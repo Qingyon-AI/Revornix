@@ -41,6 +41,7 @@ class SectionProcessState(TypedDict, total=False):
     default_document_reader_model_id: int | None
     auto_illustration: bool
     default_image_generate_engine_id: int | None
+    default_podcast_user_engine_id: int | None
 
 
 WORKFLOW_NAME = "section_process"
@@ -538,6 +539,7 @@ async def _load_context(
         state["auto_illustration"] = db_section.auto_illustration
         state["default_document_reader_model_id"] = db_user.default_document_reader_model_id
         state["default_image_generate_engine_id"] = db_user.default_image_generate_engine_id
+        state["default_podcast_user_engine_id"] = db_user.default_podcast_user_engine_id
 
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
             db=db,
@@ -915,7 +917,7 @@ async def _build_section_content(
                 db=db,
                 section_id=section_id
             )
-            if state.get("auto_podcast"):
+            if state.get("auto_podcast") and state.get("default_podcast_user_engine_id") is not None:
                 db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
                     db=db,
                     section_id=section_id,
@@ -966,8 +968,14 @@ async def _maybe_podcast(
     if state.get("auto_podcast"):
         section_id = state.get("section_id")
         user_id = state.get("user_id")
+        engine_id = state.get("default_podcast_user_engine_id")
         if section_id is None or user_id is None:
             raise Exception("Section workflow missing section_id or user_id")
+        if engine_id is None:
+            exception_logger.warning(
+                f"[SectionPodcast] skip auto podcast because default engine is not configured: section={section_id}, user_id={user_id}"
+            )
+            return state
         await run_section_podcast_workflow(
             section_id=section_id,
             user_id=user_id

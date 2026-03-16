@@ -4,7 +4,7 @@ from pydantic import Field, field_validator
 
 from .base import BaseModel
 from .ai import ChatItem
-from enums.section import UserSectionRole, UserSectionAuthority
+from enums.section import SectionProcessTriggerType, UserSectionRole, UserSectionAuthority
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
 
@@ -249,12 +249,16 @@ class DaySectionResponse(BaseModel):
     date: str
     title: str | None = None
     description: str | None
+    auto_podcast: bool = True
+    auto_illustration: bool = True
     create_time: datetime | None = None
     update_time: datetime | None
     md_file_name: str | None
     documents: list[SectionDocumentInfo] = Field(default_factory=list)
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
+    process_task_trigger_type: int | None = SectionProcessTriggerType.SCHEDULER
+    process_task_trigger_scheduler: str | None = None
     is_created: bool = True
 
 class SectionCreateRequest(BaseModel):

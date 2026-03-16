@@ -8,9 +8,15 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from common.file import get_remote_file_signed_url
+from common.section_defaults import (
+    TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
+    TODAY_SECTION_DEFAULT_AUTO_PODCAST,
+    TODAY_SECTION_DEFAULT_PROCESS_CRON,
+)
 from common.timezone import decode_cron_expr_with_timezone
 from enums.section import (
     SectionDocumentIntegration,
+    SectionProcessTriggerType,
     UserSectionAuthority,
     UserSectionRole,
 )
@@ -324,12 +330,16 @@ async def get_date_section_info(
             date=day_section_request.date,
             title=None,
             description=None,
+            auto_podcast=TODAY_SECTION_DEFAULT_AUTO_PODCAST,
+            auto_illustration=TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
             create_time=None,
             update_time=None,
             md_file_name=None,
             documents=[],
             podcast_task=None,
             process_task=None,
+            process_task_trigger_type=SectionProcessTriggerType.SCHEDULER,
+            process_task_trigger_scheduler=TODAY_SECTION_DEFAULT_PROCESS_CRON,
             is_created=False,
         )
 
@@ -361,6 +371,8 @@ async def get_date_section_info(
         date=day_section_request.date,
         title=db_section.title,
         description=db_section.description,
+        auto_podcast=db_section.auto_podcast,
+        auto_illustration=db_section.auto_illustration,
         md_file_name=db_section.md_file_name,
         documents=documents,
         is_created=True,
@@ -394,5 +406,18 @@ async def get_date_section_info(
         res.process_task = schemas.section.SectionProcessTask(
             status=db_section_process_task.status,
         )
+        res.process_task_trigger_type = db_section_process_task.trigger_type
+        db_section_process_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+            db=db,
+            section_id=db_section.id,
+        )
+        if db_section_process_trigger_scheduler is not None:
+            _, cron_expr = decode_cron_expr_with_timezone(
+                db_section_process_trigger_scheduler.cron_expr
+            )
+            res.process_task_trigger_scheduler = cron_expr
+    else:
+        res.process_task_trigger_type = SectionProcessTriggerType.SCHEDULER
+        res.process_task_trigger_scheduler = TODAY_SECTION_DEFAULT_PROCESS_CRON
 
     return res

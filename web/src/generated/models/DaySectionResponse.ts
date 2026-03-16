@@ -80,6 +80,18 @@ export interface DaySectionResponse {
     description?: string | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof DaySectionResponse
+     */
+    auto_podcast?: boolean | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DaySectionResponse
+     */
+    auto_illustration?: boolean | null;
+    /**
+     * 
      * @type {Date}
      * @memberof DaySectionResponse
      */
@@ -116,6 +128,18 @@ export interface DaySectionResponse {
     process_task?: SectionProcessTask | null;
     /**
      * 
+     * @type {number}
+     * @memberof DaySectionResponse
+     */
+    process_task_trigger_type?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DaySectionResponse
+     */
+    process_task_trigger_scheduler?: string | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof DaySectionResponse
      */
@@ -145,12 +169,16 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
         'date': json['date'],
         'title': json['title'] == null ? undefined : json['title'],
         'description': json['description'] == null ? undefined : json['description'],
+        'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
+        'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
         'create_time': (json['create_time'] == null ? undefined : new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? undefined : new Date(json['update_time'])),
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
+        'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
+        'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
         'is_created': json['is_created'] == null ? undefined : json['is_created'],
     };
 }
@@ -171,12 +199,16 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'date': value['date'],
         'title': value['title'],
         'description': value['description'],
+        'auto_podcast': value['auto_podcast'],
+        'auto_illustration': value['auto_illustration'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
         'documents': value['documents'] == null ? value['documents'] : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
+        'process_task_trigger_type': value['process_task_trigger_type'],
+        'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
         'is_created': value['is_created'],
     };
 }

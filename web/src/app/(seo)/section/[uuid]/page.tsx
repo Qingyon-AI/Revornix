@@ -40,7 +40,7 @@ import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
-import { SectionPodcastStatus } from '@/enums/section';
+import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import AudioPlayer from '@/components/ui/audio-player';
 import AudioStatusCard from '@/components/ui/audio-status-card';
 import CustomMarkdown from '@/components/ui/custom-markdown';
@@ -49,6 +49,7 @@ import Link from 'next/link';
 import { isSeoNotFoundError } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import TaskStateCard from '@/components/ui/task-state-card';
+import GraphTaskCard from '@/components/graph/graph-task-card';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -208,6 +209,26 @@ const SEOSectionDetail = async (props: {
 		section?.cover && section.creator
 			? replacePath(section.cover, section.creator.id)
 			: null;
+	const graphCardState =
+		section?.process_task?.status === SectionProcessStatus.SUCCESS
+			? {
+					badge: t('document_graph_status_success'),
+					tone: 'success' as const,
+				}
+			: section?.process_task?.status === SectionProcessStatus.FAILED
+				? {
+						badge: t('document_graph_status_failed'),
+						tone: 'danger' as const,
+					}
+				: section?.process_task?.status === SectionProcessStatus.PROCESSING
+					? {
+							badge: t('document_graph_status_doing'),
+							tone: 'default' as const,
+						}
+					: {
+							badge: t('document_graph_status_todo'),
+							tone: 'warning' as const,
+						};
 	const surfaceCardClassName =
 		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
 
@@ -334,20 +355,18 @@ const SEOSectionDetail = async (props: {
 				</div>
 
 				<div className='min-w-0 space-y-6 xl:sticky xl:top-24'>
-					<Card className={`overflow-hidden ${surfaceCardClassName}`}>
-						<CardHeader className='flex flex-row items-start justify-between gap-4 px-4 pt-4 pb-0 sm:px-5 sm:pt-5'>
-							<div className='space-y-1'>
-								<CardTitle>{t('section_graph')}</CardTitle>
-								<CardDescription className='leading-6'>
-									{t('section_graph_description')}
-								</CardDescription>
-							</div>
+					<GraphTaskCard
+						title={t('section_graph')}
+						description={t('section_graph_description')}
+						badge={graphCardState.badge}
+						tone={graphCardState.tone}
+						action={
 							<Dialog>
 								<DialogTrigger asChild>
 									<Button
 										size='icon'
 										variant='outline'
-										className='size-10 shrink-0 rounded-2xl bg-background/70'>
+										className='size-8 shrink-0 rounded-2xl border-border/70 bg-background/65 shadow-none hover:bg-background'>
 										<Expand className='size-4 text-muted-foreground' />
 									</Button>
 								</DialogTrigger>
@@ -365,13 +384,11 @@ const SEOSectionDetail = async (props: {
 									</div>
 								</DialogContent>
 							</Dialog>
-						</CardHeader>
-						<CardContent className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4'>
-							<div className='h-[260px] overflow-hidden rounded-[20px] border border-border/60 bg-background/40 sm:h-[320px] xl:h-[340px]'>
-								{section ? <SectionGraphSEO section_id={section.id} /> : null}
-							</div>
-						</CardContent>
-					</Card>
+						}>
+						<div className='h-[260px] overflow-hidden rounded-[20px] border border-border/60 bg-background/40 sm:h-[320px] xl:h-[340px]'>
+							{section ? <SectionGraphSEO section_id={section.id} /> : null}
+						</div>
+					</GraphTaskCard>
 
 					<Card className={surfaceCardClassName}>
 						<CardHeader className='gap-2 px-4 pt-4 pb-0 sm:px-5 sm:pt-5'>

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getDayDocumentsSummarySection } from '@/service/section';
 import { useTranslations } from 'next-intl';
 import { getLocalDateYMD, formatInUserTimeZone } from '@/lib/time';
+import { useUserContext } from '@/provider/user-provider';
 import {
 	Card,
 	CardContent,
@@ -33,11 +34,13 @@ import { Badge } from '@/components/ui/badge';
 import AudioPlayer from '@/components/ui/audio-player';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { cn } from '@/lib/utils';
+import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const TodaySummary = () => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const today = getLocalDateYMD();
 	const {
 		data: section,
@@ -129,10 +132,68 @@ const TodaySummary = () => {
 	};
 
 	const processState = getProcessState();
+	const automationWarnings = getSectionAutomationWarnings({
+		autoPodcast: section?.auto_podcast ?? true,
+		autoIllustration: section?.auto_illustration ?? true,
+		hasPodcastEngine: Boolean(mainUserInfo?.default_podcast_user_engine_id),
+		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+	});
+	const warningItems = [
+		automationWarnings.missingPodcastEngine
+			? {
+					label: t('section_card_warning_missing_podcast_engine'),
+					href: '/setting#default_user_podcast_engine_choose',
+				}
+			: null,
+		automationWarnings.missingIllustrationEngine
+			? {
+					label: t('section_card_warning_missing_illustration_engine'),
+					href: '/setting#default_document_summary_model_choose',
+				}
+			: null,
+	].filter(
+		(
+			item,
+		): item is {
+			label: string;
+			href: string;
+		} => Boolean(item),
+	);
 	const summaryHref =
 		sectionCreated && section?.section_id
 			? `/section/detail/${section.section_id}`
 			: null;
+	const automationNotice =
+		warningItems.length > 0 ? (
+			<div className='rounded-xl border border-amber-500/25 bg-amber-500/6 px-3.5 py-3'>
+				<div className='flex items-start gap-2.5'>
+					<div className='mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300'>
+						<AlertTriangle className='size-4' />
+					</div>
+					<div className='min-w-0 space-y-2'>
+						<div className='space-y-0.5'>
+							<div className='text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300'>
+								{t('dashboard_today_summary_automation_notice')}
+							</div>
+							<p className='text-xs text-muted-foreground'>
+								{t('dashboard_today_summary_automation_notice_description')}
+							</p>
+						</div>
+						<div className='flex flex-wrap gap-2'>
+							{warningItems.map((warning) => (
+								<Link
+									key={warning.label}
+									href={warning.href}
+									className='inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-amber-700 transition-colors hover:border-amber-500/45 hover:bg-amber-500/8 dark:text-amber-300'>
+									<AlertTriangle className='size-3.5' />
+									<span>{warning.label}</span>
+								</Link>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		) : null;
 
 	return (
 		<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
@@ -187,27 +248,30 @@ const TodaySummary = () => {
 					</Empty>
 				)}
 				{section && !isError && !sectionCreated && (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<FileText />
-							</EmptyMedia>
-							<EmptyDescription>
-								{t('dashboard_today_summary_not_created')}
-							</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => {
-									refetch();
-								}}>
-								<RefreshCcwIcon />
-								{t('refresh')}
-							</Button>
-						</EmptyContent>
-					</Empty>
+					<div className='space-y-4'>
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<FileText />
+								</EmptyMedia>
+								<EmptyDescription>
+									{t('dashboard_today_summary_not_created')}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										refetch();
+									}}>
+									<RefreshCcwIcon />
+									{t('refresh')}
+								</Button>
+							</EmptyContent>
+						</Empty>
+						{automationNotice}
+					</div>
 				)}
 				{section && !isError && sectionCreated && (
 					<div className='flex h-full flex-col gap-4'>
@@ -267,6 +331,7 @@ const TodaySummary = () => {
 								</div>
 							</div>
 						</div>
+						{automationNotice}
 
 							{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
 							section.podcast_task.podcast_file_name ? (

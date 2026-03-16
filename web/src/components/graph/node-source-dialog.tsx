@@ -136,16 +136,16 @@ const NodeSourceDialog = ({
 							</div>
 
 							{groupedSources.length > 0 ? (
-								<div className='max-h-[22rem] space-y-2 overflow-auto pr-1'>
+								<div className='max-h-[22rem] space-y-2 overflow-y-auto overflow-x-hidden pr-2 [scrollbar-gutter:stable]'>
 									{groupedSources.map((source) => {
 										const href = `/document/detail/${source.doc_id}`;
 										return (
 											<Link
 												key={`${source.doc_id}`}
 												href={href}
-												className='block rounded-2xl border border-border/60 bg-card/60 p-4 transition-all'
+												className='block w-full overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 transition-all'
 												onClick={() => onOpenChange(false)}>
-												<div className='flex items-start justify-between gap-3'>
+												<div className='grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3'>
 													<div className='min-w-0 space-y-2'>
 														<div className='truncate text-sm font-semibold text-foreground transition-colors'>
 															{source.doc_title ||
@@ -171,7 +171,7 @@ const NodeSourceDialog = ({
 															) : null}
 														</div>
 													</div>
-													<div className='flex size-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/90 text-muted-foreground transition-colors'>
+													<div className='flex size-9 shrink-0 self-center items-center justify-center rounded-xl border border-border/60 bg-background/90 text-muted-foreground transition-colors'>
 														<ArrowUpRight className='size-4' />
 													</div>
 												</div>

@@ -1,18 +1,38 @@
 import { SectionInfo } from '@/generated';
 import { formatDistance } from 'date-fns';
-import { BookTextIcon } from 'lucide-react';
+import { AlertTriangle, BookTextIcon } from 'lucide-react';
 import Link from 'next/link';
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
 import { useRouter } from 'nextjs-toploader/app';
 import { useLocale, useTranslations } from 'next-intl';
 import { replacePath } from '@/lib/utils';
+import { useUserContext } from '@/provider/user-provider';
+import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const SectionCard = ({ section }: { section: SectionInfo }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const router = useRouter();
+	const { mainUserInfo } = useUserContext();
+	const isOwner = mainUserInfo?.id === section.creator.id;
+	const automationWarnings = getSectionAutomationWarnings({
+		autoPodcast: section.auto_podcast,
+		autoIllustration: section.auto_illustration,
+		hasPodcastEngine: Boolean(mainUserInfo?.default_podcast_user_engine_id),
+		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+	});
+	const warningBadges = isOwner
+		? [
+				automationWarnings.missingPodcastEngine
+					? t('section_card_warning_missing_podcast_engine')
+					: null,
+				automationWarnings.missingIllustrationEngine
+					? t('section_card_warning_missing_illustration_engine')
+					: null,
+			].filter(Boolean)
+		: [];
 	return (
 		<Link
 			href={`/section/detail/${section.id}`}
@@ -54,6 +74,18 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 						})}
 					</div>
 				)}
+				{warningBadges.length > 0 ? (
+					<div className='flex flex-wrap gap-2'>
+						{warningBadges.map((warning) => (
+							<div
+								key={warning}
+								className='inline-flex items-center gap-1.5 rounded-full border border-amber-500/35 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300'>
+								<AlertTriangle className='size-3.5' />
+								<span>{warning}</span>
+							</div>
+						))}
+					</div>
+				) : null}
 				<div className='mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground'>
 					<div className='flex min-w-0 items-center gap-2'>
 						<Avatar
