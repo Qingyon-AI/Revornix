@@ -6,20 +6,27 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from '@tanstack/react-query';
+import {
+	getSectionDetail,
 	getMineUserRoleAndAuthority,
+	retrySectionDocumentIntegration,
 	searchSectionDocuments,
 } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { PlusCircleIcon, TableOfContentsIcon } from 'lucide-react';
+import { Loader2, PlusCircleIcon, RotateCcw, TableOfContentsIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
-import { UserSectionRole } from '@/enums/section';
+import { SectionProcessStatus, UserSectionRole } from '@/enums/section';
 import {
 	Empty,
 	EmptyDescription,
@@ -27,6 +34,8 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { cn } from '@/lib/utils';
+import { SectionDocumentIntegration } from '@/enums/document';
+import { toast } from 'sonner';
 
 const SectionDocument = ({
 	section_id,
@@ -39,6 +48,7 @@ const SectionDocument = ({
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 
 	const handleAddDocument = (section_id: string) => {
 		const params = new URLSearchParams({
@@ -83,10 +93,36 @@ const SectionDocument = ({
 		queryKey: ['getMineUserRoleAndAuthority', section_id],
 		queryFn: () => getMineUserRoleAndAuthority({ section_id: section_id }),
 	});
+	const { data: sectionDetail } = useQuery({
+		queryKey: ['getSectionDetail', section_id],
+		queryFn: () => getSectionDetail({ section_id }),
+	});
 
 	const canAddDocument =
 		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR ||
 		sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER;
+	const sectionProcessFailed =
+		sectionDetail?.process_task?.status === SectionProcessStatus.FAILED;
+
+	const retryMutation = useMutation({
+		mutationFn: (document_id: number) =>
+			retrySectionDocumentIntegration({
+				section_id,
+				document_id,
+			}),
+		onSuccess() {
+			toast.success(t('section_document_retry_submit_success'));
+			queryClient.invalidateQueries({
+				queryKey: ['searchSectionDocument', section_id],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionDetail', section_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('section_document_retry_submit_failed'));
+		},
+	});
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
@@ -128,11 +164,39 @@ const SectionDocument = ({
 							documents.map((document, index) => {
 								return (
 									<div
-										key={document.id ?? index}
-										ref={
-											index === documents.length - 1 ? bottomRef : undefined
-										}>
-										<SectionDocumentCard document={document} />
+							key={document.id ?? index}
+							ref={
+								index === documents.length - 1 ? bottomRef : undefined
+							}>
+										<SectionDocumentCard
+											document={document}
+											action={
+												canAddDocument &&
+												(document.status === SectionDocumentIntegration.FAILED ||
+													(sectionProcessFailed &&
+														document.status ===
+															SectionDocumentIntegration.WAIT_TO)) ? (
+													<Button
+														variant='outline'
+														size='sm'
+														className='h-7 rounded-lg border-border/50 bg-card/75 px-2 text-[11px] text-muted-foreground shadow-none hover:bg-card'
+														disabled={retryMutation.isPending}
+														onClick={(event) => {
+															event.preventDefault();
+															event.stopPropagation();
+															retryMutation.mutate(document.id);
+														}}>
+														{retryMutation.isPending &&
+														retryMutation.variables === document.id ? (
+															<Loader2 className='size-3 animate-spin' />
+														) : (
+															<RotateCcw className='size-3' />
+														)}
+														{t('section_document_retry')}
+													</Button>
+												) : undefined
+											}
+										/>
 									</div>
 								);
 							})}

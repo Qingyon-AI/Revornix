@@ -53,13 +53,13 @@ export interface DaySectionResponse {
      * @type {number}
      * @memberof DaySectionResponse
      */
-    section_id: number;
+    section_id?: number | null;
     /**
      * 
      * @type {UserPublicInfo}
      * @memberof DaySectionResponse
      */
-    creator: UserPublicInfo;
+    creator?: UserPublicInfo | null;
     /**
      * 
      * @type {string}
@@ -71,37 +71,37 @@ export interface DaySectionResponse {
      * @type {string}
      * @memberof DaySectionResponse
      */
-    title: string;
+    title?: string | null;
     /**
      * 
      * @type {string}
      * @memberof DaySectionResponse
      */
-    description: string | null;
+    description?: string | null;
     /**
      * 
      * @type {Date}
      * @memberof DaySectionResponse
      */
-    create_time: Date;
+    create_time?: Date | null;
     /**
      * 
      * @type {Date}
      * @memberof DaySectionResponse
      */
-    update_time: Date | null;
+    update_time?: Date | null;
     /**
      * 
      * @type {string}
      * @memberof DaySectionResponse
      */
-    md_file_name: string | null;
+    md_file_name?: string | null;
     /**
      * 
      * @type {Array<SectionDocumentInfo>}
      * @memberof DaySectionResponse
      */
-    documents: Array<SectionDocumentInfo>;
+    documents?: Array<SectionDocumentInfo>;
     /**
      * 
      * @type {SectionPodcastTask}
@@ -114,21 +114,19 @@ export interface DaySectionResponse {
      * @memberof DaySectionResponse
      */
     process_task?: SectionProcessTask | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DaySectionResponse
+     */
+    is_created?: boolean | null;
 }
 
 /**
  * Check if a given object implements the DaySectionResponse interface.
  */
 export function instanceOfDaySectionResponse(value: object): value is DaySectionResponse {
-    if (!('section_id' in value) || value['section_id'] === undefined) return false;
-    if (!('creator' in value) || value['creator'] === undefined) return false;
     if (!('date' in value) || value['date'] === undefined) return false;
-    if (!('title' in value) || value['title'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('create_time' in value) || value['create_time'] === undefined) return false;
-    if (!('update_time' in value) || value['update_time'] === undefined) return false;
-    if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
-    if (!('documents' in value) || value['documents'] === undefined) return false;
     return true;
 }
 
@@ -142,17 +140,18 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'section_id': json['section_id'],
-        'creator': UserPublicInfoFromJSON(json['creator']),
+        'section_id': json['section_id'] == null ? undefined : json['section_id'],
+        'creator': json['creator'] == null ? undefined : UserPublicInfoFromJSON(json['creator']),
         'date': json['date'],
-        'title': json['title'],
-        'description': json['description'],
-        'create_time': (new Date(json['create_time'])),
-        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'md_file_name': json['md_file_name'],
-        'documents': ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
+        'title': json['title'] == null ? undefined : json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'create_time': (json['create_time'] == null ? undefined : new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? undefined : new Date(json['update_time'])),
+        'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
+        'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
+        'is_created': json['is_created'] == null ? undefined : json['is_created'],
     };
 }
 
@@ -172,12 +171,12 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'date': value['date'],
         'title': value['title'],
         'description': value['description'],
-        'create_time': value['create_time'].toISOString(),
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
-        'documents': ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
+        'documents': value['documents'] == null ? value['documents'] : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
+        'is_created': value['is_created'],
     };
 }
-

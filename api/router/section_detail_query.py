@@ -9,7 +9,11 @@ import schemas
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from common.file import get_remote_file_signed_url
 from common.timezone import decode_cron_expr_with_timezone
-from enums.section import UserSectionAuthority, UserSectionRole
+from enums.section import (
+    SectionDocumentIntegration,
+    UserSectionAuthority,
+    UserSectionRole,
+)
 from router.logic_helpers import ensure_private_section_access
 
 section_detail_query_router = APIRouter()
@@ -40,7 +44,33 @@ async def _build_section_info_response(
         db=db,
         section_id=section_id,
     )
+    db_section_documents = crud.section.get_section_documents_by_section_id(
+        db=db,
+        section_id=section_id,
+    )
     labels = [schemas.section.SectionLabel(id=db_label.id, name=db_label.name) for db_label in db_labels]
+    document_integration = schemas.section.SectionDocumentIntegrationSummary(
+        wait_to_count=sum(
+            1
+            for item in db_section_documents
+            if item.status == SectionDocumentIntegration.WAIT_TO
+        ),
+        supplementing_count=sum(
+            1
+            for item in db_section_documents
+            if item.status == SectionDocumentIntegration.SUPPLEMENTING
+        ),
+        success_count=sum(
+            1
+            for item in db_section_documents
+            if item.status == SectionDocumentIntegration.SUCCESS
+        ),
+        failed_count=sum(
+            1
+            for item in db_section_documents
+            if item.status == SectionDocumentIntegration.FAILED
+        ),
+    )
 
     res = schemas.section.SectionInfo(
         **db_section.__dict__,
@@ -48,6 +78,7 @@ async def _build_section_info_response(
         documents_count=documents_count,
         subscribers_count=subscribers_count,
         creator=db_section.creator,
+        document_integration=document_integration,
     )
     res.publish_uuid = db_publish_section.uuid if db_publish_section is not None else None
 
@@ -287,7 +318,20 @@ async def get_date_section_info(
         date=date
     )
     if db_section is None:
-        raise schemas.error.CustomException(code=404, message="The summary section of this day is not created yet")
+        return schemas.section.DaySectionResponse(
+            section_id=None,
+            creator=None,
+            date=day_section_request.date,
+            title=None,
+            description=None,
+            create_time=None,
+            update_time=None,
+            md_file_name=None,
+            documents=[],
+            podcast_task=None,
+            process_task=None,
+            is_created=False,
+        )
 
     db_documents = crud.section.get_documents_for_section_by_section_id(
         db=db,
@@ -318,7 +362,8 @@ async def get_date_section_info(
         title=db_section.title,
         description=db_section.description,
         md_file_name=db_section.md_file_name,
-        documents=documents
+        documents=documents,
+        is_created=True,
     )
     if res.md_file_name is not None:
         res.md_file_name = await get_remote_file_signed_url(

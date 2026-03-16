@@ -3,19 +3,19 @@ import re
 from langfuse import propagate_attributes
 from langfuse.openai import OpenAI
 
+from common.logger import exception_logger
 from common.usage_billing import persist_engine_usage_from_completion
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 
 SYSTEM_PROMPT = """You are a pure image generation function.
 
-You MUST return ONLY a valid image Data URL in the exact format:
+You MUST return ONLY a valid markdown image string in the exact format:
 
 ![image](data:<MIME-Type>;base64,<BASE64_DATA>)
 
 Strict rules:
-- Output MUST start with "data:"
-- Output MUST contain exactly ONE comma ","
+- Output MUST start with "![image](data:"
 - Output MUST be a single-line string
 - Output MUST NOT contain explanations, markdown, code blocks, or whitespace
 - Output MUST NOT contain newlines
@@ -29,13 +29,40 @@ MARKDOWN_IMAGE_DATA_URL_PATTERN = re.compile(
     r"""^
     !\[image\]                           # ![image]
     \(                                   # (
-    data:image\/(png|jpeg|jpg|webp)      # image MIME
+    data:image\/(png|jpeg|jpg|webp|svg\+xml) # image MIME
     ;base64,                             # base64 separator
     [A-Za-z0-9+/=]+                      # base64 payload
     \)                                   # )
     $""",
     re.VERBOSE
 )
+
+DATA_URL_PATTERN = re.compile(
+    r"data:image\/(?:png|jpeg|jpg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+"
+)
+
+
+def _normalize_image_markdown_output(raw_output: str) -> str | None:
+    content = raw_output.strip()
+    if content.startswith("```"):
+        content = re.sub(r"^```[a-zA-Z0-9_-]*\s*", "", content)
+        content = re.sub(r"\s*```$", "", content).strip()
+
+    if MARKDOWN_IMAGE_DATA_URL_PATTERN.fullmatch(content):
+        return content
+
+    markdown_match = re.search(
+        r"!\[image\]\((data:image\/(?:png|jpeg|jpg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+)\)",
+        content,
+    )
+    if markdown_match is not None:
+        return f"![image]({markdown_match.group(1)})"
+
+    data_url_match = DATA_URL_PATTERN.search(content)
+    if data_url_match is not None:
+        return f"![image]({data_url_match.group(0)})"
+
+    return None
 
 
 class BananaImageGenerateEngine(ImageGenerateEngineBase):
@@ -96,5 +123,13 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
                 source="banana_image_generate",
             )
             if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
-                return response.choices[0].message.content
+                normalized = _normalize_image_markdown_output(
+                    response.choices[0].message.content
+                )
+                if normalized is None:
+                    exception_logger.warning(
+                        "[SectionImage] invalid image generate response: "
+                        f"user_id={self.user_id}, raw_response={response.choices[0].message.content}"
+                    )
+                return normalized
             return None

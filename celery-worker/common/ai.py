@@ -1,5 +1,7 @@
 import inspect
 import json
+import asyncio
+import random
 from typing import Any
 from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
@@ -20,6 +22,75 @@ class SummaryResultWithTitleAndDescription(BaseModel):
     title: str
     description: str
     summary: str
+
+
+LLM_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+LLM_RETRY_MAX_ATTEMPTS = 3
+LLM_RETRY_BASE_DELAY_SECONDS = 1.5
+
+
+def _get_error_status_code(error: Exception) -> int | None:
+    status_code = getattr(error, "status_code", None)
+    if isinstance(status_code, int):
+        return status_code
+
+    response = getattr(error, "response", None)
+    response_status_code = getattr(response, "status_code", None)
+    if isinstance(response_status_code, int):
+        return response_status_code
+
+    return None
+
+
+def _is_retryable_llm_error(error: Exception) -> bool:
+    status_code = _get_error_status_code(error)
+    if status_code in LLM_RETRYABLE_STATUS_CODES:
+        return True
+
+    error_text = str(error).lower()
+    return (
+        "engine_overloaded" in error_text
+        or "engine is currently overloaded" in error_text
+        or "rate limit" in error_text
+        or "too many requests" in error_text
+        or "temporarily unavailable" in error_text
+    )
+
+
+async def _call_with_llm_retry(
+    *,
+    operation_name: str,
+    call,
+    user_id: int,
+    model_id: int,
+):
+    last_error: Exception | None = None
+
+    for attempt in range(1, LLM_RETRY_MAX_ATTEMPTS + 1):
+        try:
+            return await call()
+        except Exception as error:
+            last_error = error
+            retryable = _is_retryable_llm_error(error)
+            if not retryable or attempt >= LLM_RETRY_MAX_ATTEMPTS:
+                raise
+
+            status_code = _get_error_status_code(error)
+            delay_seconds = (
+                LLM_RETRY_BASE_DELAY_SECONDS * (2 ** (attempt - 1))
+            ) + random.uniform(0, 0.35)
+            exception_logger.warning(
+                f"event=llm_retry_scheduled operation={operation_name} "
+                f"user_id={user_id} model_id={model_id} attempt={attempt} "
+                f"max_attempts={LLM_RETRY_MAX_ATTEMPTS} retryable={retryable} "
+                f"status_code={status_code} delay_seconds={delay_seconds:.2f} "
+                f"error={repr(error)}"
+            )
+            await asyncio.sleep(delay_seconds)
+
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"{operation_name} failed without raising an exception")
 
 
 async def _safe_close_async_client(client: AsyncOpenAI) -> None:
@@ -77,12 +148,17 @@ async def make_section_markdown(
             base_url=model_configuration.base_url,
         )
         try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
-                    {"role": "user", "content": prompt}
-                ],
+            completion = await _call_with_llm_retry(
+                operation_name="make_section_markdown",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {"role": "system", "content": "You are an expert in summarizing document content."},
+                        {"role": "user", "content": prompt}
+                    ],
+                ),
             )
             persist_model_usage_from_completion(
                 user_id=user_id,
@@ -124,13 +200,18 @@ async def summary_content(
                 base_url=model_configuration.base_url,
             )
         try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
-                    {"role": "user", "content": system_prompt}
-                ],
-                response_format={"type": "json_object"},
+            completion = await _call_with_llm_retry(
+                operation_name="summary_content",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {"role": "system", "content": "You are an expert in summarizing document content."},
+                        {"role": "user", "content": system_prompt}
+                    ],
+                    response_format={"type": "json_object"},
+                ),
             )
             persist_model_usage_from_completion(
                 user_id=user_id,
@@ -189,13 +270,18 @@ async def reducer_summary(
                 base_url=model_configuration.base_url,
             )
         try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
-                    {"role": "user", "content": system_prompt}
-                ],
-                response_format={"type": "json_object"},
+            completion = await _call_with_llm_retry(
+                operation_name="reducer_summary",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {"role": "system", "content": "You are an expert in summarizing document content."},
+                        {"role": "user", "content": system_prompt}
+                    ],
+                    response_format={"type": "json_object"},
+                ),
             )
             persist_model_usage_from_completion(
                 user_id=user_id,

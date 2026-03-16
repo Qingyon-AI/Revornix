@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import type { SectionPublishGetResponse } from '@/generated';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { Input } from '../ui/input';
@@ -42,12 +43,14 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 			const previous = queryClient.getQueryData([
 				'getSectionPublish',
 				section_id,
-			]);
+			]) as SectionPublishGetResponse | undefined;
 
 			// 本地乐观更新（不要占位 uuid）
-			// 只更新是否发布（uuid 是否存在）
 			const optimistic = {
-				uuid: newStatus ? 'KEEP' : null, // KEEP 表示仍旧保留旧值，不展示链接
+				status: newStatus,
+				uuid: newStatus ? previous?.uuid ?? null : null,
+				create_time: previous?.create_time ?? null,
+				update_time: previous?.update_time ?? null,
 			};
 			queryClient.setQueryData(['getSectionPublish', section_id], optimistic);
 
@@ -96,11 +99,11 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 			<div className='w-full flex items-center gap-2 justify-between'>
 				<Label>{t('section_publish_on')}</Label>
 				<Switch
-					checked={sectionPublish?.uuid ? true : false}
+					checked={sectionPublish?.status ?? false}
 					onCheckedChange={handleUpdateTheShareStatus}
 				/>
 			</div>
-			{sectionPublish?.uuid && (
+			{sectionPublish?.status && sectionPublish?.uuid && (
 				<div className='w-full flex items-center gap-2 overflow-hidden'>
 					<Input
 						disabled

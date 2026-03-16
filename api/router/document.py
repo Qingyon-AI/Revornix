@@ -199,12 +199,13 @@ async def create_ai_summary(
         document_id=ai_summary_request.document_id
     )
     if db_exist_summarize_task is not None:
-        if db_exist_summarize_task.status == DocumentSummarizeStatus.SUCCESS:
-            raise schemas.error.CustomException("Summary task is already complete", code=409)
         if db_exist_summarize_task.status == DocumentSummarizeStatus.WAIT_TO:
             raise schemas.error.CustomException("Summary task is already queued", code=409)
         if db_exist_summarize_task.status == DocumentSummarizeStatus.SUMMARIZING:
             raise schemas.error.CustomException("Summary task is already in progress", code=409)
+        db_exist_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
+        db_exist_summarize_task.summary = None
+        db_exist_summarize_task.update_time = datetime.now(timezone.utc)
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -213,6 +214,7 @@ async def create_ai_summary(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a summary", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = datetime.now(timezone.utc)
     db.commit()
 
     workflow = chain(

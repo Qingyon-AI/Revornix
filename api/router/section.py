@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from apscheduler.triggers.cron import CronTrigger
-from celery import chain
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -14,7 +13,6 @@ from common.celery.app import (
     start_process_section,
     start_process_section_podcast,
     start_trigger_user_notification_event,
-    update_section_process_status,
 )
 from common.dependencies import get_current_user, get_db, get_request_timezone
 from common.timezone import (
@@ -24,6 +22,7 @@ from common.timezone import (
 )
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import (
+    SectionDocumentIntegration,
     SectionPodcastStatus,
     SectionProcessStatus,
     SectionProcessTriggerType,
@@ -98,38 +97,119 @@ async def generate_podcast(
         raise schemas.error.CustomException('Section not found', code=404)
     if db_section.creator_id != user.id:
         raise schemas.error.CustomException('Only the section creator can generate a podcast', code=403)
+    if db_section.md_file_name is None:
+        raise schemas.error.CustomException('Section markdown is not ready', code=409)
 
     if user.default_user_file_system is None:
         raise schemas.error.CustomException('Default file system is not configured', code=400)
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=generate_podcast_request.section_id
+    )
+    if db_section_process_task is not None and db_section_process_task.status in [
+        SectionProcessStatus.WAIT_TO,
+        SectionProcessStatus.PROCESSING,
+    ]:
+        raise schemas.error.CustomException('Section is still processing', code=409)
 
     db_exist_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
         section_id=generate_podcast_request.section_id
     )
     if db_exist_podcast_task is not None:
-        if db_exist_podcast_task.status == SectionPodcastStatus.SUCCESS:
-            raise schemas.error.CustomException('Podcast task is already complete', code=409)
         if db_exist_podcast_task.status == SectionPodcastStatus.WAIT_TO:
             raise schemas.error.CustomException('Podcast task is already queued', code=409)
         if db_exist_podcast_task.status == SectionPodcastStatus.GENERATING:
             raise schemas.error.CustomException('Podcast task is already in progress', code=409)
+
+    now = datetime.now(timezone.utc)
+    if db_exist_podcast_task is None:
+        db_exist_podcast_task = crud.task.create_section_podcast_task(
+            db=db,
+            user_id=user.id,
+            section_id=generate_podcast_request.section_id,
+            status=SectionPodcastStatus.WAIT_TO,
+        )
+    else:
+        db_exist_podcast_task.status = SectionPodcastStatus.WAIT_TO
+        db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.update_time = now
+    db.commit()
+
+    start_process_section_podcast.delay(db_section.id, user.id)
+    return schemas.common.SuccessResponse()
+
+
+@section_router.post('/document/retry', response_model=schemas.common.NormalResponse)
+def retry_section_document_integration(
+    retry_request: schemas.section.RetrySectionDocumentRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    now = datetime.now(timezone.utc)
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=retry_request.section_id
+    )
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+
+    db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+        db=db,
+        section_id=retry_request.section_id,
+        user_id=user.id
+    )
+    if db_section_user is None or db_section_user.authority not in [
+        UserSectionAuthority.READ_AND_WRITE,
+        UserSectionAuthority.FULL_ACCESS,
+    ]:
+        raise schemas.error.CustomException("You don't have permission to retry this section document", code=403)
+
+    db_section_document = crud.section.get_section_document_by_section_id_and_document_id(
+        db=db,
+        section_id=retry_request.section_id,
+        document_id=retry_request.document_id
+    )
+    if db_section_document is None:
+        raise schemas.error.CustomException('Section document not found', code=404)
+    if db_section_document.status == SectionDocumentIntegration.SUCCESS:
+        raise schemas.error.CustomException('Section document is already integrated', code=409)
+    if db_section_document.status == SectionDocumentIntegration.SUPPLEMENTING:
+        raise schemas.error.CustomException('Section document is already being integrated', code=409)
+
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
-        section_id=generate_podcast_request.section_id
+        section_id=retry_request.section_id
+    )
+    if db_section_process_task is not None and db_section_process_task.status in [
+        SectionProcessStatus.WAIT_TO,
+        SectionProcessStatus.PROCESSING,
+    ]:
+        raise schemas.error.CustomException('Section is already processing', code=409)
+
+    crud.section.update_section_document_by_section_id_and_document_id(
+        db=db,
+        section_id=retry_request.section_id,
+        document_id=retry_request.document_id,
+        status=SectionDocumentIntegration.WAIT_TO
     )
     if db_section_process_task is None:
         db_section_process_task = crud.task.create_section_process_task(
             db=db,
             user_id=user.id,
-            section_id=generate_podcast_request.section_id
+            section_id=retry_request.section_id,
+            status=SectionProcessStatus.WAIT_TO
         )
-    db_section_process_task.status = SectionProcessStatus.WAIT_TO
+    else:
+        db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.update_time = now
     db.commit()
-    workflow = chain(
-        start_process_section_podcast.si(db_section.id, user.id),
-        update_section_process_status.si(db_section.id, SectionProcessStatus.SUCCESS)
-    )
-    workflow()
+
+    start_process_section.apply_async(kwargs={
+        'section_id': retry_request.section_id,
+        'user_id': user.id,
+        'auto_podcast': db_section.auto_podcast,
+    })
     return schemas.common.SuccessResponse()
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)

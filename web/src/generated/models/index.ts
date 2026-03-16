@@ -211,6 +211,7 @@ export * from './SectionCreateRequest';
 export * from './SectionCreateResponse';
 export * from './SectionDeleteRequest';
 export * from './SectionDetailRequest';
+export * from './SectionDocumentIntegrationSummary';
 export * from './SectionDocumentInfo';
 export * from './SectionDocumentRequest';
 export * from './SectionGraphRequest';
