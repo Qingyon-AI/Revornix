@@ -357,7 +357,7 @@ const SEOSectionDetail = async (props: {
 									</DialogHeader>
 									<div className='min-h-[320px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/60 sm:min-h-[420px]'>
 										{section ? (
-											<SectionGraphSEO section_id={section.id} />
+											<SectionGraphSEO section_id={section.id} showSearch />
 										) : null}
 									</div>
 								</DialogContent>

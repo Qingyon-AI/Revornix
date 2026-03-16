@@ -366,7 +366,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 													</DialogDescription>
 												</DialogHeader>
 												<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-													<DocumentGraph document_id={id} />
+													<DocumentGraph document_id={id} showSearch />
 												</div>
 											</DialogContent>
 										</Dialog>

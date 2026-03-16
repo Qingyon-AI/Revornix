@@ -1,79 +1,35 @@
 'use client';
 
+import EntityGraphCanvas, {
+	type GraphCanvasLink,
+	type GraphCanvasNode,
+} from '@/components/graph/entity-graph-canvas';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentGraphStatus } from '@/enums/document';
 import { getQueryClient } from '@/lib/get-query-client';
 import { generateDocumentGraph, getDocumentDetail } from '@/service/document';
 import { searchDocumentGraph } from '@/service/graph';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import * as d3 from 'd3';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { Loader2 } from 'lucide-react';
-import NodeSourceDialog from '@/components/graph/node-source-dialog';
 
-interface NodeSource {
-	doc_id: number;
-	doc_title?: string;
-	chunk_id?: string;
-}
-
-interface Node {
-	id: string;
-	label: string;
-	group: string;
-	degree?: number;
-	sources?: NodeSource[];
-	x?: number;
-	y?: number;
-	vx?: number;
-	vy?: number;
-	fx?: number | null;
-	fy?: number | null;
-}
-
-interface Link {
-	source: string | Node;
-	target: string | Node;
-}
-
-const isNode = (obj: string | Node): obj is Node => {
-	return typeof obj !== 'string';
-};
-
-const getColorVars = (theme: string) => {
-	if (theme === 'dark') {
-		return {
-			bgColor: '#111827',
-			linkColor: '#94a3b8',
-			nodeStroke: '#1e293b',
-			textColor: '#f8fafc',
-		};
-	} else {
-		return {
-			bgColor: '#ffffff',
-			linkColor: '#999999',
-			nodeStroke: '#ffffff',
-			textColor: '#000000',
-		};
-	}
-};
-
-const DocumentGraph = ({ document_id }: { document_id: number }) => {
+const DocumentGraph = ({
+	document_id,
+	showSearch = false,
+}: {
+	document_id: number;
+	showSearch?: boolean;
+}) => {
 	const t = useTranslations();
-	const svgRef = useRef<SVGSVGElement | null>(null);
-	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-
-	const { resolvedTheme } = useTheme();
 
 	const { data, isLoading, isError, error, isFetched, refetch } = useQuery({
 		queryKey: ['searchDocumentGraphData', document_id],
 		queryFn: async () =>
 			searchDocumentGraph({
-				document_id: document_id,
+				document_id,
 			}),
 	});
 
@@ -83,332 +39,132 @@ const DocumentGraph = ({ document_id }: { document_id: number }) => {
 		error: documentDetailError,
 	} = useQuery({
 		queryKey: ['getDocumentDetail', document_id],
-		queryFn: () => getDocumentDetail({ document_id: document_id }),
+		queryFn: () => getDocumentDetail({ document_id }),
 	});
-
-	useEffect(() => {
-		const graphData = {
-			nodes: data?.nodes.map((node) => {
-				return {
-					id: node.id,
-					group: '',
-					label: node.text,
-					degree: node.degree,
-					sources:
-						node.sources?.map((source) => ({
-							doc_id: source.doc_id,
-							doc_title: source.doc_title ?? undefined,
-							chunk_id: source.chunk_id ?? undefined,
-						})) ?? [],
-				};
-			}),
-			edges: data?.edges.map((edge) => {
-				return {
-					source: edge.src_node,
-					target: edge.tgt_node,
-				};
-			}),
-		};
-		const nodes: Node[] = graphData.nodes || [];
-		const edges: Link[] = graphData.edges || [];
-
-		const degreeExtent = d3.extent(nodes, (d) => d.degree ?? 1) as [
-			number,
-			number
-		];
-		const radiusScale = d3.scaleLinear().domain(degreeExtent).range([5, 12]);
-
-		const { bgColor, linkColor, nodeStroke, textColor } = getColorVars(
-			resolvedTheme ?? 'light'
-		);
-
-		const resize = () => {
-			const svgElement = svgRef.current;
-			if (!svgElement) return;
-
-			const width = svgElement.parentElement?.clientWidth || 800;
-			const height = svgElement.parentElement?.clientHeight || 400;
-
-			d3.select(svgElement)
-				.attr('width', width)
-				.attr('height', height)
-				.attr('viewBox', [0, 0, width, height])
-				.attr('style', 'width: 100%; height: 100%;');
-
-			const color = d3.scaleOrdinal(d3.schemeCategory10);
-
-			const simulation = d3
-				.forceSimulation<Node, Link>(nodes) // 明确类型
-				.force('charge', d3.forceManyBody().strength(-100))
-				.force('center', d3.forceCenter(width / 2, height / 2));
-
-			// ✅ 高亮逻辑开始
-			function highlightNode(selectedNode: Node | null) {
-				if (!selectedNode) {
-					nodeElements.transition().duration(100).style('opacity', 1);
-					textElements.transition().duration(100).style('opacity', 1);
-					linkElements.transition().duration(100).style('opacity', 1);
-					return;
-				}
-
-				const connectedIds = new Set<string>();
-				edges.forEach((edge) => {
-					const src = isNode(edge.source) ? edge.source.id : edge.source;
-					const tgt = isNode(edge.target) ? edge.target.id : edge.target;
-					if (src === selectedNode.id) connectedIds.add(tgt);
-					if (tgt === selectedNode.id) connectedIds.add(src);
-				});
-				connectedIds.add(selectedNode.id);
-
-				// ✅ 一次性选出相关节点和边
-				const connectedNodes = nodeElements.filter((d) =>
-					connectedIds.has(d.id)
-				);
-				const connectedLinks = linkElements.filter((d) => {
-					const src = isNode(d.source) ? d.source.id : d.source;
-					const tgt = isNode(d.target) ? d.target.id : d.target;
-					return src === selectedNode.id || tgt === selectedNode.id;
-				});
-
-				// ✅ 批量控制
-				nodeElements.style('opacity', 0.1);
-				linkElements.style('opacity', 0.1);
-				textElements.style('opacity', 0.1);
-
-				connectedNodes.style('opacity', 1);
-				connectedLinks.style('opacity', 1);
-				textElements.filter((d) => connectedIds.has(d.id)).style('opacity', 1);
-			}
-
-			const dragHandler = (simulation: d3.Simulation<Node, Link>) => {
-				function dragstarted(
-					event: d3.D3DragEvent<SVGCircleElement, Node, Node>
-				) {
-					if (!event.active) simulation.alphaTarget(0.3).restart();
-					event.subject.fx = event.subject.x;
-					event.subject.fy = event.subject.y;
-
-					// ✅ 按下时立即高亮相连节点
-					highlightNode(event.subject);
-				}
-
-				function dragged(event: d3.D3DragEvent<SVGCircleElement, Node, Node>) {
-					event.subject.fx = event.x;
-					event.subject.fy = event.y;
-				}
-
-				function dragended(
-					event: d3.D3DragEvent<SVGCircleElement, Node, Node>
-				) {
-					if (!event.active) simulation.alphaTarget(0);
-					event.subject.fx = null;
-					event.subject.fy = null;
-
-					// ✅ 拖动结束后恢复透明度
-					highlightNode(null);
-				}
-
-				return d3
-					.drag<SVGCircleElement, Node>()
-					.on('start', dragstarted)
-					.on('drag', dragged)
-					.on('end', dragended);
-			};
-
-			const svg = d3.select(svgElement);
-			svg.selectAll('*').remove();
-			const linkElements = svg
-				.append('g')
-				.attr('stroke', linkColor)
-				.attr('stroke-opacity', 0.6)
-				.attr('stroke-width', 1)
-				.selectAll('line')
-				.data(edges)
-				.join('line');
-
-			const nodeElements = svg
-				.append('g')
-				.attr('stroke', nodeStroke)
-				.attr('stroke-width', 1.5)
-				.selectAll<SVGCircleElement, Node>('circle') // 添加类型¸
-				.data(nodes)
-				.join('circle')
-				.attr('r', (d) => radiusScale(d.degree ?? 1)) // ✅ 根据 degree 调整大小
-				.attr('fill', (d) => color(d.group))
-				.style('cursor', 'pointer')
-				.on('click', (_event, d) => {
-					highlightNode(d);
-					setSelectedNode(d);
-				})
-				.call(dragHandler(simulation));
-
-			const textElements = svg
-				.append('g')
-				.selectAll('text')
-				.data(nodes)
-				.join('text')
-				.text((node) => node.label)
-				.attr('fill', textColor)
-				.attr('font-size', 10)
-				.attr('dx', 15)
-				.attr('dy', 4);
-
-			const clamp = (val: number, min: number, max: number) =>
-				Math.max(min, Math.min(max, val));
-
-			simulation.nodes(nodes).on('tick', () => {
-				nodeElements
-					.attr('cx', (d) => clamp(d.x!, 0, width))
-					.attr('cy', (d) => clamp(d.y!, 0, height));
-
-				textElements
-					.attr('x', (d) => clamp(d.x!, 0, width))
-					.attr('y', (d) => clamp(d.y!, 0, height));
-
-				linkElements
-					.attr('x1', (d) =>
-						isNode(d.source) ? clamp(d.source.x!, 0, width) : 0
-					)
-					.attr('y1', (d) =>
-						isNode(d.source) ? clamp(d.source.y!, 0, height) : 0
-					)
-					.attr('x2', (d) =>
-						isNode(d.target) ? clamp(d.target.x!, 0, width) : 0
-					)
-					.attr('y2', (d) =>
-						isNode(d.target) ? clamp(d.target.y!, 0, height) : 0
-					);
-			});
-
-			simulation
-				.force('x', d3.forceX(width / 2).strength(0.1))
-				.force('y', d3.forceY(height / 2).strength(0.1));
-
-			simulation.force(
-				'link',
-				d3
-					.forceLink<Node, Link>(edges)
-					.id((d) => d.id)
-					.distance(100)
-					.strength(0.5)
-			);
-		};
-		resize();
-
-		// Re-render graph on window resize
-		window.addEventListener('resize', resize);
-		return () => window.removeEventListener('resize', resize);
-	}, [data, resolvedTheme, document?.graph_task?.status]);
 
 	useEffect(() => {
 		if (document?.graph_task?.status === DocumentGraphStatus.SUCCESS) {
 			refetch();
 		}
-	}, [document?.graph_task?.status]);
+	}, [document?.graph_task?.status, refetch]);
 
 	const queryClient = getQueryClient();
 
 	const mutateGenerateDocumentGraph = useMutation({
 		mutationFn: () =>
 			generateDocumentGraph({
-				document_id: document_id,
+				document_id,
 			}),
-		onSuccess(data, variables, onMutateResult, context) {
+		onSuccess() {
 			toast.success(t('document_graph_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', document_id],
 			});
 		},
-		onError(error, variables, onMutateResult, context) {
-			toast.error(error.message);
-			console.error(error);
+		onError(mutationError) {
+			toast.error(mutationError.message);
+			console.error(mutationError);
 		},
 	});
 
+	const nodes: GraphCanvasNode[] =
+		data?.nodes.map((node) => ({
+			id: node.id,
+			label: node.text,
+			group: 'entity',
+			degree: node.degree,
+			sources:
+				node.sources?.map((source) => ({
+					doc_id: source.doc_id,
+					doc_title: source.doc_title ?? undefined,
+					chunk_id: source.chunk_id ?? undefined,
+				})) ?? [],
+		})) ?? [];
+
+	const edges: GraphCanvasLink[] =
+		data?.edges.map((edge) => ({
+			source: edge.src_node,
+			target: edge.tgt_node,
+		})) ?? [];
+
 	return (
-		<div className='w-full h-full flex justify-center items-center relative min-h-40'>
-			{isDocumentDetailError && (
+		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
+			{isDocumentDetailError ? (
 				<div className='text-sm text-muted-foreground'>
 					Error: {documentDetailError.message}
 				</div>
-			)}
-			{isError && (
-				<div className='text-sm text-muted-foreground'>
-					Error: {error.message}
-				</div>
-			)}
-			{isLoading && <Skeleton className='w-full h-full' />}
-			{isFetched && !isError && !isDocumentDetailError && (
+			) : null}
+			{isError ? (
+				<div className='text-sm text-muted-foreground'>Error: {error.message}</div>
+			) : null}
+			{isLoading ? <Skeleton className='h-full w-full rounded-2xl' /> : null}
+			{isFetched && !isError && !isDocumentDetailError ? (
 				<>
-					{!document?.graph_task && (
-						<div className='text-sm text-muted-foreground flex flex-col justify-center items-center'>
+					{!document?.graph_task ? (
+						<div className='flex flex-col items-center justify-center text-sm text-muted-foreground'>
 							{t('document_graph_empty')}
 							<Button
-								variant={'link'}
+								variant='link'
 								size='sm'
-								className='text-muted-foreground underline underline-offset-3 p-0 m-0'
+								className='m-0 p-0 text-muted-foreground underline underline-offset-3'
 								disabled={mutateGenerateDocumentGraph.isPending}
 								title={t('document_graph_generate')}
 								onClick={() => {
 									mutateGenerateDocumentGraph.mutate();
 								}}>
 								{t('document_graph_generate')}
-								{mutateGenerateDocumentGraph.isPending && (
+								{mutateGenerateDocumentGraph.isPending ? (
 									<Loader2 className='size-4 animate-spin' />
-								)}
+								) : null}
 							</Button>
 						</div>
-					)}
-					{document?.graph_task?.status === DocumentGraphStatus.WAIT_TO && (
+					) : null}
+					{document?.graph_task?.status === DocumentGraphStatus.WAIT_TO ? (
 						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_wait_to')}
 						</div>
-					)}
-					{document?.graph_task?.status === DocumentGraphStatus.BUILDING && (
+					) : null}
+					{document?.graph_task?.status === DocumentGraphStatus.BUILDING ? (
 						<div className='text-sm text-muted-foreground'>
 							{t('document_graph_building')}
 						</div>
-					)}
-					{document?.graph_task?.status === DocumentGraphStatus.FAILED && (
-						<div className='text-sm text-muted-foreground flex flex-col justify-center items-center'>
+					) : null}
+					{document?.graph_task?.status === DocumentGraphStatus.FAILED ? (
+						<div className='flex flex-col items-center justify-center text-sm text-muted-foreground'>
 							{t('document_graph_failed')}
 							<Button
-								variant={'link'}
+								variant='link'
 								size='sm'
-								className='text-muted-foreground underline underline-offset-3 p-0 m-0'
+								className='m-0 p-0 text-muted-foreground underline underline-offset-3'
 								disabled={mutateGenerateDocumentGraph.isPending}
 								title={t('document_graph_regenerate')}
 								onClick={() => {
 									mutateGenerateDocumentGraph.mutate();
 								}}>
 								{t('document_graph_regenerate')}
-								{mutateGenerateDocumentGraph.isPending && (
+								{mutateGenerateDocumentGraph.isPending ? (
 									<Loader2 className='size-4 animate-spin' />
-								)}
+								) : null}
 							</Button>
 						</div>
-					)}
+					) : null}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
-						!data?.edges.length &&
-						!data?.nodes.length && (
-							<div className='text-sm text-muted-foreground'>
-								{t('document_graph_data_empty')}
-							</div>
-						)}
+					nodes.length === 0 ? (
+						<div className='text-sm text-muted-foreground'>
+							{t('document_graph_data_empty')}
+						</div>
+					) : null}
 					{document?.graph_task?.status === DocumentGraphStatus.SUCCESS &&
-						data?.nodes &&
-						data?.nodes.length > 0 && <svg ref={svgRef}></svg>}
-					<NodeSourceDialog
-						node={selectedNode}
-						open={selectedNode !== null}
-						onOpenChange={(open) => {
-							if (!open) {
-								setSelectedNode(null);
-							}
-						}}
-					/>
+					nodes.length > 0 ? (
+						<EntityGraphCanvas
+							nodes={nodes}
+							edges={edges}
+							className='h-full w-full'
+							showSearch={showSearch}
+						/>
+					) : null}
 				</>
-			)}
+			) : null}
 		</div>
 	);
 };
