@@ -5,12 +5,12 @@ import 'katex/dist/katex.min.css';
 import { Skeleton } from '../ui/skeleton';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
-import { DocumentProcessStatus } from '@/enums/document';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
 import CustomMarkdown from '../ui/custom-markdown';
 import { useTranslations } from 'next-intl';
+import { shouldPollDocumentDetail } from '@/lib/document-task';
 
 const QuickDocumentDetail = ({
 	id,
@@ -48,16 +48,12 @@ const QuickDocumentDetail = ({
 	const { ref: bottomRef, inView } = useInView();
 
 	useEffect(() => {
-		if (
-			document &&
-			document.process_task &&
-			document.process_task?.status < DocumentProcessStatus.SUCCESS
-		) {
+		if (shouldPollDocumentDetail(document)) {
 			setDelay(1000);
 		} else {
 			setDelay(undefined);
 		}
-	}, [document?.process_task?.status]);
+	}, [document]);
 
 	useEffect(() => {
 		if (!document || !document.quick_note_info) return;

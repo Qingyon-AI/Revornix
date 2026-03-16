@@ -43,6 +43,7 @@ class MineruApiEngine(MarkdownEngineBase):
 
     MINERU_BASE = "https://mineru.net"
     TERMINAL_STATES = {"done", "failed"}
+    IMAGE_UPLOAD_MAX_CONCURRENCY = 4
 
     def __init__(self):
         super().__init__(
@@ -283,12 +284,16 @@ class MineruApiEngine(MarkdownEngineBase):
                             remote_file_service = await FileSystemProxy.create(
                                 user_id=user_id
                             )
+                            image_upload_semaphore = asyncio.Semaphore(
+                                self.IMAGE_UPLOAD_MAX_CONCURRENCY
+                            )
 
                             async def upload_img(p: Path) -> None:
                                 if not p.is_file():
                                     return
-                                async with aiofiles.open(p, "rb") as f:
-                                    data = await f.read()
+                                async with image_upload_semaphore:
+                                    async with aiofiles.open(p, "rb") as f:
+                                        data = await f.read()
                                 if not data:
                                     return
                                 # Ideally detect mime by extension; keep your original default.
@@ -298,7 +303,8 @@ class MineruApiEngine(MarkdownEngineBase):
                                     content_type="image/png",
                                 )
 
-                            await asyncio.gather(*(upload_img(img) for img in images_dir.iterdir()))
+                            image_paths = [img for img in images_dir.iterdir() if img.is_file()]
+                            await asyncio.gather(*(upload_img(img) for img in image_paths))
 
                         final_data.append((title, summary, content))
 

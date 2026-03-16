@@ -4,11 +4,15 @@ import hashlib
 import asyncio
 import inspect
 import time
+import gzip
 import models
+from io import BytesIO
+from dataclasses import dataclass
 from typing import cast
 from langfuse.openai import AsyncOpenAI
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger
 from langfuse import propagate_attributes
+from common.markdown_helpers import get_markdown_content_by_document_id
 from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
@@ -70,6 +74,21 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
 
 async def close_extract_llm_client(llm_client: AsyncOpenAI) -> None:
     await _safe_close_async_client(llm_client)
+
+
+CHUNK_SNAPSHOT_ROOT = ".cache/document-chunks"
+CHUNK_SNAPSHOT_META_VERSION = 1
+
+
+@dataclass
+class DocumentChunkSnapshotInfo:
+    document_id: int
+    owner_id: int
+    chunk_path: str
+    meta_path: str
+    source_signature: str
+    markdown_length: int
+    chunk_count: int
 
 
 def make_chunk_id(
@@ -165,15 +184,350 @@ Return strict JSON only:
         exception_logger.error(f"LLM semantic match failed: {e}")
         return False
 
+
+def _is_remote_file_missing_error(error: Exception) -> bool:
+    response = getattr(error, "response", None)
+    if isinstance(response, dict):
+        error_payload = response.get("Error", {})
+        if isinstance(error_payload, dict):
+            code = error_payload.get("Code")
+            if isinstance(code, str) and code in {"NoSuchKey", "NoSuchObject", "NotFound", "404"}:
+                return True
+
+        metadata = response.get("ResponseMetadata", {})
+        if isinstance(metadata, dict) and metadata.get("HTTPStatusCode") == 404:
+            return True
+
+    message = str(error).lower()
+    return (
+        "nosuchkey" in message
+        or "no such key" in message
+        or "specified key does not exist" in message
+    )
+
+
+def _hash_source_signature(source: str) -> str:
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()[:24]
+
+
+def _snapshot_paths(document_id: int, source_signature: str) -> tuple[str, str]:
+    base_path = f"{CHUNK_SNAPSHOT_ROOT}/{document_id}/{source_signature}"
+    return (
+        f"{base_path}.chunks.jsonl.gz",
+        f"{base_path}.meta.json",
+    )
+
+
+def _coerce_text_content(content: str | bytes, *, source: str) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, bytes):
+        return content.decode("utf-8")
+    raise ValueError(f"Unexpected content type from {source}: {type(content).__name__}")
+
+
+def _coerce_bytes_content(content: str | bytes, *, source: str) -> bytes:
+    if isinstance(content, bytes):
+        return content
+    if isinstance(content, str):
+        return content.encode("utf-8")
+    raise ValueError(f"Unexpected content type from {source}: {type(content).__name__}")
+
+
+async def _load_snapshot_metadata(
+    *,
+    remote_file_service: RemoteFileServiceProtocol,
+    meta_path: str,
+) -> DocumentChunkSnapshotInfo | None:
+    try:
+        raw_metadata = await remote_file_service.get_file_content_by_file_path(
+            file_path=meta_path,
+        )
+    except Exception as error:
+        if _is_remote_file_missing_error(error):
+            return None
+        raise
+
+    metadata = json.loads(_coerce_text_content(raw_metadata, source=meta_path))
+    if metadata.get("version") != CHUNK_SNAPSHOT_META_VERSION:
+        return None
+    return DocumentChunkSnapshotInfo(
+        document_id=int(metadata["document_id"]),
+        owner_id=int(metadata.get("owner_id", 0)),
+        chunk_path=str(metadata["chunk_path"]),
+        meta_path=meta_path,
+        source_signature=str(metadata["source_signature"]),
+        markdown_length=int(metadata["markdown_length"]),
+        chunk_count=int(metadata["chunk_count"]),
+    )
+
+
+async def _resolve_document_source_signature(
+    *,
+    doc_id: int,
+) -> tuple[int, str]:
+    db = session_scope()
+    try:
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=doc_id,
+        )
+        if db_document is None:
+            raise ValueError("Document not found")
+
+        creator_id = db_document.creator_id
+        category = db_document.category
+        if category == DocumentCategory.WEBSITE or category == DocumentCategory.FILE:
+            convert_task = crud.task.get_document_convert_task_by_document_id(
+                db=db,
+                document_id=doc_id,
+            )
+            if convert_task is None or convert_task.status != DocumentMdConvertStatus.SUCCESS or convert_task.md_file_name is None:
+                raise ValueError("The convert task of the document is not finished")
+            signature_source = f"{category}:{convert_task.md_file_name}"
+        elif category == DocumentCategory.QUICK_NOTE:
+            note = crud.document.get_quick_note_document_by_document_id(
+                db=db,
+                document_id=doc_id,
+            )
+            if note is None or note.content is None:
+                raise ValueError("Quick note document not found")
+            signature_source = f"{category}:{hashlib.sha256(note.content.encode('utf-8')).hexdigest()}"
+        elif category == DocumentCategory.AUDIO:
+            transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+                db=db,
+                document_id=doc_id,
+            )
+            if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+                raise ValueError("The transcribe task of the document is not finished")
+            signature_source = f"{category}:{hashlib.sha256(transcribe_task.transcribed_text.encode('utf-8')).hexdigest()}"
+        else:
+            raise ValueError(f"Unsupported document category: {category}")
+        return creator_id, _hash_source_signature(signature_source)
+    finally:
+        db.close()
+
+
+async def get_existing_document_chunk_snapshot(
+    *,
+    doc_id: int,
+    user_id: int | None = None,
+) -> DocumentChunkSnapshotInfo | None:
+    owner_id, source_signature = await _resolve_document_source_signature(
+        doc_id=doc_id,
+    )
+    chunk_path, meta_path = _snapshot_paths(doc_id, source_signature)
+    remote_file_service = await FileSystemProxy.create(
+        user_id=owner_id,
+    )
+    snapshot = await _load_snapshot_metadata(
+        remote_file_service=remote_file_service,
+        meta_path=meta_path,
+    )
+    if snapshot is not None:
+        snapshot.owner_id = owner_id
+        info_logger.info(
+            f"[WorkflowTiming] chunk_snapshot_cache_hit document_id={doc_id}, "
+            f"chunk_path={chunk_path}, chunk_count={snapshot.chunk_count}, "
+            f"markdown_length={snapshot.markdown_length}"
+        )
+    return snapshot
+
+
+async def ensure_document_chunk_snapshot(
+    *,
+    doc_id: int,
+    user_id: int,
+    force_refresh: bool = False,
+) -> DocumentChunkSnapshotInfo:
+    owner_id, source_signature = await _resolve_document_source_signature(
+        doc_id=doc_id,
+    )
+    chunk_path, meta_path = _snapshot_paths(doc_id, source_signature)
+    remote_file_service = await FileSystemProxy.create(
+        user_id=owner_id,
+    )
+
+    if not force_refresh:
+        existing_snapshot = await _load_snapshot_metadata(
+            remote_file_service=remote_file_service,
+            meta_path=meta_path,
+        )
+        if existing_snapshot is not None:
+            existing_snapshot.owner_id = owner_id
+            info_logger.info(
+                f"[WorkflowTiming] chunk_snapshot_reused document_id={doc_id}, "
+                f"chunk_path={existing_snapshot.chunk_path}, "
+                f"chunk_count={existing_snapshot.chunk_count}, "
+                f"markdown_length={existing_snapshot.markdown_length}"
+            )
+            return existing_snapshot
+
+    markdown_load_start = time.perf_counter()
+    markdown_content = await get_markdown_content_by_document_id(
+        document_id=doc_id,
+        user_id=owner_id,
+        remote_file_service=remote_file_service,
+    )
+    markdown_load_elapsed_ms = (time.perf_counter() - markdown_load_start) * 1000
+    if not markdown_content.strip():
+        raise ValueError("Document content is empty")
+
+    chunker = RecursiveChunker.from_recipe("markdown")
+    segment_size = 100_000
+    segments = [
+        markdown_content[i:i + segment_size]
+        for i in range(0, len(markdown_content), segment_size)
+    ]
+
+    chunk_build_start = time.perf_counter()
+    global_idx = 0
+    chunk_records: list[dict[str, int | str]] = []
+    for segment in segments:
+        raw_chunks = await asyncio.to_thread(chunker, segment)
+        chunks: list[Chunk] = [
+            chunk
+            for group in raw_chunks
+            for chunk in (group if isinstance(group, list) else [group])
+        ]
+        for chunk in chunks:
+            chunk_records.append(
+                {
+                    "id": make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
+                    "text": chunk.text,
+                    "idx": global_idx,
+                    "doc_id": doc_id,
+                }
+            )
+            global_idx += 1
+        _clear_torch_cache()
+    chunk_build_elapsed_ms = (time.perf_counter() - chunk_build_start) * 1000
+
+    snapshot_lines = "\n".join(
+        json.dumps(record, ensure_ascii=False)
+        for record in chunk_records
+    )
+    compressed_snapshot = gzip.compress(snapshot_lines.encode("utf-8"))
+
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=chunk_path,
+        content=compressed_snapshot,
+        content_type="application/gzip",
+    )
+    metadata = DocumentChunkSnapshotInfo(
+        document_id=doc_id,
+        owner_id=owner_id,
+        chunk_path=chunk_path,
+        meta_path=meta_path,
+        source_signature=source_signature,
+        markdown_length=len(markdown_content),
+        chunk_count=len(chunk_records),
+    )
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=meta_path,
+        content=json.dumps(
+            {
+                "version": CHUNK_SNAPSHOT_META_VERSION,
+                "document_id": metadata.document_id,
+                "owner_id": metadata.owner_id,
+                "chunk_path": metadata.chunk_path,
+                "source_signature": metadata.source_signature,
+                "markdown_length": metadata.markdown_length,
+                "chunk_count": metadata.chunk_count,
+            },
+            ensure_ascii=False,
+        ),
+        content_type="application/json",
+    )
+    info_logger.info(
+        f"[WorkflowTiming] chunk_snapshot_built document_id={doc_id}, "
+        f"chunk_path={chunk_path}, markdown_length={metadata.markdown_length}, "
+        f"chunk_count={metadata.chunk_count}, markdown_load_elapsed_ms={markdown_load_elapsed_ms:.2f}, "
+        f"chunk_build_elapsed_ms={chunk_build_elapsed_ms:.2f}"
+    )
+    return metadata
+
+
+async def _stream_chunk_document_from_snapshot(
+    *,
+    doc_id: int,
+    user_id: int,
+    chunk_snapshot_path: str,
+    max_chunks: int | None,
+    start_chunk_idx: int = 0,
+    selected_chunk_indexes: set[int] | None = None,
+) -> AsyncGenerator[ChunkInfo, None]:
+    remote_file_service = await FileSystemProxy.create(user_id=user_id)
+    raw_snapshot = await remote_file_service.get_file_content_by_file_path(
+        file_path=chunk_snapshot_path,
+    )
+    snapshot_bytes = _coerce_bytes_content(raw_snapshot, source=chunk_snapshot_path)
+    yielded_chunks = 0
+    with gzip.GzipFile(fileobj=BytesIO(snapshot_bytes), mode="rb") as snapshot_file:
+        for raw_line in snapshot_file:
+            line = raw_line.decode("utf-8").strip()
+            if not line:
+                continue
+            record = json.loads(line)
+            chunk_idx = int(record["idx"])
+            if chunk_idx < start_chunk_idx:
+                continue
+            if selected_chunk_indexes is not None and chunk_idx not in selected_chunk_indexes:
+                continue
+            yield ChunkInfo(
+                id=str(record["id"]),
+                text=str(record["text"]),
+                idx=chunk_idx,
+                doc_id=int(record["doc_id"]),
+            )
+            yielded_chunks += 1
+            if max_chunks is not None and yielded_chunks >= max_chunks:
+                break
+    info_logger.info(
+        f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
+        f"stage=stream_chunk_snapshot, document_id={doc_id}, "
+        f"chunk_path={chunk_snapshot_path}, chunks={yielded_chunks}, "
+        f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
+    )
+
 # -----------------------------
 # chunking：把长文本按语义切成 chunk（带 overlap），注意此处文本必须为一篇完整的文章，否则idx会乱
 # -----------------------------
 async def stream_chunk_document(
-    doc_id: int
+    doc_id: int,
+    max_chunks: int | None = None,
+    start_chunk_idx: int = 0,
+    chunk_snapshot_path: str | None = None,
+    user_id: int | None = None,
+    prefer_snapshot: bool = False,
+    selected_chunk_indexes: set[int] | None = None,
 ) -> AsyncGenerator[ChunkInfo, None]:
     """
     以流式方式生成 ChunkInfo，避免一次性 embedding 占用大量内存
     """
+    resolved_snapshot_path = chunk_snapshot_path
+    snapshot_user_id = user_id
+    if resolved_snapshot_path is None and prefer_snapshot and user_id is not None:
+        existing_snapshot = await get_existing_document_chunk_snapshot(
+            doc_id=doc_id,
+            user_id=user_id,
+        )
+        if existing_snapshot is not None:
+            resolved_snapshot_path = existing_snapshot.chunk_path
+            snapshot_user_id = existing_snapshot.owner_id or user_id
+
+    if resolved_snapshot_path is not None and snapshot_user_id is not None:
+        async for chunk_info in _stream_chunk_document_from_snapshot(
+            doc_id=doc_id,
+            user_id=snapshot_user_id,
+            chunk_snapshot_path=resolved_snapshot_path,
+            max_chunks=max_chunks,
+            start_chunk_idx=start_chunk_idx,
+            selected_chunk_indexes=selected_chunk_indexes,
+        ):
+            yield chunk_info
+        return
+
     db = session_scope()
     try:
         # 1️⃣ 获取文档与用户
@@ -198,11 +552,13 @@ async def stream_chunk_document(
         )
 
         # 3️⃣ 获取 Markdown 内容
+        load_start = time.perf_counter()
         markdown_content = await _load_markdown_content(
             db, 
             db_document, 
             remote_file_service
         )
+        load_elapsed_ms = (time.perf_counter() - load_start) * 1000
         
         if not markdown_content.strip():
             raise ValueError("Document content is empty")
@@ -219,9 +575,14 @@ async def stream_chunk_document(
 
         global_idx = 0
         last_check = 0.0
+        chunking_elapsed_ms = 0.0
+        generated_chunks = 0
+        reached_chunk_limit = False
         for seg_idx, segment in enumerate(segments):
             # ✅ 在后台线程中执行 CPU 密集的 chunking
+            chunking_start = time.perf_counter()
             raw_chunks = await asyncio.to_thread(chunker, segment)
+            chunking_elapsed_ms += (time.perf_counter() - chunking_start) * 1000
 
             # 展平成一维 List[Chunk]
             chunks: list[Chunk] = [
@@ -241,11 +602,32 @@ async def stream_chunk_document(
                     idx=global_idx,
                     doc_id=doc_id,
                 )
+                if chunk_info.idx < start_chunk_idx:
+                    global_idx += 1
+                    continue
+                if selected_chunk_indexes is not None and chunk_info.idx not in selected_chunk_indexes:
+                    global_idx += 1
+                    continue
                 yield chunk_info
                 global_idx += 1
+                generated_chunks += 1
+                if max_chunks is not None and generated_chunks >= max_chunks:
+                    reached_chunk_limit = True
+                    break
 
             # ✅ 每批后释放 GPU 显存
             _clear_torch_cache()
+            if reached_chunk_limit:
+                break
+
+        info_logger.info(
+            f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
+            f"stage=stream_chunk_document, document_id={doc_id}, "
+            f"chars={len(markdown_content)}, segments={len(segments)}, "
+            f"chunks={generated_chunks}, load_elapsed_ms={load_elapsed_ms:.2f}, "
+            f"chunking_elapsed_ms={chunking_elapsed_ms:.2f}, segment_size={segment_size}, "
+            f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
+        )
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
         raise
@@ -295,6 +677,87 @@ async def _load_markdown_content(
         return transcribe_task.transcribed_text
     else:
         raise ValueError(f"Unsupported document category: {cat}")
+
+
+async def get_document_markdown_length(
+    doc_id: int,
+) -> int:
+    owner_id, _ = await _resolve_document_source_signature(
+        doc_id=doc_id,
+    )
+    existing_snapshot = await get_existing_document_chunk_snapshot(
+        doc_id=doc_id,
+        user_id=owner_id,
+    )
+    if existing_snapshot is not None:
+        return existing_snapshot.markdown_length
+
+    db = session_scope()
+    try:
+        db_document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=doc_id,
+        )
+        if db_document is None:
+            raise ValueError("Document not found")
+
+        db_user = crud.user.get_user_by_id(
+            db=db,
+            user_id=db_document.creator_id,
+        )
+        if db_user is None:
+            raise ValueError("User not found")
+        if db_user.default_user_file_system is None:
+            raise ValueError("User default file system not found")
+
+        remote_file_service = await FileSystemProxy.create(
+            user_id=db_user.id,
+        )
+        load_start = time.perf_counter()
+        markdown_content = await _load_markdown_content(
+            db,
+            db_document,
+            remote_file_service,
+        )
+        load_elapsed_ms = (time.perf_counter() - load_start) * 1000
+        markdown_length = len(markdown_content)
+        info_logger.info(
+            f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
+            f"stage=get_document_markdown_length, document_id={doc_id}, "
+            f"chars={markdown_length}, load_elapsed_ms={load_elapsed_ms:.2f}"
+        )
+        return markdown_length
+    finally:
+        db.close()
+
+
+def build_sampled_chunk_indexes(
+    *,
+    total_chunks: int,
+    sample_chunks: int,
+) -> list[int]:
+    if total_chunks <= 0 or sample_chunks <= 0:
+        return []
+    if total_chunks <= sample_chunks:
+        return list(range(total_chunks))
+
+    head_count = min(4, max(2, sample_chunks // 4), total_chunks)
+    tail_count = min(4, max(2, sample_chunks // 4), total_chunks - head_count)
+    middle_count = max(0, sample_chunks - head_count - tail_count)
+
+    indexes: set[int] = set(range(head_count))
+    if tail_count > 0:
+        indexes.update(range(total_chunks - tail_count, total_chunks))
+
+    middle_start = head_count
+    middle_end = total_chunks - tail_count - 1
+    if middle_count > 0 and middle_end >= middle_start:
+        span = middle_end - middle_start + 1
+        for i in range(middle_count):
+            raw_position = middle_start + round((i + 1) * span / (middle_count + 1)) - 1
+            indexes.add(min(max(raw_position, middle_start), middle_end))
+
+    return sorted(indexes)
 
 
 # ----------------------------

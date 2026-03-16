@@ -8,8 +8,11 @@ from common.ai import reducer_summary, summary_content
 from common.logger import exception_logger, info_logger
 from common.document_guard import ensure_document_active
 from data.common import (
+    build_sampled_chunk_indexes,
     close_extract_llm_client,
+    ensure_document_chunk_snapshot,
     extract_entities_relations,
+    get_document_markdown_length,
     get_extract_llm_client,
     stream_chunk_document,
 )
@@ -27,9 +30,13 @@ class DocumentSummarizeState(TypedDict, total=False):
     summary: str
     title: str
     description: str
+    chunk_snapshot_path: str | None
+    summary_mode: str | None
 
 
 WORKFLOW_NAME = "document_summarize"
+SAMPLED_SUMMARY_MARKDOWN_CHAR_THRESHOLD = 400_000
+SAMPLED_SUMMARY_CHUNK_LIMIT = 18
 
 
 async def _init_summarize_task(
@@ -102,8 +109,32 @@ async def _summarize_document(
     user_id = state.get("user_id")
     model_id = state.get("model_id")
     llm_model = state.get("llm_model_name")
+    chunk_snapshot_path = state.get("chunk_snapshot_path")
+    summary_mode = state.get("summary_mode")
     if document_id is None or user_id is None or model_id is None or llm_model is None:
         raise Exception("Document summarize workflow missing context")
+
+    if summary_mode is None:
+        markdown_length = await get_document_markdown_length(document_id)
+        summary_mode = (
+            "sampled"
+            if markdown_length >= SAMPLED_SUMMARY_MARKDOWN_CHAR_THRESHOLD
+            else "full"
+        )
+
+    selected_chunk_indexes: set[int] | None = None
+    if summary_mode == "sampled":
+        snapshot = await ensure_document_chunk_snapshot(
+            doc_id=document_id,
+            user_id=user_id,
+        )
+        chunk_snapshot_path = snapshot.chunk_path
+        selected_chunk_indexes = set(
+            build_sampled_chunk_indexes(
+                total_chunks=snapshot.chunk_count,
+                sample_chunks=SAMPLED_SUMMARY_CHUNK_LIMIT,
+            )
+        )
 
     llm_client = await get_extract_llm_client(
         user_id=user_id
@@ -122,9 +153,22 @@ async def _summarize_document(
             context={
                 "document_id": document_id,
                 "user_id": user_id,
+                "chunk_snapshot_path": chunk_snapshot_path,
+                "summary_mode": summary_mode,
+                "sampled_chunks": (
+                    len(selected_chunk_indexes)
+                    if selected_chunk_indexes is not None
+                    else None
+                ),
             },
         ):
-            async for chunk_info in stream_chunk_document(doc_id=document_id):
+            async for chunk_info in stream_chunk_document(
+                doc_id=document_id,
+                chunk_snapshot_path=chunk_snapshot_path,
+                user_id=user_id,
+                prefer_snapshot=True,
+                selected_chunk_indexes=selected_chunk_indexes,
+            ):
                 chunk_count += 1
                 extract_start = time.perf_counter()
                 sub_entities, sub_relations = await extract_entities_relations(
@@ -157,6 +201,7 @@ async def _summarize_document(
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=summarize_document, "
             f"stage=summarize_chunks, chunks={chunk_count}, reduce_count={reduce_count}, "
+            f"summary_mode={summary_mode}, "
             f"extract_elapsed_ms={extract_elapsed_ms:.2f}, "
             f"summary_elapsed_ms={summary_elapsed_ms:.2f}, reduce_elapsed_ms={reduce_elapsed_ms:.2f}"
         )
@@ -263,7 +308,8 @@ def get_document_summarize_workflow():
 async def run_document_summarize_workflow(
     *,
     document_id: int,
-    user_id: int
+    user_id: int,
+    chunk_snapshot_path: str | None = None,
 ) -> None:
     workflow = get_document_summarize_workflow()
     try:
@@ -273,6 +319,7 @@ async def run_document_summarize_workflow(
             payload={
                 "document_id": document_id,
                 "user_id": user_id,
+                "chunk_snapshot_path": chunk_snapshot_path,
             },
         )
     except Exception as e:

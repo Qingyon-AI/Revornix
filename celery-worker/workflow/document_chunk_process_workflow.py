@@ -1,10 +1,11 @@
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import crud
 from langgraph.graph import StateGraph, END
+from langfuse.openai import AsyncOpenAI
 
 from common.ai import (
     SummaryResultWithTitleAndDescription,
@@ -61,9 +62,11 @@ class DocumentChunkProcessState(TypedDict, total=False):
 WORKFLOW_NAME = "document_chunk_process"
 
 
-CHUNK_PREPROCESS_CONCURRENCY = 4
+CHUNK_PREPROCESS_CONCURRENCY = 6
+CHUNK_EXTRACT_CONCURRENCY = 6
+CHUNK_SUMMARY_CONCURRENCY = 4
 CHUNK_UPSERT_BATCH_SIZE = 24
-SUMMARY_REDUCE_BATCH_SIZE = 6
+SUMMARY_REDUCE_BATCH_SIZE = 10
 
 
 @dataclass
@@ -71,28 +74,53 @@ class ChunkPreprocessResult:
     chunk_info: ChunkInfo
     sub_entities: list[EntityInfo]
     sub_relations: list[RelationInfo]
+    embedding_elapsed_ms: float
+    extract_elapsed_ms: float
+    summary_elapsed_ms: float
+
+
+@dataclass
+class ChunkUpsertMetrics:
+    batch_size: int
+    milvus_elapsed_ms: float
+    neo4j_elapsed_ms: float
 
 
 def _flush_chunk_upserts(
     *,
     user_id: int,
     chunks_info: list[ChunkInfo],
-) -> None:
+) -> ChunkUpsertMetrics:
     if not chunks_info:
-        return
+        return ChunkUpsertMetrics(
+            batch_size=0,
+            milvus_elapsed_ms=0.0,
+            neo4j_elapsed_ms=0.0,
+        )
 
-    start = time.perf_counter()
+    milvus_start = time.perf_counter()
     upsert_milvus(
         user_id=user_id,
         chunks_info=chunks_info,
     )
+    milvus_elapsed_ms = (time.perf_counter() - milvus_start) * 1000
+
+    neo4j_start = time.perf_counter()
     upsert_chunks_neo4j(
         chunks_info=chunks_info,
     )
-    elapsed_ms = (time.perf_counter() - start) * 1000
+    neo4j_elapsed_ms = (time.perf_counter() - neo4j_start) * 1000
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, node=process_document_chunks, "
-        f"stage=flush_chunk_upserts, elapsed_ms={elapsed_ms:.2f}, batch_size={len(chunks_info)}"
+        f"stage=flush_chunk_upserts, batch_size={len(chunks_info)}, "
+        f"milvus_elapsed_ms={milvus_elapsed_ms:.2f}, "
+        f"neo4j_elapsed_ms={neo4j_elapsed_ms:.2f}, "
+        f"elapsed_ms={milvus_elapsed_ms + neo4j_elapsed_ms:.2f}"
+    )
+    return ChunkUpsertMetrics(
+        batch_size=len(chunks_info),
+        milvus_elapsed_ms=milvus_elapsed_ms,
+        neo4j_elapsed_ms=neo4j_elapsed_ms,
     )
 
 
@@ -102,6 +130,8 @@ async def _reduce_summary_batch(
     model_id: int,
     current_summary_info: SummaryResultWithTitleAndDescription | None,
     reduce_items: list[tuple[str, list[EntityInfo], list[RelationInfo]]],
+    summary_model_configuration: Any | None = None,
+    summary_client: AsyncOpenAI | None = None,
 ) -> SummaryResultWithTitleAndDescription | None:
     merged_summaries = [item[0] for item in reduce_items if item[0].strip()]
     if not merged_summaries:
@@ -129,6 +159,8 @@ async def _reduce_summary_batch(
         new_summary_to_append="\n\n".join(merged_summaries),
         new_entities=merged_entities,
         new_relations=merged_relations,
+        model_configuration=summary_model_configuration,
+        client=summary_client,
     )
 
 
@@ -140,30 +172,77 @@ async def _preprocess_chunk(
     llm_client,
     embedding_engine,
     chunk_info: ChunkInfo,
+    auto_summary: bool,
+    extract_semaphore: asyncio.Semaphore,
+    summary_semaphore: asyncio.Semaphore | None = None,
+    summary_model_configuration: Any | None = None,
+    summary_client: AsyncOpenAI | None = None,
 ) -> ChunkPreprocessResult:
+    embedding_start = time.perf_counter()
     embedding_raw = await asyncio.to_thread(
         embedding_engine.embed,
         [chunk_info.text],
     )
+    embedding_elapsed_ms = (time.perf_counter() - embedding_start) * 1000
     chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
 
-    sub_entities, sub_relations = await extract_entities_relations(
-        user_id,
-        llm_client,
-        llm_model,
-        chunk_info,
-    )
+    async def _run_extract_step() -> tuple[list[EntityInfo], list[RelationInfo], float]:
+        async with extract_semaphore:
+            extract_start = time.perf_counter()
+            sub_entities, sub_relations = await extract_entities_relations(
+                user_id,
+                llm_client,
+                llm_model,
+                chunk_info,
+            )
+            return (
+                sub_entities,
+                sub_relations,
+                (time.perf_counter() - extract_start) * 1000,
+            )
 
-    chunk_info.summary = (await summary_content(
-        user_id=user_id,
-        model_id=model_id,
-        content=chunk_info.text,
-    )).summary
+    async def _run_summary_step() -> tuple[str | None, float]:
+        if not auto_summary or summary_semaphore is None:
+            return None, 0.0
+        async with summary_semaphore:
+            summary_start = time.perf_counter()
+            summary_result = await summary_content(
+                user_id=user_id,
+                model_id=model_id,
+                content=chunk_info.text,
+                model_configuration=summary_model_configuration,
+                client=summary_client,
+            )
+            return (
+                summary_result.summary,
+                (time.perf_counter() - summary_start) * 1000,
+            )
+
+    if auto_summary:
+        (
+            sub_entities,
+            sub_relations,
+            extract_elapsed_ms,
+        ), (
+            chunk_summary,
+            summary_elapsed_ms,
+        ) = await asyncio.gather(
+            _run_extract_step(),
+            _run_summary_step(),
+        )
+        chunk_info.summary = chunk_summary
+    else:
+        sub_entities, sub_relations, extract_elapsed_ms = await _run_extract_step()
+        summary_elapsed_ms = 0.0
+        chunk_info.summary = None
 
     return ChunkPreprocessResult(
         chunk_info=chunk_info,
         sub_entities=sub_entities,
         sub_relations=sub_relations,
+        embedding_elapsed_ms=embedding_elapsed_ms,
+        extract_elapsed_ms=extract_elapsed_ms,
+        summary_elapsed_ms=summary_elapsed_ms,
     )
 
 
@@ -328,6 +407,17 @@ async def _process_document_chunks(
     llm_client = await get_extract_llm_client(
         user_id=user_id
     )
+    summary_model_configuration = None
+    summary_client: AsyncOpenAI | None = None
+    if auto_summary:
+        summary_model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id,
+        )).get_configuration()
+        summary_client = AsyncOpenAI(
+            api_key=summary_model_configuration.api_key,
+            base_url=summary_model_configuration.base_url,
+        )
     embedding_engine = get_embedding_engine()
     entities: list[EntityInfo] = []
     relations: list[RelationInfo] = []
@@ -336,15 +426,27 @@ async def _process_document_chunks(
     chunk_upsert_batch: list[ChunkInfo] = []
     summary_reduce_buffer: list[tuple[str, list[EntityInfo], list[RelationInfo]]] = []
     preprocess_semaphore = asyncio.Semaphore(CHUNK_PREPROCESS_CONCURRENCY)
+    extract_semaphore = asyncio.Semaphore(CHUNK_EXTRACT_CONCURRENCY)
+    summary_semaphore = (
+        asyncio.Semaphore(CHUNK_SUMMARY_CONCURRENCY)
+        if auto_summary
+        else None
+    )
     pending_tasks: set[asyncio.Task[ChunkPreprocessResult]] = set()
     ready_results: dict[int, ChunkPreprocessResult] = {}
     next_chunk_idx = 0
     processed_chunks = 0
     extracted_entities_total = 0
     extracted_relations_total = 0
+    preprocess_embedding_elapsed_ms = 0.0
+    preprocess_extract_elapsed_ms = 0.0
+    preprocess_summary_elapsed_ms = 0.0
     dedupe_elapsed_ms = 0.0
     summary_reduce_elapsed_ms = 0.0
     summary_reduce_batches = 0
+    upsert_batches = 0
+    upsert_milvus_elapsed_ms = 0.0
+    upsert_neo4j_elapsed_ms = 0.0
 
     async def _consume_preprocessed_result(
         result: ChunkPreprocessResult,
@@ -353,12 +455,21 @@ async def _process_document_chunks(
         nonlocal processed_chunks
         nonlocal extracted_entities_total
         nonlocal extracted_relations_total
+        nonlocal preprocess_embedding_elapsed_ms
+        nonlocal preprocess_extract_elapsed_ms
+        nonlocal preprocess_summary_elapsed_ms
         nonlocal dedupe_elapsed_ms
         nonlocal summary_reduce_elapsed_ms
         nonlocal summary_reduce_batches
+        nonlocal upsert_batches
+        nonlocal upsert_milvus_elapsed_ms
+        nonlocal upsert_neo4j_elapsed_ms
         sub_entities = result.sub_entities
         sub_relations = result.sub_relations
         chunk_info = result.chunk_info
+        preprocess_embedding_elapsed_ms += result.embedding_elapsed_ms
+        preprocess_extract_elapsed_ms += result.extract_elapsed_ms
+        preprocess_summary_elapsed_ms += result.summary_elapsed_ms
 
         if sub_entities:
             keys = list({(e.entity_type, e.text) for e in sub_entities})
@@ -385,10 +496,13 @@ async def _process_document_chunks(
 
         chunk_upsert_batch.append(chunk_info)
         if len(chunk_upsert_batch) >= CHUNK_UPSERT_BATCH_SIZE:
-            _flush_chunk_upserts(
+            flush_metrics = _flush_chunk_upserts(
                 user_id=user_id,
                 chunks_info=chunk_upsert_batch,
             )
+            upsert_batches += 1
+            upsert_milvus_elapsed_ms += flush_metrics.milvus_elapsed_ms
+            upsert_neo4j_elapsed_ms += flush_metrics.neo4j_elapsed_ms
             chunk_upsert_batch.clear()
 
         if not auto_summary:
@@ -410,6 +524,8 @@ async def _process_document_chunks(
             model_id=model_id,
             current_summary_info=final_summary_info,
             reduce_items=summary_reduce_buffer,
+            summary_model_configuration=summary_model_configuration,
+            summary_client=summary_client,
         )
         summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
         summary_reduce_batches += 1
@@ -417,6 +533,7 @@ async def _process_document_chunks(
 
     # 4) 任务进行
     try:
+        pipeline_start = time.perf_counter()
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
@@ -425,6 +542,12 @@ async def _process_document_chunks(
                 "document_id": document_id,
                 "user_id": user_id,
                 "auto_summary": auto_summary,
+                "chunk_preprocess_concurrency": CHUNK_PREPROCESS_CONCURRENCY,
+                "extract_concurrency": CHUNK_EXTRACT_CONCURRENCY,
+                "summary_concurrency": (
+                    CHUNK_SUMMARY_CONCURRENCY if auto_summary else 0
+                ),
+                "summary_reduce_batch_size": SUMMARY_REDUCE_BATCH_SIZE,
             },
         ):
             async def _run_preprocess(
@@ -438,6 +561,11 @@ async def _process_document_chunks(
                         llm_client=llm_client,
                         embedding_engine=embedding_engine,
                         chunk_info=chunk_info,
+                        auto_summary=auto_summary,
+                        extract_semaphore=extract_semaphore,
+                        summary_semaphore=summary_semaphore,
+                        summary_model_configuration=summary_model_configuration,
+                        summary_client=summary_client,
                     )
 
             async for chunk_info in stream_chunk_document(doc_id=document_id):
@@ -475,10 +603,13 @@ async def _process_document_chunks(
                     await _consume_preprocessed_result(ready_results[idx])
 
             if chunk_upsert_batch:
-                _flush_chunk_upserts(
+                flush_metrics = _flush_chunk_upserts(
                     user_id=user_id,
                     chunks_info=chunk_upsert_batch,
                 )
+                upsert_batches += 1
+                upsert_milvus_elapsed_ms += flush_metrics.milvus_elapsed_ms
+                upsert_neo4j_elapsed_ms += flush_metrics.neo4j_elapsed_ms
                 chunk_upsert_batch.clear()
 
             if auto_summary and summary_reduce_buffer:
@@ -488,18 +619,34 @@ async def _process_document_chunks(
                     model_id=model_id,
                     current_summary_info=final_summary_info,
                     reduce_items=summary_reduce_buffer,
+                    summary_model_configuration=summary_model_configuration,
+                    summary_client=summary_client,
                 )
                 summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
                 summary_reduce_batches += 1
                 summary_reduce_buffer.clear()
 
+        pipeline_elapsed_ms = (time.perf_counter() - pipeline_start) * 1000
+        throughput = (
+            processed_chunks / (pipeline_elapsed_ms / 1000)
+            if pipeline_elapsed_ms > 0
+            else 0.0
+        )
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=process_document_chunks, "
             f"stage=chunk_preprocess_pipeline, chunks={processed_chunks}, "
             f"entities={extracted_entities_total}, relations={extracted_relations_total}, "
+            f"embedding_elapsed_ms={preprocess_embedding_elapsed_ms:.2f}, "
+            f"extract_elapsed_ms={preprocess_extract_elapsed_ms:.2f}, "
+            f"chunk_summary_elapsed_ms={preprocess_summary_elapsed_ms:.2f}, "
             f"summary_reduce_batches={summary_reduce_batches}, "
             f"summary_reduce_elapsed_ms={summary_reduce_elapsed_ms:.2f}, "
-            f"dedupe_elapsed_ms={dedupe_elapsed_ms:.2f}"
+            f"dedupe_elapsed_ms={dedupe_elapsed_ms:.2f}, "
+            f"upsert_batches={upsert_batches}, "
+            f"upsert_milvus_elapsed_ms={upsert_milvus_elapsed_ms:.2f}, "
+            f"upsert_neo4j_elapsed_ms={upsert_neo4j_elapsed_ms:.2f}, "
+            f"pipeline_elapsed_ms={pipeline_elapsed_ms:.2f}, "
+            f"throughput_chunks_per_sec={throughput:.2f}"
         )
     except Exception as e:
         for pending_task in pending_tasks:
@@ -517,6 +664,8 @@ async def _process_document_chunks(
         raise
     finally:
         await close_extract_llm_client(llm_client)
+        if summary_client is not None:
+            await close_extract_llm_client(summary_client)
 
     with timed_stage(
         workflow_name=WORKFLOW_NAME,

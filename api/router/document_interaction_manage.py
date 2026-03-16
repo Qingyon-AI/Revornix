@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
+from common.document_chunk_snapshot import delete_document_chunk_snapshots
 from common.dependencies import get_current_user, get_db
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
@@ -91,7 +92,7 @@ def read_document(
 
 
 @document_interaction_manage_router.post('/delete', response_model=SuccessResponse)
-def delete_document(
+async def delete_document(
     documents_delete_request: schemas.document.DocumentDeleteRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -102,6 +103,11 @@ def delete_document(
         user_id=user.id,
     )
     document_ids = [document.id for document in documents]
+
+    await delete_document_chunk_snapshots(
+        db=db,
+        documents=documents,
+    )
 
     crud.task.cancel_document_tasks_by_document_ids(
         db=db,

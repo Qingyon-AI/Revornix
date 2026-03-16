@@ -11,6 +11,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 from typing import Tuple, Any
+from urllib.parse import urlsplit, urlunsplit
 
 from common.common import extract_title_and_summary
 from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
@@ -53,6 +54,35 @@ def _build_local_file_log_context(file_path: str) -> dict[str, Any]:
         "source_file_size_bytes": size_bytes,
     }
 
+
+MINERU_RESULT_DOWNLOAD_TIMEOUT_SEC = 60
+MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS = 3
+MINERU_RESULT_DOWNLOAD_RETRY_BACKOFF_SEC = 2.0
+MINERU_IMAGE_UPLOAD_MAX_CONCURRENCY = 4
+
+
+def _redact_url_for_log(url: str | None) -> str | None:
+    if not url:
+        return None
+    parts = urlsplit(url)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+
+
+def _build_error_log_context(error: Exception) -> dict[str, str]:
+    error_message = str(error).strip()
+    return {
+        "error_type": type(error).__name__,
+        "error": error_message or repr(error),
+        "error_repr": repr(error),
+    }
+
+
+def _is_retryable_download_error(error: Exception) -> bool:
+    if isinstance(error, httpx.TimeoutException | httpx.TransportError):
+        return True
+    if isinstance(error, httpx.HTTPStatusError) and error.response.status_code >= 500:
+        return True
+    return False
 
 class MineruApiEngine(MarkdownEngineBase):
 
@@ -133,6 +163,7 @@ class MineruApiEngine(MarkdownEngineBase):
         self._validate_local_files(file_paths)
         stage = "init"
         file_log_contexts = [_build_local_file_log_context(path) for path in file_paths]
+        last_download_context: dict[str, Any] = {}
 
         db = session_scope()
         try:
@@ -251,7 +282,11 @@ class MineruApiEngine(MarkdownEngineBase):
             stage = "process_extract_results"
             final_data: list[Tuple[str, str, str]] = []
 
-            async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as download_client:
+            async with httpx.AsyncClient(
+                proxy=None,
+                trust_env=False,
+                timeout=MINERU_RESULT_DOWNLOAD_TIMEOUT_SEC,
+            ) as download_client:
                 for item in extract_result:
                     state = item.get("state")
 
@@ -285,17 +320,61 @@ class MineruApiEngine(MarkdownEngineBase):
                     if not full_zip_url:
                         raise Exception(f"MinerU returned done but missing full_zip_url: item={item}")
 
+                    download_context = {
+                        "batch_id": batch_id,
+                        "user_id": user_id,
+                        "data_id": item.get("data_id"),
+                        "task_id": item.get("task_id"),
+                        "mineru_file_name": item.get("file_name"),
+                        "full_zip_url_host": urlsplit(full_zip_url).netloc or None,
+                        "full_zip_url_redacted": _redact_url_for_log(full_zip_url),
+                        **data_id_to_file_context.get(item.get("data_id") or "", {}),
+                    }
+                    last_download_context = download_context
+
                     # Download zip -> extract in an isolated temporary directory.
                     with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-result-") as temp_dir_str:
                         temp_dir = Path(temp_dir_str)
                         downloaded_zip_path = temp_dir / "mineru_result.zip"
-
-                        async with download_client.stream("GET", full_zip_url) as download_resp:
-                            download_resp.raise_for_status()
-                            with downloaded_zip_path.open("wb") as downloaded_zip_file:
-                                async for chunk in download_resp.aiter_bytes():
-                                    if chunk:
-                                        downloaded_zip_file.write(chunk)
+                        for attempt in range(1, MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS + 1):
+                            try:
+                                async with download_client.stream("GET", full_zip_url) as download_resp:
+                                    download_resp.raise_for_status()
+                                    with downloaded_zip_path.open("wb") as downloaded_zip_file:
+                                        async for chunk in download_resp.aiter_bytes():
+                                            if chunk:
+                                                downloaded_zip_file.write(chunk)
+                                if attempt > 1:
+                                    info_logger.info(
+                                        format_log_message(
+                                            "mineru_result_download_recovered",
+                                            attempt=attempt,
+                                            max_attempts=MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS,
+                                            **download_context,
+                                        )
+                                    )
+                                break
+                            except Exception as error:
+                                retryable = _is_retryable_download_error(error)
+                                status_code = None
+                                if isinstance(error, httpx.HTTPStatusError):
+                                    status_code = error.response.status_code
+                                exception_logger.warning(
+                                    format_log_message(
+                                        "mineru_result_download_attempt_failed",
+                                        attempt=attempt,
+                                        max_attempts=MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS,
+                                        retryable=retryable,
+                                        status_code=status_code,
+                                        **download_context,
+                                        **_build_error_log_context(error),
+                                    )
+                                )
+                                if not retryable or attempt >= MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS:
+                                    raise
+                                await asyncio.sleep(
+                                    MINERU_RESULT_DOWNLOAD_RETRY_BACKOFF_SEC * attempt
+                                )
 
                         extracted_dir = temp_dir / "extracted"
                         extracted_dir.mkdir(parents=True, exist_ok=True)
@@ -325,12 +404,16 @@ class MineruApiEngine(MarkdownEngineBase):
                             remote_file_service = await FileSystemProxy.create(
                                 user_id=user_id
                             )
+                            image_upload_semaphore = asyncio.Semaphore(
+                                MINERU_IMAGE_UPLOAD_MAX_CONCURRENCY
+                            )
 
                             async def upload_img(p: Path) -> None:
                                 if not p.is_file():
                                     return
-                                async with aiofiles.open(p, "rb") as f:
-                                    data = await f.read()
+                                async with image_upload_semaphore:
+                                    async with aiofiles.open(p, "rb") as f:
+                                        data = await f.read()
                                 if not data:
                                     return
                                 # Ideally detect mime by extension; keep your original default.
@@ -340,7 +423,8 @@ class MineruApiEngine(MarkdownEngineBase):
                                     content_type="image/png",
                                 )
 
-                            await asyncio.gather(*(upload_img(img) for img in images_dir.iterdir()))
+                            image_paths = [img for img in images_dir.iterdir() if img.is_file()]
+                            await asyncio.gather(*(upload_img(img) for img in image_paths))
 
                         final_data.append((title, summary, content))
 
@@ -351,14 +435,22 @@ class MineruApiEngine(MarkdownEngineBase):
             return final_data
 
         except Exception as e:
+            extract_error_context = {
+                "user_id": user_id,
+                "stage": stage,
+                "file_count": len(file_paths),
+                "files": file_log_contexts,
+                **{
+                    key: value
+                    for key, value in last_download_context.items()
+                    if key != "user_id"
+                },
+                **_build_error_log_context(e),
+            }
             exception_logger.error(
                 format_log_message(
                     "mineru_extract_files_failed",
-                    user_id=user_id,
-                    stage=stage,
-                    file_count=len(file_paths),
-                    files=file_log_contexts,
-                    error=e,
+                    **extract_error_context,
                 ),
                 exc_info=True,
             )

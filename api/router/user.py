@@ -12,6 +12,7 @@ import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
+from common.document_chunk_snapshot import delete_document_chunk_snapshots
 from common.dependencies import (
     decode_jwt_token,
     get_cache,
@@ -791,11 +792,22 @@ def update_token(
     )
 
 @user_router.post('/delete', response_model=schemas.common.NormalResponse)
-def delete_user(
+async def delete_user(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     removed_from_section_notifications_to_send: list[tuple[int, int]] = []
+
+    db_documents = crud.document.get_documents_by_user_id(
+        db=db,
+        user_id=user.id
+    )
+    document_ids = [document.id for document in db_documents]
+
+    await delete_document_chunk_snapshots(
+        db=db,
+        documents=db_documents,
+    )
 
     crud.user.delete_user_by_user_id(
         db=db,
@@ -821,11 +833,6 @@ def delete_user(
         db=db,
         user_id=user.id
     )
-    db_documents = crud.document.get_documents_by_user_id(
-        db=db,
-        user_id=user.id
-    )
-    document_ids = [document.id for document in db_documents]
 
     crud.task.cancel_document_tasks_by_document_ids(
         db=db,

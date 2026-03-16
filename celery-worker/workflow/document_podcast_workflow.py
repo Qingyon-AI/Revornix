@@ -6,6 +6,12 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from data.common import (
+    build_sampled_chunk_indexes,
+    ensure_document_chunk_snapshot,
+    get_document_markdown_length,
+    stream_chunk_document,
+)
 from data.sql.base import session_scope
 from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
@@ -20,9 +26,59 @@ class DocumentPodcastState(TypedDict, total=False):
     engine_id: int
     podcast_file_name: str
     skip_processing: bool
+    podcast_mode: str
 
 
 WORKFLOW_NAME = "document_podcast"
+SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD = 400_000
+SAMPLED_PODCAST_CHUNK_LIMIT = 12
+SAMPLED_PODCAST_MAX_TEXT_LENGTH = 24_000
+SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_800
+
+
+def _normalize_podcast_chunk_text(text: str) -> str:
+    compact = " ".join(text.split()).strip()
+    if len(compact) <= SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH:
+        return compact
+    return compact[:SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH].rstrip() + "..."
+
+
+async def _build_sampled_podcast_text(
+    *,
+    document_id: int,
+    user_id: int,
+) -> str:
+    snapshot = await ensure_document_chunk_snapshot(
+        doc_id=document_id,
+        user_id=user_id,
+    )
+    selected_chunk_indexes = set(
+        build_sampled_chunk_indexes(
+            total_chunks=snapshot.chunk_count,
+            sample_chunks=SAMPLED_PODCAST_CHUNK_LIMIT,
+        )
+    )
+    parts: list[str] = []
+    total_length = 0
+    async for chunk_info in stream_chunk_document(
+        doc_id=document_id,
+        chunk_snapshot_path=snapshot.chunk_path,
+        user_id=user_id,
+        prefer_snapshot=True,
+        selected_chunk_indexes=selected_chunk_indexes,
+    ):
+        chunk_text = _normalize_podcast_chunk_text(chunk_info.text)
+        if not chunk_text:
+            continue
+        candidate_length = total_length + len(chunk_text) + (2 if parts else 0)
+        if candidate_length > SAMPLED_PODCAST_MAX_TEXT_LENGTH:
+            remaining = SAMPLED_PODCAST_MAX_TEXT_LENGTH - total_length - (2 if parts else 0)
+            if remaining > 200:
+                parts.append(chunk_text[:remaining].rstrip() + "...")
+            break
+        parts.append(chunk_text)
+        total_length = candidate_length
+    return "\n\n".join(parts)
 
 
 async def _init_podcast_task(
@@ -99,11 +155,35 @@ async def _generate_document_podcast(
     finally:
         db.close()
 
-    markdown_content = await get_markdown_content_by_document_id(
-        document_id=document_id,
-        user_id=user_id,
-        remote_file_service=remote_file_service,
-    )
+    markdown_length = await get_document_markdown_length(document_id)
+    markdown_content: str | None = None
+    if markdown_length >= SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD:
+        db = session_scope()
+        try:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_summarize_task is not None and db_summarize_task.summary:
+                markdown_content = db_summarize_task.summary
+                state["podcast_mode"] = "summary"
+        finally:
+            db.close()
+        if markdown_content is None:
+            markdown_content = await _build_sampled_podcast_text(
+                document_id=document_id,
+                user_id=user_id,
+            )
+            state["podcast_mode"] = "sampled_chunks"
+    else:
+        markdown_content = await get_markdown_content_by_document_id(
+            document_id=document_id,
+            user_id=user_id,
+            remote_file_service=remote_file_service,
+        )
+        state["podcast_mode"] = "full"
+    if not markdown_content.strip():
+        raise Exception("Document podcast content is empty")
     engine = await EngineProxy.create_tts_engine(
         user_id=user_id,
         engine_id=engine_id

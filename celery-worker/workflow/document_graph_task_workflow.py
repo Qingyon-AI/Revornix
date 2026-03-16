@@ -42,6 +42,7 @@ class DocumentGraphState(TypedDict, total=False):
     user_id: int
     model_id: int
     llm_model_name: str
+    chunk_snapshot_path: str | None
 
 
 WORKFLOW_NAME = "document_graph_task"
@@ -146,6 +147,7 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     llm_model = state.get("llm_model_name")
     user_id = state.get("user_id")
     document_id = state.get("document_id")
+    chunk_snapshot_path = state.get("chunk_snapshot_path")
     if llm_model is None or user_id is None or document_id is None:
         raise Exception("Knowledge graph workflow missing required context")
 
@@ -167,9 +169,15 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
             context={
                 "document_id": document_id,
                 "user_id": user_id,
+                "chunk_snapshot_path": chunk_snapshot_path,
             },
         ):
-            async for chunk_info in stream_chunk_document(doc_id=document_id):
+            async for chunk_info in stream_chunk_document(
+                doc_id=document_id,
+                chunk_snapshot_path=chunk_snapshot_path,
+                user_id=user_id,
+                prefer_snapshot=True,
+            ):
                 chunk_count += 1
                 sub_entities, sub_relations = await extract_entities_relations(
                     user_id=user_id,
@@ -352,7 +360,8 @@ def get_document_graph_task_workflow():
 async def run_document_graph_task_workflow(
     *,
     document_id: int,
-    user_id: int
+    user_id: int,
+    chunk_snapshot_path: str | None = None,
 ) -> None:
     workflow = get_document_graph_task_workflow()
     try:
@@ -362,6 +371,7 @@ async def run_document_graph_task_workflow(
             payload={
                 "document_id": document_id,
                 "user_id": user_id,
+                "chunk_snapshot_path": chunk_snapshot_path,
             },
         )
     except Exception as e:
