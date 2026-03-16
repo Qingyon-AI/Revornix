@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Expand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { SectionProcessStatus } from '@/enums/section';
+import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -91,16 +91,19 @@ const SectionContainer = ({ id }: { id: number }) => {
 	}, delay);
 
 	useEffect(() => {
-		if (
-			section &&
-			section.process_task &&
-			section.process_task.status < SectionProcessStatus.SUCCESS
-		) {
+		const hasRunningProcessTask =
+			section?.process_task?.status !== undefined &&
+			section.process_task.status < SectionProcessStatus.SUCCESS;
+		const hasRunningPodcastTask =
+			section?.podcast_task?.status !== undefined &&
+			section.podcast_task.status < SectionPodcastStatus.SUCCESS;
+
+		if (hasRunningProcessTask || hasRunningPodcastTask) {
 			setDelay(1000);
 			return;
 		}
 		setDelay(undefined);
-	}, [section?.process_task?.status]);
+	}, [section?.podcast_task?.status, section?.process_task?.status]);
 
 	useEffect(() => {
 		let animationFrameId: number | null = null;

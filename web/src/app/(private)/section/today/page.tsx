@@ -57,6 +57,10 @@ const SectionDetailPage = () => {
 		queryKey: ['todayDocumentSummarySection', today],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
+	const sectionCreated =
+		section?.is_created !== false &&
+		section?.section_id !== null &&
+		section?.section_id !== undefined;
 
 	const { data: userFileSystemDetail } = useQuery({
 		queryKey: [
@@ -76,19 +80,21 @@ const SectionDetailPage = () => {
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const [markdown, setMarkdown] = useState<string>();
 
-		const onGetMarkdown = async () => {
-			if (!section || !section.md_file_name || !mainUserInfo) return;
-			if (!mainUserInfo.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
-			}
+	const onGetMarkdown = async () => {
+		if (!sectionCreated || !section?.md_file_name || !mainUserInfo) return;
+		if (!mainUserInfo.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
+		setMarkdownGetError(undefined);
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		try {
 			const [res, err] = await utils.to(
-				fileService.getFileContent(section?.md_file_name)
+				fileService.getFileContent(section.md_file_name)
 			);
 			if (!res || err) {
 				setMarkdownGetError(err.message);
+				setMarkdown(undefined);
 				return;
 			}
 			if (typeof res === 'string') {
@@ -96,19 +102,23 @@ const SectionDetailPage = () => {
 			}
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
+			setMarkdown(undefined);
 		}
 	};
 
 	useEffect(() => {
+		if (!sectionCreated || !section?.md_file_name) {
+			setMarkdown(undefined);
+			setMarkdownGetError(undefined);
+			return;
+		}
 		if (
-			!section ||
-			!section?.md_file_name ||
 			!mainUserInfo ||
 			!userFileSystemDetail
 		)
 			return;
 		onGetMarkdown();
-	}, [section, mainUserInfo, userFileSystemDetail]);
+	}, [sectionCreated, section?.md_file_name, mainUserInfo, userFileSystemDetail]);
 
 	const { ref: bottomRef, inView } = useInView();
 	const {
@@ -139,17 +149,17 @@ const SectionDetailPage = () => {
 				  }
 				: undefined;
 		},
-		enabled: !!section,
+		enabled: sectionCreated,
 	});
 	const documents = data?.pages.flatMap((page) => page.elements) || [];
 
 	useEffect(() => {
-		section &&
+		sectionCreated &&
 			inView &&
 			!isFetchingSectionDocuments &&
 			hasNextPage &&
 			fetchNextPage();
-	}, [inView, isFetchingSectionDocuments, hasNextPage, section]);
+	}, [inView, isFetchingSectionDocuments, hasNextPage, sectionCreated]);
 
 	const handleAddDocument = (section_id: string) => {
 		const params = new URLSearchParams({
@@ -162,77 +172,89 @@ const SectionDetailPage = () => {
 		<>
 			<div className='px-5 pb-5 w-full flex flex-col gap-5 relative flex-1 box-border'>
 				<div className='flex justify-between items-center'>
-					<Sheet>
-						<SheetTrigger className='bg-muted rounded px-4 py-2 text-xs'>
+					{sectionCreated ? (
+						<Sheet>
+							<SheetTrigger className='bg-muted rounded px-4 py-2 text-xs'>
+								{t('today_section_documents_summary', {
+									today_documents_count: section?.documents?.length || 0,
+								})}
+							</SheetTrigger>
+							<SheetContent>
+								<SheetHeader>
+									<SheetTitle>{t('section_documents')}</SheetTitle>
+									<SheetDescription>
+										{t('section_documents_description')}
+									</SheetDescription>
+								</SheetHeader>
+								<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
+									{isSuccess && documents && documents.length === 0 && (
+										<Empty className='h-full'>
+											<EmptyHeader>
+												<EmptyMedia variant='icon'>
+													<FileText />
+												</EmptyMedia>
+												<EmptyDescription>
+													{t('documents_empty')}
+												</EmptyDescription>
+											</EmptyHeader>
+											<EmptyContent>
+												<div className='flex gap-2'>
+													<Button
+														onClick={() => {
+															section?.section_id &&
+																handleAddDocument(section.section_id.toString());
+														}}>
+														{t('document_create')}
+													</Button>
+												</div>
+											</EmptyContent>
+										</Empty>
+									)}
+									{isSuccess &&
+										documents &&
+										documents.length > 0 &&
+										documents.map((document, index) => {
+											return (
+												<div
+													key={index}
+													ref={
+														index === documents.length - 1
+															? bottomRef
+															: undefined
+													}>
+													<SectionDocumentCard document={document} />
+												</div>
+											);
+										})}
+									{isFetchingSectionDocuments && !data && (
+										<>
+											{[...Array(10)].map((_, index) => {
+												return <Skeleton className='h-40 w-full' key={index} />;
+											})}
+										</>
+									)}
+									{isFetchingNextPage && data && (
+										<>
+											{[...Array(10)].map((_, index) => {
+												return <Skeleton className='h-40 w-full' key={index} />;
+											})}
+										</>
+									)}
+								</div>
+							</SheetContent>
+						</Sheet>
+					) : (
+						<Button
+							variant='secondary'
+							size='sm'
+							className='rounded px-4 py-2 text-xs'
+							disabled>
 							{t('today_section_documents_summary', {
-								today_documents_count: section?.documents.length || 0,
+								today_documents_count: 0,
 							})}
-						</SheetTrigger>
-						<SheetContent>
-							<SheetHeader>
-								<SheetTitle>{t('section_documents')}</SheetTitle>
-								<SheetDescription>
-									{t('section_documents_description')}
-								</SheetDescription>
-							</SheetHeader>
-							<div className='px-5 flex flex-col gap-5 overflow-auto pb-5 flex-1'>
-								{isSuccess && documents && documents.length === 0 && (
-									<Empty className='h-full'>
-										<EmptyHeader>
-											<EmptyMedia variant='icon'>
-												<FileText />
-											</EmptyMedia>
-											<EmptyDescription>
-												{t('documents_empty')}
-											</EmptyDescription>
-										</EmptyHeader>
-										<EmptyContent>
-											<div className='flex gap-2'>
-												<Button
-													onClick={() => {
-														section &&
-															handleAddDocument(section?.section_id.toString());
-													}}>
-													{t('document_create')}
-												</Button>
-											</div>
-										</EmptyContent>
-									</Empty>
-								)}
-								{isSuccess &&
-									documents &&
-									documents.length > 0 &&
-									documents.map((document, index) => {
-										return (
-											<div
-												key={index}
-												ref={
-													index === documents.length - 1
-														? bottomRef
-														: undefined
-												}>
-												<SectionDocumentCard document={document} />
-											</div>
-										);
-									})}
-								{isFetchingSectionDocuments && !data && (
-									<>
-										{[...Array(10)].map((number, index) => {
-											return <Skeleton className='h-40 w-full' key={index} />;
-										})}
-									</>
-								)}
-								{isFetchingNextPage && data && (
-									<>
-										{[...Array(10)].map((number, index) => {
-											return <Skeleton className='h-40 w-full' key={index} />;
-										})}
-									</>
-								)}
-							</div>
-						</SheetContent>
-					</Sheet>
-						{section && (
+						</Button>
+					)}
+					{sectionCreated && section && section.create_time && (
 							<p className='text-xs bg-muted rounded px-4 py-2'>
 								{t('section_updated_at')}{' '}
 								{formatInUserTimeZone(
@@ -271,7 +293,30 @@ const SectionDetailPage = () => {
 							</EmptyContent>
 						</Empty>
 					)}
-					{section && !section?.md_file_name && (
+					{section && !sectionCreated && (
+						<Empty className='h-full'>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<FileText />
+								</EmptyMedia>
+								<EmptyDescription>
+									{t('dashboard_today_summary_not_created')}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => {
+										refetch();
+									}}>
+									<RefreshCcwIcon />
+									{t('refresh')}
+								</Button>
+							</EmptyContent>
+						</Empty>
+					)}
+					{section && sectionCreated && !section?.md_file_name && (
 						<Empty className='h-full'>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
@@ -294,7 +339,7 @@ const SectionDetailPage = () => {
 							</EmptyContent>
 						</Empty>
 					)}
-					{markdown && !isError && !markdownGetError && (
+					{markdown && !isError && !markdownGetError && sectionCreated && (
 						<div className='prose dark:prose-invert mx-auto'>
 							<CustomMarkdown content={markdown} />
 							<p className='text-xs text-center text-muted-foreground bg-muted rounded py-2'>

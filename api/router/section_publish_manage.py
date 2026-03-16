@@ -98,7 +98,12 @@ def section_publish_get_request(
         section_id=section_publish_get_request.section_id
     )
     if db_publish_section is None:
-        raise schemas.error.CustomException("Section not published yet", code=404)
+        return schemas.section.SectionPublishGetResponse(
+            status=False,
+            uuid=None,
+            create_time=None,
+            update_time=None
+        )
     return schemas.section.SectionPublishGetResponse(
         status=True,
         uuid=db_publish_section.uuid,

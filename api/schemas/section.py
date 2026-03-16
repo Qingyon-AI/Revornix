@@ -38,6 +38,10 @@ class SectionUserRoleAndAuthorityResponse(BaseModel):
 class GenerateSectionPodcastRequest(BaseModel):
     section_id: int
 
+class RetrySectionDocumentRequest(BaseModel):
+    section_id: int
+    document_id: int
+
 class SectionDocumentRequest(BaseModel):
     section_id: int
     start: int | None = None
@@ -54,8 +58,8 @@ class SectionPublishGetRequest(BaseModel):
 class SectionPublishGetResponse(BaseModel):
     status: bool
     uuid: str | None = None
-    create_time: datetime
-    update_time: datetime | None
+    create_time: datetime | None = None
+    update_time: datetime | None = None
 
 class SectionRePublishRequest(BaseModel):
     section_id: int
@@ -204,6 +208,12 @@ class SectionDocumentInfo(BaseModel):
     create_time: datetime
     update_time: datetime | None = None
 
+class SectionDocumentIntegrationSummary(BaseModel):
+    wait_to_count: int = 0
+    supplementing_count: int = 0
+    success_count: int = 0
+    failed_count: int = 0
+
 class SectionInfo(BaseModel):
     id: int
     title: str
@@ -223,6 +233,7 @@ class SectionInfo(BaseModel):
     publish_uuid: str | None = None
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
+    document_integration: SectionDocumentIntegrationSummary | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
 
@@ -233,17 +244,18 @@ class DaySectionRequest(BaseModel):
     date: str
 
 class DaySectionResponse(BaseModel):
-    section_id: int
-    creator: UserPublicInfo
+    section_id: int | None = None
+    creator: UserPublicInfo | None = None
     date: str
-    title: str
+    title: str | None = None
     description: str | None
-    create_time: datetime
+    create_time: datetime | None = None
     update_time: datetime | None
     md_file_name: str | None
-    documents: list[SectionDocumentInfo]
+    documents: list[SectionDocumentInfo] = Field(default_factory=list)
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
+    is_created: bool = True
 
 class SectionCreateRequest(BaseModel):
     title: str

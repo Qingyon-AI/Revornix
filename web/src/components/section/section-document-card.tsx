@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { DocumentCategory, SectionDocumentIntegration } from '@/enums/document';
 import { SectionDocumentInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
@@ -9,9 +11,11 @@ import { formatInUserTimeZone } from '@/lib/time';
 const SectionDocumentCard = ({
 	document,
 	publicMode = false,
+	action,
 }: {
 	document: SectionDocumentInfo;
 	publicMode?: boolean;
+	action?: ReactNode;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -82,6 +86,7 @@ const SectionDocumentCard = ({
 										? t('section_document_card_section_supplement_failed')
 							: t('section_document_card_section_supplement_unknown')}
 					</div>
+					{action}
 				</div>
 				<div className='text-[11px] text-muted-foreground sm:shrink-0 sm:self-end'>
 					{document.create_time &&

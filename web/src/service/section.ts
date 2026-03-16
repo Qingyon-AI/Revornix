@@ -5,6 +5,11 @@ import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
 import { request } from '@/lib/request';
 
+export type RetrySectionDocumentRequest = {
+    section_id: number
+    document_id: number
+}
+
 export const getMineUserRoleAndAuthority = async (data: MineSectionRoleAndAuthorityRequest): Promise<SectionUserRoleAndAuthorityResponse> => {
     return await request(sectionApi.getMineSectionRoleAndAuthority, {
         data
@@ -165,6 +170,12 @@ export const getSectionPublish = async (data: SectionPublishGetRequest): Promise
 
 export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
     return await request(sectionApi.searchSectionDocuments, {
+        data
+    })
+}
+
+export const retrySectionDocumentIntegration = async (data: RetrySectionDocumentRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.retrySectionDocumentIntegration, {
         data
     })
 }

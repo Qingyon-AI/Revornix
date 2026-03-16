@@ -49,8 +49,19 @@ const TodaySummary = () => {
 		queryKey: ['todayDocumentSummarySection', today],
 		queryFn: () => getDayDocumentsSummarySection({ date: today }),
 	});
+	const sectionCreated =
+		section?.is_created !== false &&
+		section?.section_id !== null &&
+		section?.section_id !== undefined;
 
 	const getProcessState = () => {
+		if (!sectionCreated) {
+			return {
+				label: t('dashboard_today_summary_process_ready'),
+				className:
+					'border-muted-foreground/20 bg-muted/40 text-muted-foreground',
+			};
+		}
 		if (!section?.process_task) {
 			return {
 				label: t('dashboard_today_summary_process_ready'),
@@ -83,6 +94,9 @@ const TodaySummary = () => {
 	};
 
 	const getAudioState = () => {
+		if (!sectionCreated) {
+			return t('dashboard_today_summary_audio_empty');
+		}
 		if (!section?.podcast_task) {
 			return t('dashboard_today_summary_audio_empty');
 		}
@@ -99,6 +113,9 @@ const TodaySummary = () => {
 	};
 
 	const getAudioHint = () => {
+		if (!sectionCreated) {
+			return t('dashboard_today_summary_not_created_description');
+		}
 		if (!section?.podcast_task) {
 			return t('dashboard_today_summary_audio_unavailable_hint');
 		}
@@ -112,7 +129,10 @@ const TodaySummary = () => {
 	};
 
 	const processState = getProcessState();
-	const summaryHref = section ? `/section/detail/${section.section_id}` : null;
+	const summaryHref =
+		sectionCreated && section?.section_id
+			? `/section/detail/${section.section_id}`
+			: null;
 
 	return (
 		<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
@@ -166,7 +186,30 @@ const TodaySummary = () => {
 						</EmptyContent>
 					</Empty>
 				)}
-				{section && !isError && (
+				{section && !isError && !sectionCreated && (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<FileText />
+							</EmptyMedia>
+							<EmptyDescription>
+								{t('dashboard_today_summary_not_created')}
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => {
+									refetch();
+								}}>
+								<RefreshCcwIcon />
+								{t('refresh')}
+							</Button>
+						</EmptyContent>
+					</Empty>
+				)}
+				{section && !isError && sectionCreated && (
 					<div className='flex h-full flex-col gap-4'>
 						<div className='flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/20 p-4'>
 							<div className='flex items-start justify-between gap-3'>
@@ -190,7 +233,7 @@ const TodaySummary = () => {
 										<span>{t('dashboard_today_summary_field_documents')}</span>
 									</div>
 									<div className='text-sm font-medium'>
-										{section.documents.length}
+										{section.documents?.length ?? 0}
 									</div>
 								</div>
 
@@ -225,14 +268,14 @@ const TodaySummary = () => {
 							</div>
 						</div>
 
-						{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-						section.podcast_task.podcast_file_name ? (
-							<AudioPlayer
-								src={section.podcast_task.podcast_file_name}
-								title={section.title}
-								artist='AI Generated'
-								variant='compact'
-							/>
+							{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+							section.podcast_task.podcast_file_name ? (
+								<AudioPlayer
+									src={section.podcast_task.podcast_file_name}
+									title={section.title || t('dashboard_today_summary')}
+									artist='AI Generated'
+									variant='compact'
+								/>
 						) : (
 							<Alert className='border-border/60 bg-muted/20'>
 								<AudioLines className='text-muted-foreground' />

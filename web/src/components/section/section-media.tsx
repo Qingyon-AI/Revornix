@@ -5,7 +5,11 @@ import { AudioLines, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { SectionPodcastStatus, UserSectionRole } from '@/enums/section';
+import {
+	SectionPodcastStatus,
+	SectionProcessStatus,
+	UserSectionRole,
+} from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
@@ -116,10 +120,25 @@ const SectionMedia = ({
 		section.cover && (creatorId !== undefined || mainUserInfo?.id !== undefined)
 			? replacePath(section.cover, creatorId ?? mainUserInfo!.id)
 			: fallbackCover;
+	const hasPendingAutoPodcastFlow =
+		section.auto_podcast &&
+		!section.podcast_task &&
+		section.process_task != null &&
+		section.process_task.status < SectionProcessStatus.SUCCESS;
 
 	return (
 		<div className='space-y-4'>
-			{ownershipResolved && !isOwner && !section.podcast_task ? (
+			{hasPendingAutoPodcastFlow ? (
+				<AudioStatusCard
+					badge={t('document_podcast_status_todo')}
+					title={t('section_podcast_wait_to')}
+					description={t('section_podcast_wait_to_description')}
+					tone='warning'
+					className={surfaceCardClassName}
+				/>
+			) : null}
+
+			{ownershipResolved && !isOwner && !section.podcast_task && !hasPendingAutoPodcastFlow ? (
 				<AudioStatusCard
 					badge={t('document_podcast_status_todo')}
 					title={t('section_podcast_user_unable')}
@@ -129,7 +148,7 @@ const SectionMedia = ({
 				/>
 			) : null}
 
-			{isOwner && !section.podcast_task ? (
+			{isOwner && !section.podcast_task && !hasPendingAutoPodcastFlow ? (
 				<AudioStatusCard
 					badge={t('document_podcast_status_todo')}
 					title={t('section_podcast_unset')}

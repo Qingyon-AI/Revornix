@@ -12,7 +12,11 @@ from common.logger import exception_logger, info_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
 from data.sql.base import session_scope
-from enums.section import SectionDocumentIntegration, SectionProcessStatus
+from enums.section import (
+    SectionDocumentIntegration,
+    SectionPodcastStatus,
+    SectionProcessStatus,
+)
 from enums.document import DocumentAudioTranscribeStatus, DocumentCategory, DocumentMdConvertStatus
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from schemas.section import GeneratedImage, ImagePlan
@@ -141,7 +145,11 @@ def apply_generated_images(
             exception_logger.warning(f"[SectionImage] missing image for id={image_id}")
             return f"\n\n<!-- image missing: id={image_id} -->\n\n"
 
-        return f"\n\n{image_md}\n\n"
+        normalized_image_md = image_md.strip()
+        if normalized_image_md.startswith("data:image/"):
+            normalized_image_md = f"![image]({normalized_image_md})"
+
+        return f"\n\n{normalized_image_md}\n\n"
 
     pattern = re.compile(r"\[image-id:\s*([^\]]+)\]")
     return pattern.sub(repl, markdown_with_markers)
@@ -819,49 +827,54 @@ async def _build_section_content(
         )
 
     if state.get("auto_illustration") and engine_id is not None:
-        with timed_stage(
-            workflow_name=WORKFLOW_NAME,
-            node_name="build_section_content",
-            stage_name="plan_section_images",
-            context={"section_id": section_id},
-        ):
-            engine = await EngineProxy.create_image_generate_engine(
-                user_id=user_id,
-                engine_id=engine_id
-            )
-            images_plan = await ImageGenerateEngineBase.plan_images_with_llm(
-                user_id=user_id,
-                markdown=content,
-                entities=entities_for_ai,
-                relations=relations_for_ai,
-            )
-        if images_plan.plans:
-            image_semaphore = asyncio.Semaphore(IMAGE_GENERATE_CONCURRENCY)
+        try:
             with timed_stage(
                 workflow_name=WORKFLOW_NAME,
                 node_name="build_section_content",
-                stage_name="generate_section_images",
-                context={
-                    "section_id": section_id,
-                    "plan_count": len(images_plan.plans),
-                },
+                stage_name="plan_section_images",
+                context={"section_id": section_id},
             ):
-                generated_images = [
-                    image
-                    for image in await asyncio.gather(
-                        *[
-                            _generate_section_image(
-                                section_id=section_id,
-                                engine=engine,
-                                image_plan=plan,
-                                semaphore=image_semaphore,
-                            )
-                            for plan in images_plan.plans
-                        ]
-                    )
-                    if image is not None
-                ]
-            content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
+                engine = await EngineProxy.create_image_generate_engine(
+                    user_id=user_id,
+                    engine_id=engine_id
+                )
+                images_plan = await ImageGenerateEngineBase.plan_images_with_llm(
+                    user_id=user_id,
+                    markdown=content,
+                    entities=entities_for_ai,
+                    relations=relations_for_ai,
+                )
+            if images_plan.plans:
+                image_semaphore = asyncio.Semaphore(IMAGE_GENERATE_CONCURRENCY)
+                with timed_stage(
+                    workflow_name=WORKFLOW_NAME,
+                    node_name="build_section_content",
+                    stage_name="generate_section_images",
+                    context={
+                        "section_id": section_id,
+                        "plan_count": len(images_plan.plans),
+                    },
+                ):
+                    generated_images = [
+                        image
+                        for image in await asyncio.gather(
+                            *[
+                                _generate_section_image(
+                                    section_id=section_id,
+                                    engine=engine,
+                                    image_plan=plan,
+                                    semaphore=image_semaphore,
+                                )
+                                for plan in images_plan.plans
+                            ]
+                        )
+                        if image is not None
+                    ]
+                content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
+        except Exception as e:
+            exception_logger.warning(
+                f"[SectionImage] illustration pipeline skipped: section={section_id}, error={e}"
+            )
 
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
     with timed_stage(
@@ -902,6 +915,21 @@ async def _build_section_content(
                 db=db,
                 section_id=section_id
             )
+            if state.get("auto_podcast"):
+                db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+                    db=db,
+                    section_id=section_id,
+                )
+                if db_section_podcast_task is None:
+                    db_section_podcast_task = crud.task.create_section_podcast_task(
+                        db=db,
+                        user_id=user_id,
+                        section_id=section_id,
+                        status=SectionPodcastStatus.WAIT_TO,
+                    )
+                else:
+                    db_section_podcast_task.status = SectionPodcastStatus.WAIT_TO
+                    db_section_podcast_task.podcast_file_name = None
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.SUCCESS
 
