@@ -25,6 +25,7 @@ from workflow.section_podcast_workflow import run_section_podcast_workflow
 from workflow.section_process_status_workflow import run_section_process_status_workflow
 from workflow.section_process_workflow import run_section_process_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+from data.common import ensure_document_chunk_snapshot
 
 celery_app = Celery(
     "worker",
@@ -133,11 +134,15 @@ def start_process_section(
 def start_process_document_embedding(
     document_id: int,
     user_id: int,
+    start_chunk_idx: int = 0,
+    chunk_snapshot_path: str | None = None,
 ):
     _run(
         run_document_embedding_workflow(
             document_id=document_id,
             user_id=user_id,
+            start_chunk_idx=start_chunk_idx,
+            chunk_snapshot_path=chunk_snapshot_path,
         )
     )
 
@@ -146,11 +151,13 @@ def start_process_document_embedding(
 def start_process_document_graph(
     document_id: int,
     user_id: int,
+    chunk_snapshot_path: str | None = None,
 ):
     _run(
         run_document_graph_task_workflow(
             document_id=document_id,
             user_id=user_id,
+            chunk_snapshot_path=chunk_snapshot_path,
         )
     )
 
@@ -159,11 +166,13 @@ def start_process_document_graph(
 def start_process_document_summarize(
     document_id: int,
     user_id: int,
+    chunk_snapshot_path: str | None = None,
 ):
     _run(
         run_document_summarize_workflow(
             document_id=document_id,
             user_id=user_id,
+            chunk_snapshot_path=chunk_snapshot_path,
         )
     )
 
@@ -190,6 +199,25 @@ def start_process_document_podcast(
             user_id=user_id,
         )
     )
+
+
+@celery_app.task
+def start_prepare_document_chunk_snapshot(
+    document_id: int,
+    user_id: int,
+):
+    try:
+        _run(
+            ensure_document_chunk_snapshot(
+                doc_id=document_id,
+                user_id=user_id,
+            )
+        )
+    except Exception as e:
+        info_logger.warning(
+            f"Document chunk snapshot preparation failed, fallback to raw chunk stream. "
+            f"document_id={document_id}, user_id={user_id}, error={e}"
+        )
 
 
 @celery_app.task

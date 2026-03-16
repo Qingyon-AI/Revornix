@@ -3,13 +3,21 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger, format_log_message
+from common.logger import exception_logger, format_log_message, info_logger
 from common.document_guard import ensure_document_active
+from data.common import get_document_markdown_length
 from data.sql.base import session_scope
-from enums.document import DocumentProcessStatus
+from enums.document import (
+    DocumentEmbeddingStatus,
+    DocumentGraphStatus,
+    DocumentPodcastStatus,
+    DocumentProcessStatus,
+    DocumentSummarizeStatus,
+)
 from schemas.task import DocumentOverrideProperty
 from workflow.document_chunk_process_workflow import run_document_chunk_process_workflow
 from workflow.document_convert_workflow import run_document_convert_workflow
+from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
 from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
@@ -24,9 +32,13 @@ class DocumentProcessState(TypedDict, total=False):
     auto_transcribe: bool
     auto_tag: bool
     override: dict | DocumentOverrideProperty | None
+    use_progressive_followups: bool
 
 
 WORKFLOW_NAME = "document_process"
+PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD = 100_000
+PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT = 24
+ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD = 400_000
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -193,6 +205,7 @@ async def _process_document_chunks(
     document_id = state.get("document_id")
     user_id = state.get("user_id")
     auto_summary = bool(state.get("auto_summary", False))
+    auto_podcast = bool(state.get("auto_podcast", False))
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
@@ -202,11 +215,45 @@ async def _process_document_chunks(
     finally:
         db.close()
 
+    markdown_length = await get_document_markdown_length(document_id)
+    if markdown_length >= PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD:
+        enable_auto_graph = markdown_length < ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD
+        info_logger.info(
+            f"[WorkflowTiming] progressive_document_processing_enabled "
+            f"workflow={WORKFLOW_NAME}, document_id={document_id}, user_id={user_id}, "
+            f"markdown_chars={markdown_length}, bootstrap_chunks={PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT}, "
+            f"auto_summary={auto_summary}, auto_podcast={auto_podcast}, "
+            f"enable_auto_graph={enable_auto_graph}"
+        )
+        await run_document_embedding_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            max_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
+            manage_task_status=False,
+        )
+        _prepare_progressive_followup_tasks(
+            document_id=document_id,
+            user_id=user_id,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            auto_graph=enable_auto_graph,
+        )
+        _enqueue_progressive_followup_tasks(
+            document_id=document_id,
+            user_id=user_id,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            auto_graph=enable_auto_graph,
+        )
+        state["use_progressive_followups"] = True
+        return state
+
     await run_document_chunk_process_workflow(
         document_id=document_id,
         user_id=user_id,
         auto_summary=auto_summary,
     )
+    state["use_progressive_followups"] = False
     return state
 
 
@@ -214,6 +261,8 @@ async def _maybe_generate_podcast(
     state: DocumentProcessState
 ) -> DocumentProcessState:
     if not state.get("auto_podcast"):
+        return state
+    if state.get("use_progressive_followups"):
         return state
     document_id = state.get("document_id")
     user_id = state.get("user_id")
@@ -253,6 +302,150 @@ async def _mark_process_success(
     finally:
         db.close()
     return state
+
+
+def _prepare_progressive_followup_tasks(
+    *,
+    document_id: int,
+    user_id: int,
+    auto_summary: bool,
+    auto_podcast: bool,
+    auto_graph: bool,
+) -> None:
+    db = session_scope()
+    try:
+        ensure_document_active(db=db, document_id=document_id)
+
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if db_embedding_task is None:
+            db_embedding_task = crud.task.create_document_embedding_task(
+                db=db,
+                user_id=user_id,
+                document_id=document_id,
+            )
+        db_embedding_task.status = DocumentEmbeddingStatus.WAIT_TO
+
+        if auto_graph:
+            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_graph_task is None:
+                db_graph_task = crud.task.create_document_graph_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                )
+            db_graph_task.status = DocumentGraphStatus.WAIT_TO
+
+        if auto_summary:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_summarize_task is None:
+                db_summarize_task = crud.task.create_document_summarize_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                )
+            db_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
+            db_summarize_task.summary = None
+
+        if auto_podcast:
+            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_podcast_task is None:
+                db_podcast_task = crud.task.create_document_podcast_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                )
+            db_podcast_task.status = DocumentPodcastStatus.WAIT_TO
+            db_podcast_task.podcast_file_name = None
+
+        db.commit()
+    finally:
+        db.close()
+
+
+def _enqueue_progressive_followup_tasks(
+    *,
+    document_id: int,
+    user_id: int,
+    auto_summary: bool,
+    auto_podcast: bool,
+    auto_graph: bool,
+) -> None:
+    from celery import chain, group
+    from common.celery.app import celery_app
+
+    followup_signatures = [
+        celery_app.signature(
+            "common.celery.app.start_process_document_embedding",
+            kwargs={
+                "document_id": document_id,
+                "user_id": user_id,
+                "start_chunk_idx": PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
+            },
+            immutable=True,
+        ),
+    ]
+    if auto_graph:
+        followup_signatures.append(
+            celery_app.signature(
+                "common.celery.app.start_process_document_graph",
+                kwargs={
+                    "document_id": document_id,
+                    "user_id": user_id,
+                },
+                immutable=True,
+            )
+        )
+    if auto_summary:
+        followup_signatures.append(
+            celery_app.signature(
+                "common.celery.app.start_process_document_summarize",
+                kwargs={
+                    "document_id": document_id,
+                    "user_id": user_id,
+                },
+                immutable=True,
+            )
+        )
+    if auto_podcast:
+        followup_signatures.append(
+            celery_app.signature(
+                "common.celery.app.start_process_document_podcast",
+                kwargs={
+                    "document_id": document_id,
+                    "user_id": user_id,
+                },
+                immutable=True,
+            )
+        )
+    workflow = chain(
+        celery_app.signature(
+            "common.celery.app.start_prepare_document_chunk_snapshot",
+            kwargs={
+                "document_id": document_id,
+                "user_id": user_id,
+            },
+            immutable=True,
+        ),
+        group(followup_signatures),
+    )
+    workflow.apply_async()
+    info_logger.info(
+        f"[WorkflowTiming] progressive_document_followups_enqueued "
+        f"workflow={WORKFLOW_NAME}, document_id={document_id}, user_id={user_id}, "
+        f"auto_summary={auto_summary}, auto_podcast={auto_podcast}, auto_graph={auto_graph}"
+    )
 
 
 def _build_workflow():

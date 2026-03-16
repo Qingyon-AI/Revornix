@@ -23,6 +23,11 @@ from data.sql.base import session_scope
 from enums.file import RemoteFileService
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
+FILE_SYSTEM_HTTP_MAX_POOL_CONNECTIONS = 32
+FILE_SYSTEM_TRANSFER_MAX_CONCURRENCY = 4
+FILE_SYSTEM_TRANSFER_MULTIPART_THRESHOLD_BYTES = 8 * 1024 * 1024
+FILE_SYSTEM_TRANSFER_MULTIPART_CHUNK_BYTES = 8 * 1024 * 1024
+
 
 class BuiltInRemoteFileService(RemoteFileServiceProtocol):
 
@@ -143,6 +148,14 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
     async def init_client(
         self,
     ):
+        def _build_botocore_config(*, read_timeout: int) -> Config:
+            return Config(
+                retries={"max_attempts": 5, "mode": "standard"},
+                connect_timeout=5,
+                read_timeout=read_timeout,
+                max_pool_connections=FILE_SYSTEM_HTTP_MAX_POOL_CONNECTIONS,
+            )
+
         def _ensure_bucket():
             if self.bucket is not None:
                 return self.bucket
@@ -172,11 +185,7 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     aws_secret_access_key=file_service_config.get("secret_access_key"),
                     region_name="main",
                     verify=deployed_by_official,
-                    config=Config(
-                        retries={"max_attempts": 5, "mode": "standard"},
-                        connect_timeout=5,
-                        read_timeout=30,
-                    ),
+                    config=_build_botocore_config(read_timeout=30),
                 )
                 self.sts_upload_client = sts
 
@@ -195,11 +204,8 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     aws_secret_access_key=creds['SecretAccessKey'],
                     aws_session_token=creds['SessionToken'],
                     region_name="main",
-                    config=Config(
-                        signature_version="s3v4",
-                        retries={"max_attempts": 5, "mode": "standard"},
-                        connect_timeout=5,
-                        read_timeout=60,
+                    config=_build_botocore_config(read_timeout=60).merge(
+                        Config(signature_version="s3v4")
                     ),
                     verify=deployed_by_official
                 )
@@ -262,6 +268,12 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
             }
             if extra_args:
                 kwargs['ExtraArgs'] = extra_args
+            kwargs['Config'] = TransferConfig(
+                multipart_threshold=FILE_SYSTEM_TRANSFER_MULTIPART_THRESHOLD_BYTES,
+                multipart_chunksize=FILE_SYSTEM_TRANSFER_MULTIPART_CHUNK_BYTES,
+                max_concurrency=FILE_SYSTEM_TRANSFER_MAX_CONCURRENCY,
+                use_threads=True,
+            )
             return self.s3_client.upload_fileobj(**kwargs)
 
         return await asyncio.to_thread(_upload)
@@ -296,9 +308,9 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 extra_args["ContentType"] = content_type
 
             config = TransferConfig(
-                multipart_threshold=8 * 1024 * 1024,  # 8MB 以上自动 multipart
-                multipart_chunksize=8 * 1024 * 1024,
-                max_concurrency=4,
+                multipart_threshold=FILE_SYSTEM_TRANSFER_MULTIPART_THRESHOLD_BYTES,
+                multipart_chunksize=FILE_SYSTEM_TRANSFER_MULTIPART_CHUNK_BYTES,
+                max_concurrency=FILE_SYSTEM_TRANSFER_MAX_CONCURRENCY,
                 use_threads=True,
             )
 

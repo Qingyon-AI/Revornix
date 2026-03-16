@@ -1,5 +1,6 @@
 import inspect
 import json
+from typing import Any
 from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
 from prompts.summary_content import summary_content_prompt
@@ -99,12 +100,16 @@ async def make_section_markdown(
 async def summary_content(
     user_id: int,
     model_id: int,
-    content: str
+    content: str,
+    *,
+    model_configuration: Any | None = None,
+    client: AsyncOpenAI | None = None,
 ):
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=model_id
-    )).get_configuration()
+    if model_configuration is None:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
     
     system_prompt = summary_content_prompt(content=content)
     
@@ -112,10 +117,12 @@ async def summary_content(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = AsyncOpenAI(
-            api_key=model_configuration.api_key,
-            base_url=model_configuration.base_url,
-        )
+        owns_client = client is None
+        if client is None:
+            client = AsyncOpenAI(
+                api_key=model_configuration.api_key,
+                base_url=model_configuration.base_url,
+            )
         try:
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
@@ -144,7 +151,8 @@ async def summary_content(
                 summary=summary
             )
         finally:
-            await _safe_close_async_client(client)
+            if owns_client:
+                await _safe_close_async_client(client)
 
 async def reducer_summary(
     user_id: int,
@@ -152,12 +160,16 @@ async def reducer_summary(
     current_summary: str | None,
     new_summary_to_append: str,
     new_entities: list[EntityInfo],
-    new_relations: list[RelationInfo]
+    new_relations: list[RelationInfo],
+    *,
+    model_configuration: Any | None = None,
+    client: AsyncOpenAI | None = None,
 ):
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=model_id
-    )).get_configuration()
+    if model_configuration is None:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
     
     system_prompt = reducer_summary_prompt(
         current_summary=current_summary,
@@ -170,10 +182,12 @@ async def reducer_summary(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = AsyncOpenAI(
-            api_key=model_configuration.api_key,
-            base_url=model_configuration.base_url,
-        )
+        owns_client = client is None
+        if client is None:
+            client = AsyncOpenAI(
+                api_key=model_configuration.api_key,
+                base_url=model_configuration.base_url,
+            )
         try:
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
@@ -202,4 +216,5 @@ async def reducer_summary(
                 summary=summary
             )
         finally:
-            await _safe_close_async_client(client)
+            if owns_client:
+                await _safe_close_async_client(client)

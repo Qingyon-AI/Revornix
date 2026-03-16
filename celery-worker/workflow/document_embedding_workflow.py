@@ -19,6 +19,10 @@ from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 class DocumentEmbeddingState(TypedDict, total=False):
     document_id: int
     user_id: int
+    max_chunks: int | None
+    start_chunk_idx: int
+    manage_task_status: bool
+    chunk_snapshot_path: str | None
 
 
 WORKFLOW_NAME = "document_embedding"
@@ -46,6 +50,7 @@ async def _init_embedding_task(
 ) -> DocumentEmbeddingState:
     document_id = state.get("document_id")
     user_id = state.get("user_id")
+    manage_task_status = bool(state.get("manage_task_status", True))
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing document_id or user_id")
 
@@ -68,20 +73,20 @@ async def _init_embedding_task(
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
 
-        # 3) 获取/创建任务记录，置为 EMBEDDING
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_embedding_task is None:
-            db_embedding_task = crud.task.create_document_embedding_task(
+        if manage_task_status:
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
                 db=db,
-                user_id=user_id,
-                document_id=document_id,
+                document_id=document_id
             )
-        if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
-            db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
-        db.commit()
+            if db_embedding_task is None:
+                db_embedding_task = crud.task.create_document_embedding_task(
+                    db=db,
+                    user_id=user_id,
+                    document_id=document_id,
+                )
+            if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
+                db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+            db.commit()
     finally:
         db.close()
     return state
@@ -92,6 +97,9 @@ async def _embed_document(
 ) -> DocumentEmbeddingState:
     document_id = state.get("document_id")
     user_id = state.get("user_id")
+    max_chunks = state.get("max_chunks")
+    start_chunk_idx = int(state.get("start_chunk_idx", 0) or 0)
+    chunk_snapshot_path = state.get("chunk_snapshot_path")
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing context")
     embedding_engine = get_embedding_engine()
@@ -114,9 +122,19 @@ async def _embed_document(
             "document_id": document_id,
             "user_id": user_id,
             "batch_size": EMBED_BATCH_SIZE,
+            "max_chunks": max_chunks,
+            "start_chunk_idx": start_chunk_idx,
+            "chunk_snapshot_path": chunk_snapshot_path,
         },
     ):
-        async for chunk_info in stream_chunk_document(doc_id=document_id):
+        async for chunk_info in stream_chunk_document(
+            doc_id=document_id,
+            max_chunks=max_chunks,
+            start_chunk_idx=start_chunk_idx,
+            chunk_snapshot_path=chunk_snapshot_path,
+            user_id=user_id,
+            prefer_snapshot=True,
+        ):
             chunk_count += 1
             embed_chunks.append(chunk_info)
             embed_texts.append(chunk_info.text)
@@ -173,8 +191,11 @@ async def _mark_embedding_success(
     state: DocumentEmbeddingState
 ) -> DocumentEmbeddingState:
     document_id = state.get("document_id")
+    manage_task_status = bool(state.get("manage_task_status", True))
     if document_id is None:
         raise Exception("Document embedding workflow missing document_id")
+    if not manage_task_status:
+        return state
 
     db = session_scope()
     try:
@@ -231,7 +252,11 @@ def get_document_embedding_workflow():
 async def run_document_embedding_workflow(
     *,
     document_id: int,
-    user_id: int
+    user_id: int,
+    max_chunks: int | None = None,
+    start_chunk_idx: int = 0,
+    manage_task_status: bool = True,
+    chunk_snapshot_path: str | None = None,
 ) -> None:
     workflow = get_document_embedding_workflow()
     try:
@@ -241,10 +266,16 @@ async def run_document_embedding_workflow(
             payload={
                 "document_id": document_id,
                 "user_id": user_id,
+                "max_chunks": max_chunks,
+                "start_chunk_idx": start_chunk_idx,
+                "manage_task_status": manage_task_status,
+                "chunk_snapshot_path": chunk_snapshot_path,
             },
         )
     except Exception as e:
         exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
+        if not manage_task_status:
+            raise
         db = session_scope()
         try:
             db_embedding_task = crud.task.get_document_embedding_task_by_document_id(

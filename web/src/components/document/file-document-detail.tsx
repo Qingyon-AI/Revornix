@@ -16,10 +16,8 @@ import { useInView } from 'react-intersection-observer';
 import { FileService } from '@/lib/file';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
-import {
-	DocumentProcessStatus,
-	DocumentMdConvertStatus,
-} from '@/enums/document';
+import { DocumentMdConvertStatus } from '@/enums/document';
+import { shouldPollDocumentDetail } from '@/lib/document-task';
 import CustomMarkdown from '../ui/custom-markdown';
 
 const FileDocumentDetail = ({
@@ -73,16 +71,12 @@ const FileDocumentDetail = ({
 	}, delay);
 
 	useEffect(() => {
-		if (
-			document &&
-			document.process_task &&
-			document.process_task?.status < DocumentProcessStatus.SUCCESS
-		) {
+		if (shouldPollDocumentDetail(document)) {
 			setDelay(1000);
 		} else {
 			setDelay(undefined);
 		}
-	}, [document?.process_task?.status]);
+	}, [document]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();

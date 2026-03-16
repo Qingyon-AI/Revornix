@@ -14,10 +14,8 @@ import { useInterval } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import { useInView } from 'react-intersection-observer';
 import { useUserContext } from '@/provider/user-provider';
-import {
-	DocumentProcessStatus,
-	DocumentTranscribeStatus,
-} from '@/enums/document';
+import { DocumentTranscribeStatus } from '@/enums/document';
+import { shouldPollDocumentDetail } from '@/lib/document-task';
 import CustomMarkdown from '../ui/custom-markdown';
 
 const AudioDocumentDetail = ({
@@ -56,16 +54,12 @@ const AudioDocumentDetail = ({
 	}, delay);
 
 	useEffect(() => {
-		if (
-			document &&
-			document.process_task &&
-			document.process_task?.status < DocumentProcessStatus.SUCCESS
-		) {
+		if (shouldPollDocumentDetail(document)) {
 			setDelay(1000);
 		} else {
 			setDelay(undefined);
 		}
-	}, [document?.process_task?.status]);
+	}, [document]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
 	const [markdown, setMarkdown] = useState<string>();
