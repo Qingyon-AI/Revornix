@@ -74,9 +74,9 @@ export default function Page({
 					</div>
 				</header>
 				{/* flex: '1 1 0' 的目的是强制flex-basis设置为0px而不是0%，因为在父级高度不确定的情况下0%会回滚为auto，导致高度被撑开，overflow-auto失效 */}
-				<div
-					className='relative flex flex-col overflow-auto w-full'
-					style={{ flex: '1 1 0' }}>
+					<div
+						className='relative flex min-w-0 flex-col overflow-auto w-full'
+						style={{ flex: '1 1 0' }}>
 					<NextTopLoader />
 					{children}
 				</div>

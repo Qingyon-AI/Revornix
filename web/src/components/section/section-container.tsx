@@ -215,7 +215,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 												</DialogDescription>
 											</DialogHeader>
 											<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-												<SectionGraph section_id={id} />
+												<SectionGraph section_id={id} showSearch />
 											</div>
 										</DialogContent>
 									</Dialog>
