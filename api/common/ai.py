@@ -1,5 +1,6 @@
 import inspect
 import json
+import re
 
 from langfuse import propagate_attributes
 from pydantic import BaseModel
@@ -10,6 +11,7 @@ from common.logger import exception_logger, format_log_message
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
 from data.custom_types.all import EntityInfo, RelationInfo
+from prompts.podcast_dialogue import podcast_dialogue_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.summary_content import summary_content_prompt
@@ -23,6 +25,13 @@ class SummaryResultWithTitleAndDescription(BaseModel):
     title: str
     description: str
     summary: str
+
+
+PODCAST_DIALOGUE_MAX_TURN_LENGTH = 300
+PODCAST_DIALOGUE_TARGET_TURN_LENGTH = 260
+PODCAST_DIALOGUE_MAX_TOTAL_LENGTH = 10_000
+PODCAST_DIALOGUE_MAX_TURNS = 32
+PODCAST_SENTENCE_SPLIT_RE = re.compile(r"(?<=[。！？!?；;])")
 
 
 async def _safe_close_async_client(client: AsyncOpenAI) -> None:
@@ -214,5 +223,192 @@ async def make_section_markdown(
             if content is None:
                 raise Exception("No content returned for ai")
             return sanitize_mermaid_blocks(content)
+        finally:
+            await _safe_close_async_client(client)
+
+
+def _extract_json_object_text(content: str) -> str:
+    stripped = content.strip()
+    if stripped.startswith("```"):
+        stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
+        stripped = re.sub(r"\s*```$", "", stripped)
+    start = stripped.find("{")
+    end = stripped.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return stripped
+    return stripped[start:end + 1]
+
+
+def _split_podcast_dialogue_text(text: str) -> list[str]:
+    normalized = " ".join(str(text).split()).strip()
+    if not normalized:
+        return []
+    if len(normalized) <= PODCAST_DIALOGUE_TARGET_TURN_LENGTH:
+        return [normalized]
+
+    sentences = [
+        sentence.strip()
+        for sentence in PODCAST_SENTENCE_SPLIT_RE.split(normalized)
+        if sentence.strip()
+    ]
+    if len(sentences) <= 1:
+        return [
+            normalized[i:i + PODCAST_DIALOGUE_TARGET_TURN_LENGTH].strip()
+            for i in range(0, len(normalized), PODCAST_DIALOGUE_TARGET_TURN_LENGTH)
+            if normalized[i:i + PODCAST_DIALOGUE_TARGET_TURN_LENGTH].strip()
+        ]
+
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        if len(sentence) > PODCAST_DIALOGUE_TARGET_TURN_LENGTH:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.extend(_split_podcast_dialogue_text(sentence))
+            continue
+        if not current:
+            current = sentence
+            continue
+        if len(current) + len(sentence) <= PODCAST_DIALOGUE_TARGET_TURN_LENGTH:
+            current = f"{current}{sentence}"
+            continue
+        chunks.append(current)
+        current = sentence
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _normalize_podcast_dialogue_turns(
+    raw_turns,
+    *,
+    speakers: list[str],
+) -> list[dict[str, str]]:
+    if not isinstance(raw_turns, list):
+        raise ValueError("Podcast dialogue result must contain a list of turns")
+
+    allowed_speakers = [speaker.strip() for speaker in speakers if speaker and speaker.strip()]
+    if len(allowed_speakers) != 2:
+        raise ValueError("Podcast dialogue requires exactly two speakers")
+
+    normalized_turns: list[dict[str, str]] = []
+    total_length = 0
+    seen_speakers: set[str] = set()
+
+    for idx, raw_turn in enumerate(raw_turns):
+        if len(normalized_turns) >= PODCAST_DIALOGUE_MAX_TURNS:
+            break
+
+        if isinstance(raw_turn, dict):
+            speaker = str(
+                raw_turn.get("speaker")
+                or raw_turn.get("role")
+                or raw_turn.get("name")
+                or allowed_speakers[idx % 2]
+            ).strip()
+            text = raw_turn.get("text") or raw_turn.get("content") or raw_turn.get("utterance") or ""
+        elif isinstance(raw_turn, str):
+            speaker = allowed_speakers[idx % 2]
+            text = raw_turn
+        else:
+            continue
+
+        if speaker not in allowed_speakers:
+            speaker = allowed_speakers[idx % 2]
+
+        for chunk in _split_podcast_dialogue_text(text):
+            if not chunk:
+                continue
+            chunk = chunk[:PODCAST_DIALOGUE_MAX_TURN_LENGTH].strip()
+            if not chunk:
+                continue
+            if total_length + len(chunk) > PODCAST_DIALOGUE_MAX_TOTAL_LENGTH:
+                remaining = PODCAST_DIALOGUE_MAX_TOTAL_LENGTH - total_length
+                if remaining <= 80:
+                    break
+                chunk = chunk[:remaining].rstrip() + "..."
+            normalized_turns.append({"speaker": speaker, "text": chunk})
+            seen_speakers.add(speaker)
+            total_length += len(chunk)
+            if (
+                len(normalized_turns) >= PODCAST_DIALOGUE_MAX_TURNS
+                or total_length >= PODCAST_DIALOGUE_MAX_TOTAL_LENGTH
+            ):
+                break
+        if (
+            len(normalized_turns) >= PODCAST_DIALOGUE_MAX_TURNS
+            or total_length >= PODCAST_DIALOGUE_MAX_TOTAL_LENGTH
+        ):
+            break
+
+    if not normalized_turns:
+        raise ValueError("Podcast dialogue result is empty after normalization")
+
+    if len(seen_speakers) < 2 and len(normalized_turns) >= 2:
+        for idx, turn in enumerate(normalized_turns):
+            turn["speaker"] = allowed_speakers[idx % 2]
+
+    return normalized_turns
+
+
+async def generate_podcast_dialogue_turns(
+    *,
+    user_id: int,
+    model_id: int,
+    content: str,
+    speakers: list[str],
+    title: str | None = None,
+    description: str | None = None,
+):
+    model_configuration = (await AIModelProxy.create(
+        user_id=user_id,
+        model_id=model_id
+    )).get_configuration()
+
+    prompt = podcast_dialogue_prompt(
+        content=content,
+        speakers=speakers,
+        title=title,
+        description=description,
+    )
+
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
+        client = AsyncOpenAI(
+            api_key=model_configuration.api_key,
+            base_url=model_configuration.base_url,
+        )
+        try:
+            completion = await client.chat.completions.create(
+                model=model_configuration.model_name,
+                messages=[
+                    {"role": "system", "content": "You are an expert in writing podcast dialogue scripts."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"}
+            )
+            persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=model_id,
+                completion=completion,
+                source="generate_podcast_dialogue_turns",
+            )
+            raw_content = completion.choices[0].message.content
+            if raw_content is None:
+                raise Exception("No content returned for podcast dialogue")
+            payload = json.loads(_extract_json_object_text(raw_content))
+            raw_turns = (
+                payload.get("nlp_texts")
+                or payload.get("turns")
+                or payload.get("dialogue")
+                or payload.get("rounds")
+            )
+            return _normalize_podcast_dialogue_turns(
+                raw_turns,
+                speakers=speakers,
+            )
         finally:
             await _safe_close_async_client(client)
