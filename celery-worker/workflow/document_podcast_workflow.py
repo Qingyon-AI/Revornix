@@ -1,4 +1,5 @@
 import uuid
+import time
 from typing import TypedDict
 
 import crud
@@ -6,6 +7,9 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.logger import info_logger
+from common.podcast_content import prepare_podcast_markdown
+from common.podcast_graph import build_document_podcast_graph_context
 from data.common import (
     build_sampled_chunk_indexes,
     ensure_document_chunk_snapshot,
@@ -27,13 +31,18 @@ class DocumentPodcastState(TypedDict, total=False):
     podcast_file_name: str
     skip_processing: bool
     podcast_mode: str
+    podcast_tier: str
+    document_title: str
+    document_description: str
+    graph_context_used: bool
 
 
 WORKFLOW_NAME = "document_podcast"
-SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD = 400_000
-SAMPLED_PODCAST_CHUNK_LIMIT = 12
-SAMPLED_PODCAST_MAX_TEXT_LENGTH = 24_000
-SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_800
+SUMMARY_PREFERRED_MARKDOWN_CHAR_THRESHOLD = 80_000
+SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD = 180_000
+SAMPLED_PODCAST_CHUNK_LIMIT = 10
+SAMPLED_PODCAST_MAX_TEXT_LENGTH = 12_000
+SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_200
 
 
 def _normalize_podcast_chunk_text(text: str) -> str:
@@ -101,6 +110,8 @@ async def _init_podcast_task(
         if db_document.category == DocumentCategory.AUDIO:
             state["skip_processing"] = True
             return state  # 音频文档不需要生成播客，直接使用用户上传的音频
+        state["document_title"] = db_document.title or ""
+        state["document_description"] = db_document.description or ""
 
         # 2) 校验 user
         db_user = crud.user.get_user_by_id(
@@ -156,8 +167,12 @@ async def _generate_document_podcast(
         db.close()
 
     markdown_length = await get_document_markdown_length(document_id)
+    prepare_started_at = time.perf_counter()
     markdown_content: str | None = None
-    if markdown_length >= SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD:
+    source_chars = 0
+    graph_context = ""
+    graph_counts = {"entities": 0, "relations": 0, "excerpts": 0}
+    if markdown_length >= SUMMARY_PREFERRED_MARKDOWN_CHAR_THRESHOLD:
         db = session_scope()
         try:
             db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
@@ -167,30 +182,79 @@ async def _generate_document_podcast(
             if db_summarize_task is not None and db_summarize_task.summary:
                 markdown_content = db_summarize_task.summary
                 state["podcast_mode"] = "summary"
+                source_chars = len(markdown_content)
         finally:
             db.close()
-        if markdown_content is None:
+        if markdown_content is None and markdown_length >= SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD:
             markdown_content = await _build_sampled_podcast_text(
                 document_id=document_id,
                 user_id=user_id,
             )
             state["podcast_mode"] = "sampled_chunks"
-    else:
+            source_chars = len(markdown_content)
+    if markdown_content is None:
         markdown_content = await get_markdown_content_by_document_id(
             document_id=document_id,
             user_id=user_id,
             remote_file_service=remote_file_service,
         )
         state["podcast_mode"] = "full"
-    if not markdown_content.strip():
+        source_chars = len(markdown_content)
+
+    try:
+        graph_context, graph_counts = build_document_podcast_graph_context(
+            document_id=document_id,
+        )
+    except Exception as e:
+        exception_logger.warning(
+            f"[PodcastGraph] failed to build document graph context: "
+            f"document_id={document_id}, error={e}"
+        )
+        graph_context = ""
+        graph_counts = {"entities": 0, "relations": 0, "excerpts": 0}
+    if graph_context:
+        markdown_content = f"{markdown_content}\n\n{graph_context}".strip()
+        state["graph_context_used"] = True
+    else:
+        state["graph_context_used"] = False
+
+    prepared_markdown_content, podcast_tier = prepare_podcast_markdown(
+        markdown=markdown_content,
+        title=state.get("document_title"),
+        description=state.get("document_description"),
+    )
+    state["podcast_tier"] = podcast_tier
+    if not prepared_markdown_content.strip():
         raise Exception("Document podcast content is empty")
+    info_logger.info(
+        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, "
+        f"stage=prepare_podcast_input, document_id={document_id}, "
+        f"markdown_length={markdown_length}, source_mode={state.get('podcast_mode')}, "
+        f"podcast_tier={podcast_tier}, source_chars={source_chars}, "
+        f"graph_context_used={state.get('graph_context_used')}, "
+        f"graph_entities={graph_counts['entities']}, "
+        f"graph_relations={graph_counts['relations']}, "
+        f"graph_excerpts={graph_counts['excerpts']}, "
+        f"prepared_chars={len(prepared_markdown_content)}, "
+        f"elapsed_ms={(time.perf_counter() - prepare_started_at) * 1000:.2f}"
+    )
     engine = await EngineProxy.create_tts_engine(
         user_id=user_id,
         engine_id=engine_id
     )
 
+    synthesize_started_at = time.perf_counter()
     audio_bytes = await engine.synthesize(
-        text=markdown_content
+        text=prepared_markdown_content
+    )
+    info_logger.info(
+        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
+        f"node=generate_document_podcast, stage=synthesize_audio, "
+        f"document_id={document_id}, podcast_tier={podcast_tier}, "
+        f"podcast_mode={state.get('podcast_mode')}, "
+        f"input_chars={len(prepared_markdown_content)}, "
+        f"audio_bytes={len(audio_bytes)}, "
+        f"elapsed_ms={(time.perf_counter() - synthesize_started_at) * 1000:.2f}"
     )
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
 
@@ -200,10 +264,17 @@ async def _generate_document_podcast(
     finally:
         db.close()
 
+    upload_started_at = time.perf_counter()
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_file_name,
         content=audio_bytes,
         content_type="audio/mpeg"
+    )
+    info_logger.info(
+        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
+        f"node=generate_document_podcast, stage=upload_podcast_audio, "
+        f"document_id={document_id}, audio_bytes={len(audio_bytes)}, "
+        f"elapsed_ms={(time.perf_counter() - upload_started_at) * 1000:.2f}"
     )
     state["podcast_file_name"] = podcast_file_name
     return state

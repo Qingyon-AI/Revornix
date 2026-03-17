@@ -3,14 +3,29 @@ import time
 import json
 import websockets
 import httpx
+import crud
 from enums.engine_enums import EngineProvided, EngineCategory
 from pydantic import AnyUrl
 from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
 from common.langfuse import langfuse
 from langfuse import propagate_attributes
-from common.logger import exception_logger
+from common.ai import generate_podcast_dialogue_turns
+from common.logger import exception_logger, info_logger
 from common.usage_billing import persist_engine_usage
 from base_implement.tts_engine_base import TTSEngineBase
+from data.sql.base import session_scope
+
+
+DEFAULT_VOLC_PODCAST_BASE_URL = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts"
+DEFAULT_VOLC_PODCAST_SPEAKERS = [
+    "zh_male_dayixiansheng_v2_saturn_bigtts",
+    "zh_female_mizaitongxue_v2_saturn_bigtts",
+]
+DEFAULT_VOLC_AUDIO_CONFIG = {
+    "format": "mp3",
+    "sample_rate": 24000,
+    "speech_rate": 0,
+}
 
 class VolcTTSEngine(TTSEngineBase):
     """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
@@ -24,8 +39,165 @@ class VolcTTSEngine(TTSEngineBase):
             engine_category=EngineCategory.TTS,
             engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
-            engine_demo_config='{"appid":"","access_token":"","base_url":""}'
+            engine_demo_config=json.dumps(
+                {
+                    "appid": "",
+                    "access_token": "",
+                    "base_url": DEFAULT_VOLC_PODCAST_BASE_URL,
+                    "generation_mode": "prompt",
+                    "speaker_info": {
+                        "speakers": DEFAULT_VOLC_PODCAST_SPEAKERS,
+                    },
+                    "audio_config": DEFAULT_VOLC_AUDIO_CONFIG,
+                    "use_head_music": True,
+                    "use_tail_music": False,
+                    "aigc_watermark": False,
+                },
+                ensure_ascii=False,
+            )
         )
+
+    def _resolve_base_url(self, config: dict) -> str:
+        return str(config.get("base_url") or DEFAULT_VOLC_PODCAST_BASE_URL)
+
+    def _resolve_generation_mode(self, config: dict) -> str:
+        raw_action = config.get("action")
+        if raw_action in {3, "3"}:
+            return "dialogue"
+        raw_mode = str(config.get("generation_mode") or "prompt").strip().lower()
+        if raw_mode in {"dialogue", "ai_dialogue", "action3"}:
+            return "dialogue"
+        return "prompt"
+
+    def _resolve_audio_config(self, config: dict) -> dict:
+        audio_config = dict(DEFAULT_VOLC_AUDIO_CONFIG)
+        raw_audio_config = config.get("audio_config")
+        if isinstance(raw_audio_config, dict):
+            for key in ("format", "sample_rate", "speech_rate"):
+                value = raw_audio_config.get(key)
+                if value not in (None, ""):
+                    audio_config[key] = value
+        return audio_config
+
+    def _resolve_speakers(self, config: dict) -> list[str]:
+        raw_speaker_info = config.get("speaker_info")
+        if isinstance(raw_speaker_info, dict):
+            raw_speakers = raw_speaker_info.get("speakers")
+            if isinstance(raw_speakers, list):
+                speakers = [
+                    str(speaker).strip()
+                    for speaker in raw_speakers
+                    if str(speaker).strip()
+                ]
+                if len(speakers) == 2:
+                    return speakers
+        return list(DEFAULT_VOLC_PODCAST_SPEAKERS)
+
+    def _resolve_dialogue_model_id(self, config: dict) -> int:
+        raw_dialogue_model_id = config.get("dialogue_model_id")
+        if raw_dialogue_model_id not in (None, ""):
+            try:
+                return int(raw_dialogue_model_id)
+            except (TypeError, ValueError) as e:
+                raise Exception("The dialogue_model_id in Volc TTS engine config is invalid") from e
+
+        if self.user_id is None:
+            raise Exception("The user_id is not set.")
+
+        db = session_scope()
+        try:
+            db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
+            if db_user is None:
+                raise Exception("The user is not found")
+            if db_user.default_document_reader_model_id is None:
+                raise Exception(
+                    "The user has not set the default document reader model required by Volc action=3 dialogue generation"
+                )
+            return db_user.default_document_reader_model_id
+        finally:
+            db.close()
+
+    async def _build_action3_dialogue_turns(
+        self,
+        *,
+        config: dict,
+        text: str,
+    ) -> list[dict[str, str]]:
+        if self.user_id is None:
+            raise Exception("The user_id is not set.")
+
+        speakers = self._resolve_speakers(config)
+        model_id = self._resolve_dialogue_model_id(config)
+        turns = await generate_podcast_dialogue_turns(
+            user_id=self.user_id,
+            model_id=model_id,
+            content=text,
+            speakers=speakers,
+        )
+        if not turns:
+            raise Exception("Failed to generate action=3 dialogue turns for Volc podcast")
+        return turns
+
+    def _build_request_payload(
+        self,
+        *,
+        config: dict,
+        text: str,
+    ) -> dict:
+        generation_mode = self._resolve_generation_mode(config)
+        audio_config = self._resolve_audio_config(config)
+        use_head_music = bool(config.get("use_head_music", True))
+        use_tail_music = bool(config.get("use_tail_music", False))
+        aigc_watermark = bool(config.get("aigc_watermark", False))
+        speaker_info = {
+            "speakers": self._resolve_speakers(config),
+        }
+
+        req_params: dict = {
+            "input_id": str(time.time()),
+            "use_head_music": use_head_music,
+            "use_tail_music": use_tail_music,
+            "aigc_watermark": aigc_watermark,
+            "audio_config": audio_config,
+            "input_info": {
+                "return_audio_url": True,
+            },
+        }
+
+        raw_input_info = config.get("input_info")
+        if isinstance(raw_input_info, dict):
+            req_params["input_info"].update(
+                {
+                    key: value
+                    for key, value in raw_input_info.items()
+                    if key != "only_nlp_text"
+                }
+            )
+            req_params["input_info"]["return_audio_url"] = True
+
+        raw_aigc_metadata = config.get("aigc_metadata")
+        if isinstance(raw_aigc_metadata, dict):
+            req_params["aigc_metadata"] = raw_aigc_metadata
+
+        if generation_mode == "dialogue":
+            req_params["action"] = 3
+            req_params["speaker_info"] = {
+                "random_order": False,
+                "speakers": speaker_info["speakers"],
+            }
+            return req_params
+
+        req_params["action"] = 4
+        req_params["prompt_text"] = f"Create a podcast about: {text}"
+        req_params["scene"] = str(config.get("scene") or "deep_research")
+
+        raw_speaker_info = config.get("speaker_info")
+        if isinstance(raw_speaker_info, dict) and raw_speaker_info.get("speakers"):
+            req_params["speaker_info"] = {
+                "random_order": bool(raw_speaker_info.get("random_order", True)),
+                "speakers": speaker_info["speakers"],
+            }
+        return req_params
         
     async def synthesize(
         self, 
@@ -34,13 +206,14 @@ class VolcTTSEngine(TTSEngineBase):
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
-        if config.get('appid') is None or config.get('access_token') is None or config.get('base_url') is None:
+        if not config.get('appid') or not config.get('access_token'):
             raise Exception("The user's configuration of this engine is not complete.")
         
         if self.user_id is None:
             raise Exception("The user_id is not set.")
 
         final_audio_url: AnyUrl | None = None
+        last_error: Exception | None = None
         
         websocket = None
         
@@ -49,7 +222,7 @@ class VolcTTSEngine(TTSEngineBase):
             "X-Api-App-Key": "aGjiRDfUWi",
             "X-Api-Access-Key": config.get('access_token'),
             "X-Api-Resource-Id": 'volc.service_type.10050',
-            "X-Api-Connect-Id": str(uuid.uuid4()),
+            "X-Api-Request-Id": str(uuid.uuid4()),
         }
         
         is_podcast_round_end = False  # 标志当前轮是否结束
@@ -71,28 +244,27 @@ class VolcTTSEngine(TTSEngineBase):
                     gen.update(
                         input=text
                     )
+                    req_params = self._build_request_payload(
+                        config=config,
+                        text=text,
+                    )
+                    if req_params.get("action") == 3:
+                        req_params["nlp_texts"] = await self._build_action3_dialogue_turns(
+                            config=config,
+                            text=text,
+                        )
+                        info_logger.info(
+                            f"event=volc_podcast_dialogue_generated user_id={self.user_id} "
+                            f"turns={len(req_params['nlp_texts'])} "
+                            f"generation_mode=dialogue"
+                        )
                     # 建立WebSocket连接	client<----------->server
                     websocket = await websockets.connect(
-                        config.get('base_url'),
+                        self._resolve_base_url(config),
                         additional_headers=headers
                     )
                     while retry_num > 0:
-                        req_params = {
-                            "input_id": str(time.time()),
-                            "action": 4,
-                            "prompt_text": f"这是一份文档，请你帮我用播客形式总结一下，{text}",
-                            "scene": "deep_research",
-                            "use_head_music": True,
-                            "audio_config": {
-                                "format": "mp3",
-                                "sample_rate": 24000,
-                                "speech_rate": 0
-                            },
-                            "input_info": {
-                                "return_audio_url": True
-                            }
-                        }
-                        if not is_podcast_round_end:
+                        if task_id and not is_podcast_round_end:
                             req_params["retry_info"] = {
                                 "retry_task_id": task_id,
                                 "last_finished_round_id": last_round_id
@@ -176,6 +348,7 @@ class VolcTTSEngine(TTSEngineBase):
                         )
                         break
                 except Exception as e:
+                    last_error = e
                     exception_logger.error(f"Synthesize error: {e}")
                     gen.update(
                         status_message=str(e)
@@ -198,4 +371,6 @@ class VolcTTSEngine(TTSEngineBase):
                         response = await client.get(str(final_audio_url))
                         response.raise_for_status()
                         return response.content
+                if last_error is not None:
+                    raise last_error
                 raise Exception("Volc TTS did not return a final audio url")
