@@ -23,3 +23,8 @@ export enum SectionProcessStatus {
     SUCCESS = 2,
     FAILED = 3,
 }
+
+export enum SectionProcessTriggerType {
+    SCHEDULER = 0,
+    UPDATED = 1,
+}

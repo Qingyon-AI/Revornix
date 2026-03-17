@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
 import { SectionProcessStatus } from '@/enums/section';
+import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn, replaceImagePaths } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
@@ -77,6 +78,8 @@ const SectionMarkdown = ({
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
 	const markdownUrl = section?.md_file_name ?? undefined;
 	const markdownSourceKey = toStableMarkdownSourceKey(markdownUrl);
+	const isScheduledWaitingForTrigger =
+		isScheduledSectionWaitingForTrigger(section);
 
 	const onGetMarkdown = async (
 		sourceKey: string,
@@ -159,6 +162,7 @@ const SectionMarkdown = ({
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =
+		!isScheduledWaitingForTrigger &&
 		processStatus < SectionProcessStatus.SUCCESS &&
 		(section?.documents_count ?? 0) > 0;
 	const showSkeleton =
@@ -173,6 +177,12 @@ const SectionMarkdown = ({
 		isFetched &&
 		Boolean(section) &&
 		!hasMarkdownFile;
+	const emptyTitle = isScheduledWaitingForTrigger
+		? t('section_markdown_scheduled_waiting')
+		: t('section_markdown_empty');
+	const emptyDescription = isScheduledWaitingForTrigger
+		? t('section_markdown_scheduled_waiting_description')
+		: undefined;
 	const contentFallbackMinHeightClassName =
 		'min-h-[calc(100dvh-8rem)] sm:min-h-[calc(100dvh-8.25rem)]';
 
@@ -184,7 +194,12 @@ const SectionMarkdown = ({
 						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground',
 						contentFallbackMinHeightClassName,
 					)}>
-					<div className='max-w-md'>{t('section_markdown_empty')}</div>
+					<div className='max-w-md space-y-2'>
+						<p className='text-base font-medium text-foreground'>
+							{emptyTitle}
+						</p>
+						{emptyDescription ? <p>{emptyDescription}</p> : null}
+					</div>
 				</div>
 			) : null}
 

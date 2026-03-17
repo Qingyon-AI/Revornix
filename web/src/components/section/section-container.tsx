@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
+import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSectionDetail } from '@/service/section';
@@ -83,6 +84,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 		section?.cover && section.creator
 			? replacePath(section.cover, section.creator.id)
 			: null;
+	const isScheduledWaitingForTrigger =
+		isScheduledSectionWaitingForTrigger(section);
 	const graphCardState =
 		section?.process_task?.status === SectionProcessStatus.SUCCESS
 			? {
@@ -113,18 +116,24 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	useEffect(() => {
 		const hasRunningProcessTask =
-			section?.process_task?.status !== undefined &&
-			section.process_task.status < SectionProcessStatus.SUCCESS;
+			section?.process_task?.status === SectionProcessStatus.PROCESSING ||
+			(section?.process_task?.status === SectionProcessStatus.WAIT_TO &&
+				!isScheduledWaitingForTrigger);
 		const hasRunningPodcastTask =
-			section?.podcast_task?.status !== undefined &&
-			section.podcast_task.status < SectionPodcastStatus.SUCCESS;
+			section?.podcast_task?.status === SectionPodcastStatus.GENERATING ||
+			(section?.podcast_task?.status === SectionPodcastStatus.WAIT_TO &&
+				!isScheduledWaitingForTrigger);
 
 		if (hasRunningProcessTask || hasRunningPodcastTask) {
 			setDelay(1000);
 			return;
 		}
 		setDelay(undefined);
-	}, [section?.podcast_task?.status, section?.process_task?.status]);
+	}, [
+		isScheduledWaitingForTrigger,
+		section?.podcast_task?.status,
+		section?.process_task?.status,
+	]);
 
 	useEffect(() => {
 		let animationFrameId: number | null = null;

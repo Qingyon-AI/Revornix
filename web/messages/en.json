@@ -718,6 +718,8 @@
     "section_create_form_submit": "Confirm Creation",
     "section_label_empty": "No tags for section",
     "section_markdown_empty": "The markdown content of this section is empty",
+    "section_markdown_scheduled_waiting": "This section will generate content at its scheduled time",
+    "section_markdown_scheduled_waiting_description": "The scheduled trigger has not run yet, so this area should stay idle instead of showing a loading skeleton.",
     "section_documents": "Documents",
     "section_documents_description": "Here you can view all the documents associated with this article.",
     "section_documents_add": "Add Document",
