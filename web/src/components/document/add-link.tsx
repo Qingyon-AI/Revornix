@@ -38,6 +38,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const AddLink = () => {
 	const queryClient = getQueryClient();
@@ -45,6 +46,8 @@ const AddLink = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { documentReaderModel, websiteParseEngine, podcastEngine } =
+		useDefaultResourceAccess();
 	const formSchema = z.object({
 		category: z.number(),
 		url: z.string().url(),
@@ -134,6 +137,19 @@ const AddLink = () => {
 		},
 	});
 
+	const documentReaderUnavailable =
+		documentReaderModel.loading ||
+		!documentReaderModel.configured ||
+		documentReaderModel.subscriptionLocked;
+	const websiteParseEngineUnavailable =
+		websiteParseEngine.loading ||
+		!websiteParseEngine.configured ||
+		websiteParseEngine.subscriptionLocked;
+	const podcastEngineUnavailable =
+		podcastEngine.loading ||
+		!podcastEngine.configured ||
+		podcastEngine.subscriptionLocked;
+
 	return (
 		<>
 			<AddDocumentLabelDialog
@@ -144,7 +160,7 @@ const AddLink = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
-						{!mainUserInfo?.default_website_document_parse_user_engine_id && (
+						{!websiteParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
@@ -159,6 +175,22 @@ const AddLink = () => {
 											{t('document_create_link_engine_unset_description_2')}
 										</Link>
 										{t('document_create_link_engine_unset_description_3')}
+									</p>
+								</AlertDescription>
+							</Alert>
+						)}
+						{websiteParseEngine.subscriptionLocked && (
+							<Alert>
+								<AlertCircleIcon />
+								<AlertTitle>{t('default_resource_unavailable_title')}</AlertTitle>
+								<AlertDescription>
+									<p>
+										{t('default_resource_subscription_locked')}{' '}
+										<Link
+											href={'/setting'}
+											className='inline-block font-bold underline underline-offset-2'>
+											{t('revornix_ai_default_model_goto')}
+										</Link>
 									</p>
 								</AlertDescription>
 							</Alert>
@@ -238,21 +270,21 @@ const AddLink = () => {
 											<Switch
 												id='auto_tag'
 												className='ml-auto'
-												disabled={
-													!mainUserInfo?.default_document_reader_model_id
-												}
+												disabled={documentReaderUnavailable && !field.value}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
 												}}
 											/>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Tooltip>
 													<TooltipTrigger>
 														<OctagonAlert className='h-4 w-4 text-destructive!' />
 													</TooltipTrigger>
 													<TooltipContent>
-														{t('document_create_auto_tag_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_tag_engine_unset')}
 													</TooltipContent>
 												</Tooltip>
 											)}
@@ -275,9 +307,7 @@ const AddLink = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_document_reader_model_id
-													}
+													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -287,11 +317,13 @@ const AddLink = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_ai_summary_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -311,9 +343,7 @@ const AddLink = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_podcast_user_engine_id
-													}
+													disabled={podcastEngineUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -323,11 +353,13 @@ const AddLink = () => {
 											<FormDescription>
 												{t('document_create_auto_podcast_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_podcast_user_engine_id && (
+											{podcastEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_auto_podcast_engine_unset')}
+														{podcastEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_podcast_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -375,7 +407,10 @@ const AddLink = () => {
 						className='mt-5 w-full shrink-0'
 						disabled={
 							mutateCreateDocument.isPending ||
-							!mainUserInfo?.default_website_document_parse_user_engine_id ||
+							websiteParseEngineUnavailable ||
+							(form.watch('auto_tag') && documentReaderUnavailable) ||
+							(form.watch('auto_summary') && documentReaderUnavailable) ||
+							(form.watch('auto_podcast') && podcastEngineUnavailable) ||
 							!form.watch('url')
 						}>
 						{t('document_create_submit')}

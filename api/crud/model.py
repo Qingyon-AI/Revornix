@@ -67,6 +67,7 @@ def create_ai_model(
     name: str,
     provider_id: int,
     description: str | None = None,
+    required_plan_level: int = 0,
     uuid: str | None = None
 ):
     """
@@ -76,6 +77,7 @@ def create_ai_model(
     new_model = models.model.AIModel(
         name=name,
         description=description,
+        required_plan_level=required_plan_level,
         provider_id=provider_id,
         uuid=uuid,
         create_time=now

@@ -40,6 +40,8 @@ import {
 import { getProvidedEngines, createEngine } from '@/service/engine';
 import { Separator } from '../ui/separator';
 import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { AccessPlanLevel } from '@/enums/product';
+import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Switch } from '../ui/switch';
 
@@ -53,6 +55,7 @@ const EngineAddButton = () => {
 		engine_id: z.number().int(),
 		name: z.string(),
 		description: z.string().optional().nullable(),
+		required_plan_level: z.number().int(),
 		config_json: z.string().optional().nullable(),
 		is_public: z.boolean(),
 	});
@@ -61,6 +64,7 @@ const EngineAddButton = () => {
 		defaultValues: {
 			name: '',
 			description: '',
+			required_plan_level: AccessPlanLevel.FREE,
 			config_json: '',
 			is_public: false,
 		},
@@ -116,6 +120,7 @@ const EngineAddButton = () => {
 			engine_provided_id: values.engine_id,
 			name: values.name,
 			description: values.description,
+			required_plan_level: values.required_plan_level,
 			config_json: values.config_json,
 			is_public: values.is_public,
 		});
@@ -241,6 +246,48 @@ const EngineAddButton = () => {
 												)}
 												value={field.value || ''}
 											/>
+										</div>
+									</div>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name='required_plan_level'
+							render={({ field }) => (
+								<FormItem>
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('setting_required_plan_level_label')}
+										</FormLabel>
+										<div className='col-span-9'>
+											<Select
+												onValueChange={(value) => field.onChange(Number(value))}
+												value={String(
+													field.value ?? AccessPlanLevel.FREE,
+												)}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_required_plan_level_placeholder',
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{[
+															AccessPlanLevel.FREE,
+															AccessPlanLevel.PRO,
+															AccessPlanLevel.MAX,
+														].map((level) => (
+															<SelectItem key={level} value={String(level)}>
+																{t(getPlanLevelTranslationKey(level))}
+															</SelectItem>
+														))}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
 										</div>
 									</div>
 									<FormMessage />

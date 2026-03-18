@@ -18,7 +18,9 @@ from fastapi import Request, HTTPException, status, Depends, Header
 from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 from common.env import is_env_disabled, is_env_enabled
 from common.logger import exception_logger, format_log_message
+from common.subscription_access import get_plan_access_level_from_product_uuid
 from common.timezone import UTC_TIMEZONE_NAME, normalize_timezone_name, timezone_cache_key
+from enums.product import PlanAccessLevel
 from enums.user import UserRole
 
 if OAUTH_SECRET_KEY is None:
@@ -343,9 +345,22 @@ def _parse_plan_start_time(raw: Any) -> datetime | None:
     return None
 
 
-async def get_user_plan_start_time_in_func(
+def _extract_user_plan_from_payload(payload: object) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+
+    user_plan = payload.get("userPlan")
+    if user_plan is None:
+        user_plan = payload.get("user_plan")
+
+    if not isinstance(user_plan, dict):
+        return None
+    return user_plan
+
+
+async def get_user_plan_payload_in_func(
     authorization: str | None,
-) -> datetime | None:
+) -> dict[str, Any] | None:
     headers: dict[str, str] = {}
     if authorization:
         if authorization.startswith("Bearer "):
@@ -374,19 +389,62 @@ async def get_user_plan_start_time_in_func(
         )
         return None
 
-    user_plan = None
-    if isinstance(payload, dict):
-        user_plan = payload.get("userPlan")
-        if user_plan is None:
-            user_plan = payload.get("user_plan")
+    return _extract_user_plan_from_payload(payload)
 
-    if not isinstance(user_plan, dict):
+
+async def get_user_plan_start_time_in_func(
+    authorization: str | None,
+) -> datetime | None:
+    user_plan = await get_user_plan_payload_in_func(
+        authorization=authorization,
+    )
+    if user_plan is None:
         return None
 
     start_raw = user_plan.get("startTime")
     if start_raw is None:
         start_raw = user_plan.get("start_time")
     return _parse_plan_start_time(start_raw)
+
+
+async def get_user_plan_level_in_func(
+    authorization: str | None,
+) -> PlanAccessLevel:
+    if _is_admin_or_root_from_authorization(authorization):
+        return PlanAccessLevel.MAX
+
+    user_plan = await get_user_plan_payload_in_func(
+        authorization=authorization,
+    )
+    if user_plan is None:
+        return PlanAccessLevel.FREE
+
+    expire_time_raw = user_plan.get("expireTime")
+    if expire_time_raw is None:
+        expire_time_raw = user_plan.get("expire_time")
+    expire_time = _parse_plan_start_time(expire_time_raw)
+    if expire_time is None or expire_time <= datetime.now(timezone.utc):
+        return PlanAccessLevel.FREE
+
+    plan = user_plan.get("plan")
+    if not isinstance(plan, dict):
+        return PlanAccessLevel.FREE
+    product = plan.get("product")
+    if not isinstance(product, dict):
+        return PlanAccessLevel.FREE
+
+    product_uuid = product.get("uuid")
+    if not isinstance(product_uuid, str) or not product_uuid.strip():
+        return PlanAccessLevel.FREE
+    return get_plan_access_level_from_product_uuid(product_uuid)
+
+
+async def is_paid_subscription_user_in_func(
+    authorization: str | None,
+) -> bool:
+    return await get_user_plan_level_in_func(
+        authorization=authorization,
+    ) > PlanAccessLevel.FREE
     
 
 def plan_ability_checked(

@@ -25,6 +25,7 @@ from common.dependencies import (
     get_db,
     plan_ability_checked_in_func,
 )
+from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.timezone import (
     get_cached_user_timezone,
     normalize_timezone_name,
@@ -193,6 +194,16 @@ async def create_ai_summary(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    if user.default_document_reader_model_id is None:
+        raise schemas.error.CustomException(
+            "Default document reader model is not configured",
+            code=400,
+        )
+    await ensure_model_access(
+        db=db,
+        user=user,
+        model_id=user.default_document_reader_model_id,
+    )
 
     db_exist_summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
@@ -291,6 +302,16 @@ async def transcribe_audio_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    if user.default_audio_transcribe_engine_id is None:
+        raise schemas.error.CustomException(
+            "Default audio transcribe engine is not configured",
+            code=400,
+        )
+    await ensure_engine_access(
+        db=db,
+        user=user,
+        engine_id=user.default_audio_transcribe_engine_id,
+    )
 
     db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
         db=db,
@@ -392,6 +413,16 @@ async def generate_podcast(
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
         raise schemas.error.CustomException("Default file system is not configured", code=400)
+    if user.default_podcast_user_engine_id is None:
+        raise schemas.error.CustomException(
+            "Default podcast engine is not configured",
+            code=400,
+        )
+    await ensure_engine_access(
+        db=db,
+        user=user,
+        engine_id=user.default_podcast_user_engine_id,
+    )
 
     db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
@@ -481,6 +512,68 @@ async def create_document(
             )
             if not auth_status:
                 raise schemas.error.CustomException("File document limit reached for the current plan", code=403)
+
+    if document_create_request.category == DocumentCategory.WEBSITE:
+        if user.default_website_document_parse_user_engine_id is None:
+            raise schemas.error.CustomException(
+                "Default website parse engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_website_document_parse_user_engine_id,
+        )
+    elif document_create_request.category in (
+        DocumentCategory.FILE,
+        DocumentCategory.AUDIO,
+    ):
+        if user.default_file_document_parse_user_engine_id is None:
+            raise schemas.error.CustomException(
+                "Default file parse engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_file_document_parse_user_engine_id,
+        )
+
+    if document_create_request.auto_summary or document_create_request.auto_tag:
+        if user.default_document_reader_model_id is None:
+            raise schemas.error.CustomException(
+                "Default document reader model is not configured",
+                code=400,
+            )
+        await ensure_model_access(
+            db=db,
+            user=user,
+            model_id=user.default_document_reader_model_id,
+        )
+
+    if document_create_request.auto_podcast:
+        if user.default_podcast_user_engine_id is None:
+            raise schemas.error.CustomException(
+                "Default podcast engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_podcast_user_engine_id,
+        )
+
+    if document_create_request.auto_transcribe:
+        if user.default_audio_transcribe_engine_id is None:
+            raise schemas.error.CustomException(
+                "Default audio transcribe engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_audio_transcribe_engine_id,
+        )
 
     db_document = await create_document_for_user(
         db=db,

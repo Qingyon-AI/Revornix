@@ -72,6 +72,18 @@ export interface EngineDetail {
     is_public: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof EngineDetail
+     */
+    required_plan_level?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EngineDetail
+     */
+    subscription_required?: boolean;
+    /**
+     * 
      * @type {Date}
      * @memberof EngineDetail
      */
@@ -133,6 +145,8 @@ export function EngineDetailFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
+        'subscription_required': json['subscription_required'] == null ? undefined : json['subscription_required'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
@@ -158,6 +172,8 @@ export function EngineDetailToJSONTyped(value?: EngineDetail | null, ignoreDiscr
         'name': value['name'],
         'description': value['description'],
         'is_public': value['is_public'],
+        'required_plan_level': value['required_plan_level'],
+        'subscription_required': value['subscription_required'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'config_json': value['config_json'],
@@ -165,4 +181,3 @@ export function EngineDetailToJSONTyped(value?: EngineDetail | null, ignoreDiscr
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };
 }
-

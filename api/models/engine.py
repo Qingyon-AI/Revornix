@@ -33,6 +33,7 @@ class Engine(Base):
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     engine_provided_id: Mapped[int] = mapped_column(ForeignKey("engine_provided.id"), nullable=False)  # 用户必须从EngineProvided中选择
     config_json: Mapped[str | None] = mapped_column(String(2000))
+    required_plan_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

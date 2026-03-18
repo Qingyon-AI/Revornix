@@ -48,6 +48,7 @@ import { Label } from '../ui/label';
 import Link from 'next/link';
 import { useRef } from 'react';
 import type { SectionInfo } from '@/generated';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const updateFormSchema = z.object({
 	section_id: z.number().int(),
@@ -123,6 +124,15 @@ const SectionOperateConfiguration = ({
 	});
 
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
+	const podcastEngineUnavailable =
+		podcastEngine.loading ||
+		!podcastEngine.configured ||
+		podcastEngine.subscriptionLocked;
+	const imageGenerateEngineUnavailable =
+		imageGenerateEngine.loading ||
+		!imageGenerateEngine.configured ||
+		imageGenerateEngine.subscriptionLocked;
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -360,9 +370,7 @@ const SectionOperateConfiguration = ({
 													{t('section_form_auto_podcast')}
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_podcast_user_engine_id
-													}
+													disabled={podcastEngineUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -372,11 +380,13 @@ const SectionOperateConfiguration = ({
 											<FormDescription>
 												{t('section_form_auto_podcast_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_podcast_user_engine_id && (
+											{podcastEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('section_form_auto_podcast_engine_unset')}
+														{podcastEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('section_form_auto_podcast_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -396,7 +406,7 @@ const SectionOperateConfiguration = ({
 												</FormLabel>
 												<Switch
 													disabled={
-														!mainUserInfo?.default_image_generate_engine_id
+														imageGenerateEngineUnavailable && !field.value
 													}
 													checked={field.value}
 													onCheckedChange={(e) => {
@@ -407,11 +417,13 @@ const SectionOperateConfiguration = ({
 											<FormDescription>
 												{t('section_form_auto_illustration_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_image_generate_engine_id && (
+											{imageGenerateEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('section_form_auto_illustration_engine_unset')}
+														{imageGenerateEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('section_form_auto_illustration_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}

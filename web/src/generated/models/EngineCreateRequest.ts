@@ -45,6 +45,12 @@ export interface EngineCreateRequest {
     engine_provided_id: number;
     /**
      * 
+     * @type {number}
+     * @memberof EngineCreateRequest
+     */
+    required_plan_level?: number;
+    /**
+     * 
      * @type {string}
      * @memberof EngineCreateRequest
      */
@@ -75,6 +81,7 @@ export function EngineCreateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'],
         'engine_provided_id': json['engine_provided_id'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
@@ -94,7 +101,7 @@ export function EngineCreateRequestToJSONTyped(value?: EngineCreateRequest | nul
         'description': value['description'],
         'is_public': value['is_public'],
         'engine_provided_id': value['engine_provided_id'],
+        'required_plan_level': value['required_plan_level'],
         'config_json': value['config_json'],
     };
 }
-

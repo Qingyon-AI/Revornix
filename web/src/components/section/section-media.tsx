@@ -18,6 +18,7 @@ import {
 	getMineUserRoleAndAuthority,
 	getSectionDetail,
 } from '@/service/section';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 import AudioPlayer from '../ui/audio-player';
 import { Button } from '../ui/button';
@@ -39,6 +40,7 @@ const SectionMedia = ({
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine } = useDefaultResourceAccess();
 
 	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', section_id],
@@ -115,7 +117,10 @@ const SectionMedia = ({
 	const ownershipResolved =
 		mainUserInfo !== undefined &&
 		(isCreatorById || isRoleFetched || isRoleError);
-	const canGeneratePodcast = Boolean(mainUserInfo?.default_podcast_user_engine_id);
+	const canGeneratePodcast =
+		podcastEngine.configured &&
+		!podcastEngine.loading &&
+		!podcastEngine.subscriptionLocked;
 	const cover =
 		section.cover && (creatorId !== undefined || mainUserInfo?.id !== undefined)
 			? replacePath(section.cover, creatorId ?? mainUserInfo!.id)
@@ -162,7 +167,9 @@ const SectionMedia = ({
 					className={surfaceCardClassName}
 					hint={
 						!canGeneratePodcast
-							? t('section_form_auto_podcast_engine_unset')
+							? podcastEngine.subscriptionLocked
+								? t('default_resource_subscription_locked')
+								: t('section_form_auto_podcast_engine_unset')
 							: undefined
 					}
 				/>
@@ -201,7 +208,9 @@ const SectionMedia = ({
 					className={surfaceCardClassName}
 					hint={
 						isOwner && !canGeneratePodcast
-							? t('section_form_auto_podcast_engine_unset')
+							? podcastEngine.subscriptionLocked
+								? t('default_resource_subscription_locked')
+								: t('section_form_auto_podcast_engine_unset')
 							: undefined
 					}
 					action={

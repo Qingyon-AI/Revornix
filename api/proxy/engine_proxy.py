@@ -2,6 +2,7 @@ import crud
 import json
 from typing import TypeVar
 
+import schemas
 from base_implement.engine_base import EngineBase
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from base_implement.markdown_engine_base import MarkdownEngineBase
@@ -12,10 +13,16 @@ from enums.engine_enums import UserEngineRole
 from common.encrypt import decrypt_engine_config
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
+    get_user_plan_level_in_func,
     get_user_plan_start_time_in_func,
     plan_ability_checked_in_func,
 )
 from common.jwt_utils import create_token
+from common.subscription_access import (
+    SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+    has_plan_level_access,
+    is_subscription_required_level,
+)
 from enums.ability import Ability
 from enums.engine_enums import Engine, EngineProvided
 from enums.user import UserRole
@@ -50,6 +57,7 @@ class EngineProxy:
         official_ability_base: str | None = None
         official_resource_uuid: str | None = None
         official_access_token: str | None = None
+        required_plan_level = 0
 
         # ---------- DB（同步世界） ----------
         with session_scope() as db:
@@ -80,20 +88,36 @@ class EngineProxy:
         
             # ---------- Official engine provider check ----------
             if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT:
+                required_plan_level = db_engine.required_plan_level
+                if is_subscription_required_level(required_plan_level):
+                    official_access_token, _ = create_token(user=db_user)
                 if db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
                     official_ability_base = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
                     official_resource_uuid = db_engine.uuid
-                    official_access_token, _ = create_token(user=db_user)
                 elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
                     official_ability_base = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
                     official_resource_uuid = db_engine.uuid
-                    official_access_token, _ = create_token(user=db_user)
 
             engine_provided_uuid = db_engine.engine_provided.uuid
             engine_uuid = db_engine.uuid
             engine_config_json = db_engine.config_json
 
         deployed_by_official = check_deployed_by_official_in_fuc()
+        if deployed_by_official and is_subscription_required_level(required_plan_level):
+            if official_access_token is None:
+                raise Exception("Failed to create access token for official engine subscription check")
+            authorization = f"Bearer {official_access_token}"
+            user_plan_level = await get_user_plan_level_in_func(
+                authorization=authorization,
+            )
+            if not has_plan_level_access(
+                required_plan_level=required_plan_level,
+                user_plan_level=user_plan_level,
+            ):
+                raise schemas.error.CustomException(
+                    message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+                    code=403,
+                )
         if deployed_by_official and official_ability_base and official_resource_uuid:
             if official_access_token is None:
                 raise Exception("Failed to create access token for official engine ability check")
@@ -126,7 +150,10 @@ class EngineProxy:
                 authorization=authorization
             )
             if not authorized:
-                raise PermissionError("plan ability denied")
+                raise schemas.error.CustomException(
+                    message="plan ability denied",
+                    code=403,
+                )
 
         if engine_provided_uuid is None or engine_uuid is None:
             raise Exception("The engine metadata is missing")

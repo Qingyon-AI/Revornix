@@ -14,18 +14,24 @@ import schemas
 from common.celery.app import start_trigger_user_notification_event
 from common.document_chunk_snapshot import delete_document_chunk_snapshots
 from common.dependencies import (
+    check_deployed_by_official_in_fuc,
     decode_jwt_token,
     get_cache,
     get_current_user,
     get_current_user_without_throw,
     get_db,
     get_real_ip,
+    get_user_plan_level_in_func,
     reject_if_official,
 )
 from common.file import get_remote_file_signed_url
 from common.hash import verify_password
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message
+from common.resource_plan_access import (
+    ensure_default_resources_access,
+    is_privileged_user,
+)
 from common.system_email.email import RevornixSystemEmail
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
@@ -168,11 +174,22 @@ def update_default_file_system(
     return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
 
 @user_router.post('/default-engine/update', response_model=schemas.common.NormalResponse)
-def update_default_engine(
+async def update_default_engine(
     default_engine_update_request: schemas.user.DefaultEngineUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    await ensure_default_resources_access(
+        user=user,
+        db=db,
+        engine_ids=[
+            default_engine_update_request.default_file_document_parse_user_engine_id,
+            default_engine_update_request.default_website_document_parse_user_engine_id,
+            default_engine_update_request.default_podcast_user_engine_id,
+            default_engine_update_request.default_image_generate_engine_id,
+            default_engine_update_request.default_audio_transcribe_engine_id,
+        ],
+    )
     crud.user.update_user_default_engine(
         db=db,
         user_id=user.id,
@@ -186,11 +203,19 @@ def update_default_engine(
     return schemas.common.SuccessResponse(message="The default engine is updated successfully.")
 
 @user_router.post('/default-model/update', response_model=schemas.common.NormalResponse)
-def update_default_model(
+async def update_default_model(
     default_model_update_request: schemas.user.DefaultModelUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    await ensure_default_resources_access(
+        user=user,
+        db=db,
+        model_ids=[
+            default_model_update_request.default_document_reader_model_id,
+            default_model_update_request.default_revornix_model_id,
+        ],
+    )
     crud.user.update_user_default_model(
         db=db,
         user_id=user.id,

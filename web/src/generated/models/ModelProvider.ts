@@ -142,4 +142,3 @@ export function ModelProviderToJSONTyped(value?: ModelProvider | null, ignoreDis
         'creator': UserPublicInfoToJSON(value['creator']),
     };
 }
-

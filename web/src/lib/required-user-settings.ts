@@ -41,17 +41,40 @@ export const REQUIRED_USER_SETTING_SPECS: RequiredUserSettingSpec[] = [
 	},
 ];
 
-export const getRequiredUserSettings = (user?: PrivateUserInfo) => {
+const toInaccessibleFieldSet = (
+	inaccessibleFields?: Iterable<RequiredUserSettingField>,
+) => {
+	return new Set(inaccessibleFields ?? []);
+};
+
+export const getRequiredUserSettings = (
+	user?: PrivateUserInfo,
+	inaccessibleFields?: Iterable<RequiredUserSettingField>,
+) => {
+	const inaccessibleFieldSet = toInaccessibleFieldSet(inaccessibleFields);
+
 	return REQUIRED_USER_SETTING_SPECS.map((setting) => ({
 		...setting,
-		completed: Boolean(user?.[setting.field]),
+		completed:
+			Boolean(user?.[setting.field]) &&
+			!inaccessibleFieldSet.has(setting.field),
 	}));
 };
 
-export const hasPendingRequiredUserSettings = (user?: PrivateUserInfo) => {
-	return getRequiredUserSettings(user).some((setting) => !setting.completed);
+export const hasPendingRequiredUserSettings = (
+	user?: PrivateUserInfo,
+	inaccessibleFields?: Iterable<RequiredUserSettingField>,
+) => {
+	return getRequiredUserSettings(user, inaccessibleFields).some(
+		(setting) => !setting.completed,
+	);
 };
 
-export const hasCompletedRequiredUserSettings = (user?: PrivateUserInfo) => {
-	return getRequiredUserSettings(user).every((setting) => setting.completed);
+export const hasCompletedRequiredUserSettings = (
+	user?: PrivateUserInfo,
+	inaccessibleFields?: Iterable<RequiredUserSettingField>,
+) => {
+	return getRequiredUserSettings(user, inaccessibleFields).every(
+		(setting) => setting.completed,
+	);
 };

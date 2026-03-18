@@ -13,6 +13,7 @@ class ModelProviderForkRequest(BaseModel):
 class ModelCreateRequest(BaseModel):
     name: str
     description: str | None
+    required_plan_level: int = 0
     provider_id: int
 
 class ModelCreateResponse(BaseModel):
@@ -56,6 +57,8 @@ class Model(BaseModel):
     uuid: str
     name: str
     description: str | None
+    required_plan_level: int = 0
+    subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None
 
@@ -108,6 +111,7 @@ class ModelUpdateRequest(BaseModel):
     id: int
     name: str | None = None
     description: str | None = None
+    required_plan_level: int | None = None
 
 class ModelProviderUpdateRequest(BaseModel):
     id: int

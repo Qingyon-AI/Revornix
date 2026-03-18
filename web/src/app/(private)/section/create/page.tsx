@@ -38,6 +38,7 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/hybrid-tooltip';
 import Link from 'next/link';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const CreatePage = () => {
 	const t = useTranslations();
@@ -79,6 +80,15 @@ const CreatePage = () => {
 	});
 
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
+	const podcastEngineUnavailable =
+		podcastEngine.loading ||
+		!podcastEngine.configured ||
+		podcastEngine.subscriptionLocked;
+	const imageGenerateEngineUnavailable =
+		imageGenerateEngine.loading ||
+		!imageGenerateEngine.configured ||
+		imageGenerateEngine.subscriptionLocked;
 
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
@@ -366,7 +376,7 @@ const CreatePage = () => {
 												{t('section_form_auto_podcast')}
 											</FormLabel>
 											<Switch
-												disabled={!mainUserInfo?.default_podcast_user_engine_id}
+												disabled={podcastEngineUnavailable && !field.value}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
@@ -376,11 +386,13 @@ const CreatePage = () => {
 										<FormDescription>
 											{t('section_form_auto_podcast_description')}
 										</FormDescription>
-										{!mainUserInfo?.default_podcast_user_engine_id && (
+										{podcastEngineUnavailable && (
 											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
-													{t('section_form_auto_podcast_engine_unset')}
+													{podcastEngine.subscriptionLocked
+														? t('default_resource_subscription_locked')
+														: t('section_form_auto_podcast_engine_unset')}
 												</AlertDescription>
 											</Alert>
 										)}
@@ -399,9 +411,7 @@ const CreatePage = () => {
 												{t('section_form_auto_illustration')}
 											</FormLabel>
 											<Switch
-												disabled={
-													!mainUserInfo?.default_image_generate_engine_id
-												}
+												disabled={imageGenerateEngineUnavailable && !field.value}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
@@ -411,11 +421,13 @@ const CreatePage = () => {
 										<FormDescription>
 											{t('section_form_auto_illustration_description')}
 										</FormDescription>
-										{!mainUserInfo?.default_image_generate_engine_id && (
+										{imageGenerateEngineUnavailable && (
 											<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 												<OctagonAlert className='h-4 w-4 text-destructive!' />
 												<AlertDescription>
-													{t('section_form_auto_illustration_engine_unset')}
+													{imageGenerateEngine.subscriptionLocked
+														? t('default_resource_subscription_locked')
+														: t('section_form_auto_illustration_engine_unset')}
 												</AlertDescription>
 											</Alert>
 										)}
@@ -424,7 +436,14 @@ const CreatePage = () => {
 							}}
 						/>
 					</div>
-					<Button className='w-full' type='submit'>
+					<Button
+						className='w-full'
+						type='submit'
+						disabled={
+							(form.watch('auto_podcast') && podcastEngineUnavailable) ||
+							(form.watch('auto_illustration') &&
+								imageGenerateEngineUnavailable)
+						}>
 						{t('section_create_form_submit')}
 					</Button>
 				</form>

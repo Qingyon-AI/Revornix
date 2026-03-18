@@ -13,6 +13,8 @@ import { deleteEngine, forkEngine } from '@/service/engine';
 import { toast } from 'sonner';
 import {
 	AudioLinesIcon,
+	BanIcon,
+	Globe2Icon,
 	ImageIcon,
 	Loader2,
 	MicIcon,
@@ -37,17 +39,25 @@ import { useUserContext } from '@/provider/user-provider';
 import { EngineCategory, getEngineCategoryLabel } from '@/enums/engine';
 import { Badge } from '../ui/badge';
 import EngineUpdate from './engine-update';
+import SubscriptionPlanBadgeContent from './subscription-plan-badge-content';
 import { EngineInfo } from '@/generated';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
+import {
+	getSubscriptionCtaTranslationKey,
+	getSubscriptionLockReasonTranslationKey,
+	isSubscriptionLocked,
+	shouldShowPlanLevelIndicator,
+} from '@/lib/subscription';
 
 const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const router = useRouter();
-	const { refreshMainUserInfo, mainUserInfo } = useUserContext();
+	const { refreshMainUserInfo, mainUserInfo, paySystemUserInfo } =
+		useUserContext();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const queryClient = getQueryClient();
@@ -90,6 +100,23 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 	const isMineEngine = useMemo(() => {
 		return mainUserInfo && mainUserInfo.id === engine_info?.creator.id;
 	}, [engine_info?.creator.id, mainUserInfo]);
+	const subscriptionLocked = useMemo(
+		() =>
+			isSubscriptionLocked(
+				engine_info.required_plan_level,
+				paySystemUserInfo,
+				mainUserInfo,
+			),
+		[engine_info.required_plan_level, mainUserInfo, paySystemUserInfo],
+	);
+	const subscriptionLockedReasonKey = useMemo(
+		() =>
+			getSubscriptionLockReasonTranslationKey(
+				paySystemUserInfo,
+				engine_info.required_plan_level,
+			),
+		[engine_info.required_plan_level, paySystemUserInfo],
+	);
 
 	return (
 		<>
@@ -142,15 +169,46 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 					</CardTitle>
 					<CardDescription className='flex flex-col flex-1'>
 						<span className='mb-2'>{engine_info.description}</span>
-						{engine_info.is_public && (
-							<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
-								<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
-								Public
-							</Badge>
-						)}
+						<div className='flex flex-wrap items-center gap-2'>
+							{engine_info.is_public && (
+								<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
+									<Globe2Icon className='mr-1 size-3.5' />
+									Public
+								</Badge>
+							)}
+							{shouldShowPlanLevelIndicator(
+								engine_info.required_plan_level,
+								mainUserInfo,
+							) && (
+								<Badge className='w-fit rounded-full border-sky-500/30 bg-sky-500/10 text-sky-700 shadow-none dark:text-sky-200'>
+									<SubscriptionPlanBadgeContent
+										requiredPlanLevel={engine_info.required_plan_level}
+										actionHref={subscriptionLocked ? '/account/plan' : undefined}
+										actionLabel={
+											subscriptionLocked
+												? t(
+														getSubscriptionCtaTranslationKey(
+															paySystemUserInfo,
+															engine_info.required_plan_level,
+														),
+												  )
+												: undefined
+										}
+									/>
+								</Badge>
+							)}
+							{engine_info.is_forked && subscriptionLocked && (
+								<Badge className='w-fit rounded-full border-rose-500/25 bg-rose-500/10 text-rose-700 shadow-none dark:text-rose-200'>
+									<BanIcon className='mr-1 size-3.5' />
+									{t('setting_subscription_locked_unavailable')}
+									<span className='opacity-70'>·</span>
+									{t(subscriptionLockedReasonKey)}
+								</Badge>
+							)}
+						</div>
 					</CardDescription>
 				</CardHeader>
-				<CardContent className='relative gap-2 flex flex-row items-center'>
+				<CardContent className='relative flex flex-nowrap items-center gap-2'>
 					<Badge className='rounded-full mr-auto pl-[2px]' variant={'outline'}>
 						<div className='rounded-full bg-indigo-600 p-1'>
 							{engine_info.category === EngineCategory.IMAGE_GENERATE && (
@@ -176,10 +234,13 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 						<>
 							{!engine_info.is_forked && (
 								<Button
-									className='shadow-none'
+									className='shadow-none text-xs'
 									variant={'outline'}
-									disabled={mutateForkEngine.isPending}
+									disabled={subscriptionLocked || mutateForkEngine.isPending}
 									onClick={() => {
+										if (subscriptionLocked) {
+											return;
+										}
 										mutateForkEngine.mutate({
 											engine_id: engine_info.id,
 											status: true,

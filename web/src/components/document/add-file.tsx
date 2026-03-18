@@ -39,6 +39,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import { FILE_DOCUMENT_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import SelectorSkeleton from './selector-skeleton';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const AddFile = () => {
 	const queryClient = getQueryClient();
@@ -46,6 +47,8 @@ const AddFile = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { documentReaderModel, fileParseEngine, podcastEngine } =
+		useDefaultResourceAccess();
 	const formSchema = z.object({
 		category: z.number(),
 		file_name: z.string(),
@@ -135,6 +138,19 @@ const AddFile = () => {
 		},
 	});
 
+	const documentReaderUnavailable =
+		documentReaderModel.loading ||
+		!documentReaderModel.configured ||
+		documentReaderModel.subscriptionLocked;
+	const fileParseEngineUnavailable =
+		fileParseEngine.loading ||
+		!fileParseEngine.configured ||
+		fileParseEngine.subscriptionLocked;
+	const podcastEngineUnavailable =
+		podcastEngine.loading ||
+		!podcastEngine.configured ||
+		podcastEngine.subscriptionLocked;
+
 	return (
 		<>
 			<AddLabelDialog
@@ -144,7 +160,7 @@ const AddFile = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
-						{!mainUserInfo?.default_file_document_parse_user_engine_id && (
+						{!fileParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
@@ -159,6 +175,22 @@ const AddFile = () => {
 											{t('document_create_file_engine_unset_description_2')}
 										</Link>
 										{t('document_create_file_engine_unset_description_3')}
+									</p>
+								</AlertDescription>
+							</Alert>
+						)}
+						{fileParseEngine.subscriptionLocked && (
+							<Alert>
+								<AlertCircleIcon />
+								<AlertTitle>{t('default_resource_unavailable_title')}</AlertTitle>
+								<AlertDescription>
+									<p>
+										{t('default_resource_subscription_locked')}{' '}
+										<Link
+											href={'/setting'}
+											className='inline-block font-bold underline underline-offset-2'>
+											{t('revornix_ai_default_model_goto')}
+										</Link>
 									</p>
 								</AlertDescription>
 							</Alert>
@@ -242,21 +274,21 @@ const AddFile = () => {
 											<Switch
 												id='auto_tag'
 												className='ml-auto'
-												disabled={
-													!mainUserInfo?.default_document_reader_model_id
-												}
+												disabled={documentReaderUnavailable && !field.value}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
 												}}
 											/>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Tooltip>
 													<TooltipTrigger>
 														<OctagonAlert className='h-4 w-4 text-destructive!' />
 													</TooltipTrigger>
 													<TooltipContent>
-														{t('document_create_auto_tag_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_tag_engine_unset')}
 													</TooltipContent>
 												</Tooltip>
 											)}
@@ -278,9 +310,7 @@ const AddFile = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_document_reader_model_id
-													}
+													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -290,11 +320,13 @@ const AddFile = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_ai_summary_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -314,9 +346,7 @@ const AddFile = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_podcast_user_engine_id
-													}
+													disabled={podcastEngineUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -326,11 +356,13 @@ const AddFile = () => {
 											<FormDescription>
 												{t('document_create_auto_podcast_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_podcast_user_engine_id && (
+											{podcastEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_auto_podcast_engine_unset')}
+														{podcastEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_podcast_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -378,7 +410,10 @@ const AddFile = () => {
 						className='mt-5 w-full shrink-0'
 						disabled={
 							mutateCreateDocument.isPending ||
-							!mainUserInfo?.default_file_document_parse_user_engine_id ||
+							fileParseEngineUnavailable ||
+							(form.watch('auto_tag') && documentReaderUnavailable) ||
+							(form.watch('auto_summary') && documentReaderUnavailable) ||
+							(form.watch('auto_podcast') && podcastEngineUnavailable) ||
 							!form.watch('file_name')
 						}>
 						{t('document_create_submit')}

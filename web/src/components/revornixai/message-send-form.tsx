@@ -33,6 +33,7 @@ import {
 	DrawerTrigger,
 } from '../ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -43,6 +44,7 @@ const MessageSendForm = () => {
 		enable_mcp: z.boolean(),
 	});
 	const { mainUserInfo } = useUserContext();
+	const { revornixModel } = useDefaultResourceAccess();
 
 	const { data: default_llm_model } = useQuery({
 		queryKey: [
@@ -186,6 +188,17 @@ const MessageSendForm = () => {
 			});
 			return;
 		}
+		if (revornixModel.subscriptionLocked) {
+			toast.error(t('default_resource_subscription_locked'), {
+				action: {
+					label: t('revornix_ai_default_model_goto'),
+					onClick: () => {
+						router.push('/setting');
+					},
+				},
+			});
+			return;
+		}
 
 		const newMessage = {
 			chat_id: crypto.randomUUID(),
@@ -310,7 +323,10 @@ const MessageSendForm = () => {
 	});
 	const messageValue = form.watch('message');
 	const canSubmit =
-		messageValue.trim().length > 0 && !mutateSendMessage.isPending;
+		messageValue.trim().length > 0 &&
+		!mutateSendMessage.isPending &&
+		!revornixModel.loading &&
+		!revornixModel.subscriptionLocked;
 	const defaultModelName = default_llm_model?.name
 		? default_llm_model.name
 		: t('setting_revornix_model_empty');

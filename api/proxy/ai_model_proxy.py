@@ -1,7 +1,7 @@
-
 from pydantic import BaseModel
 
 import crud
+import schemas
 from data.sql.base import session_scope
 from common.encrypt import decrypt_api_key
 from common.logger import exception_logger
@@ -11,8 +11,14 @@ from enums.user import UserRole
 from common.jwt_utils import create_token
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
+    get_user_plan_level_in_func,
     get_user_plan_start_time_in_func,
     plan_ability_checked_in_func,
+)
+from common.subscription_access import (
+    SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+    has_plan_level_access,
+    is_subscription_required_level,
 )
 from common.usage_billing import get_monthly_model_used_points
 
@@ -70,14 +76,21 @@ class AIModelProxy:
         provider_creator_id: int | None = None
         provider_is_public = False
         model_db_id: int | None = None
+        model_owned_by_user = False
         official_provider_check_needed = False
+        required_plan_level = 0
         official_access_token: str | None = None
+        user_is_privileged = False
 
         try:
             with session_scope() as db:
                 db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
                 if db_user is None:
                     raise Exception("The user is not found")
+                user_is_privileged = (
+                    db_user.role == UserRole.ADMIN
+                    or db_user.role == UserRole.ROOT
+                )
 
                 db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
                 if db_model is None:
@@ -96,16 +109,22 @@ class AIModelProxy:
                 provider_creator_id = db_model_provider.creator_id
                 provider_is_public = bool(db_model_provider.is_public)
                 model_db_id = db_model.id
+                required_plan_level = db_model.required_plan_level
+                model_owned_by_user = provider_creator_id == user_id
 
-                if (
-                    db_user.role != UserRole.ADMIN
-                    and db_user.role != UserRole.ROOT
-                    and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id
-                ):
-                    official_provider_check_needed = True
-                    official_access_token, _ = create_token(user=db_user)
+                if not user_is_privileged:
+                    if (
+                        not model_owned_by_user
+                        and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id
+                    ):
+                        official_provider_check_needed = True
+                    if official_provider_check_needed or (
+                        not model_owned_by_user
+                        and is_subscription_required_level(required_plan_level)
+                    ):
+                        official_access_token, _ = create_token(user=db_user)
 
-                if provider_creator_id != user_id:
+                if not model_owned_by_user:
                     if not provider_is_public:
                         raise Exception("The model provider for the model is not public, you are forbidden to use it")
                     db_user_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
@@ -121,7 +140,33 @@ class AIModelProxy:
             raise
 
         deployed_by_official = check_deployed_by_official_in_fuc()
-        if deployed_by_official and official_provider_check_needed:
+        if (
+            deployed_by_official
+            and not user_is_privileged
+            and not model_owned_by_user
+            and is_subscription_required_level(required_plan_level)
+        ):
+            if official_access_token is None:
+                raise Exception("Model subscription access token is missing")
+            authorization = f"Bearer {official_access_token}"
+            user_plan_level = await get_user_plan_level_in_func(
+                authorization=authorization,
+            )
+            if not has_plan_level_access(
+                required_plan_level=required_plan_level,
+                user_plan_level=user_plan_level,
+            ):
+                raise schemas.error.CustomException(
+                    message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+                    code=403,
+                )
+
+        if (
+            deployed_by_official
+            and not user_is_privileged
+            and not model_owned_by_user
+            and official_provider_check_needed
+        ):
             if official_access_token is None or model_db_id is None:
                 raise Exception("Official model provider metadata is missing")
             authorization = f"Bearer {official_access_token}"
@@ -146,8 +191,9 @@ class AIModelProxy:
                 authorization=authorization,
             )
             if not auth_status:
-                raise PermissionError(
-                    "User does not have permission to use official LLM model"
+                raise schemas.error.CustomException(
+                    message="User does not have permission to use official LLM model",
+                    code=403,
                 )
 
         if model_name is None or provider_base_url is None:

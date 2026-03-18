@@ -11,6 +11,10 @@ import {
 } from '@/components/ui/select';
 import type { Model } from '@/generated';
 import { useUserContext } from '@/provider/user-provider';
+import {
+	isModelSubscriptionLocked,
+	shouldShowPlanLevelIndicator,
+} from '@/lib/subscription';
 import { searchAiModel } from '@/service/ai';
 import { updateUserDefaultModel } from '@/service/user';
 import { utils } from '@kinda/utils';
@@ -18,6 +22,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
+import { Badge } from '../ui/badge';
+import SubscriptionPlanBadgeContent from './subscription-plan-badge-content';
 
 export type ProviderMapProps =  {
 	id: number;
@@ -29,7 +35,8 @@ export type ProviderMapProps =  {
 
 const DocumentSummaryModel = () => {
 	const t = useTranslations();
-	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+	const { mainUserInfo, paySystemUserInfo, refreshMainUserInfo } =
+		useUserContext();
 	const { data } = useQuery({
 		queryKey: ['getModels'],
 		queryFn: async () => {
@@ -56,19 +63,10 @@ const DocumentSummaryModel = () => {
 				};
 			}
 			// 将当前模型加入到对应 provider 的 models 列表中
-			providerMap[providerId].models.push({
-				id: model.id,
-				uuid: model.uuid,
-				name: model.name,
-				description: model.description,
-				create_time: model.create_time,
-				update_time: model.update_time,
-				provider: model.provider,
-			});
+			providerMap[providerId].models.push(model);
 		});
 		return Object.values(providerMap);
 	}, [data]);
-
 	const handleUpdateDefaultDocumentReaderModel = async (model_id: number) => {
 		const [res, err] = await utils.to(
 			updateUserDefaultModel({
@@ -84,7 +82,7 @@ const DocumentSummaryModel = () => {
 	};
 
 	return (
-		<>
+		<div className='flex justify-end'>
 			<Select
 				value={
 					mainUserInfo?.default_document_reader_model_id
@@ -97,7 +95,7 @@ const DocumentSummaryModel = () => {
 				<SelectTrigger className='min-w-[180px]'>
 					<SelectValue placeholder={t('setting_model_select')} />
 				</SelectTrigger>
-				<SelectContent>
+				<SelectContent className='min-w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]'>
 					<SelectGroup>
 						{models &&
 							models.map((provider, index) => (
@@ -107,17 +105,42 @@ const DocumentSummaryModel = () => {
 										className='text-muted-foreground text-xs'>
 										{provider.name}
 									</SelectLabel>
-									{provider.models.map((model) => (
-										<SelectItem key={model.id} value={String(model.id)}>
-											{model.name}
-										</SelectItem>
-									))}
+									{provider.models.map((model) => {
+										const locked = isModelSubscriptionLocked(
+											model.required_plan_level,
+											model.provider.creator.id,
+											paySystemUserInfo,
+											mainUserInfo,
+										);
+										return (
+											<SelectItem
+												key={model.id}
+												value={String(model.id)}
+												disabled={locked}>
+												<span className='inline-flex max-w-full items-center gap-2 pr-4'>
+													<span className='max-w-[32rem] truncate'>
+														{model.name}
+													</span>
+													{shouldShowPlanLevelIndicator(
+														model.required_plan_level,
+														mainUserInfo,
+													) && (
+														<Badge className='shrink-0 rounded-full border-sky-500/30 bg-sky-500/10 text-[10px] text-sky-700 shadow-none dark:text-sky-200'>
+															<SubscriptionPlanBadgeContent
+																requiredPlanLevel={model.required_plan_level}
+															/>
+														</Badge>
+													)}
+												</span>
+											</SelectItem>
+										);
+									})}
 								</div>
 							))}
 					</SelectGroup>
 				</SelectContent>
 			</Select>
-		</>
+		</div>
 	);
 };
 

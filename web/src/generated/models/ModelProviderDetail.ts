@@ -150,4 +150,3 @@ export function ModelProviderDetailToJSONTyped(value?: ModelProviderDetail | nul
         'creator': UserPublicInfoToJSON(value['creator']),
     };
 }
-

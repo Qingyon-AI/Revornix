@@ -42,6 +42,7 @@ import {
 	hasPendingRequiredUserSettings,
 	type RequiredUserSettingField,
 } from '@/lib/required-user-settings';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import InitMineModel from './init-mine-model';
 import InitMineEngine from './init-mine-engine';
 import DefaultFileSystemChange from './default-file-system-change';
@@ -174,19 +175,72 @@ const InitSettingDialog = ({
 }: InitSettingDialogProps) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const {
+		documentReaderModel,
+		imageGenerateEngine,
+		podcastEngine,
+		revornixModel,
+		websiteParseEngine,
+		fileParseEngine,
+	} = useDefaultResourceAccess();
 	const [showDialog, setShowDialog] = useState(false);
 	const [expandedSupportCard, setExpandedSupportCard] = useState('');
 	const hasLoadedUserInfo = mainUserInfo !== undefined;
+	const inaccessibleRequiredSettingFields = useMemo<RequiredUserSettingField[]>(
+		() => {
+			const fields: RequiredUserSettingField[] = [];
+			if (
+				!revornixModel.loading &&
+				revornixModel.configured &&
+				!revornixModel.accessible
+			) {
+				fields.push('default_revornix_model_id');
+			}
+			if (
+				!documentReaderModel.loading &&
+				documentReaderModel.configured &&
+				!documentReaderModel.accessible
+			) {
+				fields.push('default_document_reader_model_id');
+			}
+			if (
+				!websiteParseEngine.loading &&
+				websiteParseEngine.configured &&
+				!websiteParseEngine.accessible
+			) {
+				fields.push('default_website_document_parse_user_engine_id');
+			}
+			if (
+				!fileParseEngine.loading &&
+				fileParseEngine.configured &&
+				!fileParseEngine.accessible
+			) {
+				fields.push('default_file_document_parse_user_engine_id');
+			}
+			return fields;
+		},
+		[
+			documentReaderModel,
+			fileParseEngine,
+			revornixModel,
+			websiteParseEngine,
+		],
+	);
 	const requiredSettings = useMemo(
-		() => getRequiredUserSettings(mainUserInfo),
-		[mainUserInfo],
+		() =>
+			getRequiredUserSettings(mainUserInfo, inaccessibleRequiredSettingFields),
+		[inaccessibleRequiredSettingFields, mainUserInfo],
 	);
 	const requiredSettingMap = useMemo(
 		() => new Map(requiredSettings.map((setting) => [setting.field, setting])),
 		[requiredSettings],
 	);
 	const needInitial =
-		hasLoadedUserInfo && hasPendingRequiredUserSettings(mainUserInfo);
+		hasLoadedUserInfo &&
+		hasPendingRequiredUserSettings(
+			mainUserInfo,
+			inaccessibleRequiredSettingFields,
+		);
 	const completedCount = requiredSettings.filter((setting) => setting.completed)
 		.length;
 	const totalCount = requiredSettings.length;
@@ -249,12 +303,11 @@ const InitSettingDialog = ({
 
 	const needsModelSetup = !modelQuery.isLoading && modelCount === 0;
 	const needsEngineSetup = !engineQuery.isLoading && engineCount === 0;
-	const hasPodcastEngineConfigured = Boolean(
-		mainUserInfo?.default_podcast_user_engine_id,
-	);
-	const hasImageGenerateEngineConfigured = Boolean(
-		mainUserInfo?.default_image_generate_engine_id,
-	);
+	const hasPodcastEngineConfigured =
+		podcastEngine.configured && !podcastEngine.subscriptionLocked;
+	const hasImageGenerateEngineConfigured =
+		imageGenerateEngine.configured &&
+		!imageGenerateEngine.subscriptionLocked;
 
 	const settingCards = [
 		{

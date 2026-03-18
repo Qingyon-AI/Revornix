@@ -66,6 +66,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 
 from enums.model import OfficialModelProvider, UserModelProviderRole
 from enums.engine_enums import Engine, UserEngineRole
+from enums.product import PlanAccessLevel
 from enums.user import UserRole
 from enums.file import RemoteFileService
 from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole, NotificationSource
@@ -300,6 +301,7 @@ async def seed_database(db: Session):
                     db=db,
                     name='gpt-5.2',
                     description='gpt-5.2',
+                    required_plan_level=PlanAccessLevel.PRO,
                     provider_id=db_ai_model_provider.id
                 )
 
@@ -326,6 +328,11 @@ async def seed_database(db: Session):
                     name=e.meta.name,
                     description=e.meta.description,
                     is_public=True,
+                    required_plan_level=(
+                        PlanAccessLevel.PRO
+                        if e != Engine.Official_MinerU_API
+                        else PlanAccessLevel.FREE
+                    ),
                     creator_id=db_root_user.id,
                     engine_provided_id=db_engine_provider.id
                 )

@@ -39,6 +39,8 @@ import { getEngineDetail, updateEngine } from '@/service/engine';
 import { Button } from '../ui/button';
 import { Loader2, ShieldAlert, XCircleIcon } from 'lucide-react';
 import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { AccessPlanLevel } from '@/enums/product';
+import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Switch } from '../ui/switch';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserContext } from '@/provider/user-provider';
@@ -68,6 +70,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 		engine_id: z.number(),
 		name: z.string().optional(),
 		description: z.string().optional(),
+		required_plan_level: z.number().int().optional(),
 		config_json: z.string().optional(),
 		is_public: z.boolean().optional(),
 	});
@@ -78,6 +81,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			engine_id: engineId,
 			name: '',
 			description: '',
+			required_plan_level: AccessPlanLevel.FREE,
 			config_json: '',
 		},
 	});
@@ -159,6 +163,8 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			engine_id: engineId,
 			name: engine_info.name ?? '',
 			description: engine_info.description ?? '',
+			required_plan_level:
+				engine_info.required_plan_level ?? AccessPlanLevel.FREE,
 			config_json: engine_info.config_json ?? '',
 			is_public: engine_info.is_public ?? false,
 		};
@@ -313,6 +319,59 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 									);
 								}}
 							/>
+								<FormField
+									name='required_plan_level'
+									control={form.control}
+									render={({ field }) => {
+										return (
+											<FormItem>
+												<div className='grid grid-cols-12 gap-2'>
+													<FormLabel className='col-span-3'>
+														{t('setting_required_plan_level_label')}
+													</FormLabel>
+													<div className='col-span-9'>
+														<Select
+															key={`${engineId}-${String(
+																field.value ?? AccessPlanLevel.FREE,
+															)}`}
+															disabled={!authorized}
+															onValueChange={(value) =>
+																field.onChange(Number(value))
+															}
+															value={String(
+															field.value ?? AccessPlanLevel.FREE,
+														)}>
+														<SelectTrigger className='w-full'>
+															<SelectValue
+																placeholder={t(
+																	'setting_required_plan_level_placeholder',
+																)}
+															/>
+														</SelectTrigger>
+														<SelectContent>
+															<SelectGroup>
+																{[
+																	AccessPlanLevel.FREE,
+																	AccessPlanLevel.PRO,
+																	AccessPlanLevel.MAX,
+																].map((level) => (
+																	<SelectItem
+																		key={level}
+																		value={String(level)}>
+																		{t(getPlanLevelTranslationKey(level))}
+																	</SelectItem>
+																))}
+															</SelectGroup>
+														</SelectContent>
+													</Select>
+												</div>
+											</div>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+
 							<FormField
 								name='description'
 								control={form.control}
