@@ -72,6 +72,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
 	const [editing, setEditing] = useState(false);
 	const [updatePending, startUpdate] = useTransition();
 	const [deletePending, startDelete] = useTransition();
+	const updateFormId = `update-model-form-${model.id}`;
 
 	const handleDeleteModel = async () => {
 		startDelete(async () => {
@@ -148,14 +149,26 @@ const ModelCard = ({ model }: ModelCardProps) => {
 		toast.error(t('form_validate_failed'));
 	};
 
+	const handleStartEditing = (
+		event: React.MouseEvent<HTMLButtonElement>
+	) => {
+		event.preventDefault();
+		event.stopPropagation();
+		updateForm.reset({
+			name: model.name,
+			required_plan_level: model.required_plan_level ?? AccessPlanLevel.FREE,
+		});
+		setEditing(true);
+	};
+
 	return (
 		<>
 			<div className='rounded-xl bg-muted px-4 py-3 text-sm transition-colors hover:bg-muted/80'>
 				{editing ? (
-					<div className='flex items-center gap-3'>
+					<div key='editing' className='flex items-center gap-3'>
 						<Form {...updateForm}>
 							<form
-								id='update-form'
+								id={updateFormId}
 								className='mr-2 flex w-full min-w-0 items-center gap-2'
 								onSubmit={handleSubmitUpdateForm}>
 								<FormField
@@ -202,13 +215,13 @@ const ModelCard = ({ model }: ModelCardProps) => {
 							</form>
 						</Form>
 						<div className='flex shrink-0 items-center gap-2'>
-							<Button
-								type='submit'
-								variant={'outline'}
-								size='icon'
-								form='update-form'
-								disabled={updatePending}
-								className='size-11 rounded-xl'>
+								<Button
+									type='submit'
+									variant={'outline'}
+									size='icon'
+									form={updateFormId}
+									disabled={updatePending}
+									className='size-11 rounded-xl'>
 								<SaveIcon />
 								{updatePending && <Loader2 className='animate-spin' />}
 							</Button>
@@ -223,7 +236,7 @@ const ModelCard = ({ model }: ModelCardProps) => {
 						</div>
 					</div>
 				) : (
-					<div className='flex items-center justify-between gap-4'>
+					<div key='view' className='flex items-center justify-between gap-4'>
 						<div className='min-w-0 flex-1'>
 							<p className='break-all font-mono text-base font-medium leading-6'>
 								{model.name}
@@ -253,14 +266,14 @@ const ModelCard = ({ model }: ModelCardProps) => {
 							)}
 						</div>
 						<div className='flex shrink-0 items-center gap-2'>
-							<Button
-								type='button'
-								variant={'outline'}
-								size='icon'
-								className='size-11 rounded-xl'
-								onClick={() => setEditing(true)}>
-								<PencilIcon />
-							</Button>
+								<Button
+									type='button'
+									variant={'outline'}
+									size='icon'
+									className='size-11 rounded-xl'
+									onClick={handleStartEditing}>
+									<PencilIcon />
+								</Button>
 							<Button
 								type='button'
 								variant={'outline'}

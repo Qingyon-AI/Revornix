@@ -72,6 +72,7 @@ const SectionMarkdown = ({
 	const [markdownIsFetching, setMarkdownIsFetching] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
 	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const failedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
 	const loadingMarkdownUrlRef = useRef<string | undefined>(undefined);
 	const shouldReloadOnSuccessRef = useRef(false);
 	const processStatus =
@@ -87,7 +88,11 @@ const SectionMarkdown = ({
 		forceReload = false,
 	) => {
 		if (!section || !sourceUrl) return;
-		if (!forceReload && loadedMarkdownSourceKeyRef.current === sourceKey) {
+		if (
+			!forceReload &&
+			(loadedMarkdownSourceKeyRef.current === sourceKey ||
+				failedMarkdownSourceKeyRef.current === sourceKey)
+		) {
 			return;
 		}
 		if (loadingMarkdownUrlRef.current === sourceUrl) {
@@ -108,7 +113,9 @@ const SectionMarkdown = ({
 					: content,
 			);
 			loadedMarkdownSourceKeyRef.current = sourceKey;
+			failedMarkdownSourceKeyRef.current = undefined;
 		} catch (e: any) {
+			failedMarkdownSourceKeyRef.current = sourceKey;
 			setMarkdownGetError(e.message);
 		} finally {
 			setMarkdownIsFetching(false);
@@ -124,25 +131,22 @@ const SectionMarkdown = ({
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(false);
 		loadedMarkdownSourceKeyRef.current = undefined;
+		failedMarkdownSourceKeyRef.current = undefined;
 		loadingMarkdownUrlRef.current = undefined;
 	}, [section?.md_file_name]);
 
 	useEffect(() => {
+		if (!markdownUrl || !markdownSourceKey) {
+			return;
+		}
 		if (
-			!markdownUrl ||
-			!markdownSourceKey
+			loadedMarkdownSourceKeyRef.current === markdownSourceKey ||
+			failedMarkdownSourceKeyRef.current === markdownSourceKey
 		) {
 			return;
 		}
-		const shouldRetry =
-			loadedMarkdownSourceKeyRef.current !== markdownSourceKey ||
-			markdown === undefined ||
-			Boolean(markdownGetError);
-		if (!shouldRetry) {
-			return;
-		}
 		void onGetMarkdown(markdownSourceKey, markdownUrl);
-	}, [markdownGetError, markdownSourceKey, markdownUrl, markdown, processStatus]);
+	}, [markdownSourceKey, markdownUrl]);
 
 	useEffect(() => {
 		if (processStatus < SectionProcessStatus.SUCCESS) {
