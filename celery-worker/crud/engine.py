@@ -40,6 +40,7 @@ def create_engine(
     creator_id: int,
     engine_provided_id: int,
     is_public: bool,
+    required_plan_level: int = 0,
     uuid: str | None = None,
     description: str | None = None,
     config_json: str | None = None,
@@ -55,6 +56,7 @@ def create_engine(
         creator_id=creator_id,
         engine_provided_id=engine_provided_id,
         is_public=is_public,
+        required_plan_level=required_plan_level,
         description=description,
         config_json=config_json,
         create_time=now

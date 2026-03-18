@@ -36,6 +36,12 @@ export interface ModelCreateRequest {
      * @type {number}
      * @memberof ModelCreateRequest
      */
+    required_plan_level?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCreateRequest
+     */
     provider_id: number;
 }
 
@@ -61,6 +67,7 @@ export function ModelCreateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'name': json['name'],
         'description': json['description'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'provider_id': json['provider_id'],
     };
 }
@@ -78,7 +85,7 @@ export function ModelCreateRequestToJSONTyped(value?: ModelCreateRequest | null,
         
         'name': value['name'],
         'description': value['description'],
+        'required_plan_level': value['required_plan_level'],
         'provider_id': value['provider_id'],
     };
 }
-

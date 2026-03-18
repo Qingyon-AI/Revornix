@@ -24,7 +24,11 @@ POSTGRES_DB_URL = os.environ.get('POSTGRES_DB_URL')
 POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
 # 动态设置 sqlalchemy.url
-db_url = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_DB_URL}/{POSTGRES_DB}"
+# The project uses psycopg v3, so Alembic needs the explicit dialect driver too.
+db_url = (
+    f"postgresql+psycopg://"
+    f"{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_DB_URL}/{POSTGRES_DB}"
+)
 config.set_main_option('sqlalchemy.url', db_url)
 
 # Interpret the config file for Python logging.

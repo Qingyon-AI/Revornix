@@ -33,6 +33,7 @@ import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import CustomMarkdown from '../ui/custom-markdown';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const AddQuickNote = () => {
 	const searchParams = useSearchParams();
@@ -40,6 +41,7 @@ const AddQuickNote = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { documentReaderModel, podcastEngine } = useDefaultResourceAccess();
 	const formSchema = z.object({
 		category: z.number(),
 		content: z.string(),
@@ -131,6 +133,15 @@ const AddQuickNote = () => {
 			});
 		},
 	});
+
+	const documentReaderUnavailable =
+		documentReaderModel.loading ||
+		!documentReaderModel.configured ||
+		documentReaderModel.subscriptionLocked;
+	const podcastEngineUnavailable =
+		podcastEngine.loading ||
+		!podcastEngine.configured ||
+		podcastEngine.subscriptionLocked;
 
 	return (
 		<>
@@ -253,21 +264,21 @@ const AddQuickNote = () => {
 											<Switch
 												id='auto_tag'
 												className='ml-auto'
-												disabled={
-													!mainUserInfo?.default_document_reader_model_id
-												}
+												disabled={documentReaderUnavailable && !field.value}
 												checked={field.value}
 												onCheckedChange={(e) => {
 													field.onChange(e);
 												}}
 											/>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Tooltip>
 													<TooltipTrigger>
 														<OctagonAlert className='h-4 w-4 text-destructive!' />
 													</TooltipTrigger>
 													<TooltipContent>
-														{t('document_create_auto_tag_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_tag_engine_unset')}
 													</TooltipContent>
 												</Tooltip>
 											)}
@@ -290,9 +301,7 @@ const AddQuickNote = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_document_reader_model_id
-													}
+													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -302,11 +311,13 @@ const AddQuickNote = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_ai_summary_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -326,9 +337,7 @@ const AddQuickNote = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_podcast_user_engine_id
-													}
+													disabled={podcastEngineUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -338,11 +347,13 @@ const AddQuickNote = () => {
 											<FormDescription>
 												{t('document_create_auto_podcast_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_podcast_user_engine_id && (
+											{podcastEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_auto_podcast_engine_unset')}
+														{podcastEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_podcast_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -388,7 +399,13 @@ const AddQuickNote = () => {
 					<Button
 						type='submit'
 						className='mt-5 w-full shrink-0'
-						disabled={mutateCreateDocument.isPending || !form.watch('content')}>
+						disabled={
+							mutateCreateDocument.isPending ||
+							!form.watch('content') ||
+							(form.watch('auto_tag') && documentReaderUnavailable) ||
+							(form.watch('auto_summary') && documentReaderUnavailable) ||
+							(form.watch('auto_podcast') && podcastEngineUnavailable)
+						}>
 						{t('document_create_submit')}
 						{mutateCreateDocument.isPending && (
 							<Loader2 className='size-4 animate-spin' />

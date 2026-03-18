@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import AudioStatusCard from '../ui/audio-status-card';
 import { Button } from '../ui/button';
 import { AudioLines, Loader2 } from 'lucide-react';
@@ -22,6 +23,7 @@ const DocumentPodcast = ({
 	const queryClient = getQueryClient();
 
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine } = useDefaultResourceAccess();
 
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', document_id],
@@ -45,9 +47,10 @@ const DocumentPodcast = ({
 		},
 	});
 
-	const canGeneratePodcast = Boolean(
-		mainUserInfo?.default_podcast_user_engine_id,
-	);
+	const canGeneratePodcast =
+		podcastEngine.configured &&
+		!podcastEngine.loading &&
+		!podcastEngine.subscriptionLocked;
 
 	return (
 		<>
@@ -64,7 +67,9 @@ const DocumentPodcast = ({
 					className={className}
 					hint={
 						!canGeneratePodcast
-							? t('document_create_auto_podcast_engine_unset')
+							? podcastEngine.subscriptionLocked
+								? t('default_resource_subscription_locked')
+								: t('document_create_auto_podcast_engine_unset')
 							: undefined
 					}
 				/>
@@ -105,7 +110,9 @@ const DocumentPodcast = ({
 								className={className}
 								hint={
 									!canGeneratePodcast
-										? t('document_create_auto_podcast_engine_unset')
+										? podcastEngine.subscriptionLocked
+											? t('default_resource_subscription_locked')
+											: t('document_create_auto_podcast_engine_unset')
 										: undefined
 								}
 								action={
@@ -149,7 +156,9 @@ const DocumentPodcast = ({
 							className={className}
 							hint={
 								!canGeneratePodcast
-									? t('document_create_auto_podcast_engine_unset')
+									? podcastEngine.subscriptionLocked
+										? t('default_resource_subscription_locked')
+										: t('document_create_auto_podcast_engine_unset')
 									: undefined
 							}
 						/>

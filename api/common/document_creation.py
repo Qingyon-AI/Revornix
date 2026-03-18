@@ -10,6 +10,7 @@ import models
 import schemas
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
+from common.resource_plan_access import ensure_engine_access
 from common.section_defaults import (
     TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
     TODAY_SECTION_DEFAULT_AUTO_PODCAST,
@@ -61,13 +62,15 @@ def _ensure_today_section_defaults(
     db_section: models.section.Section,
     user_id: int,
     timezone_name: str,
+    default_auto_podcast: bool,
+    default_auto_illustration: bool,
 ) -> bool:
     changed = False
-    if not db_section.auto_podcast:
-        db_section.auto_podcast = TODAY_SECTION_DEFAULT_AUTO_PODCAST
+    if db_section.auto_podcast != default_auto_podcast:
+        db_section.auto_podcast = default_auto_podcast
         changed = True
-    if not db_section.auto_illustration:
-        db_section.auto_illustration = TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION
+    if db_section.auto_illustration != default_auto_illustration:
+        db_section.auto_illustration = default_auto_illustration
         changed = True
 
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
@@ -120,6 +123,31 @@ async def create_document_for_user(
         summary_timezone = await get_cached_user_timezone(user.id)
     summary_date = today_in_timezone(summary_timezone)
     created_today_section = False
+    today_section_auto_podcast = False
+    today_section_auto_illustration = False
+
+    if user.default_podcast_user_engine_id is not None:
+        try:
+            await ensure_engine_access(
+                db=db,
+                user=user,
+                engine_id=user.default_podcast_user_engine_id,
+            )
+            today_section_auto_podcast = TODAY_SECTION_DEFAULT_AUTO_PODCAST
+        except CustomException as exc:
+            if exc.code not in {403, 404}:
+                raise
+    if user.default_image_generate_engine_id is not None:
+        try:
+            await ensure_engine_access(
+                db=db,
+                user=user,
+                engine_id=user.default_image_generate_engine_id,
+            )
+            today_section_auto_illustration = TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION
+        except CustomException as exc:
+            if exc.code not in {403, 404}:
+                raise
 
     if document_create_request.category == DocumentCategory.WEBSITE:
         if document_create_request.url is None:
@@ -219,8 +247,8 @@ async def create_document_for_user(
             creator_id=user.id,
             title=f"{summary_date.isoformat()} Summary",
             description=f"This document is the summary of all documents on {summary_date.isoformat()}.",
-            auto_podcast=TODAY_SECTION_DEFAULT_AUTO_PODCAST,
-            auto_illustration=TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
+            auto_podcast=today_section_auto_podcast,
+            auto_illustration=today_section_auto_illustration,
         )
         crud.section.create_section_user(
             db=db,
@@ -254,6 +282,8 @@ async def create_document_for_user(
             db_section=db_today_section,
             user_id=user.id,
             timezone_name=summary_timezone,
+            default_auto_podcast=today_section_auto_podcast,
+            default_auto_illustration=today_section_auto_illustration,
         )
 
     section_ids = list(

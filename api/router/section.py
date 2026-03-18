@@ -15,6 +15,7 @@ from common.celery.app import (
     start_trigger_user_notification_event,
 )
 from common.dependencies import get_current_user, get_db, get_request_timezone
+from common.resource_plan_access import ensure_engine_access
 from common.timezone import (
     decode_cron_expr_with_timezone,
     encode_cron_expr_with_timezone,
@@ -102,6 +103,16 @@ async def generate_podcast(
 
     if user.default_user_file_system is None:
         raise schemas.error.CustomException('Default file system is not configured', code=400)
+    if user.default_podcast_user_engine_id is None:
+        raise schemas.error.CustomException(
+            'Default podcast engine is not configured',
+            code=400,
+        )
+    await ensure_engine_access(
+        db=db,
+        user=user,
+        engine_id=user.default_podcast_user_engine_id,
+    )
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
         section_id=generate_podcast_request.section_id
@@ -213,12 +224,34 @@ def retry_section_document_integration(
     return schemas.common.SuccessResponse()
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)
-def create_section(
+async def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
     request_timezone: str = Depends(get_request_timezone),
 ):
+    if section_create_request.auto_podcast:
+        if user.default_podcast_user_engine_id is None:
+            raise schemas.error.CustomException(
+                'Default podcast engine is not configured',
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_podcast_user_engine_id,
+        )
+    if section_create_request.auto_illustration:
+        if user.default_image_generate_engine_id is None:
+            raise schemas.error.CustomException(
+                'Default image generate engine is not configured',
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_image_generate_engine_id,
+        )
     db_section = crud.section.create_section(
         db=db,
         creator_id=user.id,
@@ -286,7 +319,7 @@ def create_section(
     return schemas.section.SectionCreateResponse(id=db_section.id)
 
 @section_router.post("/update", response_model=schemas.common.NormalResponse)
-def update_section(
+async def update_section(
     section_update_request: schemas.section.SectionUpdateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user),
@@ -308,6 +341,29 @@ def update_section(
     )
     if section_user is None or section_user.authority not in [UserSectionAuthority.READ_AND_WRITE, UserSectionAuthority.FULL_ACCESS]:
         raise schemas.error.CustomException("You don't have permission to modify this section", code=403)
+
+    if section_update_request.auto_podcast is True:
+        if user.default_podcast_user_engine_id is None:
+            raise schemas.error.CustomException(
+                'Default podcast engine is not configured',
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_podcast_user_engine_id,
+        )
+    if section_update_request.auto_illustration is True:
+        if user.default_image_generate_engine_id is None:
+            raise schemas.error.CustomException(
+                'Default image generate engine is not configured',
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_image_generate_engine_id,
+        )
 
     if section_update_request.title is not None:
         db_section.title = section_update_request.title

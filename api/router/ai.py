@@ -22,12 +22,19 @@ from common.dependencies import (
     check_deployed_by_official_in_fuc,
     get_current_user,
     get_db,
+    get_user_plan_level_in_func,
     plan_ability_checked_in_func,
 )
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message, info_logger
+from common.subscription_access import (
+    SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+    has_plan_level_access,
+    is_subscription_required_level,
+    normalize_plan_access_level,
+)
 from common.structured_mcp_adapter import StructuredLangChainAdapter
 from common.usage_collector import UsageCollector
 from common.usage_billing import persist_model_usage_from_snapshot
@@ -35,11 +42,93 @@ from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
+from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
 from schemas.ai import ChatItem
 
 ai_router = APIRouter()
 MCP_AGENT_MAX_STEPS = 12
+SUBSCRIPTION_GATE_ENABLED = check_deployed_by_official_in_fuc()
+
+
+def _is_privileged_user(user: models.user.User) -> bool:
+    return user.role in (UserRole.ADMIN, UserRole.ROOT)
+
+
+async def _ensure_subscription_access(
+    *,
+    user: models.user.User,
+    required_plan_level: int | None,
+) -> None:
+    if (
+        not SUBSCRIPTION_GATE_ENABLED
+        or not is_subscription_required_level(required_plan_level)
+        or _is_privileged_user(user)
+    ):
+        return
+    access_token, _ = create_token(user=user)
+    user_plan_level = await get_user_plan_level_in_func(
+        authorization=f"Bearer {access_token}",
+    )
+    if not has_plan_level_access(
+        required_plan_level=required_plan_level,
+        user_plan_level=user_plan_level,
+    ):
+        raise schemas.error.CustomException(
+            message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+            code=403,
+        )
+
+
+def _serialize_model_provider(
+    ai_model_provider: models.model.AIModelProvider,
+    *,
+    is_forked: bool | None = None,
+) -> schemas.ai.ModelProvider:
+    provider = schemas.ai.ModelProvider.model_validate(ai_model_provider)
+    return provider.model_copy(
+        update={
+            "is_forked": is_forked,
+        }
+    )
+
+
+def _serialize_model_provider_detail(
+    ai_model_provider: models.model.AIModelProvider,
+    *,
+    include_sensitive: bool,
+) -> schemas.ai.ModelProviderDetail:
+    detail = schemas.ai.ModelProviderDetail.model_validate(ai_model_provider)
+    update_payload: dict[str, Any] = {}
+    if not include_sensitive:
+        update_payload.update(
+            {
+                "api_key": None,
+                "base_url": None,
+            }
+        )
+    return detail.model_copy(update=update_payload)
+
+
+def _serialize_model(
+    ai_model: models.model.AIModel,
+    *,
+    is_forked: bool | None = None,
+) -> schemas.ai.Model:
+    required_plan_level = normalize_plan_access_level(ai_model.required_plan_level)
+    model = schemas.ai.Model.model_validate(ai_model)
+    return model.model_copy(
+        update={
+            "provider": _serialize_model_provider(
+                ai_model.provider,
+                is_forked=is_forked,
+            ),
+            "required_plan_level": int(required_plan_level),
+            "subscription_required": is_subscription_required_level(
+                required_plan_level,
+            ),
+        }
+    )
 
 
 def _contains_cjk(text: str) -> bool:
@@ -97,6 +186,9 @@ def create_model(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    required_plan_level = int(
+        normalize_plan_access_level(model_create_request.required_plan_level)
+    )
     db_model_provider = crud.model.get_ai_model_provider_by_id(
         db=db,
         provider_id=model_create_request.provider_id
@@ -110,6 +202,7 @@ def create_model(
         db=db,
         name=model_create_request.name,
         description=model_create_request.description,
+        required_plan_level=required_plan_level,
         provider_id=model_create_request.provider_id
     )
     db.commit()
@@ -135,13 +228,26 @@ def get_ai_model(
     if ai_model_provider is None:
         raise schemas.error.CustomException("Model provider not found for this model", code=404)
 
+    is_forked = None
     if ai_model_provider.creator_id == user.id:
-        return schemas.ai.Model.model_validate(ai_model)
+        is_forked = False
+    elif ai_model_provider.is_public:
+        is_forked = (
+            crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                db=db,
+                user_id=user.id,
+                ai_model_provider_id=ai_model_provider.id,
+                filter_role=UserModelProviderRole.FORKER,
+            )
+            is not None
+        )
     else:
-        if ai_model_provider.is_public:
-            return schemas.ai.Model.model_validate(ai_model)
-        else:
-            raise schemas.error.CustomException("You don't have permission to access this model", code=403)
+        raise schemas.error.CustomException("You don't have permission to access this model", code=403)
+
+    return _serialize_model(
+        ai_model,
+        is_forked=is_forked,
+    )
 
 @ai_router.post("/model-provider/create", response_model=schemas.ai.ModelProviderCreateResponse)
 def create_model_provider(
@@ -182,25 +288,18 @@ def get_ai_model_provider(
         raise schemas.error.CustomException("Model provider not found", code=404)
 
     if ai_model_provider.creator_id == user.id:
-        return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider)
+        return _serialize_model_provider_detail(
+            ai_model_provider,
+            include_sensitive=True,
+        )
 
     if not ai_model_provider.is_public:
         raise schemas.error.CustomException("You don't have permission to access this private model provider", code=403)
 
-    db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
-        db=db,
-        user_id=user.id,
-        ai_model_provider_id=ai_model_provider.id,
-        filter_role=UserModelProviderRole.FORKER
+    return _serialize_model_provider_detail(
+        ai_model_provider,
+        include_sensitive=False,
     )
-    if db_user_ai_model_provider is not None:
-        return schemas.ai.ModelProviderDetail.model_validate(ai_model_provider).model_copy(update={
-            "is_forked": False
-        })
-
-    return schemas.ai.ModelProvider.model_validate(ai_model_provider).model_copy(update={
-        "is_forked": True
-    })
 
 @ai_router.post("/model/delete", response_model=schemas.common.NormalResponse)
 def delete_ai_model(
@@ -304,14 +403,15 @@ def list_ai_model_provider(
     )
     next_start = next_model_provider.id if next_model_provider is not None else None
     data = [
-        schemas.ai.ModelProvider.model_validate(item[0]).model_copy(update={
-            "is_forked": crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+        _serialize_model_provider(
+            item[0],
+            is_forked=crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
                 db=db,
                 user_id=user.id,
                 ai_model_provider_id=item[0].id,
                 filter_role=UserModelProviderRole.FORKER
-            ) is not None
-        })
+            ) is not None,
+        )
         for item in db_ai_model_providers
     ]
     return schemas.pagination.InifiniteScrollPagnition(
@@ -325,7 +425,7 @@ def list_ai_model_provider(
 
 # 将对应的model provider加入自己的备选区
 @ai_router.post("/model-provider/fork", response_model=schemas.common.NormalResponse)
-def fork_ai_model_provider(
+async def fork_ai_model_provider(
     model_provider_fork_request: schemas.ai.ModelProviderForkRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
@@ -342,7 +442,6 @@ def fork_ai_model_provider(
 
     if db_ai_model_provider.creator_id == user.id:
         raise schemas.error.CustomException("You can't fork your own model provider", code=403)
-
     db_user_ai_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
         db=db,
         user_id=user.id,
@@ -388,8 +487,22 @@ def list_ai_model(
             db=db,
             provider_id=model_search_request.provider_id
         )
+        is_forked = (
+            crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                db=db,
+                user_id=user.id,
+                ai_model_provider_id=db_ai_model_provider.id,
+                filter_role=UserModelProviderRole.FORKER,
+            )
+            is not None
+        )
         for db_model in db_models:
-            data.append(schemas.ai.Model.model_validate(db_model))
+            data.append(
+                _serialize_model(
+                    db_model,
+                    is_forked=is_forked,
+                )
+            )
     # 如果没有传递 那就获取当前用户所有可用模型
     else:
         db_ai_model_providers = crud.model.get_ai_model_providers_for_user(
@@ -400,12 +513,26 @@ def list_ai_model(
         for db_ai_model_provider in db_ai_model_providers:
             if not db_ai_model_provider.is_public and db_ai_model_provider.creator_id != user.id:
                 continue
+            is_forked = (
+                crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                    db=db,
+                    user_id=user.id,
+                    ai_model_provider_id=db_ai_model_provider.id,
+                    filter_role=UserModelProviderRole.FORKER,
+                )
+                is not None
+            )
             db_models = crud.model.get_ai_models_for_ai_model_provider(
                 db=db,
                 provider_id=db_ai_model_provider.id
             )
             for db_model in db_models:
-                data.append(schemas.ai.Model.model_validate(db_model))
+                data.append(
+                    _serialize_model(
+                        db_model,
+                        is_forked=is_forked,
+                    )
+                )
 
     return schemas.ai.ModelSearchResponse(data=data)
 
@@ -435,6 +562,10 @@ def update_ai_model(
         db_ai_model.name = model_update_request.name
     if model_update_request.description is not None:
         db_ai_model.description = model_update_request.description
+    if model_update_request.required_plan_level is not None:
+        db_ai_model.required_plan_level = int(
+            normalize_plan_access_level(model_update_request.required_plan_level)
+        )
     db_ai_model.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

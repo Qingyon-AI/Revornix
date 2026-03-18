@@ -12,6 +12,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormField, FormMessage } from '../ui/form';
 import { createAiModel } from '@/service/ai';
 import { ModelProvider } from '@/generated';
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../ui/select';
+import { AccessPlanLevel } from '@/enums/product';
+import { getPlanLevelTranslationKey } from '@/lib/subscription';
 
 interface ModelAddCardProps {
 	modelProvider: ModelProvider;
@@ -28,12 +38,14 @@ const ModelAddCard = ({
 
 	const addFormSchema = z.object({
 		name: z.string().min(1, 'name needed'),
+		required_plan_level: z.number().int(),
 	});
 
 	const updateForm = useForm({
 		resolver: zodResolver(addFormSchema),
 		defaultValues: {
 			name: '',
+			required_plan_level: AccessPlanLevel.FREE,
 		},
 	});
 	const [submitPending, startSubmit] = useTransition();
@@ -63,6 +75,7 @@ const ModelAddCard = ({
 				createAiModel({
 					name: values.name,
 					description: values.name,
+					required_plan_level: values.required_plan_level,
 					provider_id: modelProvider.id,
 				})
 			);
@@ -82,28 +95,56 @@ const ModelAddCard = ({
 
 	return (
 		<>
-			<div className='rounded p-3 text-sm flex items-center justify-between bg-muted/50'>
+			<div className='rounded p-3 text-sm flex items-center justify-between gap-2 bg-muted/50'>
 				<Form {...updateForm}>
 					<form
 						id='update-form'
-						className='w-full mr-2'
+						className='flex w-full min-w-0 items-center gap-2'
 						onSubmit={handleSubmitAddForm}>
 						<FormField
 							name='name'
 							control={updateForm.control}
 							render={({ field }) => {
 								return (
-									<>
+									<div className='min-w-0 flex-1'>
 										<Input
 											placeholder={t('setting_model_name_placeholder')}
-											className='mr-2 font-mono'
+											className='font-mono'
 											autoFocus
 											{...field}
 										/>
-										<FormMessage className='mt-2' />
-									</>
+										<FormMessage className='hidden' />
+									</div>
 								);
 							}}
+						/>
+						<FormField
+							name='required_plan_level'
+							control={updateForm.control}
+							render={({ field }) => (
+								<Select
+									value={String(field.value ?? AccessPlanLevel.FREE)}
+									onValueChange={(value) => field.onChange(Number(value))}>
+									<SelectTrigger className='w-fit shrink-0'>
+										<SelectValue
+											placeholder={t('setting_required_plan_level_placeholder')}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											{[
+												AccessPlanLevel.FREE,
+												AccessPlanLevel.PRO,
+												AccessPlanLevel.MAX,
+											].map((level) => (
+												<SelectItem key={level} value={String(level)}>
+													{t(getPlanLevelTranslationKey(level))}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							)}
 						/>
 					</form>
 				</Form>

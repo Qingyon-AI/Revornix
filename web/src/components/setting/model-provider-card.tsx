@@ -28,7 +28,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
-import { Loader2, PlusCircle, XCircleIcon } from 'lucide-react';
+import { Globe2Icon, Loader2, PlusCircle, XCircleIcon } from 'lucide-react';
 import { ModelProvider } from '@/generated';
 import { Separator } from '../ui/separator';
 import ModelCard from './model-card';
@@ -121,7 +121,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 							{modelProvider.name}
 							{modelProvider.is_public && (
 								<Badge className='bg-amber-600/10 dark:bg-amber-600/20 hover:bg-amber-600/10 text-amber-500 shadow-none rounded-full'>
-									<div className='h-1.5 w-1.5 rounded-full bg-amber-500 mr-1' />{' '}
+									<Globe2Icon className='mr-1 size-3.5' />
 									Public
 								</Badge>
 							)}
@@ -171,7 +171,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 						{modelProvider.description}
 					</CardDescription>
 				</CardHeader>
-				<CardContent className='w-full flex flex-row'>
+				<CardContent className='w-full flex flex-col gap-3'>
 					<div className='flex flex-row gap-2 items-center ml-auto'>
 						<Dialog
 							open={showModelConfigDialog}

@@ -8,12 +8,60 @@ import { useUserContext } from '@/provider/user-provider';
 import DefaultWebsiteDocumentParseEngineChange from './default-website-document-parse-engine-change';
 import DefaultFileDocumentParseEngineChange from './default-file-document-parse-engine-change';
 import DefaultFileSystemChange from './default-file-system-change';
-import { hasCompletedRequiredUserSettings } from '@/lib/required-user-settings';
+import {
+	hasCompletedRequiredUserSettings,
+	type RequiredUserSettingField,
+} from '@/lib/required-user-settings';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const InitDefaultChoose = () => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
-	const initFinished = hasCompletedRequiredUserSettings(mainUserInfo);
+	const {
+		documentReaderModel,
+		revornixModel,
+		websiteParseEngine,
+		fileParseEngine,
+	} = useDefaultResourceAccess();
+	const inaccessibleRequiredSettingFields: RequiredUserSettingField[] = [];
+	if (
+		!revornixModel.loading &&
+		revornixModel.configured &&
+		!revornixModel.accessible
+	) {
+		inaccessibleRequiredSettingFields.push('default_revornix_model_id');
+	}
+	if (
+		!documentReaderModel.loading &&
+		documentReaderModel.configured &&
+		!documentReaderModel.accessible
+	) {
+		inaccessibleRequiredSettingFields.push(
+			'default_document_reader_model_id',
+		);
+	}
+	if (
+		!websiteParseEngine.loading &&
+		websiteParseEngine.configured &&
+		!websiteParseEngine.accessible
+	) {
+		inaccessibleRequiredSettingFields.push(
+			'default_website_document_parse_user_engine_id',
+		);
+	}
+	if (
+		!fileParseEngine.loading &&
+		fileParseEngine.configured &&
+		!fileParseEngine.accessible
+	) {
+		inaccessibleRequiredSettingFields.push(
+			'default_file_document_parse_user_engine_id',
+		);
+	}
+	const initFinished = hasCompletedRequiredUserSettings(
+		mainUserInfo,
+		inaccessibleRequiredSettingFields,
+	);
 	return (
 		<>
 			{!initFinished && (

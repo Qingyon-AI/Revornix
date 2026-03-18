@@ -49,6 +49,12 @@ export interface EngineUpdateRequest {
      * @memberof EngineUpdateRequest
      */
     is_public?: boolean | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineUpdateRequest
+     */
+    required_plan_level?: number | null;
 }
 
 /**
@@ -74,6 +80,7 @@ export function EngineUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'] == null ? undefined : json['is_public'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
     };
 }
 
@@ -93,6 +100,6 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
         'name': value['name'],
         'description': value['description'],
         'is_public': value['is_public'],
+        'required_plan_level': value['required_plan_level'],
     };
 }
-

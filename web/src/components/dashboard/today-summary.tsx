@@ -35,12 +35,14 @@ import AudioPlayer from '@/components/ui/audio-player';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { cn } from '@/lib/utils';
 import { getSectionAutomationWarnings } from '@/lib/section-automation';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const TodaySummary = () => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 	const today = getLocalDateYMD();
 	const {
 		data: section,
@@ -135,8 +137,11 @@ const TodaySummary = () => {
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section?.auto_podcast ?? true,
 		autoIllustration: section?.auto_illustration ?? true,
-		hasPodcastEngine: Boolean(mainUserInfo?.default_podcast_user_engine_id),
-		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+		hasPodcastEngine:
+			podcastEngine.configured && !podcastEngine.subscriptionLocked,
+		hasImageEngine:
+			imageGenerateEngine.configured &&
+			!imageGenerateEngine.subscriptionLocked,
 	});
 	const warningItems = [
 		automationWarnings.missingPodcastEngine

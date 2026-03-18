@@ -53,6 +53,18 @@ export interface Model {
     description: string | null;
     /**
      * 
+     * @type {number}
+     * @memberof Model
+     */
+    required_plan_level?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Model
+     */
+    subscription_required?: boolean;
+    /**
+     * 
      * @type {Date}
      * @memberof Model
      */
@@ -99,6 +111,8 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
         'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
+        'subscription_required': json['subscription_required'] == null ? undefined : json['subscription_required'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'provider': ModelProviderFromJSON(json['provider']),
@@ -120,9 +134,10 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'uuid': value['uuid'],
         'name': value['name'],
         'description': value['description'],
+        'required_plan_level': value['required_plan_level'],
+        'subscription_required': value['subscription_required'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'provider': ModelProviderToJSON(value['provider']),
     };
 }
-

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import sectionApi from '@/api/section';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
@@ -115,6 +116,7 @@ const SectionOperateAI = ({
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { revornixModel } = useDefaultResourceAccess();
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState('');
 	const [enableMcp, setEnableMcp] = useState(false);
@@ -398,6 +400,10 @@ const SectionOperateAI = ({
 			toast.error(t('revornix_ai_model_not_set'));
 			return;
 		}
+		if (revornixModel.subscriptionLocked) {
+			toast.error(t('default_resource_subscription_locked'));
+			return;
+		}
 
 		const nextUserMessage: Message = {
 			chat_id: crypto.randomUUID(),
@@ -510,7 +516,12 @@ const SectionOperateAI = ({
 								type='button'
 								size={'icon'}
 								onClick={() => void onSubmit()}
-								disabled={isSending || input.trim().length === 0}>
+								disabled={
+									isSending ||
+									input.trim().length === 0 ||
+									revornixModel.loading ||
+									revornixModel.subscriptionLocked
+								}>
 								<Send />
 							</Button>
 						</div>

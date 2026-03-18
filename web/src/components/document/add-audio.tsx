@@ -44,6 +44,7 @@ import {
 	formatMediaDuration,
 } from '@/lib/document-media';
 import SelectorSkeleton from './selector-skeleton';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -51,6 +52,8 @@ const AddAudio = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { documentReaderModel, fileParseEngine, transcribeEngine } =
+		useDefaultResourceAccess();
 	const formSchema = z.object({
 		category: z.number(),
 		file_name: z.string(),
@@ -179,6 +182,19 @@ const AddAudio = () => {
 			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
+	const documentReaderUnavailable =
+		documentReaderModel.loading ||
+		!documentReaderModel.configured ||
+		documentReaderModel.subscriptionLocked;
+	const fileParseEngineUnavailable =
+		fileParseEngine.loading ||
+		!fileParseEngine.configured ||
+		fileParseEngine.subscriptionLocked;
+	const transcribeEngineUnavailable =
+		transcribeEngine.loading ||
+		!transcribeEngine.configured ||
+		transcribeEngine.subscriptionLocked;
+
 	const extFromMime = (mime: string) => {
 		if (mime.includes('wav')) return 'wav';
 		if (mime.includes('webm')) return 'webm';
@@ -247,7 +263,7 @@ const AddAudio = () => {
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
-						{!mainUserInfo?.default_file_document_parse_user_engine_id && (
+						{!fileParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
 								<AlertTitle>
@@ -262,6 +278,22 @@ const AddAudio = () => {
 											{t('document_create_file_engine_unset_description_2')}
 										</Link>
 										{t('document_create_file_engine_unset_description_3')}
+									</p>
+								</AlertDescription>
+							</Alert>
+						)}
+						{fileParseEngine.subscriptionLocked && (
+							<Alert>
+								<AlertCircleIcon />
+								<AlertTitle>{t('default_resource_unavailable_title')}</AlertTitle>
+								<AlertDescription>
+									<p>
+										{t('default_resource_subscription_locked')}{' '}
+										<Link
+											href={'/setting'}
+											className='inline-block font-bold underline underline-offset-2'>
+											{t('revornix_ai_default_model_goto')}
+										</Link>
 									</p>
 								</AlertDescription>
 							</Alert>
@@ -296,9 +328,7 @@ const AddAudio = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_document_reader_model_id
-													}
+													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -308,11 +338,13 @@ const AddAudio = () => {
 											<FormDescription>
 												{t('document_create_ai_summary_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_ai_summary_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_ai_summary_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -332,9 +364,7 @@ const AddAudio = () => {
 													<Sparkles size={15} />
 												</FormLabel>
 												<Switch
-													disabled={
-														!mainUserInfo?.default_audio_transcribe_engine_id
-													}
+													disabled={transcribeEngineUnavailable && !field.value}
 													checked={field.value}
 													onCheckedChange={(e) => {
 														field.onChange(e);
@@ -344,11 +374,13 @@ const AddAudio = () => {
 											<FormDescription>
 												{t('document_create_auto_transcribe_description')}
 											</FormDescription>
-											{!mainUserInfo?.default_audio_transcribe_engine_id && (
+											{transcribeEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />
 													<AlertDescription>
-														{t('document_create_auto_transcribe_engine_unset')}
+														{transcribeEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_transcribe_engine_unset')}
 													</AlertDescription>
 												</Alert>
 											)}
@@ -417,7 +449,7 @@ const AddAudio = () => {
 												id='auto_tag'
 												className='ml-auto'
 												disabled={
-													!mainUserInfo?.default_document_reader_model_id ||
+													(documentReaderUnavailable && !field.value) ||
 													!form.watch('auto_transcribe')
 												}
 												checked={field.value}
@@ -425,13 +457,15 @@ const AddAudio = () => {
 													field.onChange(e);
 												}}
 											/>
-											{!mainUserInfo?.default_document_reader_model_id && (
+											{documentReaderUnavailable && (
 												<Tooltip>
 													<TooltipTrigger>
 														<OctagonAlert className='h-4 w-4 text-destructive!' />
 													</TooltipTrigger>
 													<TooltipContent>
-														{t('document_create_auto_tag_engine_unset')}
+														{documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_tag_engine_unset')}
 													</TooltipContent>
 												</Tooltip>
 											)}
@@ -489,7 +523,13 @@ const AddAudio = () => {
 						className='mt-5 w-full shrink-0'
 						disabled={
 							submitting ||
-							!mainUserInfo?.default_file_document_parse_user_engine_id ||
+							fileParseEngineUnavailable ||
+							(form.watch('auto_summary') && documentReaderUnavailable) ||
+							(form.watch('auto_transcribe') && transcribeEngineUnavailable) ||
+							(form.watch('auto_tag') &&
+								(documentReaderUnavailable ||
+									transcribeEngineUnavailable ||
+									!form.watch('auto_transcribe'))) ||
 							!audioResult
 						}>
 						{t('document_create_submit')}

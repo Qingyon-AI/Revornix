@@ -37,6 +37,12 @@ export interface ModelUpdateRequest {
      * @memberof ModelUpdateRequest
      */
     description?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelUpdateRequest
+     */
+    required_plan_level?: number | null;
 }
 
 /**
@@ -60,6 +66,7 @@ export function ModelUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'id': json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
     };
 }
 
@@ -77,6 +84,6 @@ export function ModelUpdateRequestToJSONTyped(value?: ModelUpdateRequest | null,
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
+        'required_plan_level': value['required_plan_level'],
     };
 }
-

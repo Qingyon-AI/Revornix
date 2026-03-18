@@ -24,6 +24,7 @@ import {
 } from '@/enums/section';
 import { formatInUserTimeZone, toDate } from '@/lib/time';
 import { getSectionAutomationWarnings } from '@/lib/section-automation';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { useUserContext } from '@/provider/user-provider';
 import { cn, replacePath } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
@@ -76,6 +77,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 
 	const {
 		data: section,
@@ -133,7 +135,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 			: undefined;
 	const creatorId = section.creator?.id ?? fallbackCreator?.id;
 	const isOwner = creatorId !== undefined && creatorId === mainUserInfo?.id;
-	const hasPodcastEngine = Boolean(mainUserInfo?.default_podcast_user_engine_id);
+	const hasPodcastEngine =
+		podcastEngine.configured && !podcastEngine.subscriptionLocked;
 	const creatorNickname =
 		section.creator?.nickname ?? fallbackCreator?.nickname ?? '--';
 	const creatorAvatar = section.creator?.avatar ?? fallbackCreator?.avatar;
@@ -228,7 +231,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 		autoPodcast: section.auto_podcast,
 		autoIllustration: section.auto_illustration,
 		hasPodcastEngine,
-		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+		hasImageEngine:
+			imageGenerateEngine.configured &&
+			!imageGenerateEngine.subscriptionLocked,
 	});
 	const warningMessages = isOwner
 		? [

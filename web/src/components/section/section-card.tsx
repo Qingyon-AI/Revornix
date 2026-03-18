@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { getSectionAutomationWarnings } from '@/lib/section-automation';
+import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const SectionCard = ({ section }: { section: SectionInfo }) => {
@@ -16,12 +17,16 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 	const t = useTranslations();
 	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
+	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 	const isOwner = mainUserInfo?.id === section.creator.id;
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section.auto_podcast,
 		autoIllustration: section.auto_illustration,
-		hasPodcastEngine: Boolean(mainUserInfo?.default_podcast_user_engine_id),
-		hasImageEngine: Boolean(mainUserInfo?.default_image_generate_engine_id),
+		hasPodcastEngine:
+			podcastEngine.configured && !podcastEngine.subscriptionLocked,
+		hasImageEngine:
+			imageGenerateEngine.configured &&
+			!imageGenerateEngine.subscriptionLocked,
 	});
 	const warningBadges = isOwner
 		? [

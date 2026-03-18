@@ -33,6 +33,7 @@ class EngineCreateRequest(BaseModel):
     description: str | None = None
     is_public: bool
     engine_provided_id: int
+    required_plan_level: int = 0
     config_json: str | None = None
 
 class EngineDetailRequest(BaseModel):
@@ -45,6 +46,8 @@ class EngineDetail(BaseModel):
     name: str
     description: str | None = None
     is_public: bool
+    required_plan_level: int = 0
+    subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
     config_json: str | None = None
@@ -57,9 +60,11 @@ class EngineBaseInfo(BaseModel):
     name: str
     description: str | None = None
     is_public: bool
+    required_plan_level: int = 0
     create_time: datetime
     update_time: datetime | None = None
     is_forked: bool | None = None
+    subscription_required: bool = False
     creator: UserPublicInfo
     engine_provided: EngineProvidedInfo
 
@@ -70,6 +75,8 @@ class EngineInfo(BaseModel):
     name: str
     description: str | None = None
     is_public: bool
+    required_plan_level: int = 0
+    subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
     is_forked: bool | None = None
@@ -102,3 +109,4 @@ class EngineUpdateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     is_public: bool | None = None
+    required_plan_level: int | None = None
