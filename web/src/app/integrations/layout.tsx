@@ -1,12 +1,5 @@
-import NextTopLoader from 'nextjs-toploader';
-
 const IntegrationsLayout = ({ children }: { children: React.ReactNode }) => {
-	return (
-		<>
-			<NextTopLoader />
-			{children}
-		</>
-	);
+	return <>{children}</>;
 };
 
 export default IntegrationsLayout;

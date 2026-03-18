@@ -1,4 +1,5 @@
 import PublicSectionCard from '@/components/seo/public-section-card';
+import SeoUserFollowButton from '@/components/seo/seo-user-follow-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -211,6 +212,11 @@ const SeoUserDetailPage = async (props: {
 							</div>
 						</div>
 						<div className='flex shrink-0 items-center gap-3'>
+							<SeoUserFollowButton
+								userId={user.id}
+								initialIsFollowed={user.is_followed}
+								className='shrink-0'
+							/>
 							<Link href='/community'>
 								<Button
 									variant='outline'
