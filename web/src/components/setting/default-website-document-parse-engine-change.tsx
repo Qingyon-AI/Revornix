@@ -20,12 +20,14 @@ import { toast } from 'sonner';
 import { EngineCategory } from '@/enums/engine';
 import { Badge } from '../ui/badge';
 import SubscriptionPlanBadgeContent from './subscription-plan-badge-content';
+import ResourceSelectEmptyState from './resource-select-empty-state';
+import { Globe } from 'lucide-react';
 
 const DefaultWebsiteDocumentParseEngineChange = () => {
 	const t = useTranslations();
 	const { mainUserInfo, paySystemUserInfo, refreshMainUserInfo } =
 		useUserContext();
-	const { data } = useQuery({
+	const { data, isFetched } = useQuery({
 		queryKey: ['searchMyEngine', EngineCategory.Markdown],
 		queryFn: async () => {
 			const res = await searchUableEngines({
@@ -66,37 +68,47 @@ const DefaultWebsiteDocumentParseEngineChange = () => {
 					<SelectValue placeholder={t('setting_default_engine_choose')} />
 				</SelectTrigger>
 				<SelectContent className='min-w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]'>
-					<SelectGroup>
-						{data?.data?.map((engine) => {
-							const locked = isSubscriptionLocked(
-								engine.required_plan_level,
-								paySystemUserInfo,
-								mainUserInfo,
-							);
-							return (
-								<SelectItem
-									key={engine.id}
-									value={String(engine.id)}
-									disabled={locked}>
-									<span className='inline-flex max-w-full items-center gap-2 pr-4'>
-										<span className='max-w-[32rem] truncate'>
-											{engine.name}
+					{isFetched && (data?.data?.length ?? 0) === 0 ? (
+						<ResourceSelectEmptyState
+							icon={Globe}
+							title={t('setting_default_engine_empty_title')}
+							description={t('setting_default_engine_empty_description')}
+							actionLabel={t('setting_default_engine_empty_action')}
+							href='/setting/engine'
+						/>
+					) : (
+						<SelectGroup>
+							{data?.data?.map((engine) => {
+								const locked = isSubscriptionLocked(
+									engine.required_plan_level,
+									paySystemUserInfo,
+									mainUserInfo,
+								);
+								return (
+									<SelectItem
+										key={engine.id}
+										value={String(engine.id)}
+										disabled={locked}>
+										<span className='inline-flex max-w-full items-center gap-2 pr-4'>
+											<span className='max-w-[32rem] truncate'>
+												{engine.name}
+											</span>
+											{shouldShowPlanLevelIndicator(
+												engine.required_plan_level,
+												mainUserInfo,
+											) && (
+												<Badge className='shrink-0 rounded-full border-sky-500/30 bg-sky-500/10 text-[10px] text-sky-700 shadow-none dark:text-sky-200'>
+													<SubscriptionPlanBadgeContent
+														requiredPlanLevel={engine.required_plan_level}
+													/>
+												</Badge>
+											)}
 										</span>
-										{shouldShowPlanLevelIndicator(
-											engine.required_plan_level,
-											mainUserInfo,
-										) && (
-											<Badge className='shrink-0 rounded-full border-sky-500/30 bg-sky-500/10 text-[10px] text-sky-700 shadow-none dark:text-sky-200'>
-												<SubscriptionPlanBadgeContent
-													requiredPlanLevel={engine.required_plan_level}
-												/>
-											</Badge>
-										)}
-									</span>
-								</SelectItem>
-							);
-						})}
-					</SelectGroup>
+									</SelectItem>
+								);
+							})}
+						</SelectGroup>
+					)}
 				</SelectContent>
 			</Select>
 		</div>

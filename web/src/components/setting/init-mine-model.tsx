@@ -33,6 +33,8 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { useState } from 'react';
+import ResourceSelectEmptyState from './resource-select-empty-state';
+import { Bot } from 'lucide-react';
 
 const InitMineModel = () => {
 	const [providerChooseYepOrNo, setProviderChooseYepOrNo] = useState('no');
@@ -224,17 +226,31 @@ const InitMineModel = () => {
 																/>
 															</SelectTrigger>
 															<SelectContent className='w-full'>
-																<SelectGroup>
-																	{models?.data?.map((item, index) => {
-																		return (
-																			<SelectItem
-																				key={index}
-																				value={item.id.toString()}>
-																				{item.name}
-																			</SelectItem>
-																		);
-																	})}
-																</SelectGroup>
+																{(models?.data?.length ?? 0) === 0 ? (
+																	<ResourceSelectEmptyState
+																		icon={Bot}
+																		title={t('setting_default_model_empty_title')}
+																		description={t(
+																			'setting_default_model_empty_description',
+																		)}
+																		actionLabel={t(
+																			'setting_default_model_empty_action',
+																		)}
+																		href='/setting/model'
+																	/>
+																) : (
+																	<SelectGroup>
+																		{models?.data?.map((item, index) => {
+																			return (
+																				<SelectItem
+																					key={index}
+																					value={item.id.toString()}>
+																					{item.name}
+																				</SelectItem>
+																			);
+																		})}
+																	</SelectGroup>
+																)}
 															</SelectContent>
 														</div>
 													</Select>
@@ -253,8 +269,8 @@ const InitMineModel = () => {
 									render={({ field }) => (
 										<FormItem>
 											<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
-												<FormLabel className='sm:col-span-4 sm:pt-2'>
-													{t('setting_model_provider_name')}
+											<FormLabel className='sm:col-span-4 sm:pt-2'>
+												{t('setting_model_provider_name')}
 												</FormLabel>
 												<Input
 													type='text'

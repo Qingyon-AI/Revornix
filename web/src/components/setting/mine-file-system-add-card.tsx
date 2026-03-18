@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
-import { Loader2, PlusIcon } from 'lucide-react';
+import { HardDrive, Loader2, PlusIcon } from 'lucide-react';
 import {
 	Dialog,
 	DialogClose,
@@ -37,6 +37,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 import { Separator } from '../ui/separator';
+import ResourceSelectEmptyState from './resource-select-empty-state';
 
 const MineFileSystemAddCard = ({}: {}) => {
 	const t = useTranslations();
@@ -155,18 +156,30 @@ const MineFileSystemAddCard = ({}: {}) => {
 														/>
 													</SelectTrigger>
 													<SelectContent>
-														<SelectGroup>
-															{provideFileSystems?.data.map((item) => {
-																return (
-																	<SelectItem
-																		key={item.id}
-																		value={String(item.id)}
-																		className='w-full'>
-																		{locale === 'zh' ? item.name_zh : item.name}
-																	</SelectItem>
-																);
-															})}
-														</SelectGroup>
+														{!isFetchingProvideFileSystems &&
+														!isRefetchingProvideFileSystems &&
+														(provideFileSystems?.data?.length ?? 0) === 0 ? (
+															<ResourceSelectEmptyState
+																icon={HardDrive}
+																title={t('setting_default_file_system_empty_title')}
+																description={t(
+																	'setting_default_file_system_empty_description',
+																)}
+															/>
+														) : (
+															<SelectGroup>
+																{provideFileSystems?.data.map((item) => {
+																	return (
+																		<SelectItem
+																			key={item.id}
+																			value={String(item.id)}
+																			className='w-full'>
+																			{locale === 'zh' ? item.name_zh : item.name}
+																		</SelectItem>
+																	);
+																})}
+															</SelectGroup>
+														)}
 													</SelectContent>
 												</Select>
 											</div>

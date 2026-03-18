@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getDayDocumentsSummarySection } from '@/service/section';
 import { useTranslations } from 'next-intl';
 import { getLocalDateYMD, formatInUserTimeZone } from '@/lib/time';
-import { useUserContext } from '@/provider/user-provider';
 import {
 	Card,
 	CardContent,
@@ -41,7 +40,6 @@ import CardTitleIcon from '@/components/ui/card-title-icon';
 
 const TodaySummary = () => {
 	const t = useTranslations();
-	const { mainUserInfo } = useUserContext();
 	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 	const today = getLocalDateYMD();
 	const {
@@ -134,23 +132,29 @@ const TodaySummary = () => {
 	};
 
 	const processState = getProcessState();
+	const hasPodcastEngine =
+		podcastEngine.configured && !podcastEngine.subscriptionLocked;
+	const hasImageEngine =
+		imageGenerateEngine.configured &&
+		!imageGenerateEngine.subscriptionLocked;
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section?.auto_podcast ?? true,
 		autoIllustration: section?.auto_illustration ?? true,
-		hasPodcastEngine:
-			podcastEngine.configured && !podcastEngine.subscriptionLocked,
-		hasImageEngine:
-			imageGenerateEngine.configured &&
-			!imageGenerateEngine.subscriptionLocked,
+		hasPodcastEngine,
+		hasImageEngine,
 	});
 	const warningItems = [
-		automationWarnings.missingPodcastEngine
+		(sectionCreated
+			? automationWarnings.missingPodcastEngine
+			: !hasPodcastEngine)
 			? {
 					label: t('section_card_warning_missing_podcast_engine'),
 					href: '/setting#default_user_podcast_engine_choose',
 				}
 			: null,
-		automationWarnings.missingIllustrationEngine
+		(sectionCreated
+			? automationWarnings.missingIllustrationEngine
+			: !hasImageEngine)
 			? {
 					label: t('section_card_warning_missing_illustration_engine'),
 					href: '/setting#default_document_summary_model_choose',
@@ -170,32 +174,21 @@ const TodaySummary = () => {
 			: null;
 	const automationNotice =
 		warningItems.length > 0 ? (
-			<div className='rounded-xl border border-amber-500/25 bg-amber-500/6 px-3.5 py-3'>
-				<div className='flex items-start gap-2.5'>
-					<div className='mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300'>
-						<AlertTriangle className='size-4' />
-					</div>
-					<div className='min-w-0 space-y-2'>
-						<div className='space-y-0.5'>
-							<div className='text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300'>
-								{t('dashboard_today_summary_automation_notice')}
-							</div>
-							<p className='text-xs text-muted-foreground'>
-								{t('dashboard_today_summary_automation_notice_description')}
-							</p>
-						</div>
-						<div className='flex flex-wrap gap-2'>
-							{warningItems.map((warning) => (
-								<Link
-									key={warning.label}
-									href={warning.href}
-									className='inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-amber-700 transition-colors hover:border-amber-500/45 hover:bg-amber-500/8 dark:text-amber-300'>
-									<AlertTriangle className='size-3.5' />
-									<span>{warning.label}</span>
-								</Link>
-							))}
-						</div>
-					</div>
+			<div className='flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/6 px-3 py-2'>
+				<div className='inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-300'>
+					<AlertTriangle className='size-3.5' />
+					<span>{t('dashboard_today_summary_automation_notice')}</span>
+				</div>
+				<div className='flex flex-wrap gap-2'>
+					{warningItems.map((warning) => (
+						<Link
+							key={warning.label}
+							href={warning.href}
+							className='inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-amber-700 transition-colors hover:border-amber-500/45 hover:bg-amber-500/8 dark:text-amber-300'>
+							<AlertTriangle className='size-3.5' />
+							<span>{warning.label}</span>
+						</Link>
+					))}
 				</div>
 			</div>
 		) : null;
@@ -211,6 +204,7 @@ const TodaySummary = () => {
 					<CardDescription>
 						{t('dashboard_today_summary_description')}
 					</CardDescription>
+					{automationNotice}
 				</div>
 				{summaryHref ? (
 					<Link href={summaryHref}>
@@ -253,7 +247,7 @@ const TodaySummary = () => {
 					</Empty>
 				)}
 				{section && !isError && !sectionCreated && (
-					<div className='space-y-4'>
+					<div className='flex h-full flex-col'>
 						<Empty>
 							<EmptyHeader>
 								<EmptyMedia variant='icon'>
@@ -275,7 +269,6 @@ const TodaySummary = () => {
 								</Button>
 							</EmptyContent>
 						</Empty>
-						{automationNotice}
 					</div>
 				)}
 				{section && !isError && sectionCreated && (
@@ -336,16 +329,15 @@ const TodaySummary = () => {
 								</div>
 							</div>
 						</div>
-						{automationNotice}
 
-							{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
-							section.podcast_task.podcast_file_name ? (
-								<AudioPlayer
-									src={section.podcast_task.podcast_file_name}
-									title={section.title || t('dashboard_today_summary')}
-									artist='AI Generated'
-									variant='compact'
-								/>
+						{section.podcast_task?.status === SectionPodcastStatus.SUCCESS &&
+						section.podcast_task.podcast_file_name ? (
+							<AudioPlayer
+								src={section.podcast_task.podcast_file_name}
+								title={section.title || t('dashboard_today_summary')}
+								artist='AI Generated'
+								variant='compact'
+							/>
 						) : (
 							<Alert className='border-border/60 bg-muted/20'>
 								<AudioLines className='text-muted-foreground' />

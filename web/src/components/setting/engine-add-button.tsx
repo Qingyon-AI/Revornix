@@ -44,6 +44,8 @@ import { AccessPlanLevel } from '@/enums/product';
 import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Switch } from '../ui/switch';
+import ResourceSelectEmptyState from './resource-select-empty-state';
+import { Boxes } from 'lucide-react';
 
 const EngineAddButton = () => {
 	const t = useTranslations();
@@ -201,14 +203,27 @@ const EngineAddButton = () => {
 											<Select
 												onValueChange={(value) => field.onChange(Number(value))}
 												value={field.value ? String(field.value) : undefined}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_engine_page_engine_form_engine_id_placeholder',
+											<SelectTrigger className='w-full'>
+												<SelectValue
+													placeholder={t(
+														'setting_engine_page_engine_form_engine_id_placeholder',
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{!isFetchingProvideEngines &&
+												!isRefetchingProvideEngines &&
+												(provideEngines?.data?.length ?? 0) === 0 ? (
+													<ResourceSelectEmptyState
+														icon={Boxes}
+														title={t('setting_default_engine_empty_title')}
+														description={t(
+															'setting_default_engine_empty_description',
 														)}
+														actionLabel={t('setting_default_engine_empty_action')}
+														href='/setting/engine'
 													/>
-												</SelectTrigger>
-												<SelectContent>
+												) : (
 													<SelectGroup>
 														{provideEngines?.data.map((item) => {
 															return (
@@ -221,9 +236,10 @@ const EngineAddButton = () => {
 															);
 														})}
 													</SelectGroup>
-												</SelectContent>
-											</Select>
-										</div>
+												)}
+											</SelectContent>
+										</Select>
+									</div>
 									</div>
 									<FormMessage />
 								</FormItem>
@@ -246,48 +262,6 @@ const EngineAddButton = () => {
 												)}
 												value={field.value || ''}
 											/>
-										</div>
-									</div>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name='required_plan_level'
-							render={({ field }) => (
-								<FormItem>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
-											{t('setting_required_plan_level_label')}
-										</FormLabel>
-										<div className='col-span-9'>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={String(
-													field.value ?? AccessPlanLevel.FREE,
-												)}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_required_plan_level_placeholder',
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{[
-															AccessPlanLevel.FREE,
-															AccessPlanLevel.PRO,
-															AccessPlanLevel.MAX,
-														].map((level) => (
-															<SelectItem key={level} value={String(level)}>
-																{t(getPlanLevelTranslationKey(level))}
-															</SelectItem>
-														))}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
 										</div>
 									</div>
 									<FormMessage />
@@ -366,7 +340,7 @@ const EngineAddButton = () => {
 							control={form.control}
 							render={({ field }) => {
 								return (
-									<FormItem className='rounded-lg border border-input p-3'>
+									<FormItem className='space-y-3 rounded-lg border border-input p-3'>
 										<div className='flex flex-row gap-1 items-center'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
 												{t('setting_model_provider_is_public')}
@@ -381,6 +355,56 @@ const EngineAddButton = () => {
 										<FormDescription>
 											{t('setting_engine_page_mine_engine_is_public_tips')}
 										</FormDescription>
+										{field.value && (
+											<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
+												<div className='space-y-1'>
+													<div className='text-sm font-medium'>
+														{t('setting_required_plan_level_label')}
+													</div>
+													<p className='text-xs text-muted-foreground'>
+														{t('setting_required_plan_level_tips')}
+													</p>
+												</div>
+												<Select
+													onValueChange={(value) =>
+														form.setValue(
+															'required_plan_level',
+															Number(value),
+															{
+																shouldDirty: true,
+																shouldValidate: true,
+															},
+														)
+													}
+													value={String(
+														form.watch('required_plan_level') ??
+															AccessPlanLevel.FREE,
+													)}>
+													<SelectTrigger className='w-full'>
+														<SelectValue
+															placeholder={t(
+																'setting_required_plan_level_placeholder',
+															)}
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															{[
+																AccessPlanLevel.FREE,
+																AccessPlanLevel.PRO,
+																AccessPlanLevel.MAX,
+															].map((level) => (
+																<SelectItem
+																	key={level}
+																	value={String(level)}>
+																	{t(getPlanLevelTranslationKey(level))}
+																</SelectItem>
+															))}
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+											</div>
+										)}
 									</FormItem>
 								);
 							}}

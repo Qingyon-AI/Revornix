@@ -319,59 +319,6 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 									);
 								}}
 							/>
-								<FormField
-									name='required_plan_level'
-									control={form.control}
-									render={({ field }) => {
-										return (
-											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
-														{t('setting_required_plan_level_label')}
-													</FormLabel>
-													<div className='col-span-9'>
-														<Select
-															key={`${engineId}-${String(
-																field.value ?? AccessPlanLevel.FREE,
-															)}`}
-															disabled={!authorized}
-															onValueChange={(value) =>
-																field.onChange(Number(value))
-															}
-															value={String(
-															field.value ?? AccessPlanLevel.FREE,
-														)}>
-														<SelectTrigger className='w-full'>
-															<SelectValue
-																placeholder={t(
-																	'setting_required_plan_level_placeholder',
-																)}
-															/>
-														</SelectTrigger>
-														<SelectContent>
-															<SelectGroup>
-																{[
-																	AccessPlanLevel.FREE,
-																	AccessPlanLevel.PRO,
-																	AccessPlanLevel.MAX,
-																].map((level) => (
-																	<SelectItem
-																		key={level}
-																		value={String(level)}>
-																		{t(getPlanLevelTranslationKey(level))}
-																	</SelectItem>
-																))}
-															</SelectGroup>
-														</SelectContent>
-													</Select>
-												</div>
-											</div>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-
 							<FormField
 								name='description'
 								control={form.control}
@@ -447,7 +394,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 										control={form.control}
 										render={({ field }) => {
 											return (
-												<FormItem className='rounded-lg border border-input p-3'>
+												<FormItem className='space-y-3 rounded-lg border border-input p-3'>
 													<div className='flex flex-row gap-1 items-center'>
 														<FormLabel className='flex flex-row gap-1 items-center'>
 															{t('setting_model_provider_is_public')}
@@ -465,6 +412,61 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 															'setting_engine_page_mine_engine_is_public_tips',
 														)}
 													</FormDescription>
+													{field.value && (
+														<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
+															<div className='space-y-1'>
+																<div className='text-sm font-medium'>
+																	{t('setting_required_plan_level_label')}
+																</div>
+																<p className='text-xs text-muted-foreground'>
+																	{t('setting_required_plan_level_tips')}
+																</p>
+															</div>
+															<Select
+																key={`${engineId}-${String(
+																	form.watch('required_plan_level') ??
+																		AccessPlanLevel.FREE,
+																)}`}
+																disabled={!authorized}
+																onValueChange={(value) =>
+																	form.setValue(
+																		'required_plan_level',
+																		Number(value),
+																		{
+																			shouldDirty: true,
+																			shouldValidate: true,
+																		},
+																	)
+																}
+																value={String(
+																	form.watch('required_plan_level') ??
+																		AccessPlanLevel.FREE,
+																)}>
+																<SelectTrigger className='w-full'>
+																	<SelectValue
+																		placeholder={t(
+																			'setting_required_plan_level_placeholder',
+																		)}
+																	/>
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectGroup>
+																		{[
+																			AccessPlanLevel.FREE,
+																			AccessPlanLevel.PRO,
+																			AccessPlanLevel.MAX,
+																		].map((level) => (
+																			<SelectItem
+																				key={level}
+																				value={String(level)}>
+																				{t(getPlanLevelTranslationKey(level))}
+																			</SelectItem>
+																		))}
+																	</SelectGroup>
+																</SelectContent>
+															</Select>
+														</div>
+													)}
 												</FormItem>
 											);
 										}}
