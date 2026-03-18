@@ -11,6 +11,7 @@ import { getLocale } from 'next-intl/server';
 import { getMessages } from 'next-intl/server';
 import { AudioPlayerProvider } from '@/provider/audio-player-provider';
 import FloatingAudioPlayer from '@/components/ui/floating-audio-player';
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
 	title: 'Revornix',
@@ -30,6 +31,7 @@ export default async function RootLayout({
 		<html lang={locale} suppressHydrationWarning>
 			<body>
 				<NextIntlClientProvider messages={messages}>
+					<NextTopLoader />
 					<ReactQueryProvider>
 						<ThemeProvider
 							attribute='class'

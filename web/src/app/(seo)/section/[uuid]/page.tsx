@@ -46,6 +46,7 @@ import { isSeoNotFoundError } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import GraphTaskCard from '@/components/graph/graph-task-card';
 import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
+import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -267,17 +268,27 @@ const SEOSectionDetail = async (props: {
 							<p className='max-w-4xl break-words text-sm leading-7 text-muted-foreground sm:text-base'>
 								{sectionDescription}
 							</p>
-							{section?.creator ? (
-								<Link
-									href={`/user/${section.creator.id}`}
-									className='inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-background/90'>
-									<Users className='size-4' />
-									<span>{t('section_creator')}</span>
-									<span className='font-medium text-foreground'>
-										{section.creator.nickname}
-									</span>
-								</Link>
-							) : null}
+							<div className='flex flex-wrap items-center gap-3'>
+								{section?.creator ? (
+									<Link
+										href={`/user/${section.creator.id}`}
+										className='inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-background/90'>
+										<Users className='size-4' />
+										<span>{t('section_creator')}</span>
+										<span className='font-medium text-foreground'>
+											{section.creator.nickname}
+										</span>
+									</Link>
+								) : null}
+								{section?.id ? (
+									<SeoSectionSubscribeButton
+										sectionId={section.id}
+										creatorId={section.creator?.id}
+										initialIsSubscribed={section.is_subscribed}
+										className='shrink-0'
+									/>
+								) : null}
+							</div>
 						</div>
 
 						<div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
