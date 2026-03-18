@@ -28,8 +28,9 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { AlertCircleIcon, Loader2 } from 'lucide-react';
+import { AlertCircleIcon, HardDrive, Loader2 } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
+import ResourceSelectEmptyState from './resource-select-empty-state';
 
 const DefaultFileSystemChange = () => {
 	const t = useTranslations();
@@ -123,16 +124,27 @@ const DefaultFileSystemChange = () => {
 					/>
 				</SelectTrigger>
 				<SelectContent>
-					<SelectGroup>
-						{mineFileSystems &&
-							mineFileSystems.data.map((user_file_system) => (
-								<SelectItem
-									key={user_file_system.id}
-									value={String(user_file_system.id)}>
-									{user_file_system.title}
-								</SelectItem>
-							))}
-					</SelectGroup>
+					{!isFetchingMineFileSystems &&
+					(mineFileSystems?.data?.length ?? 0) === 0 ? (
+						<ResourceSelectEmptyState
+							icon={HardDrive}
+							title={t('setting_default_file_system_empty_title')}
+							description={t('setting_default_file_system_empty_description')}
+							actionLabel={t('setting_default_file_system_empty_action')}
+							href='/setting/file-system'
+						/>
+					) : (
+						<SelectGroup>
+							{mineFileSystems &&
+								mineFileSystems.data.map((user_file_system) => (
+									<SelectItem
+										key={user_file_system.id}
+										value={String(user_file_system.id)}>
+										{user_file_system.title}
+									</SelectItem>
+								))}
+						</SelectGroup>
+					)}
 				</SelectContent>
 			</Select>
 

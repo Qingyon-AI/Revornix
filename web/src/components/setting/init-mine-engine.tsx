@@ -8,7 +8,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import {
+	Form,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '../ui/form';
 import { useState } from 'react';
 import { useUserContext } from '@/provider/user-provider';
 import { Input } from '../ui/input';
@@ -31,6 +38,9 @@ import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Button } from '../ui/button';
 import { CircleCheck, Loader2 } from 'lucide-react';
+import { Switch } from '../ui/switch';
+import ResourceSelectEmptyState from './resource-select-empty-state';
+import { Boxes } from 'lucide-react';
 
 const InitMineEngine = () => {
 	const t = useTranslations();
@@ -192,18 +202,32 @@ const InitMineEngine = () => {
 													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectGroup>
-														{provideEngines?.data.map((item) => {
-															return (
-																<SelectItem
-																	key={item.id}
-																	value={String(item.id)}
-																	className='w-full'>
-																	{locale === 'zh' ? item.name_zh : item.name}
-																</SelectItem>
-															);
-														})}
-													</SelectGroup>
+													{!isFetchingProvideEngines &&
+													!isRefetchingProvideEngines &&
+													(provideEngines?.data?.length ?? 0) === 0 ? (
+														<ResourceSelectEmptyState
+															icon={Boxes}
+															title={t('setting_default_engine_empty_title')}
+															description={t(
+																'setting_default_engine_empty_description',
+															)}
+															actionLabel={t('setting_default_engine_empty_action')}
+															href='/setting/engine'
+														/>
+													) : (
+														<SelectGroup>
+															{provideEngines?.data.map((item) => {
+																return (
+																	<SelectItem
+																		key={item.id}
+																		value={String(item.id)}
+																		className='w-full'>
+																		{locale === 'zh' ? item.name_zh : item.name}
+																	</SelectItem>
+																);
+															})}
+														</SelectGroup>
+													)}
 												</SelectContent>
 											</Select>
 										</div>
@@ -229,48 +253,6 @@ const InitMineEngine = () => {
 												)}
 												value={field.value || ''}
 											/>
-										</div>
-									</div>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name='required_plan_level'
-							render={({ field }) => (
-								<FormItem>
-									<div className='grid gap-2 sm:grid-cols-12 sm:gap-3'>
-										<FormLabel className='sm:col-span-4 sm:pt-2'>
-											{t('setting_required_plan_level_label')}
-										</FormLabel>
-										<div className='sm:col-span-8'>
-											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
-												value={String(
-													field.value ?? AccessPlanLevel.FREE,
-												)}>
-												<SelectTrigger className='w-full'>
-													<SelectValue
-														placeholder={t(
-															'setting_required_plan_level_placeholder',
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{[
-															AccessPlanLevel.FREE,
-															AccessPlanLevel.PRO,
-															AccessPlanLevel.MAX,
-														].map((level) => (
-															<SelectItem key={level} value={String(level)}>
-																{t(getPlanLevelTranslationKey(level))}
-															</SelectItem>
-														))}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
 										</div>
 									</div>
 									<FormMessage />
@@ -344,6 +326,76 @@ const InitMineEngine = () => {
 								</div>
 							</>
 						)}
+						<FormField
+							name='is_public'
+							control={form.control}
+							render={({ field }) => (
+								<FormItem className='space-y-3 rounded-lg border border-input p-3'>
+									<div className='flex flex-row items-center gap-1'>
+										<FormLabel className='flex flex-row items-center gap-1'>
+											{t('setting_model_provider_is_public')}
+										</FormLabel>
+										<Switch
+											checked={field.value}
+											onCheckedChange={(value) => {
+												field.onChange(value);
+											}}
+										/>
+									</div>
+									<FormDescription>
+										{t('setting_engine_page_mine_engine_is_public_tips')}
+									</FormDescription>
+									{field.value && (
+										<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
+											<div className='space-y-1'>
+												<div className='text-sm font-medium'>
+													{t('setting_required_plan_level_label')}
+												</div>
+												<p className='text-xs text-muted-foreground'>
+													{t('setting_required_plan_level_tips')}
+												</p>
+											</div>
+											<Select
+												onValueChange={(value) =>
+													form.setValue(
+														'required_plan_level',
+														Number(value),
+														{
+															shouldDirty: true,
+															shouldValidate: true,
+														},
+													)
+												}
+												value={String(
+													form.watch('required_plan_level') ??
+														AccessPlanLevel.FREE,
+												)}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_required_plan_level_placeholder',
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{[
+															AccessPlanLevel.FREE,
+															AccessPlanLevel.PRO,
+															AccessPlanLevel.MAX,
+														].map((level) => (
+															<SelectItem key={level} value={String(level)}>
+																{t(getPlanLevelTranslationKey(level))}
+															</SelectItem>
+														))}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										</div>
+									)}
+								</FormItem>
+							)}
+						/>
 						<Button
 							type='submit'
 							className='w-full rounded-2xl'

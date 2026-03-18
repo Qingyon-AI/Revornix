@@ -3,6 +3,7 @@
 import NotificationRecordCard from '@/components/notification/notification-record-card';
 import NotificationRecordCardSkeleton from '@/components/notification/notification-record-card-skeleton';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
@@ -12,7 +13,7 @@ import {
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { BadgeCheck, BellOff, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { toast } from 'sonner';
 import {
@@ -33,6 +34,7 @@ const NotificationsPage = () => {
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const [keyword, setKeyword] = useState('');
+	const deferredKeyword = useDeferredValue(keyword.trim());
 	const { ref: bottomRef, inView } = useInView();
 	const searchMyNotificationsQueryKey = [
 		'searchMyNotifications',
@@ -49,20 +51,20 @@ const NotificationsPage = () => {
 		hasNextPage,
 	} = useInfiniteQuery({
 		enabled: !!mainUserInfo?.id,
-		queryKey: [...searchMyNotificationsQueryKey, keyword],
+		queryKey: [...searchMyNotificationsQueryKey, deferredKeyword],
 		queryFn: (pageParam) =>
 			searchNotificationRecords({ ...pageParam.pageParam }),
 		initialPageParam: {
 			limit: 10,
-			keyword: keyword,
+			keyword: deferredKeyword || undefined,
 		},
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
 				? {
 						start: lastPage.next_start,
 						limit: lastPage.limit,
-						keyword: keyword,
-				  }
+						keyword: deferredKeyword || undefined,
+					}
 				: undefined;
 		},
 	});
@@ -96,20 +98,28 @@ const NotificationsPage = () => {
 	return (
 		<div className='pb-5 px-5 w-full flex-1 overflow-auto'>
 			<Tabs defaultValue='systemAlert' className='h-full flex flex-col'>
-				<div className='w-full justify-between items-center flex gap-4'>
+				<div className='flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
 					<TabsList>
 						<TabsTrigger value='systemAlert'>
 							{t('notification_system')}
 						</TabsTrigger>
 					</TabsList>
-					<Button
-						disabled={mutate.isPending}
-						variant={'secondary'}
-						onClick={() => mutate.mutate()}>
-						{t('notification_all_marked_read')}
-						<BadgeCheck />
-						{mutate.isPending && <Loader2 className='animate-spin' />}
-					</Button>
+					<div className='flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center'>
+						<Input
+							value={keyword}
+							onChange={(event) => setKeyword(event.target.value)}
+							placeholder={t('notification_search_placeholder')}
+							className='w-full sm:w-72'
+						/>
+						<Button
+							disabled={mutate.isPending}
+							variant={'secondary'}
+							onClick={() => mutate.mutate()}>
+							{t('notification_all_marked_read')}
+							<BadgeCheck />
+							{mutate.isPending && <Loader2 className='animate-spin' />}
+						</Button>
+					</div>
 				</div>
 				<TabsContent value='systemAlert' className='flex-1 overflow-auto'>
 					{isError && (
@@ -125,7 +135,11 @@ const NotificationsPage = () => {
 								<EmptyMedia variant='icon'>
 									<BellOff />
 								</EmptyMedia>
-								<EmptyDescription>{t('notification_empty')}</EmptyDescription>
+								<EmptyDescription>
+									{deferredKeyword
+										? t('notification_search_empty')
+										: t('notification_empty')}
+								</EmptyDescription>
 							</EmptyHeader>
 						</Empty>
 					)}
