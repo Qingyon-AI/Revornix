@@ -5,9 +5,11 @@ import {
 	DocumentDetailRequest,
 	DocumentDetailResponse,
 	InifiniteScrollPagnitionSectionInfo,
+	InifiniteScrollPagnitionSectionDocumentInfo,
 	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
+	SectionDocumentRequest,
 	SectionInfo,
 	UserInfoRequest,
 	UserPublicInfo,
@@ -70,6 +72,14 @@ export const fetchPublicDocumentDetail = async (
 	data: DocumentDetailRequest,
 ): Promise<PublicDocumentDetail> => {
 	return await serverRequest(documentApi.documentDetail, {
+		data,
+	});
+};
+
+export const fetchPublicSectionDocuments = async (
+	data: SectionDocumentRequest,
+): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
+	return await serverRequest(sectionApi.searchSectionDocuments, {
 		data,
 	});
 };

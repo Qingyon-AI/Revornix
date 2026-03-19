@@ -1,5 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { NO_INDEX_METADATA } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = NO_INDEX_METADATA;
 
 const SEOPage = async () => {
 	const cookieStore = await cookies();

@@ -1,12 +1,14 @@
 import PublicSectionCard from '@/components/seo/public-section-card';
+import JsonLd from '@/components/seo/json-ld';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { ArrowRight, Compass, Search, Sparkles } from 'lucide-react';
-import { fetchPublicSections } from '@/lib/seo';
+import { ArrowRight, Compass, Search } from 'lucide-react';
+import { fetchPublicSections, getPublicSectionHref } from '@/lib/seo';
+import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -30,26 +32,39 @@ const getStartValue = (value: string | string[] | undefined) => {
 export async function generateMetadata(props: {
 	searchParams: SearchParams;
 }): Promise<Metadata> {
-	const t = await getTranslations();
-	const searchParams = await props.searchParams;
+	const [t, searchParams] = await Promise.all([
+		getTranslations(),
+		props.searchParams,
+	]);
 	const keyword = getSingleValue(searchParams.q)?.trim();
+	const start = getStartValue(searchParams.start);
+	const noIndex = Boolean(keyword) || start !== undefined;
 
 	if (keyword) {
-		return {
+		return buildMetadata({
 			title: `${keyword} | ${t('seo_community_title')}`,
 			description: t('seo_community_description'),
-		};
+			path: '/community',
+			noIndex,
+			keywords: [keyword, 'community', 'public sections'],
+		});
 	}
 
-	return {
+	return buildMetadata({
 		title: t('seo_community_title'),
 		description: t('seo_community_description'),
-	};
+		path: '/community',
+		noIndex,
+		keywords: ['community', 'public sections', 'knowledge sharing'],
+	});
 }
 
 const CommunityPage = async (props: { searchParams: SearchParams }) => {
-	const t = await getTranslations();
-	const searchParams = await props.searchParams;
+	const [t, locale, searchParams] = await Promise.all([
+		getTranslations(),
+		getLocale(),
+		props.searchParams,
+	]);
 	const keyword = getSingleValue(searchParams.q)?.trim() || undefined;
 	const start = getStartValue(searchParams.start);
 	const sections = await fetchPublicSections({
@@ -69,9 +84,25 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 
 	const surfaceCardClassName =
 		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
+	const communitySchema = {
+		'@context': 'https://schema.org',
+		'@type': 'CollectionPage',
+		name: t('seo_community_title'),
+		description: t('seo_community_description'),
+		url: createAbsoluteUrl('/community'),
+		inLanguage: locale,
+		mainEntity:
+			sections.elements?.slice(0, 8).map((section) => ({
+				'@type': 'CollectionPage',
+				name: section.title,
+				description: section.description,
+				url: createAbsoluteUrl(getPublicSectionHref(section)),
+			})) ?? [],
+	};
 
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+			<JsonLd data={communitySchema} />
 			<Card
 				className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
