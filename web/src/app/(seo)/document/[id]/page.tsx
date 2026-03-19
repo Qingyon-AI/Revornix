@@ -1,5 +1,6 @@
 import AudioPlayer from '@/components/ui/audio-player';
 import CustomMarkdown from '@/components/ui/custom-markdown';
+import JsonLd from '@/components/seo/json-ld';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,12 @@ import {
 	Headphones,
 	Users,
 } from 'lucide-react';
+import {
+	buildMetadata,
+	createAbsoluteUrl,
+	getSiteOrigin,
+	toIsoDate,
+} from '@/lib/seo-metadata';
 
 type Params = Promise<{ id: string }>;
 
@@ -83,16 +90,36 @@ export async function generateMetadata(props: {
 		const document = await fetchPublicDocumentDetail({
 			document_id: Number(id),
 		});
-		return {
+		const coverSrc =
+			document.cover && document.creator
+				? replacePath(document.cover, document.creator.id)
+				: undefined;
+
+		return buildMetadata({
 			title: `${document.title || t('document_no_title')} | ${t('seo_document_title_suffix')}`,
 			description: document.description || t('document_no_description'),
-		};
+			path: `/document/${document.id}`,
+			type: 'article',
+			images: [coverSrc],
+			publishedTime: toIsoDate(document.create_time),
+			modifiedTime: toIsoDate(document.update_time ?? document.create_time),
+			authors: [document.creator.nickname],
+			tags: document.labels?.map((label) => label.name),
+			keywords: [
+				document.title,
+				document.from_plat,
+				...(document.labels?.map((label) => label.name) ?? []),
+			],
+		});
 	} catch (error) {
 		if (isSeoNotFoundError(error)) {
-			return {
+			return buildMetadata({
 				title: t('seo_document_title_suffix'),
 				description: t('document_no_description'),
-			};
+				path: `/document/${id}`,
+				noIndex: true,
+				keywords: ['public document'],
+			});
 		}
 		throw error;
 	}
@@ -131,12 +158,34 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			(document.podcast_task?.status === DocumentPodcastStatus.SUCCESS
 				? document.podcast_task.podcast_file_name
 				: null);
+		const documentSchema = {
+			'@context': 'https://schema.org',
+			'@type': 'Article',
+			headline: document.title || t('document_no_title'),
+			description: document.description || t('document_no_description'),
+			image: coverSrc,
+			datePublished: toIsoDate(document.create_time),
+			dateModified: toIsoDate(document.update_time ?? document.create_time),
+			mainEntityOfPage: createAbsoluteUrl(`/document/${document.id}`),
+			author: {
+				'@type': 'Person',
+				name: document.creator.nickname,
+				url: createAbsoluteUrl(`/user/${document.creator.id}`),
+			},
+			publisher: {
+				'@type': 'Organization',
+				name: t('website_title'),
+				url: getSiteOrigin(),
+			},
+			keywords: document.labels?.map((label) => label.name),
+		};
 
 		const surfaceCardClassName =
 			'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
 
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+				<JsonLd data={documentSchema} />
 				<Card
 					className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 					<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />

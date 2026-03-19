@@ -2,6 +2,7 @@ import {
 	SectionInfo as SectionInfoType,
 	SectionSeoDetailRequest,
 } from '@/generated';
+import JsonLd from '@/components/seo/json-ld';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
 import {
@@ -47,6 +48,11 @@ import { notFound } from 'next/navigation';
 import GraphTaskCard from '@/components/graph/graph-task-card';
 import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import {
+	buildMetadata,
+	createAbsoluteUrl,
+	toIsoDate,
+} from '@/lib/seo-metadata';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -122,10 +128,27 @@ export async function generateMetadata(props: {
 		throw new Error('Something is wrong while getting the section detail');
 	}
 	if (section_res) {
-		return {
+		return buildMetadata({
 			title: section_res.title,
 			description: section_res.description,
-		};
+			path: `/section/${uuid}`,
+			type: 'article',
+			images: [
+				section_res.cover && section_res.creator
+					? replacePath(section_res.cover, section_res.creator.id)
+					: undefined,
+			],
+			publishedTime: toIsoDate(section_res.create_time),
+			modifiedTime: toIsoDate(section_res.update_time ?? section_res.create_time),
+			authors: section_res.creator?.nickname
+				? [section_res.creator.nickname]
+				: undefined,
+			tags: section_res.labels?.map((label) => label.name),
+			keywords: [
+				section_res.title,
+				...(section_res.labels?.map((label) => label.name) ?? []),
+			],
+		});
 	}
 	return;
 }
@@ -206,6 +229,26 @@ const SEOSectionDetail = async (props: {
 		section?.cover && section.creator
 			? replacePath(section.cover, section.creator.id)
 			: null;
+	const sectionSchema =
+		section && section.creator
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'CollectionPage',
+					name: sectionTitle,
+					description: sectionDescription,
+					url: createAbsoluteUrl(`/section/${uuid}`),
+					image: sectionCover ?? undefined,
+					datePublished: toIsoDate(section.create_time),
+					dateModified: toIsoDate(section.update_time ?? section.create_time),
+					inLanguage: locale,
+					author: {
+						'@type': 'Person',
+						name: section.creator.nickname,
+						url: createAbsoluteUrl(`/user/${section.creator.id}`),
+					},
+					keywords: section.labels?.map((label) => label.name),
+				}
+			: null;
 	const graphCardState =
 		section?.process_task?.status === SectionProcessStatus.SUCCESS
 			? {
@@ -231,6 +274,7 @@ const SEOSectionDetail = async (props: {
 
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+			{sectionSchema ? <JsonLd data={sectionSchema} /> : null}
 			<Card className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
 				<CardContent className='relative px-5 py-6 sm:px-7 sm:py-7'>

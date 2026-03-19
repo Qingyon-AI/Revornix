@@ -1,4 +1,5 @@
 import PublicSectionCard from '@/components/seo/public-section-card';
+import JsonLd from '@/components/seo/json-ld';
 import SeoUserFollowButton from '@/components/seo/seo-user-follow-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +20,7 @@ import {
 } from '@/lib/seo';
 import { cn, replacePath } from '@/lib/utils';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
@@ -31,6 +32,7 @@ import {
 	Sparkles,
 	Users,
 } from 'lucide-react';
+import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -80,22 +82,41 @@ const getRoleMeta = (
 
 export async function generateMetadata(props: {
 	params: Params;
+	searchParams: SearchParams;
 }): Promise<Metadata> {
-	const { id } = await props.params;
-	const t = await getTranslations();
+	const [{ id }, searchParams, t] = await Promise.all([
+		props.params,
+		props.searchParams,
+		getTranslations(),
+	]);
+	const keyword = getSingleValue(searchParams.q)?.trim();
+	const start = getStartValue(searchParams.start);
+	const noIndex = Boolean(keyword) || start !== undefined;
 
 	try {
 		const user = await fetchPublicUserDetail({ user_id: Number(id) });
-		return {
+		const avatarSrc =
+			user.avatar && user.avatar.length > 0
+				? replacePath(user.avatar, user.id)
+				: undefined;
+
+		return buildMetadata({
 			title: `${user.nickname} | ${t('seo_user_title_suffix')}`,
 			description: user.slogan || t('user_detail_public_profile_description'),
-		};
+			path: `/user/${user.id}`,
+			noIndex,
+			images: [avatarSrc],
+			keywords: [user.nickname, 'creator', 'public profile'],
+		});
 	} catch (error) {
 		if (isSeoNotFoundError(error)) {
-			return {
+			return buildMetadata({
 				title: t('seo_user_title_suffix'),
 				description: t('user_detail_public_profile_description'),
-			};
+				path: `/user/${id}`,
+				noIndex: true,
+				keywords: ['creator', 'public profile'],
+			});
 		}
 		throw error;
 	}
@@ -105,9 +126,10 @@ const SeoUserDetailPage = async (props: {
 	params: Params;
 	searchParams: SearchParams;
 }) => {
-	const [{ id }, searchParams, t] = await Promise.all([
+	const [{ id }, searchParams, locale, t] = await Promise.all([
 		props.params,
 		props.searchParams,
+		getLocale(),
 		getTranslations(),
 	]);
 
@@ -137,6 +159,23 @@ const SeoUserDetailPage = async (props: {
 			user.avatar && user.avatar.length > 0
 				? replacePath(user.avatar, user.id)
 				: undefined;
+		const profileSchema = {
+			'@context': 'https://schema.org',
+			'@type': 'ProfilePage',
+			name: `${user.nickname} | ${t('seo_user_title_suffix')}`,
+			description:
+				user.slogan || t('user_detail_public_profile_description'),
+			url: createAbsoluteUrl(`/user/${user.id}`),
+			inLanguage: locale,
+			mainEntity: {
+				'@type': 'Person',
+				name: user.nickname,
+				description:
+					user.slogan || t('user_detail_public_profile_description'),
+				image: avatarSrc,
+				url: createAbsoluteUrl(`/user/${user.id}`),
+			},
+		};
 		const nextHref = new URLSearchParams();
 		if (keyword) {
 			nextHref.set('q', keyword);
@@ -150,6 +189,7 @@ const SeoUserDetailPage = async (props: {
 
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+				<JsonLd data={profileSchema} />
 				<div className='relative overflow-hidden rounded-[30px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] p-6 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.38)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.2),transparent_24%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(15,23,42,0.84))]'>
 					<div className='pointer-events-none absolute inset-0'>
 						<div className='absolute left-0 top-0 h-28 w-28 rounded-full bg-emerald-500/12 blur-3xl' />
