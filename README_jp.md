@@ -47,8 +47,6 @@ Revornix/
 ├── api/                  # FastAPI コアバックエンド（認証、ドキュメント、AI API）
 ├── celery-worker/        # 非同期ワークフロー（embedding、要約、グラフ、通知）
 ├── hot-news/             # トレンド集約サービス（DailyHotApi ベース）
-├── nginx/                # リバースプロキシ設定
-├── docker-compose.yaml   # 本番向け全体構成
 └── docker-compose-local.yaml # ローカル依存サービス起動
 ```
 

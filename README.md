@@ -47,8 +47,6 @@ Revornix/
 ├── api/                  # FastAPI core backend (auth, documents, sections, AI APIs)
 ├── celery-worker/        # Async workflows (embedding, summary, graph, podcast, notifications)
 ├── hot-news/             # Trending aggregation service (based on DailyHotApi)
-├── nginx/                # Reverse proxy config
-├── docker-compose.yaml   # Full stack deployment
 └── docker-compose-local.yaml # Local dependency bootstrap
 ```
 
