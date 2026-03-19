@@ -64,15 +64,19 @@ Revornix/
 
 ## Some UI
 
-![Home](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204108304.png)
+![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260312200944018.png)
 
-![Document Page](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114203737293.png)
+![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193157115.png)
 
-![Column Page](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114204036225.png)
+![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318190625846.png)
+
+![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
+
+![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192242314.png)
 
 Note: The trending headlines feature is based on [DailyHotApi](https://github.com/imsyy/DailyHotApi).
 
-![Trending](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260114225533807.png)
+![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
 
 ## Quick Start
 
