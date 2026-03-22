@@ -5,10 +5,11 @@ import {
 	fetchPublicSections,
 	type PublicSectionInfo,
 } from '@/lib/seo';
-import { createAbsoluteUrl } from '@/lib/seo-metadata';
+import { createAbsoluteUrl, toIsoDate } from '@/lib/seo-metadata';
 
 export const SITEMAP_REVALIDATE_SECONDS = 3600;
 export const SITEMAP_URLS_PER_FILE = 50000;
+export const SITEMAP_CONTENT_TYPE = 'application/xml; charset=utf-8';
 
 const SECTION_PAGE_SIZE = 50;
 const DOCUMENTS_PER_SECTION = 20;
@@ -16,6 +17,15 @@ const SECTION_DOCUMENT_CONCURRENCY = 5;
 
 const getLastModified = (value?: Date | string | null) => {
 	return value ? new Date(value) : new Date();
+};
+
+const escapeXml = (value: string) => {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&apos;');
 };
 
 const addEntry = (
@@ -134,7 +144,17 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 
 	addEntry(entries, '/community', new Date(), 'daily', 1);
 
-	const publicSections = await fetchAllPublicSections();
+	let publicSections: PublicSectionInfo[] = [];
+	try {
+		publicSections = await fetchAllPublicSections();
+	} catch (error) {
+		console.error(
+			'[SEO] Failed to fetch public sections for sitemap:',
+			error,
+		);
+		return Array.from(entries.values());
+	}
+
 	const creatorLatestUpdate = new Map<number, Date>();
 
 	for (const section of publicSections) {
@@ -259,16 +279,112 @@ export const getSitemapChunk = async (
 	return chunks[chunkId] ?? [];
 };
 
-export const getSitemapUrls = unstable_cache(
+const getChunkLastModified = (chunk: MetadataRoute.Sitemap) => {
+	let lastModified: Date | undefined;
+
+	for (const entry of chunk) {
+		if (!entry.lastModified) {
+			continue;
+		}
+
+		const parsedDate = new Date(entry.lastModified);
+		if (Number.isNaN(parsedDate.getTime())) {
+			continue;
+		}
+
+		if (!lastModified || parsedDate > lastModified) {
+			lastModified = parsedDate;
+		}
+	}
+
+	return lastModified;
+};
+
+export const getSitemapIndexUrl = () => {
+	return createAbsoluteUrl('/sitemap.xml');
+};
+
+export const getSitemapChunkUrls = unstable_cache(
 	async () => {
 		const chunkCount = await getSitemapChunkCount();
 
 		return Array.from({ length: chunkCount }, (_, index) =>
-			createAbsoluteUrl(`/sitemap/${index}.xml`),
+			createAbsoluteUrl(`/sitemap/${index}`),
 		);
 	},
-	['public-sitemap-urls'],
+	['public-sitemap-chunk-urls'],
 	{
 		revalidate: SITEMAP_REVALIDATE_SECONDS,
 	},
 );
+
+export const getSitemapChunkDescriptors = unstable_cache(
+	async () => {
+		const chunks = await getAllSitemapChunks();
+
+		return chunks.map((chunk, index) => ({
+			id: index,
+			url: createAbsoluteUrl(`/sitemap/${index}`),
+			lastModified: getChunkLastModified(chunk),
+		}));
+	},
+	['public-sitemap-chunk-descriptors'],
+	{
+		revalidate: SITEMAP_REVALIDATE_SECONDS,
+	},
+);
+
+export const renderSitemapIndexXml = (
+	entries: Array<{
+		url: string;
+		lastModified?: Date | string | null;
+	}>,
+) => {
+	const body = entries
+		.map((entry) => {
+			const lastModified = toIsoDate(entry.lastModified);
+
+			return [
+				'<sitemap>',
+				`<loc>${escapeXml(entry.url)}</loc>`,
+				lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : '',
+				'</sitemap>',
+			]
+				.filter(Boolean)
+				.join('');
+		})
+		.join('');
+
+	return [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		`<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</sitemapindex>`,
+	].join('');
+};
+
+export const renderSitemapUrlSetXml = (entries: MetadataRoute.Sitemap) => {
+	const body = entries
+		.map((entry) => {
+			const lastModified = toIsoDate(entry.lastModified);
+
+			return [
+				'<url>',
+				`<loc>${escapeXml(entry.url)}</loc>`,
+				lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : '',
+				entry.changeFrequency
+					? `<changefreq>${escapeXml(entry.changeFrequency)}</changefreq>`
+					: '',
+				typeof entry.priority === 'number'
+					? `<priority>${entry.priority.toFixed(1)}</priority>`
+					: '',
+				'</url>',
+			]
+				.filter(Boolean)
+				.join('');
+		})
+		.join('');
+
+	return [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`,
+	].join('');
+};
