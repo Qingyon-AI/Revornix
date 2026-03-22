@@ -1,6 +1,13 @@
 import { NextResponse, NextRequest } from 'next/server'
 
-const whitelist = ['/login', '/register', '/.well-known/apple-app-site-association']
+const whitelist = [
+    '/login',
+    '/register',
+    '/manifest.webmanifest',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/.well-known/apple-app-site-association',
+]
 
 const privateSectionPaths = new Set([
     'detail',
@@ -36,10 +43,22 @@ const isPublicSingleSegmentPath = (pathname: string, prefix: string) => {
     return segment.length > 0 && !segment.includes('/')
 }
 
+const isPublicMetadataPath = (pathname: string) => {
+    const normalizedPath = normalizePath(pathname)
+    return (
+        normalizedPath === '/manifest.webmanifest' ||
+        normalizedPath === '/sitemap.xml' ||
+        normalizedPath === '/robots.txt' ||
+        normalizedPath.startsWith('/sitemap/') ||
+        normalizedPath.startsWith('/sitemaps/')
+    )
+}
+
 const auth = (request: NextRequest) => {
     const normalizedPath = normalizePath(request.nextUrl.pathname)
     if (
         whitelist.includes(normalizedPath) ||
+        isPublicMetadataPath(normalizedPath) ||
         normalizedPath === '/community' ||
         normalizedPath.startsWith('/integrations') ||
         isSeoSectionPath(normalizedPath) ||
@@ -72,9 +91,10 @@ export const config = {
          * - api (API routes)
          * - _next/static (static files)
          * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
+         * - favicon.ico, manifest.webmanifest, sitemap.xml, robots.txt (metadata files)
+         * - sitemap/*, sitemaps/* (public sitemap routes)
          * - serviceWorker
          */
-        '/((?!api|_next/static|_next/image|favicon.ico|serviceWorker).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|sitemap/|sitemaps/|serviceWorker).*)',
     ],
 }
