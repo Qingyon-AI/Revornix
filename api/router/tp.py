@@ -12,6 +12,7 @@ import crud
 import models
 import schemas
 from common.celery.app import start_process_document, start_process_section
+from common.document_creation import ensure_document_creation_requirements
 from common.upload_limits import validate_file_upload_size
 from common.dependencies import (
     check_deployed_by_official,
@@ -200,6 +201,12 @@ async def create_document(
         )
     if not auth_status and deployed_by_official:
         raise schemas.error.CustomException("Document limit reached for the current plan", code=403)
+
+    await ensure_document_creation_requirements(
+        db=db,
+        user=user,
+        document_create_request=document_create_request,
+    )
 
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_website_documents_count = crud.document.count_user_documents(
