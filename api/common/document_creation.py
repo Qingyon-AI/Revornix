@@ -10,7 +10,7 @@ import models
 import schemas
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
-from common.resource_plan_access import ensure_engine_access
+from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.section_defaults import (
     TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
     TODAY_SECTION_DEFAULT_AUTO_PODCAST,
@@ -111,6 +111,74 @@ def _ensure_today_section_defaults(
     return changed
 
 
+async def ensure_document_creation_requirements(
+    *,
+    db: Session,
+    user: models.user.User,
+    document_create_request: schemas.document.BaseDocumentCreateRequest,
+) -> None:
+    if user.default_user_file_system is None:
+        raise CustomException("Default file system is not configured", code=400)
+
+    if user.default_document_reader_model_id is None:
+        raise CustomException("Default document reader model is not configured", code=400)
+    await ensure_model_access(
+        db=db,
+        user=user,
+        model_id=user.default_document_reader_model_id,
+    )
+
+    if document_create_request.category == DocumentCategory.WEBSITE:
+        if user.default_website_document_parse_user_engine_id is None:
+            raise CustomException(
+                "Default website parse engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_website_document_parse_user_engine_id,
+        )
+    elif document_create_request.category in (
+        DocumentCategory.FILE,
+        DocumentCategory.AUDIO,
+    ):
+        if user.default_file_document_parse_user_engine_id is None:
+            raise CustomException(
+                "Default file parse engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_file_document_parse_user_engine_id,
+        )
+
+    if document_create_request.auto_podcast:
+        if user.default_podcast_user_engine_id is None:
+            raise CustomException(
+                "Default podcast engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_podcast_user_engine_id,
+        )
+
+    if document_create_request.auto_transcribe:
+        if user.default_audio_transcribe_engine_id is None:
+            raise CustomException(
+                "Default audio transcribe engine is not configured",
+                code=400,
+            )
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=user.default_audio_transcribe_engine_id,
+        )
+
+
 async def create_document_for_user(
     *,
     db: Session,
@@ -118,6 +186,11 @@ async def create_document_for_user(
     document_create_request: schemas.document.DocumentCreateRequest,
     summary_timezone: str | None = None,
 ) -> models.document.Document:
+    await ensure_document_creation_requirements(
+        db=db,
+        user=user,
+        document_create_request=document_create_request,
+    )
     now = datetime.now(timezone.utc)
     if summary_timezone is None:
         summary_timezone = await get_cached_user_timezone(user.id)
