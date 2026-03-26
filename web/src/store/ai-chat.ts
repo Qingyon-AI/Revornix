@@ -29,7 +29,8 @@ export type AIChatAction = {
         session_id: string,
         chat_id: string,
         role: 'assistant' | 'user',
-        token: string
+        token: string,
+        patch?: Partial<SessionItem['messages'][number]>
     ) => void;
     advanceChatMessageWorkflow: (
         session_id: string,
@@ -117,7 +118,7 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                         sessions: [],
                     };
                 }),
-                updateChatMessage: (session_id: string, chat_id: string, role: string, token: string) => {
+                updateChatMessage: (session_id: string, chat_id: string, role: string, token: string, patch) => {
                     return set((state) => {
                         const sessions = state.sessions.map(session => {
                             if (session.id !== session_id) return session;
@@ -131,11 +132,13 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                     chat_id: chat_id,
                                     role: role,
                                     content: token,
+                                    ...patch,
                                 });
                             } else {
                                 messages[idx] = {
                                     ...messages[idx],
                                     content: messages[idx].content + token,
+                                    ...patch,
                                 };
                             }
 

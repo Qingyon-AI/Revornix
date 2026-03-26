@@ -29,10 +29,25 @@ import {
 import { isEmpty } from 'lodash-es';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { replacePath } from '@/lib/utils';
+import { useUserContext } from '@/provider/user-provider';
 import CustomMarkdown from '../ui/custom-markdown';
+
+const legacyPhaseLabelMap: Record<string, string> = {
+	'正在理解你的问题': 'revornix_ai_phase_thinking',
+	'工具返回结果，继续思考': 'revornix_ai_phase_thinking',
+	'正在生成回答': 'revornix_ai_phase_writing',
+	'服务处理失败，请稍后重试。': 'revornix_ai_error_server_failed',
+	'The server failed to complete the request.': 'revornix_ai_error_server_failed',
+	'MCP 工具调用达到步骤上限，未能在限制内完成。':
+		'revornix_ai_error_mcp_recursion_limit',
+	'The MCP tool-calling workflow hit its step limit before completion.':
+		'revornix_ai_error_mcp_recursion_limit',
+};
 
 const MessageCard = ({ message }: { message: Message }) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const ai_workflow = message.ai_workflow;
 	const ai_state = message.ai_state;
 	const documentSources =
@@ -53,6 +68,15 @@ const MessageCard = ({ message }: { message: Message }) => {
 
 	const resolvePhaseLabel = (label?: string) => {
 		if (!label) return '';
+		if (legacyPhaseLabelMap[label]) {
+			return t(legacyPhaseLabelMap[label] as any);
+		}
+		if (
+			label.startsWith('正在调用工具：') ||
+			label.startsWith('Calling tool:')
+		) {
+			return t('revornix_ai_phase_tool');
+		}
 		if (t.has(label as any)) {
 			return t(label as any);
 		}
@@ -107,6 +131,31 @@ const MessageCard = ({ message }: { message: Message }) => {
 			.map((citation) => citation.document_title)
 			.filter(Boolean)
 			.join(' · ');
+	};
+
+	const renderMessageImages = () => {
+		if (!message.images || message.images.length === 0 || !mainUserInfo?.id) {
+			return null;
+		}
+
+		return (
+			<div className='mt-3 flex flex-wrap gap-2'>
+				{message.images.map((imagePath) => (
+					<a
+						key={imagePath}
+						href={replacePath(imagePath, mainUserInfo.id)}
+						target='_blank'
+						rel='noreferrer'
+						className='block h-16 w-16 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-20 sm:w-20'>
+						<img
+							src={replacePath(imagePath, mainUserInfo.id)}
+							alt='uploaded image'
+							className='h-full w-full object-cover'
+						/>
+					</a>
+				))}
+			</div>
+		);
 	};
 
 	const renderChunkCitations = () => {
@@ -366,6 +415,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 				<div className='prose max-w-none break-words dark:prose-invert'>
 					<CustomMarkdown content={message.content} />
 				</div>
+				{renderMessageImages()}
 				{message.role === 'assistant' && renderChunkCitations()}
 				{message.role === 'assistant' && renderDocumentSources()}
 				<div

@@ -1,8 +1,11 @@
+import base64
 import json
+import mimetypes
 import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from typing import Any
+from urllib.request import urlopen
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends
@@ -44,6 +47,7 @@ from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
+from proxy.file_system_proxy import FileSystemProxy
 from schemas.ai import ChatItem
 
 ai_router = APIRouter()
@@ -131,10 +135,6 @@ def _serialize_model(
     )
 
 
-def _contains_cjk(text: str) -> bool:
-    return any("\u4e00" <= char <= "\u9fff" for char in text)
-
-
 def _is_graph_recursion_limit_error(exc: Exception) -> bool:
     error_message = str(exc)
     return (
@@ -144,41 +144,103 @@ def _is_graph_recursion_limit_error(exc: Exception) -> bool:
     )
 
 
-def _build_mcp_recursion_limit_text(*, query: str, has_partial_answer: bool) -> str:
-    is_chinese = _contains_cjk(query)
-    if is_chinese:
-        if has_partial_answer:
-            return (
-                "\n\n补充说明：本次 MCP 工具调用已达到步骤上限，当前回答可能不完整。"
-                "你可以缩小问题范围、明确要调用的工具，或关闭 MCP 后重试。"
-            )
-        return (
-            "本次 MCP 工具调用已达到步骤上限，我暂时无法在限制内完成回答。"
-            "你可以缩小问题范围、明确要调用的工具，或关闭 MCP 后重试。"
-        )
-
+def _build_mcp_recursion_limit_notice_key(*, has_partial_answer: bool) -> str:
     if has_partial_answer:
-        return (
-            "\n\nAdditional note: the MCP tool-calling workflow hit its step limit, "
-            "so the answer above may be incomplete. Try narrowing the request, naming the tool more explicitly, "
-            "or retrying with MCP disabled."
-        )
-    return (
-        "The MCP tool-calling workflow hit its step limit before the answer could be completed. "
-        "Try narrowing the request, naming the tool more explicitly, or retrying with MCP disabled."
-    )
+        return "revornix_ai_notice_mcp_recursion_limit_incomplete"
+    return "revornix_ai_notice_mcp_recursion_limit"
 
 
-def _build_agent_error_message(*, query: str, is_recursion_limit: bool) -> str:
-    """Build a localized error message for agent-based chat failures."""
-    is_chinese = _contains_cjk(query)
+def _build_agent_error_message_key(*, is_recursion_limit: bool) -> str:
     if is_recursion_limit:
-        return (
-            "MCP 工具调用达到步骤上限，未能在限制内完成。"
-            if is_chinese
-            else "The MCP tool-calling workflow hit its step limit before completion."
+        return "revornix_ai_error_mcp_recursion_limit"
+    return "revornix_ai_error_server_failed"
+
+
+def _normalize_chat_images(image_paths: list[str] | None) -> list[str]:
+    if not image_paths:
+        return []
+    return [path.strip() for path in image_paths if isinstance(path, str) and path.strip()]
+
+
+def _build_data_url(*, mime_type: str, content: bytes) -> str:
+    encoded = base64.b64encode(content).decode("ascii")
+    return f"data:{mime_type};base64,{encoded}"
+
+
+def _guess_image_mime_type(path: str) -> str:
+    guessed, _ = mimetypes.guess_type(path)
+    if guessed and guessed.startswith("image/"):
+        return guessed
+    return "image/png"
+
+
+async def _resolve_chat_image_urls(*, user_id: int, image_paths: list[str]) -> list[str]:
+    if not image_paths:
+        return []
+
+    file_service = await FileSystemProxy.create(user_id=user_id)
+    resolved_urls: list[str] = []
+    for path in image_paths:
+        if path.startswith("data:image/"):
+            resolved_urls.append(path)
+            continue
+
+        if path.startswith("http://") or path.startswith("https://"):
+            with urlopen(path, timeout=10) as response:
+                content = response.read()
+                mime_type = response.headers.get_content_type() or _guess_image_mime_type(path)
+            resolved_urls.append(
+                _build_data_url(
+                    mime_type=mime_type,
+                    content=content,
+                )
+            )
+            continue
+
+        content = await file_service.get_file_content_by_file_path(file_path=path)
+        if isinstance(content, str):
+            content = content.encode("utf-8")
+        resolved_urls.append(
+            _build_data_url(
+                mime_type=_guess_image_mime_type(path),
+                content=content,
+            )
         )
-    return "服务处理失败，请稍后重试。" if is_chinese else "The server failed to complete the request."
+    return resolved_urls
+
+
+async def _build_human_message_with_images(
+    *,
+    user_id: int,
+    text: str,
+    image_paths: list[str] | None = None,
+) -> HumanMessage:
+    normalized_images = _normalize_chat_images(image_paths)
+    if not normalized_images:
+        return HumanMessage(content=text)
+
+    resolved_urls = await _resolve_chat_image_urls(
+        user_id=user_id,
+        image_paths=normalized_images,
+    )
+    content_parts: list[dict[str, Any]] = []
+    if text.strip():
+        content_parts.append(
+            {
+                "type": "text",
+                "text": text,
+            }
+        )
+    content_parts.extend(
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": image_url,
+            },
+        }
+        for image_url in resolved_urls
+    )
+    return HumanMessage(content=content_parts)
 
 @ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
 def create_model(
@@ -709,7 +771,6 @@ async def stream_ops_with_agent(
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
     chat_id = uuid4().hex
-    query = ""
     stream_failed = False
     emitted_text_output = False
 
@@ -719,10 +780,21 @@ async def stream_ops_with_agent(
         # ==========================
         agent.clear_conversation_history()
 
-        query = messages.pop().content
+        latest_message = messages.pop()
+        query_message = await _build_human_message_with_images(
+            user_id=user_id,
+            text=latest_message.content,
+            image_paths=latest_message.images,
+        )
         for message in messages:
             if message.role == "user":
-                agent.add_to_history(HumanMessage(content=message.content))
+                agent.add_to_history(
+                    await _build_human_message_with_images(
+                        user_id=user_id,
+                        text=message.content,
+                        image_paths=message.images,
+                    )
+                )
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
 
@@ -734,7 +806,7 @@ async def stream_ops_with_agent(
             tags=[f"model:{agent._model_name}"],
         ):
 
-            async for raw_event in agent.stream_events(query=query):
+            async for raw_event in agent.stream_events(query=query_message):
                 raw_event_dict = dict(raw_event)
                 if raw_event_dict.get("event") == "on_chat_model_end":
                     usage_collector.collect(raw_event_dict)
@@ -800,19 +872,18 @@ async def stream_ops_with_agent(
                     "timestamp": time.time(),
                     "trace": {},
                     "payload": {
-                        "kind": "token",
-                        "content": _build_mcp_recursion_limit_text(
-                            query=query,
+                        "kind": "system_text",
+                        "message": _build_mcp_recursion_limit_notice_key(
                             has_partial_answer=emitted_text_output,
                         ),
+                        "paragraph_break": emitted_text_output,
                     },
                 }
             )
 
         payload: dict[str, Any] = {
             "code": "MCP_RECURSION_LIMIT" if is_recursion_limit else "SERVER_ERROR",
-            "message": _build_agent_error_message(
-                query=query,
+            "message": _build_agent_error_message_key(
                 is_recursion_limit=is_recursion_limit,
             ),
         }
@@ -875,7 +946,7 @@ def _sse(event: dict) -> str:
 @ai_router.post("/ask")
 async def ask_ai(
     chat_messages: schemas.ai.ChatMessages,
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
 ):
     """Handle Revornix AI chat requests with optional MCP tool usage."""
     messages = [
@@ -896,6 +967,11 @@ async def ask_ai(
             "The latest message must be from the user",
             code=400,
         )
+    if not messages[-1].content.strip() and not _normalize_chat_images(messages[-1].images):
+        raise schemas.error.CustomException(
+            "The latest message must include text or images",
+            code=400,
+        )
 
     try:
         agent, model_id = await create_agent(
@@ -912,7 +988,7 @@ async def ask_ai(
             user_id=user.id,
             model_id=model_id,
             agent=agent,
-            messages=messages
+            messages=messages,
         ),
         media_type="text/event-stream; charset=utf-8",
         headers={

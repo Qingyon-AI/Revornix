@@ -2,6 +2,7 @@ export type Message = {
     chat_id: string;
     role: string;
     content: string;
+    images?: string[];
     ai_state?: AIState;              // 当前态
     ai_workflow?: AIWorkflow;  // 历史态
     tool_results?: ToolResult[];
@@ -100,6 +101,11 @@ export type AIEvent =
         | {
             kind: 'token';
             content: string;
+        }
+        | {
+            kind: 'system_text';
+            message: string;
+            paragraph_break?: boolean;
         }
         | {
             kind: 'tool_result';

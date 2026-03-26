@@ -23,9 +23,11 @@ from data.milvus.search import naive_search_for_documents
 from data.neo4j.search import section_graph_search
 from enums.document import DocumentEmbeddingStatus, DocumentSummarizeStatus
 from router.ai import (
-    _build_agent_error_message,
-    _build_mcp_recursion_limit_text,
+    _build_agent_error_message_key,
+    _build_human_message_with_images,
+    _build_mcp_recursion_limit_notice_key,
     _is_graph_recursion_limit_error,
+    _normalize_chat_images,
     create_agent,
 )
 from router.logic_helpers import ensure_private_section_access
@@ -493,21 +495,31 @@ async def _stream_section_answer_with_agent(
         query = messages[-1].content
         for message in messages[:-1]:
             if message.role == "user":
-                agent.add_to_history(HumanMessage(content=message.content))
+                agent.add_to_history(
+                    await _build_human_message_with_images(
+                        user_id=user.id,
+                        text=message.content,
+                        image_paths=message.images,
+                    )
+                )
             elif message.role == "assistant":
                 agent.add_to_history(AIMessage(content=message.content))
+
+        query_message = await _build_human_message_with_images(
+            user_id=user.id,
+            text=_build_section_agent_query(
+                query=query,
+                section_id=section_id,
+                section_title=section_title,
+            ),
+            image_paths=messages[-1].images,
+        )
 
         with propagate_attributes(
             user_id=str(user.id),
             tags=[f"model:{agent._model_name}", f"section:{section_id}"],
         ):
-            async for raw_event in agent.stream_events(
-                query=_build_section_agent_query(
-                    query=query,
-                    section_id=section_id,
-                    section_title=section_title,
-                )
-            ):
+            async for raw_event in agent.stream_events(query=query_message):
                 raw_event_dict = dict(raw_event)
                 if raw_event_dict.get("event") == "on_chat_model_end":
                     usage_collector.collect(raw_event_dict)
@@ -548,19 +560,18 @@ async def _stream_section_answer_with_agent(
                     "timestamp": time.time(),
                     "trace": {},
                     "payload": {
-                        "kind": "token",
-                        "content": _build_mcp_recursion_limit_text(
-                            query=query,
+                        "kind": "system_text",
+                        "message": _build_mcp_recursion_limit_notice_key(
                             has_partial_answer=emitted_text_output,
                         ),
+                        "paragraph_break": emitted_text_output,
                     },
                 }
             )
 
         payload: dict[str, Any] = {
             "code": "MCP_RECURSION_LIMIT" if is_recursion_limit else "SERVER_ERROR",
-            "message": _build_agent_error_message(
-                query=query,
+            "message": _build_agent_error_message_key(
                 is_recursion_limit=is_recursion_limit,
             ),
         }
@@ -643,6 +654,11 @@ async def ask_section_ai(
     if messages[-1].role != "user":
         raise schemas.error.CustomException(
             "The latest message must be from the user",
+            code=400,
+        )
+    if not messages[-1].content.strip() and not _normalize_chat_images(messages[-1].images):
+        raise schemas.error.CustomException(
+            "The latest message must include text or images",
             code=400,
         )
 

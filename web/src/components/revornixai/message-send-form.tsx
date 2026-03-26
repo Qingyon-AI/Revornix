@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
-import { Info, Send, SlidersHorizontal } from 'lucide-react';
+import { ImagePlus, Info, Loader2, Send, SlidersHorizontal, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { AIEvent, Message } from '@/types/ai';
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
@@ -24,6 +24,7 @@ import {
 import { useRouter } from 'nextjs-toploader/app';
 import { useAiChatStore } from '@/store/ai-chat';
 import { createEmptySession } from '@/lib/ai-session';
+import { replacePath } from '@/lib/utils';
 import {
 	Drawer,
 	DrawerContent,
@@ -33,6 +34,7 @@ import {
 	DrawerTrigger,
 } from '../ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 const MessageSendForm = () => {
@@ -40,7 +42,7 @@ const MessageSendForm = () => {
 	const t = useTranslations();
 	const isMobile = useIsMobile();
 	const formSchema = z.object({
-		message: z.string().min(1, t('revornix_ai_message_content_needed')),
+		message: z.string(),
 		enable_mcp: z.boolean(),
 	});
 	const { mainUserInfo } = useUserContext();
@@ -65,6 +67,16 @@ const MessageSendForm = () => {
 	const updateSessionMeta = useAiChatStore((s) => s.updateSessionMeta);
 	const updateChatMessage = useAiChatStore((s) => s.updateChatMessage);
 	const currentSession = useAiChatStore((s) => s.currentSession);
+	const {
+		attachments,
+		imagePaths,
+		isUploading: isUploadingImages,
+		inputRef: imageInputRef,
+		openPicker,
+		handleFileChange,
+		removeAttachment,
+		clearAttachments,
+	} = useAIImageAttachments();
 
 	const createAIResponseEventHandler = (sessionId: string) => {
 		return (event: AIEvent) => {
@@ -105,6 +117,20 @@ const MessageSendForm = () => {
 					break;
 
 				case 'output':
+					if (event.payload.kind === 'system_text') {
+						const translatedMessage = t.has(event.payload.message as any)
+							? t(event.payload.message as any)
+							: event.payload.message;
+						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
+						store.updateChatMessage(
+							sessionId,
+							event.chat_id,
+							'assistant',
+							`${event.payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
+						);
+						break;
+					}
+
 					if (event.payload.kind === 'tool_result') {
 						if (
 							Array.isArray(event.payload.references) &&
@@ -127,13 +153,15 @@ const MessageSendForm = () => {
 						break;
 					}
 
-					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
-					store.updateChatMessage(
-						sessionId,
-						event.chat_id,
-						'assistant',
-						event.payload.content,
-					);
+					if (event.payload.kind === 'token') {
+						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
+						store.updateChatMessage(
+							sessionId,
+							event.chat_id,
+							'assistant',
+							event.payload.content,
+						);
+					}
 					break;
 
 				case 'done':
@@ -176,6 +204,11 @@ const MessageSendForm = () => {
 	};
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
+		const trimmedMessage = values.message.trim();
+		if (!trimmedMessage && imagePaths.length === 0) {
+			toast.error(t('revornix_ai_message_content_needed'));
+			return;
+		}
 		// 如果用户没有设置默认交互模型则引导用户前往设置
 		if (!mainUserInfo?.default_revornix_model_id) {
 			toast.error(t('revornix_ai_model_not_set'), {
@@ -202,7 +235,8 @@ const MessageSendForm = () => {
 
 		const newMessage = {
 			chat_id: crypto.randomUUID(),
-			content: values.message,
+			content: trimmedMessage,
+			images: imagePaths.length > 0 ? [...imagePaths] : undefined,
 			role: 'user',
 		};
 
@@ -227,6 +261,9 @@ const MessageSendForm = () => {
 			newMessage.chat_id,
 			'user',
 			newMessage.content,
+			{
+				images: newMessage.images,
+			},
 		);
 
 		const messagesToSend = [...baseMessages, newMessage];
@@ -236,6 +273,7 @@ const MessageSendForm = () => {
 			enable_mcp: values.enable_mcp,
 			onEvent: createAIResponseEventHandler(targetSessionId),
 		});
+		clearAttachments();
 		form.resetField('message');
 	};
 
@@ -323,8 +361,9 @@ const MessageSendForm = () => {
 	});
 	const messageValue = form.watch('message');
 	const canSubmit =
-		messageValue.trim().length > 0 &&
+		(messageValue.trim().length > 0 || imagePaths.length > 0) &&
 		!mutateSendMessage.isPending &&
+		!isUploadingImages &&
 		!revornixModel.loading &&
 		!revornixModel.subscriptionLocked;
 	const defaultModelName = default_llm_model?.name
@@ -485,6 +524,28 @@ const MessageSendForm = () => {
 							render={({ field }) => (
 								<FormItem className='flex-1'>
 									<div className='relative rounded-[20px] border border-border/70 bg-background p-1.5'>
+										{attachments.length > 0 && mainUserInfo?.id ? (
+											<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
+												{attachments.map((attachment) => (
+													<div
+														key={attachment.path}
+														className='group relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
+														<img
+															src={replacePath(attachment.path, mainUserInfo.id)}
+															alt={attachment.name}
+															className='h-full w-full object-cover'
+														/>
+														<button
+															type='button'
+															className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
+															onClick={() => removeAttachment(attachment.path)}
+															aria-label={t('delete')}>
+															<X className='size-3' />
+														</button>
+													</div>
+												))}
+											</div>
+										) : null}
 										<Textarea
 											className={`resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
 												isMobile
@@ -505,7 +566,21 @@ const MessageSendForm = () => {
 											}}
 										/>
 										<div className='absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-2'>
-											<div className='flex min-h-9 items-center'>
+											<div className='flex min-h-9 items-center gap-2'>
+												<Button
+													type='button'
+													size='sm'
+													variant='ghost'
+													className='h-9 rounded-full px-3 text-[11px] text-muted-foreground'
+													onClick={openPicker}
+													disabled={mutateSendMessage.isPending || isUploadingImages}>
+													{isUploadingImages ? (
+														<Loader2 className='size-3.5 animate-spin' />
+													) : (
+														<ImagePlus className='size-3.5' />
+													)}
+													<span>{t('upload_image')}</span>
+												</Button>
 												{!isMobile ? (
 													<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
 														<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
@@ -525,6 +600,16 @@ const MessageSendForm = () => {
 												<Send className='size-4' />
 											</Button>
 										</div>
+										<input
+											ref={imageInputRef}
+											type='file'
+											accept='image/*'
+											multiple
+											className='hidden'
+											onChange={(event) => {
+												void handleFileChange(event);
+											}}
+										/>
 									</div>
 								</FormItem>
 							)}
