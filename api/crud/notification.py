@@ -680,7 +680,7 @@ def search_notification_sources_for_user(
     query = query.outerjoin(
         models.notification.UserNotificationSource,
         and_(
-            models.notification.UserNotificationSource.notification_source_id == models.notification.UserNotificationSource.id,
+            models.notification.UserNotificationSource.notification_source_id == models.notification.NotificationSource.id,
             models.notification.UserNotificationSource.user_id == user_id,
             models.notification.UserNotificationSource.delete_at.is_(None),
         ),
@@ -779,7 +779,7 @@ def search_notification_targets_for_user(
     query = query.outerjoin(
         models.notification.UserNotificationTarget,
         and_(
-            models.notification.UserNotificationTarget.notification_target_id == models.notification.UserNotificationTarget.id,
+            models.notification.UserNotificationTarget.notification_target_id == models.notification.NotificationTarget.id,
             models.notification.UserNotificationTarget.user_id == user_id,
             models.notification.UserNotificationTarget.delete_at.is_(None),
         ),

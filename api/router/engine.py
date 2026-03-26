@@ -136,31 +136,30 @@ def search_document_parse_engine(
 ):
     """搜索当前所有我可以使用的引擎 包含我创建的和公开的
     """
-    has_more = True
+    has_more = False
     next_start = None
-    next_model_provider = None
+    next_engine = None
     db_engines = crud.engine.search_engines_for_user(
         db=db,
         user_id=user.id,
         keyword=engine_search_request.keyword,
+        start=engine_search_request.start,
+        limit=engine_search_request.limit,
     )
-    if len(db_engines) < engine_search_request.limit or len(db_engines) == 0:
-        has_more = False
-    if len(db_engines) == engine_search_request.limit:
-        next_model_provider = crud.engine.search_next_engine_for_user(
+    if engine_search_request.limit > 0 and len(db_engines) == engine_search_request.limit:
+        next_engine = crud.engine.search_next_engine_for_user(
             db=db,
             user_id=user.id,
             engine=db_engines[-1][0],
             keyword=engine_search_request.keyword
         )
-        has_more = next_model_provider is not None
-        next_start = next_model_provider.id if next_model_provider is not None else None
+        has_more = next_engine is not None
+        next_start = next_engine[0].id if next_engine is not None else None
     total = crud.engine.count_all_engines_for_user(
         db=db,
         user_id=user.id,
         keyword=engine_search_request.keyword
     )
-    next_start = next_model_provider.id if next_model_provider is not None else None
     data = [
         _serialize_engine_info(
             item[0],
