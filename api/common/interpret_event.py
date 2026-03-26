@@ -316,7 +316,7 @@ class EventInterpreter:
                     chat_id=chat_id,
                     trace=trace,
                     phase="thinking",
-                    label="正在理解你的问题",
+                    label="revornix_ai_phase_thinking",
                 )
                 if evt:
                     yield evt
@@ -336,7 +336,7 @@ class EventInterpreter:
                 chat_id=chat_id,
                 trace=trace,
                 phase="writing",
-                label="正在生成回答",
+                label="revornix_ai_phase_writing",
             )
             if evt:
                 yield evt
@@ -381,7 +381,7 @@ class EventInterpreter:
                 chat_id=chat_id,
                 trace=trace,
                 phase="tool",
-                label=f"正在调用工具：{tool_name}",
+                label="revornix_ai_phase_tool",
                 detail={"tool": tool_name},
             )
             if evt:
@@ -433,7 +433,7 @@ class EventInterpreter:
                 chat_id=chat_id,
                 trace=trace,
                 phase="thinking",
-                label="工具返回结果，继续思考",
+                label="revornix_ai_phase_thinking",
             )
             if evt:
                 yield evt

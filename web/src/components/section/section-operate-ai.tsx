@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { Bot, Send } from 'lucide-react';
+import { Bot, ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import sectionApi from '@/api/section';
+import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
-import { cn } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
 import { useUserContext } from '@/provider/user-provider';
 import type {
@@ -117,6 +118,16 @@ const SectionOperateAI = ({
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel } = useDefaultResourceAccess();
+	const {
+		attachments,
+		imagePaths,
+		isUploading: isUploadingImages,
+		inputRef: imageInputRef,
+		openPicker,
+		handleFileChange,
+		removeAttachment,
+		clearAttachments,
+	} = useAIImageAttachments();
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState('');
 	const [enableMcp, setEnableMcp] = useState(false);
@@ -211,6 +222,29 @@ const SectionOperateAI = ({
 			case 'output': {
 				const payload = event.payload;
 
+				if (payload.kind === 'system_text') {
+					const translatedMessage = t.has(payload.message as any)
+						? t(payload.message as any)
+						: payload.message;
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+							...message,
+							role: 'assistant',
+							content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
+							ai_state: {
+								phase: 'writing',
+								label: phaseLabelMap.writing,
+							},
+							ai_workflow: pushWorkflowStep(
+								message.ai_workflow,
+								'writing',
+								phaseLabelMap.writing,
+							),
+						})),
+					);
+					break;
+				}
+
 				if (payload.kind === 'tool_result') {
 					if (
 						Array.isArray(payload.references) &&
@@ -245,22 +279,24 @@ const SectionOperateAI = ({
 					break;
 				}
 
-				setMessages((currentMessages) =>
-					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-						...message,
-						role: 'assistant',
-						content: message.content + event.payload.content,
-						ai_state: {
-							phase: 'writing',
-							label: phaseLabelMap.writing,
-						},
-						ai_workflow: pushWorkflowStep(
-							message.ai_workflow,
-							'writing',
-							phaseLabelMap.writing,
-						),
-					})),
-				);
+				if (payload.kind === 'token') {
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+							...message,
+							role: 'assistant',
+							content: message.content + payload.content,
+							ai_state: {
+								phase: 'writing',
+								label: phaseLabelMap.writing,
+							},
+							ai_workflow: pushWorkflowStep(
+								message.ai_workflow,
+								'writing',
+								phaseLabelMap.writing,
+							),
+						})),
+					);
+				}
 				break;
 			}
 			case 'done': {
@@ -373,6 +409,7 @@ const SectionOperateAI = ({
 					chat_id: message.chat_id,
 					role: message.role,
 					content: message.content,
+					images: message.images,
 				})),
 				enable_mcp,
 			}),
@@ -393,7 +430,7 @@ const SectionOperateAI = ({
 
 	const onSubmit = async () => {
 		const trimmedInput = input.trim();
-		if (!trimmedInput) {
+		if (!trimmedInput && imagePaths.length === 0) {
 			return;
 		}
 		if (!mainUserInfo?.default_revornix_model_id) {
@@ -409,10 +446,12 @@ const SectionOperateAI = ({
 			chat_id: crypto.randomUUID(),
 			role: 'user',
 			content: trimmedInput,
+			images: imagePaths.length > 0 ? [...imagePaths] : undefined,
 		};
 		const nextMessages = [...messages, nextUserMessage];
 		setMessages(nextMessages);
 		setInput('');
+		clearAttachments();
 		setIsSending(true);
 
 		try {
@@ -481,6 +520,28 @@ const SectionOperateAI = ({
 
 				<div className='border-t border-border/60 px-5 py-4'>
 					<div className='rounded-xl border border-border/70 bg-card/85 px-4 py-3'>
+						{attachments.length > 0 && mainUserInfo?.id ? (
+							<div className='mb-3 flex flex-wrap gap-2'>
+								{attachments.map((attachment) => (
+									<div
+										key={attachment.path}
+										className='relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
+										<img
+											src={replacePath(attachment.path, mainUserInfo.id)}
+											alt={attachment.name}
+											className='h-full w-full object-cover'
+										/>
+										<button
+											type='button'
+											className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
+											onClick={() => removeAttachment(attachment.path)}
+											aria-label={t('delete')}>
+											<X className='size-3' />
+										</button>
+									</div>
+								))}
+							</div>
+						) : null}
 						<Textarea
 							value={input}
 							onChange={(event) => setInput(event.target.value)}
@@ -496,6 +557,20 @@ const SectionOperateAI = ({
 						/>
 						<div className='flex items-center justify-between gap-4'>
 							<div className='flex min-w-0 items-center gap-3 text-xs text-muted-foreground'>
+								<Button
+									type='button'
+									size='sm'
+									variant='ghost'
+									className='h-8 rounded-full px-3 text-[11px] text-muted-foreground'
+									onClick={openPicker}
+									disabled={isSending || isUploadingImages}>
+									{isUploadingImages ? (
+										<Loader2 className='size-3.5 animate-spin' />
+									) : (
+										<ImagePlus className='size-3.5' />
+									)}
+									<span>{t('upload_image')}</span>
+								</Button>
 								<div
 									className='flex items-center gap-2'
 									title={t('revornix_ai_mcp_description')}>
@@ -518,13 +593,24 @@ const SectionOperateAI = ({
 								onClick={() => void onSubmit()}
 								disabled={
 									isSending ||
-									input.trim().length === 0 ||
+									(input.trim().length === 0 && imagePaths.length === 0) ||
+									isUploadingImages ||
 									revornixModel.loading ||
 									revornixModel.subscriptionLocked
 								}>
 								<Send />
 							</Button>
 						</div>
+						<input
+							ref={imageInputRef}
+							type='file'
+							accept='image/*'
+							multiple
+							className='hidden'
+							onChange={(event) => {
+								void handleFileChange(event);
+							}}
+						/>
 					</div>
 				</div>
 			</SheetContent>

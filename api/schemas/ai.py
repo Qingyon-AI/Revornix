@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 
 from .base import BaseModel
 from .user import UserPublicInfo
@@ -125,6 +125,7 @@ class ChatItem(BaseModel):
     chat_id: str
     content: str
     role: str
+    images: list[str] = Field(default_factory=list)
 
 class ChatMessages(BaseModel):
     messages: list[ChatItem]

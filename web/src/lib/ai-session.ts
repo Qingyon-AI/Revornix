@@ -55,6 +55,7 @@ const hydrateMessage = (messageLike: Partial<Message>): Message => {
 		chat_id: message.chat_id ?? crypto.randomUUID(),
 		role: message.role ?? 'assistant',
 		content: message.content ?? '',
+		images: Array.isArray(message.images) ? message.images : undefined,
 		ai_state: message.ai_state,
 		ai_workflow: message.ai_workflow,
 		tool_results: Array.isArray(message.tool_results) ? message.tool_results : undefined,
