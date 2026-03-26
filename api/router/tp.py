@@ -1,35 +1,51 @@
 # 第三方接口
+#
+# 当使用 api key 的时候, 调用这边的接口组
 
-# 当使用api key的时候, 调用这边的接口组
-
-from datetime import datetime, timezone
-
-from celery import chain, group
 from fastapi import APIRouter, Depends, File, Form, Header, UploadFile
 from sqlalchemy.orm import Session
 
 import crud
 import models
 import schemas
-from common.celery.app import start_process_document, start_process_section
-from common.document_creation import ensure_document_creation_requirements
-from common.upload_limits import validate_file_upload_size
 from common.dependencies import (
     check_deployed_by_official,
     get_current_user_with_api_key,
     get_db,
+    get_request_timezone,
     plan_ability_checked_in_func,
 )
+from common.document_creation import create_document_for_user
 from common.jwt_utils import create_token
 from common.timezone import (
     get_cached_user_timezone,
     normalize_timezone_name,
     today_in_timezone,
 )
+from common.upload_limits import validate_file_upload_size
 from enums.ability import Ability
-from enums.document import DocumentCategory, UserDocumentAuthority
-from enums.section import SectionDocumentIntegration, UserSectionAuthority, UserSectionRole
+from enums.document import DocumentCategory
+from enums.section import UserSectionRole
 from proxy.file_system_proxy import FileSystemProxy
+from router.document import update_document as update_document_impl
+from router.document_query import (
+    get_document_detail as get_document_detail_impl,
+    search_all_mine_documents as search_all_mine_documents_impl,
+)
+from router.section import (
+    create_section as create_section_impl,
+    update_section as update_section_impl,
+)
+from router.section_detail_query import (
+    get_section_detail as get_section_detail_impl,
+    section_document_request as section_document_request_impl,
+)
+from router.section_publish_manage import (
+    section_publish_get_request as section_publish_get_request_impl,
+    section_publish_request as section_publish_request_impl,
+    section_republish as section_republish_impl,
+)
+from router.section_search_query import search_mine_sections as search_mine_sections_impl
 
 tp_router = APIRouter()
 
@@ -64,35 +80,78 @@ async def upload_file_system(
     return schemas.common.SuccessResponse()
 
 @tp_router.post('/section/create', response_model=schemas.section.SectionCreateResponse)
-def create_section(
+async def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user_with_api_key)
+    user: models.user.User = Depends(get_current_user_with_api_key),
+    request_timezone: str = Depends(get_request_timezone),
 ):
-    db_section = crud.section.create_section(
+    return await create_section_impl(
+        section_create_request=section_create_request,
         db=db,
-        creator_id=user.id,
-        cover=section_create_request.cover,
-        title=section_create_request.title,
-        description=section_create_request.description,
-        auto_illustration=section_create_request.auto_illustration,
-        auto_podcast=section_create_request.auto_podcast
+        user=user,
+        request_timezone=request_timezone,
     )
-    if section_create_request.labels:
-        crud.section.create_section_labels(
-            db=db,
-            section_id=db_section.id,
-            label_ids=section_create_request.labels
-        )
-    crud.section.create_section_user(
+
+
+@tp_router.post('/section/update', response_model=schemas.common.NormalResponse)
+async def update_section(
+    section_update_request: schemas.section.SectionUpdateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+    request_timezone: str = Depends(get_request_timezone),
+):
+    return await update_section_impl(
+        section_update_request=section_update_request,
         db=db,
-        section_id=db_section.id,
-        user_id=user.id,
-        authority=UserSectionAuthority.FULL_ACCESS,
-        role=UserSectionRole.CREATOR
+        user=user,
+        request_timezone=request_timezone,
     )
-    db.commit()
-    return schemas.section.SectionCreateResponse(id=db_section.id)
+
+
+@tp_router.post('/section/detail', response_model=schemas.section.SectionInfo)
+async def get_section_detail(
+    section_detail_request: schemas.section.SectionDetailRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await get_section_detail_impl(
+        section_detail_request=section_detail_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/documents',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo],
+)
+def get_section_documents(
+    section_document_request: schemas.section.SectionDocumentRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return section_document_request_impl(
+        section_document_request=section_document_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/mine/search',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+)
+async def search_mine_sections(
+    search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await search_mine_sections_impl(
+        search_mine_sections_request=search_mine_sections_request,
+        db=db,
+        user=user,
+    )
 
 @tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
 def add_label(
@@ -111,6 +170,37 @@ def add_label(
         name=db_label.name
     )
 
+
+@tp_router.post('/section/label/list', response_model=schemas.section.LabelListResponse)
+def list_section_label(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    db_labels = crud.section.get_user_labels_by_user_id(
+        db=db,
+        user_id=user.id,
+    )
+    labels = [
+        schemas.section.SectionLabel(id=label.id, name=label.name)
+        for label in db_labels
+    ]
+    return schemas.section.LabelListResponse(data=labels)
+
+
+@tp_router.post('/section/label/delete', response_model=schemas.common.NormalResponse)
+def delete_section_label(
+    label_delete_request: schemas.section.LabelDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    crud.section.delete_labels_by_label_ids(
+        db=db,
+        label_ids=label_delete_request.label_ids,
+        user_id=user.id,
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
 @tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
 def get_all_mine_sections(
     db: Session = Depends(get_db),
@@ -126,6 +216,45 @@ def get_all_mine_sections(
         for db_section in db_sections
     ]
     return schemas.section.AllMySectionsResponse(data=sections)
+
+
+@tp_router.post('/section/publish', response_model=schemas.common.NormalResponse)
+def publish_section(
+    section_publish_request: schemas.section.SectionPublishRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return section_publish_request_impl(
+        section_publish_request=section_publish_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post('/section/publish/get', response_model=schemas.section.SectionPublishGetResponse)
+def get_section_publish(
+    section_publish_get_request: schemas.section.SectionPublishGetRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return section_publish_get_request_impl(
+        section_publish_get_request=section_publish_get_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post('/section/republish', response_model=schemas.common.NormalResponse)
+def republish_section(
+    section_republish_request: schemas.section.SectionRePublishRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return section_republish_impl(
+        section_republish_request=section_republish_request,
+        db=db,
+        user=user,
+    )
 
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
 def list_label(
@@ -159,15 +288,30 @@ def create_document_label(
         name=db_label.name
     )
 
+
+@tp_router.post("/document/label/delete", response_model=schemas.common.NormalResponse)
+def delete_document_label(
+    label_delete_request: schemas.document.LabelDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    crud.document.delete_labels_by_label_ids(
+        db=db,
+        label_ids=label_delete_request.label_ids,
+        user_id=user.id,
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
 async def create_document(
-    document_create_request: schemas.document.DocumentCreateRequest,
+    document_create_request: schemas.document.ApiDocumentCreateRequest,
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     deployed_by_official: bool = Depends(check_deployed_by_official),
     x_user_timezone: str | None = Header(default=None),
 ):
-    now = datetime.now(timezone.utc)
     if x_user_timezone is not None and x_user_timezone.strip():
         user_timezone = normalize_timezone_name(x_user_timezone)
     else:
@@ -202,12 +346,6 @@ async def create_document(
     if not auth_status and deployed_by_official:
         raise schemas.error.CustomException("Document limit reached for the current plan", code=403)
 
-    await ensure_document_creation_requirements(
-        db=db,
-        user=user,
-        document_create_request=document_create_request,
-    )
-
     if document_create_request.category == DocumentCategory.WEBSITE:
         db_website_documents_count = crud.document.count_user_documents(
             db=db,
@@ -221,22 +359,6 @@ async def create_document(
             )
             if not auth_status and deployed_by_official:
                 raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
-
-        if document_create_request.url is None:
-            raise schemas.error.CustomException("URL is required for website documents", code=400)
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            title='Website Analysing...',
-            description='Website Analysing...',
-            category=document_create_request.category,
-            from_plat='api'
-        )
-        crud.document.create_website_document(
-            db=db,
-            url=document_create_request.url,
-            document_id=db_document.id
-        )
     elif document_create_request.category == DocumentCategory.FILE:
         db_file_documents_count = crud.document.count_user_documents(
             db=db,
@@ -251,143 +373,57 @@ async def create_document(
             if not auth_status and deployed_by_official:
                 raise schemas.error.CustomException("File document limit reached for the current plan", code=403)
 
-        if document_create_request.file_name is None:
-            raise schemas.error.CustomException("File name is required for file documents", code=400)
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat='api',
-            title='File document analysing...',
-            description='File document analysing...'
-        )
-        crud.document.create_file_document(
-            db=db,
-            document_id=db_document.id,
-            file_name=document_create_request.file_name
-        )
-    elif document_create_request.category == DocumentCategory.QUICK_NOTE:
-        if document_create_request.content is None:
-            raise schemas.error.CustomException("Content is required for quick notes", code=400)
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat='api',
-            title=f'Quick Note saved at {now}',
-            description=f'Quick Note saved at {now}'
-        )
-        crud.document.create_quick_note_document(
-            db=db,
-            document_id=db_document.id,
-            content=document_create_request.content
-        )
-    elif document_create_request.category == DocumentCategory.AUDIO:
-        if document_create_request.file_name is None:
-            raise schemas.error.CustomException("File name is required for audio documents", code=400)
-        db_document = crud.document.create_base_document(
-            db=db,
-            creator_id=user.id,
-            category=document_create_request.category,
-            from_plat='api',
-            title=f'Audio saved at {now}',
-            description=f'Audio saved at {now}'
-        )
-        crud.document.create_audio_document(
-            db=db,
-            document_id=db_document.id,
-            audio_file_name=document_create_request.file_name
-        )
-    else:
-        raise schemas.error.CustomException("Unsupported document category", code=400)
-    if len(document_create_request.labels) > 0:
-        crud.document.create_document_labels(
-            db=db,
-            document_id=db_document.id,
-            label_ids=document_create_request.labels
-        )
-    crud.document.create_user_document(
+    api_document_create_request = schemas.document.DocumentCreateRequest(
+        **document_create_request.model_dump(mode='python'),
+        from_plat='api',
+    )
+    db_document = await create_document_for_user(
         db=db,
-        user_id=user.id,
-        document_id=db_document.id,
-        authority=UserDocumentAuthority.OWNER
+        user=user,
+        document_create_request=api_document_create_request,
+        summary_timezone=user_timezone,
     )
-    crud.task.create_document_process_task(
-        db=db,
-        user_id=user.id,
-        document_id=db_document.id,
-    )
-    # 查看是否存在当日专栏，并且绑定当前文档到今日专栏
-    db_today_section = crud.section.get_section_by_user_and_date(
-        db=db,
-        user_id=user.id,
-        date=summary_date
-    )
-    if db_today_section is None:
-        db_today_section = crud.section.create_section(
-            db=db,
-            creator_id=user.id,
-            title=f'{summary_date.isoformat()} Summary',
-            description=f"This document is the summary of all documents on {summary_date.isoformat()}."
-        )
-        crud.section.create_section_user(
-            db=db,
-            section_id=db_today_section.id,
-            user_id=user.id,
-            role=UserSectionRole.CREATOR,
-            authority=UserSectionAuthority.FULL_ACCESS
-        )
-        crud.section.create_date_section(
-            db=db,
-            section_id=db_today_section.id,
-            date=summary_date
-        )
-    document_create_request.sections.append(db_today_section.id)
-    # 去重
-    document_create_request.sections = list(dict.fromkeys(
-        document_create_request.sections
-    ))
-    for section_id in document_create_request.sections:
-        crud.section.create_or_update_section_document(
-            db=db,
-            document_id=db_document.id,
-            section_id=section_id,
-            status=SectionDocumentIntegration.WAIT_TO
-        )
-    db.commit()
-
-    # 开始后台处理
-    # 获取所有关联的 section (此时已经写入 WAIT_TO 状态)
-    db_sections = crud.section.get_sections_by_document_id(
-        db=db,
-        document_id=db_document.id
-    )
-    # 构造每个 Section 的 Celery 任务
-    section_process_tasks = group(
-        start_process_section.si(
-            section_id=sec.id,
-            user_id=user.id,
-            auto_podcast=sec.auto_podcast
-        )
-        for sec in db_sections
-    )
-
-    background_tasks = chain(
-        start_process_document.si(
-            document_id=db_document.id,
-            user_id=user.id,
-            auto_summary=document_create_request.auto_summary,
-            auto_podcast=document_create_request.auto_podcast,
-            auto_transcribe=document_create_request.auto_transcribe,
-            auto_tag=document_create_request.auto_tag,
-            override=schemas.task.DocumentOverrideProperty(
-                title=document_create_request.title,
-                description=document_create_request.description,
-                cover=document_create_request.cover
-            ).model_dump(mode='json')
-        ),
-        section_process_tasks
-    )
-    background_tasks.apply_async()
 
     return schemas.document.DocumentCreateResponse(document_id=db_document.id)
+
+
+@tp_router.post("/document/detail", response_model=schemas.document.DocumentDetailResponse)
+async def get_document_detail(
+    document_detail_request: schemas.document.DocumentDetailRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await get_document_detail_impl(
+        document_detail_request=document_detail_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/update", response_model=schemas.common.NormalResponse)
+def update_document(
+    document_update_request: schemas.document.DocumentUpdateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return update_document_impl(
+        document_update_request=document_update_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    "/document/search/mine",
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+)
+async def search_mine_documents(
+    search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await search_all_mine_documents_impl(
+        search_all_my_document_request=search_all_my_document_request,
+        db=db,
+        user=user,
+    )
