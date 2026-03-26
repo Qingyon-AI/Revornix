@@ -141,17 +141,20 @@ def get_notification_sources(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    has_more = True
+    has_more = False
     next_start = None
     next_notification_source = None
     db_notification_sources = crud.notification.search_notification_sources_for_user(
         db=db,
         user_id=user.id,
         keyword=notification_source_search_request.keyword,
+        start=notification_source_search_request.start,
+        limit=notification_source_search_request.limit,
     )
-    if len(db_notification_sources) < notification_source_search_request.limit or len(db_notification_sources) == 0:
-        has_more = False
-    if len(db_notification_sources) == notification_source_search_request.limit:
+    if (
+        notification_source_search_request.limit > 0
+        and len(db_notification_sources) == notification_source_search_request.limit
+    ):
         next_notification_source = crud.notification.search_next_notification_source_for_user(
             db=db,
             user_id=user.id,
@@ -159,13 +162,12 @@ def get_notification_sources(
             keyword=notification_source_search_request.keyword
         )
         has_more = next_notification_source is not None
-        next_start = next_notification_source.id if next_notification_source is not None else None
+        next_start = next_notification_source[0].id if next_notification_source is not None else None
     total = crud.notification.count_all_notification_sources_for_user(
         db=db,
         user_id=user.id,
         keyword=notification_source_search_request.keyword
     )
-    next_start = next_notification_source.id if next_notification_source is not None else None
 
     def get_notification_source_info(db_notification_source: models.notification.NotificationSource):
         db_notification_source_provided = crud.notification.get_notification_source_by_id(
@@ -247,17 +249,20 @@ def get_notification_target(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    has_more = True
+    has_more = False
     next_start = None
     next_notification_target = None
     db_notification_targets = crud.notification.search_notification_targets_for_user(
         db=db,
         user_id=user.id,
         keyword=notification_target_search_request.keyword,
+        start=notification_target_search_request.start,
+        limit=notification_target_search_request.limit,
     )
-    if len(db_notification_targets) < notification_target_search_request.limit or len(db_notification_targets) == 0:
-        has_more = False
-    if len(db_notification_targets) == notification_target_search_request.limit:
+    if (
+        notification_target_search_request.limit > 0
+        and len(db_notification_targets) == notification_target_search_request.limit
+    ):
         next_notification_target = crud.notification.search_next_notification_target_for_user(
             db=db,
             user_id=user.id,
@@ -265,13 +270,12 @@ def get_notification_target(
             keyword=notification_target_search_request.keyword
         )
         has_more = next_notification_target is not None
-        next_start = next_notification_target.id if next_notification_target is not None else None
+        next_start = next_notification_target[0].id if next_notification_target is not None else None
     total = crud.notification.count_all_notification_targets_for_user(
         db=db,
         user_id=user.id,
         keyword=notification_target_search_request.keyword
     )
-    next_start = next_notification_target.id if next_notification_target is not None else None
 
     def get_notification_target_info(db_notification_target: models.notification.NotificationTarget):
         db_notification_target_provided = crud.notification.get_notification_target_by_id(

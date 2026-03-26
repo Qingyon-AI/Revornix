@@ -377,17 +377,20 @@ def list_ai_model_provider(
 ):
     """搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
     """
-    has_more = True
+    has_more = False
     next_start = None
     next_model_provider = None
     db_ai_model_providers = crud.model.search_ai_model_providers_for_user(
         db=db,
         user_id=user.id,
-        keyword=model_provider_search_request.keyword
+        keyword=model_provider_search_request.keyword,
+        start=model_provider_search_request.start,
+        limit=model_provider_search_request.limit,
     )
-    if len(db_ai_model_providers) < model_provider_search_request.limit or len(db_ai_model_providers) == 0:
-        has_more = False
-    if len(db_ai_model_providers) == model_provider_search_request.limit:
+    if (
+        model_provider_search_request.limit > 0
+        and len(db_ai_model_providers) == model_provider_search_request.limit
+    ):
         next_model_provider = crud.model.search_next_ai_model_providers_for_user(
             db=db,
             user_id=user.id,
@@ -395,13 +398,12 @@ def list_ai_model_provider(
             keyword=model_provider_search_request.keyword
         )
         has_more = next_model_provider is not None
-        next_start = next_model_provider.id if next_model_provider is not None else None
+        next_start = next_model_provider[0].id if next_model_provider is not None else None
     total = crud.model.count_all_ai_model_providers_for_user(
         db=db,
         user_id=user.id,
         keyword=model_provider_search_request.keyword
     )
-    next_start = next_model_provider.id if next_model_provider is not None else None
     data = [
         _serialize_model_provider(
             item[0],
