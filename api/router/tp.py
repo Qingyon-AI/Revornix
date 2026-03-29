@@ -30,6 +30,7 @@ from proxy.file_system_proxy import FileSystemProxy
 from router.document import update_document as update_document_impl
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
+    search_knowledge_vector as search_knowledge_vector_impl,
     search_all_mine_documents as search_all_mine_documents_impl,
 )
 from router.section import (
@@ -424,6 +425,22 @@ async def search_mine_documents(
 ):
     return await search_all_mine_documents_impl(
         search_all_my_document_request=search_all_my_document_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    "/document/vector/search",
+    response_model=schemas.document.VectorSearchResponse,
+)
+def search_document_vector(
+    vector_search_request: schemas.document.VectorSearchRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return search_knowledge_vector_impl(
+        vector_search_request=vector_search_request,
         db=db,
         user=user,
     )

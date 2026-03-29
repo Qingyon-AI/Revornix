@@ -25,6 +25,8 @@ import type {
   SchemasDocumentLabelListResponse,
   SectionCreateRequest,
   SectionCreateResponse,
+  VectorSearchRequest,
+  VectorSearchResponse,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -47,6 +49,10 @@ import {
     SectionCreateRequestToJSON,
     SectionCreateResponseFromJSON,
     SectionCreateResponseToJSON,
+    VectorSearchRequestFromJSON,
+    VectorSearchRequestToJSON,
+    VectorSearchResponseFromJSON,
+    VectorSearchResponseToJSON,
 } from '../models/index';
 
 export interface AddLabelTpSectionLabelCreatePostRequest {
@@ -79,6 +85,12 @@ export interface GetAllMineSectionsTpSectionMineAllPostRequest {
 }
 
 export interface ListLabelTpDocumentLabelListPostRequest {
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchKnowledgeVectorTpDocumentVectorSearchPostRequest {
+    vectorSearchRequest: VectorSearchRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -403,6 +415,61 @@ export class TpApi extends runtime.BaseAPI {
      */
     async listLabelTpDocumentLabelListPost(requestParameters: ListLabelTpDocumentLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentLabelListResponse> {
         const response = await this.listLabelTpDocumentLabelListPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchKnowledgeVectorTpDocumentVectorSearchPost without sending the request
+     */
+    async searchKnowledgeVectorTpDocumentVectorSearchPostRequestOpts(requestParameters: SearchKnowledgeVectorTpDocumentVectorSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['vectorSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'vectorSearchRequest',
+                'Required parameter "vectorSearchRequest" was null or undefined when calling searchKnowledgeVectorTpDocumentVectorSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/vector/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: VectorSearchRequestToJSON(requestParameters['vectorSearchRequest']),
+        };
+    }
+
+    /**
+     * Search Knowledge Vector
+     */
+    async searchKnowledgeVectorTpDocumentVectorSearchPostRaw(requestParameters: SearchKnowledgeVectorTpDocumentVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VectorSearchResponse>> {
+        const requestOptions = await this.searchKnowledgeVectorTpDocumentVectorSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VectorSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Knowledge Vector
+     */
+    async searchKnowledgeVectorTpDocumentVectorSearchPost(requestParameters: SearchKnowledgeVectorTpDocumentVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VectorSearchResponse> {
+        const response = await this.searchKnowledgeVectorTpDocumentVectorSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
