@@ -309,7 +309,7 @@ export const getSitemapChunkUrls = unstable_cache(
 		const chunkCount = await getSitemapChunkCount();
 
 		return Array.from({ length: chunkCount }, (_, index) =>
-			createAbsoluteUrl(`/sitemap/${index}`),
+			createAbsoluteUrl(`/sitemap/${index}.xml`),
 		);
 	},
 	['public-sitemap-chunk-urls'],
@@ -324,7 +324,7 @@ export const getSitemapChunkDescriptors = unstable_cache(
 
 		return chunks.map((chunk, index) => ({
 			id: index,
-			url: createAbsoluteUrl(`/sitemap/${index}`),
+			url: createAbsoluteUrl(`/sitemap/${index}.xml`),
 			lastModified: getChunkLastModified(chunk),
 		}));
 	},
