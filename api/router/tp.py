@@ -28,6 +28,7 @@ from enums.document import DocumentCategory
 from enums.section import UserSectionRole
 from proxy.file_system_proxy import FileSystemProxy
 from router.document import update_document as update_document_impl
+from router.document_interaction_manage import delete_document as delete_document_impl
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
     search_knowledge_vector as search_knowledge_vector_impl,
@@ -35,6 +36,7 @@ from router.document_query import (
 )
 from router.section import (
     create_section as create_section_impl,
+    delete_section as delete_section_impl,
     update_section as update_section_impl,
 )
 from router.section_detail_query import (
@@ -107,6 +109,19 @@ async def update_section(
         db=db,
         user=user,
         request_timezone=request_timezone,
+    )
+
+
+@tp_router.post('/section/delete', response_model=schemas.common.NormalResponse)
+def delete_section(
+    section_delete_request: schemas.section.SectionDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return delete_section_impl(
+        section_delete_request=section_delete_request,
+        db=db,
+        user=user,
     )
 
 
@@ -409,6 +424,19 @@ def update_document(
 ):
     return update_document_impl(
         document_update_request=document_update_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/delete", response_model=schemas.common.NormalResponse)
+async def delete_document(
+    documents_delete_request: schemas.document.DocumentDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await delete_document_impl(
+        documents_delete_request=documents_delete_request,
         db=db,
         user=user,
     )
