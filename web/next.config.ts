@@ -3,6 +3,18 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  rewrites: async () => {
+    return [
+      {
+        source: "/sitemap.xml",
+        destination: "/sitemaps",
+      },
+      {
+        source: "/sitemap/:id.xml",
+        destination: "/sitemap/:id",
+      },
+    ];
+  },
   headers: async () => {
     return [
       {

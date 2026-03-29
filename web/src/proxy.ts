@@ -6,6 +6,7 @@ const whitelist = [
     '/manifest.webmanifest',
     '/robots.txt',
     '/sitemap.xml',
+    '/sitemaps',
     '/.well-known/apple-app-site-association',
 ]
 
@@ -49,6 +50,7 @@ const isPublicMetadataPath = (pathname: string) => {
         normalizedPath === '/manifest.webmanifest' ||
         normalizedPath === '/sitemap.xml' ||
         normalizedPath === '/robots.txt' ||
+        normalizedPath === '/sitemaps' ||
         normalizedPath.startsWith('/sitemap/') ||
         normalizedPath.startsWith('/sitemaps/')
     )
