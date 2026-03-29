@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | [**createSectionTpSectionCreatePost**](TpApi.md#createsectiontpsectioncreatepost) | **POST** /tp/section/create | Create Section |
 | [**getAllMineSectionsTpSectionMineAllPost**](TpApi.md#getallminesectionstpsectionmineallpost) | **POST** /tp/section/mine/all | Get All Mine Sections |
 | [**listLabelTpDocumentLabelListPost**](TpApi.md#listlabeltpdocumentlabellistpost) | **POST** /tp/document/label/list | List Label |
+| [**searchKnowledgeVectorTpDocumentVectorSearchPost**](TpApi.md#searchknowledgevectortpdocumentvectorsearchpost) | **POST** /tp/document/vector/search | Search Knowledge Vector |
 | [**uploadFileSystemTpFileUploadPost**](TpApi.md#uploadfilesystemtpfileuploadpost) | **POST** /tp/file/upload | Upload File System |
 
 
@@ -440,6 +441,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## searchKnowledgeVectorTpDocumentVectorSearchPost
+
+> VectorSearchResponse searchKnowledgeVectorTpDocumentVectorSearchPost(vectorSearchRequest, xUserTimezone, apiKey)
+
+Search Knowledge Vector
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TpApi,
+} from '';
+import type { SearchKnowledgeVectorTpDocumentVectorSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new TpApi();
+
+  const body = {
+    // VectorSearchRequest
+    vectorSearchRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
+    apiKey: apiKey_example,
+  } satisfies SearchKnowledgeVectorTpDocumentVectorSearchPostRequest;
+
+  try {
+    const data = await api.searchKnowledgeVectorTpDocumentVectorSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **vectorSearchRequest** | [VectorSearchRequest](VectorSearchRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**VectorSearchResponse**](VectorSearchResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## uploadFileSystemTpFileUploadPost
 
 > NormalResponse uploadFileSystemTpFileUploadPost(file, filePath, contentType, xUserTimezone, apiKey)
@@ -516,4 +589,3 @@ No authorization required
 | **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
