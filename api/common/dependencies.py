@@ -173,16 +173,26 @@ async def get_current_user_with_api_key(
     db: Session = Depends(get_db),
     x_user_timezone: str | None = Header(default=None),
 ):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
     user = crud.user.get_user_by_id(
         db=db,
         user_id=api_key.user_id
     )
-    if user is not None:
-        await _cache_user_timezone(
-            request=request,
-            user_id=user.id,
-            raw_timezone=x_user_timezone,
+    if user is None:
+        raise credentials_exception
+    if user.is_forbidden:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are forbidden"
         )
+    await _cache_user_timezone(
+        request=request,
+        user_id=user.id,
+        raw_timezone=x_user_timezone,
+    )
     return user
 
 def get_real_ip(
