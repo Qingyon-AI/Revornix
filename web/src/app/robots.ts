@@ -1,9 +1,7 @@
 import type { MetadataRoute } from 'next';
-import { getSiteOrigin } from '@/lib/seo-metadata';
 import { getSitemapIndexUrl } from '@/lib/sitemap';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-	const siteOrigin = getSiteOrigin();
 
 	return {
 		rules: [
@@ -37,7 +35,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 				],
 			},
 		],
-		host: siteOrigin,
 		sitemap: getSitemapIndexUrl(),
 	};
 }
