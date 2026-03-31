@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { AudioLines, Loader2, type LucideIcon } from 'lucide-react';
 
 import { Button } from './button';
@@ -28,7 +30,7 @@ const AudioStatusCard = ({
 	actionLoading?: boolean;
 	icon?: LucideIcon;
 	tone?: TaskStateTone;
-	hint?: string;
+	hint?: ReactNode;
 	className?: string;
 	spinning?: boolean;
 }) => {

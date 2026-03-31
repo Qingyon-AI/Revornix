@@ -14,6 +14,7 @@ from common.section_defaults import (
     TODAY_SECTION_DEFAULT_PROCESS_CRON,
 )
 from common.timezone import decode_cron_expr_with_timezone
+from enums.document import DocumentGraphStatus, DocumentProcessStatus
 from enums.section import (
     SectionDocumentIntegration,
     SectionProcessTriggerType,
@@ -23,6 +24,52 @@ from enums.section import (
 from router.logic_helpers import ensure_private_section_access
 
 section_detail_query_router = APIRouter()
+
+
+def _get_task_time(task) -> datetime | None:
+    if task is None:
+        return None
+    return task.update_time or task.create_time
+
+
+def _is_section_graph_stale(
+    *,
+    db: Session,
+    document_ids: list[int],
+) -> bool:
+    if not document_ids:
+        return False
+
+    graph_task_by_document_id = {
+        task.document_id: task
+        for task in crud.task.get_document_graph_tasks_by_document_ids(
+            db=db,
+            document_ids=document_ids,
+        )
+    }
+    process_task_by_document_id = {
+        task.document_id: task
+        for task in crud.task.get_document_process_tasks_by_document_ids(
+            db=db,
+            document_ids=document_ids,
+        )
+    }
+
+    for document_id in document_ids:
+        graph_task = graph_task_by_document_id.get(document_id)
+        if graph_task is None or graph_task.status != DocumentGraphStatus.SUCCESS:
+            return True
+
+        process_task = process_task_by_document_id.get(document_id)
+        if process_task is None or process_task.status == DocumentProcessStatus.SUCCESS:
+            continue
+
+        graph_time = _get_task_time(graph_task)
+        process_time = _get_task_time(process_task)
+        if graph_time is not None and process_time is not None and process_time > graph_time:
+            return True
+
+    return False
 
 
 async def _build_section_info_response(
@@ -54,6 +101,7 @@ async def _build_section_info_response(
         db=db,
         section_id=section_id,
     )
+    document_ids = [item.document_id for item in db_section_documents]
     labels = [schemas.section.SectionLabel(id=db_label.id, name=db_label.name) for db_label in db_labels]
     document_integration = schemas.section.SectionDocumentIntegrationSummary(
         wait_to_count=sum(
@@ -85,6 +133,10 @@ async def _build_section_info_response(
         subscribers_count=subscribers_count,
         creator=db_section.creator,
         document_integration=document_integration,
+        graph_stale=_is_section_graph_stale(
+            db=db,
+            document_ids=document_ids,
+        ),
     )
     res.publish_uuid = db_publish_section.uuid if db_publish_section is not None else None
 
@@ -102,6 +154,8 @@ async def _build_section_info_response(
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
+            create_time=db_section_podcast_task.create_time,
+            update_time=db_section_podcast_task.update_time,
         )
         if db_section_podcast_task.podcast_file_name is not None:
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
@@ -116,6 +170,8 @@ async def _build_section_info_response(
     if db_section_process_task is not None:
         res.process_task = schemas.section.SectionProcessTask(
             status=db_section_process_task.status,
+            create_time=db_section_process_task.create_time,
+            update_time=db_section_process_task.update_time,
         )
 
     if viewer_user_id is not None:
@@ -391,6 +447,8 @@ async def get_date_section_info(
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
+            create_time=db_section_podcast_task.create_time,
+            update_time=db_section_podcast_task.update_time,
         )
         if db_section_podcast_task.podcast_file_name is not None:
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
@@ -405,6 +463,8 @@ async def get_date_section_info(
     if db_section_process_task is not None:
         res.process_task = schemas.section.SectionProcessTask(
             status=db_section_process_task.status,
+            create_time=db_section_process_task.create_time,
+            update_time=db_section_process_task.update_time,
         )
         res.process_task_trigger_type = db_section_process_task.trigger_type
         db_section_process_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(

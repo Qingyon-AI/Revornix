@@ -27,6 +27,18 @@ export interface DocumentPodcastTask {
     status: number;
     /**
      * 
+     * @type {Date}
+     * @memberof DocumentPodcastTask
+     */
+    create_time?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentPodcastTask
+     */
+    update_time?: Date | null;
+    /**
+     * 
      * @type {string}
      * @memberof DocumentPodcastTask
      */
@@ -53,6 +65,8 @@ export function DocumentPodcastTaskFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'status': json['status'],
+        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'podcast_file_name': json['podcast_file_name'],
     };
 }
@@ -69,7 +83,8 @@ export function DocumentPodcastTaskToJSONTyped(value?: DocumentPodcastTask | nul
     return {
         
         'status': value['status'],
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'podcast_file_name': value['podcast_file_name'],
     };
 }
-

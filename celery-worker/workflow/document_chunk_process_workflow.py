@@ -1,6 +1,7 @@
 import asyncio
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, TypedDict
 
 import crud
@@ -251,6 +252,7 @@ def _mark_chunk_related_tasks_failed(
     document_id: int,
     auto_summary: bool,
 ) -> None:
+    now = datetime.now(timezone.utc)
     db = session_scope()
     try:
         db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
@@ -259,6 +261,7 @@ def _mark_chunk_related_tasks_failed(
         )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            db_embedding_task.update_time = now
 
         if auto_summary:
             db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
@@ -267,6 +270,7 @@ def _mark_chunk_related_tasks_failed(
             )
             if db_summarize_task is not None:
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
+                db_summarize_task.update_time = now
 
         db_graph_task = crud.task.get_document_graph_task_by_document_id(
             db=db,
@@ -274,6 +278,7 @@ def _mark_chunk_related_tasks_failed(
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.FAILED
+            db_graph_task.update_time = now
         db.commit()
     finally:
         db.close()
@@ -295,6 +300,7 @@ def _set_graph_task_status(
         )
         if db_graph_task is not None:
             db_graph_task.status = status
+            db_graph_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -308,6 +314,7 @@ async def _init_chunk_tasks(
     if document_id is None or user_id is None:
         raise Exception("Document chunk workflow missing document_id or user_id")
 
+    now = datetime.now(timezone.utc)
     db = session_scope()
     try:
         # 1) 校验 document
@@ -343,6 +350,7 @@ async def _init_chunk_tasks(
             )
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+            db_embedding_task.update_time = now
         db_summarize_task = None
         auto_summary = bool(state.get("auto_summary", False))
         if auto_summary:
@@ -358,6 +366,7 @@ async def _init_chunk_tasks(
                 )
             if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
                 db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
+                db_summarize_task.update_time = now
         db_graph_task = crud.task.get_document_graph_task_by_document_id(
             db=db,
             document_id=document_id
@@ -370,6 +379,7 @@ async def _init_chunk_tasks(
             )
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
+            db_graph_task.update_time = now
         db.commit()
     finally:
         db.close()
@@ -680,12 +690,14 @@ async def _process_document_chunks(
         db = session_scope()
         try:
             ensure_document_active(db=db, document_id=document_id)
+            now = datetime.now(timezone.utc)
             db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
                 db=db,
                 document_id=document_id
             )
             if db_embedding_task is not None:
                 db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+                db_embedding_task.update_time = now
             if auto_summary:
                 db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
                     db=db,
@@ -695,6 +707,7 @@ async def _process_document_chunks(
                     db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
                     if final_summary_info is not None:
                         db_summarize_task.summary = final_summary_info.summary
+                    db_summarize_task.update_time = now
                 if final_summary_info is not None:
                     db_document = crud.document.get_document_by_document_id(
                         db=db,

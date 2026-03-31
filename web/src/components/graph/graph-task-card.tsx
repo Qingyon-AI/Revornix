@@ -10,6 +10,7 @@ type GraphTaskCardProps = {
 	title: string;
 	description?: string;
 	badge?: string;
+	hint?: ReactNode;
 	tone?: TaskStateTone;
 	action?: ReactNode;
 	children: ReactNode;
@@ -21,6 +22,7 @@ const GraphTaskCard = ({
 	title,
 	description,
 	badge,
+	hint,
 	tone = 'default',
 	action,
 	children,
@@ -33,6 +35,7 @@ const GraphTaskCard = ({
 			badge={badge}
 			title={title}
 			description={description}
+			hint={hint}
 			tone={tone}
 			action={action}
 			className={className}

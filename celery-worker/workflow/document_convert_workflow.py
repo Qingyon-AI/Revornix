@@ -1,5 +1,6 @@
 import uuid
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
@@ -134,6 +135,7 @@ async def _init_convert_task(
         else:
             if db_convert_task.status != DocumentMdConvertStatus.CONVERTING:
                 db_convert_task.status = DocumentMdConvertStatus.CONVERTING
+                db_convert_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -290,6 +292,7 @@ async def _mark_convert_success(
             raise Exception("The convert task of the document is not found")
         db_convert_task.status = DocumentMdConvertStatus.SUCCESS
         db_convert_task.md_file_name = md_file_name
+        db_convert_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -376,6 +379,7 @@ async def run_document_convert_workflow(
             )
             if db_convert_task is not None:
                 db_convert_task.status = DocumentMdConvertStatus.FAILED
+                db_convert_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

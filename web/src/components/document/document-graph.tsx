@@ -10,6 +10,7 @@ import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentGraphStatus } from '@/enums/document';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { generateDocumentGraph, getDocumentDetail } from '@/service/document';
 import { searchDocumentGraph } from '@/service/graph';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -37,6 +38,7 @@ const DocumentGraph = ({
 	});
 	const graphStatus = document?.graph_task?.status;
 	const isGraphReady = graphStatus === DocumentGraphStatus.SUCCESS;
+	const freshnessState = getDocumentFreshnessState(document);
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
 		queryKey: ['searchDocumentGraphData', document_id, graphStatus],
@@ -186,16 +188,24 @@ const DocumentGraph = ({
 							badge={t('document_graph_status_success')}
 							title={t('document_graph_data_empty')}
 							description={t('document_graph_description')}
-							tone='success'
+							tone={freshnessState.graphStale ? 'warning' : 'success'}
 						/>
 					) : null}
 					{isGraphReady && nodes.length > 0 ? (
-						<EntityGraphCanvas
-							nodes={nodes}
-							edges={edges}
-							className='h-full w-full'
-							showSearch={showSearch}
-						/>
+						<>
+							{freshnessState.graphStale ? (
+								<div className='pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 shadow-sm dark:text-amber-200'>
+									<AlertCircle className='size-3.5' />
+									<span>{t('document_graph_stale_hint')}</span>
+								</div>
+							) : null}
+							<EntityGraphCanvas
+								nodes={nodes}
+								edges={edges}
+								className='h-full w-full'
+								showSearch={showSearch}
+							/>
+						</>
 					) : null}
 				</>
 			) : null}

@@ -8,6 +8,7 @@ import { enUS } from 'date-fns/locale/en-US';
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
+	AlertTriangle,
 	BookMarked,
 	CalendarClock,
 	CalendarDays,
@@ -22,6 +23,7 @@ import { toast } from 'sonner';
 
 import { formatInUserTimeZone, toDate } from '@/lib/time';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { cn, replacePath } from '@/lib/utils';
 import {
 	embeddingDocument,
@@ -40,6 +42,7 @@ import {
 } from '@/enums/document';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Alert, AlertDescription } from '../ui/alert';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -166,6 +169,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const fromPlatLabel = data.from_plat || '-';
 	const statusActionClassName =
 		'h-auto p-0 text-xs font-medium text-muted-foreground underline underline-offset-4';
+	const freshnessState = getDocumentFreshnessState(data);
+	const warningMessages = [
+		freshnessState.summaryStale ? t('document_summary_stale_warning') : null,
+		freshnessState.graphStale ? t('document_graph_stale_warning') : null,
+		freshnessState.podcastStale ? t('document_podcast_stale_warning') : null,
+	].filter((message): message is string => Boolean(message));
 
 	const renderStatusBadge = (
 		label: string,
@@ -366,7 +375,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				icon={Sparkles}
 				badge={t('document_summarize_status_success')}
 				title={t('ai_summary_ready')}
-				tone='success'
+				tone={freshnessState.summaryStale ? 'warning' : 'success'}
+				hint={
+					freshnessState.summaryStale
+						? t('document_summary_stale_hint')
+						: undefined
+				}
 				action={summaryActionButton}
 				bodyClassName='px-3.5 pb-3.5 pt-3'>
 				<div className='rounded-[16px] border border-border/60 bg-background/45 px-3.5 py-3 text-sm leading-7 text-muted-foreground'>
@@ -483,6 +497,19 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			{statusBadges.length > 0 ? (
 				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 					{statusBadges}
+				</div>
+			) : null}
+
+			{warningMessages.length > 0 ? (
+				<div className='space-y-2'>
+					{warningMessages.map((message) => (
+						<Alert
+							key={message}
+							className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
+							<AlertTriangle className='size-4 text-current' />
+							<AlertDescription>{message}</AlertDescription>
+						</Alert>
+					))}
 				</div>
 			) : null}
 

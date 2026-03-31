@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -67,6 +68,7 @@ async def _init_transcribe_task(
         else:
             if db_transcribe_task.status != DocumentAudioTranscribeStatus.TRANSCRIBING:
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.TRANSCRIBING
+                db_transcribe_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -120,6 +122,7 @@ async def _transcribe_document_audio(
             raise Exception("The transcribe task of the document is not found")
         db_transcribe_task.transcribed_text = text
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
+        db_transcribe_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -181,6 +184,7 @@ async def run_document_transcribe_workflow(
             )
             if db_transcribe_task is not None:
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.FAILED
+                db_transcribe_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

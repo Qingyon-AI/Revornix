@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateDocumentPodcast, getDocumentDetail } from '@/service/document';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
@@ -51,6 +52,23 @@ const DocumentPodcast = ({
 		podcastEngine.configured &&
 		!podcastEngine.loading &&
 		!podcastEngine.subscriptionLocked;
+	const freshnessState = getDocumentFreshnessState(document);
+	const podcastHintMessages = [
+		freshnessState.podcastStale ? t('document_podcast_stale_hint') : null,
+		!canGeneratePodcast
+			? podcastEngine.subscriptionLocked
+				? t('default_resource_subscription_locked')
+				: t('document_create_auto_podcast_engine_unset')
+			: null,
+	].filter((message): message is string => Boolean(message));
+	const podcastHint =
+		podcastHintMessages.length > 0 ? (
+			<div className='space-y-1'>
+				{podcastHintMessages.map((message) => (
+					<p key={message}>{message}</p>
+				))}
+			</div>
+		) : undefined;
 
 	return (
 		<>
@@ -65,13 +83,7 @@ const DocumentPodcast = ({
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={className}
-					hint={
-						!canGeneratePodcast
-							? podcastEngine.subscriptionLocked
-								? t('default_resource_subscription_locked')
-								: t('document_create_auto_podcast_engine_unset')
-							: undefined
-					}
+					hint={podcastHint}
 				/>
 			)}
 
@@ -106,15 +118,9 @@ const DocumentPodcast = ({
 								icon={AudioLines}
 								badge={t('document_podcast_status_success')}
 								title={t('document_podcast_ready')}
-								tone='success'
+								tone={freshnessState.podcastStale ? 'warning' : 'success'}
 								className={className}
-								hint={
-									!canGeneratePodcast
-										? podcastEngine.subscriptionLocked
-											? t('default_resource_subscription_locked')
-											: t('document_create_auto_podcast_engine_unset')
-										: undefined
-								}
+								hint={podcastHint}
 								action={
 									<Button
 										variant='outline'
@@ -154,13 +160,7 @@ const DocumentPodcast = ({
 							actionLoading={mutateGeneratePodcast.isPending}
 							tone='danger'
 							className={className}
-							hint={
-								!canGeneratePodcast
-									? podcastEngine.subscriptionLocked
-										? t('default_resource_subscription_locked')
-										: t('document_create_auto_podcast_engine_unset')
-									: undefined
-							}
+							hint={podcastHint}
 						/>
 					)}
 				</>

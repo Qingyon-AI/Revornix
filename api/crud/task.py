@@ -245,6 +245,19 @@ def get_section_podcast_task_by_section_id(
                          models.task.SectionPodcastTask.delete_at.is_(None))
     return query.one_or_none()
 
+def get_section_podcast_tasks_by_section_ids(
+    db: Session,
+    section_ids: list[int]
+):
+    if not section_ids:
+        return []
+    query = db.query(models.task.SectionPodcastTask)
+    query = query.filter(
+        models.task.SectionPodcastTask.section_id.in_(section_ids),
+        models.task.SectionPodcastTask.delete_at.is_(None),
+    )
+    return query.all()
+
 def get_document_podcast_task_by_document_id(
     db: Session,
     document_id: int

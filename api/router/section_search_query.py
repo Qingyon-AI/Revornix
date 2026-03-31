@@ -30,6 +30,10 @@ async def _build_section_infos(
         section_ids=section_ids,
         filter_roles=[UserSectionRole.SUBSCRIBER],
     )
+    podcast_tasks = crud.task.get_section_podcast_tasks_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+    )
     labels_by_section_id = crud.section.get_labels_by_section_ids(db=db, section_ids=section_ids)
     publish_sections = crud.section.get_publish_sections_by_section_ids(
         db=db,
@@ -37,6 +41,9 @@ async def _build_section_infos(
     )
     publish_uuid_by_section_id = {
         item.section_id: item.uuid for item in publish_sections
+    }
+    podcast_task_by_section_id = {
+        task.section_id: task for task in podcast_tasks
     }
 
     authority_by_section_id: dict[int, UserSectionAuthority | int] = {}
@@ -64,6 +71,19 @@ async def _build_section_infos(
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.publish_uuid = publish_uuid_by_section_id.get(section.id)
+        podcast_task = podcast_task_by_section_id.get(section.id)
+        if podcast_task is not None:
+            res.podcast_task = schemas.task.SectionPodcastTask(
+                status=podcast_task.status,
+                podcast_file_name=podcast_task.podcast_file_name,
+                create_time=podcast_task.create_time,
+                update_time=podcast_task.update_time,
+            )
+            if podcast_task.podcast_file_name is not None:
+                res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
+                    user_id=podcast_task.user_id,
+                    file_name=podcast_task.podcast_file_name,
+                )
 
         authority = authority_by_section_id.get(section.id)
         if authority is not None:

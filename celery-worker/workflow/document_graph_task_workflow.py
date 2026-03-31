@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -112,6 +113,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
             )
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
+            db_graph_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -300,6 +302,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.SUCCESS.value
+            db_graph_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -384,6 +387,7 @@ async def run_document_graph_task_workflow(
             )
             if db_graph_task is not None:
                 db_graph_task.status = DocumentGraphStatus.FAILED.value
+                db_graph_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

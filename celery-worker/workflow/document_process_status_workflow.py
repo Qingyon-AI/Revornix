@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
@@ -37,6 +38,7 @@ async def _update_document_status(
         )
         if db_document_process_task is not None:
             db_document_process_task.status = status
+            db_document_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the document status: {e}")

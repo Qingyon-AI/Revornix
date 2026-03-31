@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
+	AlertCircle,
 	BookOpenText,
 	CalendarClock,
 	CalendarDays,
@@ -48,6 +49,7 @@ import { notFound } from 'next/navigation';
 import GraphTaskCard from '@/components/graph/graph-task-card';
 import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
@@ -249,8 +251,15 @@ const SEOSectionDetail = async (props: {
 					keywords: section.labels?.map((label) => label.name),
 				}
 			: null;
+	const freshnessState = getSectionFreshnessState(section);
 	const graphCardState =
+		freshnessState.graphStale &&
 		section?.process_task?.status === SectionProcessStatus.SUCCESS
+			? {
+					badge: t('section_graph_status_stale'),
+					tone: 'warning' as const,
+				}
+			: section?.process_task?.status === SectionProcessStatus.SUCCESS
 			? {
 					badge: t('document_graph_status_success'),
 					tone: 'success' as const,
@@ -410,6 +419,11 @@ const SEOSectionDetail = async (props: {
 						title={t('section_graph')}
 						description={t('section_graph_description')}
 						badge={graphCardState.badge}
+						hint={
+							freshnessState.graphStale
+								? t('section_graph_stale_hint')
+								: undefined
+						}
 						tone={graphCardState.tone}
 						action={
 							<Dialog>
@@ -427,17 +441,32 @@ const SEOSectionDetail = async (props: {
 										<DialogDescription>
 											{t('section_graph_description')}
 										</DialogDescription>
+										{freshnessState.graphStale ? (
+											<div className='flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm leading-6 text-amber-800 dark:text-amber-200'>
+												<AlertCircle className='mt-0.5 size-4 shrink-0' />
+												<span>{t('section_graph_stale_hint')}</span>
+											</div>
+										) : null}
 									</DialogHeader>
 									<div className='min-h-[320px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/60 sm:min-h-[420px]'>
 										{section ? (
-											<SectionGraphSEO section_id={section.id} showSearch />
+											<SectionGraphSEO
+												section_id={section.id}
+												showSearch
+												showStaleHint={false}
+											/>
 										) : null}
 									</div>
 								</DialogContent>
 							</Dialog>
 						}>
 						<div className='h-[260px] overflow-hidden rounded-[20px] border border-border/60 bg-background/40 sm:h-[320px] xl:h-[340px]'>
-							{section ? <SectionGraphSEO section_id={section.id} /> : null}
+							{section ? (
+								<SectionGraphSEO
+									section_id={section.id}
+									showStaleHint={false}
+								/>
+							) : null}
 						</div>
 					</GraphTaskCard>
 
