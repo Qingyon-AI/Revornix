@@ -25,6 +25,18 @@ export interface DocumentGraphTask {
      * @memberof DocumentGraphTask
      */
     status: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentGraphTask
+     */
+    create_time?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentGraphTask
+     */
+    update_time?: Date | null;
 }
 
 /**
@@ -46,6 +58,8 @@ export function DocumentGraphTaskFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'status': json['status'],
+        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
     };
 }
 
@@ -61,6 +75,7 @@ export function DocumentGraphTaskToJSONTyped(value?: DocumentGraphTask | null, i
     return {
         
         'status': value['status'],
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

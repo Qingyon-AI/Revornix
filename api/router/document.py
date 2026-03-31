@@ -248,6 +248,7 @@ async def create_embedding(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    now = datetime.now(timezone.utc)
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=embedding_request.document_id
@@ -274,6 +275,7 @@ async def create_embedding(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating embeddings", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = now
     db.commit()
 
     workflow = chain(
@@ -296,6 +298,7 @@ async def transcribe_audio_document(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    now = datetime.now(timezone.utc)
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=transcribe_request.document_id
@@ -332,6 +335,7 @@ async def transcribe_audio_document(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before transcription", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = now
     db.commit()
 
     workflow = chain(
@@ -355,6 +359,7 @@ async def generate_graph(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    now = datetime.now(timezone.utc)
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=graph_generate_request.document_id
@@ -381,6 +386,7 @@ async def generate_graph(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a graph", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = now
     db.commit()
 
     workflow = chain(
@@ -403,6 +409,7 @@ async def generate_podcast(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    now = datetime.now(timezone.utc)
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=generate_podcast_request.document_id
@@ -429,12 +436,13 @@ async def generate_podcast(
         document_id=generate_podcast_request.document_id
     )
     if db_exist_podcast_task is not None:
-        if db_exist_podcast_task.status == DocumentPodcastStatus.SUCCESS:
-            raise schemas.error.CustomException("Podcast task is already complete", code=409)
         if db_exist_podcast_task.status == DocumentPodcastStatus.WAIT_TO:
             raise schemas.error.CustomException("Podcast task is already queued", code=409)
         if db_exist_podcast_task.status == DocumentPodcastStatus.GENERATING:
             raise schemas.error.CustomException("Podcast task is already in progress", code=409)
+        db_exist_podcast_task.status = DocumentPodcastStatus.WAIT_TO
+        db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.update_time = now
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -443,6 +451,7 @@ async def generate_podcast(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a podcast", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = now
     db.commit()
 
     workflow = chain(
@@ -527,6 +536,7 @@ async def transform_markdown(
     user: models.user.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    now = datetime.now(timezone.utc)
     db_document = crud.document.get_document_by_document_id(
         db=db,
         document_id=transform_markdown_request.document_id
@@ -544,6 +554,7 @@ async def transform_markdown(
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before Markdown conversion", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
+    db_process_task.update_time = now
 
     db_convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
@@ -558,6 +569,7 @@ async def transform_markdown(
         elif db_convert_task.status == DocumentMdConvertStatus.CONVERTING:
             raise schemas.error.CustomException("Markdown conversion task is already in progress", code=409)
         db_convert_task.status = DocumentMdConvertStatus.WAIT_TO
+        db_convert_task.update_time = now
     db.commit()
 
     # Background tasks

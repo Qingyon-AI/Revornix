@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
@@ -32,6 +33,7 @@ async def _update_section_status(
         )
         if db_section_process_task is not None:
             db_section_process_task.status = status
+            db_section_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()

@@ -27,6 +27,18 @@ export interface DocumentConvertTask {
     status: number;
     /**
      * 
+     * @type {Date}
+     * @memberof DocumentConvertTask
+     */
+    create_time?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentConvertTask
+     */
+    update_time?: Date | null;
+    /**
+     * 
      * @type {string}
      * @memberof DocumentConvertTask
      */
@@ -53,6 +65,8 @@ export function DocumentConvertTaskFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'status': json['status'],
+        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'md_file_name': json['md_file_name'],
     };
 }
@@ -69,7 +83,8 @@ export function DocumentConvertTaskToJSONTyped(value?: DocumentConvertTask | nul
     return {
         
         'status': value['status'],
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
     };
 }
-

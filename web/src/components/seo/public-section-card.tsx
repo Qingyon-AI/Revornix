@@ -10,6 +10,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import SectionCardPodcast from '../section/section-card-podcast';
 import SeoSectionSubscribeButton from './seo-section-subscribe-button';
 
 const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
@@ -64,6 +65,8 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 						</div>
 					) : null}
 				</Link>
+
+				<SectionCardPodcast section={section} />
 
 				<div className='mt-auto flex flex-col gap-3 text-xs text-muted-foreground'>
 					<div className='flex items-center gap-2'>

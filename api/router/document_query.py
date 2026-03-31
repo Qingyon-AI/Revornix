@@ -90,6 +90,8 @@ async def get_document_infos(
             info.convert_task = schemas.task.DocumentConvertTask(
                 status=convert_task.status,
                 md_file_name=convert_task.md_file_name,
+                create_time=convert_task.create_time,
+                update_time=convert_task.update_time,
             )
             if info.convert_task.md_file_name is not None:
                 info.convert_task.md_file_name = await get_remote_file_signed_url(
@@ -101,12 +103,16 @@ async def get_document_infos(
         if embedding_task is not None:
             info.embedding_task = schemas.task.DocumentEmbeddingTask(
                 status=embedding_task.status,
+                create_time=embedding_task.create_time,
+                update_time=embedding_task.update_time,
             )
 
         graph_task = graph_task_by_document_id.get(document.id)
         if graph_task is not None:
             info.graph_task = schemas.task.DocumentGraphTask(
                 status=graph_task.status,
+                create_time=graph_task.create_time,
+                update_time=graph_task.update_time,
             )
 
         podcast_task = podcast_task_by_document_id.get(document.id)
@@ -114,6 +120,8 @@ async def get_document_infos(
             info.podcast_task = schemas.task.DocumentPodcastTask(
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
+                create_time=podcast_task.create_time,
+                update_time=podcast_task.update_time,
             )
             if podcast_task.podcast_file_name is not None:
                 info.podcast_task.podcast_file_name = await get_remote_file_signed_url(
@@ -126,6 +134,8 @@ async def get_document_infos(
             info.summarize_task = schemas.task.DocumentSummarizeTask(
                 status=summarize_task.status,
                 summary=summarize_task.summary,
+                create_time=summarize_task.create_time,
+                update_time=summarize_task.update_time,
             )
 
         transcribe_task = transcribe_task_by_document_id.get(document.id)
@@ -133,12 +143,16 @@ async def get_document_infos(
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
                 transcribed_text=transcribe_task.transcribed_text,
+                create_time=transcribe_task.create_time,
+                update_time=transcribe_task.update_time,
             )
 
         process_task = process_task_by_document_id.get(document.id)
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
                 status=process_task.status,
+                create_time=process_task.create_time,
+                update_time=process_task.update_time,
             )
 
         res.append(info)
@@ -288,7 +302,9 @@ async def get_document_detail(
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
             status=convert_task.status,
-            md_file_name=convert_task.md_file_name
+            md_file_name=convert_task.md_file_name,
+            create_time=convert_task.create_time,
+            update_time=convert_task.update_time,
         )
         if res.convert_task.md_file_name is not None:
             res.convert_task.md_file_name = await get_remote_file_signed_url(
@@ -302,7 +318,9 @@ async def get_document_detail(
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
-            podcast_file_name=podcast_task.podcast_file_name
+            podcast_file_name=podcast_task.podcast_file_name,
+            create_time=podcast_task.create_time,
+            update_time=podcast_task.update_time,
         )
         if podcast_task.podcast_file_name is not None:
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
@@ -316,7 +334,9 @@ async def get_document_detail(
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
             status=summarize_task.status,
-            summary=summarize_task.summary
+            summary=summarize_task.summary,
+            create_time=summarize_task.create_time,
+            update_time=summarize_task.update_time,
         )
     embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,

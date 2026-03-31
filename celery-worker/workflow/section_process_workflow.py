@@ -2,6 +2,7 @@ import asyncio
 import re
 import uuid
 from collections import deque
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -517,6 +518,7 @@ async def _load_context(
     if section_id is None or user_id is None:
         raise Exception("Section workflow missing section_id or user_id")
 
+    now = datetime.now(timezone.utc)
     with session_scope() as db:
         db_section = crud.section.get_section_by_section_id(
             db=db,
@@ -555,6 +557,7 @@ async def _load_context(
         else:
             if db_section_process_task.status != SectionProcessStatus.PROCESSING:
                 db_section_process_task.status = SectionProcessStatus.PROCESSING
+                db_section_process_task.update_time = now
         db.commit()
 
         db_section_documents_all = crud.section.get_section_documents_by_section_id(
@@ -592,6 +595,7 @@ async def _load_context(
         if not ready_documents:
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.WAIT_TO
+                db_section_process_task.update_time = now
             db.commit()
             state["target_document_ids"] = []
             state["skip_processing"] = True
@@ -732,6 +736,7 @@ async def _build_section_content(
             )
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.FAILED
+                db_section_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
         state["skip_processing"] = True
         return state
@@ -905,6 +910,7 @@ async def _build_section_content(
         },
     ):
         with session_scope() as db:
+            now = datetime.now(timezone.utc)
             db_section = crud.section.get_section_by_section_id(
                 db=db,
                 section_id=section_id
@@ -932,8 +938,10 @@ async def _build_section_content(
                 else:
                     db_section_podcast_task.status = SectionPodcastStatus.WAIT_TO
                     db_section_podcast_task.podcast_file_name = None
+                    db_section_podcast_task.update_time = now
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.SUCCESS
+                db_section_process_task.update_time = now
 
             if ok_document_ids:
                 ok_document_id_set = set(ok_document_ids)
@@ -1042,12 +1050,14 @@ async def run_section_process_workflow(
         exception_logger.error(f"Error processing section {section_id}: {e}")
         try:
             with session_scope() as db:
+                now = datetime.now(timezone.utc)
                 db_section_process_task = crud.task.get_section_process_task_by_section_id(
                     db=db,
                     section_id=section_id
                 )
                 if db_section_process_task is not None:
                     db_section_process_task.status = SectionProcessStatus.FAILED
+                    db_section_process_task.update_time = now
                 db_section_documents = crud.section.get_section_documents_by_section_id(
                     db=db,
                     section_id=section_id

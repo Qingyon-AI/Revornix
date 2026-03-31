@@ -1,5 +1,6 @@
 import uuid
 import time
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -76,6 +77,7 @@ async def _init_section_podcast_task(
         else:
             if db_podcast_task.status != SectionPodcastStatus.GENERATING:
                 db_podcast_task.status = SectionPodcastStatus.GENERATING
+                db_podcast_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -193,6 +195,7 @@ async def _mark_section_podcast_success(
         if db_podcast_task is not None:
             db_podcast_task.status = SectionPodcastStatus.SUCCESS
             db_podcast_task.podcast_file_name = podcast_file_name
+            db_podcast_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -261,6 +264,7 @@ async def run_section_podcast_workflow(
             )
             if db_podcast_task is not None:
                 db_podcast_task.status = SectionPodcastStatus.FAILED
+                db_podcast_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

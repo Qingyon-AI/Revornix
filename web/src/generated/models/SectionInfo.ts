@@ -172,6 +172,12 @@ export interface SectionInfo {
     document_integration?: SectionDocumentIntegrationSummary | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
+    graph_stale?: boolean | null;
+    /**
+     * 
      * @type {number}
      * @memberof SectionInfo
      */
@@ -229,6 +235,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
         'document_integration': json['document_integration'] == null ? undefined : SectionDocumentIntegrationSummaryFromJSON(json['document_integration']),
+        'graph_stale': json['graph_stale'] == null ? undefined : json['graph_stale'],
         'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
     };
@@ -263,6 +270,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
         'document_integration': SectionDocumentIntegrationSummaryToJSON(value['document_integration']),
+        'graph_stale': value['graph_stale'],
         'process_task_trigger_type': value['process_task_trigger_type'],
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
     };

@@ -3,11 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
 import { SectionProcessStatus } from '@/enums/section';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn, replaceImagePaths } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
+import { Alert, AlertDescription } from '../ui/alert';
 import CustomMarkdown from '../ui/custom-markdown';
 import { Skeleton } from '../ui/skeleton';
 
@@ -81,6 +83,7 @@ const SectionMarkdown = ({
 	const markdownSourceKey = toStableMarkdownSourceKey(markdownUrl);
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
+	const freshnessState = getSectionFreshnessState(section);
 
 	const onGetMarkdown = async (
 		sourceKey: string,
@@ -237,6 +240,15 @@ const SectionMarkdown = ({
 
 			{markdown !== undefined ? (
 				<div className='relative w-full'>
+					{freshnessState.markdownStale ? (
+						<div className='mx-auto mb-4 w-full max-w-[880px]'>
+							<Alert className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
+								<AlertDescription>
+									{t('section_markdown_stale_hint')}
+								</AlertDescription>
+							</Alert>
+						</div>
+					) : null}
 					<div className='prose prose-zinc mx-auto max-w-[880px] overflow-x-hidden pb-6 dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl sm:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
 						<CustomMarkdown content={markdown || t('section_no_md')} />
 						<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>

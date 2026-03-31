@@ -234,6 +234,7 @@ class SectionInfo(BaseModel):
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
     document_integration: SectionDocumentIntegrationSummary | None = None
+    graph_stale: bool | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
 

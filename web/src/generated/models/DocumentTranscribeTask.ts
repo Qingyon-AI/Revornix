@@ -27,6 +27,18 @@ export interface DocumentTranscribeTask {
     status: number;
     /**
      * 
+     * @type {Date}
+     * @memberof DocumentTranscribeTask
+     */
+    create_time?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DocumentTranscribeTask
+     */
+    update_time?: Date | null;
+    /**
+     * 
      * @type {string}
      * @memberof DocumentTranscribeTask
      */
@@ -53,6 +65,8 @@ export function DocumentTranscribeTaskFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'status': json['status'],
+        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
+        'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'transcribed_text': json['transcribed_text'],
     };
 }
@@ -69,7 +83,8 @@ export function DocumentTranscribeTaskToJSONTyped(value?: DocumentTranscribeTask
     return {
         
         'status': value['status'],
+        'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
+        'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'transcribed_text': value['transcribed_text'],
     };
 }
-

@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -80,6 +81,7 @@ async def _init_summarize_task(
             )
         if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
             db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
+            db_summarize_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -250,6 +252,7 @@ async def _mark_summarize_success(
                 db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
                 if summary is not None:
                     db_summarize_task.summary = summary
+                db_summarize_task.update_time = datetime.now(timezone.utc)
             if db_document is not None:
                 if title is not None:
                     db_document.title = title
@@ -332,6 +335,7 @@ async def run_document_summarize_workflow(
             )
             if db_summarize_task is not None:
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
+                db_summarize_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

@@ -1,5 +1,6 @@
 import asyncio
 import time
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -86,6 +87,7 @@ async def _init_embedding_task(
                 )
             if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
                 db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
+                db_embedding_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -206,6 +208,7 @@ async def _mark_embedding_success(
         )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            db_embedding_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -284,6 +287,7 @@ async def run_document_embedding_workflow(
             )
             if db_embedding_task is not None:
                 db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+                db_embedding_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
             db.close()

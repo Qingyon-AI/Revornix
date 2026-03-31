@@ -11,6 +11,7 @@ import {
 	UserSectionRole,
 } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import {
@@ -131,6 +132,23 @@ const SectionMedia = ({
 		!section.podcast_task &&
 		section.process_task != null &&
 		section.process_task.status < SectionProcessStatus.SUCCESS;
+	const freshnessState = getSectionFreshnessState(section);
+	const podcastHintMessages = [
+		freshnessState.podcastStale ? t('section_podcast_stale_hint') : null,
+		isOwner && !canGeneratePodcast
+			? podcastEngine.subscriptionLocked
+				? t('default_resource_subscription_locked')
+				: t('section_form_auto_podcast_engine_unset')
+			: null,
+	].filter((message): message is string => Boolean(message));
+	const podcastHint =
+		podcastHintMessages.length > 0 ? (
+			<div className='space-y-1'>
+				{podcastHintMessages.map((message) => (
+					<p key={message}>{message}</p>
+				))}
+			</div>
+		) : undefined;
 
 	return (
 		<div className='space-y-4'>
@@ -165,13 +183,7 @@ const SectionMedia = ({
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={surfaceCardClassName}
-					hint={
-						!canGeneratePodcast
-							? podcastEngine.subscriptionLocked
-								? t('default_resource_subscription_locked')
-								: t('section_form_auto_podcast_engine_unset')
-							: undefined
-					}
+					hint={podcastHint}
 				/>
 			) : null}
 
@@ -204,15 +216,9 @@ const SectionMedia = ({
 					icon={AudioLines}
 					badge={t('document_podcast_status_success')}
 					title={t('section_podcast_ready')}
-					tone='success'
+					tone={freshnessState.podcastStale ? 'warning' : 'success'}
 					className={surfaceCardClassName}
-					hint={
-						isOwner && !canGeneratePodcast
-							? podcastEngine.subscriptionLocked
-								? t('default_resource_subscription_locked')
-								: t('section_form_auto_podcast_engine_unset')
-							: undefined
-					}
+					hint={podcastHint}
 					action={
 						isOwner ? (
 							<Button
@@ -251,11 +257,7 @@ const SectionMedia = ({
 					actionDisabled={!isOwner || !canGeneratePodcast}
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone='danger'
-					hint={
-						isOwner && !canGeneratePodcast
-							? t('section_form_auto_podcast_engine_unset')
-							: undefined
-					}
+					hint={podcastHint}
 					className={surfaceCardClassName}
 				/>
 			) : null}

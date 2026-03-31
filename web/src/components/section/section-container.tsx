@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
-import { Expand } from 'lucide-react';
+import { AlertCircle, Expand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -86,8 +87,15 @@ const SectionContainer = ({ id }: { id: number }) => {
 			: null;
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
+	const freshnessState = getSectionFreshnessState(section);
 	const graphCardState =
+		freshnessState.graphStale &&
 		section?.process_task?.status === SectionProcessStatus.SUCCESS
+			? {
+					badge: t('section_graph_status_stale'),
+					tone: 'warning' as const,
+				}
+			: section?.process_task?.status === SectionProcessStatus.SUCCESS
 			? {
 					badge: t('document_graph_status_success'),
 					tone: 'success' as const,
@@ -250,6 +258,11 @@ const SectionContainer = ({ id }: { id: number }) => {
 								title={t('section_graph')}
 								description={t('section_graph_description')}
 								badge={graphCardState.badge}
+								hint={
+									freshnessState.graphStale
+										? t('section_graph_stale_hint')
+										: undefined
+								}
 								tone={graphCardState.tone}
 								action={
 									<Dialog>
@@ -267,15 +280,25 @@ const SectionContainer = ({ id }: { id: number }) => {
 												<DialogDescription>
 													{t('section_graph_description')}
 												</DialogDescription>
+												{freshnessState.graphStale ? (
+													<div className='flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm leading-6 text-amber-800 dark:text-amber-200'>
+														<AlertCircle className='mt-0.5 size-4 shrink-0' />
+														<span>{t('section_graph_stale_hint')}</span>
+													</div>
+												) : null}
 											</DialogHeader>
 											<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-												<SectionGraph section_id={id} showSearch />
+												<SectionGraph
+													section_id={id}
+													showSearch
+													showStaleHint={false}
+												/>
 											</div>
 										</DialogContent>
 									</Dialog>
 								}>
 								<div className='h-[300px] overflow-hidden rounded-[20px] border border-border/60 bg-background/35'>
-									<SectionGraph section_id={id} />
+									<SectionGraph section_id={id} showStaleHint={false} />
 								</div>
 							</GraphTaskCard>
 						)}

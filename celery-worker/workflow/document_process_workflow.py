@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
@@ -89,6 +90,7 @@ async def _init_document_process_task(
         else:
             if db_document_process_task.status != DocumentProcessStatus.PROCESSING:
                 db_document_process_task.status = DocumentProcessStatus.PROCESSING
+                db_document_process_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
         db.close()
@@ -298,6 +300,7 @@ async def _mark_process_success(
         )
         if db_document_process_task is not None:
             db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
+            db_document_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
         db.close()
@@ -312,6 +315,7 @@ def _prepare_progressive_followup_tasks(
     auto_podcast: bool,
     auto_graph: bool,
 ) -> None:
+    now = datetime.now(timezone.utc)
     db = session_scope()
     try:
         ensure_document_active(db=db, document_id=document_id)
@@ -327,6 +331,7 @@ def _prepare_progressive_followup_tasks(
                 document_id=document_id,
             )
         db_embedding_task.status = DocumentEmbeddingStatus.WAIT_TO
+        db_embedding_task.update_time = now
 
         if auto_graph:
             db_graph_task = crud.task.get_document_graph_task_by_document_id(
@@ -340,6 +345,7 @@ def _prepare_progressive_followup_tasks(
                     document_id=document_id,
                 )
             db_graph_task.status = DocumentGraphStatus.WAIT_TO
+            db_graph_task.update_time = now
 
         if auto_summary:
             db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
@@ -354,6 +360,7 @@ def _prepare_progressive_followup_tasks(
                 )
             db_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
             db_summarize_task.summary = None
+            db_summarize_task.update_time = now
 
         if auto_podcast:
             db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
@@ -368,6 +375,7 @@ def _prepare_progressive_followup_tasks(
                 )
             db_podcast_task.status = DocumentPodcastStatus.WAIT_TO
             db_podcast_task.podcast_file_name = None
+            db_podcast_task.update_time = now
 
         db.commit()
     finally:
@@ -577,6 +585,7 @@ async def run_document_process_workflow(
             )
             if db_document_process_task is not None:
                 db_document_process_task.status = DocumentProcessStatus.FAILED
+                db_document_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
         finally:
             db.close()

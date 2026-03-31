@@ -9,6 +9,7 @@ import EntityGraphCanvas, {
 import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionProcessStatus } from '@/enums/section';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getSectionDetail } from '@/service/section';
 import { searchSectionGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
@@ -18,9 +19,11 @@ import { useTranslations } from 'next-intl';
 const SectionGraphSEO = ({
 	section_id,
 	showSearch = false,
+	showStaleHint = true,
 }: {
 	section_id: number;
 	showSearch?: boolean;
+	showStaleHint?: boolean;
 }) => {
 	const t = useTranslations();
 	const {
@@ -35,6 +38,11 @@ const SectionGraphSEO = ({
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
 	const isSectionProcessing = processStatus < SectionProcessStatus.SUCCESS;
 	const isSectionFailed = processStatus === SectionProcessStatus.FAILED;
+	const freshnessState = getSectionFreshnessState(section);
+	const staleHint =
+		showStaleHint && freshnessState.graphStale
+			? t('section_graph_stale_hint')
+			: null;
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
 		queryKey: ['searchDocumentGraph', section_id, processStatus],
@@ -85,12 +93,20 @@ const SectionGraphSEO = ({
 			) : null}
 			{isLoading && !nodes.length ? <Skeleton className='h-full w-full rounded-2xl' /> : null}
 			{nodes.length > 0 ? (
-				<EntityGraphCanvas
-					nodes={nodes}
-					edges={edges}
-					className='h-full w-full'
-					showSearch={showSearch}
-				/>
+				<>
+					{staleHint ? (
+						<div className='pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 shadow-sm dark:text-amber-200'>
+							<AlertCircle className='size-3.5' />
+							<span>{staleHint}</span>
+						</div>
+					) : null}
+					<EntityGraphCanvas
+						nodes={nodes}
+						edges={edges}
+						className='h-full w-full'
+						showSearch={showSearch}
+					/>
+				</>
 			) : null}
 			{!nodes.length && isSectionProcessing ? (
 				<GraphStatePanel
@@ -127,8 +143,8 @@ const SectionGraphSEO = ({
 					icon={Sparkles}
 					badge={t('document_graph_status_success')}
 					title={t('section_graph_empty')}
-					description={t('section_graph_description')}
-					tone='success'
+					description={staleHint ?? t('section_graph_description')}
+					tone={freshnessState.graphStale ? 'warning' : 'success'}
 				/>
 			) : null}
 		</div>

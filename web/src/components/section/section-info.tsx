@@ -23,6 +23,7 @@ import {
 	UserSectionAuthority,
 } from '@/enums/section';
 import { formatInUserTimeZone, toDate } from '@/lib/time';
+import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { useUserContext } from '@/provider/user-provider';
@@ -243,8 +244,12 @@ const SectionInfo = ({ id }: { id: number }) => {
 				automationWarnings.missingIllustrationEngine
 					? t('section_form_auto_illustration_engine_unset')
 					: null,
-			].filter(Boolean)
+			].filter((message): message is string => Boolean(message))
 		: [];
+	const freshnessState = getSectionFreshnessState(section);
+	const staleWarningMessages = [
+		freshnessState.markdownStale ? t('section_markdown_stale_warning') : null,
+	].filter((message): message is string => Boolean(message));
 
 	return (
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
@@ -346,11 +351,11 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</div>
 			) : null}
 
-			{warningMessages.length > 0 ? (
+			{warningMessages.length + staleWarningMessages.length > 0 ? (
 				<div className='space-y-2'>
-					{warningMessages.map((message) => (
+					{[...warningMessages, ...staleWarningMessages].map((message, index) => (
 						<Alert
-							key={message}
+							key={`${index}-${message}`}
 							className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
 							<AlertTriangle className='size-4 text-current' />
 							<AlertDescription>{message}</AlertDescription>
