@@ -79,3 +79,4 @@ export function DocumentGraphTaskToJSONTyped(value?: DocumentGraphTask | null, i
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

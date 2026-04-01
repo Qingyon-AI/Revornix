@@ -25,6 +25,8 @@ All URIs are relative to *http://localhost*
 
 Ask Ai
 
+Handle Revornix AI chat requests with optional MCP tool usage.
+
 ### Example
 
 ```ts

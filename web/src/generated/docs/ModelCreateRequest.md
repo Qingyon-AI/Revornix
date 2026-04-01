@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `name` | string
 `description` | string
+`required_plan_level` | number
 `provider_id` | number
 
 ## Example
@@ -19,6 +20,7 @@ import type { ModelCreateRequest } from ''
 const example = {
   "name": null,
   "description": null,
+  "required_plan_level": null,
   "provider_id": null,
 } satisfies ModelCreateRequest
 

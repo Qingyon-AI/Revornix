@@ -1,26 +1,22 @@
 
-# DocumentEmbeddingTask
+# TriggerSectionProcessRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`status` | number
-`create_time` | Date
-`update_time` | Date
+`section_id` | number
 
 ## Example
 
 ```typescript
-import type { DocumentEmbeddingTask } from ''
+import type { TriggerSectionProcessRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "status": null,
-  "create_time": null,
-  "update_time": null,
-} satisfies DocumentEmbeddingTask
+  "section_id": null,
+} satisfies TriggerSectionProcessRequest
 
 console.log(example)
 
@@ -29,7 +25,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as DocumentEmbeddingTask
+const exampleParsed = JSON.parse(exampleJSON) as TriggerSectionProcessRequest
 console.log(exampleParsed)
 ```
 

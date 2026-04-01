@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `status` | number
 `podcast_file_name` | string
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
@@ -18,6 +20,8 @@ import type { DocumentPodcastTask } from ''
 const example = {
   "status": null,
   "podcast_file_name": null,
+  "create_time": null,
+  "update_time": null,
 } satisfies DocumentPodcastTask
 
 console.log(example)

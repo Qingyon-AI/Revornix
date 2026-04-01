@@ -21,8 +21,11 @@ Name | Type
 `md_file_name` | string
 `labels` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
 `cover` | string
+`publish_uuid` | string
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `process_task` | [SectionProcessTask](SectionProcessTask.md)
+`document_integration` | [SectionDocumentIntegrationSummary](SectionDocumentIntegrationSummary.md)
+`graph_stale` | boolean
 `process_task_trigger_type` | number
 `process_task_trigger_scheduler` | string
 
@@ -48,8 +51,11 @@ const example = {
   "md_file_name": null,
   "labels": null,
   "cover": null,
+  "publish_uuid": null,
   "podcast_task": null,
   "process_task": null,
+  "document_integration": null,
+  "graph_stale": null,
   "process_task_trigger_type": null,
   "process_task_trigger_scheduler": null,
 } satisfies SectionInfo

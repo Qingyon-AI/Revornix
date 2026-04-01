@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `default_document_reader_model_id` | number
 `default_revornix_model_id` | number
+`default_ai_interaction_language` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { DefaultModelUpdateRequest } from ''
 const example = {
   "default_document_reader_model_id": null,
   "default_revornix_model_id": null,
+  "default_ai_interaction_language": null,
 } satisfies DefaultModelUpdateRequest
 
 console.log(example)

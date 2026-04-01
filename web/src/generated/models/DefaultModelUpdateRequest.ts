@@ -78,3 +78,4 @@ export function DefaultModelUpdateRequestToJSONTyped(value?: DefaultModelUpdateR
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
+

@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**addLabelSectionLabelCreatePost**](SectionApi.md#addlabelsectionlabelcreatepost) | **POST** /section/label/create | Add Label |
+| [**askSectionAiSectionAskPost**](SectionApi.md#asksectionaisectionaskpost) | **POST** /section/ask | Ask Section Ai |
 | [**createSectionCommentSectionCommentCreatePost**](SectionApi.md#createsectioncommentsectioncommentcreatepost) | **POST** /section/comment/create | Create Section Comment |
 | [**createSectionSectionCreatePost**](SectionApi.md#createsectionsectioncreatepost) | **POST** /section/create | Create Section |
 | [**deleteLabelSectionLabelDeletePost**](SectionApi.md#deletelabelsectionlabeldeletepost) | **POST** /section/label/delete | Delete Label |
@@ -20,6 +21,7 @@ All URIs are relative to *http://localhost*
 | [**getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost**](SectionApi.md#getsectionuserroleandauthoritysectionuserroleandauthoritypost) | **POST** /section/user/role-and-authority | Get Section User Role And Authority |
 | [**listLabelSectionLabelListPost**](SectionApi.md#listlabelsectionlabellistpost) | **POST** /section/label/list | List Label |
 | [**publicSectionsSectionPublicSearchPost**](SectionApi.md#publicsectionssectionpublicsearchpost) | **POST** /section/public/search | Public Sections |
+| [**retrySectionDocumentIntegrationSectionDocumentRetryPost**](SectionApi.md#retrysectiondocumentintegrationsectiondocumentretrypost) | **POST** /section/document/retry | Retry Section Document Integration |
 | [**searchMineSectionsSectionMineSearchPost**](SectionApi.md#searchminesectionssectionminesearchpost) | **POST** /section/mine/search | Search Mine Sections |
 | [**searchSectionCommentSectionCommentSearchPost**](SectionApi.md#searchsectioncommentsectioncommentsearchpost) | **POST** /section/comment/search | Search Section Comment |
 | [**searchUserSectionsSectionUserSearchPost**](SectionApi.md#searchusersectionssectionusersearchpost) | **POST** /section/user/search | Search User Sections |
@@ -32,6 +34,7 @@ All URIs are relative to *http://localhost*
 | [**sectionUserModifyRequestSectionUserModifyPost**](SectionApi.md#sectionusermodifyrequestsectionusermodifypost) | **POST** /section/user/modify | Section User Modify Request |
 | [**sectionUserRequestSectionUserPost**](SectionApi.md#sectionuserrequestsectionuserpost) | **POST** /section/user | Section User Request |
 | [**subscribeSectionSectionSubscribePost**](SectionApi.md#subscribesectionsectionsubscribepost) | **POST** /section/subscribe | Subscribe Section |
+| [**triggerSectionProcessSectionProcessTriggerPost**](SectionApi.md#triggersectionprocesssectionprocesstriggerpost) | **POST** /section/process/trigger | Trigger Section Process |
 | [**updateSectionSectionUpdatePost**](SectionApi.md#updatesectionsectionupdatepost) | **POST** /section/update | Update Section |
 
 
@@ -88,6 +91,80 @@ example().catch(console.error);
 ### Return type
 
 [**CreateLabelResponse**](CreateLabelResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## askSectionAiSectionAskPost
+
+> any askSectionAiSectionAskPost(sectionAskRequest, authorization, xUserTimezone)
+
+Ask Section Ai
+
+Handle section AI chat requests through the shared MCP agent pipeline.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { AskSectionAiSectionAskPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionAskRequest
+    sectionAskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies AskSectionAiSectionAskPostRequest;
+
+  try {
+    const data = await api.askSectionAiSectionAskPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionAskRequest** | [SectionAskRequest](SectionAskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
 
 ### Authorization
 
@@ -1182,6 +1259,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## retrySectionDocumentIntegrationSectionDocumentRetryPost
+
+> NormalResponse retrySectionDocumentIntegrationSectionDocumentRetryPost(retrySectionDocumentRequest, authorization, xUserTimezone)
+
+Retry Section Document Integration
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // RetrySectionDocumentRequest
+    retrySectionDocumentRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest;
+
+  try {
+    const data = await api.retrySectionDocumentIntegrationSectionDocumentRetryPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **retrySectionDocumentRequest** | [RetrySectionDocumentRequest](RetrySectionDocumentRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## searchMineSectionsSectionMineSearchPost
 
 > InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xUserTimezone)
@@ -2020,6 +2169,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **sectionSubscribeRequest** | [SectionSubscribeRequest](SectionSubscribeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## triggerSectionProcessSectionProcessTriggerPost
+
+> NormalResponse triggerSectionProcessSectionProcessTriggerPost(triggerSectionProcessRequest, authorization, xUserTimezone)
+
+Trigger Section Process
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { TriggerSectionProcessSectionProcessTriggerPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // TriggerSectionProcessRequest
+    triggerSectionProcessRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies TriggerSectionProcessSectionProcessTriggerPostRequest;
+
+  try {
+    const data = await api.triggerSectionProcessSectionProcessTriggerPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **triggerSectionProcessRequest** | [TriggerSectionProcessRequest](TriggerSectionProcessRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

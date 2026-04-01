@@ -37,6 +37,12 @@ export interface ChatItem {
      * @memberof ChatItem
      */
     role: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ChatItem
+     */
+    images?: Array<string>;
 }
 
 /**
@@ -62,6 +68,7 @@ export function ChatItemFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'chat_id': json['chat_id'],
         'content': json['content'],
         'role': json['role'],
+        'images': json['images'] == null ? undefined : json['images'],
     };
 }
 
@@ -79,6 +86,7 @@ export function ChatItemToJSONTyped(value?: ChatItem | null, ignoreDiscriminator
         'chat_id': value['chat_id'],
         'content': value['content'],
         'role': value['role'],
+        'images': value['images'],
     };
 }
 

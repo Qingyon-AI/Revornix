@@ -9,6 +9,7 @@ Name | Type
 `id` | number
 `title` | string
 `description` | string
+`publish_uuid` | string
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "id": null,
   "title": null,
   "description": null,
+  "publish_uuid": null,
 } satisfies SchemasDocumentBaseSectionInfo
 
 console.log(example)

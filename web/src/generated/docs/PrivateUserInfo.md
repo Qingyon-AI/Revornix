@@ -28,6 +28,7 @@ Name | Type
 `default_podcast_user_engine_id` | number
 `default_audio_transcribe_engine_id` | number
 `default_image_generate_engine_id` | number
+`default_ai_interaction_language` | number
 
 ## Example
 
@@ -58,6 +59,7 @@ const example = {
   "default_podcast_user_engine_id": null,
   "default_audio_transcribe_engine_id": null,
   "default_image_generate_engine_id": null,
+  "default_ai_interaction_language": null,
 } satisfies PrivateUserInfo
 
 console.log(example)

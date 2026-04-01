@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `status` | number
 `summary` | string
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
@@ -18,6 +20,8 @@ import type { DocumentSummarizeTask } from ''
 const example = {
   "status": null,
   "summary": null,
+  "create_time": null,
+  "update_time": null,
 } satisfies DocumentSummarizeTask
 
 console.log(example)

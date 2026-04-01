@@ -194,6 +194,7 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Handle Revornix AI chat requests with optional MCP tool usage.
      * Ask Ai
      */
     async askAiAiAskPostRaw(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -208,6 +209,7 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Handle Revornix AI chat requests with optional MCP tool usage.
      * Ask Ai
      */
     async askAiAiAskPost(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {

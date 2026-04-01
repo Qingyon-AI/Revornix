@@ -9,6 +9,7 @@ Name | Type
 `chat_id` | string
 `content` | string
 `role` | string
+`images` | Array&lt;string&gt;
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "chat_id": null,
   "content": null,
   "role": null,
+  "images": null,
 } satisfies ChatItem
 
 console.log(example)

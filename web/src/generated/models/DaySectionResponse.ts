@@ -77,19 +77,19 @@ export interface DaySectionResponse {
      * @type {string}
      * @memberof DaySectionResponse
      */
-    description?: string | null;
+    description: string | null;
     /**
      * 
      * @type {boolean}
      * @memberof DaySectionResponse
      */
-    auto_podcast?: boolean | null;
+    auto_podcast?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof DaySectionResponse
      */
-    auto_illustration?: boolean | null;
+    auto_illustration?: boolean;
     /**
      * 
      * @type {Date}
@@ -101,13 +101,13 @@ export interface DaySectionResponse {
      * @type {Date}
      * @memberof DaySectionResponse
      */
-    update_time?: Date | null;
+    update_time: Date | null;
     /**
      * 
      * @type {string}
      * @memberof DaySectionResponse
      */
-    md_file_name?: string | null;
+    md_file_name: string | null;
     /**
      * 
      * @type {Array<SectionDocumentInfo>}
@@ -143,7 +143,7 @@ export interface DaySectionResponse {
      * @type {boolean}
      * @memberof DaySectionResponse
      */
-    is_created?: boolean | null;
+    is_created?: boolean;
 }
 
 /**
@@ -151,6 +151,9 @@ export interface DaySectionResponse {
  */
 export function instanceOfDaySectionResponse(value: object): value is DaySectionResponse {
     if (!('date' in value) || value['date'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('update_time' in value) || value['update_time'] === undefined) return false;
+    if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
     return true;
 }
 
@@ -168,12 +171,12 @@ export function DaySectionResponseFromJSONTyped(json: any, ignoreDiscriminator: 
         'creator': json['creator'] == null ? undefined : UserPublicInfoFromJSON(json['creator']),
         'date': json['date'],
         'title': json['title'] == null ? undefined : json['title'],
-        'description': json['description'] == null ? undefined : json['description'],
+        'description': json['description'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
         'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
-        'create_time': (json['create_time'] == null ? undefined : new Date(json['create_time'])),
-        'update_time': (json['update_time'] == null ? undefined : new Date(json['update_time'])),
-        'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
+        'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
+        'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'md_file_name': json['md_file_name'],
         'documents': json['documents'] == null ? undefined : ((json['documents'] as Array<any>).map(SectionDocumentInfoFromJSON)),
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
@@ -204,7 +207,7 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'md_file_name': value['md_file_name'],
-        'documents': value['documents'] == null ? value['documents'] : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
+        'documents': value['documents'] == null ? undefined : ((value['documents'] as Array<any>).map(SectionDocumentInfoToJSON)),
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
         'process_task_trigger_type': value['process_task_trigger_type'],
@@ -212,3 +215,4 @@ export function DaySectionResponseToJSONTyped(value?: DaySectionResponse | null,
         'is_created': value['is_created'],
     };
 }
+

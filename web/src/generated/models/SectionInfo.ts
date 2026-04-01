@@ -12,67 +12,195 @@
  * Do not edit the class manually.
  */
 
+import { mapValues } from '../runtime';
 import type { SectionProcessTask } from './SectionProcessTask';
 import {
     SectionProcessTaskFromJSON,
+    SectionProcessTaskFromJSONTyped,
     SectionProcessTaskToJSON,
+    SectionProcessTaskToJSONTyped,
 } from './SectionProcessTask';
 import type { SectionPodcastTask } from './SectionPodcastTask';
 import {
     SectionPodcastTaskFromJSON,
+    SectionPodcastTaskFromJSONTyped,
     SectionPodcastTaskToJSON,
+    SectionPodcastTaskToJSONTyped,
 } from './SectionPodcastTask';
-import type { SectionDocumentIntegrationSummary } from './SectionDocumentIntegrationSummary';
-import {
-    SectionDocumentIntegrationSummaryFromJSON,
-    SectionDocumentIntegrationSummaryToJSON,
-} from './SectionDocumentIntegrationSummary';
 import type { SectionLabel } from './SectionLabel';
 import {
     SectionLabelFromJSON,
+    SectionLabelFromJSONTyped,
     SectionLabelToJSON,
+    SectionLabelToJSONTyped,
 } from './SectionLabel';
+import type { SectionDocumentIntegrationSummary } from './SectionDocumentIntegrationSummary';
+import {
+    SectionDocumentIntegrationSummaryFromJSON,
+    SectionDocumentIntegrationSummaryFromJSONTyped,
+    SectionDocumentIntegrationSummaryToJSON,
+    SectionDocumentIntegrationSummaryToJSONTyped,
+} from './SectionDocumentIntegrationSummary';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
+    UserPublicInfoFromJSONTyped,
     UserPublicInfoToJSON,
+    UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
 import type { UserSectionAuthority } from './UserSectionAuthority';
 import {
     UserSectionAuthorityFromJSON,
+    UserSectionAuthorityFromJSONTyped,
     UserSectionAuthorityToJSON,
+    UserSectionAuthorityToJSONTyped,
 } from './UserSectionAuthority';
 
 /**
- *
+ * 
  * @export
  * @interface SectionInfo
  */
 export interface SectionInfo {
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
     id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     title: string;
+    /**
+     * 
+     * @type {UserPublicInfo}
+     * @memberof SectionInfo
+     */
     creator: UserPublicInfo;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     description: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
     auto_podcast: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
     auto_illustration: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
     documents_count?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
     subscribers_count?: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof SectionInfo
+     */
     create_time: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof SectionInfo
+     */
     update_time?: Date | null;
+    /**
+     * 
+     * @type {UserSectionAuthority}
+     * @memberof SectionInfo
+     */
     authority?: UserSectionAuthority | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
     is_subscribed?: boolean | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     md_file_name?: string | null;
+    /**
+     * 
+     * @type {Array<SectionLabel>}
+     * @memberof SectionInfo
+     */
     labels?: Array<SectionLabel> | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     cover: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     publish_uuid?: string | null;
+    /**
+     * 
+     * @type {SectionPodcastTask}
+     * @memberof SectionInfo
+     */
     podcast_task?: SectionPodcastTask | null;
+    /**
+     * 
+     * @type {SectionProcessTask}
+     * @memberof SectionInfo
+     */
     process_task?: SectionProcessTask | null;
+    /**
+     * 
+     * @type {SectionDocumentIntegrationSummary}
+     * @memberof SectionInfo
+     */
     document_integration?: SectionDocumentIntegrationSummary | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
     graph_stale?: boolean | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionInfo
+     */
     process_task_trigger_type?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionInfo
+     */
     process_task_trigger_scheduler?: string | null;
 }
 
+
+
+/**
+ * Check if a given object implements the SectionInfo interface.
+ */
 export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
@@ -94,6 +222,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         return json;
     }
     return {
+        
         'id': json['id'],
         'title': json['title'],
         'creator': UserPublicInfoFromJSON(json['creator']),
@@ -119,12 +248,17 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
     };
 }
 
-export function SectionInfoToJSON(value?: SectionInfo | null): any {
+export function SectionInfoToJSON(json: any): SectionInfo {
+    return SectionInfoToJSONTyped(json, false);
+}
+
+export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
+        
         'id': value['id'],
         'title': value['title'],
         'creator': UserPublicInfoToJSON(value['creator']),
@@ -149,3 +283,4 @@ export function SectionInfoToJSON(value?: SectionInfo | null): any {
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
     };
 }
+

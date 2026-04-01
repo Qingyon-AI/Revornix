@@ -10,6 +10,8 @@ Name | Type
 `uuid` | string
 `name` | string
 `description` | string
+`required_plan_level` | number
+`subscription_required` | boolean
 `create_time` | Date
 `update_time` | Date
 `provider` | [ModelProvider](ModelProvider.md)
@@ -25,6 +27,8 @@ const example = {
   "uuid": null,
   "name": null,
   "description": null,
+  "required_plan_level": null,
+  "subscription_required": null,
   "create_time": null,
   "update_time": null,
   "provider": null,

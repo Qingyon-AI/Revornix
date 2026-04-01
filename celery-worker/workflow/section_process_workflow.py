@@ -119,8 +119,8 @@ SECTION_IMAGE_PLACEHOLDER_SVG_TEMPLATE = """<svg xmlns="http://www.w3.org/2000/s
 <rect x="64" y="64" width="1152" height="592" rx="34" fill="url(#panel)" stroke="#d5bd93" stroke-width="3"/>
 <rect x="96" y="96" width="1088" height="320" rx="28" fill="#e7d4b1"/>
 <rect x="96" y="432" width="1088" height="192" rx="24" fill="#fcf7ee" stroke="#eadbbe" stroke-width="2"/>
-<rect x="132" y="130" width="164" height="34" rx="17" fill="#8c6840"/>
-<text x="214" y="153" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" fill="#fffaf2">ILLUSTRATION QUEUE</text>
+<rect x="132" y="130" width="216" height="34" rx="17" fill="#8c6840"/>
+<text x="240" y="153" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" fill="#fffaf2">ILLUSTRATION QUEUE</text>
 <rect x="132" y="202" width="520" height="30" rx="15" fill="#6f542f" opacity="0.92"/>
 <rect x="132" y="250" width="410" height="18" rx="9" fill="#9b7a4c" opacity="0.75"/>
 <rect x="132" y="286" width="338" height="18" rx="9" fill="#b7915b" opacity="0.58"/>

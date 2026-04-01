@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `status` | number
 `transcribed_text` | string
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
@@ -18,6 +20,8 @@ import type { DocumentTranscribeTask } from ''
 const example = {
   "status": null,
   "transcribed_text": null,
+  "create_time": null,
+  "update_time": null,
 } satisfies DocumentTranscribeTask
 
 console.log(example)

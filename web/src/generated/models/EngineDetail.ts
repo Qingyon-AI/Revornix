@@ -181,3 +181,4 @@ export function EngineDetailToJSONTyped(value?: EngineDetail | null, ignoreDiscr
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };
 }
+
