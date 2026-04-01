@@ -1,12 +1,14 @@
 import asyncio
 import base64
 import re
+import time
 import uuid
 from collections import deque
 from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
+from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.ai import make_section_markdown
@@ -20,6 +22,7 @@ from enums.section import (
     SectionProcessStatus,
 )
 from enums.document import DocumentAudioTranscribeStatus, DocumentCategory, DocumentMdConvertStatus
+from enums.user import AIInteractionLanguage
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from schemas.section import GeneratedImage, ImagePlan
 from common.markdown_helpers import (
@@ -86,12 +89,112 @@ SECTION_MARKDOWN_CONTEXT_MEMORY_CHAR_LIMIT = 5_000
 SECTION_MARKDOWN_FAST_PATH_MAX_CHARS = 4_500
 SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT = 12
 SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT = 12
-SECTION_IMAGE_MIN_CONTENT_CHARS = 3_200
+SECTION_IMAGE_MIN_CONTENT_CHARS = 2_000
 SECTION_IMAGE_MIN_ENTITY_COUNT = 6
 SECTION_IMAGE_MIN_RELATION_COUNT = 4
-SECTION_IMAGE_SINGLE_DOC_MIN_CONTENT_CHARS = 5_500
+SECTION_IMAGE_SINGLE_DOC_MIN_CONTENT_CHARS = 3_000
 SECTION_IMAGE_SINGLE_DOC_MIN_ENTITY_COUNT = 10
 SECTION_IMAGE_SINGLE_DOC_MIN_RELATION_COUNT = 6
+SECTION_IMAGE_GENERATE_MAX_ATTEMPTS = 2
+SECTION_IMAGE_PLACEHOLDER_SVG_TEMPLATE = """<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#f7f1e4"/>
+<stop offset="50%" stop-color="#efe4cf"/>
+<stop offset="100%" stop-color="#e8d7bb"/>
+</linearGradient>
+<linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#fff9ef"/>
+<stop offset="100%" stop-color="#f3e6cf"/>
+</linearGradient>
+<linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+<stop offset="50%" stop-color="#ffffff" stop-opacity="0.75"/>
+<stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+</linearGradient>
+</defs>
+<rect width="1280" height="720" rx="32" fill="url(#bg)"/>
+<circle cx="1110" cy="118" r="160" fill="#ffffff" opacity="0.2"/>
+<circle cx="170" cy="622" r="190" fill="#c89c62" opacity="0.12"/>
+<rect x="64" y="64" width="1152" height="592" rx="34" fill="url(#panel)" stroke="#d5bd93" stroke-width="3"/>
+<rect x="96" y="96" width="1088" height="320" rx="28" fill="#e7d4b1"/>
+<rect x="96" y="432" width="1088" height="192" rx="24" fill="#fcf7ee" stroke="#eadbbe" stroke-width="2"/>
+<rect x="132" y="130" width="164" height="34" rx="17" fill="#8c6840"/>
+<text x="214" y="153" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" fill="#fffaf2">ILLUSTRATION QUEUE</text>
+<rect x="132" y="202" width="520" height="30" rx="15" fill="#6f542f" opacity="0.92"/>
+<rect x="132" y="250" width="410" height="18" rx="9" fill="#9b7a4c" opacity="0.75"/>
+<rect x="132" y="286" width="338" height="18" rx="9" fill="#b7915b" opacity="0.58"/>
+<rect x="836" y="166" width="232" height="160" rx="28" fill="#fff8eb" opacity="0.96" stroke="#dfc79f" stroke-width="2"/>
+<circle cx="952" cy="224" r="42" fill="#d9b67d"/>
+<circle cx="952" cy="224" r="24" fill="#f9efdb">
+<animate attributeName="r" values="18;28;18" dur="1.8s" repeatCount="indefinite"/>
+</circle>
+<rect x="874" y="286" width="156" height="16" rx="8" fill="#caa16a"/>
+<rect x="874" y="312" width="118" height="12" rx="6" fill="#dcc197"/>
+<text x="640" y="505" text-anchor="middle" font-size="46" font-family="Arial, sans-serif" fill="#5d4526">Generating section illustration</text>
+<text x="640" y="548" text-anchor="middle" font-size="26" font-family="Arial, sans-serif" fill="#7a5b33">正在生成专栏插图，请稍后刷新</text>
+<text x="640" y="590" text-anchor="middle" font-size="22" font-family="Arial, sans-serif" fill="#9a7a50">Section {section_id} · Image {image_id}</text>
+<rect x="172" y="612" width="936" height="10" rx="5" fill="#ead8b8"/>
+<rect x="172" y="612" width="260" height="10" rx="5" fill="#b9894c">
+<animate attributeName="x" values="172;846;172" dur="2.8s" repeatCount="indefinite"/>
+</rect>
+<rect x="-320" y="96" width="320" height="320" fill="url(#shine)" opacity="0.5">
+<animate attributeName="x" values="-320;1184" dur="3.2s" repeatCount="indefinite"/>
+</rect>
+</svg>"""
+
+
+def _contains_cjk(text: str | None) -> bool:
+    return bool(text and re.search(r"[\u4e00-\u9fff]", text))
+
+
+def _get_section_heading_labels(
+    language: int | None,
+    *,
+    content_hint: str | None = None,
+) -> dict[str, str]:
+    resolved_language = language
+    if resolved_language == AIInteractionLanguage.AUTO:
+        resolved_language = (
+            AIInteractionLanguage.CHINESE
+            if _contains_cjk(content_hint)
+            else AIInteractionLanguage.ENGLISH
+        )
+
+    if resolved_language == AIInteractionLanguage.CHINESE:
+        return {
+            "title": "专栏总结",
+            "executive_summary": "执行摘要",
+            "key_insights": "关键洞察",
+            "detailed_analysis": "详细分析",
+            "graph_interpretation": "知识图谱解读",
+            "core_entities": "核心实体",
+            "core_relations": "核心关系",
+            "no_key_insights": "未提取出关键洞察。",
+            "no_graph_signals": "未提取出知识图谱信号。",
+            "conclusion": "结论与建议",
+            "prioritize_themes_prefix": "优先关注以下主题：",
+            "continue_tracking_prefix": "继续跟踪这些核心概念：",
+            "review_source_content": "回看源内容，并补充更结构化的材料。",
+            "add_more_source_material": "补充更多源材料，以增强实体和关系覆盖。",
+        }
+
+    return {
+        "title": "Section Summary",
+        "executive_summary": "Executive Summary",
+        "key_insights": "Key Insights",
+        "detailed_analysis": "Detailed Analysis",
+        "graph_interpretation": "Knowledge Graph Interpretation",
+        "core_entities": "Core Entities",
+        "core_relations": "Core Relations",
+        "no_key_insights": "No key insights extracted.",
+        "no_graph_signals": "No knowledge graph signals were extracted.",
+        "conclusion": "Conclusion & Recommendations",
+        "prioritize_themes_prefix": "Prioritize the themes around",
+        "continue_tracking_prefix": "Continue tracking the core concepts:",
+        "review_source_content": "Review the source content and enrich the section with more structured material.",
+        "add_more_source_material": "Add more source material to strengthen entity and relation coverage.",
+    }
 
 
 def _format_document_category_label(category: int) -> str:
@@ -204,6 +307,40 @@ def apply_generated_images(
     return pattern.sub(repl, markdown_with_markers)
 
 
+def _build_section_image_placeholder_markdown(
+    *,
+    section_id: int,
+    image_id: str,
+) -> str:
+    svg = SECTION_IMAGE_PLACEHOLDER_SVG_TEMPLATE.format(
+        section_id=section_id,
+        image_id=image_id,
+    )
+    payload = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return (
+        f"<!-- section-image-placeholder: section={section_id}, image={image_id} -->\n"
+        f"![image](data:image/svg+xml;base64,{payload})"
+    )
+
+
+def _build_placeholder_generated_images(
+    *,
+    section_id: int,
+    image_plans: list[ImagePlan],
+) -> list[GeneratedImage]:
+    return [
+        GeneratedImage(
+            id=plan.id,
+            prompt=plan.prompt,
+            image=_build_section_image_placeholder_markdown(
+                section_id=section_id,
+                image_id=plan.id,
+            ),
+        )
+        for plan in image_plans
+    ]
+
+
 def _extract_image_payload(image_markdown: str) -> tuple[str, bytes] | None:
     normalized = image_markdown.strip()
     markdown_match = re.fullmatch(r"!\[[^\]]*\]\((data:image/[^)]+)\)", normalized)
@@ -219,9 +356,12 @@ def _extract_image_payload(image_markdown: str) -> tuple[str, bytes] | None:
 
     mime_subtype = data_match.group("mime_subtype").lower()
     extension = "jpg" if mime_subtype == "jpeg" else mime_subtype.replace("+xml", "")
-    payload = data_match.group("payload")
+    payload = data_match.group("payload").strip()
+    missing_padding = len(payload) % 4
+    if missing_padding:
+        payload += "=" * (4 - missing_padding)
     try:
-        content = base64.b64decode(payload)
+        content = base64.b64decode(payload, validate=True)
     except Exception as decode_error:
         exception_logger.warning(
             f"[SectionImage] failed to decode generated image payload: {decode_error}"
@@ -229,6 +369,15 @@ def _extract_image_payload(image_markdown: str) -> tuple[str, bytes] | None:
         return None
 
     return extension, content
+
+
+def _is_generated_image_payload_valid(image_markdown: str) -> bool:
+    normalized_image = image_markdown.strip()
+    if normalized_image.startswith("![image](data:image/") or normalized_image.startswith(
+        "data:image/"
+    ):
+        return _extract_image_payload(normalized_image) is not None
+    return True
 
 
 async def _persist_generated_images(
@@ -244,6 +393,13 @@ async def _persist_generated_images(
     async def _persist_one(image: GeneratedImage) -> GeneratedImage:
         payload = _extract_image_payload(image.image)
         if payload is None:
+            normalized_image = image.image.strip()
+            if normalized_image.startswith("![image](data:image/") or normalized_image.startswith("data:image/"):
+                return GeneratedImage(
+                    id=image.id,
+                    prompt=image.prompt,
+                    image=f"<!-- image skipped: invalid payload, id={image.id} -->",
+                )
             return image
 
         extension, content = payload
@@ -268,6 +424,70 @@ async def _persist_generated_images(
         )
 
     return list(await asyncio.gather(*[_persist_one(image) for image in images]))
+
+
+async def run_finalize_section_images(
+    *,
+    section_id: int,
+    user_id: int,
+    md_file_name: str,
+    markdown_with_markers: str,
+    image_plans_payload: list[dict],
+    engine_id: int,
+) -> None:
+    image_plans = [ImagePlan(**payload) for payload in image_plans_payload]
+    if not image_plans:
+        return
+
+    remote_file_service = await FileSystemProxy.create(user_id=user_id)
+    engine = await EngineProxy.create_image_generate_engine(
+        user_id=user_id,
+        engine_id=engine_id,
+    )
+    image_semaphore = asyncio.Semaphore(
+        min(IMAGE_GENERATE_CONCURRENCY, max(1, len(image_plans)))
+    )
+
+    started_at = time.perf_counter()
+    generated_images = [
+        image
+        for image in await asyncio.gather(
+            *[
+                _generate_section_image(
+                    section_id=section_id,
+                    engine=engine,
+                    image_plan=plan,
+                    semaphore=image_semaphore,
+                )
+                for plan in image_plans
+            ]
+        )
+        if image is not None
+    ]
+    generated_images = await _persist_generated_images(
+        section_id=section_id,
+        remote_file_service=remote_file_service,
+        images=generated_images,
+    )
+
+    placeholder_images = _build_placeholder_generated_images(
+        section_id=section_id,
+        image_plans=image_plans,
+    )
+    final_content = apply_generated_images(
+        markdown_with_markers,
+        [*placeholder_images, *generated_images],
+    )
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=md_file_name,
+        content=final_content.encode("utf-8"),
+        content_type="text/plain",
+    )
+    info_logger.info(
+        f"[SectionImage] finalize section images completed: section={section_id}, "
+        f"plans={len(image_plans)}, generated={len(generated_images)}, "
+        f"elapsed_ms={(time.perf_counter() - started_at) * 1000:.2f}"
+    )
 
 
 def _is_token_limit_error(error: Exception) -> bool:
@@ -430,6 +650,7 @@ def _split_summary_sentences(text: str, *, max_items: int) -> list[str]:
 
 def _build_fast_section_markdown(
     *,
+    language: int | None,
     summary_title: str | None,
     summary_description: str | None,
     summary_body: str | None,
@@ -437,7 +658,15 @@ def _build_fast_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo],
 ) -> str:
-    title = (summary_title or "Section Summary").strip()
+    labels = _get_section_heading_labels(
+        language,
+        content_hint="\n".join(
+            item
+            for item in [summary_title, summary_description, summary_body, source_markdown]
+            if item
+        ),
+    )
+    title = (summary_title or labels["title"]).strip()
     description = (summary_description or "").strip()
     summary_body = (summary_body or "").strip()
     key_points = _split_summary_sentences(summary_body, max_items=5)
@@ -448,7 +677,7 @@ def _build_fast_section_markdown(
     top_entities = entities[:SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT]
     top_relations = relations[:SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT]
 
-    lines = [f"# {title}", "", "## Executive Summary", ""]
+    lines = [f"# {title}", "", f"## {labels['executive_summary']}", ""]
     if description:
         lines.append(description)
         lines.append("")
@@ -456,25 +685,25 @@ def _build_fast_section_markdown(
         lines.append(summary_body)
         lines.append("")
 
-    lines.extend(["## Key Insights", ""])
+    lines.extend([f"## {labels['key_insights']}", ""])
     if key_points:
         lines.extend([f"- {item}" for item in key_points])
     else:
-        lines.append("- No key insights extracted.")
+        lines.append(f"- {labels['no_key_insights']}")
     lines.append("")
 
-    lines.extend(["## Detailed Analysis", "", detail_excerpt, ""])
+    lines.extend([f"## {labels['detailed_analysis']}", "", detail_excerpt, ""])
 
-    lines.extend(["## Knowledge Graph Interpretation", ""])
+    lines.extend([f"## {labels['graph_interpretation']}", ""])
     if top_entities:
-        lines.append("### Core Entities")
+        lines.append(f"### {labels['core_entities']}")
         lines.append("")
         lines.extend(
             [f"- **{entity.text}** ({entity.entity_type})" for entity in top_entities]
         )
         lines.append("")
     if top_relations:
-        lines.append("### Core Relations")
+        lines.append(f"### {labels['core_relations']}")
         lines.append("")
         lines.extend(
             [
@@ -484,22 +713,29 @@ def _build_fast_section_markdown(
         )
         lines.append("")
     if not top_entities and not top_relations:
-        lines.append("No knowledge graph signals were extracted.")
+        lines.append(labels["no_graph_signals"])
         lines.append("")
 
-    lines.extend(["## Conclusion & Recommendations", ""])
+    lines.extend([f"## {labels['conclusion']}", ""])
     if key_points:
-        lines.append(
-            f"- Prioritize the themes around {key_points[0][:120]}."
-        )
+        if language == AIInteractionLanguage.CHINESE or (
+            language == AIInteractionLanguage.AUTO and _contains_cjk(summary_body)
+        ):
+            lines.append(f"- {labels['prioritize_themes_prefix']}{key_points[0][:120]}。")
+        else:
+            lines.append(f"- {labels['prioritize_themes_prefix']} {key_points[0][:120]}.")
     else:
-        lines.append("- Review the source content and enrich the section with more structured material.")
+        lines.append(f"- {labels['review_source_content']}")
     if top_entities:
-        lines.append(
-            f"- Continue tracking the core concepts: {', '.join(entity.text for entity in top_entities[:5])}."
-        )
+        concepts = ", ".join(entity.text for entity in top_entities[:5])
+        if language == AIInteractionLanguage.CHINESE or (
+            language == AIInteractionLanguage.AUTO and _contains_cjk(summary_body)
+        ):
+            lines.append(f"- {labels['continue_tracking_prefix']}{concepts}。")
+        else:
+            lines.append(f"- {labels['continue_tracking_prefix']} {concepts}.")
     else:
-        lines.append("- Add more source material to strengthen entity and relation coverage.")
+        lines.append(f"- {labels['add_more_source_material']}")
     lines.append("")
 
     return "\n".join(lines).strip()
@@ -602,12 +838,18 @@ async def _compose_section_markdown_in_batches(
             model_id=model_id,
             content=markdown_contents[0],
         )
+        with session_scope() as db:
+            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+            user_language = (
+                db_user.default_ai_interaction_language if db_user is not None else None
+            )
         info_logger.info(
             f"[SectionMarkdown] fast path used: section={section_id}, "
             f"source_chars={len(markdown_contents[0])}, entities={len(entities)}, "
             f"relations={len(relations)}"
         )
         return _build_fast_section_markdown(
+            language=user_language,
             summary_title=fast_summary.title,
             summary_description=fast_summary.description,
             summary_body=fast_summary.summary,
@@ -760,24 +1002,58 @@ async def _generate_section_image(
     semaphore: asyncio.Semaphore,
 ) -> GeneratedImage | None:
     async with semaphore:
-        try:
-            generated_image = await asyncio.to_thread(
-                engine.generate_image,
-                image_plan.prompt,
+        for attempt in range(1, SECTION_IMAGE_GENERATE_MAX_ATTEMPTS + 1):
+            started_at = time.perf_counter()
+            info_logger.info(
+                f"[SectionImage] generate image start: section={section_id}, "
+                f"image_id={image_plan.id}, attempt={attempt}, "
+                f"prompt_chars={len(image_plan.prompt)}"
             )
-        except Exception as image_error:
-            exception_logger.error(
-                f"[SectionImage] generate image failed: section={section_id}, "
-                f"image_id={image_plan.id}, error={image_error}"
+            try:
+                generated_image = await asyncio.to_thread(
+                    engine.generate_image,
+                    image_plan.prompt,
+                )
+            except Exception as image_error:
+                elapsed_ms = (time.perf_counter() - started_at) * 1000
+                exception_logger.error(
+                    f"[SectionImage] generate image failed: section={section_id}, "
+                    f"image_id={image_plan.id}, attempt={attempt}, "
+                    f"elapsed_ms={elapsed_ms:.2f}, error={image_error}"
+                )
+                return None
+
+            elapsed_ms = (time.perf_counter() - started_at) * 1000
+            if generated_image is None:
+                exception_logger.warning(
+                    f"[SectionImage] empty image response: section={section_id}, "
+                    f"image_id={image_plan.id}, attempt={attempt}, "
+                    f"elapsed_ms={elapsed_ms:.2f}"
+                )
+                return None
+
+            if not _is_generated_image_payload_valid(generated_image):
+                exception_logger.warning(
+                    f"[SectionImage] invalid image payload, retry={attempt < SECTION_IMAGE_GENERATE_MAX_ATTEMPTS}: "
+                    f"section={section_id}, image_id={image_plan.id}, attempt={attempt}, "
+                    f"elapsed_ms={elapsed_ms:.2f}"
+                )
+                if attempt < SECTION_IMAGE_GENERATE_MAX_ATTEMPTS:
+                    continue
+                return None
+
+            info_logger.info(
+                f"[SectionImage] generate image success: section={section_id}, "
+                f"image_id={image_plan.id}, attempt={attempt}, "
+                f"elapsed_ms={elapsed_ms:.2f}"
             )
-            return None
-        if generated_image is None:
-            return None
-        return GeneratedImage(
-            id=image_plan.id,
-            prompt=image_plan.prompt,
-            image=generated_image,
-        )
+            return GeneratedImage(
+                id=image_plan.id,
+                prompt=image_plan.prompt,
+                image=generated_image,
+            )
+
+        return None
 
 
 async def _load_context(
@@ -1116,6 +1392,8 @@ async def _build_section_content(
         entity_count=len(entities_for_ai),
         relation_count=len(relations_for_ai),
     )
+    pending_image_plans_payload: list[dict] = []
+    markdown_with_markers_for_images: str | None = None
     if state.get("auto_illustration") and engine_id is not None and should_generate_images:
         try:
             with timed_stage(
@@ -1124,10 +1402,6 @@ async def _build_section_content(
                 stage_name="plan_section_images",
                 context={"section_id": section_id},
             ):
-                engine = await EngineProxy.create_image_generate_engine(
-                    user_id=user_id,
-                    engine_id=engine_id
-                )
                 images_plan = await ImageGenerateEngineBase.plan_images_with_llm(
                     user_id=user_id,
                     markdown=content,
@@ -1135,39 +1409,18 @@ async def _build_section_content(
                     relations=relations_for_ai,
                 )
             if images_plan.plans:
-                image_semaphore = asyncio.Semaphore(
-                    min(IMAGE_GENERATE_CONCURRENCY, max(1, len(images_plan.plans)))
-                )
-                with timed_stage(
-                    workflow_name=WORKFLOW_NAME,
-                    node_name="build_section_content",
-                    stage_name="generate_section_images",
-                    context={
-                        "section_id": section_id,
-                        "plan_count": len(images_plan.plans),
-                    },
-                ):
-                    generated_images = [
-                        image
-                        for image in await asyncio.gather(
-                            *[
-                                _generate_section_image(
-                                    section_id=section_id,
-                                    engine=engine,
-                                    image_plan=plan,
-                                    semaphore=image_semaphore,
-                                )
-                                for plan in images_plan.plans
-                            ]
-                        )
-                        if image is not None
-                    ]
-                generated_images = await _persist_generated_images(
+                placeholder_images = _build_placeholder_generated_images(
                     section_id=section_id,
-                    remote_file_service=remote_file_service,
-                    images=generated_images,
+                    image_plans=images_plan.plans,
                 )
-                content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
+                content = apply_generated_images(
+                    images_plan.markdown_with_markers,
+                    placeholder_images,
+                )
+                markdown_with_markers_for_images = images_plan.markdown_with_markers
+                pending_image_plans_payload = [
+                    plan.model_dump() for plan in images_plan.plans
+                ]
         except Exception as e:
             exception_logger.warning(
                 f"[SectionImage] illustration pipeline skipped: section={section_id}, error={e}"
@@ -1226,6 +1479,29 @@ async def _build_section_content(
                         db_section_document.status = SectionDocumentIntegration.SUCCESS
 
             db.commit()
+
+    if (
+        state.get("auto_illustration")
+        and engine_id is not None
+        and should_generate_images
+        and markdown_with_markers_for_images is not None
+        and pending_image_plans_payload
+    ):
+        current_app.send_task(
+            "common.celery.app.finalize_section_images",
+            kwargs={
+                "section_id": section_id,
+                "user_id": user_id,
+                "md_file_name": md_file_name,
+                "markdown_with_markers": markdown_with_markers_for_images,
+                "image_plans_payload": pending_image_plans_payload,
+                "engine_id": engine_id,
+            },
+        )
+        info_logger.info(
+            f"[SectionImage] finalize section images task dispatched: section={section_id}, "
+            f"plans={len(pending_image_plans_payload)}, md_file_name={md_file_name}"
+        )
 
     info_logger.info(
         f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=build_section_content, "
