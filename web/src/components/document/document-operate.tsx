@@ -36,6 +36,8 @@ import {
 	DocumentDetailResponse,
 	DocumentInfo as DocumentListItem,
 	InifiniteScrollPagnitionDocumentInfo,
+	InifiniteScrollPagnitionSectionDocumentInfo,
+	SectionDocumentInfo,
 } from '@/generated';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -251,6 +253,25 @@ const DocumentOperate = ({
 				DocumentListItem
 			>(queryClient, queryKey, (item) => item.id !== id);
 		});
+
+		filterInfiniteQueryElements<
+			InifiniteScrollPagnitionSectionDocumentInfo,
+			SectionDocumentInfo
+		>(queryClient, ['searchSectionDocument'], (item) => item.id !== id);
+	};
+
+	const invalidateRelatedSectionQueries = (
+		documentDetail?: DocumentDetailResponse,
+	) => {
+		documentDetail?.sections?.forEach((section) => {
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionDetail', section.id],
+			});
+		});
+
+		queryClient.invalidateQueries({
+			queryKey: ['searchSectionDocument'],
+		});
 	};
 
 	const { data } = useQuery({
@@ -369,9 +390,14 @@ const DocumentOperate = ({
 		mutationKey: ['deleteDocument', id],
 		mutationFn: () => deleteDocument({ document_ids: [id] }),
 		onSuccess: () => {
+			const currentDocument = queryClient.getQueryData<DocumentDetailResponse>([
+				'getDocumentDetail',
+				id,
+			]);
 			toast.success(t('document_delete_success'));
 			removeDocumentFromCache();
 			invalidateDocumentSummaryQueries();
+			invalidateRelatedSectionQueries(currentDocument);
 			setShowDeleteDocumentDialog(false);
 			router.back();
 		},

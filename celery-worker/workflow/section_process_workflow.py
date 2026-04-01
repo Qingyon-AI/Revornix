@@ -27,7 +27,6 @@ from common.markdown_helpers import (
     get_markdown_content_by_section_id,
 )
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from workflow.section_knowledge_snapshot_workflow import generate_section_knowledge_snapshot
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
@@ -45,7 +44,6 @@ class SectionProcessState(TypedDict, total=False):
     auto_illustration: bool
     default_image_generate_engine_id: int | None
     default_podcast_user_engine_id: int | None
-    knowledge_snapshot_id: int | None
 
 
 WORKFLOW_NAME = "section_process"
@@ -1242,23 +1240,6 @@ async def _build_section_content(
     return state
 
 
-async def _build_knowledge_snapshot(
-    state: SectionProcessState
-) -> SectionProcessState:
-    if state.get("skip_processing"):
-        return state
-    section_id = state.get("section_id")
-    user_id = state.get("user_id")
-    if section_id is None or user_id is None:
-        raise Exception("Section workflow missing section_id or user_id")
-    snapshot_id = await generate_section_knowledge_snapshot(
-        section_id=section_id,
-        user_id=user_id,
-    )
-    state["knowledge_snapshot_id"] = snapshot_id
-    return state
-
-
 async def _mark_section_process_success(
     state: SectionProcessState
 ) -> SectionProcessState:
@@ -1297,19 +1278,12 @@ def _build_workflow():
     add_timed_node(
         workflow,
         workflow_name=WORKFLOW_NAME,
-        node_name="build_knowledge_snapshot",
-        node_func=_build_knowledge_snapshot,
-    )
-    add_timed_node(
-        workflow,
-        workflow_name=WORKFLOW_NAME,
         node_name="mark_section_process_success",
         node_func=_mark_section_process_success,
     )
     workflow.set_entry_point("load_context")
     workflow.add_edge("load_context", "build_section_content")
-    workflow.add_edge("build_section_content", "build_knowledge_snapshot")
-    workflow.add_edge("build_knowledge_snapshot", "mark_section_process_success")
+    workflow.add_edge("build_section_content", "mark_section_process_success")
     workflow.add_edge("mark_section_process_success", END)
     return workflow.compile()
 

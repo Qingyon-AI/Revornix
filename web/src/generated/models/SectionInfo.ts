@@ -12,7 +12,6 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
 import type { SectionProcessTask } from './SectionProcessTask';
 import {
     SectionProcessTaskFromJSON,
@@ -23,11 +22,6 @@ import {
     SectionPodcastTaskFromJSON,
     SectionPodcastTaskToJSON,
 } from './SectionPodcastTask';
-import type { SectionKnowledgeSnapshot } from './SectionKnowledgeSnapshot';
-import {
-    SectionKnowledgeSnapshotFromJSON,
-    SectionKnowledgeSnapshotToJSON,
-} from './SectionKnowledgeSnapshot';
 import type { SectionDocumentIntegrationSummary } from './SectionDocumentIntegrationSummary';
 import {
     SectionDocumentIntegrationSummaryFromJSON,
@@ -50,150 +44,35 @@ import {
 } from './UserSectionAuthority';
 
 /**
- * 
+ *
  * @export
  * @interface SectionInfo
  */
 export interface SectionInfo {
-    /**
-     * 
-     * @type {number}
-     * @memberof SectionInfo
-     */
     id: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof SectionInfo
-     */
     title: string;
-    /**
-     * 
-     * @type {UserPublicInfo}
-     * @memberof SectionInfo
-     */
     creator: UserPublicInfo;
-    /**
-     * 
-     * @type {string}
-     * @memberof SectionInfo
-     */
     description: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SectionInfo
-     */
     auto_podcast: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SectionInfo
-     */
     auto_illustration: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof SectionInfo
-     */
     documents_count?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SectionInfo
-     */
     subscribers_count?: number;
-    /**
-     * 
-     * @type {Date}
-     * @memberof SectionInfo
-     */
     create_time: Date;
-    /**
-     * 
-     * @type {Date}
-     * @memberof SectionInfo
-     */
     update_time?: Date | null;
-    /**
-     * 
-     * @type {UserSectionAuthority}
-     * @memberof SectionInfo
-     */
     authority?: UserSectionAuthority | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SectionInfo
-     */
     is_subscribed?: boolean | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SectionInfo
-     */
     md_file_name?: string | null;
-    /**
-     * 
-     * @type {Array<SectionLabel>}
-     * @memberof SectionInfo
-     */
     labels?: Array<SectionLabel> | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SectionInfo
-     */
     cover: string | null;
-    /**
-     * 
-     * @type {SectionKnowledgeSnapshot}
-     * @memberof SectionInfo
-     */
-    knowledge_snapshot?: SectionKnowledgeSnapshot | null;
-    /**
-     * 
-     * @type {SectionPodcastTask}
-     * @memberof SectionInfo
-     */
+    publish_uuid?: string | null;
     podcast_task?: SectionPodcastTask | null;
-    /**
-     * 
-     * @type {SectionProcessTask}
-     * @memberof SectionInfo
-     */
     process_task?: SectionProcessTask | null;
-    /**
-     * 
-     * @type {SectionDocumentIntegrationSummary}
-     * @memberof SectionInfo
-     */
     document_integration?: SectionDocumentIntegrationSummary | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SectionInfo
-     */
     graph_stale?: boolean | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof SectionInfo
-     */
     process_task_trigger_type?: number | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof SectionInfo
-     */
     process_task_trigger_scheduler?: string | null;
 }
 
-
-
-/**
- * Check if a given object implements the SectionInfo interface.
- */
 export function instanceOfSectionInfo(value: object): value is SectionInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
@@ -215,7 +94,6 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         return json;
     }
     return {
-        
         'id': json['id'],
         'title': json['title'],
         'creator': UserPublicInfoFromJSON(json['creator']),
@@ -231,7 +109,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SectionLabelFromJSON)),
         'cover': json['cover'],
-        'knowledge_snapshot': json['knowledge_snapshot'] == null ? undefined : SectionKnowledgeSnapshotFromJSON(json['knowledge_snapshot']),
+        'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
         'document_integration': json['document_integration'] == null ? undefined : SectionDocumentIntegrationSummaryFromJSON(json['document_integration']),
@@ -241,17 +119,12 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
     };
 }
 
-export function SectionInfoToJSON(json: any): SectionInfo {
-    return SectionInfoToJSONTyped(json, false);
-}
-
-export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscriminator: boolean = false): any {
+export function SectionInfoToJSON(value?: SectionInfo | null): any {
     if (value == null) {
         return value;
     }
 
     return {
-        
         'id': value['id'],
         'title': value['title'],
         'creator': UserPublicInfoToJSON(value['creator']),
@@ -267,7 +140,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SectionLabelToJSON)),
         'cover': value['cover'],
-        'knowledge_snapshot': SectionKnowledgeSnapshotToJSON(value['knowledge_snapshot']),
+        'publish_uuid': value['publish_uuid'],
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
         'document_integration': SectionDocumentIntegrationSummaryToJSON(value['document_integration']),
