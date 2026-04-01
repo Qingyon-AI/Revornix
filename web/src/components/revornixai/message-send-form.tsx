@@ -515,7 +515,7 @@ const MessageSendForm = () => {
 	return (
 		<Form {...form}>
 			<form onSubmit={onSubmitMessageForm}>
-				<div className='rounded-[22px] border border-border/60 bg-card p-2 shadow-sm'>
+				<div className='rounded-[22px] bg-card'>
 					<div>
 						{isMobile ? renderMobileToolbar() : renderDesktopToolbar()}
 						<FormField
