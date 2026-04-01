@@ -141,3 +141,4 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'provider': ModelProviderToJSON(value['provider']),
     };
 }
+

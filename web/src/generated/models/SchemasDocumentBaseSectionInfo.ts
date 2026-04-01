@@ -37,6 +37,12 @@ export interface SchemasDocumentBaseSectionInfo {
      * @memberof SchemasDocumentBaseSectionInfo
      */
     description: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SchemasDocumentBaseSectionInfo
+     */
+    publish_uuid?: string | null;
 }
 
 /**
@@ -62,6 +68,7 @@ export function SchemasDocumentBaseSectionInfoFromJSONTyped(json: any, ignoreDis
         'id': json['id'],
         'title': json['title'],
         'description': json['description'],
+        'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
     };
 }
 
@@ -79,6 +86,7 @@ export function SchemasDocumentBaseSectionInfoToJSONTyped(value?: SchemasDocumen
         'id': value['id'],
         'title': value['title'],
         'description': value['description'],
+        'publish_uuid': value['publish_uuid'],
     };
 }
 

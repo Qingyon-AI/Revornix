@@ -10,6 +10,7 @@ Name | Type
 `description` | string
 `is_public` | boolean
 `engine_provided_id` | number
+`required_plan_level` | number
 `config_json` | string
 
 ## Example
@@ -23,6 +24,7 @@ const example = {
   "description": null,
   "is_public": null,
   "engine_provided_id": null,
+  "required_plan_level": null,
   "config_json": null,
 } satisfies EngineCreateRequest
 

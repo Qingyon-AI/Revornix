@@ -12,6 +12,8 @@ Name | Type
 `name` | string
 `description` | string
 `is_public` | boolean
+`required_plan_level` | number
+`subscription_required` | boolean
 `create_time` | Date
 `update_time` | Date
 `config_json` | string
@@ -31,6 +33,8 @@ const example = {
   "name": null,
   "description": null,
   "is_public": null,
+  "required_plan_level": null,
+  "subscription_required": null,
   "create_time": null,
   "update_time": null,
   "config_json": null,

@@ -11,6 +11,7 @@ Name | Type
 `name` | string
 `description` | string
 `is_public` | boolean
+`required_plan_level` | number
 
 ## Example
 
@@ -24,6 +25,7 @@ const example = {
   "name": null,
   "description": null,
   "is_public": null,
+  "required_plan_level": null,
 } satisfies EngineUpdateRequest
 
 console.log(example)

@@ -279,3 +279,4 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
+

@@ -16,6 +16,7 @@ docs/AddNotificationTargetRequest.md
 docs/AddNotificationTaskRequest.md
 docs/AiApi.md
 docs/AllMySectionsResponse.md
+docs/ApiDocumentCreateRequest.md
 docs/ApiKeyApi.md
 docs/ApiKeyCreateRequest.md
 docs/ApiKeyCreateResponse.md
@@ -203,6 +204,7 @@ docs/ProvideFileSystemSearchResponse.md
 docs/QuickNoteDocumentInfo.md
 docs/ReadNotificationRecordRequest.md
 docs/ReadRequest.md
+docs/RetrySectionDocumentRequest.md
 docs/SchemasDocumentBaseSectionInfo.md
 docs/SchemasDocumentLabelListResponse.md
 docs/SchemasSectionBaseSectionInfo.md
@@ -224,6 +226,7 @@ docs/SearchUserFollowsRequest.md
 docs/SearchUserRequest.md
 docs/SearchUserSectionsRequest.md
 docs/SectionApi.md
+docs/SectionAskRequest.md
 docs/SectionCommentCreateRequest.md
 docs/SectionCommentDeleteRequest.md
 docs/SectionCommentInfo.md
@@ -233,6 +236,7 @@ docs/SectionCreateResponse.md
 docs/SectionDeleteRequest.md
 docs/SectionDetailRequest.md
 docs/SectionDocumentInfo.md
+docs/SectionDocumentIntegrationSummary.md
 docs/SectionDocumentRequest.md
 docs/SectionGraphRequest.md
 docs/SectionInfo.md
@@ -265,6 +269,7 @@ docs/TokenUpdateRequest.md
 docs/TpApi.md
 docs/TriggerEvent.md
 docs/TriggerEventsResponse.md
+docs/TriggerSectionProcessRequest.md
 docs/UpdateNotificationSourceRequest.md
 docs/UpdateNotificationTargetRequest.md
 docs/UpdateNotificationTaskRequest.md
@@ -295,6 +300,7 @@ models/AddNotificationSourceRequest.ts
 models/AddNotificationTargetRequest.ts
 models/AddNotificationTaskRequest.ts
 models/AllMySectionsResponse.ts
+models/ApiDocumentCreateRequest.ts
 models/ApiKeyCreateRequest.ts
 models/ApiKeyCreateResponse.ts
 models/ApiKeyInfo.ts
@@ -474,6 +480,7 @@ models/ProvideFileSystemSearchResponse.ts
 models/QuickNoteDocumentInfo.ts
 models/ReadNotificationRecordRequest.ts
 models/ReadRequest.ts
+models/RetrySectionDocumentRequest.ts
 models/SchemasDocumentBaseSectionInfo.ts
 models/SchemasDocumentLabelListResponse.ts
 models/SchemasSectionBaseSectionInfo.ts
@@ -494,6 +501,7 @@ models/SearchUserFansRequest.ts
 models/SearchUserFollowsRequest.ts
 models/SearchUserRequest.ts
 models/SearchUserSectionsRequest.ts
+models/SectionAskRequest.ts
 models/SectionCommentCreateRequest.ts
 models/SectionCommentDeleteRequest.ts
 models/SectionCommentInfo.ts
@@ -503,6 +511,7 @@ models/SectionCreateResponse.ts
 models/SectionDeleteRequest.ts
 models/SectionDetailRequest.ts
 models/SectionDocumentInfo.ts
+models/SectionDocumentIntegrationSummary.ts
 models/SectionDocumentRequest.ts
 models/SectionGraphRequest.ts
 models/SectionInfo.ts
@@ -534,6 +543,7 @@ models/TokenResponse.ts
 models/TokenUpdateRequest.ts
 models/TriggerEvent.ts
 models/TriggerEventsResponse.ts
+models/TriggerSectionProcessRequest.ts
 models/UpdateNotificationSourceRequest.ts
 models/UpdateNotificationTargetRequest.ts
 models/UpdateNotificationTaskRequest.ts

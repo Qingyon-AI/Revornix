@@ -9,6 +9,7 @@ Name | Type
 `id` | number
 `name` | string
 `description` | string
+`required_plan_level` | number
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "id": null,
   "name": null,
   "description": null,
+  "required_plan_level": null,
 } satisfies ModelUpdateRequest
 
 console.log(example)

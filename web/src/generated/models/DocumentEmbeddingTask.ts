@@ -79,3 +79,4 @@ export function DocumentEmbeddingTaskToJSONTyped(value?: DocumentEmbeddingTask |
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

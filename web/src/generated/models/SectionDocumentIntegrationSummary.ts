@@ -12,87 +12,78 @@
  * Do not edit the class manually.
  */
 
+import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface SectionDocumentIntegrationSummary
  */
 export interface SectionDocumentIntegrationSummary {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SectionDocumentIntegrationSummary
-	 */
-	wait_to_count?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SectionDocumentIntegrationSummary
-	 */
-	supplementing_count?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SectionDocumentIntegrationSummary
-	 */
-	success_count?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof SectionDocumentIntegrationSummary
-	 */
-	failed_count?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionDocumentIntegrationSummary
+     */
+    wait_to_count?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionDocumentIntegrationSummary
+     */
+    supplementing_count?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionDocumentIntegrationSummary
+     */
+    success_count?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionDocumentIntegrationSummary
+     */
+    failed_count?: number;
 }
 
-export function instanceOfSectionDocumentIntegrationSummary(
-	value: object,
-): value is SectionDocumentIntegrationSummary {
-	return true;
+/**
+ * Check if a given object implements the SectionDocumentIntegrationSummary interface.
+ */
+export function instanceOfSectionDocumentIntegrationSummary(value: object): value is SectionDocumentIntegrationSummary {
+    return true;
 }
 
-export function SectionDocumentIntegrationSummaryFromJSON(
-	json: any,
-): SectionDocumentIntegrationSummary {
-	return SectionDocumentIntegrationSummaryFromJSONTyped(json, false);
+export function SectionDocumentIntegrationSummaryFromJSON(json: any): SectionDocumentIntegrationSummary {
+    return SectionDocumentIntegrationSummaryFromJSONTyped(json, false);
 }
 
-export function SectionDocumentIntegrationSummaryFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean,
-): SectionDocumentIntegrationSummary {
-	if (json == null) {
-		return json;
-	}
-	return {
-		wait_to_count: json['wait_to_count'] == null ? undefined : json['wait_to_count'],
-		supplementing_count:
-			json['supplementing_count'] == null
-				? undefined
-				: json['supplementing_count'],
-		success_count:
-			json['success_count'] == null ? undefined : json['success_count'],
-		failed_count: json['failed_count'] == null ? undefined : json['failed_count'],
-	};
+export function SectionDocumentIntegrationSummaryFromJSONTyped(json: any, ignoreDiscriminator: boolean): SectionDocumentIntegrationSummary {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'wait_to_count': json['wait_to_count'] == null ? undefined : json['wait_to_count'],
+        'supplementing_count': json['supplementing_count'] == null ? undefined : json['supplementing_count'],
+        'success_count': json['success_count'] == null ? undefined : json['success_count'],
+        'failed_count': json['failed_count'] == null ? undefined : json['failed_count'],
+    };
 }
 
-export function SectionDocumentIntegrationSummaryToJSON(
-	json: any,
-): SectionDocumentIntegrationSummary {
-	return SectionDocumentIntegrationSummaryToJSONTyped(json, false);
+export function SectionDocumentIntegrationSummaryToJSON(json: any): SectionDocumentIntegrationSummary {
+    return SectionDocumentIntegrationSummaryToJSONTyped(json, false);
 }
 
-export function SectionDocumentIntegrationSummaryToJSONTyped(
-	value?: SectionDocumentIntegrationSummary | null,
-	ignoreDiscriminator: boolean = false,
-): any {
-	if (value == null) {
-		return value;
-	}
+export function SectionDocumentIntegrationSummaryToJSONTyped(value?: SectionDocumentIntegrationSummary | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		wait_to_count: value['wait_to_count'],
-		supplementing_count: value['supplementing_count'],
-		success_count: value['success_count'],
-		failed_count: value['failed_count'],
-	};
+    return {
+        
+        'wait_to_count': value['wait_to_count'],
+        'supplementing_count': value['supplementing_count'],
+        'success_count': value['success_count'],
+        'failed_count': value['failed_count'],
+    };
 }
+

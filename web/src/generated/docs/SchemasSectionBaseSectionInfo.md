@@ -10,6 +10,7 @@ Name | Type
 `title` | string
 `description` | string
 `authority` | [UserSectionAuthority](UserSectionAuthority.md)
+`publish_uuid` | string
 
 ## Example
 
@@ -22,6 +23,7 @@ const example = {
   "title": null,
   "description": null,
   "authority": null,
+  "publish_uuid": null,
 } satisfies SchemasSectionBaseSectionInfo
 
 console.log(example)

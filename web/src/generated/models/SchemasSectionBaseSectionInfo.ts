@@ -51,6 +51,12 @@ export interface SchemasSectionBaseSectionInfo {
      * @memberof SchemasSectionBaseSectionInfo
      */
     authority?: UserSectionAuthority | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SchemasSectionBaseSectionInfo
+     */
+    publish_uuid?: string | null;
 }
 
 
@@ -79,6 +85,7 @@ export function SchemasSectionBaseSectionInfoFromJSONTyped(json: any, ignoreDisc
         'title': json['title'],
         'description': json['description'],
         'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
+        'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
     };
 }
 
@@ -97,6 +104,7 @@ export function SchemasSectionBaseSectionInfoToJSONTyped(value?: SchemasSectionB
         'title': value['title'],
         'description': value['description'],
         'authority': UserSectionAuthorityToJSON(value['authority']),
+        'publish_uuid': value['publish_uuid'],
     };
 }
 

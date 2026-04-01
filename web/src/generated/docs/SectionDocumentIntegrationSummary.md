@@ -1,26 +1,28 @@
 
-# DocumentEmbeddingTask
+# SectionDocumentIntegrationSummary
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`status` | number
-`create_time` | Date
-`update_time` | Date
+`wait_to_count` | number
+`supplementing_count` | number
+`success_count` | number
+`failed_count` | number
 
 ## Example
 
 ```typescript
-import type { DocumentEmbeddingTask } from ''
+import type { SectionDocumentIntegrationSummary } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "status": null,
-  "create_time": null,
-  "update_time": null,
-} satisfies DocumentEmbeddingTask
+  "wait_to_count": null,
+  "supplementing_count": null,
+  "success_count": null,
+  "failed_count": null,
+} satisfies SectionDocumentIntegrationSummary
 
 console.log(example)
 
@@ -29,7 +31,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as DocumentEmbeddingTask
+const exampleParsed = JSON.parse(exampleJSON) as SectionDocumentIntegrationSummary
 console.log(exampleParsed)
 ```
 

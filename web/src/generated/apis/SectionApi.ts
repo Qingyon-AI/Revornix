@@ -29,11 +29,13 @@ import type {
   LabelDeleteRequest,
   MineSectionRoleAndAuthorityRequest,
   NormalResponse,
+  RetrySectionDocumentRequest,
   SchemasSectionLabelListResponse,
   SearchMineSectionsRequest,
   SearchPublicSectionsRequest,
   SearchSubscribedSectionRequest,
   SearchUserSectionsRequest,
+  SectionAskRequest,
   SectionCommentCreateRequest,
   SectionCommentDeleteRequest,
   SectionCommentSearchRequest,
@@ -56,6 +58,7 @@ import type {
   SectionUserRequest,
   SectionUserRoleAndAuthorityRequest,
   SectionUserRoleAndAuthorityResponse,
+  TriggerSectionProcessRequest,
 } from '../models/index';
 import {
     AllMySectionsResponseFromJSON,
@@ -86,6 +89,8 @@ import {
     MineSectionRoleAndAuthorityRequestToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+    RetrySectionDocumentRequestFromJSON,
+    RetrySectionDocumentRequestToJSON,
     SchemasSectionLabelListResponseFromJSON,
     SchemasSectionLabelListResponseToJSON,
     SearchMineSectionsRequestFromJSON,
@@ -96,6 +101,8 @@ import {
     SearchSubscribedSectionRequestToJSON,
     SearchUserSectionsRequestFromJSON,
     SearchUserSectionsRequestToJSON,
+    SectionAskRequestFromJSON,
+    SectionAskRequestToJSON,
     SectionCommentCreateRequestFromJSON,
     SectionCommentCreateRequestToJSON,
     SectionCommentDeleteRequestFromJSON,
@@ -140,10 +147,18 @@ import {
     SectionUserRoleAndAuthorityRequestToJSON,
     SectionUserRoleAndAuthorityResponseFromJSON,
     SectionUserRoleAndAuthorityResponseToJSON,
+    TriggerSectionProcessRequestFromJSON,
+    TriggerSectionProcessRequestToJSON,
 } from '../models/index';
 
 export interface AddLabelSectionLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface AskSectionAiSectionAskPostRequest {
+    sectionAskRequest: SectionAskRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -236,6 +251,12 @@ export interface PublicSectionsSectionPublicSearchPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest {
+    retrySectionDocumentRequest: RetrySectionDocumentRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface SearchMineSectionsSectionMineSearchPostRequest {
     searchMineSectionsRequest: SearchMineSectionsRequest;
     authorization?: string | null;
@@ -308,6 +329,12 @@ export interface SubscribeSectionSectionSubscribePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface TriggerSectionProcessSectionProcessTriggerPostRequest {
+    triggerSectionProcessRequest: TriggerSectionProcessRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface UpdateSectionSectionUpdatePostRequest {
     sectionUpdateRequest: SectionUpdateRequest;
     authorization?: string | null;
@@ -371,6 +398,67 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async addLabelSectionLabelCreatePost(requestParameters: AddLabelSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelSectionLabelCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for askSectionAiSectionAskPost without sending the request
+     */
+    async askSectionAiSectionAskPostRequestOpts(requestParameters: AskSectionAiSectionAskPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionAskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionAskRequest',
+                'Required parameter "sectionAskRequest" was null or undefined when calling askSectionAiSectionAskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/ask`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionAskRequestToJSON(requestParameters['sectionAskRequest']),
+        };
+    }
+
+    /**
+     * Handle section AI chat requests through the shared MCP agent pipeline.
+     * Ask Section Ai
+     */
+    async askSectionAiSectionAskPostRaw(requestParameters: AskSectionAiSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.askSectionAiSectionAskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Handle section AI chat requests through the shared MCP agent pipeline.
+     * Ask Section Ai
+     */
+    async askSectionAiSectionAskPost(requestParameters: AskSectionAiSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.askSectionAiSectionAskPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1180,6 +1268,61 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for retrySectionDocumentIntegrationSectionDocumentRetryPost without sending the request
+     */
+    async retrySectionDocumentIntegrationSectionDocumentRetryPostRequestOpts(requestParameters: RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['retrySectionDocumentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'retrySectionDocumentRequest',
+                'Required parameter "retrySectionDocumentRequest" was null or undefined when calling retrySectionDocumentIntegrationSectionDocumentRetryPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/document/retry`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RetrySectionDocumentRequestToJSON(requestParameters['retrySectionDocumentRequest']),
+        };
+    }
+
+    /**
+     * Retry Section Document Integration
+     */
+    async retrySectionDocumentIntegrationSectionDocumentRetryPostRaw(requestParameters: RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.retrySectionDocumentIntegrationSectionDocumentRetryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Retry Section Document Integration
+     */
+    async retrySectionDocumentIntegrationSectionDocumentRetryPost(requestParameters: RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.retrySectionDocumentIntegrationSectionDocumentRetryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for searchMineSectionsSectionMineSearchPost without sending the request
      */
     async searchMineSectionsSectionMineSearchPostRequestOpts(requestParameters: SearchMineSectionsSectionMineSearchPostRequest): Promise<runtime.RequestOpts> {
@@ -1836,6 +1979,61 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async subscribeSectionSectionSubscribePost(requestParameters: SubscribeSectionSectionSubscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.subscribeSectionSectionSubscribePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for triggerSectionProcessSectionProcessTriggerPost without sending the request
+     */
+    async triggerSectionProcessSectionProcessTriggerPostRequestOpts(requestParameters: TriggerSectionProcessSectionProcessTriggerPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['triggerSectionProcessRequest'] == null) {
+            throw new runtime.RequiredError(
+                'triggerSectionProcessRequest',
+                'Required parameter "triggerSectionProcessRequest" was null or undefined when calling triggerSectionProcessSectionProcessTriggerPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/process/trigger`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TriggerSectionProcessRequestToJSON(requestParameters['triggerSectionProcessRequest']),
+        };
+    }
+
+    /**
+     * Trigger Section Process
+     */
+    async triggerSectionProcessSectionProcessTriggerPostRaw(requestParameters: TriggerSectionProcessSectionProcessTriggerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.triggerSectionProcessSectionProcessTriggerPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Trigger Section Process
+     */
+    async triggerSectionProcessSectionProcessTriggerPost(requestParameters: TriggerSectionProcessSectionProcessTriggerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.triggerSectionProcessSectionProcessTriggerPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

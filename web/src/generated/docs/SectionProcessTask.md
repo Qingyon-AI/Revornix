@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `status` | number
+`create_time` | Date
+`update_time` | Date
 
 ## Example
 
@@ -16,6 +18,8 @@ import type { SectionProcessTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "create_time": null,
+  "update_time": null,
 } satisfies SectionProcessTask
 
 console.log(example)

@@ -87,3 +87,4 @@ export function ModelUpdateRequestToJSONTyped(value?: ModelUpdateRequest | null,
         'required_plan_level': value['required_plan_level'],
     };
 }
+

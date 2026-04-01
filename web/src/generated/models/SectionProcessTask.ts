@@ -79,3 +79,4 @@ export function SectionProcessTaskToJSONTyped(value?: SectionProcessTask | null,
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

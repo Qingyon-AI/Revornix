@@ -89,3 +89,4 @@ export function ModelCreateRequestToJSONTyped(value?: ModelCreateRequest | null,
         'provider_id': value['provider_id'],
     };
 }
+

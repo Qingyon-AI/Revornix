@@ -1,26 +1,26 @@
 
-# DocumentEmbeddingTask
+# SectionAskRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`status` | number
-`create_time` | Date
-`update_time` | Date
+`section_id` | number
+`messages` | [Array&lt;ChatItem&gt;](ChatItem.md)
+`enable_mcp` | boolean
 
 ## Example
 
 ```typescript
-import type { DocumentEmbeddingTask } from ''
+import type { SectionAskRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "status": null,
-  "create_time": null,
-  "update_time": null,
-} satisfies DocumentEmbeddingTask
+  "section_id": null,
+  "messages": null,
+  "enable_mcp": null,
+} satisfies SectionAskRequest
 
 console.log(example)
 
@@ -29,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as DocumentEmbeddingTask
+const exampleParsed = JSON.parse(exampleJSON) as SectionAskRequest
 console.log(exampleParsed)
 ```
 
