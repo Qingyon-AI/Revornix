@@ -2,7 +2,11 @@ import models
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus, DocumentSummarizeStatus, DocumentAudioTranscribeStatus
-from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
+from enums.section import (
+    SectionPodcastStatus,
+    SectionProcessStatus,
+    SectionProcessTriggerType,
+)
 
 def create_document_convert_task(
     db: Session,
@@ -200,6 +204,19 @@ def get_document_summarize_task_by_document_id(
     query = query.filter(models.task.DocumentSummarizeTask.document_id == document_id,
                          models.task.DocumentSummarizeTask.delete_at.is_(None))
     return query.one_or_none()
+
+def get_document_summarize_tasks_by_document_ids(
+    db: Session,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return []
+    query = db.query(models.task.DocumentSummarizeTask)
+    query = query.filter(
+        models.task.DocumentSummarizeTask.document_id.in_(document_ids),
+        models.task.DocumentSummarizeTask.delete_at.is_(None),
+    )
+    return query.all()
 
 def get_document_process_task_by_document_id(
     db: Session,

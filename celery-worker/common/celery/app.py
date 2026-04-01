@@ -4,16 +4,20 @@ load_dotenv(override=True)
 
 import asyncio
 import os
+from datetime import datetime, timezone
 
 from celery import Celery
 from celery.signals import worker_process_init, worker_ready
 
+import crud
 from common.env import is_env_enabled
 from common.logger import exception_logger, info_logger
 from config.redis import REDIS_PORT, REDIS_URL
 from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
+from data.sql.base import session_scope
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
+from enums.section import SectionPodcastStatus
 from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_graph_task_workflow import run_document_graph_task_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
@@ -120,14 +124,36 @@ def start_process_section(
     section_id: int,
     user_id: int,
     auto_podcast: bool = False,
+    force_full_rebuild: bool = False,
 ):
     _run(
         run_section_process_workflow(
             section_id=section_id,
             user_id=user_id,
             auto_podcast=auto_podcast,
+            force_full_rebuild=force_full_rebuild,
         )
     )
+    if auto_podcast:
+        with session_scope() as db:
+            now = datetime.now(timezone.utc)
+            db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+                db=db,
+                section_id=section_id,
+            )
+            if db_podcast_task is None:
+                crud.task.create_section_podcast_task(
+                    db=db,
+                    user_id=user_id,
+                    section_id=section_id,
+                    status=SectionPodcastStatus.WAIT_TO,
+                )
+            else:
+                db_podcast_task.status = SectionPodcastStatus.WAIT_TO
+                db_podcast_task.podcast_file_name = None
+                db_podcast_task.update_time = now
+            db.commit()
+        start_process_section_podcast.delay(section_id, user_id)
 
 
 @celery_app.task

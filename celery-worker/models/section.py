@@ -63,3 +63,22 @@ class Section(Base):
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     creator: Mapped["User"] = relationship("User", backref="created_sections")
+
+
+class SectionKnowledgeSnapshot(Base):
+    __tablename__ = "section_knowledge_snapshot"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    knowledge_pack_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    traceability_manifest_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    document_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    knowledge_point_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    topic_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    image_candidate_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

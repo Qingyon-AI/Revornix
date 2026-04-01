@@ -131,7 +131,6 @@ const SectionContainer = ({ id }: { id: number }) => {
 			section?.podcast_task?.status === SectionPodcastStatus.GENERATING ||
 			(section?.podcast_task?.status === SectionPodcastStatus.WAIT_TO &&
 				!isScheduledWaitingForTrigger);
-
 		if (hasRunningProcessTask || hasRunningPodcastTask) {
 			setDelay(1000);
 			return;

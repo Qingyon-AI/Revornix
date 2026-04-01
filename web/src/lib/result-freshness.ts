@@ -141,7 +141,6 @@ export const getSectionFreshnessState = (section?: SectionInfo | null) => {
 					section?.process_task,
 					SectionProcessStatus.SUCCESS,
 				)));
-
 	return {
 		markdownStale,
 		graphStale,
