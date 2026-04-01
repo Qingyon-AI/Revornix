@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
@@ -73,10 +74,17 @@ const SectionMarkdown = ({
 	const [markdown, setMarkdown] = useState<string>();
 	const [markdownIsFetching, setMarkdownIsFetching] = useState(false);
 	const [markdownGetError, setMarkdownGetError] = useState<string>();
+	const [placeholderPollingDelay, setPlaceholderPollingDelay] = useState<
+		number | undefined
+	>();
 	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
 	const failedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
 	const loadingMarkdownUrlRef = useRef<string | undefined>(undefined);
 	const shouldReloadOnSuccessRef = useRef(false);
+	const latestMarkdownSourceRef = useRef<{
+		sourceKey?: string;
+		sourceUrl?: string;
+	}>({});
 	const processStatus =
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
 	const markdownUrl = section?.md_file_name ?? undefined;
@@ -84,6 +92,15 @@ const SectionMarkdown = ({
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
+
+	const containsImagePlaceholder = (content?: string) =>
+		Boolean(content?.includes('section-image-placeholder:'));
+
+	const buildMarkdownRequestUrl = (sourceUrl: string, forceReload: boolean) => {
+		if (!forceReload) return sourceUrl;
+		const separator = sourceUrl.includes('?') ? '&' : '?';
+		return `${sourceUrl}${separator}_ts=${Date.now()}`;
+	};
 
 	const onGetMarkdown = async (
 		sourceKey: string,
@@ -105,7 +122,10 @@ const SectionMarkdown = ({
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(true);
 		try {
-			const response = await fetch(sourceUrl);
+			const requestUrl = buildMarkdownRequestUrl(sourceUrl, forceReload);
+			const response = await fetch(requestUrl, {
+				cache: forceReload ? 'no-store' : 'default',
+			});
 			if (!response.ok) {
 				throw new Error(`Request failed with status ${response.status}`);
 			}
@@ -117,6 +137,9 @@ const SectionMarkdown = ({
 			);
 			loadedMarkdownSourceKeyRef.current = sourceKey;
 			failedMarkdownSourceKeyRef.current = undefined;
+			setPlaceholderPollingDelay(
+				containsImagePlaceholder(content) ? 4000 : undefined,
+			);
 		} catch (e: any) {
 			failedMarkdownSourceKeyRef.current = sourceKey;
 			setMarkdownGetError(e.message);
@@ -133,10 +156,18 @@ const SectionMarkdown = ({
 		setMarkdown(undefined);
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(false);
+		setPlaceholderPollingDelay(undefined);
 		loadedMarkdownSourceKeyRef.current = undefined;
 		failedMarkdownSourceKeyRef.current = undefined;
 		loadingMarkdownUrlRef.current = undefined;
 	}, [section?.md_file_name]);
+
+	useEffect(() => {
+		latestMarkdownSourceRef.current = {
+			sourceKey: markdownSourceKey,
+			sourceUrl: markdownUrl,
+		};
+	}, [markdownSourceKey, markdownUrl]);
 
 	useEffect(() => {
 		if (!markdownUrl || !markdownSourceKey) {
@@ -166,6 +197,15 @@ const SectionMarkdown = ({
 		shouldReloadOnSuccessRef.current = false;
 		void onGetMarkdown(markdownSourceKey, markdownUrl, true);
 	}, [markdownSourceKey, markdownUrl, processStatus]);
+
+	useInterval(
+		() => {
+			const { sourceKey, sourceUrl } = latestMarkdownSourceRef.current;
+			if (!sourceKey || !sourceUrl) return;
+			void onGetMarkdown(sourceKey, sourceUrl, true);
+		},
+		placeholderPollingDelay,
+	);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =

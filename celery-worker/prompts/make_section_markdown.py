@@ -1,11 +1,64 @@
 from data.custom_types.all import EntityInfo, RelationInfo
+from enums.user import AIInteractionLanguage
+
+
+def _get_section_heading_spec(language: int | None) -> tuple[list[str], str]:
+    if language == AIInteractionLanguage.CHINESE:
+        headings = [
+            "执行摘要",
+            "关键洞察",
+            "详细分析",
+            "知识图谱解读",
+            "结论与建议",
+        ]
+        instruction = (
+            "Use Simplified Chinese section headings. "
+            "The required headings are exactly: "
+            + ", ".join(f"`{heading}`" for heading in headings)
+            + "."
+        )
+        return headings, instruction
+
+    if language == AIInteractionLanguage.ENGLISH:
+        headings = [
+            "Executive Summary",
+            "Key Insights",
+            "Detailed Analysis",
+            "Knowledge Graph Interpretation",
+            "Conclusion & Recommendations",
+        ]
+        instruction = (
+            "Use English section headings. "
+            "The required headings are exactly: "
+            + ", ".join(f"`{heading}`" for heading in headings)
+            + "."
+        )
+        return headings, instruction
+
+    headings = [
+        "Executive Summary / 执行摘要",
+        "Key Insights / 关键洞察",
+        "Detailed Analysis / 详细分析",
+        "Knowledge Graph Interpretation / 知识图谱解读",
+        "Conclusion & Recommendations / 结论与建议",
+    ]
+    instruction = (
+        "Choose section headings in the same dominant language as the output. "
+        "If the output is Chinese, use `执行摘要`, `关键洞察`, `详细分析`, "
+        "`知识图谱解读`, `结论与建议`. If the output is English, use "
+        "`Executive Summary`, `Key Insights`, `Detailed Analysis`, "
+        "`Knowledge Graph Interpretation`, `Conclusion & Recommendations`."
+    )
+    return headings, instruction
 
 def make_section_markdown_prompt(
     current_markdown_content: str | None,
     new_markdown_contents_to_append: str,
     entities: list[EntityInfo],
-    relations: list[RelationInfo]
+    relations: list[RelationInfo],
+    language: int | None,
 ):
+    section_headings, heading_instruction = _get_section_heading_spec(language)
     # ---- Entity Table ----
     entities_lines = "\n".join(
         f"| {e.id} | {e.text} | {e.entity_type} | {', '.join(map(str, e.chunks))} |"
@@ -65,11 +118,13 @@ You must generate a refined Markdown report following these rules:
 ## 1. Required Structure
 Your output **must** include the following sections:
 
-1. **Executive Summary**  
-2. **Key Insights**  
-3. **Detailed Analysis**  
-4. **Knowledge Graph Interpretation**
-5. **Conclusion & Recommendations**
+1. **{section_headings[0]}**  
+2. **{section_headings[1]}**  
+3. **{section_headings[2]}**  
+4. **{section_headings[3]}**
+5. **{section_headings[4]}**
+
+{heading_instruction}
 
 ## 2. Output Style
 - Prefer concise synthesis over long expansion

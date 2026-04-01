@@ -248,8 +248,9 @@ async def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
+    user_language = _get_user_ai_interaction_language(user_id)
     language_instruction = build_text_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        user_language,
     )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
@@ -260,7 +261,8 @@ async def make_section_markdown(
         current_markdown_content=current_markdown_content,
         new_markdown_contents_to_append=new_markdown_contents_to_append,
         entities=entities,
-        relations=relations
+        relations=relations,
+        language=user_language,
     )
 
     with propagate_attributes(

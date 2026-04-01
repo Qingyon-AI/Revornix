@@ -27,7 +27,10 @@ from workflow.document_summarize_workflow import run_document_summarize_workflow
 from workflow.notification_event_workflow import run_notification_event_workflow
 from workflow.section_podcast_workflow import run_section_podcast_workflow
 from workflow.section_process_status_workflow import run_section_process_status_workflow
-from workflow.section_process_workflow import run_section_process_workflow
+from workflow.section_process_workflow import (
+    run_finalize_section_images,
+    run_section_process_workflow,
+)
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
 from data.common import ensure_document_chunk_snapshot
 
@@ -154,6 +157,27 @@ def start_process_section(
                 db_podcast_task.update_time = now
             db.commit()
         start_process_section_podcast.delay(section_id, user_id)
+
+
+@celery_app.task
+def finalize_section_images(
+    section_id: int,
+    user_id: int,
+    md_file_name: str,
+    markdown_with_markers: str,
+    image_plans_payload: list[dict],
+    engine_id: int,
+):
+    _run(
+        run_finalize_section_images(
+            section_id=section_id,
+            user_id=user_id,
+            md_file_name=md_file_name,
+            markdown_with_markers=markdown_with_markers,
+            image_plans_payload=image_plans_payload,
+            engine_id=engine_id,
+        )
+    )
 
 
 @celery_app.task
