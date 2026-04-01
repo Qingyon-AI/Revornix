@@ -19,7 +19,7 @@ const CoverUpdate = ({ ownerId }: { ownerId?: number }) => {
 						: null;
 
 				return (
-					<FormItem className='space-y-3 rounded-2xl border border-border/60 bg-background/35 p-4'>
+					<FormItem className='rounded-2xl border border-border/60 bg-background/35 p-4'>
 						<div className='flex flex-row items-center justify-between'>
 							<FormLabel>{t('section_form_cover')}</FormLabel>
 						</div>

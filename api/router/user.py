@@ -220,7 +220,8 @@ async def update_default_model(
         db=db,
         user_id=user.id,
         default_document_reader_model_id=default_model_update_request.default_document_reader_model_id,
-        default_revornix_model_id=default_model_update_request.default_revornix_model_id
+        default_revornix_model_id=default_model_update_request.default_revornix_model_id,
+        default_ai_interaction_language=default_model_update_request.default_ai_interaction_language,
     )
     db.commit()
     return schemas.common.SuccessResponse(message="The default model is updated successfully.")

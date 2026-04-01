@@ -10,6 +10,10 @@ from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
 
 from common.logger import exception_logger, info_logger
+from common.ai import (
+    _get_user_ai_interaction_language,
+    build_structured_output_language_instruction,
+)
 from common.markdown_helpers import (
     get_markdown_content_by_document_id,
     get_markdown_content_by_section_id,
@@ -754,6 +758,9 @@ async def _generate_knowledge_pack_with_llm(
     model_id: int,
     payload: dict[str, Any],
 ) -> dict[str, Any]:
+    language_instruction = build_structured_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
     model_conf = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id,
@@ -770,7 +777,13 @@ async def _generate_knowledge_pack_with_llm(
             completion = await client.chat.completions.create(
                 model=model_conf.model_name,
                 messages=[
-                    {"role": "system", "content": SECTION_KNOWLEDGE_SNAPSHOT_SYSTEM},
+                    {
+                        "role": "system",
+                        "content": (
+                            f"{SECTION_KNOWLEDGE_SNAPSHOT_SYSTEM}\n\n"
+                            f"{language_instruction}"
+                        ),
+                    },
                     {"role": "user", "content": build_section_knowledge_snapshot_user_prompt(payload)},
                 ],
                 response_format={"type": "json_object"},

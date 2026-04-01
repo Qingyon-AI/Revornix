@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langfuse import propagate_attributes
 from mcp_use import MCPAgent, MCPClient
@@ -45,7 +45,7 @@ from data.sql.base import session_scope
 from enums.ability import Ability
 from enums.mcp import MCPCategory
 from enums.model import UserModelProviderRole
-from enums.user import UserRole
+from enums.user import AIInteractionLanguage, UserRole
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
 from schemas.ai import ChatItem
@@ -761,11 +761,37 @@ async def create_agent(
     finally:
         db.close()
 
+
+def _build_ai_language_instruction(language: int | None) -> str:
+    if language == AIInteractionLanguage.CHINESE:
+        return (
+            "Always answer in Simplified Chinese unless the user explicitly asks "
+            "you to switch to another language."
+        )
+    if language == AIInteractionLanguage.ENGLISH:
+        return (
+            "Always answer in English unless the user explicitly asks "
+            "you to switch to another language."
+        )
+    return (
+        "Reply in the same language as the latest user message when it is clear. "
+        "If the latest message does not provide a clear language signal, follow "
+        "the dominant language of the conversation."
+    )
+
+
+def _apply_agent_system_prompt(*, agent: MCPAgent, system_prompt: str) -> None:
+    agent.system_prompt = system_prompt
+    agent._system_message = SystemMessage(content=system_prompt)
+    if hasattr(agent, "_create_agent"):
+        agent._agent_executor = agent._create_agent()
+
 async def stream_ops_with_agent(
     user_id: int,
     model_id: int,
     agent: MCPAgent,
     messages: list[ChatItem],
+    system_prompt: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """Stream a general Revornix AI response through the MCP agent pipeline."""
     interpreter = EventInterpreter()
@@ -779,6 +805,8 @@ async def stream_ops_with_agent(
         # 1️⃣ 初始化上下文
         # ==========================
         agent.clear_conversation_history()
+        if system_prompt:
+            _apply_agent_system_prompt(agent=agent, system_prompt=system_prompt)
 
         latest_message = messages.pop()
         query_message = await _build_human_message_with_images(
@@ -989,6 +1017,9 @@ async def ask_ai(
             model_id=model_id,
             agent=agent,
             messages=messages,
+            system_prompt=_build_ai_language_instruction(
+                user.default_ai_interaction_language,
+            ),
         ),
         media_type="text/event-stream; charset=utf-8",
         headers={

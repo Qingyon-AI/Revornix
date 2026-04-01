@@ -198,36 +198,56 @@ const SectionInfo = ({ id }: { id: number }) => {
 	})();
 	const statusBadges = [
 		section.process_task
-			? renderStatusBadge(
-					t('section_process_status'),
-					section.process_task.status === SectionProcessStatus.WAIT_TO
-						? t('section_process_status_todo')
-						: section.process_task.status === SectionProcessStatus.PROCESSING
-							? t('section_process_status_doing')
-							: section.process_task.status === SectionProcessStatus.SUCCESS
-								? t('section_process_status_success')
-								: t('section_process_status_failed'),
-				)
+			? {
+					key: 'process',
+					node: renderStatusBadge(
+						t('section_process_status'),
+						section.process_task.status === SectionProcessStatus.WAIT_TO
+							? t('section_process_status_todo')
+							: section.process_task.status ===
+									  SectionProcessStatus.PROCESSING
+								? t('section_process_status_doing')
+								: section.process_task.status ===
+										  SectionProcessStatus.SUCCESS
+									? t('section_process_status_success')
+									: t('section_process_status_failed'),
+					),
+				}
 			: null,
 		documentIntegrationStatus
-			? renderStatusBadge(
-					t('section_document_integration_status'),
-					documentIntegrationStatus,
-				)
+			? {
+					key: 'document-integration',
+					node: renderStatusBadge(
+						t('section_document_integration_status'),
+						documentIntegrationStatus,
+					),
+				}
 			: null,
 		effectivePodcastStatus !== undefined
-			? renderStatusBadge(
-					t('section_podcast_status'),
-					effectivePodcastStatus === SectionPodcastStatus.WAIT_TO
-						? t('section_podcast_status_todo')
-						: effectivePodcastStatus === SectionPodcastStatus.GENERATING
-							? t('section_podcast_status_doing')
-							: effectivePodcastStatus === SectionPodcastStatus.SUCCESS
-								? t('section_podcast_status_success')
-								: t('section_podcast_status_failed'),
-		)
+			? {
+					key: 'podcast',
+					node: renderStatusBadge(
+						t('section_podcast_status'),
+						effectivePodcastStatus === SectionPodcastStatus.WAIT_TO
+							? t('section_podcast_status_todo')
+							: effectivePodcastStatus ===
+									  SectionPodcastStatus.GENERATING
+								? t('section_podcast_status_doing')
+								: effectivePodcastStatus ===
+										  SectionPodcastStatus.SUCCESS
+									? t('section_podcast_status_success')
+									: t('section_podcast_status_failed'),
+					),
+				}
 			: null,
-	].filter(Boolean);
+	].filter(
+		(
+			item,
+		): item is {
+			key: string;
+			node: ReturnType<typeof renderStatusBadge>;
+		} => Boolean(item),
+	);
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section.auto_podcast,
 		autoIllustration: section.auto_illustration,
@@ -347,7 +367,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 
 			{statusBadges.length > 0 ? (
 				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-					{statusBadges}
+					{statusBadges.map((badge) => (
+						<div key={badge.key}>{badge.node}</div>
+					))}
 				</div>
 			) : null}
 

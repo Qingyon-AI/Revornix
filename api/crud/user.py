@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 import models
 from common.hash import hash_password
-from enums.user import MarkDocumentReadReason, UserRole
+from enums.user import AIInteractionLanguage, MarkDocumentReadReason, UserRole
 
 
 def create_base_user(
@@ -16,6 +16,7 @@ def create_base_user(
     nickname: str,
     avatar: str,
     default_read_mark_reason: MarkDocumentReadReason = MarkDocumentReadReason.REQUEST_ONCE,
+    default_ai_interaction_language: AIInteractionLanguage = AIInteractionLanguage.AUTO,
     role: UserRole = UserRole.USER,
 ):
     now = datetime.now(timezone.utc)
@@ -25,6 +26,7 @@ def create_base_user(
         nickname=nickname,
         avatar=avatar,
         default_read_mark_reason=default_read_mark_reason,
+        default_ai_interaction_language=default_ai_interaction_language,
         create_time=now
     )
     db.add(db_user)
@@ -696,7 +698,8 @@ def update_user_default_model(
     db: Session,
     user_id: int,
     default_document_reader_model_id: int | None = None,
-    default_revornix_model_id: int | None = None
+    default_revornix_model_id: int | None = None,
+    default_ai_interaction_language: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
@@ -709,6 +712,8 @@ def update_user_default_model(
         db_user.default_document_reader_model_id = default_document_reader_model_id
     if default_revornix_model_id is not None:
         db_user.default_revornix_model_id = default_revornix_model_id
+    if default_ai_interaction_language is not None:
+        db_user.default_ai_interaction_language = default_ai_interaction_language
     db_user.update_time = now
     db.flush()
     return db_user

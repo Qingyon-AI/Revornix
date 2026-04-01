@@ -187,6 +187,12 @@ export interface PrivateUserInfo {
      * @memberof PrivateUserInfo
      */
     default_image_generate_engine_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PrivateUserInfo
+     */
+    default_ai_interaction_language?: number | null;
 }
 
 /**
@@ -233,6 +239,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'default_podcast_user_engine_id': json['default_podcast_user_engine_id'] == null ? undefined : json['default_podcast_user_engine_id'],
         'default_audio_transcribe_engine_id': json['default_audio_transcribe_engine_id'] == null ? undefined : json['default_audio_transcribe_engine_id'],
         'default_image_generate_engine_id': json['default_image_generate_engine_id'] == null ? undefined : json['default_image_generate_engine_id'],
+        'default_ai_interaction_language': json['default_ai_interaction_language'] == null ? undefined : json['default_ai_interaction_language'],
     };
 }
 
@@ -269,6 +276,6 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_podcast_user_engine_id': value['default_podcast_user_engine_id'],
         'default_audio_transcribe_engine_id': value['default_audio_transcribe_engine_id'],
         'default_image_generate_engine_id': value['default_image_generate_engine_id'],
+        'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
-

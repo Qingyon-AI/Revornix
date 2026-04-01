@@ -5,6 +5,10 @@ from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
 
 import crud
+from common.ai import (
+    _get_user_ai_interaction_language,
+    build_text_output_language_instruction,
+)
 from common.logger import exception_logger
 from data.neo4j.search import global_search, naive_search
 from data.sql.base import session_scope
@@ -49,6 +53,9 @@ async def global_query(
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
+    language_instruction = build_text_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
 
     with session_scope() as db:
         db_user = crud.user.get_user_by_id(
@@ -75,7 +82,10 @@ async def global_query(
         try:
             resp = await llm_client.chat.completions.create(
                 model=model_configuration.model_name,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[
+                    {"role": "system", "content": language_instruction},
+                    {"role": "user", "content": prompt},
+                ]
             )
             return resp.choices[0].message.content
         finally:
@@ -91,6 +101,9 @@ async def naive_query(
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
+    language_instruction = build_text_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
 
     with session_scope() as db:
         db_user = crud.user.get_user_by_id(
@@ -117,7 +130,10 @@ async def naive_query(
         try:
             resp = await llm_client.chat.completions.create(
                 model=model_configuration.model_name,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[
+                    {"role": "system", "content": language_instruction},
+                    {"role": "user", "content": prompt},
+                ]
             )
             return resp.choices[0].message.content
         finally:

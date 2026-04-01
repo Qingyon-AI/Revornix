@@ -24,6 +24,7 @@ from data.neo4j.search import section_graph_search
 from enums.document import DocumentEmbeddingStatus, DocumentSummarizeStatus
 from router.ai import (
     _build_agent_error_message_key,
+    _build_ai_language_instruction,
     _build_human_message_with_images,
     _build_mcp_recursion_limit_notice_key,
     _is_graph_recursion_limit_error,
@@ -185,6 +186,7 @@ async def _build_section_context(
     section_id: int,
     viewer_user_id: int,
     question: str,
+    response_language_instruction: str,
 ) -> tuple[models.section.Section, str, list[dict[str, Any]]]:
     """Assemble section-scoped prompt context from markdown, vector hits, and graph expansion."""
     db_section = crud.section.get_section_by_section_id(
@@ -455,7 +457,7 @@ async def _build_section_context(
             "Use only the provided section knowledge, related document excerpts, and entity graph signals.",
             "If the context is insufficient, explicitly say that you do not know.",
             "Do not invent facts that are not grounded in the provided context.",
-            "Reply in the same language as the latest user question.",
+            response_language_instruction,
             "",
             "Section knowledge:",
             context,
@@ -667,6 +669,9 @@ async def ask_section_ai(
         section_id=section_ask_request.section_id,
         viewer_user_id=user.id,
         question=messages[-1].content,
+        response_language_instruction=_build_ai_language_instruction(
+            user.default_ai_interaction_language,
+        ),
     )
 
     try:

@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Loader2, RefreshCcw } from 'lucide-react';
+import { AlertCircleIcon, Loader2, RefreshCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -13,6 +14,16 @@ import { getSectionDetail, triggerSectionProcess } from '@/service/section';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 import { Button } from '../ui/button';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '../ui/alert-dialog';
 
 const SectionOperateProcess = ({
 	section_id,
@@ -27,6 +38,7 @@ const SectionOperateProcess = ({
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const { documentReaderModel } = useDefaultResourceAccess();
+	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', section_id],
@@ -71,19 +83,48 @@ const SectionOperateProcess = ({
 				: t('section_process_manual_trigger');
 
 	return (
-		<Button
-			title={t('section_process_manual_trigger')}
-			variant='ghost'
-			className={cn('w-full flex-1 text-xs', className)}
-			disabled={!canTrigger || mutation.isPending}
-			onClick={() => mutation.mutate()}>
-			{mutation.isPending || isProcessing ? (
-				<Loader2 className='animate-spin' />
-			) : (
-				<RefreshCcw />
-			)}
-			{buttonLabel}
-		</Button>
+		<>
+			<Button
+				title={t('section_process_manual_trigger')}
+				variant='ghost'
+				className={cn('w-full flex-1 text-xs', className)}
+				disabled={!canTrigger || mutation.isPending}
+				onClick={() => setConfirmOpen(true)}>
+				{mutation.isPending || isProcessing ? (
+					<Loader2 className='animate-spin' />
+				) : (
+					<RefreshCcw />
+				)}
+				{buttonLabel}
+			</Button>
+
+			<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle className='mb-2 flex flex-row items-center gap-2'>
+							<div className='mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-destructive/10 sm:mx-0'>
+								<AlertCircleIcon className='size-4 text-destructive' />
+							</div>
+							{t('section_process_confirm_restart_title')}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t('section_process_confirm_restart_description')}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+						<AlertDialogAction
+							disabled={mutation.isPending}
+							onClick={() => mutation.mutate()}>
+							{t('confirm')}
+							{mutation.isPending && (
+								<Loader2 className='size-4 animate-spin' />
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
 	);
 };
 

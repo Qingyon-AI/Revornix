@@ -10,6 +10,7 @@ import LanguageChange from '@/components/setting/language-change';
 import MCPServerManage from '@/components/setting/mcp-server-manage';
 import ModelCollection from '@/components/setting/model-collection';
 import RevornixAIModel from '@/components/setting/revornix-ai-model';
+import DefaultAiInteractionLanguageChoose from '@/components/setting/default-ai-interaction-language-choose';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -236,6 +237,15 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<RevornixAIModel />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_ai_interaction_language')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<DefaultAiInteractionLanguageChoose />
 						</div>
 					</div>
 					<Separator />
