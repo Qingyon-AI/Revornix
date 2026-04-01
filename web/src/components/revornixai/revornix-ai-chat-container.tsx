@@ -142,7 +142,7 @@ const RevornixAI = () => {
 								</div>
 							)}
 						</div>
-						<div className='shrink-0 border-t border-border/60 px-3 py-2 sm:px-4'>
+						<div className='shrink-0'>
 							<MessageSendForm />
 						</div>
 					</div>
