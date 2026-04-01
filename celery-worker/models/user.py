@@ -44,6 +44,7 @@ class User(Base):
     default_podcast_user_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_audio_transcribe_engine_id: Mapped[int | None] = mapped_column(Integer)
     default_image_generate_engine_id: Mapped[int | None] = mapped_column(Integer)
+    default_ai_interaction_language: Mapped[int | None] = mapped_column(Integer, comment='0: auto detect from messages, 1: chinese, 2: english')
     default_read_mark_reason: Mapped[int | None] = mapped_column(Integer, comment='0: Request once, 1: Scroll to the bottom of the document, 2: Manually Mark')
     default_user_file_system: Mapped[int | None] = mapped_column(Integer)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

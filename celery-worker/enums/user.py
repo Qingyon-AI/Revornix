@@ -12,6 +12,11 @@ class MarkDocumentReadReason(IntEnum):
     SCROLL_TO_BOTTOM = 1
     MANUAL_MARK = 2
 
+class AIInteractionLanguage(IntEnum):
+    AUTO = 0
+    CHINESE = 1
+    ENGLISH = 2
+
 class UserRole(IntEnum):
     ROOT = 1
     ADMIN = 2

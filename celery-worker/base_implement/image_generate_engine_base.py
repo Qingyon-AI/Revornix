@@ -5,6 +5,10 @@ from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
 
 import crud
+from common.ai import (
+    _get_user_ai_interaction_language,
+    build_structured_output_language_instruction,
+)
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import session_scope
 from common.logger import exception_logger, format_log_message, info_logger
@@ -237,6 +241,9 @@ class ImageGenerateEngineBase(EngineBase):
             relations=relations_dict,
             max_images=3,
         )
+        language_instruction = build_structured_output_language_instruction(
+            _get_user_ai_interaction_language(user_id),
+        )
 
         model_conf = (await AIModelProxy.create(
             user_id=user_id,
@@ -255,7 +262,10 @@ class ImageGenerateEngineBase(EngineBase):
                 completion = await client.chat.completions.create(
                     model=model_conf.model_name,
                     messages=[
-                        {"role": "system", "content": IMAGE_PLANNER_SYSTEM},
+                        {
+                            "role": "system",
+                            "content": f"{IMAGE_PLANNER_SYSTEM}\n\n{language_instruction}",
+                        },
                         {"role": "user", "content": user_prompt},
                     ],
                     response_format={"type": "json_object"}

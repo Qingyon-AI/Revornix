@@ -31,6 +31,12 @@ export interface DefaultModelUpdateRequest {
      * @memberof DefaultModelUpdateRequest
      */
     default_revornix_model_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof DefaultModelUpdateRequest
+     */
+    default_ai_interaction_language?: number | null;
 }
 
 /**
@@ -52,6 +58,7 @@ export function DefaultModelUpdateRequestFromJSONTyped(json: any, ignoreDiscrimi
         
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
         'default_revornix_model_id': json['default_revornix_model_id'] == null ? undefined : json['default_revornix_model_id'],
+        'default_ai_interaction_language': json['default_ai_interaction_language'] == null ? undefined : json['default_ai_interaction_language'],
     };
 }
 
@@ -68,6 +75,6 @@ export function DefaultModelUpdateRequestToJSONTyped(value?: DefaultModelUpdateR
         
         'default_document_reader_model_id': value['default_document_reader_model_id'],
         'default_revornix_model_id': value['default_revornix_model_id'],
+        'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
-

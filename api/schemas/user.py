@@ -88,6 +88,7 @@ class DefaultEngineUpdateRequest(BaseModel):
 class DefaultModelUpdateRequest(BaseModel):
     default_document_reader_model_id: int | None = None
     default_revornix_model_id: int | None = None
+    default_ai_interaction_language: int | None = None
 
 class DailyReportStatusChangeRequest(BaseModel):
     status: bool
@@ -176,6 +177,7 @@ class PrivateUserInfo(BaseModel):
     default_podcast_user_engine_id: int | None = None
     default_audio_transcribe_engine_id: int | None = None
     default_image_generate_engine_id: int | None = None
+    default_ai_interaction_language: int | None = None
 
 class UserInfoRequest(BaseModel):
     user_id: int

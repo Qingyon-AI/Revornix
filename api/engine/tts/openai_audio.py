@@ -5,6 +5,10 @@ from langfuse import propagate_attributes
 
 from langfuse.openai import AsyncOpenAI
 
+from common.ai import (
+    _get_user_ai_interaction_language,
+    build_text_output_language_instruction,
+)
 from common.logger import exception_logger
 from enums.engine_enums import EngineCategory, EngineProvided
 from prompts.podcast_generation import podcast_generation_prompt
@@ -73,6 +77,9 @@ class OpenAIAudioEngine(TTSEngineBase):
             user_id=str(self.user_id),
             tags=[f'model:{model_name}']
         ):  
+            language_instruction = build_text_output_language_instruction(
+                _get_user_ai_interaction_language(self.user_id),
+            )
             llm_client = AsyncOpenAI(
                 base_url=base_url,
                 api_key=api_key
@@ -83,6 +90,10 @@ class OpenAIAudioEngine(TTSEngineBase):
                     modalities=["text", "audio"],
                     audio={"voice": "alloy", "format": "mp3"},
                     messages=[
+                        {
+                            "role": "system",
+                            "content": language_instruction,
+                        },
                         {
                             "role": "user",
                             "content": f'{podcast_generation_prompt(text)}'

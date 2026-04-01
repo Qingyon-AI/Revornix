@@ -1,6 +1,7 @@
 import inspect
 import json
 import re
+import crud
 
 from langfuse import propagate_attributes
 from pydantic import BaseModel
@@ -11,6 +12,8 @@ from common.logger import exception_logger, format_log_message
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
 from data.custom_types.all import EntityInfo, RelationInfo
+from data.sql.base import session_scope
+from enums.user import AIInteractionLanguage
 from prompts.podcast_dialogue import podcast_dialogue_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
 from prompts.reducer_summary import reducer_summary_prompt
@@ -32,6 +35,48 @@ PODCAST_DIALOGUE_TARGET_TURN_LENGTH = 260
 PODCAST_DIALOGUE_MAX_TOTAL_LENGTH = 10_000
 PODCAST_DIALOGUE_MAX_TURNS = 32
 PODCAST_SENTENCE_SPLIT_RE = re.compile(r"(?<=[。！？!?；;])")
+
+
+def _get_user_ai_interaction_language(user_id: int) -> int | None:
+    with session_scope() as db:
+        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        if db_user is None:
+            return None
+        return db_user.default_ai_interaction_language
+
+
+def build_text_output_language_instruction(language: int | None) -> str:
+    if language == AIInteractionLanguage.CHINESE:
+        return (
+            "All user-visible output must be written in Simplified Chinese unless "
+            "the input explicitly requires another language."
+        )
+    if language == AIInteractionLanguage.ENGLISH:
+        return (
+            "All user-visible output must be written in English unless "
+            "the input explicitly requires another language."
+        )
+    return (
+        "Choose the output language automatically from the input content. "
+        "Use the dominant language of the source material for all user-visible output."
+    )
+
+
+def build_structured_output_language_instruction(language: int | None) -> str:
+    if language == AIInteractionLanguage.CHINESE:
+        return (
+            "For every user-visible string field you generate, use Simplified Chinese "
+            "unless the input explicitly requires another language."
+        )
+    if language == AIInteractionLanguage.ENGLISH:
+        return (
+            "For every user-visible string field you generate, use English "
+            "unless the input explicitly requires another language."
+        )
+    return (
+        "For every user-visible string field you generate, choose the language "
+        "automatically from the input content and use the dominant language of the source material."
+    )
 
 
 async def _safe_close_async_client(client: AsyncOpenAI) -> None:
@@ -73,6 +118,9 @@ async def summary_content(
     model_id: int,
     content: str
 ):
+    language_instruction = build_structured_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
@@ -92,7 +140,13 @@ async def summary_content(
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert in summarizing document content.\n\n"
+                            f"{language_instruction}"
+                        ),
+                    },
                     {"role": "user", "content": system_prompt}
                 ],
                 response_format={"type": "json_object"}
@@ -126,6 +180,9 @@ async def reducer_summary(
     new_entities: list[EntityInfo],
     new_relations: list[RelationInfo]
 ):
+    language_instruction = build_structured_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
@@ -150,7 +207,13 @@ async def reducer_summary(
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert in summarizing document content.\n\n"
+                            f"{language_instruction}"
+                        ),
+                    },
                     {"role": "user", "content": system_prompt}
                 ],
                 response_format={"type": "json_object"}
@@ -185,6 +248,9 @@ async def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
+    language_instruction = build_text_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
@@ -209,7 +275,13 @@ async def make_section_markdown(
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert in summarizing document content."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert in summarizing document content.\n\n"
+                            f"{language_instruction}"
+                        ),
+                    },
                     {"role": "user", "content": prompt}
                 ],
             )
@@ -361,6 +433,9 @@ async def generate_podcast_dialogue_turns(
     title: str | None = None,
     description: str | None = None,
 ):
+    language_instruction = build_structured_output_language_instruction(
+        _get_user_ai_interaction_language(user_id),
+    )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
         model_id=model_id
@@ -385,7 +460,13 @@ async def generate_podcast_dialogue_turns(
             completion = await client.chat.completions.create(
                 model=model_configuration.model_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert in writing podcast dialogue scripts."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert in writing podcast dialogue scripts.\n\n"
+                            f"{language_instruction}"
+                        ),
+                    },
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"}

@@ -64,7 +64,7 @@ const updateFormSchema = z.object({
 
 type UpdateFormValues = z.infer<typeof updateFormSchema>;
 const formBlockClassName =
-	'space-y-3 rounded-2xl border border-border/60 bg-background/35 p-4';
+	'rounded-2xl border border-border/60 bg-background/35 p-4';
 
 const normalizeSectionFormValues = (
 	values: Partial<UpdateFormValues>,
@@ -417,6 +417,12 @@ const SectionOperateConfiguration = ({
 											<FormDescription>
 												{t('section_form_auto_illustration_description')}
 											</FormDescription>
+											<Alert className='bg-muted/40'>
+												<Info className='h-4 w-4' />
+												<AlertDescription>
+													{t('section_form_auto_illustration_skip_hint')}
+												</AlertDescription>
+											</Alert>
 											{imageGenerateEngineUnavailable && (
 												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
 													<OctagonAlert className='h-4 w-4 text-destructive!' />

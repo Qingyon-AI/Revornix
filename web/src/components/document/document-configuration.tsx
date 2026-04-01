@@ -45,7 +45,7 @@ const updateFormSchema = z.object({
 type UpdateFormValues = z.infer<typeof updateFormSchema>;
 
 const formBlockClassName =
-	'space-y-3 rounded-2xl border border-border/60 bg-background/35 p-4';
+	'rounded-2xl border border-border/60 bg-background/35 p-4';
 
 const normalizeDocumentFormValues = (
 	values: Partial<UpdateFormValues>,
