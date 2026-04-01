@@ -216,6 +216,7 @@ export * from './SectionDocumentInfo';
 export * from './SectionDocumentRequest';
 export * from './SectionGraphRequest';
 export * from './SectionInfo';
+export * from './SectionKnowledgeSnapshot';
 export * from './SectionLabel';
 export * from './SectionPodcastTask';
 export * from './SectionProcessTask';

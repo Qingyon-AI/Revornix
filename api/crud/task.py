@@ -12,7 +12,11 @@ from enums.document import (
     DocumentSummarizeStatus,
     DocumentAudioTranscribeStatus
 )
-from enums.section import SectionPodcastStatus, SectionProcessStatus, SectionProcessTriggerType
+from enums.section import (
+    SectionPodcastStatus,
+    SectionProcessStatus,
+    SectionProcessTriggerType,
+)
 
 
 def create_section_process_task_trigger_scheduler(

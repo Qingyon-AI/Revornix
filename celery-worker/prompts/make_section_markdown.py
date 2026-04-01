@@ -29,9 +29,9 @@ def make_section_markdown_prompt(
     current_md = current_markdown_content or "_No existing section content._"
     
     prompt = f"""
-You are a **professional technical writer, information architect, and knowledge-graph analyst**.
+You are a professional technical writer and information architect.
 
-Your task is to produce a **high-quality, visually enriched, structured Markdown report** based on the following inputs.
+Your task is to produce a clear, concise, well-structured Markdown report based on the following inputs.
 
 ---
 
@@ -60,7 +60,7 @@ Use these relations to establish logical structure, semantic dependencies, and i
 ---
 
 # 📝 Your Output Task
-You must generate a **new, refined, and expanded Markdown report** following these rules:
+You must generate a refined Markdown report following these rules:
 
 ## 1. Required Structure
 Your output **must** include the following sections:
@@ -68,14 +68,16 @@ Your output **must** include the following sections:
 1. **Executive Summary**  
 2. **Key Insights**  
 3. **Detailed Analysis**  
-4. **Knowledge Graph Interpretation**  
+4. **Knowledge Graph Interpretation**
 5. **Conclusion & Recommendations**
 
-## 2. Visual & Rich-Content Requirements (Mandatory)
-Your report **must** incorporate visual elements using Markdown:
-
-- When helpful, include **Mermaid diagrams** (flowchart, concept graph, or sequence diagram)
-- Use **tables**, **lists**, **callouts**, and **code blocks** when appropriate
+## 2. Output Style
+- Prefer concise synthesis over long expansion
+- Reuse and improve existing structure when possible instead of rewriting everything from scratch
+- Keep the whole report compact and readable; avoid unnecessary repetition
+- Prefer short paragraphs and bullets
+- Use tables only when they clearly improve readability
+- Include at most one Mermaid diagram, and only when it adds real value
 - If you include Mermaid, keep it compatible with strict Mermaid rendering:
   use `flowchart TD` or `flowchart LR`
 - Use node syntax like `ID["Short label"]`
@@ -102,6 +104,7 @@ flowchart LR
 - "Current Section Content" may contain helper blocks such as
   "Context Memory", "Section Head Snapshot", or "Section Tail Snapshot";
   treat them as references only and DO NOT output these helper headings verbatim
+- Avoid verbose filler, decorative language, and redundant examples
 - Output pure Markdown only, with no additional explanations
 
 ⬇️ Please output the final Markdown report now.

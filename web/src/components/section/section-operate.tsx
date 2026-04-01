@@ -40,6 +40,7 @@ import SectionOperateAI from './section-operate-ai';
 import SectionOperateComment from './section-operate-comment';
 import SectionOperateConfiguration from './section-operate-configuration';
 import SectionOperateDelete from './section-operate-delete';
+import SectionOperateProcess from './section-operate-process';
 import SectionOperateShare from './section-operate-share';
 import SectionOperateSubscribe from './section-operate-subscribe';
 
@@ -80,7 +81,7 @@ const SectionOperate = ({
 	const mobileActionButtonClassName =
 		'h-14 w-full justify-start gap-3 rounded-[20px] border border-border/70 bg-background/70 px-4 text-left text-sm font-medium text-foreground shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:bg-background/90 dark:bg-background/45 dark:hover:bg-background/60 [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground';
 	const desktopDockClassName =
-		'grid w-full grid-cols-2 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65 sm:grid-cols-3 xl:grid-cols-6';
+		'grid w-full grid-cols-2 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65 sm:grid-cols-3 xl:grid-cols-7';
 
 	const isCreatorById =
 		Boolean(section?.creator?.id !== undefined) &&
@@ -214,6 +215,11 @@ const SectionOperate = ({
 									{ownershipResolved ? (
 										isOwner ? (
 										<>
+											<SectionOperateProcess
+												section_id={id}
+												className={mobileActionButtonClassName}
+												onTriggerClick={closeMobileMenu}
+											/>
 											<SectionOperateShare
 												section_id={id}
 												className={mobileActionButtonClassName}
@@ -293,6 +299,10 @@ const SectionOperate = ({
 			{ownershipResolved ? (
 				isOwner ? (
 				<>
+					<SectionOperateProcess
+						section_id={id}
+						className={actionButtonClassName}
+					/>
 					<SectionOperateShare
 						section_id={id}
 						className={actionButtonClassName}

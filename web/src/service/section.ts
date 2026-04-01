@@ -10,6 +10,10 @@ export type RetrySectionDocumentRequest = {
     document_id: number
 }
 
+export type TriggerSectionProcessRequest = {
+    section_id: number
+}
+
 export const getMineUserRoleAndAuthority = async (data: MineSectionRoleAndAuthorityRequest): Promise<SectionUserRoleAndAuthorityResponse> => {
     return await request(sectionApi.getMineSectionRoleAndAuthority, {
         data
@@ -24,6 +28,12 @@ export const getSectionUserRoleAndAuthority = async (data: SectionUserRoleAndAut
 
 export const generateSectionPodcast = async (data: GenerateSectionPodcastRequest): Promise<NormalResponse> => {
     return await request(sectionApi.generateSectionPodcast, {
+        data
+    })
+}
+
+export const triggerSectionProcess = async (data: TriggerSectionProcessRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.triggerSectionProcess, {
         data
     })
 }

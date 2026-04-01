@@ -77,8 +77,8 @@ export const getIsServer = () => {
 }
 
 export const replaceImagePaths = (content: string, owner_id: number) => {
-  return content.replace(/!\[\]\((images\/[^\)]+)\)/g, (match, path) => {
-    return `![](${process.env.NEXT_PUBLIC_API_PREFIX}/file-system/url/resolve?path=${path}&owner_id=${owner_id})`;
+  return content.replace(/!\[([^\]]*)\]\((images\/[^\)]+)\)/g, (match, alt, path) => {
+    return `![${alt}](${process.env.NEXT_PUBLIC_API_PREFIX}/file-system/url/resolve?path=${path}&owner_id=${owner_id})`;
   });
 }
 

@@ -15,7 +15,7 @@ from common.celery.app import (
     start_trigger_user_notification_event,
 )
 from common.dependencies import get_current_user, get_db, get_request_timezone
-from common.resource_plan_access import ensure_engine_access
+from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.timezone import (
     decode_cron_expr_with_timezone,
     encode_cron_expr_with_timezone,
@@ -151,6 +151,63 @@ async def generate_podcast(
     return schemas.common.SuccessResponse()
 
 
+@section_router.post('/process/trigger', response_model=schemas.common.NormalResponse)
+async def trigger_section_process(
+    trigger_process_request: schemas.section.TriggerSectionProcessRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=trigger_process_request.section_id
+    )
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+    if db_section.creator_id != user.id:
+        raise schemas.error.CustomException('Only the section creator can trigger processing', code=403)
+    if user.default_user_file_system is None:
+        raise schemas.error.CustomException('Default file system is not configured', code=400)
+    if user.default_document_reader_model_id is None:
+        raise schemas.error.CustomException('Default document reader model is not configured', code=400)
+
+    await ensure_model_access(
+        db=db,
+        user=user,
+        model_id=user.default_document_reader_model_id,
+    )
+
+    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db=db,
+        section_id=trigger_process_request.section_id
+    )
+    if db_section_process_task is not None and db_section_process_task.status in [
+        SectionProcessStatus.WAIT_TO,
+        SectionProcessStatus.PROCESSING,
+    ]:
+        raise schemas.error.CustomException('Section process task is already queued', code=409)
+
+    now = datetime.now(timezone.utc)
+    if db_section_process_task is None:
+        crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=trigger_process_request.section_id,
+            status=SectionProcessStatus.WAIT_TO,
+        )
+    else:
+        db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.update_time = now
+    db.commit()
+
+    start_process_section.apply_async(kwargs={
+        'section_id': db_section.id,
+        'user_id': user.id,
+        'auto_podcast': db_section.auto_podcast,
+        'force_full_rebuild': True,
+    })
+    return schemas.common.SuccessResponse()
+
+
 @section_router.post('/document/retry', response_model=schemas.common.NormalResponse)
 def retry_section_document_integration(
     retry_request: schemas.section.RetrySectionDocumentRequest,
@@ -279,25 +336,25 @@ async def create_section(
             db=db,
             section_id=db_section.id
         )
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
-        db=db,
-        section_id=db_section.id
-    )
-    if db_section_process_task is None:
-        db_section_process_task = crud.task.create_section_process_task(
-            db=db,
-            user_id=user.id,
-            section_id=db_section.id
-        )
-    db_section_process_task.trigger_type = section_create_request.process_task_trigger_type
-
     if (
         section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER
         and section_create_request.process_task_trigger_scheduler is None
     ):
         raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
 
-    if section_create_request.process_task_trigger_scheduler is not None:
+    db_section_process_task = None
+    if section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER:
+        db_section_process_task = crud.task.create_section_process_task(
+            db=db,
+            user_id=user.id,
+            section_id=db_section.id,
+            trigger_type=SectionProcessTriggerType.SCHEDULER,
+        )
+
+    if (
+        section_create_request.process_task_trigger_scheduler is not None
+        and db_section_process_task is not None
+    ):
         stored_cron_expr = encode_cron_expr_with_timezone(
             cron_expr=section_create_request.process_task_trigger_scheduler,
             timezone_name=request_timezone,
@@ -397,20 +454,36 @@ async def update_section(
         db=db,
         section_id=db_section.id
     )
-    if db_section_process_task is None:
-        db_section_process_task = crud.task.create_section_process_task(
-            db=db,
-            user_id=user.id,
-            section_id=db_section.id,
-        )
-    if section_update_request.process_task_trigger_type is not None:
-        db_section_process_task.trigger_type = section_update_request.process_task_trigger_type
+    next_trigger_type = (
+        section_update_request.process_task_trigger_type
+        if section_update_request.process_task_trigger_type is not None
+        else db_section_process_task.trigger_type
+        if db_section_process_task is not None
+        else SectionProcessTriggerType.UPDATED
+    )
+    if next_trigger_type == SectionProcessTriggerType.SCHEDULER:
+        if db_section_process_task is None:
+            db_section_process_task = crud.task.create_section_process_task(
+                db=db,
+                user_id=user.id,
+                section_id=db_section.id,
+                trigger_type=SectionProcessTriggerType.SCHEDULER,
+            )
+        else:
+            db_section_process_task.trigger_type = SectionProcessTriggerType.SCHEDULER
+    elif (
+        db_section_process_task is not None
+        and section_update_request.process_task_trigger_type is not None
+    ):
+        db_section_process_task.trigger_type = SectionProcessTriggerType.UPDATED
 
     db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
         db=db,
         section_id=db_section.id
     )
     if section_update_request.process_task_trigger_scheduler is not None:
+        if db_section_process_task is None:
+            raise schemas.error.CustomException("Scheduler cron expression is only valid for scheduled trigger", code=400)
         stored_cron_expr = encode_cron_expr_with_timezone(
             cron_expr=section_update_request.process_task_trigger_scheduler,
             timezone_name=request_timezone,
@@ -431,7 +504,7 @@ async def update_section(
     if should_sync_schedule:
         _remove_section_process_schedule(db_section.id)
 
-        if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
+        if next_trigger_type == SectionProcessTriggerType.SCHEDULER:
             scheduler_timezone = request_timezone
             scheduler_cron_expr = section_update_request.process_task_trigger_scheduler
 

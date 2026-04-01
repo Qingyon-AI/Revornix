@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import re
 import uuid
 from collections import deque
@@ -9,13 +10,13 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.ai import make_section_markdown
+from common.ai import summary_content
 from common.logger import exception_logger, info_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import neo4j_driver
 from data.sql.base import session_scope
 from enums.section import (
     SectionDocumentIntegration,
-    SectionPodcastStatus,
     SectionProcessStatus,
 )
 from enums.document import DocumentAudioTranscribeStatus, DocumentCategory, DocumentMdConvertStatus
@@ -26,7 +27,7 @@ from common.markdown_helpers import (
     get_markdown_content_by_section_id,
 )
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from workflow.section_podcast_workflow import run_section_podcast_workflow
+from workflow.section_knowledge_snapshot_workflow import generate_section_knowledge_snapshot
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
@@ -36,6 +37,7 @@ class SectionProcessState(TypedDict, total=False):
     section_id: int
     user_id: int
     auto_podcast: bool
+    force_full_rebuild: bool
     target_document_ids: list[int]
     skip_processing: bool
     section_md_file_name: str | None
@@ -43,6 +45,7 @@ class SectionProcessState(TypedDict, total=False):
     auto_illustration: bool
     default_image_generate_engine_id: int | None
     default_podcast_user_engine_id: int | None
+    knowledge_snapshot_id: int | None
 
 
 WORKFLOW_NAME = "section_process"
@@ -71,7 +74,8 @@ EDGE_QUERY = """
 """
 
 DOCUMENT_MARKDOWN_FETCH_CONCURRENCY = 6
-IMAGE_GENERATE_CONCURRENCY = 2
+IMAGE_GENERATE_CONCURRENCY = 4
+IMAGE_UPLOAD_CONCURRENCY = 4
 SECTION_MARKDOWN_BATCH_CHAR_LIMIT = 12_000
 SECTION_MARKDOWN_CONTEXT_CHAR_LIMIT = 20_000
 SECTION_MARKDOWN_CONTEXT_MIN_CHAR_LIMIT = 8_000
@@ -81,6 +85,15 @@ SECTION_MARKDOWN_MAX_ENTITIES = 200
 SECTION_MARKDOWN_MAX_RELATIONS = 300
 SECTION_MARKDOWN_CONTEXT_HEAD_CHAR_LIMIT = 4_000
 SECTION_MARKDOWN_CONTEXT_MEMORY_CHAR_LIMIT = 5_000
+SECTION_MARKDOWN_FAST_PATH_MAX_CHARS = 4_500
+SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT = 12
+SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT = 12
+SECTION_IMAGE_MIN_CONTENT_CHARS = 3_200
+SECTION_IMAGE_MIN_ENTITY_COUNT = 6
+SECTION_IMAGE_MIN_RELATION_COUNT = 4
+SECTION_IMAGE_SINGLE_DOC_MIN_CONTENT_CHARS = 5_500
+SECTION_IMAGE_SINGLE_DOC_MIN_ENTITY_COUNT = 10
+SECTION_IMAGE_SINGLE_DOC_MIN_RELATION_COUNT = 6
 
 def _get_document_ready_state(
     *,
@@ -157,6 +170,72 @@ def apply_generated_images(
     return pattern.sub(repl, markdown_with_markers)
 
 
+def _extract_image_payload(image_markdown: str) -> tuple[str, bytes] | None:
+    normalized = image_markdown.strip()
+    markdown_match = re.fullmatch(r"!\[[^\]]*\]\((data:image/[^)]+)\)", normalized)
+    if markdown_match is not None:
+        normalized = markdown_match.group(1)
+
+    data_match = re.fullmatch(
+        r"(data:image/(?P<mime_subtype>[^;]+);base64,(?P<payload>[A-Za-z0-9+/=]+))",
+        normalized,
+    )
+    if data_match is None:
+        return None
+
+    mime_subtype = data_match.group("mime_subtype").lower()
+    extension = "jpg" if mime_subtype == "jpeg" else mime_subtype.replace("+xml", "")
+    payload = data_match.group("payload")
+    try:
+        content = base64.b64decode(payload)
+    except Exception as decode_error:
+        exception_logger.warning(
+            f"[SectionImage] failed to decode generated image payload: {decode_error}"
+        )
+        return None
+
+    return extension, content
+
+
+async def _persist_generated_images(
+    *,
+    section_id: int,
+    remote_file_service: RemoteFileServiceProtocol,
+    images: list[GeneratedImage],
+) -> list[GeneratedImage]:
+    upload_semaphore = asyncio.Semaphore(
+        min(IMAGE_UPLOAD_CONCURRENCY, max(1, len(images)))
+    )
+
+    async def _persist_one(image: GeneratedImage) -> GeneratedImage:
+        payload = _extract_image_payload(image.image)
+        if payload is None:
+            return image
+
+        extension, content = payload
+        content_type = (
+            "image/jpeg"
+            if extension == "jpg"
+            else "image/svg+xml"
+            if extension == "svg"
+            else f"image/{extension}"
+        )
+        file_path = f"images/sections/{section_id}/{uuid.uuid4().hex}.{extension}"
+        async with upload_semaphore:
+            await remote_file_service.upload_raw_content_to_path(
+                file_path=file_path,
+                content=content,
+                content_type=content_type,
+            )
+        return GeneratedImage(
+            id=image.id,
+            prompt=image.prompt,
+            image=f"![]({file_path})",
+        )
+
+    return list(await asyncio.gather(*[_persist_one(image) for image in images]))
+
+
 def _is_token_limit_error(error: Exception) -> bool:
     message = str(error).lower()
     return (
@@ -164,6 +243,34 @@ def _is_token_limit_error(error: Exception) -> bool:
         or "maximum context length" in message
         or "context_length_exceeded" in message
     )
+
+
+def _should_generate_section_images(
+    *,
+    content: str,
+    target_document_count: int,
+    entity_count: int,
+    relation_count: int,
+) -> tuple[bool, str]:
+    content_chars = len(content.strip())
+    if content_chars < SECTION_IMAGE_MIN_CONTENT_CHARS:
+        return False, f"content_too_short:{content_chars}"
+
+    min_entity_count = SECTION_IMAGE_MIN_ENTITY_COUNT
+    min_relation_count = SECTION_IMAGE_MIN_RELATION_COUNT
+    min_content_chars = SECTION_IMAGE_MIN_CONTENT_CHARS
+    if target_document_count <= 1:
+        min_entity_count = SECTION_IMAGE_SINGLE_DOC_MIN_ENTITY_COUNT
+        min_relation_count = SECTION_IMAGE_SINGLE_DOC_MIN_RELATION_COUNT
+        min_content_chars = SECTION_IMAGE_SINGLE_DOC_MIN_CONTENT_CHARS
+
+    if content_chars < min_content_chars:
+        return False, f"content_below_threshold:{content_chars}<{min_content_chars}"
+    if entity_count < min_entity_count:
+        return False, f"entity_count_too_low:{entity_count}<{min_entity_count}"
+    if relation_count < min_relation_count:
+        return False, f"relation_count_too_low:{relation_count}<{min_relation_count}"
+    return True, "eligible"
 
 
 def _truncate_markdown_context(
@@ -273,6 +380,97 @@ def _build_markdown_memory(
     return memory
 
 
+def _split_summary_sentences(text: str, *, max_items: int) -> list[str]:
+    normalized = " ".join((text or "").split()).strip()
+    if not normalized:
+        return []
+    parts = [
+        part.strip()
+        for part in re.split(r"(?<=[。！？!?；;])\s*", normalized)
+        if part.strip()
+    ]
+    if not parts:
+        return [normalized]
+    return parts[:max_items]
+
+
+def _build_fast_section_markdown(
+    *,
+    summary_title: str | None,
+    summary_description: str | None,
+    summary_body: str | None,
+    source_markdown: str,
+    entities: list[EntityInfo],
+    relations: list[RelationInfo],
+) -> str:
+    title = (summary_title or "Section Summary").strip()
+    description = (summary_description or "").strip()
+    summary_body = (summary_body or "").strip()
+    key_points = _split_summary_sentences(summary_body, max_items=5)
+    detail_excerpt = source_markdown.strip()
+    if len(detail_excerpt) > 2_400:
+        detail_excerpt = detail_excerpt[:2397].rstrip() + "..."
+
+    top_entities = entities[:SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT]
+    top_relations = relations[:SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT]
+
+    lines = [f"# {title}", "", "## Executive Summary", ""]
+    if description:
+        lines.append(description)
+        lines.append("")
+    if summary_body:
+        lines.append(summary_body)
+        lines.append("")
+
+    lines.extend(["## Key Insights", ""])
+    if key_points:
+        lines.extend([f"- {item}" for item in key_points])
+    else:
+        lines.append("- No key insights extracted.")
+    lines.append("")
+
+    lines.extend(["## Detailed Analysis", "", detail_excerpt, ""])
+
+    lines.extend(["## Knowledge Graph Interpretation", ""])
+    if top_entities:
+        lines.append("### Core Entities")
+        lines.append("")
+        lines.extend(
+            [f"- **{entity.text}** ({entity.entity_type})" for entity in top_entities]
+        )
+        lines.append("")
+    if top_relations:
+        lines.append("### Core Relations")
+        lines.append("")
+        lines.extend(
+            [
+                f"- **{relation.src_node}** -> *{relation.relation_type}* -> **{relation.tgt_node}**"
+                for relation in top_relations
+            ]
+        )
+        lines.append("")
+    if not top_entities and not top_relations:
+        lines.append("No knowledge graph signals were extracted.")
+        lines.append("")
+
+    lines.extend(["## Conclusion & Recommendations", ""])
+    if key_points:
+        lines.append(
+            f"- Prioritize the themes around {key_points[0][:120]}."
+        )
+    else:
+        lines.append("- Review the source content and enrich the section with more structured material.")
+    if top_entities:
+        lines.append(
+            f"- Continue tracking the core concepts: {', '.join(entity.text for entity in top_entities[:5])}."
+        )
+    else:
+        lines.append("- Add more source material to strengthen entity and relation coverage.")
+    lines.append("")
+
+    return "\n".join(lines).strip()
+
+
 def _split_text_near_middle(text: str) -> tuple[str, str]:
     if len(text) <= 1:
         return text, ""
@@ -360,6 +558,30 @@ async def _compose_section_markdown_in_batches(
     entities: list[EntityInfo],
     relations: list[RelationInfo],
 ) -> str:
+    if (
+        current_markdown_content is None
+        and len(markdown_contents) == 1
+        and len(markdown_contents[0]) <= SECTION_MARKDOWN_FAST_PATH_MAX_CHARS
+    ):
+        fast_summary = await summary_content(
+            user_id=user_id,
+            model_id=model_id,
+            content=markdown_contents[0],
+        )
+        info_logger.info(
+            f"[SectionMarkdown] fast path used: section={section_id}, "
+            f"source_chars={len(markdown_contents[0])}, entities={len(entities)}, "
+            f"relations={len(relations)}"
+        )
+        return _build_fast_section_markdown(
+            summary_title=fast_summary.title,
+            summary_description=fast_summary.description,
+            summary_body=fast_summary.summary,
+            source_markdown=markdown_contents[0],
+            entities=entities,
+            relations=relations,
+        )
+
     pending_batches = _build_markdown_batches(
         markdown_contents=markdown_contents,
         max_batch_chars=SECTION_MARKDOWN_BATCH_CHAR_LIMIT,
@@ -519,6 +741,7 @@ async def _load_context(
         raise Exception("Section workflow missing section_id or user_id")
 
     now = datetime.now(timezone.utc)
+    force_full_rebuild = bool(state.get("force_full_rebuild"))
     with session_scope() as db:
         db_section = crud.section.get_section_by_section_id(
             db=db,
@@ -572,7 +795,7 @@ async def _load_context(
 
         target_documents = (
             db_section_documents_all
-            if db_section.md_file_name is None
+            if force_full_rebuild or db_section.md_file_name is None
             else db_section_documents_wait_to
         )
         ready_documents = []
@@ -833,7 +1056,13 @@ async def _build_section_content(
             relations=relations_for_ai,
         )
 
-    if state.get("auto_illustration") and engine_id is not None:
+    should_generate_images, skip_image_reason = _should_generate_section_images(
+        content=content,
+        target_document_count=len(ok_document_ids),
+        entity_count=len(entities_for_ai),
+        relation_count=len(relations_for_ai),
+    )
+    if state.get("auto_illustration") and engine_id is not None and should_generate_images:
         try:
             with timed_stage(
                 workflow_name=WORKFLOW_NAME,
@@ -852,7 +1081,9 @@ async def _build_section_content(
                     relations=relations_for_ai,
                 )
             if images_plan.plans:
-                image_semaphore = asyncio.Semaphore(IMAGE_GENERATE_CONCURRENCY)
+                image_semaphore = asyncio.Semaphore(
+                    min(IMAGE_GENERATE_CONCURRENCY, max(1, len(images_plan.plans)))
+                )
                 with timed_stage(
                     workflow_name=WORKFLOW_NAME,
                     node_name="build_section_content",
@@ -877,11 +1108,23 @@ async def _build_section_content(
                         )
                         if image is not None
                     ]
+                generated_images = await _persist_generated_images(
+                    section_id=section_id,
+                    remote_file_service=remote_file_service,
+                    images=generated_images,
+                )
                 content = apply_generated_images(images_plan.markdown_with_markers, generated_images)
         except Exception as e:
             exception_logger.warning(
                 f"[SectionImage] illustration pipeline skipped: section={section_id}, error={e}"
             )
+    elif state.get("auto_illustration"):
+        info_logger.info(
+            f"[SectionImage] skip illustration planning: section={section_id}, "
+            f"reason={skip_image_reason}, target_documents={len(ok_document_ids)}, "
+            f"content_chars={len(content.strip())}, entities={len(entities_for_ai)}, "
+            f"relations={len(relations_for_ai)}"
+        )
 
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
     with timed_stage(
@@ -910,7 +1153,6 @@ async def _build_section_content(
         },
     ):
         with session_scope() as db:
-            now = datetime.now(timezone.utc)
             db_section = crud.section.get_section_by_section_id(
                 db=db,
                 section_id=section_id
@@ -918,30 +1160,6 @@ async def _build_section_content(
             if db_section is None:
                 raise Exception("The section which will be processed is not found.")
             db_section.md_file_name = md_file_name
-
-            db_section_process_task = crud.task.get_section_process_task_by_section_id(
-                db=db,
-                section_id=section_id
-            )
-            if state.get("auto_podcast") and state.get("default_podcast_user_engine_id") is not None:
-                db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
-                    db=db,
-                    section_id=section_id,
-                )
-                if db_section_podcast_task is None:
-                    db_section_podcast_task = crud.task.create_section_podcast_task(
-                        db=db,
-                        user_id=user_id,
-                        section_id=section_id,
-                        status=SectionPodcastStatus.WAIT_TO,
-                    )
-                else:
-                    db_section_podcast_task.status = SectionPodcastStatus.WAIT_TO
-                    db_section_podcast_task.podcast_file_name = None
-                    db_section_podcast_task.update_time = now
-            if db_section_process_task is not None:
-                db_section_process_task.status = SectionProcessStatus.SUCCESS
-                db_section_process_task.update_time = now
 
             if ok_document_ids:
                 ok_document_id_set = set(ok_document_ids)
@@ -968,26 +1186,41 @@ async def _build_section_content(
     return state
 
 
-async def _maybe_podcast(
+async def _build_knowledge_snapshot(
     state: SectionProcessState
 ) -> SectionProcessState:
     if state.get("skip_processing"):
         return state
-    if state.get("auto_podcast"):
-        section_id = state.get("section_id")
-        user_id = state.get("user_id")
-        engine_id = state.get("default_podcast_user_engine_id")
-        if section_id is None or user_id is None:
-            raise Exception("Section workflow missing section_id or user_id")
-        if engine_id is None:
-            exception_logger.warning(
-                f"[SectionPodcast] skip auto podcast because default engine is not configured: section={section_id}, user_id={user_id}"
-            )
-            return state
-        await run_section_podcast_workflow(
+    section_id = state.get("section_id")
+    user_id = state.get("user_id")
+    if section_id is None or user_id is None:
+        raise Exception("Section workflow missing section_id or user_id")
+    snapshot_id = await generate_section_knowledge_snapshot(
+        section_id=section_id,
+        user_id=user_id,
+    )
+    state["knowledge_snapshot_id"] = snapshot_id
+    return state
+
+
+async def _mark_section_process_success(
+    state: SectionProcessState
+) -> SectionProcessState:
+    if state.get("skip_processing"):
+        return state
+    section_id = state.get("section_id")
+    if section_id is None:
+        raise Exception("Section workflow missing section_id")
+
+    with session_scope() as db:
+        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+            db=db,
             section_id=section_id,
-            user_id=user_id
         )
+        if db_section_process_task is not None:
+            db_section_process_task.status = SectionProcessStatus.SUCCESS
+            db_section_process_task.update_time = datetime.now(timezone.utc)
+            db.commit()
     return state
 
 
@@ -1008,14 +1241,20 @@ def _build_workflow():
     add_timed_node(
         workflow,
         workflow_name=WORKFLOW_NAME,
-        node_name="maybe_podcast",
-        node_func=_maybe_podcast,
+        node_name="build_knowledge_snapshot",
+        node_func=_build_knowledge_snapshot,
     )
-
+    add_timed_node(
+        workflow,
+        workflow_name=WORKFLOW_NAME,
+        node_name="mark_section_process_success",
+        node_func=_mark_section_process_success,
+    )
     workflow.set_entry_point("load_context")
     workflow.add_edge("load_context", "build_section_content")
-    workflow.add_edge("build_section_content", "maybe_podcast")
-    workflow.add_edge("maybe_podcast", END)
+    workflow.add_edge("build_section_content", "build_knowledge_snapshot")
+    workflow.add_edge("build_knowledge_snapshot", "mark_section_process_success")
+    workflow.add_edge("mark_section_process_success", END)
     return workflow.compile()
 
 
@@ -1034,6 +1273,7 @@ async def run_section_process_workflow(
     section_id: int,
     user_id: int,
     auto_podcast: bool = False,
+    force_full_rebuild: bool = False,
 ) -> None:
     workflow = get_section_process_workflow()
     try:
@@ -1043,7 +1283,8 @@ async def run_section_process_workflow(
             payload={
                 "section_id": section_id,
                 "user_id": user_id,
-                "auto_podcast": auto_podcast
+                "auto_podcast": auto_podcast,
+                "force_full_rebuild": force_full_rebuild,
             },
         )
     except Exception as e:

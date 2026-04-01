@@ -16,44 +16,37 @@ import { mapValues } from '../runtime';
 import type { SectionProcessTask } from './SectionProcessTask';
 import {
     SectionProcessTaskFromJSON,
-    SectionProcessTaskFromJSONTyped,
     SectionProcessTaskToJSON,
-    SectionProcessTaskToJSONTyped,
 } from './SectionProcessTask';
 import type { SectionPodcastTask } from './SectionPodcastTask';
 import {
     SectionPodcastTaskFromJSON,
-    SectionPodcastTaskFromJSONTyped,
     SectionPodcastTaskToJSON,
-    SectionPodcastTaskToJSONTyped,
 } from './SectionPodcastTask';
+import type { SectionKnowledgeSnapshot } from './SectionKnowledgeSnapshot';
+import {
+    SectionKnowledgeSnapshotFromJSON,
+    SectionKnowledgeSnapshotToJSON,
+} from './SectionKnowledgeSnapshot';
 import type { SectionDocumentIntegrationSummary } from './SectionDocumentIntegrationSummary';
 import {
     SectionDocumentIntegrationSummaryFromJSON,
-    SectionDocumentIntegrationSummaryFromJSONTyped,
     SectionDocumentIntegrationSummaryToJSON,
-    SectionDocumentIntegrationSummaryToJSONTyped,
 } from './SectionDocumentIntegrationSummary';
 import type { SectionLabel } from './SectionLabel';
 import {
     SectionLabelFromJSON,
-    SectionLabelFromJSONTyped,
     SectionLabelToJSON,
-    SectionLabelToJSONTyped,
 } from './SectionLabel';
 import type { UserPublicInfo } from './UserPublicInfo';
 import {
     UserPublicInfoFromJSON,
-    UserPublicInfoFromJSONTyped,
     UserPublicInfoToJSON,
-    UserPublicInfoToJSONTyped,
 } from './UserPublicInfo';
 import type { UserSectionAuthority } from './UserSectionAuthority';
 import {
     UserSectionAuthorityFromJSON,
-    UserSectionAuthorityFromJSONTyped,
     UserSectionAuthorityToJSON,
-    UserSectionAuthorityToJSONTyped,
 } from './UserSectionAuthority';
 
 /**
@@ -154,6 +147,12 @@ export interface SectionInfo {
     cover: string | null;
     /**
      * 
+     * @type {SectionKnowledgeSnapshot}
+     * @memberof SectionInfo
+     */
+    knowledge_snapshot?: SectionKnowledgeSnapshot | null;
+    /**
+     * 
      * @type {SectionPodcastTask}
      * @memberof SectionInfo
      */
@@ -232,6 +231,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(SectionLabelFromJSON)),
         'cover': json['cover'],
+        'knowledge_snapshot': json['knowledge_snapshot'] == null ? undefined : SectionKnowledgeSnapshotFromJSON(json['knowledge_snapshot']),
         'podcast_task': json['podcast_task'] == null ? undefined : SectionPodcastTaskFromJSON(json['podcast_task']),
         'process_task': json['process_task'] == null ? undefined : SectionProcessTaskFromJSON(json['process_task']),
         'document_integration': json['document_integration'] == null ? undefined : SectionDocumentIntegrationSummaryFromJSON(json['document_integration']),
@@ -267,6 +267,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'md_file_name': value['md_file_name'],
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(SectionLabelToJSON)),
         'cover': value['cover'],
+        'knowledge_snapshot': SectionKnowledgeSnapshotToJSON(value['knowledge_snapshot']),
         'podcast_task': SectionPodcastTaskToJSON(value['podcast_task']),
         'process_task': SectionProcessTaskToJSON(value['process_task']),
         'document_integration': SectionDocumentIntegrationSummaryToJSON(value['document_integration']),
