@@ -95,6 +95,42 @@ SECTION_IMAGE_SINGLE_DOC_MIN_CONTENT_CHARS = 5_500
 SECTION_IMAGE_SINGLE_DOC_MIN_ENTITY_COUNT = 10
 SECTION_IMAGE_SINGLE_DOC_MIN_RELATION_COUNT = 6
 
+
+def _format_document_category_label(category: int) -> str:
+    if category == DocumentCategory.FILE:
+        return "File"
+    if category == DocumentCategory.WEBSITE:
+        return "Website"
+    if category == DocumentCategory.QUICK_NOTE:
+        return "Quick Note"
+    if category == DocumentCategory.AUDIO:
+        return "Audio Transcript"
+    return f"DocumentCategory({category})"
+
+
+def _wrap_document_markdown_for_section(
+    *,
+    document_id: int,
+    document_title: str | None,
+    document_category: int,
+    markdown_content: str,
+) -> str:
+    title = (document_title or "").strip() or f"Document {document_id}"
+    category_label = _format_document_category_label(document_category)
+    normalized_content = markdown_content.strip()
+    if not normalized_content:
+        return ""
+
+    return (
+        f"<!-- section-source: document_id={document_id}, category={category_label} -->\n"
+        f"# Source Document: {title}\n\n"
+        f"- Document ID: {document_id}\n"
+        f"- Document Type: {category_label}\n\n"
+        "## Source Content\n\n"
+        f"{normalized_content}"
+    )
+
+
 def _get_document_ready_state(
     *,
     db,
@@ -691,12 +727,26 @@ async def _fetch_document_markdown(
 ) -> tuple[int, str | None]:
     async with semaphore:
         try:
+            with session_scope() as db:
+                db_document = crud.document.get_document_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                )
+                if db_document is None:
+                    raise Exception("Document not found")
+
             markdown_content = await get_markdown_content_by_document_id(
                 document_id=document_id,
                 user_id=user_id,
                 remote_file_service=remote_file_service,
             )
-            return document_id, markdown_content
+            wrapped_markdown = _wrap_document_markdown_for_section(
+                document_id=document_id,
+                document_title=db_document.title,
+                document_category=db_document.category,
+                markdown_content=markdown_content,
+            )
+            return document_id, wrapped_markdown
         except Exception as e:
             exception_logger.error(
                 f"Section {section_id} failed to collect document {document_id}: {e}"
@@ -854,7 +904,8 @@ async def _build_section_content(
     )
 
     current_markdown_content = None
-    if section_md_file_name is not None:
+    force_full_rebuild = bool(state.get("force_full_rebuild"))
+    if section_md_file_name is not None and not force_full_rebuild:
         try:
             with timed_stage(
                 workflow_name=WORKFLOW_NAME,
@@ -875,6 +926,11 @@ async def _build_section_content(
             exception_logger.warning(
                 f"Section {section_id} failed to load previous markdown context: {e}"
             )
+    elif section_md_file_name is not None and force_full_rebuild:
+        info_logger.info(
+            f"[SectionMarkdown] skip previous markdown context due to force_full_rebuild: "
+            f"section={section_id}"
+        )
 
     rebuild_from_all_documents = (
         section_md_file_name is not None
