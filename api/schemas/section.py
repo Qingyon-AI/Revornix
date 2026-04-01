@@ -217,17 +217,6 @@ class SectionDocumentIntegrationSummary(BaseModel):
     success_count: int = 0
     failed_count: int = 0
 
-class SectionKnowledgeSnapshot(BaseModel):
-    id: int
-    version: int
-    source_hash: str
-    document_count: int = 0
-    knowledge_point_count: int = 0
-    topic_count: int = 0
-    image_candidate_count: int = 0
-    create_time: datetime
-    update_time: datetime | None = None
-
 class SectionInfo(BaseModel):
     id: int
     title: str
@@ -245,7 +234,6 @@ class SectionInfo(BaseModel):
     labels: list[SectionLabel] | None = None
     cover: str | None
     publish_uuid: str | None = None
-    knowledge_snapshot: SectionKnowledgeSnapshot | None = None
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
     document_integration: SectionDocumentIntegrationSummary | None = None

@@ -26,38 +26,6 @@ def create_or_update_section_document(
     db.flush()
     return db_section_document
 
-def create_section_knowledge_snapshot(
-    db: Session,
-    *,
-    user_id: int,
-    section_id: int,
-    version: int,
-    source_hash: str,
-    knowledge_pack_file_name: str,
-    traceability_manifest_file_name: str,
-    document_count: int = 0,
-    knowledge_point_count: int = 0,
-    topic_count: int = 0,
-    image_candidate_count: int = 0
-):
-    now = datetime.now(timezone.utc)
-    snapshot = models.section.SectionKnowledgeSnapshot(
-        user_id=user_id,
-        section_id=section_id,
-        version=version,
-        source_hash=source_hash,
-        knowledge_pack_file_name=knowledge_pack_file_name,
-        traceability_manifest_file_name=traceability_manifest_file_name,
-        document_count=document_count,
-        knowledge_point_count=knowledge_point_count,
-        topic_count=topic_count,
-        image_candidate_count=image_candidate_count,
-        create_time=now,
-    )
-    db.add(snapshot)
-    db.flush()
-    return snapshot
-
 def get_section_documents_by_section_id(
     db: Session,
     section_id: int,
@@ -69,32 +37,6 @@ def get_section_documents_by_section_id(
     if filter_status is not None:
         query = query.filter(models.section.SectionDocument.status == filter_status)
     return query.all()
-
-def get_section_knowledge_snapshot_by_id(
-    db: Session,
-    snapshot_id: int
-):
-    query = db.query(models.section.SectionKnowledgeSnapshot)
-    query = query.filter(
-        models.section.SectionKnowledgeSnapshot.id == snapshot_id,
-        models.section.SectionKnowledgeSnapshot.delete_at.is_(None),
-    )
-    return query.one_or_none()
-
-def get_latest_section_knowledge_snapshot_by_section_id(
-    db: Session,
-    section_id: int
-):
-    query = db.query(models.section.SectionKnowledgeSnapshot)
-    query = query.filter(
-        models.section.SectionKnowledgeSnapshot.section_id == section_id,
-        models.section.SectionKnowledgeSnapshot.delete_at.is_(None),
-    )
-    query = query.order_by(
-        models.section.SectionKnowledgeSnapshot.version.desc(),
-        models.section.SectionKnowledgeSnapshot.id.desc(),
-    )
-    return query.first()
 
 def get_documents_for_section_by_section_id(
     db: Session, 

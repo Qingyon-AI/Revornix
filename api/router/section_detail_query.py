@@ -146,23 +146,6 @@ async def _build_section_info_response(
             file_name=res.md_file_name,
         )
 
-    db_section_snapshot = crud.section.get_latest_section_knowledge_snapshot_by_section_id(
-        db=db,
-        section_id=section_id,
-    )
-    if db_section_snapshot is not None:
-        res.knowledge_snapshot = schemas.section.SectionKnowledgeSnapshot(
-            id=db_section_snapshot.id,
-            version=db_section_snapshot.version,
-            source_hash=db_section_snapshot.source_hash,
-            document_count=db_section_snapshot.document_count,
-            knowledge_point_count=db_section_snapshot.knowledge_point_count,
-            topic_count=db_section_snapshot.topic_count,
-            image_candidate_count=db_section_snapshot.image_candidate_count,
-            create_time=db_section_snapshot.create_time,
-            update_time=db_section_snapshot.update_time,
-        )
-
     db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
         section_id=section_id,
