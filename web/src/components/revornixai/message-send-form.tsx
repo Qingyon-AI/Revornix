@@ -3,7 +3,14 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
-import { ImagePlus, Info, Loader2, Send, SlidersHorizontal, X } from 'lucide-react';
+import {
+	ImagePlus,
+	Info,
+	Loader2,
+	Send,
+	SlidersHorizontal,
+	X,
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { AIEvent, Message } from '@/types/ai';
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
@@ -121,7 +128,11 @@ const MessageSendForm = () => {
 						const translatedMessage = t.has(event.payload.message as any)
 							? t(event.payload.message as any)
 							: event.payload.message;
-						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
+						store.advanceChatMessageWorkflow(
+							sessionId,
+							event.chat_id,
+							'writing',
+						);
 						store.updateChatMessage(
 							sessionId,
 							event.chat_id,
@@ -154,7 +165,11 @@ const MessageSendForm = () => {
 					}
 
 					if (event.payload.kind === 'token') {
-						store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'writing');
+						store.advanceChatMessageWorkflow(
+							sessionId,
+							event.chat_id,
+							'writing',
+						);
 						store.updateChatMessage(
 							sessionId,
 							event.chat_id,
@@ -372,7 +387,7 @@ const MessageSendForm = () => {
 
 	const renderDesktopToolbar = () => {
 		return (
-			<div className='mb-2 flex flex-wrap items-center gap-1.5'>
+			<div className='p-2 flex flex-wrap items-center gap-1.5 border-t border-b border-border/60 bg-background'>
 				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs'>
 					<span className='shrink-0 text-muted-foreground'>
 						{t('revornix_ai_default_model')}
@@ -523,7 +538,7 @@ const MessageSendForm = () => {
 							name='message'
 							render={({ field }) => (
 								<FormItem className='flex-1'>
-									<div className='relative rounded-[20px] border border-border/70 bg-background p-1.5'>
+									<div className='relative rounded-[20px] bg-background'>
 										{attachments.length > 0 && mainUserInfo?.id ? (
 											<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
 												{attachments.map((attachment) => (
@@ -531,7 +546,10 @@ const MessageSendForm = () => {
 														key={attachment.path}
 														className='group relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
 														<img
-															src={replacePath(attachment.path, mainUserInfo.id)}
+															src={replacePath(
+																attachment.path,
+																mainUserInfo.id,
+															)}
 															alt={attachment.name}
 															className='h-full w-full object-cover'
 														/>
@@ -570,10 +588,12 @@ const MessageSendForm = () => {
 												<Button
 													type='button'
 													size='sm'
-													variant='ghost'
-													className='h-9 rounded-full px-3 text-[11px] text-muted-foreground'
+													variant='link'
+													className='h-9 rounded-full text-[11px] text-muted-foreground'
 													onClick={openPicker}
-													disabled={mutateSendMessage.isPending || isUploadingImages}>
+													disabled={
+														mutateSendMessage.isPending || isUploadingImages
+													}>
 													{isUploadingImages ? (
 														<Loader2 className='size-3.5 animate-spin' />
 													) : (
@@ -581,6 +601,8 @@ const MessageSendForm = () => {
 													)}
 													<span>{t('upload_image')}</span>
 												</Button>
+											</div>
+											<div className='flex flex-row items-center gap-2'>
 												{!isMobile ? (
 													<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
 														<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
@@ -590,15 +612,15 @@ const MessageSendForm = () => {
 														<span>{t('revornix_ai_quickly_send')}</span>
 													</div>
 												) : null}
+												<Button
+													type='submit'
+													size='icon'
+													variant='default'
+													disabled={!canSubmit}
+													className='size-9 rounded-[14px]'>
+													<Send className='size-4' />
+												</Button>
 											</div>
-											<Button
-												type='submit'
-												size='icon'
-												variant='default'
-												disabled={!canSubmit}
-												className='size-9 rounded-[14px]'>
-												<Send className='size-4' />
-											</Button>
 										</div>
 										<input
 											ref={imageInputRef}
