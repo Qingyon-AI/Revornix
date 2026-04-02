@@ -30,6 +30,7 @@ export default {
     triggerSectionProcess: API_PREFIX + "/section/process/trigger",
     askSectionAi: API_PREFIX + "/section/ask",
     generateSectionPodcast: API_PREFIX + '/section/podcast/generate',
+    generateSectionPpt: API_PREFIX + '/section/ppt/generate',
     getSectionUserRoleAndAuthority: API_PREFIX + '/section/user/role-and-authority',
     getMineSectionRoleAndAuthority: API_PREFIX + '/section/mine/role-and-authority'
 }

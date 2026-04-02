@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -12,6 +13,7 @@ from common.apscheduler.app import scheduler
 from common.celery.app import (
     start_process_section,
     start_process_section_podcast,
+    start_process_section_ppt,
     start_trigger_user_notification_event,
 )
 from common.dependencies import get_current_user, get_db, get_request_timezone
@@ -50,6 +52,51 @@ section_router.include_router(section_user_query_router)
 section_router.include_router(section_search_query_router)
 section_router.include_router(section_detail_query_router)
 section_router.include_router(section_subscription_manage_router)
+
+
+def _get_section_ppt_manifest_path(section_id: int) -> str:
+    return f"generated/sections/{section_id}/ppt/manifest.json"
+
+
+async def _get_section_ppt_manifest_status(
+    *,
+    user_id: int,
+    section_id: int,
+) -> str | None:
+    try:
+        from proxy.file_system_proxy import FileSystemProxy
+
+        remote_file_service = await FileSystemProxy.create(user_id=user_id)
+        raw_content = await remote_file_service.get_file_content_by_file_path(
+            _get_section_ppt_manifest_path(section_id)
+        )
+        if isinstance(raw_content, bytes):
+            manifest = json.loads(raw_content.decode("utf-8"))
+        else:
+            manifest = json.loads(raw_content)
+        if isinstance(manifest, dict):
+            status = manifest.get("status")
+            if isinstance(status, str):
+                return status
+    except Exception:
+        return None
+    return None
+
+
+async def _write_section_ppt_manifest(
+    *,
+    user_id: int,
+    section_id: int,
+    payload: dict,
+) -> None:
+    from proxy.file_system_proxy import FileSystemProxy
+
+    remote_file_service = await FileSystemProxy.create(user_id=user_id)
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=_get_section_ppt_manifest_path(section_id),
+        content=json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8"),
+        content_type="application/json",
+    )
 
 
 def _section_process_job_id(section_id: int) -> str:
@@ -148,6 +195,69 @@ async def generate_podcast(
     db.commit()
 
     start_process_section_podcast.delay(db_section.id, user.id)
+    return schemas.common.SuccessResponse()
+
+
+@section_router.post('/ppt/generate', response_model=schemas.common.NormalResponse)
+async def generate_ppt(
+    generate_ppt_request: schemas.section.GenerateSectionPptRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_section = crud.section.get_section_by_section_id(
+        db=db,
+        section_id=generate_ppt_request.section_id
+    )
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+    if db_section.creator_id != user.id:
+        raise schemas.error.CustomException('Only the section creator can generate PPT', code=403)
+    if db_section.md_file_name is None:
+        raise schemas.error.CustomException('Section markdown is not ready', code=409)
+    if user.default_user_file_system is None:
+        raise schemas.error.CustomException('Default file system is not configured', code=400)
+    if user.default_document_reader_model_id is None:
+        raise schemas.error.CustomException('Default document reader model is not configured', code=400)
+    if user.default_image_generate_engine_id is None:
+        raise schemas.error.CustomException('Default image generate engine is not configured', code=400)
+
+    await ensure_model_access(
+        db=db,
+        user=user,
+        model_id=user.default_document_reader_model_id,
+    )
+    await ensure_engine_access(
+        db=db,
+        user=user,
+        engine_id=user.default_image_generate_engine_id,
+    )
+
+    existing_status = await _get_section_ppt_manifest_status(
+        user_id=user.id,
+        section_id=db_section.id,
+    )
+    if existing_status in {"wait_to", "processing"}:
+        raise schemas.error.CustomException('PPT task is already queued', code=409)
+
+    now = datetime.now(timezone.utc).isoformat()
+    await _write_section_ppt_manifest(
+        user_id=user.id,
+        section_id=db_section.id,
+        payload={
+            "version": 1,
+            "status": "wait_to",
+            "title": None,
+            "subtitle": None,
+            "theme_prompt": None,
+            "pptx_file_name": None,
+            "error_message": None,
+            "create_time": now,
+            "update_time": now,
+            "slides": [],
+        },
+    )
+
+    start_process_section_ppt.delay(db_section.id, user.id)
     return schemas.common.SuccessResponse()
 
 

@@ -26,6 +26,7 @@ from workflow.document_process_workflow import run_document_process_workflow
 from workflow.document_summarize_workflow import run_document_summarize_workflow
 from workflow.notification_event_workflow import run_notification_event_workflow
 from workflow.section_podcast_workflow import run_section_podcast_workflow
+from workflow.section_ppt_workflow import run_section_ppt_workflow
 from workflow.section_process_status_workflow import run_section_process_status_workflow
 from workflow.section_process_workflow import (
     run_finalize_section_images,
@@ -290,6 +291,19 @@ def start_process_section_podcast(
 ):
     _run(
         run_section_podcast_workflow(
+            section_id=section_id,
+            user_id=user_id,
+        )
+    )
+
+
+@celery_app.task
+def start_process_section_ppt(
+    section_id: int,
+    user_id: int,
+):
+    _run(
+        run_section_ppt_workflow(
             section_id=section_id,
             user_id=user_id,
         )

@@ -14,6 +14,34 @@ export type TriggerSectionProcessRequest = {
     section_id: number
 }
 
+export type GenerateSectionPptRequest = {
+    section_id: number
+}
+
+export type SectionPptSlide = {
+    id: string
+    title: string
+    summary: string
+    prompt: string
+    image_url?: string | null
+}
+
+export type SectionPptPreview = {
+    status: string
+    title?: string | null
+    subtitle?: string | null
+    theme_prompt?: string | null
+    pptx_url?: string | null
+    error_message?: string | null
+    create_time?: string | null
+    update_time?: string | null
+    slides: SectionPptSlide[]
+}
+
+export type SectionDetailWithPpt = SectionInfo & {
+    ppt_preview?: SectionPptPreview | null
+}
+
 export const getMineUserRoleAndAuthority = async (data: MineSectionRoleAndAuthorityRequest): Promise<SectionUserRoleAndAuthorityResponse> => {
     return await request(sectionApi.getMineSectionRoleAndAuthority, {
         data
@@ -28,6 +56,12 @@ export const getSectionUserRoleAndAuthority = async (data: SectionUserRoleAndAut
 
 export const generateSectionPodcast = async (data: GenerateSectionPodcastRequest): Promise<NormalResponse> => {
     return await request(sectionApi.generateSectionPodcast, {
+        data
+    })
+}
+
+export const generateSectionPpt = async (data: GenerateSectionPptRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.generateSectionPpt, {
         data
     })
 }
@@ -100,13 +134,13 @@ export const deleteSection = async (data: SectionDeleteRequest): Promise<NormalR
     })
 }
 
-export const getSectionDetail = async (data: SectionDetailRequest): Promise<SectionInfo> => {
+export const getSectionDetail = async (data: SectionDetailRequest): Promise<SectionDetailWithPpt> => {
     return await request(sectionApi.getSectionDetail, {
         data
     })
 }
 
-export const getSEOSectionDetail = async (data: SectionSeoDetailRequest): Promise<SectionInfo> => {
+export const getSEOSectionDetail = async (data: SectionSeoDetailRequest): Promise<SectionDetailWithPpt> => {
     return await request(sectionApi.getSEOSectionDetail, {
         data
     })

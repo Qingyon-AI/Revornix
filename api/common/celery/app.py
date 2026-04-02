@@ -44,6 +44,7 @@ start_process_document_transcribe = _task("common.celery.app.start_process_docum
 start_process_document_podcast = _task("common.celery.app.start_process_document_podcast")
 update_document_process_status = _task("common.celery.app.update_document_process_status")
 start_process_section_podcast = _task("common.celery.app.start_process_section_podcast")
+start_process_section_ppt = _task("common.celery.app.start_process_section_ppt")
 update_section_process_status = _task("common.celery.app.update_section_process_status")
 finalize_section_images = _task("common.celery.app.finalize_section_images")
 start_trigger_user_notification_event = _task("common.celery.app.start_trigger_user_notification_event")
@@ -59,6 +60,7 @@ __all__ = [
     "start_process_document_summarize",
     "start_process_section",
     "start_process_section_podcast",
+    "start_process_section_ppt",
     "start_trigger_user_notification_event",
     "finalize_section_images",
     "update_document_process_status",
