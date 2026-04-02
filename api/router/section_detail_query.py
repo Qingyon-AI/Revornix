@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
@@ -8,6 +9,7 @@ import models
 import schemas
 from common.dependencies import get_current_user, get_current_user_without_throw, get_db
 from common.file import get_remote_file_signed_url
+from proxy.file_system_proxy import FileSystemProxy
 from common.section_defaults import (
     TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
     TODAY_SECTION_DEFAULT_AUTO_PODCAST,
@@ -24,6 +26,84 @@ from enums.section import (
 from router.logic_helpers import ensure_private_section_access
 
 section_detail_query_router = APIRouter()
+
+
+def _get_section_ppt_manifest_path(section_id: int) -> str:
+    return f"generated/sections/{section_id}/ppt/manifest.json"
+
+
+async def _get_section_ppt_preview(
+    *,
+    user_id: int,
+    section_id: int,
+) -> schemas.section.SectionPptPreview | None:
+    manifest_path = _get_section_ppt_manifest_path(section_id)
+    try:
+        remote_file_service = await FileSystemProxy.create(user_id=user_id)
+        raw_content = await remote_file_service.get_file_content_by_file_path(manifest_path)
+    except Exception:
+        return None
+
+    try:
+        if isinstance(raw_content, bytes):
+            manifest = json.loads(raw_content.decode("utf-8"))
+        else:
+            manifest = json.loads(raw_content)
+    except Exception:
+        return None
+
+    if not isinstance(manifest, dict):
+        return None
+
+    slides_payload = manifest.get("slides") or []
+    slides: list[schemas.section.SectionPptSlide] = []
+    pptx_url = None
+    pptx_file_name = manifest.get("pptx_file_name")
+    if isinstance(pptx_file_name, str) and pptx_file_name.strip():
+        try:
+            pptx_url = await get_remote_file_signed_url(
+                user_id=user_id,
+                file_name=pptx_file_name,
+            )
+        except Exception:
+            pptx_url = None
+    for slide in slides_payload:
+        if not isinstance(slide, dict):
+            continue
+        image_file_name = slide.get("image_file_name")
+        image_url = None
+        if isinstance(image_file_name, str) and image_file_name.strip():
+            try:
+                image_url = await get_remote_file_signed_url(
+                    user_id=user_id,
+                    file_name=image_file_name,
+                )
+            except Exception:
+                image_url = None
+        try:
+            slides.append(
+                schemas.section.SectionPptSlide(
+                    id=str(slide.get("id") or ""),
+                    title=str(slide.get("title") or ""),
+                    summary=str(slide.get("summary") or ""),
+                    prompt=str(slide.get("prompt") or ""),
+                    image_url=image_url,
+                )
+            )
+        except Exception:
+            continue
+
+    return schemas.section.SectionPptPreview(
+        status=str(manifest.get("status") or "unknown"),
+        title=manifest.get("title"),
+        subtitle=manifest.get("subtitle"),
+        theme_prompt=manifest.get("theme_prompt"),
+        pptx_url=pptx_url,
+        error_message=manifest.get("error_message"),
+        create_time=manifest.get("create_time"),
+        update_time=manifest.get("update_time"),
+        slides=slides,
+    )
 
 
 def _get_task_time(task) -> datetime | None:
@@ -184,6 +264,11 @@ async def _build_section_info_response(
             res.authority = UserSectionAuthority(db_section_user.authority)
             if include_subscription_flag and db_section_user.role == UserSectionRole.SUBSCRIBER:
                 res.is_subscribed = True
+
+    res.ppt_preview = await _get_section_ppt_preview(
+        user_id=db_section.creator_id,
+        section_id=section_id,
+    )
 
     return res
 

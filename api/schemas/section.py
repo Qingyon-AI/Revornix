@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from pydantic import Field, field_validator
@@ -240,8 +242,33 @@ class SectionInfo(BaseModel):
     graph_stale: bool | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
+    ppt_preview: SectionPptPreview | None = None
+
+
+class SectionPptSlide(BaseModel):
+    id: str
+    title: str
+    summary: str
+    prompt: str
+    image_url: str | None = None
+
+
+class SectionPptPreview(BaseModel):
+    status: str
+    title: str | None = None
+    subtitle: str | None = None
+    theme_prompt: str | None = None
+    pptx_url: str | None = None
+    error_message: str | None = None
+    create_time: datetime | None = None
+    update_time: datetime | None = None
+    slides: list[SectionPptSlide] = Field(default_factory=list)
 
 class SectionDeleteRequest(BaseModel):
+    section_id: int
+
+
+class GenerateSectionPptRequest(BaseModel):
     section_id: int
 
 class DaySectionRequest(BaseModel):
