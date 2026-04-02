@@ -231,7 +231,7 @@ const SectionMarkdown = ({
 		? t('section_markdown_scheduled_waiting_description')
 		: undefined;
 	const contentFallbackMinHeightClassName =
-		'min-h-[calc(100dvh-8rem)] sm:min-h-[calc(100dvh-8.25rem)]';
+		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 
 	return (
 		<div className={cn('relative flex min-h-full w-full flex-col', className)}>
