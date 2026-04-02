@@ -137,7 +137,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		width: 0,
 	});
 	const mainCardMinHeightClassName =
-		'min-h-[calc(100dvh-6rem)] sm:min-h-[calc(100dvh-6.25rem)]';
+		'min-h-[calc(100dvh-7rem)] sm:min-h-[calc(100dvh-7.25rem)]';
 	const surfaceCardClassName =
 		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur';
 	const mainSurfaceClassName = cn(

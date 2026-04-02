@@ -43,11 +43,13 @@ from enums.document import (
 )
 from enums.section import SectionDocumentIntegration, SectionProcessTriggerType
 from router.document_interaction_manage import document_interaction_manage_router
+from router.document_ai import document_ai_router
 from router.document_query import document_query_router
 
 document_router = APIRouter()
 document_router.include_router(document_query_router)
 document_router.include_router(document_interaction_manage_router)
+document_router.include_router(document_ai_router)
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 def get_label_summary(

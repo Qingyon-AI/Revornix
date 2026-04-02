@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import field_serializer, ConfigDict
 
 from .base import BaseModel
+from .ai import ChatItem
 from .task import (
     DocumentConvertTask,
     DocumentEmbeddingTask,
@@ -44,6 +45,12 @@ class DocumentMarkdownConvertRequest(BaseModel):
 
 class DocumentAiSummaryRequest(BaseModel):
     document_id: int
+
+
+class DocumentAskRequest(BaseModel):
+    document_id: int
+    messages: list["ChatItem"]
+    enable_mcp: bool = False
 
 class BaseSectionInfo(BaseModel):
     id: int

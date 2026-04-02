@@ -31,7 +31,7 @@ const AudioDocumentDetail = ({
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const contentFallbackMinHeightClassName =
-		'min-h-[calc(100dvh-8rem)] sm:min-h-[calc(100dvh-8.25rem)]';
+		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 	const statusContainerClassName = cn(
 		'flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
 		contentFallbackMinHeightClassName,
