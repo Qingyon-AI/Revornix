@@ -859,6 +859,7 @@
     "section_ppt_failed_description": "This PPT generation attempt did not complete successfully. Check the model and image engine configuration, then try again.",
     "section_ppt_reader_model_unset": "Default document reader model is not configured",
     "section_ppt_image_engine_unset": "Default image generation engine is not configured",
+    "section_ppt_open_settings": "Open Settings",
     "section_ppt_slide_generating": "This slide is being rendered by the image generation engine. Check back in a moment.",
     "section_ppt_slide_count": "Slide {current} / {total}",
     "section_configuration_label": "Configuration",

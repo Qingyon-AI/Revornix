@@ -859,6 +859,7 @@
     "section_ppt_failed_description": "本次 PPT 生成没有成功，你可以检查模型与生图引擎配置后重新发起。",
     "section_ppt_reader_model_unset": "默认文档阅读模型未配置",
     "section_ppt_image_engine_unset": "默认图片生成引擎未配置",
+    "section_ppt_open_settings": "前往设置",
     "section_ppt_slide_generating": "当前页面正在通过生图引擎生成，请稍后刷新查看。",
     "section_ppt_slide_count": "第 {current} / {total} 页",
     "section_configuration_label": "配置",
