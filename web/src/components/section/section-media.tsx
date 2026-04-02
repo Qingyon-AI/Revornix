@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import {
 	AudioLines,
 	ChevronLeft,
@@ -222,6 +223,23 @@ const SectionMedia = ({
 				))}
 			</div>
 		) : undefined;
+	const shouldShowDocumentReaderSettingsAction =
+		isOwner && !documentReaderModel.accessible && !documentReaderModel.loading;
+	const shouldShowImageEngineSettingsAction =
+		isOwner && !imageGenerateEngine.accessible && !imageGenerateEngine.loading;
+	const pptSettingsHref = shouldShowImageEngineSettingsAction
+		? '/setting#default_image_generate_engine_choose'
+		: shouldShowDocumentReaderSettingsAction
+			? '/setting#default_document_summary_model_choose'
+			: null;
+	const pptSettingsAction = pptSettingsHref ? (
+		<Button
+			asChild
+			variant='outline'
+			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'>
+			<Link href={pptSettingsHref}>{t('section_ppt_open_settings')}</Link>
+		</Button>
+	) : null;
 
 	return (
 		<div className='space-y-4'>
@@ -356,16 +374,19 @@ const SectionMedia = ({
 					hint={pptHint}
 					className={surfaceCardClassName}
 					action={
-						<Button
-							variant='outline'
-							className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-							onClick={() => mutateGeneratePpt.mutate()}
-							disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
-							{mutateGeneratePpt.isPending ? (
-								<Loader2 className='size-4 animate-spin' />
-							) : null}
-							{t('section_ppt_generate')}
-						</Button>
+						<>
+							{pptSettingsAction}
+							<Button
+								variant='outline'
+								className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+								onClick={() => mutateGeneratePpt.mutate()}
+								disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
+								{mutateGeneratePpt.isPending ? (
+									<Loader2 className='size-4 animate-spin' />
+								) : null}
+								{t('section_ppt_generate')}
+							</Button>
+						</>
 					}
 				/>
 			) : null}
@@ -441,6 +462,7 @@ const SectionMedia = ({
 					className={surfaceCardClassName}
 					action={
 						<>
+							{pptSettingsAction}
 							{pptPreview.pptx_url ? (
 								<Button
 									asChild
@@ -558,16 +580,19 @@ const SectionMedia = ({
 					className={surfaceCardClassName}
 					action={
 						isOwner ? (
-							<Button
-								variant='outline'
-								className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-								onClick={() => mutateGeneratePpt.mutate()}
-								disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
-								{mutateGeneratePpt.isPending ? (
-									<Loader2 className='size-4 animate-spin' />
-								) : null}
-								{t('section_ppt_regenerate')}
-							</Button>
+							<>
+								{pptSettingsAction}
+								<Button
+									variant='outline'
+									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+									onClick={() => mutateGeneratePpt.mutate()}
+									disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
+									{mutateGeneratePpt.isPending ? (
+										<Loader2 className='size-4 animate-spin' />
+									) : null}
+									{t('section_ppt_regenerate')}
+								</Button>
+							</>
 						) : undefined
 					}
 				/>

@@ -214,7 +214,7 @@ const SettingPage = () => {
 					<Separator />
 					<div
 						className='flex justify-between items-center'
-						id='default_document_summary_model_choose'>
+						id='default_image_generate_engine_choose'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('setting_image_generate_engine')}
 						</Label>
