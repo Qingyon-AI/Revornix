@@ -565,18 +565,26 @@ async def create_document(
         raise schemas.error.CustomException("Document limit reached for the current plan", code=403)
 
     if document_create_request.category == DocumentCategory.WEBSITE:
-        db_website_documents_count = crud.document.count_user_documents(
-            db=db,
-            user_id=user.id,
-            filter_category=DocumentCategory.WEBSITE
-        )
-        if db_website_documents_count > 20 and deployed_by_official:
-            auth_status = await plan_ability_checked_in_func(
-                ability=Ability.COLLECT_LINK.value,
-                authorization=f'Bearer {access_token}'
+        existing_website_document = None
+        if document_create_request.url is not None and document_create_request.url.strip():
+            existing_website_document = crud.document.get_website_document_by_user_id_and_url(
+                db=db,
+                user_id=user.id,
+                url=document_create_request.url.strip(),
             )
-            if not auth_status and deployed_by_official:
-                raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
+        if existing_website_document is None:
+            db_website_documents_count = crud.document.count_user_documents(
+                db=db,
+                user_id=user.id,
+                filter_category=DocumentCategory.WEBSITE
+            )
+            if db_website_documents_count > 20 and deployed_by_official:
+                auth_status = await plan_ability_checked_in_func(
+                    ability=Ability.COLLECT_LINK.value,
+                    authorization=f'Bearer {access_token}'
+                )
+                if not auth_status and deployed_by_official:
+                    raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
     elif document_create_request.category == DocumentCategory.FILE:
         db_file_documents_count = crud.document.count_user_documents(
             db=db,

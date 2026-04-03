@@ -199,6 +199,23 @@ class DocumentInfo(BaseModel):
 
 class WebsiteDocumentInfo(BaseModel):
     url: str
+    latest_snapshot_time: datetime | None = None
+    snapshot_count: int = 0
+
+
+class WebsiteDocumentSnapshotInfo(BaseModel):
+    id: int
+    url: str
+    title: str | None = None
+    description: str | None = None
+    cover: str | None = None
+    md_file_name: str | None = None
+    create_time: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class FileDocumentInfo(BaseModel):
     file_name: str
@@ -225,6 +242,7 @@ class DocumentDetailResponse(BaseModel):
     is_star: bool | None = None
     is_read: bool | None = None
     website_info: WebsiteDocumentInfo | None = None
+    website_snapshots: list[WebsiteDocumentSnapshotInfo] = []
     file_info: FileDocumentInfo | None = None
     quick_note_info: QuickNoteDocumentInfo | None = None
     audio_info: AudioDocumentInfo | None = None

@@ -22,6 +22,11 @@ class DocumentConvertState(TypedDict, total=False):
     category: int
     engine_id: int
     md_file_name: str | None
+    website_url: str | None
+    website_title: str | None
+    website_description: str | None
+    website_cover: str | None
+    website_keywords: str | None
     skip_processing: bool
 
 
@@ -232,6 +237,11 @@ async def _convert_document_content(
         description = web_info.description
         cover = web_info.cover
         content = web_info.content
+        state["website_url"] = website_url
+        state["website_title"] = title
+        state["website_description"] = description
+        state["website_cover"] = cover
+        state["website_keywords"] = web_info.keywords
 
     db = session_scope()
     try:
@@ -245,6 +255,13 @@ async def _convert_document_content(
         db_document.title = title
         db_document.description = description
         db_document.cover = cover
+        if category == DocumentCategory.WEBSITE:
+            db_website_document = crud.document.get_website_document_by_document_id(
+                db=db,
+                document_id=document_id,
+            )
+            if db_website_document is not None:
+                db_website_document.keywords = state.get("website_keywords")
         db.commit()
     finally:
         db.close()
@@ -278,6 +295,7 @@ async def _mark_convert_success(
         return state
     document_id = state.get("document_id")
     md_file_name = state.get("md_file_name")
+    category = state.get("category")
     if document_id is None:
         raise Exception("Document convert workflow missing document_id")
 
@@ -293,6 +311,18 @@ async def _mark_convert_success(
         db_convert_task.status = DocumentMdConvertStatus.SUCCESS
         db_convert_task.md_file_name = md_file_name
         db_convert_task.update_time = datetime.now(timezone.utc)
+        if category == DocumentCategory.WEBSITE:
+            website_url = state.get("website_url")
+            if website_url is not None:
+                crud.document.create_website_document_snapshot(
+                    db=db,
+                    document_id=document_id,
+                    url=website_url,
+                    title=state.get("website_title"),
+                    description=state.get("website_description"),
+                    cover=state.get("website_cover"),
+                    md_file_name=md_file_name,
+                )
         db.commit()
     finally:
         db.close()

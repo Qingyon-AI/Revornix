@@ -101,6 +101,30 @@ def create_website_document(
     db.flush()
     return db_website_document
 
+
+def create_website_document_snapshot(
+    db: Session,
+    document_id: int,
+    url: str,
+    title: str | None = None,
+    description: str | None = None,
+    cover: str | None = None,
+    md_file_name: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_snapshot = models.document.WebsiteDocumentSnapshot(
+        document_id=document_id,
+        url=url,
+        title=title,
+        description=description,
+        cover=cover,
+        md_file_name=md_file_name,
+        create_time=now,
+    )
+    db.add(db_snapshot)
+    db.flush()
+    return db_snapshot
+
 def create_file_document(
     db: Session,
     document_id: int,
@@ -158,6 +182,20 @@ def get_read_document_by_document_id_and_user_id(
     query = query.filter(models.document.ReadDocument.document_id == document_id,
                          models.document.ReadDocument.user_id == user_id,
                          models.document.ReadDocument.delete_at.is_(None))
+    return query.one_or_none()
+
+
+def get_user_document_by_user_id_and_document_id(
+    db: Session,
+    user_id: int,
+    document_id: int,
+):
+    query = db.query(models.document.UserDocument)
+    query = query.filter(
+        models.document.UserDocument.user_id == user_id,
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
     return query.one_or_none()
 
 def get_website_document_by_user_id_and_url(
@@ -481,6 +519,24 @@ def get_website_document_by_document_id(
                          models.document.WebsiteDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
     return query.one_or_none()
+
+
+def get_website_document_snapshots_by_document_id(
+    db: Session,
+    document_id: int,
+):
+    query = db.query(models.document.WebsiteDocumentSnapshot)
+    query = query.join(models.document.Document)
+    query = query.filter(
+        models.document.WebsiteDocumentSnapshot.document_id == document_id,
+        models.document.WebsiteDocumentSnapshot.delete_at.is_(None),
+        models.document.Document.delete_at.is_(None),
+    )
+    query = query.order_by(
+        models.document.WebsiteDocumentSnapshot.create_time.desc(),
+        models.document.WebsiteDocumentSnapshot.id.desc(),
+    )
+    return query.all()
 
 def get_quick_note_document_by_document_id(
     db: Session,

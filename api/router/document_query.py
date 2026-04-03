@@ -289,10 +289,26 @@ async def get_document_detail(
             db=db,
             document_id=document_id,
         )
+        website_snapshots = crud.document.get_website_document_snapshots_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
         if website_document is not None:
             res.website_info = schemas.document.WebsiteDocumentInfo(
-                url=website_document.url
+                url=website_document.url,
+                latest_snapshot_time=website_snapshots[0].create_time if website_snapshots else None,
+                snapshot_count=len(website_snapshots),
             )
+        for snapshot in website_snapshots:
+            if snapshot.md_file_name is not None:
+                snapshot.md_file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=snapshot.md_file_name,
+                )
+        res.website_snapshots = [
+            schemas.document.WebsiteDocumentSnapshotInfo.model_validate(snapshot)
+            for snapshot in website_snapshots
+        ]
     elif document.category == DocumentCategory.FILE:
         file_document = crud.document.get_file_document_by_document_id(
             db=db,
