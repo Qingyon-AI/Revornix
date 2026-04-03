@@ -272,3 +272,4 @@ export * from './WeChatMiniUserCreateRequest';
 export * from './WeChatWebUserBindRequest';
 export * from './WeChatWebUserCreateRequest';
 export * from './WebsiteDocumentInfo';
+export * from './WebsiteDocumentSnapshotInfo';

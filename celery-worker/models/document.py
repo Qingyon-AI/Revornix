@@ -89,6 +89,21 @@ class WebsiteDocument(Base):
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
+class WebsiteDocumentSnapshot(Base):
+    __tablename__ = "website_document_snapshot"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    title: Mapped[str | None] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(String(1000))
+    cover: Mapped[str | None] = mapped_column(Text())
+    md_file_name: Mapped[str | None] = mapped_column(String(500))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class FileDocument(Base):
     __tablename__ = "file_document"
 

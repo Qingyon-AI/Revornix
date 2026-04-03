@@ -52,6 +52,30 @@ def create_website_document(
     db.flush()
     return db_website_document
 
+
+def create_website_document_snapshot(
+    db: Session,
+    document_id: int,
+    url: str,
+    title: str | None = None,
+    description: str | None = None,
+    cover: str | None = None,
+    md_file_name: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_snapshot = models.document.WebsiteDocumentSnapshot(
+        document_id=document_id,
+        url=url,
+        title=title,
+        description=description,
+        cover=cover,
+        md_file_name=md_file_name,
+        create_time=now,
+    )
+    db.add(db_snapshot)
+    db.flush()
+    return db_snapshot
+
 def create_file_document(
     db: Session, 
     document_id: int, 

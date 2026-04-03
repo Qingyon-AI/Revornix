@@ -25,6 +25,18 @@ export interface WebsiteDocumentInfo {
      * @memberof WebsiteDocumentInfo
      */
     url: string;
+    /**
+     *
+     * @type {Date}
+     * @memberof WebsiteDocumentInfo
+     */
+    latest_snapshot_time?: Date | null;
+    /**
+     *
+     * @type {number}
+     * @memberof WebsiteDocumentInfo
+     */
+    snapshot_count?: number;
 }
 
 /**
@@ -46,6 +58,8 @@ export function WebsiteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'url': json['url'],
+        'latest_snapshot_time': (json['latest_snapshot_time'] == null ? undefined : new Date(json['latest_snapshot_time'])),
+        'snapshot_count': json['snapshot_count'] == null ? undefined : json['snapshot_count'],
     };
 }
 
@@ -61,6 +75,7 @@ export function WebsiteDocumentInfoToJSONTyped(value?: WebsiteDocumentInfo | nul
     return {
         
         'url': value['url'],
+        'latest_snapshot_time': value['latest_snapshot_time'] == null ? value['latest_snapshot_time'] : value['latest_snapshot_time'].toISOString(),
+        'snapshot_count': value['snapshot_count'],
     };
 }
-

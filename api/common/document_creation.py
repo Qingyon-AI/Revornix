@@ -23,6 +23,7 @@ from common.timezone import (
     today_in_timezone,
 )
 from enums.document import DocumentCategory, UserDocumentAuthority
+from enums.document import DocumentProcessStatus
 from enums.section import (
     SectionDocumentIntegration,
     SectionProcessTriggerType,
@@ -179,6 +180,100 @@ async def ensure_document_creation_requirements(
         )
 
 
+def _sync_document_labels(
+    *,
+    db: Session,
+    document_id: int,
+    label_ids: list[int],
+) -> None:
+    if not label_ids:
+        return
+    existing_document_labels = crud.document.get_document_labels_by_document_id(
+        db=db,
+        document_id=document_id,
+    )
+    existing_label_ids = {item.label_id for item in existing_document_labels}
+    new_label_ids = [label_id for label_id in label_ids if label_id not in existing_label_ids]
+    if new_label_ids:
+        crud.document.create_document_labels(
+            db=db,
+            document_id=document_id,
+            label_ids=new_label_ids,
+        )
+
+
+def _ensure_document_process_task(
+    *,
+    db: Session,
+    user_id: int,
+    document_id: int,
+) -> None:
+    now = datetime.now(timezone.utc)
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=document_id,
+    )
+    if db_process_task is None:
+        crud.task.create_document_process_task(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+        )
+        return
+    db_process_task.status = DocumentProcessStatus.WAIT_TO
+    db_process_task.update_time = now
+
+
+def _queue_document_background_processing(
+    *,
+    db: Session,
+    db_document: models.document.Document,
+    user: models.user.User,
+    document_create_request: schemas.document.DocumentCreateRequest,
+) -> None:
+    db_sections = crud.section.get_sections_by_document_id(
+        db=db,
+        document_id=db_document.id,
+    )
+    db_sections_to_process: list[models.section.Section] = []
+    for db_section in db_sections:
+        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+            db=db,
+            section_id=db_section.id,
+        )
+        if (
+            db_section_process_task is not None
+            and db_section_process_task.trigger_type == SectionProcessTriggerType.UPDATED
+        ):
+            db_sections_to_process.append(db_section)
+
+    section_process_tasks = group(
+        start_process_section.si(
+            section_id=db_section.id,
+            user_id=user.id,
+            auto_podcast=db_section.auto_podcast,
+        )
+        for db_section in db_sections_to_process
+    )
+    background_tasks = chain(
+        start_process_document.si(
+            document_id=db_document.id,
+            user_id=user.id,
+            auto_tag=document_create_request.auto_tag,
+            auto_summary=document_create_request.auto_summary,
+            auto_podcast=document_create_request.auto_podcast,
+            auto_transcribe=document_create_request.auto_transcribe,
+            override=schemas.task.DocumentOverrideProperty(
+                title=document_create_request.title,
+                description=document_create_request.description,
+                cover=document_create_request.cover,
+            ).model_dump(mode="json"),
+        ),
+        section_process_tasks,
+    )
+    background_tasks.apply_async()
+
+
 async def create_document_for_user(
     *,
     db: Session,
@@ -225,19 +320,28 @@ async def create_document_for_user(
     if document_create_request.category == DocumentCategory.WEBSITE:
         if document_create_request.url is None:
             raise CustomException("URL is required for website documents", code=400)
-        db_document = crud.document.create_base_document(
+        normalized_url = document_create_request.url.strip()
+        existing_website_document = crud.document.get_website_document_by_user_id_and_url(
             db=db,
-            creator_id=user.id,
-            title="Website Analysing...",
-            description="Website Analysing...",
-            category=document_create_request.category,
-            from_plat=document_create_request.from_plat,
+            user_id=user.id,
+            url=normalized_url,
         )
-        crud.document.create_website_document(
-            db=db,
-            document_id=db_document.id,
-            url=document_create_request.url,
-        )
+        if existing_website_document is not None:
+            db_document = existing_website_document
+        else:
+            db_document = crud.document.create_base_document(
+                db=db,
+                creator_id=user.id,
+                title="Website Analysing...",
+                description="Website Analysing...",
+                category=document_create_request.category,
+                from_plat=document_create_request.from_plat,
+            )
+            crud.document.create_website_document(
+                db=db,
+                document_id=db_document.id,
+                url=normalized_url,
+            )
     elif document_create_request.category == DocumentCategory.FILE:
         if document_create_request.file_name is None:
             raise CustomException("File name is required for file documents", code=400)
@@ -289,20 +393,24 @@ async def create_document_for_user(
     else:
         raise CustomException("Unsupported document category", code=400)
 
-    if document_create_request.labels:
-        crud.document.create_document_labels(
-            db=db,
-            document_id=db_document.id,
-            label_ids=document_create_request.labels,
-        )
+    _sync_document_labels(
+        db=db,
+        document_id=db_document.id,
+        label_ids=document_create_request.labels,
+    )
 
-    crud.document.create_user_document(
+    if crud.document.get_user_document_by_user_id_and_document_id(
         db=db,
         user_id=user.id,
         document_id=db_document.id,
-        authority=UserDocumentAuthority.OWNER,
-    )
-    crud.task.create_document_process_task(
+    ) is None:
+        crud.document.create_user_document(
+            db=db,
+            user_id=user.id,
+            document_id=db_document.id,
+            authority=UserDocumentAuthority.OWNER,
+        )
+    _ensure_document_process_task(
         db=db,
         user_id=user.id,
         document_id=db_document.id,
@@ -359,9 +467,17 @@ async def create_document_for_user(
             default_auto_illustration=today_section_auto_illustration,
         )
 
+    existing_section_ids = [
+        section.id
+        for section in crud.section.get_sections_by_document_id(
+            db=db,
+            document_id=db_document.id,
+        )
+    ]
     section_ids = list(
         dict.fromkeys(
             [
+                *existing_section_ids,
                 *document_create_request.sections,
                 db_today_section.id,
             ]
@@ -382,46 +498,11 @@ async def create_document_for_user(
             timezone_name=summary_timezone,
         )
 
-    db_sections = crud.section.get_sections_by_document_id(
+    _queue_document_background_processing(
         db=db,
-        document_id=db_document.id,
+        db_document=db_document,
+        user=user,
+        document_create_request=document_create_request,
     )
-    db_sections_to_process: list[models.section.Section] = []
-    for db_section in db_sections:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
-            db=db,
-            section_id=db_section.id,
-        )
-        if (
-            db_section_process_task is not None
-            and db_section_process_task.trigger_type == SectionProcessTriggerType.UPDATED
-        ):
-            db_sections_to_process.append(db_section)
-
-    section_process_tasks = group(
-        start_process_section.si(
-            section_id=db_section.id,
-            user_id=user.id,
-            auto_podcast=db_section.auto_podcast,
-        )
-        for db_section in db_sections_to_process
-    )
-    background_tasks = chain(
-        start_process_document.si(
-            document_id=db_document.id,
-            user_id=user.id,
-            auto_tag=document_create_request.auto_tag,
-            auto_summary=document_create_request.auto_summary,
-            auto_podcast=document_create_request.auto_podcast,
-            auto_transcribe=document_create_request.auto_transcribe,
-            override=schemas.task.DocumentOverrideProperty(
-                title=document_create_request.title,
-                description=document_create_request.description,
-                cover=document_create_request.cover,
-            ).model_dump(mode="json"),
-        ),
-        section_process_tasks,
-    )
-    background_tasks.apply_async()
 
     return db_document

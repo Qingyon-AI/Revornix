@@ -42,6 +42,11 @@ def delete_website_documents_by_document_ids(
         model=models.document.WebsiteDocument,
         document_ids=document_ids,
     )
+    _soft_delete_document_subtype_records(
+        db=db,
+        model=models.document.WebsiteDocumentSnapshot,
+        document_ids=document_ids,
+    )
 
 
 def delete_audio_documents_by_document_ids(

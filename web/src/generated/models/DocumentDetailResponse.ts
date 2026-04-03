@@ -62,6 +62,13 @@ import {
     WebsiteDocumentInfoToJSON,
     WebsiteDocumentInfoToJSONTyped,
 } from './WebsiteDocumentInfo';
+import type { WebsiteDocumentSnapshotInfo } from './WebsiteDocumentSnapshotInfo';
+import {
+    WebsiteDocumentSnapshotInfoFromJSON,
+    WebsiteDocumentSnapshotInfoFromJSONTyped,
+    WebsiteDocumentSnapshotInfoToJSON,
+    WebsiteDocumentSnapshotInfoToJSONTyped,
+} from './WebsiteDocumentSnapshotInfo';
 import type { SchemasDocumentBaseSectionInfo } from './SchemasDocumentBaseSectionInfo';
 import {
     SchemasDocumentBaseSectionInfoFromJSON,
@@ -209,6 +216,12 @@ export interface DocumentDetailResponse {
      */
     website_info?: WebsiteDocumentInfo | null;
     /**
+     *
+     * @type {Array<WebsiteDocumentSnapshotInfo>}
+     * @memberof DocumentDetailResponse
+     */
+    website_snapshots?: Array<WebsiteDocumentSnapshotInfo>;
+    /**
      * 
      * @type {FileDocumentInfo}
      * @memberof DocumentDetailResponse
@@ -309,6 +322,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'is_star': json['is_star'] == null ? undefined : json['is_star'],
         'is_read': json['is_read'] == null ? undefined : json['is_read'],
         'website_info': json['website_info'] == null ? undefined : WebsiteDocumentInfoFromJSON(json['website_info']),
+        'website_snapshots': json['website_snapshots'] == null ? undefined : ((json['website_snapshots'] as Array<any>).map(WebsiteDocumentSnapshotInfoFromJSON)),
         'file_info': json['file_info'] == null ? undefined : FileDocumentInfoFromJSON(json['file_info']),
         'quick_note_info': json['quick_note_info'] == null ? undefined : QuickNoteDocumentInfoFromJSON(json['quick_note_info']),
         'audio_info': json['audio_info'] == null ? undefined : AudioDocumentInfoFromJSON(json['audio_info']),
@@ -348,6 +362,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'is_star': value['is_star'],
         'is_read': value['is_read'],
         'website_info': WebsiteDocumentInfoToJSON(value['website_info']),
+        'website_snapshots': value['website_snapshots'] == null ? undefined : ((value['website_snapshots'] as Array<any>).map(WebsiteDocumentSnapshotInfoToJSON)),
         'file_info': FileDocumentInfoToJSON(value['file_info']),
         'quick_note_info': QuickNoteDocumentInfoToJSON(value['quick_note_info']),
         'audio_info': AudioDocumentInfoToJSON(value['audio_info']),
@@ -360,4 +375,3 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
-
