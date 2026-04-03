@@ -28,18 +28,45 @@ from enums.document import DocumentCategory
 from enums.section import UserSectionRole
 from proxy.file_system_proxy import FileSystemProxy
 from router.document import update_document as update_document_impl
+from router.document import (
+    create_ai_summary as create_ai_summary_impl,
+    create_embedding as create_embedding_impl,
+    generate_graph as generate_document_graph_impl,
+    generate_podcast as generate_document_podcast_impl,
+    get_month_summary as get_month_summary_impl,
+    transform_markdown as transform_markdown_impl,
+    transcribe_audio_document as transcribe_audio_document_impl,
+)
 from router.document_interaction_manage import delete_document as delete_document_impl
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
+    recent_read_document as recent_read_document_impl,
     search_knowledge_vector as search_knowledge_vector_impl,
     search_all_mine_documents as search_all_mine_documents_impl,
+    search_my_star_documents as search_my_star_documents_impl,
+    search_user_unread_documents as search_user_unread_documents_impl,
+)
+from router.graph import (
+    document_graph as document_graph_impl,
+    graph as graph_impl,
+    section_graph as section_graph_impl,
 )
 from router.section import (
     create_section as create_section_impl,
     delete_section as delete_section_impl,
+    generate_podcast as generate_section_podcast_impl,
+    generate_ppt as generate_section_ppt_impl,
+    retry_section_document_integration as retry_section_document_integration_impl,
+    trigger_section_process as trigger_section_process_impl,
     update_section as update_section_impl,
 )
+from router.section_comment_manage import (
+    create_section_comment as create_section_comment_impl,
+    delete_section_comment as delete_section_comment_impl,
+    search_section_comment as search_section_comment_impl,
+)
 from router.section_detail_query import (
+    get_date_section_info as get_date_section_info_impl,
     get_section_detail as get_section_detail_impl,
     section_document_request as section_document_request_impl,
 )
@@ -48,7 +75,12 @@ from router.section_publish_manage import (
     section_publish_request as section_publish_request_impl,
     section_republish as section_republish_impl,
 )
-from router.section_search_query import search_mine_sections as search_mine_sections_impl
+from router.section_search_query import (
+    get_my_subscribed_sections as get_my_subscribed_sections_impl,
+    public_sections as public_sections_impl,
+    search_mine_sections as search_mine_sections_impl,
+    search_user_sections as search_user_sections_impl,
+)
 
 tp_router = APIRouter()
 
@@ -138,6 +170,19 @@ async def get_section_detail(
     )
 
 
+@tp_router.post('/section/date', response_model=schemas.section.DaySectionResponse)
+async def get_section_date(
+    day_section_request: schemas.section.DaySectionRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await get_date_section_info_impl(
+        day_section_request=day_section_request,
+        db=db,
+        user=user,
+    )
+
+
 @tp_router.post(
     '/section/documents',
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo],
@@ -154,6 +199,48 @@ def get_section_documents(
     )
 
 
+@tp_router.post('/section/comment/create', response_model=schemas.common.NormalResponse)
+def create_section_comment(
+    section_comment_create_request: schemas.section.SectionCommentCreateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return create_section_comment_impl(
+        section_comment_create_request=section_comment_create_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/comment/search',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo],
+)
+def search_section_comment(
+    section_comment_search_request: schemas.section.SectionCommentSearchRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return search_section_comment_impl(
+        section_comment_search_request=section_comment_search_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post('/section/comment/delete', response_model=schemas.common.NormalResponse)
+def delete_section_comment(
+    section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return delete_section_comment_impl(
+        section_comment_delete_request=section_comment_delete_request,
+        db=db,
+        user=user,
+    )
+
+
 @tp_router.post(
     '/section/mine/search',
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
@@ -165,6 +252,54 @@ async def search_mine_sections(
 ):
     return await search_mine_sections_impl(
         search_mine_sections_request=search_mine_sections_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/subscribed',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+)
+async def get_subscribed_sections(
+    search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await get_my_subscribed_sections_impl(
+        search_subscribed_section_request=search_subscribed_section_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/public/search',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+)
+async def search_public_sections(
+    search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await public_sections_impl(
+        search_public_sections_request=search_public_sections_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    '/section/user/search',
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+)
+async def search_user_sections(
+    search_user_sections_request: schemas.section.SearchUserSectionsRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await search_user_sections_impl(
+        search_user_sections_request=search_user_sections_request,
         db=db,
         user=user,
     )
@@ -232,6 +367,58 @@ def get_all_mine_sections(
         for db_section in db_sections
     ]
     return schemas.section.AllMySectionsResponse(data=sections)
+
+
+@tp_router.post('/section/podcast/generate', response_model=schemas.common.NormalResponse)
+async def generate_section_podcast(
+    generate_podcast_request: schemas.section.GenerateSectionPodcastRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await generate_section_podcast_impl(
+        generate_podcast_request=generate_podcast_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post('/section/ppt/generate', response_model=schemas.common.NormalResponse)
+async def generate_section_ppt(
+    generate_ppt_request: schemas.section.GenerateSectionPptRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await generate_section_ppt_impl(
+        generate_ppt_request=generate_ppt_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post('/section/process/trigger', response_model=schemas.common.NormalResponse)
+async def trigger_section_process(
+    trigger_process_request: schemas.section.TriggerSectionProcessRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await trigger_section_process_impl(
+        trigger_process_request=trigger_process_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post('/section/document/retry', response_model=schemas.common.NormalResponse)
+def retry_section_document(
+    retry_request: schemas.section.RetrySectionDocumentRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return retry_section_document_integration_impl(
+        retry_request=retry_request,
+        user=user,
+        db=db,
+    )
 
 
 @tp_router.post('/section/publish', response_model=schemas.common.NormalResponse)
@@ -416,6 +603,82 @@ async def get_document_detail(
     )
 
 
+@tp_router.post("/document/ai/summary", response_model=schemas.common.NormalResponse)
+async def create_ai_summary(
+    ai_summary_request: schemas.document.DocumentAiSummaryRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await create_ai_summary_impl(
+        ai_summary_request=ai_summary_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/document/embedding", response_model=schemas.common.NormalResponse)
+async def create_document_embedding(
+    embedding_request: schemas.document.DocumentEmbeddingRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await create_embedding_impl(
+        embedding_request=embedding_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/document/transcribe", response_model=schemas.common.NormalResponse)
+async def transcribe_audio_document(
+    transcribe_request: schemas.document.DocumentTranscribeRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await transcribe_audio_document_impl(
+        transcribe_request=transcribe_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/document/graph/generate", response_model=schemas.common.NormalResponse)
+async def generate_document_graph(
+    graph_generate_request: schemas.document.DocumentGraphGenerateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await generate_document_graph_impl(
+        graph_generate_request=graph_generate_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/document/podcast/generate", response_model=schemas.common.NormalResponse)
+async def generate_document_podcast(
+    generate_podcast_request: schemas.document.GenerateDocumentPodcastRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await generate_document_podcast_impl(
+        generate_podcast_request=generate_podcast_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/document/month/summary", response_model=schemas.document.DocumentMonthSummaryResponse)
+def get_document_month_summary(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return get_month_summary_impl(
+        db=db,
+        user=user,
+    )
+
+
 @tp_router.post("/document/note/create", response_model=schemas.common.NormalResponse)
 def create_document_note(
     note_create_request: schemas.document.DocumentNoteCreateRequest,
@@ -492,6 +755,38 @@ def delete_document_note(
     return schemas.common.SuccessResponse()
 
 
+@tp_router.post(
+    "/document/unread/search",
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+)
+async def search_unread_documents(
+    search_unread_list_request: schemas.document.SearchUnreadListRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await search_user_unread_documents_impl(
+        search_unread_list_request=search_unread_list_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    "/document/recent/search",
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+)
+async def search_recent_documents(
+    search_recent_read_request: schemas.document.SearchRecentReadRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await recent_read_document_impl(
+        search_recent_read_request=search_recent_read_request,
+        db=db,
+        user=user,
+    )
+
+
 @tp_router.post("/document/update", response_model=schemas.common.NormalResponse)
 def update_document(
     document_update_request: schemas.document.DocumentUpdateRequest,
@@ -505,6 +800,19 @@ def update_document(
     )
 
 
+@tp_router.post("/document/markdown/transform", response_model=schemas.common.NormalResponse)
+async def transform_document_markdown(
+    transform_markdown_request: schemas.document.DocumentMarkdownConvertRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await transform_markdown_impl(
+        transform_markdown_request=transform_markdown_request,
+        user=user,
+        db=db,
+    )
+
+
 @tp_router.post("/document/delete", response_model=schemas.common.NormalResponse)
 async def delete_document(
     documents_delete_request: schemas.document.DocumentDeleteRequest,
@@ -513,6 +821,22 @@ async def delete_document(
 ):
     return await delete_document_impl(
         documents_delete_request=documents_delete_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post(
+    "/document/star/search",
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+)
+async def search_star_documents(
+    search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await search_my_star_documents_impl(
+        search_my_star_documents_request=search_my_star_documents_request,
         db=db,
         user=user,
     )
@@ -548,3 +872,34 @@ def search_document_vector(
         db=db,
         user=user,
     )
+
+
+@tp_router.post("/graph/document", response_model=schemas.graph.GraphResponse)
+def document_graph(
+    document_graph_request: schemas.graph.DocumentGraphRequest,
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return document_graph_impl(
+        document_graph_request=document_graph_request,
+        user=user,
+    )
+
+
+@tp_router.post("/graph/section", response_model=schemas.graph.GraphResponse)
+def section_graph(
+    section_graph_request: schemas.graph.SectionGraphRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return section_graph_impl(
+        section_graph_request=section_graph_request,
+        user=user,
+        db=db,
+    )
+
+
+@tp_router.post("/graph/search", response_model=schemas.graph.GraphResponse)
+def search_graph(
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return graph_impl(user=user)
