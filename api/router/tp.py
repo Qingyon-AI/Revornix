@@ -416,6 +416,82 @@ async def get_document_detail(
     )
 
 
+@tp_router.post("/document/note/create", response_model=schemas.common.NormalResponse)
+def create_document_note(
+    note_create_request: schemas.document.DocumentNoteCreateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    crud.document.create_document_note(
+        db=db,
+        user_id=user.id,
+        document_id=note_create_request.document_id,
+        content=note_create_request.content,
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@tp_router.post(
+    "/document/note/search",
+    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo],
+)
+def search_document_notes(
+    search_note_request: schemas.document.SearchDocumentNoteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    has_more = True
+    next_start = None
+    next_note = None
+    notes = crud.document.search_all_document_notes_by_document_id(
+        db=db,
+        document_id=search_note_request.document_id,
+        start=search_note_request.start,
+        limit=search_note_request.limit,
+        keyword=search_note_request.keyword,
+    )
+    if len(notes) < search_note_request.limit or len(notes) == 0:
+        has_more = False
+    if len(notes) == search_note_request.limit:
+        next_note = crud.document.search_next_note_by_document_note(
+            db=db,
+            document_note=notes[-1],
+            keyword=search_note_request.keyword,
+        )
+        has_more = next_note is not None
+        next_start = next_note.id if next_note is not None else None
+    total = crud.document.count_all_document_notes_by_document_id(
+        db=db,
+        document_id=search_note_request.document_id,
+        keyword=search_note_request.keyword,
+    )
+    next_start = next_note.id if next_note is not None else None
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=notes,
+        start=search_note_request.start,
+        limit=search_note_request.limit,
+        has_more=has_more,
+        next_start=next_start,
+    )
+
+
+@tp_router.post("/document/note/delete", response_model=schemas.common.NormalResponse)
+def delete_document_note(
+    note_delete_request: schemas.document.DocumentNoteDeleteRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    crud.document.delete_document_notes_by_user_id_and_note_ids(
+        db=db,
+        user_id=user.id,
+        note_ids=note_delete_request.document_note_ids,
+    )
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
 @tp_router.post("/document/update", response_model=schemas.common.NormalResponse)
 def update_document(
     document_update_request: schemas.document.DocumentUpdateRequest,
