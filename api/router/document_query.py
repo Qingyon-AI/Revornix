@@ -158,22 +158,57 @@ async def get_document_infos(
         res.append(info)
     return res
 
+
+def _resolve_document_from_detail_request(
+    *,
+    db: Session,
+    document_detail_request: schemas.document.DocumentDetailRequest,
+    user: models.user.User | None,
+) -> models.document.Document:
+    if document_detail_request.document_id is not None:
+        document = crud.document.get_document_by_document_id(
+            db=db,
+            document_id=document_detail_request.document_id,
+        )
+        if document is None:
+            raise schemas.error.CustomException("Document not found", code=404)
+        return document
+
+    assert document_detail_request.url is not None
+    normalized_url = document_detail_request.url.strip()
+    if not normalized_url:
+        raise schemas.error.CustomException("Either document_id or url is required", code=400)
+    if user is None:
+        raise schemas.error.CustomException(
+            "Authentication is required when querying document detail by url",
+            code=403,
+        )
+
+    document = crud.document.get_website_document_by_user_id_and_url(
+        db=db,
+        user_id=user.id,
+        url=normalized_url,
+    )
+    if document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    return document
+
 @document_query_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
     db: Session = Depends(get_db),
     user: models.user.User | None = Depends(get_current_user_without_throw)
 ):
-    document = crud.document.get_document_by_document_id(
+    document = _resolve_document_from_detail_request(
         db=db,
-        document_id=document_detail_request.document_id
+        document_detail_request=document_detail_request,
+        user=user,
     )
-    if document is None:
-        raise schemas.error.CustomException("Document not found", code=404)
+    document_id = document.id
 
     _ensure_document_access(
         db=db,
-        document_id=document_detail_request.document_id,
+        document_id=document_id,
         document_creator_id=document.creator_id,
         user_id=user.id if user is not None else None,
     )
@@ -184,16 +219,16 @@ async def get_document_detail(
         is_star = crud.document.get_star_document_by_user_id_and_document_id(
             db=db,
             user_id=user.id,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         ) is not None
         is_read = crud.document.get_read_document_by_document_id_and_user_id(
             db=db,
             user_id=user.id,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         ) is not None
     db_sections = crud.document.get_sections_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     publish_sections = crud.section.get_publish_sections_by_section_ids(
         db=db,
@@ -209,7 +244,7 @@ async def get_document_detail(
     elif user is not None:
         visible_sections = crud.document.get_published_section_of_the_document_by_document_id(
             db=db,
-            document_id=document_detail_request.document_id,
+            document_id=document_id,
             user_id=user.id,
         )
         visible_section_ids.update(section.id for section in visible_sections)
@@ -226,7 +261,7 @@ async def get_document_detail(
     ]
     db_labels = crud.document.get_labels_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     labels = [
         schemas.document.DocumentLabel(
@@ -252,7 +287,7 @@ async def get_document_detail(
     if document.category == DocumentCategory.WEBSITE:
         website_document = crud.document.get_website_document_by_document_id(
             db=db,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         )
         if website_document is not None:
             res.website_info = schemas.document.WebsiteDocumentInfo(
@@ -261,7 +296,7 @@ async def get_document_detail(
     elif document.category == DocumentCategory.FILE:
         file_document = crud.document.get_file_document_by_document_id(
             db=db,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         )
         if file_document is not None:
             res.file_info = schemas.document.FileDocumentInfo(
@@ -275,7 +310,7 @@ async def get_document_detail(
     elif document.category == DocumentCategory.QUICK_NOTE:
         quick_note_document = crud.document.get_quick_note_document_by_document_id(
             db=db,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         )
         if quick_note_document is not None:
             res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
@@ -284,7 +319,7 @@ async def get_document_detail(
     elif document.category == DocumentCategory.AUDIO:
         audio_document = crud.document.get_audio_document_by_document_id(
             db=db,
-            document_id=document_detail_request.document_id
+            document_id=document_id,
         )
         if audio_document is not None:
             res.audio_info = schemas.document.AudioDocumentInfo(
@@ -297,7 +332,7 @@ async def get_document_detail(
                 )
     convert_task = crud.task.get_document_convert_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
@@ -313,7 +348,7 @@ async def get_document_detail(
             )
     podcast_task = crud.task.get_document_podcast_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
@@ -329,7 +364,7 @@ async def get_document_detail(
             )
     summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
@@ -340,22 +375,22 @@ async def get_document_detail(
         )
     embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     res.embedding_task = embedding_task
     graph_task = crud.task.get_document_graph_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     res.graph_task = graph_task
     transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     res.transcribe_task = transcribe_task
     process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
-        document_id=document_detail_request.document_id
+        document_id=document_id,
     )
     res.process_task = process_task
     return res

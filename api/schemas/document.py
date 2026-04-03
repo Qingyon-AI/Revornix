@@ -1,7 +1,7 @@
 from datetime import date as date_type
 from datetime import datetime
 
-from pydantic import field_serializer, ConfigDict
+from pydantic import field_serializer, ConfigDict, model_validator
 
 from .base import BaseModel
 from .ai import ChatItem
@@ -246,7 +246,14 @@ class DocumentDeleteRequest(BaseModel):
 
 
 class DocumentDetailRequest(BaseModel):
-    document_id: int
+    document_id: int | None = None
+    url: str | None = None
+
+    @model_validator(mode="after")
+    def validate_document_identifier(self):
+        if self.document_id is None and (self.url is None or len(self.url.strip()) == 0):
+            raise ValueError("Either document_id or url is required")
+        return self
 
 class ReadRequest(BaseModel):
     document_id: int

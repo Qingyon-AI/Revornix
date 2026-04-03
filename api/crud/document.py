@@ -167,10 +167,16 @@ def get_website_document_by_user_id_and_url(
 ):
     query = db.query(models.document.Document)
     query = query.join(models.document.WebsiteDocument)
+    query = query.join(
+        models.document.UserDocument,
+        models.document.UserDocument.document_id == models.document.Document.id,
+    )
     query = query.filter(models.document.WebsiteDocument.url == url,
                          models.document.WebsiteDocument.delete_at.is_(None),
+                         models.document.UserDocument.delete_at.is_(None),
                          models.document.UserDocument.user_id == user_id,
                          models.document.Document.delete_at.is_(None))
+    query = query.options(selectinload(models.document.Document.creator))
     return query.one_or_none()
 
 def get_sections_by_document_id(
