@@ -31,6 +31,7 @@ import {
 	BookOpenText,
 	CalendarClock,
 	CalendarDays,
+	ChevronRight,
 	Expand,
 	Sparkles,
 	Users,
@@ -78,6 +79,26 @@ const formatSectionDate = (
 	return new Intl.DateTimeFormat(locale, {
 		dateStyle: 'medium',
 	}).format(new Date(value));
+};
+
+const buildSectionMetaDescription = (section: SectionInfoType) => {
+	const rawDescription = section.description?.trim();
+	if (rawDescription) {
+		return rawDescription;
+	}
+
+	const labels = section.labels
+		?.map((label) => label.name?.trim())
+		.filter(Boolean)
+		.slice(0, 3);
+
+	return [
+		section.title?.trim(),
+		labels && labels.length > 0 ? `Topics: ${labels.join(', ')}` : null,
+		section.creator?.nickname ? `Creator: ${section.creator.nickname}` : null,
+	]
+		.filter(Boolean)
+		.join(' • ');
 };
 
 const SeoMetricCard = ({
@@ -130,9 +151,10 @@ export async function generateMetadata(props: {
 		throw new Error('Something is wrong while getting the section detail');
 	}
 	if (section_res) {
+		const metaDescription = buildSectionMetaDescription(section_res);
 		return buildMetadata({
 			title: section_res.title,
-			description: section_res.description,
+			description: metaDescription,
 			path: `/section/${uuid}`,
 			type: 'article',
 			images: [
@@ -251,7 +273,44 @@ const SEOSectionDetail = async (props: {
 					keywords: section.labels?.map((label) => label.name),
 				}
 			: null;
+	const breadcrumbSchema = section
+		? {
+				'@context': 'https://schema.org',
+				'@type': 'BreadcrumbList',
+				itemListElement: [
+					{
+						'@type': 'ListItem',
+						position: 1,
+						name: t('seo_community_title'),
+						item: createAbsoluteUrl('/community'),
+					},
+					...(section.creator
+						? [
+								{
+									'@type': 'ListItem',
+									position: 2,
+									name: section.creator.nickname,
+									item: createAbsoluteUrl(`/user/${section.creator.id}`),
+								},
+							]
+						: []),
+					{
+						'@type': 'ListItem',
+						position: section.creator ? 3 : 2,
+						name: sectionTitle,
+						item: createAbsoluteUrl(`/section/${uuid}`),
+					},
+				],
+			}
+		: null;
 	const freshnessState = getSectionFreshnessState(section);
+	const structuredData: Array<Record<string, unknown>> = [];
+	if (sectionSchema) {
+		structuredData.push(sectionSchema);
+	}
+	if (breadcrumbSchema) {
+		structuredData.push(breadcrumbSchema);
+	}
 	const graphCardState =
 		freshnessState.graphStale &&
 		section?.process_task?.status === SectionProcessStatus.SUCCESS
@@ -281,9 +340,26 @@ const SEOSectionDetail = async (props: {
 	const surfaceCardClassName =
 		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
 
-	return (
-		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
-			{sectionSchema ? <JsonLd data={sectionSchema} /> : null}
+		return (
+			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+				{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
+				<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+				<Link href='/community' className='transition-colors hover:text-foreground'>
+					{t('seo_community_title')}
+				</Link>
+				<ChevronRight className='size-4' />
+				{section?.creator ? (
+					<>
+						<Link
+							href={`/user/${section.creator.id}`}
+							className='transition-colors hover:text-foreground'>
+							{section.creator.nickname}
+						</Link>
+						<ChevronRight className='size-4' />
+					</>
+				) : null}
+				<span className='line-clamp-1 text-foreground'>{sectionTitle}</span>
+			</div>
 			<Card className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
 				<CardContent className='relative px-5 py-6 sm:px-7 sm:py-7'>
@@ -496,6 +572,29 @@ const SEOSectionDetail = async (props: {
 						cover={sectionCover}
 						className={surfaceCardClassName}
 					/>
+
+					<Card className={surfaceCardClassName}>
+						<CardHeader className='gap-2 px-4 pt-4 pb-0 sm:px-5 sm:pt-5'>
+							<CardTitle>{t('seo_community_title')}</CardTitle>
+							<CardDescription className='leading-6'>
+								{t('seo_community_description')}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className='flex flex-col gap-3 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+							<Link
+								href='/community'
+								className='text-sm font-medium text-foreground transition-colors hover:text-primary'>
+								{t('seo_user_back_to_community')}
+							</Link>
+							{section?.creator ? (
+								<Link
+									href={`/user/${section.creator.id}`}
+									className='text-sm font-medium text-foreground transition-colors hover:text-primary'>
+									{t('seo_document_related_creator')}
+								</Link>
+							) : null}
+						</CardContent>
+					</Card>
 				</div>
 			</div>
 		</div>
