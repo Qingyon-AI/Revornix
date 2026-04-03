@@ -27,6 +27,7 @@ import {
 	ArrowRight,
 	AtSign,
 	BookMarked,
+	ChevronRight,
 	Search,
 	Shield,
 	Sparkles,
@@ -80,6 +81,24 @@ const getRoleMeta = (
 	}
 };
 
+const buildUserMetaDescription = (
+	user: Awaited<ReturnType<typeof fetchPublicUserDetail>>,
+	totalSections?: number,
+) => {
+	const slogan = user.slogan?.trim();
+	if (slogan) {
+		return slogan;
+	}
+
+	return [
+		`${user.nickname} public creator profile`,
+		typeof totalSections === 'number' ? `${totalSections} public sections` : null,
+		'Revornix community',
+	]
+		.filter(Boolean)
+		.join(' • ');
+};
+
 export async function generateMetadata(props: {
 	params: Params;
 	searchParams: SearchParams;
@@ -99,10 +118,11 @@ export async function generateMetadata(props: {
 			user.avatar && user.avatar.length > 0
 				? replacePath(user.avatar, user.id)
 				: undefined;
+		const metaDescription = buildUserMetaDescription(user);
 
 		return buildMetadata({
 			title: `${user.nickname} | ${t('seo_user_title_suffix')}`,
-			description: user.slogan || t('user_detail_public_profile_description'),
+			description: metaDescription,
 			path: `/user/${user.id}`,
 			noIndex,
 			images: [avatarSrc],
@@ -163,19 +183,39 @@ const SeoUserDetailPage = async (props: {
 			'@context': 'https://schema.org',
 			'@type': 'ProfilePage',
 			name: `${user.nickname} | ${t('seo_user_title_suffix')}`,
-			description:
-				user.slogan || t('user_detail_public_profile_description'),
+			description: buildUserMetaDescription(user, totalSections),
 			url: createAbsoluteUrl(`/user/${user.id}`),
 			inLanguage: locale,
 			mainEntity: {
 				'@type': 'Person',
 				name: user.nickname,
-				description:
-					user.slogan || t('user_detail_public_profile_description'),
+				description: buildUserMetaDescription(user, totalSections),
 				image: avatarSrc,
 				url: createAbsoluteUrl(`/user/${user.id}`),
 			},
 		};
+		const breadcrumbSchema = {
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: [
+				{
+					'@type': 'ListItem',
+					position: 1,
+					name: t('seo_community_title'),
+					item: createAbsoluteUrl('/community'),
+				},
+				{
+					'@type': 'ListItem',
+					position: 2,
+					name: user.nickname,
+					item: createAbsoluteUrl(`/user/${user.id}`),
+				},
+			],
+		};
+		const structuredData: Array<Record<string, unknown>> = [
+			profileSchema,
+			breadcrumbSchema,
+		];
 		const nextHref = new URLSearchParams();
 		if (keyword) {
 			nextHref.set('q', keyword);
@@ -189,7 +229,14 @@ const SeoUserDetailPage = async (props: {
 
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
-				<JsonLd data={profileSchema} />
+				<JsonLd data={structuredData} />
+				<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+					<Link href='/community' className='transition-colors hover:text-foreground'>
+						{t('seo_community_title')}
+					</Link>
+					<ChevronRight className='size-4' />
+					<span className='line-clamp-1 text-foreground'>{user.nickname}</span>
+				</div>
 				<div className='relative overflow-hidden rounded-[30px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] p-6 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.38)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.2),transparent_24%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(15,23,42,0.84))]'>
 					<div className='pointer-events-none absolute inset-0'>
 						<div className='absolute left-0 top-0 h-28 w-28 rounded-full bg-emerald-500/12 blur-3xl' />
@@ -338,6 +385,34 @@ const SeoUserDetailPage = async (props: {
 						</CardContent>
 					</Card>
 				</div>
+
+				<Card className='rounded-[28px] border border-border/60 bg-card/85 py-0 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.32)] backdrop-blur'>
+					<CardContent className='px-6 py-6'>
+						<div className='max-w-5xl space-y-4'>
+							<div className='space-y-2'>
+								<h2 className='text-2xl font-semibold tracking-tight'>
+									{t('seo_user_intro_title')}
+								</h2>
+								<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+									{user.slogan
+										? t('seo_user_intro_with_slogan', { name: user.nickname })
+										: t('seo_user_intro_without_slogan', {
+												name: user.nickname,
+										  })}
+								</p>
+							</div>
+							<div className='space-y-3'>
+								<h3 className='text-lg font-semibold tracking-tight'>
+									{t('seo_user_explore_title')}
+								</h3>
+								<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
+									<li>{t('seo_user_explore_sections')}</li>
+									<li>{t('seo_user_explore_community')}</li>
+								</ul>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 
 				<div className='rounded-[30px] border border-border/60 bg-card/86 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.32)] backdrop-blur'>
 					<div className='border-b border-border/60 px-5 py-5'>
