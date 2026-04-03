@@ -37,6 +37,7 @@ from router.document import (
     transform_markdown as transform_markdown_impl,
     transcribe_audio_document as transcribe_audio_document_impl,
 )
+from router.document_ai import ask_document_ai as ask_document_ai_impl
 from router.document_interaction_manage import delete_document as delete_document_impl
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
@@ -60,6 +61,7 @@ from router.section import (
     trigger_section_process as trigger_section_process_impl,
     update_section as update_section_impl,
 )
+from router.section_ai import ask_section_ai as ask_section_ai_impl
 from router.section_comment_manage import (
     create_section_comment as create_section_comment_impl,
     delete_section_comment as delete_section_comment_impl,
@@ -165,6 +167,19 @@ async def get_section_detail(
 ):
     return await get_section_detail_impl(
         section_detail_request=section_detail_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post('/section/ask')
+async def ask_section_ai(
+    section_ask_request: schemas.section.SectionAskRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await ask_section_ai_impl(
+        section_ask_request=section_ask_request,
         db=db,
         user=user,
     )
@@ -598,6 +613,19 @@ async def get_document_detail(
 ):
     return await get_document_detail_impl(
         document_detail_request=document_detail_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/ask")
+async def ask_document_ai(
+    document_ask_request: schemas.document.DocumentAskRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await ask_document_ai_impl(
+        document_ask_request=document_ask_request,
         db=db,
         user=user,
     )
