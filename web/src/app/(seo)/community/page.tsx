@@ -197,6 +197,38 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				) : null}
 			</div>
 
+			<Card className={surfaceCardClassName}>
+				<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
+					<div className='space-y-5'>
+						<div className='space-y-3'>
+							<h2 className='text-2xl font-semibold tracking-tight'>
+								{t('seo_community_intro_title')}
+							</h2>
+							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+								{t('seo_community_intro_paragraph_1')}
+							</p>
+							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+								{t('seo_community_intro_paragraph_2')}
+							</p>
+							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+								{t('seo_community_intro_paragraph_3')}
+							</p>
+						</div>
+
+						<div className='space-y-3'>
+							<h3 className='text-lg font-semibold tracking-tight'>
+								{t('seo_community_explore_title')}
+							</h3>
+							<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
+								<li>{t('seo_community_explore_sections')}</li>
+								<li>{t('seo_community_explore_creators')}</li>
+								<li>{t('seo_community_explore_documents')}</li>
+							</ul>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
 			{sections.elements && sections.elements.length > 0 ? (
 				<div className='grid gap-5 md:grid-cols-2 xl:grid-cols-3'>
 					{sections.elements.map((section) => (
