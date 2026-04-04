@@ -218,6 +218,7 @@ async def _build_section_info_response(
         creator=db_section.creator,
         document_integration=document_integration,
         is_day_section=db_day_section is not None,
+        day_section_date=db_day_section.date.isoformat() if db_day_section is not None else None,
         graph_stale=_is_section_graph_stale(
             db=db,
             document_ids=document_ids,

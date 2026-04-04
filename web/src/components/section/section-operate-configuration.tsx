@@ -271,7 +271,7 @@ const SectionOperateConfiguration = ({
 							onSubmit={onSubmitUpdateForm}
 							id='update-form'
 							className='space-y-4'>
-							<CoverUpdate ownerId={section?.creator.id} />
+							<CoverUpdate ownerId={section?.creator.id} section={section} />
 							<FormField
 								name='title'
 								control={form.control}

@@ -10,9 +10,10 @@ import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
-import { cn, replacePath } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSectionDetail } from '@/service/section';
+import { getSectionCoverSrc } from '@/lib/section-cover';
 
 import SectionGraph from './section-graph';
 import SectionInfo from './section-info';
@@ -81,10 +82,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
-	const sectionCoverSrc =
-		section?.cover && section.creator
-			? replacePath(section.cover, section.creator.id)
-			: null;
+	const sectionCoverSrc = getSectionCoverSrc(section);
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);

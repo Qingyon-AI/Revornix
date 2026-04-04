@@ -43,7 +43,6 @@ import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import CustomMarkdown from '@/components/ui/custom-markdown';
-import { replacePath } from '@/lib/utils';
 import Link from 'next/link';
 import { isSeoNotFoundError } from '@/lib/seo';
 import { notFound } from 'next/navigation';
@@ -56,6 +55,7 @@ import {
 	createAbsoluteUrl,
 	toIsoDate,
 } from '@/lib/seo-metadata';
+import { getSectionCoverSrc } from '@/lib/section-cover';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -158,9 +158,7 @@ export async function generateMetadata(props: {
 			path: `/section/${uuid}`,
 			type: 'article',
 			images: [
-				section_res.cover && section_res.creator
-					? replacePath(section_res.cover, section_res.creator.id)
-					: undefined,
+				getSectionCoverSrc(section_res) ?? undefined,
 			],
 			publishedTime: toIsoDate(section_res.create_time),
 			modifiedTime: toIsoDate(section_res.update_time ?? section_res.create_time),
@@ -249,10 +247,7 @@ const SEOSectionDetail = async (props: {
 		section?.description || t('section_description_empty');
 	const updatedAt = formatSectionDate(section?.update_time, locale);
 	const createdAt = formatSectionDate(section?.create_time, locale);
-	const sectionCover =
-		section?.cover && section.creator
-			? replacePath(section.cover, section.creator.id)
-			: null;
+	const sectionCover = getSectionCoverSrc(section);
 	const sectionSchema =
 		section && section.creator
 			? {

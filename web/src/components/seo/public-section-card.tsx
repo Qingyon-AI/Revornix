@@ -2,6 +2,7 @@
 
 import { PublicSectionInfo, getPublicSectionHref } from '@/lib/seo';
 import { replacePath } from '@/lib/utils';
+import { getSectionCoverSrc } from '@/lib/section-cover';
 import { formatDistance } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import { zhCN } from 'date-fns/locale/zh-CN';
@@ -18,14 +19,15 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 	const t = useTranslations();
 	const router = useRouter();
 	const sectionHref = getPublicSectionHref(section);
+	const coverSrc = getSectionCoverSrc(section);
 
 	return (
 		<div className='group flex h-full flex-col overflow-hidden rounded-[28px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-40px_rgba(15,23,42,0.62)]'>
 			<Link href={sectionHref} className='block'>
 				<div className='relative h-44 w-full overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.14),transparent_28%),linear-gradient(135deg,rgba(70,33,42,0.82),rgba(30,41,59,0.78))]'>
-					{section.cover ? (
+					{coverSrc ? (
 						<img
-							src={replacePath(section.cover, section.creator.id)}
+							src={coverSrc}
 							alt={section.title}
 							className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105'
 						/>

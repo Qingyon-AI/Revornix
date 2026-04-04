@@ -4,7 +4,7 @@ import SectionOperateSubscribe from './section-operate-subscribe';
 import { useRouter } from 'nextjs-toploader/app';
 import { useQuery } from '@tanstack/react-query';
 import { getSectionDetail } from '@/service/section';
-import { replacePath } from '@/lib/utils';
+import { getSectionCoverSrc } from '@/lib/section-cover';
 
 const NeedPaySectionDialog = ({ id }: { id: number }) => {
 	const router = useRouter();
@@ -14,14 +14,15 @@ const NeedPaySectionDialog = ({ id }: { id: number }) => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
+	const coverSrc = getSectionCoverSrc(section);
 	return (
 		<>
 			{section && (
 				<div className='flex justify-center items-center h-full w-full'>
 					<Card className='pt-0 w-[500px] overflow-auto gap-5'>
-						{section?.cover && (
+						{coverSrc && (
 							<img
-								src={replacePath(section.cover, section.creator.id)}
+								src={coverSrc}
 								alt='cover'
 								className='w-full h-36 object-cover'
 							/>

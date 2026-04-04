@@ -20,7 +20,6 @@ import {
 } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
-import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import {
 	generateSectionPpt,
@@ -29,6 +28,7 @@ import {
 	getSectionDetail,
 } from '@/service/section';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { getSectionCoverSrc } from '@/lib/section-cover';
 
 import AudioPlayer from '../ui/audio-player';
 import { Button } from '../ui/button';
@@ -176,10 +176,7 @@ const SectionMedia = ({
 	const canGeneratePpt =
 		imageGenerateEngine.accessible && documentReaderModel.accessible;
 	const canSubmitPpt = canGeneratePpt && Boolean(section.md_file_name);
-	const cover =
-		section.cover && (creatorId !== undefined || mainUserInfo?.id !== undefined)
-			? replacePath(section.cover, creatorId ?? mainUserInfo!.id)
-			: fallbackCover;
+	const cover = getSectionCoverSrc(section) ?? fallbackCover;
 	const hasPendingAutoPodcastFlow =
 		section.auto_podcast &&
 		canGeneratePodcast &&

@@ -6,12 +6,13 @@ import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
 import { useRouter } from 'nextjs-toploader/app';
 import { useLocale, useTranslations } from 'next-intl';
-import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import SectionCardPodcast from './section-card-podcast';
+import { getSectionCoverSrc } from '@/lib/section-cover';
+import { replacePath } from '@/lib/utils';
 
 const SectionCard = ({ section }: { section: SectionInfo }) => {
 	const locale = useLocale();
@@ -39,13 +40,14 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 					: null,
 			].filter(Boolean)
 		: [];
+	const coverSrc = getSectionCoverSrc(section);
 	return (
 		<div className='group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md'>
 			<Link href={`/section/detail/${section.id}`} className='block'>
 				<div className='relative h-40 w-full overflow-hidden'>
-					{section?.cover ? (
+					{coverSrc ? (
 						<img
-							src={replacePath(section.cover, section.creator.id)}
+							src={coverSrc}
 							alt='cover'
 							className='h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105'
 						/>
