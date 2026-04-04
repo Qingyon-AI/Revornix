@@ -200,6 +200,12 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     is_day_section?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof SectionInfo
+     */
+    day_section_date?: string | null;
 }
 
 
@@ -252,6 +258,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
         'is_day_section': json['is_day_section'] == null ? undefined : json['is_day_section'],
+        'day_section_date': json['day_section_date'] == null ? undefined : json['day_section_date'],
     };
 }
 
@@ -289,5 +296,6 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'process_task_trigger_type': value['process_task_trigger_type'],
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
         'is_day_section': value['is_day_section'],
+        'day_section_date': value['day_section_date'],
     };
 }
