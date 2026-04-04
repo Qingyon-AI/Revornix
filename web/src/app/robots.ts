@@ -27,7 +27,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 					'/section/detail',
 					'/section/mine',
 					'/section/subscribed',
-					'/section/today',
 					'/setting',
 					'/user/detail',
 					'/user/fans',

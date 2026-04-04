@@ -168,6 +168,7 @@ class BaseSectionInfo(BaseModel):
     description: str | None
     authority: UserSectionAuthority | None = None
     publish_uuid: str | None = None
+    is_day_section: bool = False
 
 class AllMySectionsResponse(BaseModel):
     data: list[BaseSectionInfo]
@@ -242,6 +243,7 @@ class SectionInfo(BaseModel):
     graph_stale: bool | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
+    is_day_section: bool = False
     ppt_preview: SectionPptPreview | None = None
 
 

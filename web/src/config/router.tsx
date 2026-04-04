@@ -152,11 +152,6 @@ const routers: RouteItem[] = [
 				path: '/create',
 			},
 			{
-				title: '今日专栏',
-				title_en: 'Today Section',
-				path: '/today',
-			},
-			{
 				title: '我的专栏',
 				title_en: 'My Section',
 				path: '/mine',

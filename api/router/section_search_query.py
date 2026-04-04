@@ -45,6 +45,13 @@ async def _build_section_infos(
     podcast_task_by_section_id = {
         task.section_id: task for task in podcast_tasks
     }
+    day_sections = crud.section.get_day_sections_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+    )
+    is_day_section_by_section_id = {
+        item.section_id: True for item in day_sections
+    }
 
     authority_by_section_id: dict[int, UserSectionAuthority | int] = {}
     if viewer_user_id is not None:
@@ -71,6 +78,7 @@ async def _build_section_infos(
         res.documents_count = documents_count_by_section_id.get(section.id, 0)
         res.subscribers_count = subscribers_count_by_section_id.get(section.id, 0)
         res.publish_uuid = publish_uuid_by_section_id.get(section.id)
+        res.is_day_section = is_day_section_by_section_id.get(section.id, False)
         podcast_task = podcast_task_by_section_id.get(section.id)
         if podcast_task is not None:
             res.podcast_task = schemas.task.SectionPodcastTask(
@@ -211,11 +219,19 @@ def get_all_mine_sections(
         user_id=user.id,
     )
     authority_by_section_id = {item.section_id: item.authority for item in section_users}
+    day_sections = crud.section.get_day_sections_by_section_ids(
+        db=db,
+        section_ids=section_ids,
+    )
+    is_day_section_by_section_id = {
+        item.section_id: True for item in day_sections
+    }
 
     sections = [
         schemas.section.BaseSectionInfo(
             **db_section.__dict__,
             authority=UserSectionAuthority(authority_by_section_id.get(db_section.id)),
+            is_day_section=is_day_section_by_section_id.get(db_section.id, False),
         )
         for db_section in db_sections
     ]

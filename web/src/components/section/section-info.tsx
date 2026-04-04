@@ -278,6 +278,11 @@ const SectionInfo = ({ id }: { id: number }) => {
 					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
 						{title}
 					</h2>
+					{section.is_day_section ? (
+						<div className='flex flex-wrap gap-2'>
+							<InfoBadge>{t('section_day_badge')}</InfoBadge>
+						</div>
+					) : null}
 					<p className='text-sm leading-7 text-muted-foreground'>
 						{description}
 					</p>
@@ -384,6 +389,17 @@ const SectionInfo = ({ id }: { id: number }) => {
 						</Alert>
 					))}
 				</div>
+			) : null}
+
+			{section.is_day_section ? (
+				<Alert className='border-emerald-500/30 bg-emerald-500/8 text-emerald-800 dark:text-emerald-200'>
+					<AlertTriangle className='size-4 text-current' />
+					<AlertDescription>
+						<span className='font-medium'>{t('section_day_notice_title')}</span>
+						{' '}
+						{t('section_day_notice_description')}
+					</AlertDescription>
+				</Alert>
 			) : null}
 		</div>
 	);

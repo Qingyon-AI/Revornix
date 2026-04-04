@@ -806,6 +806,32 @@ def get_section_by_user_and_date(
                          models.section.SectionUser.user_id == user_id)
     return query.one_or_none()
 
+
+def get_day_section_by_section_id(
+    db: Session,
+    section_id: int,
+):
+    query = db.query(models.section.DaySection)
+    query = query.filter(
+        models.section.DaySection.section_id == section_id,
+        models.section.DaySection.delete_at.is_(None),
+    )
+    return query.one_or_none()
+
+
+def get_day_sections_by_section_ids(
+    db: Session,
+    section_ids: list[int],
+):
+    if not section_ids:
+        return []
+    query = db.query(models.section.DaySection)
+    query = query.filter(
+        models.section.DaySection.section_id.in_(section_ids),
+        models.section.DaySection.delete_at.is_(None),
+    )
+    return query.all()
+
 def get_section_by_section_id(
     db: Session,
     section_id: int

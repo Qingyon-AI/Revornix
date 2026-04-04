@@ -512,18 +512,28 @@ const SectionOperateConfiguration = ({
 														</TooltipContent>
 													</Tooltip>
 												</FormLabel>
-												<Input
-													className='bg-background/60 font-mono'
-													placeholder={t(
-														'section_form_process_task_trigger_scheduler_placeholder'
-													)}
-													{...field}
-													value={field.value || ''}
-												/>
-												<FormMessage />
-											</FormItem>
-										);
-									}}
+											<Input
+												className='bg-background/60 font-mono'
+												placeholder={t(
+													'section_form_process_task_trigger_scheduler_placeholder'
+												)}
+												{...field}
+												value={field.value || ''}
+											/>
+											{section?.is_day_section ? (
+												<Alert className='border-emerald-500/20 bg-emerald-500/6 text-emerald-800 dark:text-emerald-200'>
+													<Info className='h-4 w-4 text-current' />
+													<AlertDescription>
+														{t(
+															'section_form_process_task_trigger_scheduler_day_section_notice'
+														)}
+													</AlertDescription>
+												</Alert>
+											) : null}
+											<FormMessage />
+										</FormItem>
+									);
+								}}
 								/>
 							)}
 						</form>

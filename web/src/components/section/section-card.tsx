@@ -65,6 +65,13 @@ const SectionCard = ({ section }: { section: SectionInfo }) => {
 					<h1 className='line-clamp-2 text-base font-semibold leading-6'>
 						{section.title ? section.title : t('section_title_empty')}
 					</h1>
+					{section.is_day_section ? (
+						<div className='flex flex-wrap gap-2'>
+							<div className='inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300'>
+								{t('section_day_badge')}
+							</div>
+						</div>
+					) : null}
 					<p className='flex-1 line-clamp-3 text-sm/6 text-muted-foreground'>
 						{section.description
 							? section.description
