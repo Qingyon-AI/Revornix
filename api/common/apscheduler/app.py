@@ -9,6 +9,7 @@ import crud
 import schemas
 from common.celery.app import start_process_section
 from common.logger import exception_logger, format_log_message, info_logger
+from common.section_schedule import build_day_section_trigger
 from common.timezone import (
     decode_cron_expr_with_timezone,
     get_cached_user_timezone,
@@ -177,6 +178,23 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
     )
     if cron_expr is None:
         continue
+    db_day_section = crud.section.get_day_section_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_day_section is not None:
+        trigger = build_day_section_trigger(
+            section_date=db_day_section.date,
+            cron_expr=cron_expr,
+            timezone_name=timezone_name,
+        )
+        if trigger is None:
+            continue
+    else:
+        trigger = CronTrigger.from_crontab(
+            cron_expr,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        )
     scheduler.add_job(
         func=start_process_section,
         kwargs={
@@ -184,10 +202,7 @@ for db_section, db_section_process_task in db_section_trigger_schedulers:
             "user_id": db_section.creator_id,
             "auto_podcast": db_section.auto_podcast
         },
-        trigger=CronTrigger.from_crontab(
-            cron_expr,
-            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
-        ),
+        trigger=trigger,
         id=f"section-process-{db_section.id!s}"
     )
 

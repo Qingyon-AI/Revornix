@@ -46,6 +46,13 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 						<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
 							{section.title ? section.title : t('section_title_empty')}
 						</h2>
+						{section.is_day_section ? (
+							<div className='flex flex-wrap gap-2'>
+								<div className='inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300'>
+									{t('section_day_badge')}
+								</div>
+							</div>
+						) : null}
 						<p className='line-clamp-3 text-sm leading-6 text-muted-foreground'>
 							{section.description
 								? section.description

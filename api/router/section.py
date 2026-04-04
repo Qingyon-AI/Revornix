@@ -18,6 +18,7 @@ from common.celery.app import (
 )
 from common.dependencies import get_current_user, get_db, get_request_timezone
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
+from common.section_schedule import build_day_section_trigger
 from common.timezone import (
     decode_cron_expr_with_timezone,
     encode_cron_expr_with_timezone,
@@ -112,10 +113,29 @@ def _remove_section_process_schedule(section_id: int) -> None:
 
 def _schedule_section_process(
     *,
+    db: Session,
     db_section: models.section.Section,
     cron_expr: str,
     timezone_name: str,
 ) -> None:
+    db_day_section = crud.section.get_day_section_by_section_id(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_day_section is not None:
+        trigger = build_day_section_trigger(
+            section_date=db_day_section.date,
+            cron_expr=cron_expr,
+            timezone_name=timezone_name,
+        )
+        if trigger is None:
+            return
+    else:
+        trigger = CronTrigger.from_crontab(
+            cron_expr,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        )
+
     scheduler.add_job(
         func=start_process_section,
         kwargs={
@@ -123,10 +143,7 @@ def _schedule_section_process(
             "user_id": db_section.creator_id,
             "auto_podcast": db_section.auto_podcast
         },
-        trigger=CronTrigger.from_crontab(
-            cron_expr,
-            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
-        ),
+        trigger=trigger,
         id=_section_process_job_id(db_section.id),
     )
 
@@ -478,6 +495,7 @@ async def create_section(
         if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
             _remove_section_process_schedule(db_section.id)
             _schedule_section_process(
+                db=db,
                 db_section=db_section,
                 cron_expr=section_create_request.process_task_trigger_scheduler,
                 timezone_name=request_timezone,
@@ -629,6 +647,7 @@ async def update_section(
                 raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
 
             _schedule_section_process(
+                db=db,
                 db_section=db_section,
                 cron_expr=scheduler_cron_expr,
                 timezone_name=scheduler_timezone,

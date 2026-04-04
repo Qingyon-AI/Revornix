@@ -194,6 +194,12 @@ export interface SectionInfo {
      * @memberof SectionInfo
      */
     process_task_trigger_scheduler?: string | null;
+    /**
+     *
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
+    is_day_section?: boolean;
 }
 
 
@@ -245,6 +251,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'graph_stale': json['graph_stale'] == null ? undefined : json['graph_stale'],
         'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
+        'is_day_section': json['is_day_section'] == null ? undefined : json['is_day_section'],
     };
 }
 
@@ -281,6 +288,6 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'graph_stale': value['graph_stale'],
         'process_task_trigger_type': value['process_task_trigger_type'],
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
+        'is_day_section': value['is_day_section'],
     };
 }
-

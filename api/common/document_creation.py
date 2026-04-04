@@ -1,7 +1,6 @@
+from datetime import date as date_type
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
-from apscheduler.triggers.cron import CronTrigger
 from celery import chain, group
 from sqlalchemy.orm import Session
 
@@ -11,6 +10,7 @@ import schemas
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
+from common.section_schedule import build_day_section_trigger
 from common.section_defaults import (
     TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
     TODAY_SECTION_DEFAULT_AUTO_PODCAST,
@@ -19,7 +19,6 @@ from common.section_defaults import (
 from common.timezone import (
     encode_cron_expr_with_timezone,
     get_cached_user_timezone,
-    normalize_timezone_name,
     today_in_timezone,
 )
 from enums.document import DocumentCategory, UserDocumentAuthority
@@ -36,12 +35,22 @@ from schemas.error import CustomException
 def _schedule_section_process_for_today_section(
     *,
     db_section: models.section.Section,
+    section_date: date_type,
     timezone_name: str,
 ) -> None:
     job_id = f"section-process-{db_section.id!s}"
     job = scheduler.get_job(job_id)
     if job is not None:
         scheduler.remove_job(job_id)
+
+    trigger = build_day_section_trigger(
+        section_date=section_date,
+        cron_expr=TODAY_SECTION_DEFAULT_PROCESS_CRON,
+        timezone_name=timezone_name,
+    )
+    if trigger is None:
+        return
+
     scheduler.add_job(
         func=start_process_section,
         kwargs={
@@ -49,10 +58,7 @@ def _schedule_section_process_for_today_section(
             "user_id": db_section.creator_id,
             "auto_podcast": db_section.auto_podcast,
         },
-        trigger=CronTrigger.from_crontab(
-            TODAY_SECTION_DEFAULT_PROCESS_CRON,
-            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
-        ),
+        trigger=trigger,
         id=job_id,
     )
 
@@ -290,7 +296,6 @@ async def create_document_for_user(
     if summary_timezone is None:
         summary_timezone = await get_cached_user_timezone(user.id)
     summary_date = today_in_timezone(summary_timezone)
-    created_today_section = False
     today_section_auto_podcast = False
     today_section_auto_illustration = False
 
@@ -422,7 +427,6 @@ async def create_document_for_user(
         date=summary_date,
     )
     if db_today_section is None:
-        created_today_section = True
         db_today_section = crud.section.create_section(
             db=db,
             creator_id=user.id,
@@ -458,7 +462,7 @@ async def create_document_for_user(
             ),
         )
     else:
-        created_today_section = _ensure_today_section_defaults(
+        _ensure_today_section_defaults(
             db=db,
             db_section=db_today_section,
             user_id=user.id,
@@ -492,11 +496,11 @@ async def create_document_for_user(
         )
 
     db.commit()
-    if created_today_section:
-        _schedule_section_process_for_today_section(
-            db_section=db_today_section,
-            timezone_name=summary_timezone,
-        )
+    _schedule_section_process_for_today_section(
+        db_section=db_today_section,
+        section_date=summary_date,
+        timezone_name=summary_timezone,
+    )
 
     _queue_document_background_processing(
         db=db,

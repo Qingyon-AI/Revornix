@@ -181,6 +181,10 @@ async def _build_section_info_response(
         db=db,
         section_id=section_id,
     )
+    db_day_section = crud.section.get_day_section_by_section_id(
+        db=db,
+        section_id=section_id,
+    )
     document_ids = [item.document_id for item in db_section_documents]
     labels = [schemas.section.SectionLabel(id=db_label.id, name=db_label.name) for db_label in db_labels]
     document_integration = schemas.section.SectionDocumentIntegrationSummary(
@@ -213,6 +217,7 @@ async def _build_section_info_response(
         subscribers_count=subscribers_count,
         creator=db_section.creator,
         document_integration=document_integration,
+        is_day_section=db_day_section is not None,
         graph_stale=_is_section_graph_stale(
             db=db,
             document_ids=document_ids,
