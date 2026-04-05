@@ -62,7 +62,8 @@ export type PrePayProductRequestDTOPayWayEnum = typeof PrePayProductRequestDTOPa
  */
 export const PrePayProductRequestDTOCategoryEnum = {
     UserPlan: 'USER_PLAN',
-    Section: 'SECTION'
+    Section: 'SECTION',
+    ComputePack: 'COMPUTE_PACK'
 } as const;
 export type PrePayProductRequestDTOCategoryEnum = typeof PrePayProductRequestDTOCategoryEnum[keyof typeof PrePayProductRequestDTOCategoryEnum];
 
@@ -124,4 +125,3 @@ export function PrePayProductRequestDTOToJSONTyped(value?: PrePayProductRequestD
         'currency_code': value['currency_code'],
     };
 }
-

@@ -51,6 +51,30 @@ export interface EngineUpdateRequest {
     is_public?: boolean | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof EngineUpdateRequest
+     */
+    is_official_hosted?: boolean | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineUpdateRequest
+     */
+    billing_mode?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineUpdateRequest
+     */
+    billing_unit_price?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineUpdateRequest
+     */
+    compute_point_multiplier?: number | null;
+    /**
+     * 
      * @type {number}
      * @memberof EngineUpdateRequest
      */
@@ -80,6 +104,10 @@ export function EngineUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'] == null ? undefined : json['is_public'],
+        'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
+        'billing_mode': json['billing_mode'] == null ? undefined : json['billing_mode'],
+        'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
+        'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
     };
 }
@@ -100,7 +128,10 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
         'name': value['name'],
         'description': value['description'],
         'is_public': value['is_public'],
+        'is_official_hosted': value['is_official_hosted'],
+        'billing_mode': value['billing_mode'],
+        'billing_unit_price': value['billing_unit_price'],
+        'compute_point_multiplier': value['compute_point_multiplier'],
         'required_plan_level': value['required_plan_level'],
     };
 }
-

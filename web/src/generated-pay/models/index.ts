@@ -5,6 +5,7 @@ export * from './BonusWithdrawRequestDTO';
 export * from './CheckAbilityRequestDTO';
 export * from './ConfirmAppleSubscriptionRequestDTO';
 export * from './ConfirmSubscriptionResponseDTO';
+export * from './ComputeBalanceDTO';
 export * from './GetOrderDetailByPaypalOrderRequestDTO';
 export * from './GetOrderDetailRequestDTO';
 export * from './GetOrderDetailResponseDTO';

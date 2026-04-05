@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy import func
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langfuse import propagate_attributes
@@ -57,6 +58,14 @@ SUBSCRIPTION_GATE_ENABLED = check_deployed_by_official_in_fuc()
 
 def _is_privileged_user(user: models.user.User) -> bool:
     return user.role in (UserRole.ADMIN, UserRole.ROOT)
+
+
+def _ensure_privileged_user(user: models.user.User) -> None:
+    if not _is_privileged_user(user):
+        raise schemas.error.CustomException(
+            message="Only administrators can inspect billing audit issues.",
+            code=403,
+        )
 
 
 async def _ensure_subscription_access(
@@ -242,6 +251,109 @@ async def _build_human_message_with_images(
     )
     return HumanMessage(content=content_parts)
 
+
+@ai_router.post(
+    "/model/billing-audit",
+    response_model=schemas.ai.BillingAuditResponse,
+)
+def inspect_model_billing_audit(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+):
+    _ensure_privileged_user(user)
+
+    usage_rows = (
+        db.query(
+            models.usage.UsageLedger.resource_uuid,
+            func.count(models.usage.UsageLedger.id),
+            func.coalesce(func.sum(models.usage.UsageLedger.billable_points), 0),
+        )
+        .filter(models.usage.UsageLedger.resource_type == "llm")
+        .group_by(models.usage.UsageLedger.resource_uuid)
+        .all()
+    )
+    usage_map = {
+        resource_uuid: {
+            "count": int(total_count or 0),
+            "charged_points": int(total_points or 0),
+        }
+        for resource_uuid, total_count, total_points in usage_rows
+    }
+
+    db_models = (
+        db.query(models.model.AIModel)
+        .join(models.model.AIModel.provider)
+        .join(models.model.AIModelProvider.creator)
+        .filter(models.model.AIModel.delete_at.is_(None))
+        .all()
+    )
+
+    issues: list[schemas.ai.BillingAuditIssue] = []
+    for db_model in db_models:
+        provider = db_model.provider
+        creator = provider.creator if provider is not None else None
+        is_platform_owned = creator is not None and creator.role in (
+            UserRole.ADMIN,
+            UserRole.ROOT,
+        )
+        usage_info = usage_map.get(db_model.uuid, {"count": 0, "charged_points": 0})
+        has_usage = usage_info["count"] > 0
+        charged_points = usage_info["charged_points"]
+
+        if is_platform_owned and not bool(db_model.is_official_hosted):
+            severity = "high" if has_usage else "medium"
+            issues.append(
+                schemas.ai.BillingAuditIssue(
+                    code="platform_model_not_official_hosted",
+                    severity=severity,
+                    resource_id=db_model.id,
+                    resource_uuid=db_model.uuid,
+                    resource_name=db_model.name,
+                    provider_name=provider.name if provider is not None else None,
+                    title="Platform model is not marked as official hosted",
+                    description=(
+                        "This model belongs to a platform-owned provider but is not marked as official hosted, "
+                        "so it will not participate in compute-point charging."
+                    ),
+                )
+            )
+
+        if bool(db_model.is_official_hosted) and float(db_model.compute_point_multiplier or 1.0) <= 1.0:
+            issues.append(
+                schemas.ai.BillingAuditIssue(
+                    code="official_hosted_model_default_multiplier",
+                    severity="low",
+                    resource_id=db_model.id,
+                    resource_uuid=db_model.uuid,
+                    resource_name=db_model.name,
+                    provider_name=provider.name if provider is not None else None,
+                    title="Official hosted model still uses the default multiplier",
+                    description=(
+                        "This model is marked as official hosted but still uses a 1.0 multiplier. "
+                        "That may be intentional, but it is worth reviewing if the model has above-average cost."
+                    ),
+                )
+            )
+
+        if is_platform_owned and has_usage and charged_points <= 0:
+            issues.append(
+                schemas.ai.BillingAuditIssue(
+                    code="used_model_without_compute_charge",
+                    severity="high",
+                    resource_id=db_model.id,
+                    resource_uuid=db_model.uuid,
+                    resource_name=db_model.name,
+                    provider_name=provider.name if provider is not None else None,
+                    title="Used model has not produced any compute-point charge",
+                    description=(
+                        "This model already has usage records, but the accumulated charged points are still 0. "
+                        "Please verify the official-hosted flag and multiplier configuration."
+                    ),
+                )
+            )
+
+    return schemas.ai.BillingAuditResponse(items=issues)
+
 @ai_router.post("/model/create", response_model=schemas.ai.ModelCreateResponse)
 def create_model(
     model_create_request: schemas.ai.ModelCreateRequest,
@@ -265,7 +377,9 @@ def create_model(
         name=model_create_request.name,
         description=model_create_request.description,
         required_plan_level=required_plan_level,
-        provider_id=model_create_request.provider_id
+        provider_id=model_create_request.provider_id,
+        is_official_hosted=model_create_request.is_official_hosted,
+        compute_point_multiplier=model_create_request.compute_point_multiplier,
     )
     db.commit()
     return schemas.ai.ModelCreateResponse(id=db_ai_model.id)
@@ -630,6 +744,10 @@ def update_ai_model(
         db_ai_model.required_plan_level = int(
             normalize_plan_access_level(model_update_request.required_plan_level)
         )
+    if model_update_request.is_official_hosted is not None:
+        db_ai_model.is_official_hosted = model_update_request.is_official_hosted
+    if model_update_request.compute_point_multiplier is not None:
+        db_ai_model.compute_point_multiplier = model_update_request.compute_point_multiplier
     db_ai_model.update_time = now
     db.commit()
     return schemas.common.SuccessResponse()

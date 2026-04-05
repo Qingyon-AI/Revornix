@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import sectionApi from '@/api/section';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
@@ -582,7 +583,7 @@ const SectionOperateAI = ({
 									/>
 								</div>
 								<Link
-									href={'/setting/mcp'}
+									href={settingAnchorHrefs.mcpServerManage}
 									className='shrink-0 underline underline-offset-4'>
 									{t('revornix_ai_go_to_configure_mcp')}
 								</Link>

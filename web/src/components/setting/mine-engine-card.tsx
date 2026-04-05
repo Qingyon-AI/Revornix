@@ -37,6 +37,10 @@ import { useMemo, useState } from 'react';
 import { useUserContext } from '@/provider/user-provider';
 
 import { EngineCategory, getEngineCategoryLabel } from '@/enums/engine';
+import {
+	EngineBillingMode,
+	isEngineBillingMode,
+} from '@/enums/engine-billing';
 import { Badge } from '../ui/badge';
 import EngineUpdate from './engine-update';
 import SubscriptionPlanBadgeContent from './subscription-plan-badge-content';
@@ -46,7 +50,6 @@ import { useRouter } from 'nextjs-toploader/app';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
 import {
-	getSubscriptionCtaTranslationKey,
 	getSubscriptionLockReasonTranslationKey,
 	isSubscriptionLocked,
 	shouldShowPlanLevelIndicator,
@@ -117,6 +120,9 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 			),
 		[engine_info.required_plan_level, paySystemUserInfo],
 	);
+	const billingMode = isEngineBillingMode(engine_info.billing_mode ?? 0)
+		? (engine_info.billing_mode as EngineBillingMode)
+		: EngineBillingMode.TOKEN;
 
 	return (
 		<>
@@ -183,17 +189,7 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 								<Badge className='w-fit rounded-full border-sky-500/30 bg-sky-500/10 text-sky-700 shadow-none dark:text-sky-200'>
 									<SubscriptionPlanBadgeContent
 										requiredPlanLevel={engine_info.required_plan_level}
-										actionHref={subscriptionLocked ? '/account/plan' : undefined}
-										actionLabel={
-											subscriptionLocked
-												? t(
-														getSubscriptionCtaTranslationKey(
-															paySystemUserInfo,
-															engine_info.required_plan_level,
-														),
-												  )
-												: undefined
-										}
+										showActions={subscriptionLocked}
 									/>
 								</Badge>
 							)}
@@ -205,6 +201,22 @@ const MineEngineCard = ({ engine_info }: { engine_info: EngineInfo }) => {
 									{t(subscriptionLockedReasonKey)}
 								</Badge>
 							)}
+							{engine_info.is_official_hosted && (
+								<Badge className='w-fit rounded-full border-emerald-500/25 bg-emerald-500/10 text-emerald-700 shadow-none dark:text-emerald-200'>
+									{t('setting_engine_billing_card_summary', {
+										price: engine_info.billing_unit_price ?? 1,
+										unit: t(`setting_engine_billing_mode_${billingMode}_unit`),
+									})}
+								</Badge>
+							)}
+							{engine_info.is_official_hosted &&
+								(engine_info.compute_point_multiplier ?? 1) > 1 && (
+									<Badge className='w-fit rounded-full border-slate-500/25 bg-slate-500/10 text-slate-700 shadow-none dark:text-slate-200'>
+										{t('setting_compute_point_multiplier_badge', {
+											value: engine_info.compute_point_multiplier ?? 1,
+										})}
+									</Badge>
+								)}
 						</div>
 					</CardDescription>
 				</CardHeader>

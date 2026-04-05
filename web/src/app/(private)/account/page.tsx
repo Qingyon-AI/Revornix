@@ -16,6 +16,7 @@ import GoogleBind from '@/components/user/google-bind';
 import PhoneBind from '@/components/user/phone-bind';
 import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
+import UserComputeBalance from '@/components/user/user-compute-balance';
 import { headers } from 'next/headers';
 import EmailBindCloud from '@/components/user/email-bind-cloud';
 import { isEnvEnabled } from '@/lib/env';
@@ -77,6 +78,18 @@ const AccountPage = async () => {
 								</Label>
 								<div className='flex flex-col gap-2 text-xs font-bold'>
 									<UserPlan />
+								</div>
+							</div>
+							<Separator />
+							<div className='flex justify-between items-center'>
+								<Label className='flex flex-col gap-2 items-start'>
+									{t('account_compute_points_remaining')}
+									<div className='text-[0.8rem] text-muted-foreground'>
+										{t('account_plan_compute_pack_description')}
+									</div>
+								</Label>
+								<div className='flex flex-col gap-2 text-xs font-bold'>
+									<UserComputeBalance />
 								</div>
 							</div>
 						</>

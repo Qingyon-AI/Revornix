@@ -2,6 +2,17 @@ import engineApi from '@/api/engine'
 import { CommunityEngineSearchRequest, EngineCreateRequest, EngineDeleteRequest, EngineDetail, EngineDetailRequest, EngineForkRequest, EngineProvidedSearchRequest, EngineProvidedSearchResponse, EngineUpdateRequest, InifiniteScrollPagnitionEngineInfo, NormalResponse, UsableEngineSearchRequest, UsableEnginesResponse } from '@/generated'
 import { request } from '@/lib/request'
 
+export type BillingAuditIssueDTO = {
+    code: string
+    severity: string
+    resource_id: number
+    resource_uuid: string
+    resource_name: string
+    provider_name?: string | null
+    title: string
+    description: string
+}
+
 export const getEngineDetail = async (data: EngineDetailRequest): Promise<EngineDetail> => {
     return await request(engineApi.getEngineDetail, {
         data
@@ -48,4 +59,8 @@ export const deleteEngine = async (data: EngineDeleteRequest): Promise<NormalRes
     return await request(engineApi.deleteEngine, {
         data
     })
+}
+
+export const getEngineBillingAudit = async (): Promise<{ items: BillingAuditIssueDTO[] }> => {
+    return await request(engineApi.getEngineBillingAudit)
 }

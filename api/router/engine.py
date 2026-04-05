@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 import crud
@@ -29,6 +30,14 @@ SUBSCRIPTION_GATE_ENABLED = check_deployed_by_official_in_fuc()
 
 def _is_privileged_user(user: models.user.User) -> bool:
     return user.role in (UserRole.ADMIN, UserRole.ROOT)
+
+
+def _ensure_privileged_user(user: models.user.User) -> None:
+    if not _is_privileged_user(user):
+        raise schemas.error.CustomException(
+            message="Only administrators can inspect billing audit issues.",
+            code=403,
+        )
 
 
 async def _ensure_subscription_access(
@@ -99,6 +108,109 @@ def _serialize_engine_detail(
         }
     )
 
+
+@engine_router.post(
+    "/billing-audit",
+    response_model=schemas.engine.BillingAuditResponse,
+)
+def inspect_engine_billing_audit(
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+):
+    _ensure_privileged_user(user)
+
+    usage_rows = (
+        db.query(
+            models.usage.UsageLedger.resource_uuid,
+            func.count(models.usage.UsageLedger.id),
+            func.coalesce(func.sum(models.usage.UsageLedger.billable_points), 0),
+        )
+        .filter(models.usage.UsageLedger.resource_type == "engine")
+        .group_by(models.usage.UsageLedger.resource_uuid)
+        .all()
+    )
+    usage_map = {
+        resource_uuid: {
+            "count": int(total_count or 0),
+            "charged_points": int(total_points or 0),
+        }
+        for resource_uuid, total_count, total_points in usage_rows
+    }
+
+    db_engines = (
+        db.query(models.engine.Engine)
+        .join(models.engine.Engine.creator)
+        .join(models.engine.Engine.engine_provided)
+        .filter(models.engine.Engine.delete_at.is_(None))
+        .all()
+    )
+
+    issues: list[schemas.engine.BillingAuditIssue] = []
+    for db_engine in db_engines:
+        creator = db_engine.creator
+        engine_provided = db_engine.engine_provided
+        is_platform_owned = creator is not None and creator.role in (
+            UserRole.ADMIN,
+            UserRole.ROOT,
+        )
+        usage_info = usage_map.get(db_engine.uuid, {"count": 0, "charged_points": 0})
+        has_usage = usage_info["count"] > 0
+        charged_points = usage_info["charged_points"]
+
+        if is_platform_owned and not bool(db_engine.is_official_hosted):
+            severity = "high" if has_usage else "medium"
+            issues.append(
+                schemas.engine.BillingAuditIssue(
+                    code="platform_engine_not_official_hosted",
+                    severity=severity,
+                    resource_id=db_engine.id,
+                    resource_uuid=db_engine.uuid,
+                    resource_name=db_engine.name,
+                    provider_name=engine_provided.name if engine_provided is not None else None,
+                    title="Platform engine is not marked as official hosted",
+                    description=(
+                        "This engine is platform-owned but is not marked as official hosted, "
+                        "so it will not participate in compute-point charging."
+                    ),
+                )
+            )
+
+        if bool(db_engine.is_official_hosted) and float(db_engine.compute_point_multiplier or 1.0) <= 1.0:
+            issues.append(
+                schemas.engine.BillingAuditIssue(
+                    code="official_hosted_engine_default_multiplier",
+                    severity="low",
+                    resource_id=db_engine.id,
+                    resource_uuid=db_engine.uuid,
+                    resource_name=db_engine.name,
+                    provider_name=engine_provided.name if engine_provided is not None else None,
+                    title="Official hosted engine still uses the default multiplier",
+                    description=(
+                        "This engine is marked as official hosted but still uses a 1.0 multiplier. "
+                        "That may be intentional, but it is worth reviewing for higher-cost engines."
+                    ),
+                )
+            )
+
+        if is_platform_owned and has_usage and charged_points <= 0:
+            issues.append(
+                schemas.engine.BillingAuditIssue(
+                    code="used_engine_without_compute_charge",
+                    severity="high",
+                    resource_id=db_engine.id,
+                    resource_uuid=db_engine.uuid,
+                    resource_name=db_engine.name,
+                    provider_name=engine_provided.name if engine_provided is not None else None,
+                    title="Used engine has not produced any compute-point charge",
+                    description=(
+                        "This engine already has usage records, but the accumulated charged points are still 0. "
+                        "Please verify the official-hosted flag and multiplier configuration."
+                    ),
+                )
+            )
+
+    return schemas.engine.BillingAuditResponse(items=issues)
+
 @engine_router.post("/create", response_model=schemas.common.NormalResponse)
 def create_engine(
     engine_create_request: schemas.engine.EngineCreateRequest,
@@ -115,6 +227,10 @@ def create_engine(
         description=engine_create_request.description,
         is_public=engine_create_request.is_public,
         required_plan_level=required_plan_level,
+        is_official_hosted=engine_create_request.is_official_hosted,
+        billing_mode=int(engine_create_request.billing_mode),
+        billing_unit_price=engine_create_request.billing_unit_price,
+        compute_point_multiplier=engine_create_request.compute_point_multiplier,
         config_json=engine_create_request.config_json,
         creator_id=user.id,
         engine_provided_id=engine_create_request.engine_provided_id
@@ -380,6 +496,14 @@ def update_engine(
         db_engine.required_plan_level = int(
             normalize_plan_access_level(engine_update_request.required_plan_level)
         )
+    if engine_update_request.is_official_hosted is not None:
+        db_engine.is_official_hosted = engine_update_request.is_official_hosted
+    if engine_update_request.billing_mode is not None:
+        db_engine.billing_mode = int(engine_update_request.billing_mode)
+    if engine_update_request.billing_unit_price is not None:
+        db_engine.billing_unit_price = engine_update_request.billing_unit_price
+    if engine_update_request.compute_point_multiplier is not None:
+        db_engine.compute_point_multiplier = engine_update_request.compute_point_multiplier
 
     db_engine.update_time = now
 

@@ -53,6 +53,18 @@ export interface Model {
     description: string | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof Model
+     */
+    is_official_hosted?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof Model
+     */
+    compute_point_multiplier?: number;
+    /**
+     * 
      * @type {number}
      * @memberof Model
      */
@@ -111,6 +123,8 @@ export function ModelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Mod
         'uuid': json['uuid'],
         'name': json['name'],
         'description': json['description'],
+        'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
+        'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'subscription_required': json['subscription_required'] == null ? undefined : json['subscription_required'],
         'create_time': (new Date(json['create_time'])),
@@ -134,6 +148,8 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'uuid': value['uuid'],
         'name': value['name'],
         'description': value['description'],
+        'is_official_hosted': value['is_official_hosted'],
+        'compute_point_multiplier': value['compute_point_multiplier'],
         'required_plan_level': value['required_plan_level'],
         'subscription_required': value['subscription_required'],
         'create_time': value['create_time'].toISOString(),
@@ -141,4 +157,3 @@ export function ModelToJSONTyped(value?: Model | null, ignoreDiscriminator: bool
         'provider': ModelProviderToJSON(value['provider']),
     };
 }
-

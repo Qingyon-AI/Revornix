@@ -9,4 +9,5 @@ export default {
     updateEngine: API_PREFIX + '/engine/update',
     deleteEngine: API_PREFIX + '/engine/delete',
     getProvidedEngines: API_PREFIX + '/engine/provided',
-}
+    getEngineBillingAudit: API_PREFIX + '/engine/billing-audit',
+} 

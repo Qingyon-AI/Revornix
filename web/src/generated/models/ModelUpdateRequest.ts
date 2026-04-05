@@ -43,6 +43,18 @@ export interface ModelUpdateRequest {
      * @memberof ModelUpdateRequest
      */
     required_plan_level?: number | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelUpdateRequest
+     */
+    is_official_hosted?: boolean | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelUpdateRequest
+     */
+    compute_point_multiplier?: number | null;
 }
 
 /**
@@ -67,6 +79,8 @@ export function ModelUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
+        'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
+        'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
     };
 }
 
@@ -85,6 +99,7 @@ export function ModelUpdateRequestToJSONTyped(value?: ModelUpdateRequest | null,
         'name': value['name'],
         'description': value['description'],
         'required_plan_level': value['required_plan_level'],
+        'is_official_hosted': value['is_official_hosted'],
+        'compute_point_multiplier': value['compute_point_multiplier'],
     };
 }
-

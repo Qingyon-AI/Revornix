@@ -30,6 +30,7 @@ import { getAllMineSections } from '@/service/section';
 import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
+import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { useUserContext } from '@/provider/user-provider';
 import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -273,7 +274,7 @@ const AddAudio = () => {
 									<p>
 										{t('document_create_file_engine_unset_description_1')}
 										<Link
-											href={'/setting'}
+											href={settingAnchorHrefs.defaultFileParseEngine}
 											className='inline-block underline underline-offset-2 font-bold'>
 											{t('document_create_file_engine_unset_description_2')}
 										</Link>
@@ -290,7 +291,7 @@ const AddAudio = () => {
 									<p>
 										{t('default_resource_subscription_locked')}{' '}
 										<Link
-											href={'/setting'}
+											href={settingAnchorHrefs.defaultFileParseEngine}
 											className='inline-block font-bold underline underline-offset-2'>
 											{t('revornix_ai_default_model_goto')}
 										</Link>

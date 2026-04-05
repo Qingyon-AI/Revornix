@@ -45,6 +45,7 @@ from data.sql.base import Base
 
 from models.api_key import *
 from models.document import *
+from models.engine import *
 from models.notification import *
 from models.section import *
 from models.task import *

@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_current_user_without_throw, get_db
+from common.dependencies import (
+    get_current_user,
+    get_current_user_without_throw,
+    get_db,
+)
 from common.file import get_remote_file_signed_url
 from proxy.file_system_proxy import FileSystemProxy
 from common.section_defaults import (
@@ -227,10 +231,13 @@ async def _build_section_info_response(
     res.publish_uuid = db_publish_section.uuid if db_publish_section is not None else None
 
     if res.md_file_name is not None:
+        original_md_file_name = res.md_file_name
         res.md_file_name = await get_remote_file_signed_url(
             user_id=res.creator.id,
             file_name=res.md_file_name,
         )
+    else:
+        original_md_file_name = None
 
     db_section_podcast_task = crud.task.get_section_podcast_task_by_section_id(
         db=db,
@@ -280,10 +287,10 @@ async def _build_section_info_response(
 
 
 @section_detail_query_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
-def section_document_request(
+async def section_document_request(
     section_document_request: schemas.section.SectionDocumentRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw),
 ):
     db_section = crud.section.get_section_by_section_id(
         db=db,
@@ -379,7 +386,7 @@ def section_document_request(
 async def section_seo_detail_request(
     section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw),
 ):
     db_section_publish = crud.section.get_publish_sections_by_uuid(
         db=db,
@@ -409,7 +416,7 @@ async def section_seo_detail_request(
 async def get_section_detail(
     section_detail_request: schemas.section.SectionDetailRequest,
     user: models.user.User = Depends(get_current_user_without_throw),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     db_section = crud.section.get_section_by_section_id(
         db=db,

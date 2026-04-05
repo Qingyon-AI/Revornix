@@ -32,7 +32,9 @@ const CustomPlan = () => {
 						</span>
 						<span>/{t('account_plan_month')}</span>
 					</div>
-					<div>{t('account_plan_custom_plan_description')}</div>
+					<div className='text-sm leading-6 text-muted-foreground'>
+						{t('account_plan_custom_plan_description')}
+					</div>
 				</CardContent>
 				<CardFooter>
 					<Dialog>

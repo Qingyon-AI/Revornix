@@ -39,6 +39,7 @@ import { getEngineDetail, updateEngine } from '@/service/engine';
 import { Button } from '../ui/button';
 import { Loader2, ShieldAlert, XCircleIcon } from 'lucide-react';
 import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { EngineBillingMode } from '@/enums/engine-billing';
 import { AccessPlanLevel } from '@/enums/product';
 import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Switch } from '../ui/switch';
@@ -53,6 +54,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import EngineBillingPolicyFields from './engine-billing-policy-fields';
 
 const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	const t = useTranslations();
@@ -71,6 +73,10 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 		name: z.string().optional(),
 		description: z.string().optional(),
 		required_plan_level: z.number().int().optional(),
+		is_official_hosted: z.boolean().optional(),
+		billing_mode: z.number().int().optional(),
+		billing_unit_price: z.number().positive().optional(),
+		compute_point_multiplier: z.number().positive().optional(),
 		config_json: z.string().optional(),
 		is_public: z.boolean().optional(),
 	});
@@ -82,9 +88,14 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			name: '',
 			description: '',
 			required_plan_level: AccessPlanLevel.FREE,
+			is_official_hosted: false,
+			billing_mode: EngineBillingMode.TOKEN,
+			billing_unit_price: 1,
+			compute_point_multiplier: 1,
 			config_json: '',
 		},
 	});
+	const isPublic = form.watch('is_public');
 
 	const initialValuesRef = useRef<z.infer<typeof formSchema> | null>(null);
 
@@ -146,8 +157,18 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 		}
 
 		mutateUpdateEngine.mutate({
-			...values,
 			engine_id: engineId,
+			name: values.name,
+			description: values.description,
+			config_json: values.config_json,
+			is_public: values.is_public,
+			required_plan_level: values.is_public
+				? values.required_plan_level
+				: AccessPlanLevel.FREE,
+			is_official_hosted: values.is_official_hosted,
+			billing_mode: values.billing_mode,
+			billing_unit_price: values.billing_unit_price,
+			compute_point_multiplier: values.compute_point_multiplier,
 		});
 	};
 
@@ -167,6 +188,10 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 				engine_info.required_plan_level ?? AccessPlanLevel.FREE,
 			config_json: engine_info.config_json ?? '',
 			is_public: engine_info.is_public ?? false,
+			is_official_hosted: engine_info.is_official_hosted ?? false,
+			billing_mode: engine_info.billing_mode ?? EngineBillingMode.TOKEN,
+			billing_unit_price: engine_info.billing_unit_price ?? 1,
+			compute_point_multiplier: engine_info.compute_point_multiplier ?? 1,
 		};
 
 		setEngineCategory(engine_info.category);
@@ -394,7 +419,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 										control={form.control}
 										render={({ field }) => {
 											return (
-												<FormItem className='space-y-3 rounded-lg border border-input p-3'>
+												<FormItem className='rounded-lg border border-input p-3'>
 													<div className='flex flex-row gap-1 items-center'>
 														<FormLabel className='flex flex-row gap-1 items-center'>
 															{t('setting_model_provider_is_public')}
@@ -412,8 +437,8 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 															'setting_engine_page_mine_engine_is_public_tips',
 														)}
 													</FormDescription>
-													{field.value && (
-														<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
+													{isPublic && (
+														<div className='grid gap-3 rounded-xl border border-input/70 bg-background/60 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-center'>
 															<div className='space-y-1'>
 																<div className='text-sm font-medium'>
 																	{t('setting_required_plan_level_label')}
@@ -470,6 +495,10 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 												</FormItem>
 											);
 										}}
+									/>
+									<EngineBillingPolicyFields
+										form={form}
+										disabled={!authorized}
 									/>
 								</>
 							)}

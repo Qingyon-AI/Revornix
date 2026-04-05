@@ -84,6 +84,12 @@ const SectionMedia = ({
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionDetail', section_id],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserInfo'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserComputeLedger'],
+			});
 		},
 		onError() {
 			toast.error(t('section_podcast_generate_task_submitted_failed'));
@@ -98,6 +104,12 @@ const SectionMedia = ({
 			toast.success(t('section_ppt_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionDetail', section_id],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserInfo'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserComputeLedger'],
 			});
 		},
 		onError() {
@@ -188,7 +200,7 @@ const SectionMedia = ({
 		freshnessState.podcastStale ? t('section_podcast_stale_hint') : null,
 		isOwner && !canGeneratePodcast
 			? podcastEngine.subscriptionLocked
-				? t('default_resource_subscription_locked')
+				? t('hosted_feature_compute_fallback_hint')
 				: t('section_form_auto_podcast_engine_unset')
 			: null,
 	].filter((message): message is string => Boolean(message));
@@ -203,12 +215,12 @@ const SectionMedia = ({
 	const pptHintMessages = [
 		isOwner && !documentReaderModel.accessible
 			? documentReaderModel.subscriptionLocked
-				? t('default_resource_subscription_locked')
+				? t('hosted_feature_compute_fallback_hint')
 				: t('section_ppt_reader_model_unset')
 			: null,
 		isOwner && !imageGenerateEngine.accessible
 			? imageGenerateEngine.subscriptionLocked
-				? t('default_resource_subscription_locked')
+				? t('hosted_feature_compute_fallback_hint')
 				: t('section_ppt_image_engine_unset')
 			: null,
 	].filter((message): message is string => Boolean(message));

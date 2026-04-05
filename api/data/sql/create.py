@@ -280,7 +280,8 @@ async def seed_database(db: Session):
         model_providers: list[OfficialModelProvider] = [OfficialModelProvider.Revornix]
         for provider in model_providers:
             meta = provider.meta
-            if crud.model.get_ai_model_provider_by_uuid(db, meta.id) is None:
+            db_ai_model_provider = crud.model.get_ai_model_provider_by_uuid(db, meta.id)
+            if db_ai_model_provider is None:
                 db_ai_model_provider = crud.model.create_ai_model_provider(
                     db=db,
                     uuid=meta.id,
@@ -297,12 +298,21 @@ async def seed_database(db: Session):
                     ai_model_provider_id=db_ai_model_provider.id,
                     role=UserModelProviderRole.CREATOR
                 )
+            db_provider_models = crud.model.get_ai_models_for_ai_model_provider(
+                db=db,
+                provider_id=db_ai_model_provider.id,
+            )
+            seeded_model = next(
+                (item for item in db_provider_models if item.name == 'gpt-5.2'),
+                None,
+            )
+            if seeded_model is None:
                 crud.model.create_ai_model(
                     db=db,
                     name='gpt-5.2',
                     description='gpt-5.2',
                     required_plan_level=PlanAccessLevel.PRO,
-                    provider_id=db_ai_model_provider.id
+                    provider_id=db_ai_model_provider.id,
                 )
 
         # Engines（注意：这里要从 engine_provided 表取 id，别查 engine 表）
@@ -314,7 +324,8 @@ async def seed_database(db: Session):
             Engine.Official_Volc_Standard_STT
         ]
         for e in engines:
-            if crud.engine.get_engine_by_uuid(db=db, engine_uuid=e.meta.uuid) is None:
+            db_engine = crud.engine.get_engine_by_uuid(db=db, engine_uuid=e.meta.uuid)
+            if db_engine is None:
                 db_engine_provider = crud.engine.get_engine_provided_by_engine_uuid(
                     db=db,
                     engine_provided_uuid=e.meta.engine_provided.meta.uuid
@@ -333,6 +344,14 @@ async def seed_database(db: Session):
                         if e != Engine.Official_MinerU_API
                         else PlanAccessLevel.FREE
                     ),
+                    is_official_hosted=True,
+                    billing_mode=(
+                        2
+                        if e == Engine.Official_MinerU_API
+                        else 0
+                    ),
+                    billing_unit_price=1.0,
+                    compute_point_multiplier=1.0,
                     creator_id=db_root_user.id,
                     engine_provided_id=db_engine_provider.id
                 )

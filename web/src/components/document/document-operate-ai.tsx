@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { Bot, ImagePlus, Loader2, Send, X } from 'lucide-react';
@@ -10,6 +11,7 @@ import { useTranslations } from 'next-intl';
 import documentApi from '@/api/document';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
@@ -111,6 +113,7 @@ const DocumentOperateAI = ({
 	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
+	const queryClient = useQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel } = useDefaultResourceAccess();
 	const {
@@ -288,9 +291,9 @@ const DocumentOperateAI = ({
 				}
 				break;
 			}
-			case 'done': {
-				setMessages((currentMessages) =>
-					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+				case 'done': {
+					setMessages((currentMessages) =>
+						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
 						...message,
 						role: 'assistant',
 						ai_state: {
@@ -309,11 +312,17 @@ const DocumentOperateAI = ({
 										event.payload.references,
 									)
 								: message.chunk_citations,
-					})),
-				);
-				break;
-			}
-			case 'error': {
+						})),
+					);
+					void queryClient.invalidateQueries({
+						queryKey: ['paySystemUserInfo'],
+					});
+					void queryClient.invalidateQueries({
+						queryKey: ['paySystemUserComputeLedger'],
+					});
+					break;
+				}
+				case 'error': {
 				setMessages((currentMessages) =>
 					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
 						...message,
@@ -331,8 +340,8 @@ const DocumentOperateAI = ({
 						),
 					})),
 				);
-				break;
-			}
+					break;
+				}
 		}
 	};
 
@@ -427,7 +436,7 @@ const DocumentOperateAI = ({
 			return;
 		}
 		if (revornixModel.subscriptionLocked) {
-			toast.error(t('default_resource_subscription_locked'));
+			toast.error(t('revornix_ai_access_hint'));
 			return;
 		}
 
@@ -476,6 +485,9 @@ const DocumentOperateAI = ({
 					</SheetDescription>
 					<div className='rounded-lg border border-border/60 bg-card/65 px-3 py-2 text-xs leading-5 text-muted-foreground'>
 						{t('document_ai_session_notice')}
+					</div>
+					<div className='rounded-lg border border-border/60 bg-card/65 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+						{t('revornix_ai_access_hint')}
 					</div>
 				</SheetHeader>
 
@@ -571,7 +583,7 @@ const DocumentOperateAI = ({
 									/>
 								</div>
 								<Link
-									href='/setting/mcp'
+									href={settingAnchorHrefs.mcpServerManage}
 									className='shrink-0 underline underline-offset-4'>
 									{t('revornix_ai_go_to_configure_mcp')}
 								</Link>

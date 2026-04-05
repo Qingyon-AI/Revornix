@@ -41,6 +41,12 @@ const DocumentPodcast = ({
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', document_id],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserInfo'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserComputeLedger'],
+			});
 		},
 		onError(error, variables, onMutateResult, context) {
 			toast.error(t('document_podcast_generate_task_submitted_failed'));
@@ -57,7 +63,7 @@ const DocumentPodcast = ({
 		freshnessState.podcastStale ? t('document_podcast_stale_hint') : null,
 		!canGeneratePodcast
 			? podcastEngine.subscriptionLocked
-				? t('default_resource_subscription_locked')
+				? t('hosted_feature_compute_fallback_hint')
 				: t('document_create_auto_podcast_engine_unset')
 			: null,
 	].filter((message): message is string => Boolean(message));

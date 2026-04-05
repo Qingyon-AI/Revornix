@@ -181,22 +181,39 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									{t('setting_model_models_configure')}
 								</Button>
 							</DialogTrigger>
-							<DialogContent>
+							<DialogContent className='max-h-[88vh] max-w-5xl flex flex-col p-0'>
 								<DialogHeader>
-									<DialogTitle>
+									<div className='px-6 pt-6'>
+										<DialogTitle>
 										{t('setting_model_models_configure')}
-									</DialogTitle>
-									<DialogDescription>
+										</DialogTitle>
+										<DialogDescription>
 										{t('setting_model_models_configure_description')}
-									</DialogDescription>
+										</DialogDescription>
+									</div>
 								</DialogHeader>
-								<div className='max-h-[80vh] flex flex-col gap-2'>
+								<div className='flex min-h-0 flex-1 flex-col px-6 pb-6 overflow-auto'>
 									{models?.data?.length === 0 && (
-										<div className='rounded p-3 text-xs bg-muted text-center text-muted-foreground'>
+										<div className='rounded-xl border border-dashed border-input/70 bg-muted/40 p-4 text-sm text-center text-muted-foreground'>
 											{t('setting_model_empty')}
 										</div>
 									)}
-									<div className='flex-1 overflow-auto flex flex-col gap-2'>
+									<div className='mt-4 flex items-center justify-between gap-3'>
+										<div className='text-sm text-muted-foreground'>
+											{t('setting_model_collection_manage_hint')}
+										</div>
+										<Button
+											type='button'
+											variant='outline'
+											className='rounded-xl'
+											onClick={() => {
+												setShowAddModel(true);
+											}}>
+											{t('setting_model_add')}
+											<PlusCircle className='ml-1 size-4' />
+										</Button>
+									</div>
+									<div className='mt-4 flex-1 space-y-3 pr-1'>
 										{models &&
 											models.data?.map((model, index) => {
 												return <ModelCard key={index} model={model} />;
@@ -216,15 +233,6 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 												}}
 											/>
 										)}
-									</div>
-									<Separator className='my-5' />
-									<div
-										className='rounded flex flex-row bg-muted p-3 text-xs text-muted-foreground justify-center cursor-pointer'
-										onClick={() => {
-											setShowAddModel(true);
-										}}>
-										{t('setting_model_add')}
-										<PlusCircle className='h-4 w-4 ml-1' />
 									</div>
 								</div>
 							</DialogContent>

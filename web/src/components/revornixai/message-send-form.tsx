@@ -1,6 +1,6 @@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
 import {
@@ -43,11 +43,13 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { settingAnchorHrefs } from '@/lib/setting-navigation';
 
 const MessageSendForm = () => {
 	const router = useRouter();
 	const t = useTranslations();
 	const isMobile = useIsMobile();
+	const queryClient = useQueryClient();
 	const formSchema = z.object({
 		message: z.string(),
 		enable_mcp: z.boolean(),
@@ -181,6 +183,12 @@ const MessageSendForm = () => {
 
 				case 'done':
 					store.advanceChatMessageWorkflow(sessionId, event.chat_id, 'done');
+					void queryClient.invalidateQueries({
+						queryKey: ['paySystemUserInfo'],
+					});
+					void queryClient.invalidateQueries({
+						queryKey: ['paySystemUserComputeLedger'],
+					});
 					break;
 
 				case 'error':
@@ -230,18 +238,18 @@ const MessageSendForm = () => {
 				action: {
 					label: t('revornix_ai_default_model_goto'),
 					onClick: () => {
-						router.push('/setting');
+						router.push(settingAnchorHrefs.defaultRevornixAIModel);
 					},
 				},
 			});
 			return;
 		}
 		if (revornixModel.subscriptionLocked) {
-			toast.error(t('default_resource_subscription_locked'), {
+			toast.error(t('revornix_ai_access_hint'), {
 				action: {
 					label: t('revornix_ai_default_model_goto'),
 					onClick: () => {
-						router.push('/setting');
+						router.push(settingAnchorHrefs.defaultRevornixAIModel);
 					},
 				},
 			});
@@ -361,6 +369,20 @@ const MessageSendForm = () => {
 			} catch (e) {
 				errorMessage = 'Unknown error';
 			}
+			if (
+				typeof errorMessage === 'string' &&
+				errorMessage.includes(
+					'Paid subscription or available compute points required.',
+				)
+			) {
+				errorMessage = t('revornix_ai_access_hint');
+			}
+			if (
+				typeof errorMessage === 'string' &&
+				errorMessage.includes('Official LLM quota exceeded')
+			) {
+				errorMessage = t('revornix_ai_quota_hint');
+			}
 			throw new Error(`Failed to send message, ${errorMessage}`);
 		}
 		await consumeSSE(response, onEvent);
@@ -387,7 +409,7 @@ const MessageSendForm = () => {
 
 	const renderDesktopToolbar = () => {
 		return (
-			<div className='p-2 flex flex-wrap items-center gap-1.5 border-t border-b border-border/60 bg-background'>
+			<div className='p-2 flex flex-wrap items-center gap-1.5 border-t border-b border-border/60'>
 				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs'>
 					<span className='shrink-0 text-muted-foreground'>
 						{t('revornix_ai_default_model')}
@@ -397,7 +419,7 @@ const MessageSendForm = () => {
 					</span>
 					<span className='h-3.5 w-px shrink-0 bg-border' />
 					<Link
-						href={'/setting'}
+						href={settingAnchorHrefs.defaultRevornixAIModel}
 						className='shrink-0 text-xs text-muted-foreground transition-colors hover:text-foreground'>
 						{t('revornix_ai_default_model_goto')}
 					</Link>
@@ -428,7 +450,7 @@ const MessageSendForm = () => {
 							/>
 							<span className='h-3.5 w-px shrink-0 bg-border' />
 							<Link
-								href={'/setting/mcp'}
+								href={settingAnchorHrefs.mcpServerManage}
 								className='text-xs text-muted-foreground transition-colors hover:text-foreground'>
 								{t('revornix_ai_go_to_configure_mcp')}
 							</Link>
@@ -480,7 +502,7 @@ const MessageSendForm = () => {
 									{defaultModelName}
 								</div>
 								<Link
-									href={'/setting'}
+									href={settingAnchorHrefs.defaultRevornixAIModel}
 									className='mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4'>
 									{t('revornix_ai_default_model_goto')}
 								</Link>
@@ -515,7 +537,7 @@ const MessageSendForm = () => {
 									/>
 								</div>
 								<Link
-									href={'/setting/mcp'}
+									href={settingAnchorHrefs.mcpServerManage}
 									className='mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4'>
 									{t('revornix_ai_go_to_configure_mcp')}
 								</Link>
@@ -538,7 +560,7 @@ const MessageSendForm = () => {
 							name='message'
 							render={({ field }) => (
 								<FormItem className='flex-1'>
-									<div className='relative rounded-[20px] bg-background'>
+									<div className='relative'>
 										{attachments.length > 0 && mainUserInfo?.id ? (
 											<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
 												{attachments.map((attachment) => (
@@ -565,11 +587,11 @@ const MessageSendForm = () => {
 											</div>
 										) : null}
 										<Textarea
-											className={`resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
-												isMobile
-													? 'min-h-[88px] max-h-[144px] pb-[3.25rem]'
-													: 'min-h-[78px] max-h-[140px] pb-[3.25rem] pr-[3.5rem]'
-											}`}
+											className={`bg-transparent! resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
+													isMobile
+														? 'min-h-[88px] max-h-[144px] pb-[3.25rem]'
+														: 'min-h-[78px] max-h-[140px] pb-[3.25rem] pr-[3.5rem]'
+												}`}
 											placeholder={t('revornix_ai_message_placeholder')}
 											disabled={mutateSendMessage.isPending}
 											{...field}

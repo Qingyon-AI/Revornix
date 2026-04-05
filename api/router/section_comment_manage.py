@@ -5,15 +5,18 @@ import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
-from common.dependencies import get_current_user, get_current_user_without_throw, get_db
+from common.dependencies import (
+    get_current_user,
+    get_current_user_without_throw,
+    get_db,
+)
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
 from router.logic_helpers import ensure_private_section_access
-
 section_comment_manage_router = APIRouter()
 
 
-def _ensure_section_comment_access(
+async def _ensure_section_comment_access(
     *,
     db: Session,
     section_id: int,
@@ -44,12 +47,12 @@ def _ensure_section_comment_access(
     return db_section
 
 @section_comment_manage_router.post('/comment/create', response_model=schemas.common.NormalResponse)
-def create_section_comment(
+async def create_section_comment(
     section_comment_create_request: schemas.section.SectionCommentCreateRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
 ):
-    _ensure_section_comment_access(
+    await _ensure_section_comment_access(
         db=db,
         section_id=section_comment_create_request.section_id,
         user_id=user.id,
@@ -79,12 +82,12 @@ def create_section_comment(
     return schemas.common.SuccessResponse()
 
 @section_comment_manage_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
-def search_section_comment(
+async def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user_without_throw)
+    user: models.user.User = Depends(get_current_user_without_throw),
 ):
-    _ensure_section_comment_access(
+    await _ensure_section_comment_access(
         db=db,
         section_id=section_comment_search_request.section_id,
         user_id=user.id if user is not None else None,
@@ -125,10 +128,10 @@ def search_section_comment(
     )
 
 @section_comment_manage_router.post('/comment/delete', response_model=schemas.common.NormalResponse)
-def delete_section_comment(
+async def delete_section_comment(
     section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
 ):
     crud.section.delete_section_comments_by_section_comment_ids(
         db=db,

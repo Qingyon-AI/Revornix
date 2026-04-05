@@ -14,6 +14,7 @@ from typing import Tuple, Any
 
 from common.common import extract_title_and_summary
 from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
+from common.usage_billing import persist_engine_usage
 from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
 from data.sql.base import session_scope
@@ -332,6 +333,12 @@ class MineruApiEngine(MarkdownEngineBase):
                 await browser.close()
 
             results = await self._extract_files([str(temp_shot_pdf_path)])
+            persist_engine_usage(
+                user_id=self.user_id,
+                resource_uuid=self.resource_uuid or self.engine_uuid,
+                usage_details={"file_count": 1},
+                source="mineru_markdown_website",
+            )
 
         if not results:
             raise Exception("No results returned from file extraction")
@@ -348,6 +355,12 @@ class MineruApiEngine(MarkdownEngineBase):
 
     async def analyse_file(self, file_path: str) -> FileInfo:
         results = await self._extract_files([file_path])
+        persist_engine_usage(
+            user_id=self.user_id,
+            resource_uuid=self.resource_uuid or self.engine_uuid,
+            usage_details={"file_count": 1},
+            source="mineru_markdown_file",
+        )
 
         if not results:
             raise Exception("No results returned from file extraction")

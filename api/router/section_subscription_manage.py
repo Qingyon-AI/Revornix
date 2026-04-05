@@ -5,7 +5,10 @@ import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
-from common.dependencies import get_current_user, get_db
+from common.dependencies import (
+    get_current_user,
+    get_db,
+)
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionAuthority, UserSectionRole
 from router.logic_helpers import resolve_subscribe_action
@@ -14,10 +17,10 @@ section_subscription_manage_router = APIRouter()
 
 
 @section_subscription_manage_router.post('/subscribe', response_model=schemas.common.NormalResponse)
-def subscribe_section(
+async def subscribe_section(
     section_subscribe_request: schemas.section.SectionSubscribeRequest,
     db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User = Depends(get_current_user),
 ):
     db_section = crud.section.get_section_by_section_id(
         db=db,
@@ -39,7 +42,6 @@ def subscribe_section(
     )
 
     if action == "create":
-        # 免费专栏仅需要订阅一次即可永久生效，TODO：用户如果修改专栏的免费状态，则使其免费订阅失效，需要重新订阅
         crud.section.create_section_user(
             db=db,
             section_id=section_subscribe_request.section_id,

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 
 from .base import BaseModel
 from .user import UserPublicInfo
@@ -12,9 +12,21 @@ class ModelProviderForkRequest(BaseModel):
 
 class ModelCreateRequest(BaseModel):
     name: str
-    description: str | None
+    description: str | None = None
     required_plan_level: int = 0
     provider_id: int
+    is_official_hosted: bool = False
+    compute_point_multiplier: float = Field(default=1.0, gt=0)
+
+    @model_validator(mode="after")
+    def normalize_billing_fields(self):
+        self.name = self.name.strip()
+        if self.description is not None:
+            description = self.description.strip()
+            self.description = description or None
+        if not self.is_official_hosted:
+            self.compute_point_multiplier = 1.0
+        return self
 
 class ModelCreateResponse(BaseModel):
     id: int
@@ -58,6 +70,8 @@ class Model(BaseModel):
     name: str
     description: str | None
     required_plan_level: int = 0
+    is_official_hosted: bool = False
+    compute_point_multiplier: float = 1.0
     subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None
@@ -112,6 +126,19 @@ class ModelUpdateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     required_plan_level: int | None = None
+    is_official_hosted: bool | None = None
+    compute_point_multiplier: float | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def normalize_billing_fields(self):
+        if self.name is not None:
+            self.name = self.name.strip()
+        if self.description is not None:
+            description = self.description.strip()
+            self.description = description or None
+        if self.is_official_hosted is False:
+            self.compute_point_multiplier = 1.0
+        return self
 
 class ModelProviderUpdateRequest(BaseModel):
     id: int
@@ -130,3 +157,18 @@ class ChatItem(BaseModel):
 class ChatMessages(BaseModel):
     messages: list[ChatItem]
     enable_mcp: bool = False
+
+
+class BillingAuditIssue(BaseModel):
+    code: str
+    severity: str
+    resource_id: int
+    resource_uuid: str
+    resource_name: str
+    provider_name: str | None = None
+    title: str
+    description: str
+
+
+class BillingAuditResponse(BaseModel):
+    items: list[BillingAuditIssue]

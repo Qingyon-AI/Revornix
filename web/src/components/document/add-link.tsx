@@ -33,6 +33,7 @@ import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUserContext } from '@/provider/user-provider';
 import Link from 'next/link';
+import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
@@ -170,7 +171,7 @@ const AddLink = () => {
 									<p>
 										{t('document_create_link_engine_unset_description_1')}
 										<Link
-											href={'/setting'}
+											href={settingAnchorHrefs.defaultWebsiteParseEngine}
 											className='inline-block underline underline-offset-2 font-bold'>
 											{t('document_create_link_engine_unset_description_2')}
 										</Link>
@@ -187,7 +188,7 @@ const AddLink = () => {
 									<p>
 										{t('default_resource_subscription_locked')}{' '}
 										<Link
-											href={'/setting'}
+											href={settingAnchorHrefs.defaultWebsiteParseEngine}
 											className='inline-block font-bold underline underline-offset-2'>
 											{t('revornix_ai_default_model_goto')}
 										</Link>

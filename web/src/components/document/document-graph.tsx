@@ -19,6 +19,22 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 
+const resolveGraphGenerateErrorMessage = (
+	message: string | undefined,
+	t: ReturnType<typeof useTranslations>,
+) => {
+	if (!message) {
+		return t('document_graph_generate_failed_default');
+	}
+	if (message.includes('Paid subscription or available compute points required.')) {
+		return t('document_graph_generate_failed_access');
+	}
+	if (message.includes('Official LLM quota exceeded')) {
+		return t('document_graph_generate_failed_quota');
+	}
+	return message;
+};
+
 const DocumentGraph = ({
 	document_id,
 	showSearch = false,
@@ -61,9 +77,17 @@ const DocumentGraph = ({
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', document_id],
 			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserInfo'],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['paySystemUserComputeLedger'],
+			});
 		},
 		onError(mutationError) {
-			toast.error(mutationError.message);
+			toast.error(
+				resolveGraphGenerateErrorMessage(mutationError.message, t),
+			);
 			console.error(mutationError);
 		},
 	});
@@ -120,20 +144,25 @@ const DocumentGraph = ({
 							description={t('document_graph_description')}
 							tone='warning'
 							action={
-								<Button
-									variant='outline'
-									size='sm'
-									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-									disabled={mutateGenerateDocumentGraph.isPending}
-									title={t('document_graph_generate')}
-									onClick={() => {
-										mutateGenerateDocumentGraph.mutate();
-									}}>
-									{mutateGenerateDocumentGraph.isPending ? (
-										<Loader2 className='size-4 animate-spin' />
-									) : null}
-									{t('document_graph_generate')}
-								</Button>
+								<div className='flex flex-col items-center gap-2'>
+									<Button
+										variant='outline'
+										size='sm'
+										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+										disabled={mutateGenerateDocumentGraph.isPending}
+										title={t('document_graph_generate')}
+										onClick={() => {
+											mutateGenerateDocumentGraph.mutate();
+										}}>
+										{mutateGenerateDocumentGraph.isPending ? (
+											<Loader2 className='size-4 animate-spin' />
+										) : null}
+										{t('document_graph_generate')}
+									</Button>
+									<p className='max-w-md text-center text-xs leading-5 text-muted-foreground'>
+										{t('document_graph_access_hint')}
+									</p>
+								</div>
 							}
 						/>
 					) : null}
@@ -165,20 +194,25 @@ const DocumentGraph = ({
 							iconClassName='text-destructive'
 							tone='danger'
 							action={
-								<Button
-									variant='outline'
-									size='sm'
-									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-									disabled={mutateGenerateDocumentGraph.isPending}
-									title={t('document_graph_regenerate')}
-									onClick={() => {
-										mutateGenerateDocumentGraph.mutate();
-									}}>
-									{mutateGenerateDocumentGraph.isPending ? (
-										<Loader2 className='size-4 animate-spin' />
-									) : null}
-									{t('document_graph_regenerate')}
-								</Button>
+								<div className='flex flex-col items-center gap-2'>
+									<Button
+										variant='outline'
+										size='sm'
+										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+										disabled={mutateGenerateDocumentGraph.isPending}
+										title={t('document_graph_regenerate')}
+										onClick={() => {
+											mutateGenerateDocumentGraph.mutate();
+										}}>
+										{mutateGenerateDocumentGraph.isPending ? (
+											<Loader2 className='size-4 animate-spin' />
+										) : null}
+										{t('document_graph_regenerate')}
+									</Button>
+									<p className='max-w-md text-center text-xs leading-5 text-muted-foreground'>
+										{t('document_graph_access_hint')}
+									</p>
+								</div>
 							}
 						/>
 					) : null}

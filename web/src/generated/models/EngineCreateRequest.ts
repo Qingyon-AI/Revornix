@@ -45,6 +45,30 @@ export interface EngineCreateRequest {
     engine_provided_id: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof EngineCreateRequest
+     */
+    is_official_hosted?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineCreateRequest
+     */
+    billing_mode?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineCreateRequest
+     */
+    billing_unit_price?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof EngineCreateRequest
+     */
+    compute_point_multiplier?: number;
+    /**
+     * 
      * @type {number}
      * @memberof EngineCreateRequest
      */
@@ -81,6 +105,10 @@ export function EngineCreateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'],
         'engine_provided_id': json['engine_provided_id'],
+        'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
+        'billing_mode': json['billing_mode'] == null ? undefined : json['billing_mode'],
+        'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
+        'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
@@ -101,8 +129,11 @@ export function EngineCreateRequestToJSONTyped(value?: EngineCreateRequest | nul
         'description': value['description'],
         'is_public': value['is_public'],
         'engine_provided_id': value['engine_provided_id'],
+        'is_official_hosted': value['is_official_hosted'],
+        'billing_mode': value['billing_mode'],
+        'billing_unit_price': value['billing_unit_price'],
+        'compute_point_multiplier': value['compute_point_multiplier'],
         'required_plan_level': value['required_plan_level'],
         'config_json': value['config_json'],
     };
 }
-

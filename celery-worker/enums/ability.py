@@ -10,6 +10,7 @@ class Ability(Enum):
     API_COLLECT_LIMITED_MORE = "api-collect-limited-more"
     API_COLLECT_LIMITED_MUCH_MORE = "api-collect-limited-much-more"
     SECTION_COLLABORATION = "section-collaboration"
+    PAID_SECTION_CREATE = "paid-section-create"
     OFFICIAL_PROXIED_LLM_LIMITED = "official-proxied-llm-limited"
     OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED = "official-proxied-podcast-generator-limited"
     OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED = "official-proxied-image-generator-limited"

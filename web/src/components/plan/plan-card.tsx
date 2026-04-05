@@ -31,7 +31,7 @@ import { getOrderStatus } from '@/service/order';
 import { useUserContext } from '@/provider/user-provider';
 import { useCountDown, useInterval } from 'ahooks';
 import { useGetSet } from 'react-use';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn, getPrice } from '@/lib/utils';
 import {
@@ -40,6 +40,8 @@ import {
 	PrePayProductRequestDTOPayWayEnum,
 	PrePayProductResponseDTO,
 } from '@/generated-pay';
+import { PayStatus } from '@/enums/order';
+import { Plan as ProductPlan } from '@/enums/product';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -59,14 +61,27 @@ export type IntroduceAbility = {
 const PlanCard = ({
 	product_uuid,
 	badge,
+	category,
+	actionLabel,
+	description,
+	description_zh,
+	footnote,
+	footnote_zh,
 	introduction_abilities,
 }: {
 	product_uuid: string;
 	badge?: string;
+	category?: PrePayProductRequestDTOCategoryEnum;
+	actionLabel?: string;
+	description?: string;
+	description_zh?: string;
+	footnote?: string;
+	footnote_zh?: string;
 	introduction_abilities?: IntroduceAbility[];
 }) => {
 	const t = useTranslations();
 	const locale = useLocale();
+	const queryClient = useQueryClient();
 
 	const [prepayBackData, setPrepayBackData] =
 		useState<PrePayProductResponseDTO>();
@@ -87,6 +102,14 @@ const PlanCard = ({
 	const [showScanCode, setShowScanCode] = useState(false);
 	const { refreshMainUserInfo, mainUserInfo, refreshPaySystemInfo } =
 		useUserContext();
+	const isFreePlan =
+		(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
+			PrePayProductRequestDTOCategoryEnum.UserPlan &&
+		product_uuid === ProductPlan.FREE;
+	const isPaymentSettled = (status?: number | null) =>
+		status === PayStatus.SUCCESS ||
+		status === PayStatus.FINISHED ||
+		status === PayStatus.COMPLETED;
 
 	const clean = useInterval(
 		async () => {
@@ -98,12 +121,15 @@ const PlanCard = ({
 				console.error(err);
 				return;
 			}
-			if (res && res.status === 0) {
+			if (res && isPaymentSettled(res.status)) {
 				clean();
 				toast.success(t('account_plan_pay_success'));
 				await utils.sleep(1000);
 				await refreshMainUserInfo();
 				await refreshPaySystemInfo();
+				await queryClient.invalidateQueries({
+					queryKey: ['paySystemUserComputeLedger'],
+				});
 				setShowPayDialog(false);
 				setShowScanCode(false);
 				setPrepayBackData(undefined);
@@ -145,7 +171,7 @@ const PlanCard = ({
 			prePayProduct({
 				product_uuid,
 				pay_way,
-				category: PrePayProductRequestDTOCategoryEnum.UserPlan,
+				category: category ?? PrePayProductRequestDTOCategoryEnum.UserPlan,
 				currency_code: currencyCode,
 			}),
 		);
@@ -317,6 +343,19 @@ const PlanCard = ({
 						<Info size={15} />
 						{t('account_plan_pay_way_choose_advice')}
 					</div>
+					{(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
+						PrePayProductRequestDTOCategoryEnum.UserPlan && (
+							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+								{t('account_plan_subscription_checkout_notice')}
+							</div>
+						)}
+					{(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
+						PrePayProductRequestDTOCategoryEnum.UserPlan &&
+						product_uuid === ProductPlan.MAX && (
+							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+								{t('account_plan_upgrade_points_notice')}
+							</div>
+						)}
 				</DialogContent>
 			</Dialog>
 
@@ -337,6 +376,11 @@ const PlanCard = ({
 						{!productDetail && t('loading')}
 						{locale === 'zh' ? productDetail?.name_zh : productDetail?.name}
 					</CardTitle>
+					{(description || description_zh) && (
+						<p className='text-sm leading-6 text-muted-foreground'>
+							{locale === 'zh' ? description_zh : description}
+						</p>
+					)}
 				</CardHeader>
 				<CardContent className='flex flex-col gap-5 flex-1'>
 					<div className='flex justify-between items-center'>
@@ -349,7 +393,12 @@ const PlanCard = ({
 										} ${getPrice(productDetail?.prices, currencyCode)?.price}`
 									: t('loading')}
 							</span>
-							<span>/{t('account_plan_month')}</span>
+							{(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
+							PrePayProductRequestDTOCategoryEnum.UserPlan ? (
+								<span>/{t('account_plan_month')}</span>
+							) : (
+								<span>{t('account_plan_one_time')}</span>
+							)}
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -385,17 +434,32 @@ const PlanCard = ({
 								);
 							})}
 					</div>
+					{(footnote || footnote_zh) && (
+						<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+							{locale === 'zh' ? footnote_zh : footnote}
+						</div>
+					)}
 				</CardContent>
 				<CardFooter>
 					<Button
 						className='w-full'
-						disabled={!productDetail?.prices}
+						disabled={isFreePlan || !productDetail?.prices}
 						onClick={() => {
+							if (isFreePlan) {
+								return;
+							}
+							setShowScanCode(false);
+							setPrepayBackData(undefined);
+							setPayWay(undefined);
+							setTargetTime(undefined);
+							setIntervalTime(undefined);
 							setShowPayDialog(true);
 						}}>
-						{productDetail?.prices
-							? t('account_plan_subscribe')
-							: t('account_plan_free')}
+						{isFreePlan
+							? t('account_plan_no_subscription_needed')
+							: productDetail?.prices
+								? actionLabel ?? t('account_plan_subscribe')
+								: t('account_plan_free')}
 					</Button>
 				</CardFooter>
 			</Card>

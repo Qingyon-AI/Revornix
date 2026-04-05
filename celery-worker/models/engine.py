@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -35,6 +35,8 @@ class Engine(Base):
     config_json: Mapped[str | None] = mapped_column(String(2000))
     required_plan_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_official_hosted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    compute_point_multiplier: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -3,9 +3,14 @@
 @plugin '@tailwindcss/typography';
 
 .global-highlight {
-	background-color: rgba(255, 255, 0, 0.4);
-	transition: background-color 0.5s ease;
-	border-radius: 4px;
+	background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--primary) 14%, transparent) inset,
+		0 10px 24px -22px color-mix(in srgb, var(--primary) 36%, transparent);
+	transition:
+		background-color 0.45s ease,
+		box-shadow 0.45s ease;
+	border-radius: 10px;
 }
 
 @custom-variant dark (&:is(.dark *));
