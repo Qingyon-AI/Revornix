@@ -42,4 +42,5 @@ export default {
     bindWeChat: API_PREFIX + '/user/bind/wechat/web',
     unBindWeChat: API_PREFIX + '/user/unbind/wechat',
     getUserInfoForPaySystem: UNION_PAY_API_PREFIX + '/user/info',
+    getUserComputeLedgerForPaySystem: UNION_PAY_API_PREFIX + '/user/compute/ledger',
 } 

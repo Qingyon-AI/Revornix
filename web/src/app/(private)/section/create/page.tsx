@@ -254,8 +254,8 @@ const CreatePage = () => {
 									</div>
 								</FormItem>
 							);
-						}}
-					/>
+							}}
+						/>
 					<FormField
 						name='process_task_trigger_type'
 						control={form.control}

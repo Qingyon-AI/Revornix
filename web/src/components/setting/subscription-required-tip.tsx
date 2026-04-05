@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { UserResponseDTO } from '@/generated-pay';
 import { cn } from '@/lib/utils';
-import { getSubscriptionCtaTranslationKey } from '@/lib/subscription';
+import SubscriptionActionLinks from './subscription-action-links';
 
 type SubscriptionRequiredTipProps = {
 	visible: boolean;
@@ -15,8 +14,6 @@ type SubscriptionRequiredTipProps = {
 
 const SubscriptionRequiredTip = ({
 	visible,
-	paySystemUserInfo,
-	requiredPlanLevel,
 	className,
 }: SubscriptionRequiredTipProps) => {
 	const t = useTranslations();
@@ -28,16 +25,8 @@ const SubscriptionRequiredTip = ({
 	return (
 		<p className={cn('text-xs text-muted-foreground leading-5', className)}>
 			{t('setting_subscription_required_hint')}{' '}
-			<Link
-				href='/account/plan'
-				className='text-primary underline underline-offset-4'>
-				{t(
-					getSubscriptionCtaTranslationKey(
-						paySystemUserInfo,
-						requiredPlanLevel,
-					),
-				)}
-			</Link>
+			<SubscriptionActionLinks />
+			<span className='ml-1'>{t('setting_subscription_required_hint_compute_fallback')}</span>
 		</p>
 	);
 };

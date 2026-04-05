@@ -13,10 +13,10 @@ from enums.engine_enums import UserEngineRole
 from common.encrypt import decrypt_engine_config
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
+    get_user_compute_balance_in_func,
     get_user_plan_level_in_func,
-    get_user_plan_start_time_in_func,
-    plan_ability_checked_in_func,
 )
+from common.usage_billing import get_minimum_required_points
 from common.jwt_utils import create_token
 from common.subscription_access import (
     SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
@@ -25,8 +25,8 @@ from common.subscription_access import (
 )
 from enums.ability import Ability
 from enums.engine_enums import Engine, EngineProvided
+from enums.product import PlanAccessLevel
 from enums.user import UserRole
-from common.usage_billing import get_monthly_used_points
 
 T_Engine = TypeVar("T_Engine", bound=EngineBase)
 
@@ -54,10 +54,12 @@ class EngineProxy:
         engine_uuid: str | None = None
         engine_config_json: str | None = None
 
-        official_ability_base: str | None = None
-        official_resource_uuid: str | None = None
+        official_hosted_check_needed = False
         official_access_token: str | None = None
         required_plan_level = 0
+        user_plan_level = PlanAccessLevel.FREE
+        available_compute_points = 0
+        minimum_required_points = 1
 
         # ---------- DB（同步世界） ----------
         with session_scope() as db:
@@ -91,12 +93,11 @@ class EngineProxy:
                 required_plan_level = db_engine.required_plan_level
                 if is_subscription_required_level(required_plan_level):
                     official_access_token, _ = create_token(user=db_user)
-                if db_engine.uuid == Engine.Official_Volc_TTS.meta.uuid:
-                    official_ability_base = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value
-                    official_resource_uuid = db_engine.uuid
-                elif db_engine.uuid == Engine.Official_Banana_Image.meta.uuid:
-                    official_ability_base = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value
-                    official_resource_uuid = db_engine.uuid
+                official_hosted_check_needed = bool(db_engine.is_official_hosted)
+                minimum_required_points = get_minimum_required_points(
+                    multiplier=db_engine.compute_point_multiplier,
+                    unit_price=db_engine.billing_unit_price,
+                )
 
             engine_provided_uuid = db_engine.engine_provided.uuid
             engine_uuid = db_engine.uuid
@@ -114,44 +115,31 @@ class EngineProxy:
                 required_plan_level=required_plan_level,
                 user_plan_level=user_plan_level,
             ):
-                raise schemas.error.CustomException(
-                    message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
-                    code=403,
-                )
-        if deployed_by_official and official_ability_base and official_resource_uuid:
+                if official_hosted_check_needed:
+                    available_compute_points = await get_user_compute_balance_in_func(
+                        authorization=authorization
+                    )
+                    if available_compute_points < minimum_required_points:
+                        raise schemas.error.CustomException(
+                            message="Paid subscription or available compute points required.",
+                            code=403,
+                        )
+                else:
+                    raise schemas.error.CustomException(
+                        message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+                        code=403,
+                    )
+        if deployed_by_official and official_hosted_check_needed:
             if official_access_token is None:
                 raise Exception("Failed to create access token for official engine ability check")
             authorization = f"Bearer {official_access_token}"
-            plan_start_time = await get_user_plan_start_time_in_func(
-                authorization=authorization,
-            )
-            with session_scope() as db:
-                token_total = get_monthly_used_points(
-                    db=db,
-                    user_id=user_id,
-                    resource_uuid=official_resource_uuid,
-                    cycle_anchor_at=plan_start_time,
+            if available_compute_points <= 0:
+                available_compute_points = await get_user_compute_balance_in_func(
+                    authorization=authorization
                 )
-
-            ability = official_ability_base
-            if official_ability_base == Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED.value:
-                if token_total > 1_000_000:
-                    ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_MORE.value
-                if token_total > 10_000_000:
-                    ability = Ability.OFFICIAL_PROXIED_PODCAST_GENERATOR_LIMITED_NONE.value
-            elif official_ability_base == Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED.value:
-                if token_total > 100_000:
-                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_MORE.value
-                if token_total > 1000_000:
-                    ability = Ability.OFFICIAL_PROXIED_IMAGE_GENERATOR_LIMITED_NONE.value
-
-            authorized = await plan_ability_checked_in_func(
-                ability=ability,
-                authorization=authorization
-            )
-            if not authorized:
+            if available_compute_points < minimum_required_points:
                 raise schemas.error.CustomException(
-                    message="plan ability denied",
+                    message="Official hosted compute points exhausted. Please upgrade your plan or buy a compute pack.",
                     code=403,
                 )
 

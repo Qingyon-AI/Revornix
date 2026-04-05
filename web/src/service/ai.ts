@@ -2,6 +2,17 @@ import aiApi from '@/api/ai'
 import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InifiniteScrollPagnitionModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
+export type BillingAuditIssueDTO = {
+    code: string
+    severity: string
+    resource_id: number
+    resource_uuid: string
+    resource_name: string
+    provider_name?: string | null
+    title: string
+    description: string
+}
+
 export const forkAiModelProvider = async (data: ModelProviderForkRequest) => {
     return await request(aiApi.forkAiModelProvider, {
         data: data
@@ -72,4 +83,8 @@ export const getAiModelProvider = async (data: ModelProviderRequest): Promise<Mo
     return await request(aiApi.getAiModelProviderDetail, {
         data: data
     })
+}
+
+export const getAiModelBillingAudit = async (): Promise<{ items: BillingAuditIssueDTO[] }> => {
+    return await request(aiApi.getAiModelBillingAudit)
 }

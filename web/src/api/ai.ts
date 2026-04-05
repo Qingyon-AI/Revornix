@@ -13,4 +13,5 @@ export default {
     updateAiModelProvider: API_PREFIX + '/ai/model-provider/update',
     getAiModelDetail: API_PREFIX + '/ai/model/detail',
     getAiModelProviderDetail: API_PREFIX + '/ai/model-provider/detail',
+    getAiModelBillingAudit: API_PREFIX + '/ai/model/billing-audit',
 } 

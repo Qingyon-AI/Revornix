@@ -68,6 +68,8 @@ def create_ai_model(
     provider_id: int,
     description: str | None = None,
     required_plan_level: int = 0,
+    is_official_hosted: bool = False,
+    compute_point_multiplier: float = 1.0,
     uuid: str | None = None
 ):
     """
@@ -79,6 +81,8 @@ def create_ai_model(
         description=description,
         required_plan_level=required_plan_level,
         provider_id=provider_id,
+        is_official_hosted=is_official_hosted,
+        compute_point_multiplier=compute_point_multiplier,
         uuid=uuid,
         create_time=now
     )

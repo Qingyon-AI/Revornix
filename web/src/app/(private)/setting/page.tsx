@@ -249,7 +249,9 @@ const SettingPage = () => {
 						</div>
 					</div>
 					<Separator />
-					<div className='flex justify-between items-center'>
+					<div
+						className='flex justify-between items-center'
+						id='mcp_server_manage'>
 						<Label className='flex flex-col gap-2 items-start'>
 							{t('mcp_server_manage')}
 						</Label>

@@ -40,12 +40,14 @@ import {
 import { getProvidedEngines, createEngine } from '@/service/engine';
 import { Separator } from '../ui/separator';
 import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { EngineBillingMode } from '@/enums/engine-billing';
 import { AccessPlanLevel } from '@/enums/product';
 import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Switch } from '../ui/switch';
 import ResourceSelectEmptyState from './resource-select-empty-state';
 import { Boxes } from 'lucide-react';
+import EngineBillingPolicyFields from './engine-billing-policy-fields';
 
 const EngineAddButton = () => {
 	const t = useTranslations();
@@ -58,6 +60,10 @@ const EngineAddButton = () => {
 		name: z.string(),
 		description: z.string().optional().nullable(),
 		required_plan_level: z.number().int(),
+		is_official_hosted: z.boolean(),
+		billing_mode: z.number().int(),
+		billing_unit_price: z.number().positive(),
+		compute_point_multiplier: z.number().positive(),
 		config_json: z.string().optional().nullable(),
 		is_public: z.boolean(),
 	});
@@ -67,10 +73,15 @@ const EngineAddButton = () => {
 			name: '',
 			description: '',
 			required_plan_level: AccessPlanLevel.FREE,
+			is_official_hosted: false,
+			billing_mode: EngineBillingMode.TOKEN,
+			billing_unit_price: 1,
+			compute_point_multiplier: 1,
 			config_json: '',
 			is_public: false,
 		},
 	});
+	const isPublic = form.watch('is_public');
 	const queryClient = getQueryClient();
 	const {
 		data: provideEngines,
@@ -122,7 +133,13 @@ const EngineAddButton = () => {
 			engine_provided_id: values.engine_id,
 			name: values.name,
 			description: values.description,
-			required_plan_level: values.required_plan_level,
+			required_plan_level: values.is_public
+				? values.required_plan_level
+				: AccessPlanLevel.FREE,
+			is_official_hosted: values.is_official_hosted,
+			billing_mode: values.billing_mode,
+			billing_unit_price: values.billing_unit_price,
+			compute_point_multiplier: values.compute_point_multiplier,
 			config_json: values.config_json,
 			is_public: values.is_public,
 		});
@@ -340,8 +357,8 @@ const EngineAddButton = () => {
 							control={form.control}
 							render={({ field }) => {
 								return (
-									<FormItem className='space-y-3 rounded-lg border border-input p-3'>
-										<div className='flex flex-row gap-1 items-center'>
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center justify-between'>
 											<FormLabel className='flex flex-row gap-1 items-center'>
 												{t('setting_model_provider_is_public')}
 											</FormLabel>
@@ -352,63 +369,64 @@ const EngineAddButton = () => {
 												}}
 											/>
 										</div>
-										<FormDescription>
-											{t('setting_engine_page_mine_engine_is_public_tips')}
-										</FormDescription>
-										{field.value && (
-											<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
-												<div className='space-y-1'>
-													<div className='text-sm font-medium'>
-														{t('setting_required_plan_level_label')}
-													</div>
-													<p className='text-xs text-muted-foreground'>
-														{t('setting_required_plan_level_tips')}
-													</p>
+									<FormDescription>
+										{t('setting_engine_page_mine_engine_is_public_tips')}
+									</FormDescription>
+									{isPublic && (
+										<div className='grid gap-3 rounded-xl border border-input/70 bg-background/60 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-center'>
+											<div className='space-y-1'>
+												<div className='text-sm font-medium'>
+													{t('setting_required_plan_level_label')}
 												</div>
-												<Select
-													onValueChange={(value) =>
-														form.setValue(
-															'required_plan_level',
-															Number(value),
-															{
-																shouldDirty: true,
-																shouldValidate: true,
-															},
-														)
-													}
-													value={String(
-														form.watch('required_plan_level') ??
-															AccessPlanLevel.FREE,
-													)}>
-													<SelectTrigger className='w-full'>
-														<SelectValue
-															placeholder={t(
-																'setting_required_plan_level_placeholder',
-															)}
-														/>
-													</SelectTrigger>
-													<SelectContent>
-														<SelectGroup>
-															{[
-																AccessPlanLevel.FREE,
-																AccessPlanLevel.PRO,
-																AccessPlanLevel.MAX,
-															].map((level) => (
-																<SelectItem
-																	key={level}
-																	value={String(level)}>
-																	{t(getPlanLevelTranslationKey(level))}
-																</SelectItem>
-															))}
-														</SelectGroup>
-													</SelectContent>
-												</Select>
+												<p className='text-xs text-muted-foreground'>
+													{t('setting_required_plan_level_tips')}
+												</p>
 											</div>
-										)}
-									</FormItem>
+											<Select
+												onValueChange={(value) =>
+													form.setValue(
+														'required_plan_level',
+														Number(value),
+														{
+															shouldDirty: true,
+															shouldValidate: true,
+														},
+													)
+												}
+												value={String(
+													form.watch('required_plan_level') ??
+														AccessPlanLevel.FREE,
+												)}>
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_required_plan_level_placeholder',
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{[
+															AccessPlanLevel.FREE,
+															AccessPlanLevel.PRO,
+															AccessPlanLevel.MAX,
+														].map((level) => (
+															<SelectItem
+																key={level}
+																value={String(level)}>
+																{t(getPlanLevelTranslationKey(level))}
+															</SelectItem>
+														))}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										</div>
+									)}
+								</FormItem>
 								);
 							}}
 						/>
+						<EngineBillingPolicyFields form={form} />
 					</form>
 				</Form>
 				<Separator />

@@ -39,6 +39,18 @@ export interface ModelCreateRequest {
     required_plan_level?: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelCreateRequest
+     */
+    is_official_hosted?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCreateRequest
+     */
+    compute_point_multiplier?: number;
+    /**
+     * 
      * @type {number}
      * @memberof ModelCreateRequest
      */
@@ -68,6 +80,8 @@ export function ModelCreateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'name': json['name'],
         'description': json['description'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
+        'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
+        'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
         'provider_id': json['provider_id'],
     };
 }
@@ -86,7 +100,8 @@ export function ModelCreateRequestToJSONTyped(value?: ModelCreateRequest | null,
         'name': value['name'],
         'description': value['description'],
         'required_plan_level': value['required_plan_level'],
+        'is_official_hosted': value['is_official_hosted'],
+        'compute_point_multiplier': value['compute_point_multiplier'],
         'provider_id': value['provider_id'],
     };
 }
-

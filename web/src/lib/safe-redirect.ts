@@ -22,3 +22,19 @@ export const getSafeRedirectPage = (rawRedirectPage: string | null) => {
 
 	return redirectPage;
 };
+
+export const encodeRedirectState = (redirectPage: string | null) => {
+	return encodeURIComponent(getSafeRedirectPage(redirectPage));
+};
+
+export const decodeRedirectState = (state: string | null) => {
+	if (!state) {
+		return '/dashboard';
+	}
+
+	try {
+		return getSafeRedirectPage(decodeURIComponent(state));
+	} catch {
+		return '/dashboard';
+	}
+};

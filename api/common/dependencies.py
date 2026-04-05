@@ -455,6 +455,85 @@ async def is_paid_subscription_user_in_func(
     return await get_user_plan_level_in_func(
         authorization=authorization,
     ) > PlanAccessLevel.FREE
+
+
+async def get_user_compute_balance_in_func(
+    authorization: str | None,
+) -> int:
+    headers: dict[str, str] = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/info",
+                headers=headers,
+            )
+            if not response.is_success:
+                exception_logger.warning(
+                    format_log_message(
+                        "user_compute_info_request_failed",
+                        status_code=response.status_code,
+                    )
+                )
+                return 0
+            payload = response.json()
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("user_compute_info_request_failed", error=e)
+        )
+        return 0
+
+    if not isinstance(payload, dict):
+        return 0
+    available_points = payload.get("available_points")
+    if isinstance(available_points, (int, float)):
+        return max(int(available_points), 0)
+    return 0
+
+
+
+
+async def consume_user_compute_points_in_func(
+    *,
+    authorization: str | None,
+    points: int,
+    reason: str,
+    source: str,
+    idempotency_key: str,
+) -> bool:
+    if points <= 0:
+        return True
+
+    headers: dict[str, str] = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/consume",
+                headers=headers,
+                json={
+                    "points": int(points),
+                    "reason": reason,
+                    "source": source,
+                    "idempotency_key": idempotency_key,
+                },
+            )
+            return response.is_success
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("user_compute_consume_request_failed", error=e)
+        )
+        return False
     
 
 def plan_ability_checked(

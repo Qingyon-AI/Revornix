@@ -3,8 +3,38 @@ import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, B
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
 
+export type ComputeLedgerItem = {
+    id: number;
+    delta_points: number;
+    balance_after: number;
+    reason?: string | null;
+    source?: string | null;
+    create_time?: string | null;
+    expire_time?: string | null;
+}
+
+export type ComputeLedgerResponse = {
+    items: ComputeLedgerItem[];
+    total: number;
+    page: number;
+    page_size: number;
+    has_more: boolean;
+}
+
+export type ComputeLedgerRequest = {
+    page?: number;
+    page_size?: number;
+    direction?: 'all' | 'income' | 'expense';
+}
+
 export const getUserInfoForPaySystem = async (): Promise<UserResponseDTO> => {
     return await request(userApi.getUserInfoForPaySystem)
+}
+
+export const getUserComputeLedgerForPaySystem = async (data?: ComputeLedgerRequest): Promise<ComputeLedgerResponse> => {
+    return await request(userApi.getUserComputeLedgerForPaySystem, {
+        data
+    })
 }
 
 export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {

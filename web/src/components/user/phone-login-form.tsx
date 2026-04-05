@@ -39,7 +39,7 @@ import GithubIcon from '../icons/github-icon';
 import { GOOGLE_CLIENT_ID } from '@/config/google';
 import { GITHUB_CLIENT_ID } from '@/config/github';
 import WechatIcon from '../icons/wechat-icon';
-import { getSafeRedirectPage } from '@/lib/safe-redirect';
+import { encodeRedirectState, getSafeRedirectPage } from '@/lib/safe-redirect';
 import { isEnvEnabled } from '@/lib/env';
 
 const phoneFormSchema = z.object({
@@ -51,8 +51,9 @@ const PhoneLoginForm = () => {
 	const t = useTranslations();
 	const searchParams = useSearchParams();
 	const redirect_page = getSafeRedirectPage(searchParams.get('redirect_to'));
+	const redirectState = encodeRedirectState(searchParams.get('redirect_to'));
 	const router = useRouter();
-	const { loginWay, setLoginWay } = useLoginProvider();
+	const { setLoginWay } = useLoginProvider();
 	const { refreshMainUserInfo } = useUserContext();
 	const phoneForm = useForm<z.infer<typeof phoneFormSchema>>({
 		resolver: zodResolver(phoneFormSchema),
@@ -134,14 +135,12 @@ const PhoneLoginForm = () => {
 	};
 
 	const handleGoogleLogin = () => {
-		// redirect the user to github
-		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${window.location.origin}/integrations/google/oauth2/create/callback&scope=openid email profile&response_type=code`;
+		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${window.location.origin}/integrations/google/oauth2/create/callback&scope=openid email profile&response_type=code&state=${redirectState}`;
 		window.location.assign(link);
 	};
 
 	const handleGitHubLogin = () => {
-		// redirect the user to github
-		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/create/callback`;
+		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/create/callback&state=${redirectState}`;
 		window.location.assign(link);
 	};
 
@@ -232,7 +231,7 @@ const PhoneLoginForm = () => {
 										process.env.NEXT_PUBLIC_WECHAT_APP_ID
 									}&redirect_uri=${encodeURIComponent(
 										wechatCreateRedirectUri
-									)}&response_type=code&scope=snsapi_login&state=ndkasnl#wechat_redirect`}>
+									)}&response_type=code&scope=snsapi_login&state=${redirectState}#wechat_redirect`}>
 									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
 										<WechatIcon />
 									</Button>

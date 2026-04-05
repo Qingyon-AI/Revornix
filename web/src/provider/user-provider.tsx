@@ -4,7 +4,9 @@ import {
 	type ReactNode,
 	createContext,
 	useContext,
+	useCallback,
 	useEffect,
+	useMemo,
 	useState,
 } from 'react';
 import Cookies from 'js-cookie';
@@ -53,41 +55,103 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 		queryFn: getUserInfoForPaySystem,
 	});
 
+	const isSameMainUserInfo = (
+		left?: PrivateUserInfo,
+		right?: PrivateUserInfo,
+	) => {
+		if (left === right) {
+			return true;
+		}
+		if (!left || !right) {
+			return false;
+		}
+		return JSON.stringify(left) === JSON.stringify(right);
+	};
+
+	const isSamePaySystemUserInfo = (
+		left?: UserResponseDTO,
+		right?: UserResponseDTO,
+	) => {
+		if (left === right) {
+			return true;
+		}
+		if (!left || !right) {
+			return false;
+		}
+
+		const leftPlan = left.userPlan;
+		const rightPlan = right.userPlan;
+		const leftBalance = left.computeBalance;
+		const rightBalance = right.computeBalance;
+
+		return (
+			left.id === right.id &&
+			left.uuid === right.uuid &&
+			left.nickname === right.nickname &&
+			leftPlan?.id === rightPlan?.id &&
+			leftPlan?.startTime === rightPlan?.startTime &&
+			leftPlan?.expireTime === rightPlan?.expireTime &&
+			leftPlan?.plan?.product?.uuid === rightPlan?.plan?.product?.uuid &&
+			leftBalance?.available_points === rightBalance?.available_points &&
+			leftBalance?.gifted_points === rightBalance?.gifted_points &&
+			leftBalance?.purchased_points === rightBalance?.purchased_points &&
+			leftBalance?.consumed_points === rightBalance?.consumed_points
+		);
+	};
+
 	useEffect(() => {
 		if (mainInfo) {
-			setMainUserInfo(mainInfo);
+			setMainUserInfo((current) =>
+				isSameMainUserInfo(current, mainInfo) ? current : mainInfo,
+			);
 		}
 		if (paySystemInfo) {
-			setPaySystemUserInfo(paySystemInfo);
+			setPaySystemUserInfo((current) =>
+				isSamePaySystemUserInfo(current, paySystemInfo)
+					? current
+					: paySystemInfo,
+			);
 		}
 	}, [mainInfo, paySystemInfo]);
 
-	const logOut = () => {
+	const logOut = useCallback(() => {
 		Cookies.remove('access_token');
 		Cookies.remove('refresh_token');
 		window.location.reload();
-	};
+	}, []);
 
 	// 5. 临时更新用户信息
-	const tempUpdateUserInfo = (newUserInfo: PrivateUserInfo) => {
+	const tempUpdateUserInfo = useCallback((newUserInfo: PrivateUserInfo) => {
 		setMainUserInfo(newUserInfo); // 触发重新渲染
-	};
+	}, []);
 
 	useEffect(() => {
 		Cookies.get('access_token') && refreshMainUserInfo();
 		Cookies.get('access_token') && refreshPaySystemInfo();
 	}, []);
 
+	const value = useMemo(
+		() => ({
+			mainUserInfo,
+			paySystemUserInfo,
+			refreshMainUserInfo,
+			refreshPaySystemInfo,
+			logOut,
+			tempUpdateUserInfo,
+		}),
+		[
+			mainUserInfo,
+			paySystemUserInfo,
+			refreshMainUserInfo,
+			refreshPaySystemInfo,
+			logOut,
+			tempUpdateUserInfo,
+		],
+	);
+
 	return (
 		<UserContext.Provider
-			value={{
-				mainUserInfo,
-				paySystemUserInfo,
-				refreshMainUserInfo,
-				refreshPaySystemInfo,
-				logOut,
-				tempUpdateUserInfo,
-			}}>
+			value={value}>
 			{children}
 		</UserContext.Provider>
 	);

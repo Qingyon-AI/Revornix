@@ -1,3 +1,5 @@
+'use client';
+
 import { getSectionDetail, subscribeSection } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
@@ -8,6 +10,9 @@ import { utils } from '@kinda/utils';
 import { BellOffIcon, BellPlusIcon, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { useUserContext } from '@/provider/user-provider';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
 
 const SectionOperateSubscribe = ({
 	section_id,
@@ -19,6 +24,10 @@ const SectionOperateSubscribe = ({
 	onTriggerClick?: () => void;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const { mainUserInfo } = useUserContext();
 	const id = section_id;
 
 	const [subscribing, setSubscribing] = useState(false);
@@ -31,9 +40,18 @@ const SectionOperateSubscribe = ({
 			return getSectionDetail({ section_id: id });
 		},
 	});
+	const handleLoginRedirect = () => {
+		const currentSearch = searchParams.toString();
+		const redirectTo = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+		router.push(`/login?redirect_to=${encodeURIComponent(redirectTo)}`);
+	};
 
 	const handleUpdateSubscribeStatue = async () => {
 		if (!section) return;
+		if (!mainUserInfo) {
+			handleLoginRedirect();
+			return;
+		}
 		setSubscribing(true);
 		const [res, err] = await utils.to(
 			subscribeSection({
@@ -67,29 +85,27 @@ const SectionOperateSubscribe = ({
 	};
 
 	return (
-		<>
-			<Button
-				className={cn('text-xs', className)}
-				variant={'ghost'}
-				disabled={subscribing}
-				onClick={() => {
-					handleUpdateSubscribeStatue();
-					onTriggerClick?.();
-				}}>
-				{section?.is_subscribed ? (
-					<>
-						<BellOffIcon />
-						{t('section_unsubscribe')}
-					</>
-				) : (
-					<>
-						<BellPlusIcon />
-						{t('section_subscribe')}
-					</>
-				)}
-				{subscribing && <Loader2 className='animate-spin' />}
-			</Button>
-		</>
+		<Button
+			className={cn('text-xs', className)}
+			variant={'ghost'}
+			disabled={subscribing}
+			onClick={() => {
+				handleUpdateSubscribeStatue();
+				onTriggerClick?.();
+			}}>
+			{section?.is_subscribed ? (
+				<>
+					<BellOffIcon />
+					{t('section_unsubscribe')}
+				</>
+			) : (
+				<>
+					<BellPlusIcon />
+					{mainUserInfo ? t('section_subscribe') : t('seo_nav_login_in')}
+				</>
+			)}
+			{subscribing && <Loader2 className='animate-spin' />}
+		</Button>
 	);
 };
 export default SectionOperateSubscribe;

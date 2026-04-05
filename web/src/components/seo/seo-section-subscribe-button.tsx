@@ -43,7 +43,6 @@ const SeoSectionSubscribeButton = ({
 		enabled: !!mainUserInfo,
 		refetchOnWindowFocus: false,
 	});
-
 	useEffect(() => {
 		setIsSubscribed(!!initialIsSubscribed);
 	}, [initialIsSubscribed, sectionId]);
@@ -123,7 +122,6 @@ const SeoSectionSubscribeButton = ({
 		!!mainUserInfo &&
 		relationQuery.isPending &&
 		relationQuery.data === undefined;
-
 	return (
 		<Button
 			type='button'

@@ -13,6 +13,11 @@
  */
 
 import { mapValues } from '../runtime';
+import type { ComputeBalanceDTO } from './ComputeBalanceDTO';
+import {
+    ComputeBalanceDTOFromJSON,
+    ComputeBalanceDTOToJSON,
+} from './ComputeBalanceDTO';
 import type { UserPlan } from './UserPlan';
 import {
     UserPlanFromJSON,
@@ -51,6 +56,12 @@ export interface UserResponseDTO {
      * @memberof UserResponseDTO
      */
     userPlan: UserPlan;
+    /**
+     * 
+     * @type {ComputeBalanceDTO}
+     * @memberof UserResponseDTO
+     */
+    computeBalance?: ComputeBalanceDTO;
 }
 
 /**
@@ -78,6 +89,7 @@ export function UserResponseDTOFromJSONTyped(json: any, ignoreDiscriminator: boo
         'uuid': json['uuid'],
         'nickname': json['nickname'],
         'userPlan': UserPlanFromJSON(json['userPlan']),
+        'computeBalance': json['computeBalance'] == null ? undefined : ComputeBalanceDTOFromJSON(json['computeBalance']),
     };
 }
 
@@ -96,6 +108,6 @@ export function UserResponseDTOToJSONTyped(value?: UserResponseDTO | null, ignor
         'uuid': value['uuid'],
         'nickname': value['nickname'],
         'userPlan': UserPlanToJSON(value['userPlan']),
+        'computeBalance': ComputeBalanceDTOToJSON(value['computeBalance']),
     };
 }
-

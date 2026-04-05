@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field, model_validator
 
 from .base import BaseModel
 from .user import UserPublicInfo
 from enums.engine_enums import EngineCategory
+from enums.billing import EngineBillingMode
 
 
 class EngineProvidedInfo(BaseModel):
@@ -34,7 +35,24 @@ class EngineCreateRequest(BaseModel):
     is_public: bool
     engine_provided_id: int
     required_plan_level: int = 0
+    is_official_hosted: bool = False
+    billing_mode: EngineBillingMode = EngineBillingMode.TOKEN
+    billing_unit_price: float = Field(default=1.0, gt=0)
+    compute_point_multiplier: float = Field(default=1.0, gt=0)
     config_json: str | None = None
+
+    @model_validator(mode="after")
+    def normalize_related_fields(self):
+        self.name = self.name.strip()
+        if self.description is not None:
+            description = self.description.strip()
+            self.description = description or None
+        if self.config_json is not None:
+            config_json = self.config_json.strip()
+            self.config_json = config_json or None
+        if not self.is_public:
+            self.required_plan_level = 0
+        return self
 
 class EngineDetailRequest(BaseModel):
     engine_id: int
@@ -47,6 +65,10 @@ class EngineDetail(BaseModel):
     description: str | None = None
     is_public: bool
     required_plan_level: int = 0
+    is_official_hosted: bool = False
+    billing_mode: int = int(EngineBillingMode.TOKEN)
+    billing_unit_price: float = 1.0
+    compute_point_multiplier: float = 1.0
     subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
@@ -61,6 +83,10 @@ class EngineBaseInfo(BaseModel):
     description: str | None = None
     is_public: bool
     required_plan_level: int = 0
+    is_official_hosted: bool = False
+    billing_mode: int = int(EngineBillingMode.TOKEN)
+    billing_unit_price: float = 1.0
+    compute_point_multiplier: float = 1.0
     create_time: datetime
     update_time: datetime | None = None
     is_forked: bool | None = None
@@ -76,6 +102,10 @@ class EngineInfo(BaseModel):
     description: str | None = None
     is_public: bool
     required_plan_level: int = 0
+    is_official_hosted: bool = False
+    billing_mode: int = int(EngineBillingMode.TOKEN)
+    billing_unit_price: float = 1.0
+    compute_point_multiplier: float = 1.0
     subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
@@ -110,3 +140,36 @@ class EngineUpdateRequest(BaseModel):
     description: str | None = None
     is_public: bool | None = None
     required_plan_level: int | None = None
+    is_official_hosted: bool | None = None
+    billing_mode: EngineBillingMode | None = None
+    billing_unit_price: float | None = Field(default=None, gt=0)
+    compute_point_multiplier: float | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def normalize_related_fields(self):
+        if self.name is not None:
+            self.name = self.name.strip()
+        if self.description is not None:
+            description = self.description.strip()
+            self.description = description or None
+        if self.config_json is not None:
+            config_json = self.config_json.strip()
+            self.config_json = config_json or None
+        if self.is_public is False:
+            self.required_plan_level = 0
+        return self
+
+
+class BillingAuditIssue(BaseModel):
+    code: str
+    severity: str
+    resource_id: int
+    resource_uuid: str
+    resource_name: str
+    provider_name: str | None = None
+    title: str
+    description: str
+
+
+class BillingAuditResponse(BaseModel):
+    items: list[BillingAuditIssue]

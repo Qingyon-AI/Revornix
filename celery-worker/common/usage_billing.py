@@ -7,8 +7,12 @@ from typing import Any
 from uuid import uuid4
 
 import crud
+import httpx
 from common.logger import exception_logger
+from common.jwt_utils import create_token
+from config.base import UNION_PAY_API_PREFIX
 from data.sql.base import session_scope
+from enums.engine_enums import Engine
 from sqlalchemy.orm import Session
 
 
@@ -210,15 +214,28 @@ def persist_model_usage(
     key = idempotency_key or f"{source}:{uuid4().hex}"
     try:
         with session_scope() as db:
+            charged_points = _resolve_model_charge_points(
+                db=db,
+                model_id=model_id,
+                raw_points=calculate_billable_points(normalized),
+            )
             billable_points = record_model_usage(
                 db=db,
                 user_id=user_id,
                 model_id=model_id,
                 usage_details=normalized,
+                charged_points=charged_points,
                 source=source,
                 idempotency_key=key,
                 at=at,
                 cycle_anchor_at=cycle_anchor_at,
+            )
+            _consume_charged_points(
+                user_id=user_id,
+                charged_points=charged_points,
+                reason="Official LLM usage",
+                source="llm-usage",
+                idempotency_key=f"compute:{key}",
             )
             db.commit()
             return billable_points
@@ -290,16 +307,29 @@ def persist_engine_usage(
     key = idempotency_key or f"{source}:{uuid4().hex}"
     try:
         with session_scope() as db:
+            charged_points = _resolve_engine_charge_points(
+                db=db,
+                resource_uuid=resource_uuid,
+                raw_points=calculate_billable_points(normalized),
+            )
             billable_points = record_usage(
                 db=db,
                 user_id=user_id,
                 resource_uuid=resource_uuid,
                 resource_type="engine",
                 usage_details=normalized,
+                charged_points=charged_points,
                 source=source,
                 idempotency_key=key,
                 at=at,
                 cycle_anchor_at=cycle_anchor_at,
+            )
+            _consume_charged_points(
+                user_id=user_id,
+                charged_points=charged_points,
+                reason="Official engine usage",
+                source="engine-usage",
+                idempotency_key=f"compute:{key}",
             )
             db.commit()
             return billable_points
@@ -364,6 +394,7 @@ def record_usage(
     resource_uuid: str,
     resource_type: str,
     usage_details: Mapping[str, Any],
+    charged_points: int | None = None,
     source: str | None = None,
     idempotency_key: str | None = None,
     at: datetime | None = None,
@@ -373,7 +404,7 @@ def record_usage(
     if not normalized:
         return 0
 
-    billable_points = calculate_billable_points(normalized)
+    billable_points = max(int(charged_points), 0) if charged_points is not None else calculate_billable_points(normalized)
     now = at or datetime.now(timezone.utc)
     cycle_month = get_cycle_month(now, cycle_anchor_at=cycle_anchor_at)
 
@@ -431,6 +462,7 @@ def record_model_usage(
     user_id: int,
     model_id: int,
     usage_details: Mapping[str, Any],
+    charged_points: int | None = None,
     source: str | None = None,
     idempotency_key: str | None = None,
     at: datetime | None = None,
@@ -445,6 +477,7 @@ def record_model_usage(
         resource_uuid=db_model.uuid,
         resource_type="llm",
         usage_details=usage_details,
+        charged_points=charged_points,
         source=source,
         idempotency_key=idempotency_key,
         at=at,
@@ -491,3 +524,137 @@ def get_monthly_model_used_points(
         at=at,
         cycle_anchor_at=cycle_anchor_at,
     )
+
+
+def _resolve_model_charge_points(
+    *,
+    db: Session,
+    model_id: int,
+    raw_points: int,
+) -> int:
+    if raw_points <= 0:
+        return 0
+    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    if db_model is None or not bool(db_model.is_official_hosted):
+        return 0
+    return _apply_point_multiplier(
+        raw_points=raw_points,
+        multiplier=db_model.compute_point_multiplier,
+    )
+
+
+def _resolve_engine_charge_points(
+    *,
+    db: Session,
+    resource_uuid: str,
+    raw_points: int,
+) -> int:
+    if raw_points <= 0:
+        return 0
+    db_engine = crud.engine.get_engine_by_uuid(db=db, engine_uuid=resource_uuid)
+    if db_engine is None or not bool(db_engine.is_official_hosted):
+        return 0
+    return _apply_point_multiplier(
+        raw_points=raw_points,
+        multiplier=db_engine.compute_point_multiplier,
+    )
+
+
+def _consume_charged_points(
+    *,
+    user_id: int,
+    charged_points: int,
+    reason: str,
+    source: str,
+    idempotency_key: str,
+) -> None:
+    if charged_points <= 0:
+        return
+    authorization = _build_authorization(user_id)
+    if authorization is None:
+        raise RuntimeError("Failed to build authorization for compute point consumption")
+    _consume_points(
+        authorization=authorization,
+        billable_points=charged_points,
+        reason=reason,
+        source=source,
+        idempotency_key=idempotency_key,
+    )
+
+
+def _apply_point_multiplier(*, raw_points: int, multiplier: float | None) -> int:
+    points = max(int(raw_points), 0)
+    if points <= 0:
+        return 0
+    effective_multiplier = float(multiplier or 1.0)
+    if effective_multiplier <= 1:
+        return points
+    return max(int(round(points * effective_multiplier)), 1)
+
+
+def get_minimum_required_points(*, multiplier: float | None) -> int:
+    effective_multiplier = float(multiplier or 1.0)
+    if effective_multiplier <= 1:
+        return 1
+    return max(int(round(effective_multiplier)), 1)
+
+
+def _consume_points(
+    *,
+    authorization: str,
+    billable_points: int,
+    reason: str,
+    source: str,
+    idempotency_key: str,
+) -> None:
+    if billable_points <= 0:
+        return
+    try:
+        with httpx.Client(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+            response = client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/consume",
+                headers={"Authorization": authorization},
+                json={
+                    "points": int(billable_points),
+                    "reason": reason,
+                    "source": source,
+                    "idempotency_key": idempotency_key,
+                },
+            )
+            if not response.is_success:
+                raise RuntimeError(
+                    "Compute point consume rejected. "
+                    f"idempotency_key={idempotency_key}, "
+                    f"status_code={response.status_code}, "
+                    f"response={response.text[:500]}"
+                )
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to consume compute points. idempotency_key={idempotency_key}, error={e}"
+        ) from e
+
+
+def _build_authorization(user_id: int) -> str | None:
+    with session_scope() as db:
+        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        if db_user is None:
+            return None
+        access_token, _ = create_token(user=db_user)
+        return f"Bearer {access_token}"
+
+
+def _fetch_pay_user_info(authorization: str) -> dict[str, Any] | None:
+    try:
+        with httpx.Client(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+            response = client.post(
+                f"{UNION_PAY_API_PREFIX}/user/info",
+                headers={"Authorization": authorization},
+            )
+            if not response.is_success:
+                return None
+            payload = response.json()
+            if isinstance(payload, dict):
+                return payload
+    except Exception as e:
+        exception_logger.warning(f"Failed to fetch pay user info: {e}")
+    return None

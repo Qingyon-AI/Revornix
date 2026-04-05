@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -18,6 +18,8 @@ class AIModel(Base):
     description: Mapped[str | None] = mapped_column(String(255))
     required_plan_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     provider_id: Mapped[int] = mapped_column(ForeignKey("ai_model_provider.id"), index=True, nullable=False)
+    is_official_hosted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    compute_point_multiplier: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -41,6 +41,8 @@ def create_engine(
     engine_provided_id: int,
     is_public: bool,
     required_plan_level: int = 0,
+    is_official_hosted: bool = False,
+    compute_point_multiplier: float = 1.0,
     uuid: str | None = None,
     description: str | None = None,
     config_json: str | None = None,
@@ -57,6 +59,8 @@ def create_engine(
         engine_provided_id=engine_provided_id,
         is_public=is_public,
         required_plan_level=required_plan_level,
+        is_official_hosted=is_official_hosted,
+        compute_point_multiplier=compute_point_multiplier,
         description=description,
         config_json=config_json,
         create_time=now

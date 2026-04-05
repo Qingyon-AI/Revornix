@@ -17,12 +17,14 @@ import {
 	CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
+	BotIcon,
 	ChevronDownIcon,
 	CheckCircle2Icon,
 	CopyIcon,
 	FileTextIcon,
 	PenLineIcon,
 	SparkleIcon,
+	UserIcon,
 	WrenchIcon,
 	XCircleIcon,
 } from 'lucide-react';
@@ -138,19 +140,36 @@ const MessageCard = ({ message }: { message: Message }) => {
 			return null;
 		}
 
+		const singleImage = message.images.length === 1;
+
 		return (
-			<div className='mt-3 flex flex-wrap gap-2'>
+			<div
+				className={cn(
+					'mt-3 grid gap-2.5',
+					singleImage ? 'grid-cols-1' : 'grid-cols-2',
+				)}>
 				{message.images.map((imagePath) => (
 					<a
 						key={imagePath}
 						href={replacePath(imagePath, mainUserInfo.id)}
 						target='_blank'
 						rel='noreferrer'
-						className='block h-16 w-16 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-20 sm:w-20'>
+						className={cn(
+							'group relative overflow-hidden rounded-[22px] border border-border/60 bg-muted/30 shadow-sm transition-transform hover:-translate-y-0.5',
+							singleImage
+								? 'max-w-[320px]'
+								: 'aspect-square min-h-[140px]',
+						)}>
+						<div className='pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100' />
 						<img
 							src={replacePath(imagePath, mainUserInfo.id)}
 							alt='uploaded image'
-							className='h-full w-full object-cover'
+							className={cn(
+								'h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]',
+								singleImage
+									? 'max-h-[280px] min-h-[180px]'
+									: 'aspect-square',
+							)}
 						/>
 					</a>
 				))}
@@ -323,13 +342,43 @@ const MessageCard = ({ message }: { message: Message }) => {
 			})}>
 			<div
 				className={cn(
-					'min-w-0 rounded-xl border px-3 py-2.5 md:px-4 md:py-3',
+					'min-w-0 overflow-hidden rounded-[26px] border px-3.5 py-3 shadow-sm transition-colors md:px-5 md:py-4',
 					message.role === 'user'
-						? 'max-w-[min(82%,760px)] border-border/60 bg-muted/60'
-						: 'max-w-[min(92%,1080px)] border-border/60 bg-card shadow-sm',
+						? 'max-w-[min(82%,760px)] border-primary/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.04),rgba(15,23,42,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]'
+						: 'max-w-[min(92%,1080px)] border-border/70 bg-card/95',
 				)}>
+				<div className='mb-3 flex items-center justify-between gap-3'>
+					<div
+						className={cn(
+							'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide',
+							message.role === 'user'
+								? 'border-primary/15 bg-background/70 text-foreground/80'
+								: 'border-border/60 bg-muted/40 text-muted-foreground',
+						)}>
+						{message.role === 'user' ? (
+							<UserIcon className='size-3.5' />
+						) : (
+							<BotIcon className='size-3.5' />
+						)}
+						<span>
+							{message.role === 'user'
+								? t('revornix_ai_you_label')
+								: t('website_title')}
+						</span>
+					</div>
+					<Button
+						type='button'
+						size='sm'
+						variant='ghost'
+						className='h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground'
+						aria-label={t('copy')}
+						onClick={handleCopyMarkdown}>
+						<CopyIcon className='size-3.5' />
+						<span>{copied ? t('copied') : t('copy')}</span>
+					</Button>
+				</div>
 				{ai_state && (
-					<Alert className='mb-3 border-border/60 bg-muted/40'>
+					<Alert className='mb-4 rounded-[22px] border-border/60 bg-muted/30 px-4 py-3'>
 						<AlertDescription>
 							<Accordion type='multiple' className='w-full'>
 								<AccordionItem value='state'>
@@ -353,7 +402,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 											</AlertTitle>
 										</div>
 									</AccordionTrigger>
-									<AccordionContent className='pb-0 mt-2'>
+									<AccordionContent className='mt-3 pb-0'>
 										{ai_workflow && (
 											<div className='space-y-1'>
 												<div className='relative pl-5'>
@@ -362,9 +411,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 													<div className='space-y-2'>
 														{ai_workflow.map((step, index) => {
 															return (
-																<div
-																	className='flex flex-col text-xs'
-																	key={index}>
+																<div className='flex flex-col text-xs' key={index}>
 																	<div className='flex flex-row items-center gap-2'>
 																		{step.phase === 'thinking' && (
 																			<SparkleIcon size={12} />
@@ -388,11 +435,11 @@ const MessageCard = ({ message }: { message: Message }) => {
 																	</div>
 
 																	{!isEmpty(step.meta) && (
-																		<div className='pl-5 mt-1 w-fit'>
+																		<div className='mt-1 w-fit pl-5'>
 																			{(step.phase === 'tool' ||
 																				step.phase === 'tool_result') &&
 																			step.meta?.tool && (
-																					<div className='break-all rounded border border-border/50 bg-background px-1.5 py-0.5'>
+																					<div className='break-all rounded-full border border-border/50 bg-background px-2 py-0.5 text-[11px]'>
 																						{step.meta.tool}
 																					</div>
 																				)}
@@ -412,30 +459,18 @@ const MessageCard = ({ message }: { message: Message }) => {
 					</Alert>
 				)}
 
-				<div className='prose max-w-none break-words dark:prose-invert'>
-					<CustomMarkdown content={message.content} />
-				</div>
-				{renderMessageImages()}
-				{message.role === 'assistant' && renderChunkCitations()}
-				{message.role === 'assistant' && renderDocumentSources()}
+				{message.role === 'user' && renderMessageImages()}
 				<div
 					className={cn(
-						'mt-2.5 flex items-center justify-end border-t pt-1.5',
-						message.role === 'user'
-							? 'border-border/40'
-							: 'border-border/40',
+						'prose max-w-none break-words dark:prose-invert',
+						message.role === 'assistant' && 'prose-p:leading-7 prose-headings:tracking-tight',
+						message.role === 'user' && message.images?.length ? 'mt-4' : undefined,
 					)}>
-					<Button
-						type='button'
-						size='sm'
-						variant='ghost'
-						className='h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground'
-						aria-label={t('copy')}
-						onClick={handleCopyMarkdown}>
-						<CopyIcon className='size-3.5' />
-						<span>{copied ? t('copied') : t('copy')}</span>
-					</Button>
+					<CustomMarkdown content={message.content} />
 				</div>
+				{message.role !== 'user' && renderMessageImages()}
+				{message.role === 'assistant' && renderChunkCitations()}
+				{message.role === 'assistant' && renderDocumentSources()}
 			</div>
 		</div>
 	);

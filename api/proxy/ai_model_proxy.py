@@ -5,23 +5,21 @@ import schemas
 from data.sql.base import session_scope
 from common.encrypt import decrypt_api_key
 from common.logger import exception_logger
-from enums.model import UserModelProviderRole, OfficialModelProvider
-from enums.ability import Ability
+from enums.model import UserModelProviderRole
+from enums.product import PlanAccessLevel
 from enums.user import UserRole
 from common.jwt_utils import create_token
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
+    get_user_compute_balance_in_func,
     get_user_plan_level_in_func,
-    get_user_plan_start_time_in_func,
-    plan_ability_checked_in_func,
 )
+from common.usage_billing import get_minimum_required_points
 from common.subscription_access import (
     SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
     has_plan_level_access,
     is_subscription_required_level,
 )
-from common.usage_billing import get_monthly_model_used_points
-
 # =========================
 # DTO
 # =========================
@@ -81,6 +79,9 @@ class AIModelProxy:
         required_plan_level = 0
         official_access_token: str | None = None
         user_is_privileged = False
+        user_plan_level = PlanAccessLevel.FREE
+        available_compute_points = 0
+        minimum_required_points = 1
 
         try:
             with session_scope() as db:
@@ -111,12 +112,12 @@ class AIModelProxy:
                 model_db_id = db_model.id
                 required_plan_level = db_model.required_plan_level
                 model_owned_by_user = provider_creator_id == user_id
+                minimum_required_points = get_minimum_required_points(
+                    multiplier=db_model.compute_point_multiplier,
+                )
 
                 if not user_is_privileged:
-                    if (
-                        not model_owned_by_user
-                        and db_model_provider.uuid == OfficialModelProvider.Revornix.meta.id
-                    ):
+                    if not model_owned_by_user and bool(db_model.is_official_hosted):
                         official_provider_check_needed = True
                     if official_provider_check_needed or (
                         not model_owned_by_user
@@ -156,10 +157,20 @@ class AIModelProxy:
                 required_plan_level=required_plan_level,
                 user_plan_level=user_plan_level,
             ):
-                raise schemas.error.CustomException(
-                    message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
-                    code=403,
-                )
+                if official_provider_check_needed:
+                    available_compute_points = await get_user_compute_balance_in_func(
+                        authorization=authorization,
+                    )
+                    if available_compute_points < minimum_required_points:
+                        raise schemas.error.CustomException(
+                            message="Paid subscription or available compute points required.",
+                            code=403,
+                        )
+                else:
+                    raise schemas.error.CustomException(
+                        message=SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
+                        code=403,
+                    )
 
         if (
             deployed_by_official
@@ -167,32 +178,16 @@ class AIModelProxy:
             and not model_owned_by_user
             and official_provider_check_needed
         ):
-            if official_access_token is None or model_db_id is None:
+            if official_access_token is None:
                 raise Exception("Official model provider metadata is missing")
             authorization = f"Bearer {official_access_token}"
-            plan_start_time = await get_user_plan_start_time_in_func(
-                authorization=authorization,
-            )
-            with session_scope() as db:
-                token_total = get_monthly_model_used_points(
-                    db=db,
-                    user_id=user_id,
-                    model_id=model_db_id,
-                    cycle_anchor_at=plan_start_time,
+            if available_compute_points <= 0:
+                available_compute_points = await get_user_compute_balance_in_func(
+                    authorization=authorization,
                 )
-            ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED.value
-            if token_total > 1_000_000:
-                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_MORE.value
-            if token_total > 10_000_000:
-                ability = Ability.OFFICIAL_PROXIED_LLM_LIMITED_NONE.value
-
-            auth_status = await plan_ability_checked_in_func(
-                ability=ability,
-                authorization=authorization,
-            )
-            if not auth_status:
+            if available_compute_points < minimum_required_points:
                 raise schemas.error.CustomException(
-                    message="User does not have permission to use official LLM model",
+                    message="Official LLM compute points exhausted. Please upgrade your plan or buy a compute pack.",
                     code=403,
                 )
 

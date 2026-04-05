@@ -57,12 +57,19 @@ const SectionDocument = ({
 		router.push(`/document/create?${params.toString()}`);
 	};
 
+	const { data: sectionDetail } = useQuery({
+		queryKey: ['getSectionDetail', section_id],
+		queryFn: () => getSectionDetail({ section_id }),
+	});
+
 	const { ref: bottomRef, inView } = useInView();
 	const {
 		data,
+		error,
 		isFetchingNextPage,
 		isFetching,
 		isSuccess,
+		isError,
 		fetchNextPage,
 		hasNextPage,
 	} = useInfiniteQuery({
@@ -92,10 +99,6 @@ const SectionDocument = ({
 	const { data: sectionUserRoleAndAuthority } = useQuery({
 		queryKey: ['getMineUserRoleAndAuthority', section_id],
 		queryFn: () => getMineUserRoleAndAuthority({ section_id: section_id }),
-	});
-	const { data: sectionDetail } = useQuery({
-		queryKey: ['getSectionDetail', section_id],
-		queryFn: () => getSectionDetail({ section_id }),
 	});
 
 	const canAddDocument =
@@ -149,6 +152,18 @@ const SectionDocument = ({
 				</SheetHeader>
 				<div className='min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-4 sm:px-5 sm:pb-4'>
 					<div className='flex flex-col gap-4'>
+						{isError ? (
+							<Empty className='rounded-3xl border border-dashed border-border/70 bg-muted/20 py-12'>
+								<EmptyHeader>
+									<EmptyMedia variant='icon'>
+										<TableOfContentsIcon />
+									</EmptyMedia>
+									<EmptyDescription>
+										{error instanceof Error ? error.message : t('request_error')}
+									</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						) : null}
 						{isSuccess && documents && documents.length === 0 && (
 							<Empty className='rounded-3xl border border-dashed border-border/70 bg-muted/20 py-12'>
 								<EmptyHeader>

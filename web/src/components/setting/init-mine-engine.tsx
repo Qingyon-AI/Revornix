@@ -33,6 +33,7 @@ import {
 	searchUableEngines,
 } from '@/service/engine';
 import { EngineCategory, EngineCategoryList } from '@/enums/engine';
+import { EngineBillingMode } from '@/enums/engine-billing';
 import { AccessPlanLevel } from '@/enums/product';
 import { getPlanLevelTranslationKey } from '@/lib/subscription';
 import { Field, FieldLabel } from '@/components/ui/field';
@@ -41,6 +42,7 @@ import { CircleCheck, Loader2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import ResourceSelectEmptyState from './resource-select-empty-state';
 import { Boxes } from 'lucide-react';
+import EngineBillingPolicyFields from './engine-billing-policy-fields';
 
 const InitMineEngine = () => {
 	const t = useTranslations();
@@ -52,6 +54,10 @@ const InitMineEngine = () => {
 		name: z.string(),
 		description: z.string().optional().nullable(),
 		required_plan_level: z.number().int(),
+		is_official_hosted: z.boolean(),
+		billing_mode: z.number().int(),
+		billing_unit_price: z.number().positive(),
+		compute_point_multiplier: z.number().positive(),
 		config_json: z.string().optional().nullable(),
 		is_public: z.boolean(),
 	});
@@ -61,6 +67,10 @@ const InitMineEngine = () => {
 			name: '',
 			description: '',
 			required_plan_level: AccessPlanLevel.FREE,
+			is_official_hosted: false,
+			billing_mode: EngineBillingMode.TOKEN,
+			billing_unit_price: 1,
+			compute_point_multiplier: 1,
 			config_json: '',
 			is_public: false,
 		},
@@ -128,6 +138,10 @@ const InitMineEngine = () => {
 			name: values.name,
 			description: values.description,
 			required_plan_level: values.required_plan_level,
+			is_official_hosted: values.is_official_hosted,
+			billing_mode: values.billing_mode,
+			billing_unit_price: values.billing_unit_price,
+			compute_point_multiplier: values.compute_point_multiplier,
 			config_json: values.config_json,
 			is_public: values.is_public,
 		});
@@ -330,7 +344,7 @@ const InitMineEngine = () => {
 							name='is_public'
 							control={form.control}
 							render={({ field }) => (
-								<FormItem className='space-y-3 rounded-lg border border-input p-3'>
+								<FormItem className='rounded-lg border border-input p-3'>
 									<div className='flex flex-row items-center gap-1'>
 										<FormLabel className='flex flex-row items-center gap-1'>
 											{t('setting_model_provider_is_public')}
@@ -346,7 +360,7 @@ const InitMineEngine = () => {
 										{t('setting_engine_page_mine_engine_is_public_tips')}
 									</FormDescription>
 									{field.value && (
-										<div className='space-y-2 rounded-xl border border-input/70 bg-background/60 p-3'>
+										<div className='grid gap-3 rounded-xl border border-input/70 bg-background/60 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-center'>
 											<div className='space-y-1'>
 												<div className='text-sm font-medium'>
 													{t('setting_required_plan_level_label')}
@@ -396,6 +410,7 @@ const InitMineEngine = () => {
 								</FormItem>
 							)}
 						/>
+						<EngineBillingPolicyFields form={form} />
 						<Button
 							type='submit'
 							className='w-full rounded-2xl'

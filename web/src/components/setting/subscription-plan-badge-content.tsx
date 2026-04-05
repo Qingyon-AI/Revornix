@@ -1,20 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import { StarIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getPlanLevelTranslationKey } from '@/lib/subscription';
+import SubscriptionActionLinks from './subscription-action-links';
 
 type SubscriptionPlanBadgeContentProps = {
 	requiredPlanLevel?: number | null;
-	actionLabel?: string;
-	actionHref?: string;
+	showActions?: boolean;
 };
 
 const SubscriptionPlanBadgeContent = ({
 	requiredPlanLevel,
-	actionLabel,
-	actionHref,
+	showActions,
 }: SubscriptionPlanBadgeContentProps) => {
 	const t = useTranslations();
 
@@ -24,14 +22,10 @@ const SubscriptionPlanBadgeContent = ({
 			<span>{t('setting_subscription_limited_badge')}</span>
 			<span className='opacity-70'>·</span>
 			<span>{t(getPlanLevelTranslationKey(requiredPlanLevel))}</span>
-			{actionLabel && actionHref && (
+			{showActions && (
 				<>
 					<span className='opacity-70'>·</span>
-					<Link
-						href={actionHref}
-						className='underline underline-offset-4 transition-colors hover:opacity-80'>
-						{actionLabel}
-					</Link>
+					<SubscriptionActionLinks compact />
 				</>
 			)}
 		</>

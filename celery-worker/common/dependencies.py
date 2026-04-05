@@ -244,3 +244,75 @@ async def is_paid_subscription_user_in_func(
     return await get_user_plan_level_in_func(
         authorization=authorization,
     ) > PlanAccessLevel.FREE
+
+
+async def get_user_compute_balance_in_func(
+    authorization: str | None,
+):
+    headers = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        timeout = httpx.Timeout(10.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/info",
+                headers=headers,
+            )
+            if not response.is_success:
+                exception_logger.warning(
+                    f"Failed to get user compute info. status={response.status_code}"
+                )
+                return 0
+            payload = response.json()
+            if not isinstance(payload, dict):
+                return 0
+    except Exception as e:
+        exception_logger.warning(f"Failed to request user compute info: {e}")
+        return 0
+
+    available_points = payload.get("available_points")
+    if isinstance(available_points, (int, float)):
+        return max(int(available_points), 0)
+    return 0
+
+
+async def consume_user_compute_points_in_func(
+    *,
+    authorization: str | None,
+    points: int,
+    reason: str,
+    source: str,
+    idempotency_key: str,
+):
+    if points <= 0:
+        return True
+
+    headers = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        timeout = httpx.Timeout(10.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/consume",
+                headers=headers,
+                json={
+                    "points": int(points),
+                    "reason": reason,
+                    "source": source,
+                    "idempotency_key": idempotency_key,
+                },
+            )
+            return response.is_success
+    except Exception as e:
+        exception_logger.warning(f"Failed to consume user compute points: {e}")
+        return False
