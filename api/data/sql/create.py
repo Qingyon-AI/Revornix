@@ -303,14 +303,14 @@ async def seed_database(db: Session):
                 provider_id=db_ai_model_provider.id,
             )
             seeded_model = next(
-                (item for item in db_provider_models if item.name == 'gpt-5.2'),
+                (item for item in db_provider_models if item.name == 'gpt-5.4'),
                 None,
             )
             if seeded_model is None:
                 crud.model.create_ai_model(
                     db=db,
-                    name='gpt-5.2',
-                    description='gpt-5.2',
+                    name='gpt-5.4',
+                    description='gpt-5.4',
                     required_plan_level=PlanAccessLevel.PRO,
                     provider_id=db_ai_model_provider.id,
                 )
