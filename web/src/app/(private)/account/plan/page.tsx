@@ -73,19 +73,13 @@ const ProPage = async () => {
 			name_zh: '文档与专栏知识图谱',
 		},
 		{
-			name: 'Official Revornix AI monthly text quota.',
-			name_zh: '每月包含官方 Revornix AI 文本额度',
-			tag: '2M pts',
+			name: 'Monthly hosted point allowance shared across official AI features.',
+			name_zh: '每月包含可共享使用的官方总积分额度',
+			tag: '4.3M pts',
 		},
 		{
-			name: 'Official image generation monthly quota.',
-			name_zh: '每月包含官方插图生成额度',
-			tag: '300k pts',
-		},
-		{
-			name: 'Official podcast generation monthly quota.',
-			name_zh: '每月包含官方播客生成额度',
-			tag: '2M pts',
+			name: 'Based on the current default hosted stack, roughly equal to one standard monthly mix across Revornix AI, Banana Image, and Volc Podcast Engine.',
+			name_zh: '按当前默认官方组合计费，约等于 1 份标准月组合额度，可覆盖 Revornix AI、Banana Image 与豆包播客引擎的常见使用。',
 		},
 		{
 			name: 'API endpoint ingestion.',
@@ -95,7 +89,6 @@ const ProPage = async () => {
 		{
 			name: 'Multi-user section collaboration.',
 			name_zh: '专栏多人协作',
-			tag: 'up to 3 seats',
 		},
 		{
 			name: 'MCP Client and MCP Server.',
@@ -109,19 +102,13 @@ const ProPage = async () => {
 			name_zh: '包含 Pro 全部能力，面向创作者与重度用户',
 		},
 		{
-			name: 'Higher-priority hosted AI quota for Revornix AI.',
-			name_zh: '更高优先级的官方 Revornix AI 月额度',
-			tag: '8M pts',
+			name: 'Larger monthly hosted point allowance shared across official AI features.',
+			name_zh: '更多的每月官方总积分额度',
+			tag: '17.2M pts',
 		},
 		{
-			name: 'Higher-priority hosted image generation quota.',
-			name_zh: '更高优先级的官方插图生成月额度',
-			tag: '1.2M pts',
-		},
-		{
-			name: 'Higher-priority hosted podcast generation quota.',
-			name_zh: '更高优先级的官方播客生成月额度',
-			tag: '8M pts',
+			name: 'Based on the current default hosted stack, roughly equal to four standard monthly mixes across Revornix AI, Banana Image, and Volc Podcast Engine.',
+			name_zh: '按当前默认官方组合计费，约等于 4 份标准月组合额度，可覆盖更高频的 Revornix AI、Banana Image 与豆包播客引擎使用。',
 		},
 		{
 			name: 'API endpoint ingestion.',
@@ -129,9 +116,8 @@ const ProPage = async () => {
 			tag: '50 / day',
 		},
 		{
-			name: 'Advanced section collaboration.',
-			name_zh: '更高协作上限的专栏协作',
-			tag: 'up to 10 seats',
+			name: 'Multi-user section collaboration.',
+			name_zh: '专栏多人协作',
 		},
 		{
 			name: 'MCP Client and MCP Server.',
