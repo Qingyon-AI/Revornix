@@ -27,10 +27,10 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 								})`,
 							}}>
 							<div className='flex w-full flex-1 flex-col gap-1.5'>
-								<div className='text-sm font-bold line-clamp-1'>
+								<div className='text-sm font-bold line-clamp-1 break-all'>
 									{document.title ? document.title : 'Untitled'}
 								</div>
-								<div className='text-sm line-clamp-3 text-muted-foreground'>
+								<div className='text-sm line-clamp-3 text-muted-foreground break-all'>
 									{document.description
 										? document.description
 										: 'No description'}

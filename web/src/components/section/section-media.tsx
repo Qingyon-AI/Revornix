@@ -33,6 +33,7 @@ import { getSectionCoverSrc } from '@/lib/section-cover';
 import AudioPlayer from '../ui/audio-player';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
+import ImagePreview from '../ui/image-preview';
 import { Skeleton } from '../ui/skeleton';
 import AudioStatusCard from '../ui/audio-status-card';
 import TaskStateCard from '../ui/task-state-card';
@@ -426,10 +427,10 @@ const SectionMedia = ({
 						<div className='space-y-3'>
 							<div className='overflow-hidden rounded-[20px] border border-border/60 bg-background/40'>
 								{currentPptSlide.image_url ? (
-									<img
+									<ImagePreview
 										src={currentPptSlide.image_url}
 										alt={currentPptSlide.title}
-										className='aspect-video w-full object-cover'
+										imageClassName='aspect-video w-full object-cover'
 									/>
 								) : (
 									<div className='flex aspect-video items-center justify-center bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_40%),linear-gradient(135deg,rgba(15,23,42,0.05),rgba(15,23,42,0.12))] px-6 text-center text-sm leading-7 text-muted-foreground'>
@@ -503,10 +504,10 @@ const SectionMedia = ({
 						<div className='space-y-3'>
 							<div className='overflow-hidden rounded-[20px] border border-border/60 bg-background/40'>
 								{currentPptSlide.image_url ? (
-									<img
+									<ImagePreview
 										src={currentPptSlide.image_url}
 										alt={currentPptSlide.title}
-										className='aspect-video w-full object-cover'
+										imageClassName='aspect-video w-full object-cover'
 									/>
 								) : null}
 							</div>

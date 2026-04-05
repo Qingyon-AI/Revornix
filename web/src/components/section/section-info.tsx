@@ -66,7 +66,7 @@ const InfoMetric = ({
 				</div>
 				<span>{label}</span>
 			</div>
-			<div className='mt-3 text-base font-semibold'>{value}</div>
+			<div className='text-base font-semibold'>{value}</div>
 			{hint ? (
 				<p className='mt-1 text-xs text-muted-foreground'>{hint}</p>
 			) : null}
