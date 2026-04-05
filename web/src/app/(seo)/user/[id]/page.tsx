@@ -340,7 +340,7 @@ const SeoUserDetailPage = async (props: {
 									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 										{t('user_fans')}
 									</div>
-									<div className='mt-3 text-2xl font-semibold'>
+									<div className='mt-3 text-base font-semibold'>
 										{user.fans ?? 0}
 									</div>
 								</div>
@@ -348,7 +348,7 @@ const SeoUserDetailPage = async (props: {
 									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 										{t('user_follows')}
 									</div>
-									<div className='mt-3 text-2xl font-semibold'>
+									<div className='mt-3 text-base font-semibold'>
 										{user.follows ?? 0}
 									</div>
 								</div>

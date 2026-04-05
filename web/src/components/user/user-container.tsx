@@ -365,7 +365,7 @@ const UserContainer = ({ id }: { id: number }) => {
 										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 											{t('user_fans')}
 										</div>
-										<div className='mt-3 text-2xl font-semibold'>
+										<div className='mt-3 text-base font-semibold'>
 											{userInfo.fans ?? 0}
 										</div>
 									</div>
@@ -373,7 +373,7 @@ const UserContainer = ({ id }: { id: number }) => {
 										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 											{t('user_follows')}
 										</div>
-										<div className='mt-3 text-2xl font-semibold'>
+										<div className='mt-3 text-base font-semibold'>
 											{userInfo.follows ?? 0}
 										</div>
 									</div>

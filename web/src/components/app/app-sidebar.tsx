@@ -40,7 +40,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenuItem>
 						<SidebarMenuButton size='lg' asChild>
 							<Link href='/dashboard'>
-								<div className='flex aspect-square size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/20 via-sky-400/10 to-transparent ring-1 ring-sidebar-border/70 shadow-sm'>
+								<div className='flex aspect-square size-10 items-center justify-center'>
 									<Image src={logo} alt='logo' className='block dark:hidden' />
 									<Image
 										src={darklogo}
