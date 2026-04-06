@@ -1,0 +1,233 @@
+import { Callout } from 'nextra/components';
+
+# Python SDK and CLI
+
+Revornix provides an official `revornix` Python package with two layers:
+
+- Python SDK: for backend scripts, automations, scheduled jobs, and CI flows
+- CLI: for shell scripts, terminal usage, and toolchain integration
+
+Source and release info: [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)
+
+<Callout>
+	If you want to integrate Revornix without hand-writing HTTP requests, start here. The package still calls the public [Third-Party API](./api) underneath.
+</Callout>
+
+## Installation
+
+```shell
+pip install revornix
+```
+
+The package currently requires Python `>=3.10`.
+
+## Authentication
+
+Both SDK and CLI require:
+
+- `base_url`: your Revornix API base URL
+- `api_key`: your Revornix API key
+
+In Revornix, click the avatar in the bottom-left, then go to **Account** -> **APIKey Management** to create or copy a key.
+
+The CLI supports these environment variables:
+
+```shell
+export REVORNIX_BASE_URL="https://api.revornix.cn"
+export REVORNIX_API_KEY="YOUR_API_KEY"
+```
+
+## CLI Quick Start
+
+Show help:
+
+```shell
+revornix --help
+```
+
+If you do not want to rely on environment variables, pass credentials directly:
+
+```shell
+revornix --base-url "https://api.revornix.cn" --api-key "YOUR_API_KEY" --help
+```
+
+The CLI is organized into 4 command groups:
+
+- `files`: upload files
+- `documents`: create, update, search, and delete documents
+- `labels`: manage document labels and section labels
+- `sections`: manage sections, publish status, and section documents
+
+Upload a file:
+
+```shell
+revornix files upload \
+  --local-file-path ./demo.txt \
+  --remote-file-path uploads/demo.txt \
+  --content-type text/plain
+```
+
+Create a quick note:
+
+```shell
+revornix documents create-quick-note \
+  --content "hello world" \
+  --title "Quick Note" \
+  --section 1 \
+  --label 10 \
+  --auto-summary
+```
+
+Upload a local file and create a file document in one step:
+
+```shell
+revornix documents upload-create-file \
+  --local-file-path ./demo.pdf \
+  --remote-file-path uploads/demo.pdf \
+  --title "Demo File" \
+  --section 1 \
+  --label 10
+```
+
+Create a website document:
+
+```shell
+revornix documents create-website \
+  --url https://example.com \
+  --section 1 \
+  --label 10
+```
+
+Create a section and auto-publish it:
+
+```shell
+revornix sections create \
+  --title "AI Notes" \
+  --description "Knowledge base for AI" \
+  --process-task-trigger-type 1 \
+  --label 10 \
+  --auto-publish
+```
+
+### CLI Notes
+
+- Repeat `--section` for multiple section IDs
+- Repeat `--label` for multiple label IDs
+- Repeat `--document-id` when deleting multiple documents
+- Some booleans are simple flags such as `--auto-summary`, while others take explicit values such as `--status true`
+- CLI responses are printed as JSON, which makes them easy to pipe into scripts
+- `documents search-vector` depends on the server already having embeddings for target documents
+
+## Python SDK Quick Start
+
+Create a `Session`:
+
+```python
+from revornix import Session
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+```
+
+Import schema models:
+
+```python
+from revornix.schema import DocumentSchema, SectionSchema
+```
+
+Create a quick note document:
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+data = DocumentSchema.QuickNoteDocumentParameters(
+    title="Quick Note",
+    description="Created from SDK",
+    cover=None,
+    sections=[1],
+    labels=[10],
+    content="hello world",
+    auto_summary=False,
+    auto_podcast=False,
+    auto_tag=False,
+)
+
+res = session.create_quick_note_document(data=data)
+```
+
+Upload a file and create a file document:
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+session.upload_file(
+    local_file_path="./demo.pdf",
+    remote_file_path="uploads/demo.pdf",
+)
+
+data = DocumentSchema.FileDocumentParameters(
+    title="Demo File",
+    description="Imported from uploaded file",
+    cover=None,
+    sections=[1],
+    labels=[10],
+    file_name="uploads/demo.pdf",
+    auto_summary=False,
+    auto_podcast=False,
+    auto_tag=False,
+)
+
+res = session.create_file_document(data=data)
+```
+
+Run vector search:
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+data = DocumentSchema.VectorSearchRequest(query="retrieval augmented generation")
+res = session.search_document_vector(data=data)
+```
+
+## Coverage
+
+`Session` already covers the main operations:
+
+- file upload
+- document create/detail/update/delete/search/vector-search
+- document label and section label create/list/delete
+- section create/detail/update/delete/search/publish/republish
+
+If you need lower-level field-by-field definitions, continue with [Third-Party API](./api).
+
+## Good Fits
+
+- bulk ingestion into Revornix from Python scripts
+- backend jobs, CI, or cron-based content workflows
+- a lower-level integration layer for OpenClaw, workflow engines, or custom agents
+
+## Related Links
+
+- [Third-Party API](./api)
+- [OpenClaw Skill](./openclaw-skill)
+- [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)

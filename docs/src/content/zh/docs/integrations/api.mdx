@@ -1,0 +1,325 @@
+import { Callout } from 'nextra/components';
+import { ProcessDiagram } from '../../../../components/process-diagram';
+
+# 三方 API
+
+这篇文档说明 `/tp` 分组下的 API Key 接口。它们面向服务端集成、自动化流程和外部系统调用，能力范围覆盖文档采集、专栏处理、知识图谱和内容生产流程。
+
+**本页所有接口都需要携带 `API-KEY` 请求头。**
+
+| 请求头 | 值 |
+| --- | --- |
+| `API-KEY` | `your api key` |
+
+API Key 可以在 Revornix 内通过 **左下角头像 -> 账户 -> APIKey 管理** 创建。
+
+<Callout>
+  如果你不想手写 HTTP 请求，优先参考 [Python SDK 与 CLI](./python-sdk) 或 [OpenClaw Skill](./openclaw-skill)。
+</Callout>
+
+## 通用约定
+
+- 所有路径都以 `/tp` 开头。
+- 大多数接口使用 `POST` 并接受 JSON 请求体。
+- `/tp/file/upload` 使用 `multipart/form-data`。
+- `/tp/document/create` 会读取可选请求头 `X-User-Timezone`，用于按用户时区计算当日 API 采集额度与月度汇总日期。
+- `/tp/document/create` 后端会强制把 `from_plat` 记为 `api`，调用方不需要再额外传这个字段。
+
+## 接入流程示意
+
+<ProcessDiagram
+	title='三方 API 接入路径'
+	steps={[
+		{ title: '外部系统发起请求', description: '调用方携带 API-KEY 请求 /tp 分组接口。' },
+		{ title: '上传或创建内容', description: '先上传文件，或直接创建文档和专栏。' },
+		{ title: 'API 落库并建任务', description: '服务保存状态并把后续加工交给异步任务。' },
+		{ title: 'Worker 执行流程', description: '文档和专栏的异步处理在后台继续进行。' },
+		{ title: '轮询获取结果', description: '调用方通过详情、搜索或状态接口继续取回结果。' },
+	]}
+/>
+
+## 上传接口
+
+### `POST /tp/file/upload`
+
+先把文件上传到调用用户的默认文件系统，再通过 `/tp/document/create` 引用该路径创建文件文档。
+
+#### 参数
+
+| 参数名 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| `file` | File | 是 | 实际上传文件 |
+| `file_path` | string | 是 | 写入默认文件系统的目标路径 |
+| `content_type` | string | 是 | 文件 MIME 类型 |
+
+#### 要求
+
+- 调用用户必须已经配置默认文件系统。
+- `file_path` 和 `content_type` 为必填字段。
+
+#### 示例
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key"
+}
+files = {
+    "file": ("example.md", open("example.md", "rb"), "text/markdown")
+}
+data = {
+    "file_path": "/files/example.md",
+    "content_type": "text/markdown"
+}
+
+response = client.post(
+    "http://localhost:8001/tp/file/upload",
+    headers=headers,
+    files=files,
+    data=data,
+)
+```
+
+上传完成后，通常下一步就是调用 `/tp/document/create`，把 `file_path` 作为文件文档的 `file_name` 传入。
+
+## 专栏接口
+
+### 核心写入接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/section/create` | 创建专栏 |
+| `POST /tp/section/update` | 更新专栏基础信息与处理配置 |
+| `POST /tp/section/delete` | 删除专栏 |
+| `POST /tp/section/process/trigger` | 手动触发一次专栏处理流程 |
+| `POST /tp/section/document/retry` | 重试单篇专栏文档集成 |
+| `POST /tp/section/podcast/generate` | 生成专栏播客 |
+| `POST /tp/section/ppt/generate` | 生成专栏 PPT |
+| `POST /tp/section/publish` | 发布专栏 |
+| `POST /tp/section/republish` | 重新发布专栏 |
+
+### 查询与交互接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/section/detail` | 获取专栏详情 |
+| `POST /tp/section/date` | 获取按日期归档的专栏信息 |
+| `POST /tp/section/documents` | 获取专栏内文档分页列表 |
+| `POST /tp/section/ask` | 对专栏发起 AI 问答 |
+| `POST /tp/section/publish/get` | 获取专栏发布状态与发布信息 |
+| `POST /tp/section/mine/search` | 搜索我可访问的专栏 |
+| `POST /tp/section/mine/all` | 获取我的全部专栏简表 |
+| `POST /tp/section/subscribed` | 获取我订阅的专栏 |
+| `POST /tp/section/public/search` | 搜索公开专栏 |
+| `POST /tp/section/user/search` | 搜索指定用户的专栏 |
+
+### 评论接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/section/comment/create` | 创建专栏评论 |
+| `POST /tp/section/comment/search` | 分页搜索专栏评论 |
+| `POST /tp/section/comment/delete` | 删除专栏评论 |
+
+### 标签接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/section/label/create` | 创建专栏标签 |
+| `POST /tp/section/label/list` | 获取调用用户的专栏标签 |
+| `POST /tp/section/label/delete` | 删除专栏标签 |
+
+### `POST /tp/section/create`
+
+创建一个新的专栏。该接口会沿用应用内专栏的处理逻辑，包括触发策略、自动发布、自动播客、自动插图等配置。
+
+#### 关键字段
+
+| 参数名 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| `title` | string | 是 | 专栏标题 |
+| `description` | string | 是 | 专栏描述 |
+| `cover` | string | 否 | 专栏封面 |
+| `labels` | int[] | 是 | 专栏标签 ID 列表 |
+| `auto_publish` | boolean | 否 | 是否自动发布 |
+| `auto_podcast` | boolean | 否 | 是否自动生成播客 |
+| `auto_illustration` | boolean | 否 | 是否自动生成插图 |
+| `process_task_trigger_type` | int | 是 | 处理触发方式，常见值为时间触发或更新事件触发 |
+| `process_task_trigger_scheduler` | string | 否 | 定时触发时使用的 cron 表达式 |
+
+#### 示例
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key"
+}
+
+response = client.post(
+    "http://localhost:8001/tp/section/create",
+    headers=headers,
+    json={
+        "title": "AI 产品观察",
+        "description": "按主题汇总行业动态与深度解读",
+        "cover": "/covers/ai-weekly.png",
+        "labels": [1, 2],
+        "auto_publish": True,
+        "auto_podcast": True,
+        "auto_illustration": True,
+        "process_task_trigger_type": 1
+    },
+)
+```
+
+### `POST /tp/section/ppt/generate`
+
+对已有专栏生成 PPT。适合在专栏 Markdown 已整理完成后补做演示材料。
+
+#### 常见字段
+
+| 参数名 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| `section_id` | int | 是 | 目标专栏 ID |
+
+### `POST /tp/section/comment/search`
+
+返回分页评论结果，适合评论流和管理后台场景。
+
+#### 常见字段
+
+| 参数名 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| `section_id` | int | 是 | 目标专栏 ID |
+| `start` | int | 否 | 游标起点 |
+| `limit` | int | 否 | 每页数量 |
+| `keyword` | string | 否 | 评论关键字过滤 |
+
+## 文档接口
+
+### 标签接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/document/label/list` | 获取文档标签列表 |
+| `POST /tp/document/label/create` | 创建文档标签 |
+| `POST /tp/document/label/delete` | 删除文档标签 |
+
+### 文档写入与处理接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/document/create` | 创建文档 |
+| `POST /tp/document/update` | 更新文档基础信息 |
+| `POST /tp/document/delete` | 删除文档 |
+| `POST /tp/document/markdown/transform` | 触发文档 Markdown 转换 |
+| `POST /tp/document/ai/summary` | 生成 AI 摘要 |
+| `POST /tp/document/embedding` | 生成文档向量 |
+| `POST /tp/document/transcribe` | 转写音频文档 |
+| `POST /tp/document/graph/generate` | 生成文档图谱 |
+| `POST /tp/document/podcast/generate` | 生成文档播客 |
+
+### 文档查询与搜索接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/document/detail` | 获取文档详情 |
+| `POST /tp/document/ask` | 对文档发起 AI 问答 |
+| `POST /tp/document/month/summary` | 获取月度文档汇总 |
+| `POST /tp/document/unread/search` | 搜索未读文档 |
+| `POST /tp/document/recent/search` | 搜索最近阅读文档 |
+| `POST /tp/document/star/search` | 搜索已收藏文档 |
+| `POST /tp/document/search/mine` | 搜索我的文档 |
+| `POST /tp/document/vector/search` | 在知识向量中搜索相关片段 |
+
+### 笔记接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/document/note/create` | 创建文档笔记 |
+| `POST /tp/document/note/search` | 分页搜索文档笔记 |
+| `POST /tp/document/note/delete` | 删除文档笔记 |
+
+### `POST /tp/document/create`
+
+创建文档时，后端会按文档类型执行与应用内一致的采集与处理流程，并把 `from_plat` 固定记为 `api`。
+
+#### 关键字段
+
+| 参数名 | 类型 | 必填 | 描述 |
+| --- | --- | --- | --- |
+| `category` | int | 是 | 文档类型 |
+| `sections` | int[] | 是 | 要推送到的专栏 ID 列表 |
+| `labels` | int[] | 是 | 文档标签 ID 列表 |
+| `title` | string | 否 | 文档标题 |
+| `description` | string | 否 | 文档描述 |
+| `cover` | string | 否 | 文档封面 |
+| `content` | string | 条件必填 | 速记文档时必填 |
+| `url` | string | 条件必填 | 链接文档时必填 |
+| `file_name` | string | 条件必填 | 文件文档时必填，对应上传时的 `file_path` |
+| `auto_summary` | boolean | 否 | 是否自动生成摘要 |
+| `auto_podcast` | boolean | 否 | 是否自动生成播客 |
+| `auto_tag` | boolean | 否 | 是否自动打标 |
+
+#### 分类
+
+| `category` | 含义 |
+| --- | --- |
+| `0` | 文件文档 |
+| `1` | 链接文档 |
+| `2` | 速记文档 |
+| `3` | 音频文档 |
+
+#### 要求
+
+- 调用方不需要传 `from_plat`，服务会自动写成 `api`。
+- 官方部署下，这个接口会按套餐能力校验 API 采集额度。
+- 官方部署下，网站文档和文件文档在累计数量较高时也会触发额外能力校验。
+- 如果你依赖“按用户当天”统计额度，建议显式传 `X-User-Timezone`。
+
+#### 示例
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key",
+    "X-User-Timezone": "Asia/Shanghai",
+}
+
+response = client.post(
+    "http://localhost:8001/tp/document/create",
+    headers=headers,
+    json={
+        "category": 1,
+        "url": "https://example.com/article",
+        "sections": [12],
+        "labels": [3],
+        "auto_summary": True,
+        "auto_podcast": False,
+        "auto_tag": True
+    },
+)
+```
+
+### `POST /tp/document/vector/search`
+
+在用户知识向量中搜索与问题最相关的内容片段，适合做检索增强和外部问答编排。
+
+### `POST /tp/document/note/search`
+
+返回分页笔记结果，支持关键字过滤，适合嵌入到自己的阅读工作台或评论式批注视图。
+
+## 图谱接口
+
+| 路径 | 说明 |
+| --- | --- |
+| `POST /tp/graph/document` | 获取单篇文档图谱 |
+| `POST /tp/graph/section` | 获取单个专栏图谱 |
+| `POST /tp/graph/search` | 获取调用用户的全局图谱 |
+
+这些接口返回统一的图谱响应结构，可直接用于知识关系可视化、节点检索和图谱浏览器。

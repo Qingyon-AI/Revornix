@@ -1,0 +1,47 @@
+import { Callout } from 'nextra/components';
+
+# MCP
+
+> MCP 是一个开放协议，它标准化了应用程序如何向 LLM 提供上下文。可以将 MCP 视为 AI 应用程序的 USB-C 端口。就像 USB-C 为连接设备与各种外设和配件提供了标准化方式一样，MCP 为连接 AI 模型与不同数据源和工具提供了标准化方式。 
+> -- from [anthropic](https://docs.anthropic.com/zh-CN/docs/agents-and-tools/mcp)
+
+<Callout type="warning">
+为了更好的工具调用效果，请使用支持指令遵从的基座模型。
+</Callout>
+
+Revornix 已内置 MCP 客户端，你可以通过设置中的 MCP 管理配置自己的 MCP 服务端。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260115160023140.png)
+
+用户侧 MCP 配置支持两种类型：
+
+- `STD`：通过本地命令启动的 MCP Server
+- `HTTP`：通过 URL 访问的远程 MCP Server
+
+在成功配置 MCP 服务端后，Revornix AI 可以基于你的工具能力进行对话和调用。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193157115.png)
+
+## Revornix 的 MCP 双向能力
+
+Revornix 目前支持 MCP 客户端 + 服务端双向能力。
+
+- 客户端侧：支持接入 `STD` 和 `HTTP` 两类 MCP Server，你可以在设置中的 MCP 管理里进行配置。
+- 服务端侧：能力内置在 API 中，相关路由归档在 `api/mcp_router/*`；当前官方服务分组可对应到 `common`、`document`、`graph`。
+- `common`：用于通用 MCP 能力扩展。
+- `document`：主要用于文档与知识库交互，让 Revornix AI 或外部 MCP Client 可以基于本地文档进行调用。
+- `graph`：主要面向图谱相关能力扩展，用于补充知识图谱场景下的 MCP 调用能力。
+
+### 官方托管服务端地址
+
+如果你直接使用 Revornix 官方提供的 MCP 服务端，目前可使用以下地址：
+
+- `https://api.revornix.cn/mcp-server/common/mcp`
+- `https://api.revornix.cn/mcp-server/document/mcp`
+- `https://api.revornix.cn/mcp-server/graph/mcp`
+
+提示：以上是官方托管环境的 MCP 地址；如果你讨论的是自部署结构或二次开发，建议以 `api/mcp_router/*` 以及 `common`、`document`、`graph` 这些分组来理解服务端能力。
+
+### 开发者提示
+
+如果你有意扩展 Revornix 自带的 MCP Server，建议将代码放在 `api/mcp_router` 下，并优先参考现有的 `common`、`document`、`graph` 分组。

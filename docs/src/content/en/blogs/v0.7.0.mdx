@@ -1,0 +1,43 @@
+---
+title: v0.7.0
+description: This release includes major updates, with fixes and optimizations across notifications, caching, UI, and more.
+---
+
+import { Callout } from 'nextra/components';
+
+# Revornix-v0.7.0
+
+<Callout>
+Considering the compatibility issues in MinerU package structures, this release removes local MinerU parsing for websites and files. MinerU is not being dropped; it will be replaced by independently deployed MinerU services and is expected to be officially supported in `v1.0.0`.
+</Callout>
+
+## Highlights
+
+- Fixed notification task bugs, and notifications now work as expected.
+- Lightly refactored the notification system, making create/edit/delete operations more intuitive.
+- Added caching for some paths, reducing token usage and improving request speed.
+- Added logging at key checkpoints to improve traceability.
+- Improved some type annotations.
+- Optimized the tagging engine.
+- Improved frontend UI interactions.
+- Fixed known UI styling issues, such as avatar sizing.
+- Optimized workflows for sections and documentation.
+- Improved project file structure organization.
+- Fixed redirect behavior on the login page.
+- Optimized notification templates.
+- Fixed bugs caused by timezone differences, such as daily summary timing and same-day section time mismatches.
+- Fixed user capability whitelist issues.
+- Removed local MinerU mode (to be replaced by independently deployed MinerU services later).
+- Fixed missing content in some multilingual areas.
+- Optimized parts of the code logic.
+- Fixed other known bugs.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share ideas and collaborate!
+
+You can open new issues in this project's Issues section.
+
+## Contributing
+
+Please see our [contributor guide](https://revornix.com/docs/developer/contribute) for more information.

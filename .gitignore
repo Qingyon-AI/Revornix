@@ -16,3 +16,5 @@ volumes/*
 127.0.0.1
 neo4j/plugins/*
 .vscode/
+.ruff_cache/
+.claude/

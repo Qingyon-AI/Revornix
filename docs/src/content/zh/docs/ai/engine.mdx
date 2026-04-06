@@ -1,0 +1,133 @@
+import { Callout } from 'nextra/components';
+
+# 引擎
+
+“引擎”已经从单纯的文档解析扩展成一整套专门能力资源。 
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260406182947966.png)
+
+它们主要覆盖：
+
+- 网站 / 文件转 Markdown
+- 播客生成
+- 图片生成
+- 音频转写
+
+这些引擎通常会和默认模型一起构成完整工作流。
+
+## 1. 主要引擎类别
+
+| 引擎类别 | 代表引擎 | 用途 |
+| --- | --- | --- |
+| Markdown 解析 | Markitdown、Jina、MinerU API | 网站 / 文件转 Markdown |
+| 播客生成 | Volc Podcast Engine、OpenAI Audio Engine | 文档 / 专栏播客 |
+| 图片生成 | Banana Image | 专栏插图、PPT 幻灯片图 |
+| 音频转写 | Volc STT Fast、Volc STT Standard | 音频文档转文字 |
+
+## 2. 默认引擎位现在已经拆细
+
+用户设置里不是只选一个“默认引擎”，而是分别配置：
+
+- 默认网站解析引擎
+- 默认文件解析引擎
+- 默认播客引擎
+- 默认图片生成引擎
+- 默认音频转写引擎
+
+这些默认位都会在写入设置前做一次资源访问校验。
+
+## 3. 解析类引擎的差异
+
+### Jina
+
+- 主要用于网站内容抓取与解析
+- 不适合作为文件解析的主引擎
+- 需要配置 Jina API Key
+
+### Markitdown
+
+- 可处理网站和文件
+- 如果要更好地处理图片相关内容，建议配置 `openai_api_key`
+- 还会联动用户的默认文档阅读模型
+
+### MinerU API
+
+- 官方环境会预置官方托管的 MinerU API 引擎
+- 在官方初始化里，它是唯一被 seed 为 `FREE` 等级可用的官方引擎
+- 它也会参与网站 / 文件转 Markdown 这类工作流
+
+## 4. 播客、转写和生图引擎的作用
+
+### 播客引擎
+
+播客引擎不只服务文档，也服务专栏。  
+如果你没有配置默认播客引擎，文档播客、专栏播客相关入口都会直接提示资源未设置。
+
+代表引擎包括：
+
+- `Volc Podcast Engine`
+- `OpenAI Audio Engine`
+
+其中 `Volc Podcast Engine` 在某些模式下还会联动你的默认文档阅读模型来生成对话式播客结构。
+
+### 音频转写引擎
+
+音频文档会依赖默认转写引擎完成文字化。  
+官方初始化中包含：
+
+- `Official_Volc_Fast_STT`
+- `Official_Volc_Standard_STT`
+
+### 图片生成引擎
+
+图片生成引擎不只用于“专栏插图”。
+
+它至少会影响：
+
+- 专栏自动插图
+- 专栏 PPT 幻灯片图生成
+
+官方初始化中包含：
+
+- `Official_Banana_Image`
+
+## 5. 官方托管引擎
+
+引擎支持“官方托管”标记：
+
+- 可标记为 `is_official_hosted`
+- 可配置计费模式 `billing_mode`
+- 可配置单价 `billing_unit_price`
+- 可配置积分倍率 `compute_point_multiplier`
+
+也就是说，引擎现在已经不只是“有没有这个能力”，还可以表达：
+
+- 这个引擎是不是官方托管
+- 这个引擎如何换算积分
+- 这个引擎需要什么套餐等级
+
+## 6. 官方引擎清单
+
+在官方部署初始化里，会创建这些官方公开引擎：
+
+- `Official_Banana_Image`
+- `Official_Volc_TTS`
+- `Official_MinerU_API`
+- `Official_Volc_Fast_STT`
+- `Official_Volc_Standard_STT`
+
+其中：
+
+- `Official_MinerU_API` 初始化为 `FREE` 级别
+- 其余几项初始化为 `PRO` 级别
+
+## 7. 引擎社区与 Fork
+
+- 你可以把自己的引擎设为公开
+- 公开引擎可以设置所需套餐等级
+- 其他用户可以在社区中发现这些引擎
+- 真正要使用时，仍然需要先 Fork 到自己的资源列表
+
+<Callout>
+	所以“看到一个引擎”和“能把它选为默认引擎”是两回事。默认选择、实际调用、套餐限制现在是打通的。
+</Callout>

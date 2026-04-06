@@ -1,0 +1,120 @@
+import { Callout } from 'nextra/components';
+
+# OpenClaw Skill
+
+Revornix provides a `revornix-publisher` skill so OpenClaw can directly work with Revornix sections, labels, documents, and file uploads. The skill currently lives in the `skills/revornix-publisher/` directory of [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib).
+
+<Callout>
+	This skill uses a bundled Python script instead of hand-written HTTP requests in prompts. It is a better fit for OpenClaw agents, automated publishing flows, and conversational knowledge-base maintenance.
+</Callout>
+
+## Supported Operations
+
+- sections: list, search, detail, create, update, delete, publish, republish
+- documents: create quick note, website, file, and audio documents; detail, update, delete, search, vector search
+- labels: list, create, and delete document labels and section labels
+- files: upload files, then upload-and-create file or audio documents in one step
+
+## Prerequisites
+
+Based on the skill metadata and script implementation, this skill currently needs:
+
+- `python3`
+- `REVORNIX_BASE_URL`
+- `REVORNIX_API_KEY`
+- a `darwin` or `linux` runtime
+
+If OpenClaw runs the session inside a sandbox, `python3` must also be available inside the container.
+
+## Where to Install It
+
+OpenClaw supports AgentSkills-style folders. You can place `revornix-publisher` in any of these locations:
+
+- `<workspace>/skills/revornix-publisher`
+- `<workspace>/.agents/skills/revornix-publisher`
+- `~/.agents/skills/revornix-publisher`
+- `~/.openclaw/skills/revornix-publisher`
+
+If you already have the `Revornix-Python-Lib` repository locally, you can copy the `skills/revornix-publisher` directory directly.
+
+## Configuration
+
+The simplest setup is to provide environment variables to the OpenClaw process:
+
+```shell
+export REVORNIX_BASE_URL="https://api.revornix.cn"
+export REVORNIX_API_KEY="YOUR_API_KEY"
+```
+
+You can also inject them through `~/.openclaw/openclaw.json`:
+
+```json5
+{
+  skills: {
+    entries: {
+      "revornix-publisher": {
+        enabled: true,
+        env: {
+          REVORNIX_BASE_URL: "https://api.revornix.cn",
+          REVORNIX_API_KEY: "YOUR_API_KEY",
+        },
+      },
+    },
+  },
+}
+```
+
+## Script Entry Point
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py --help
+```
+
+Common command examples:
+
+List sections:
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py list-sections
+```
+
+Create a quick note:
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py create-quick-note \
+  --content "hello world" \
+  --section 1 \
+  --label 10
+```
+
+Upload a local file and create a file document:
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py upload-and-create-file-document \
+  --local-file-path ./demo.pdf \
+  --remote-file-path uploads/demo.pdf \
+  --section 1 \
+  --label 10
+```
+
+Publish a section:
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py publish-section \
+  --section-id 12 \
+  --status true
+```
+
+## Usage Notes
+
+- list or search before creating sections or labels to avoid duplicates
+- `--section`, `--label`, `--document-id`, and `--label-id` all support repeated values
+- `search-document-vector` depends on existing server-side embeddings
+- every result is printed as JSON, which makes it easy for agents and scripts to consume
+- do not invent IDs; if the target is unclear, fetch detail first
+
+## Related Links
+
+- [Python SDK and CLI](./python-sdk)
+- [Third-Party API](./api)
+- [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)

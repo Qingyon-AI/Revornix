@@ -1,0 +1,120 @@
+import { Callout } from 'nextra/components';
+
+# OpenClaw Skill
+
+Revornix 已提供 `revornix-publisher` skill，用于让 OpenClaw 直接操作 Revornix 中的专栏、标签、文档，以及文件上传流程。该 skill 当前位于 [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib) 仓库的 `skills/revornix-publisher/` 目录下。
+
+<Callout>
+	这个 skill 的底层入口是一个 Python 脚本，而不是在提示词里手写 HTTP 请求；它更适合 OpenClaw 代理、自动化发布流程，以及对话式知识库维护。
+</Callout>
+
+## 支持的操作
+
+- 专栏：列出、搜索、查看详情、创建、更新、删除、发布、重新发布
+- 文档：创建速记、网页、文件、音频文档；查看详情、更新、删除、搜索、向量检索
+- 标签：文档标签和专栏标签的列出、创建、删除
+- 文件：上传文件，以及上传后一步创建文件或音频文档
+
+## 前置条件
+
+根据 skill 元数据和脚本实现，当前需要：
+
+- `python3`
+- `REVORNIX_BASE_URL`
+- `REVORNIX_API_KEY`
+- 运行环境为 `darwin` 或 `linux`
+
+如果 OpenClaw 会把当前 session 放进 sandbox，容器内也需要能执行 `python3`。
+
+## 安装位置
+
+OpenClaw 兼容 AgentSkills 风格的 skill 目录。你可以把 `revornix-publisher` 放到以下任一位置：
+
+- `<workspace>/skills/revornix-publisher`
+- `<workspace>/.agents/skills/revornix-publisher`
+- `~/.agents/skills/revornix-publisher`
+- `~/.openclaw/skills/revornix-publisher`
+
+如果你已经有 `Revornix-Python-Lib` 仓库，直接复制其中的 `skills/revornix-publisher` 目录即可。
+
+## 配置方式
+
+最直接的方式是给 OpenClaw 进程提供环境变量：
+
+```shell
+export REVORNIX_BASE_URL="https://api.revornix.cn"
+export REVORNIX_API_KEY="YOUR_API_KEY"
+```
+
+也可以在 `~/.openclaw/openclaw.json` 中单独给 skill 注入环境变量：
+
+```json5
+{
+  skills: {
+    entries: {
+      "revornix-publisher": {
+        enabled: true,
+        env: {
+          REVORNIX_BASE_URL: "https://api.revornix.cn",
+          REVORNIX_API_KEY: "YOUR_API_KEY",
+        },
+      },
+    },
+  },
+}
+```
+
+## 底层脚本入口
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py --help
+```
+
+常见命令示例：
+
+列出专栏：
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py list-sections
+```
+
+创建速记文档：
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py create-quick-note \
+  --content "hello world" \
+  --section 1 \
+  --label 10
+```
+
+上传本地文件并创建文件文档：
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py upload-and-create-file-document \
+  --local-file-path ./demo.pdf \
+  --remote-file-path uploads/demo.pdf \
+  --section 1 \
+  --label 10
+```
+
+发布专栏：
+
+```bash
+python3 skills/revornix-publisher/scripts/revornix_api.py publish-section \
+  --section-id 12 \
+  --status true
+```
+
+## 使用建议
+
+- 在创建专栏或标签前，优先先列出或搜索，避免重复创建
+- `--section`、`--label`、`--document-id`、`--label-id` 都支持重复传入
+- `search-document-vector` 依赖服务端已有 embedding
+- 所有结果都会以 JSON 输出，适合继续被 Agent 或脚本消费
+- 不要凭空编造 ID；不确定目标时先查询详情
+
+## 相关链接
+
+- [Python SDK 与 CLI](./python-sdk)
+- [三方 API](./api)
+- [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)

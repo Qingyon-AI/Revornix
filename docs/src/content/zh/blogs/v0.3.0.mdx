@@ -1,0 +1,75 @@
+---
+title: v0.3.0
+description: v0.3.0正式版本推送。
+---
+import StaticImage from '../../../components/static-image'
+
+# Revornix-v0.3.0
+
+v0.3.0-beta系迭代终于结束，我们迎来了正式版。
+
+## 从旧版本升级
+
+**此次版本更新迭代是破坏式更新，部分设计和过往设计并不兼容。在升级前请先将原先的文件系统数据备份（理论上如果你是老用户的话应该就是`volumes/files`和`volumes/mysql`文件夹，实际位置参考下图⬇️），升级后请重新导入数据。**
+
+<StaticImage src="https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507241710451.png" className='size-50 mt-5' />
+
+### 如何导入原文档：
+
+将`volumes/files`文件夹下的所有文件保留结构上传到你的新文件系统中的对应bucket下即可。注意不要直接上传`files`文件夹，而是将文件夹内的所有文件上传到对应bucket下。
+
+比如你新的阶段的文件系统是内置Minio，那么你只需要进入本地Minio的网站控制台（http://localhost:9011），账号和密码就是你设置的`FILE_SYSTEM_USER_NAME`以及`FILE_SYSTEM_PASSWORD`，登陆后找到你自己的bucket，bucket名称是你的账号唯一id，可以通过账号页面底部查看。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507271538564.png)
+
+然后将整个volumes/files下的所有文件保持原有结构批量上传到对应bucket下，等待上传成功后，即完成了文件系统迁移。
+
+### 如何迁移数据库：
+
+1. 安装pgloader
+
+mac可以通过homebrew，ubuntu可以通过apt-get安装。
+
+2. 编写脚本
+
+```
+LOAD DATABASE
+     FROM mysql://<你设置的mysql账户>:<你设置的mysql密码>@<你的mysql服务地址>/<你设置的mysql数据库名称>
+     INTO postgresql://<你设置的postgres账户>:<你设置的postgres密码>@<你的postgres服务地址>/<你设置的postgres数据库名称>
+
+WITH include no drop, create tables, create indexes, reset sequences, data only
+
+SET work_mem to '128MB', maintenance_work_mem to '512 MB'
+
+CAST type datetime to timestamptz
+     drop default drop not null using zero-dates-to-null,
+
+     type tinyint when (= precision 1) to boolean using tinyint-to-boolean
+
+ALTER schema '<你设置的mysql数据库名称>' rename to 'public';
+```
+
+保存为`migrate.load`
+
+3. 运行迁移
+
+```shell
+pgloader migrate.load
+```
+
+## 更新亮点
+
+- 自定义文件系统，支持不同类型，阿里云OSS/亚马逊云S3/本地存储MINIO以及支持S3协议的其他云存储桶服务。
+- 迁移数据库技术栈，从MySQL迁移到PostgreSQL，提升性能。
+- 优化引擎配置项。
+- 修复小部分bugs，优化部分代码，提升稳定性。
+
+## 联系我们
+
+欢迎加入我们的 [Discord](https://discord.com/invite/3XZfz84aPN) 社区分享想法和协作！
+
+你可以在本项目的 Issues 区域提出新的问题。
+
+## 贡献
+
+欢迎查看我们的[贡献者指南](https://revornix.com/docs/developer/contribute)获取更多信息。

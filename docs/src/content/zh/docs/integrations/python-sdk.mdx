@@ -1,0 +1,233 @@
+import { Callout } from 'nextra/components';
+
+# Python SDK 与 CLI
+
+Revornix 官方提供 `revornix` Python 包，它同时包含两部分能力：
+
+- Python SDK：适合在服务端脚本、自动化任务、定时任务、CI 流程中直接调用。
+- CLI：适合 shell 脚本、终端手动操作，以及和其他工具链组合。
+
+源码与发布信息见 [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)。
+
+<Callout>
+	如果你只是想接入 Revornix，而不想自己手写 HTTP 请求，优先使用本页说明；底层仍然调用公开的 [三方 API](./api)。
+</Callout>
+
+## 安装
+
+```shell
+pip install revornix
+```
+
+当前包要求 Python `>=3.10`。
+
+## 认证配置
+
+无论是 SDK 还是 CLI，都需要以下凭据：
+
+- `base_url`：Revornix API 根地址
+- `api_key`：Revornix API Key
+
+你可以在 Revornix 中点击左下角头像，进入 **账户** -> **APIKey 管理** 获取或新增 API Key。
+
+CLI 支持以下环境变量：
+
+```shell
+export REVORNIX_BASE_URL="https://api.revornix.cn"
+export REVORNIX_API_KEY="YOUR_API_KEY"
+```
+
+## CLI 快速开始
+
+查看帮助：
+
+```shell
+revornix --help
+```
+
+如果不想依赖环境变量，也可以直接传参：
+
+```shell
+revornix --base-url "https://api.revornix.cn" --api-key "YOUR_API_KEY" --help
+```
+
+当前 CLI 主要有 4 组命令：
+
+- `files`：上传文件
+- `documents`：创建、更新、搜索、删除文档
+- `labels`：管理文档标签和专栏标签
+- `sections`：管理专栏、发布状态与专栏内文档
+
+上传文件：
+
+```shell
+revornix files upload \
+  --local-file-path ./demo.txt \
+  --remote-file-path uploads/demo.txt \
+  --content-type text/plain
+```
+
+创建速记文档：
+
+```shell
+revornix documents create-quick-note \
+  --content "hello world" \
+  --title "Quick Note" \
+  --section 1 \
+  --label 10 \
+  --auto-summary
+```
+
+上传本地文件并一步创建文件文档：
+
+```shell
+revornix documents upload-create-file \
+  --local-file-path ./demo.pdf \
+  --remote-file-path uploads/demo.pdf \
+  --title "Demo File" \
+  --section 1 \
+  --label 10
+```
+
+创建网页文档：
+
+```shell
+revornix documents create-website \
+  --url https://example.com \
+  --section 1 \
+  --label 10
+```
+
+创建专栏并自动发布：
+
+```shell
+revornix sections create \
+  --title "AI Notes" \
+  --description "Knowledge base for AI" \
+  --process-task-trigger-type 1 \
+  --label 10 \
+  --auto-publish
+```
+
+### CLI 使用说明
+
+- 多个专栏请重复传入 `--section`
+- 多个标签请重复传入 `--label`
+- 删除多个文档时请重复传入 `--document-id`
+- 布尔值参数根据命令不同，既有 `--auto-summary` 这类开关，也有 `--status true` 这类显式值
+- CLI 输出默认是 JSON，适合被脚本继续处理
+- `documents search-vector` 依赖服务端已经为目标文档生成向量
+
+## Python SDK 快速开始
+
+创建 `Session`：
+
+```python
+from revornix import Session
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+```
+
+导入 Schema 模型：
+
+```python
+from revornix.schema import DocumentSchema, SectionSchema
+```
+
+创建速记文档：
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+data = DocumentSchema.QuickNoteDocumentParameters(
+    title="Quick Note",
+    description="Created from SDK",
+    cover=None,
+    sections=[1],
+    labels=[10],
+    content="hello world",
+    auto_summary=False,
+    auto_podcast=False,
+    auto_tag=False,
+)
+
+res = session.create_quick_note_document(data=data)
+```
+
+上传文件并创建文件文档：
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+session.upload_file(
+    local_file_path="./demo.pdf",
+    remote_file_path="uploads/demo.pdf",
+)
+
+data = DocumentSchema.FileDocumentParameters(
+    title="Demo File",
+    description="Imported from uploaded file",
+    cover=None,
+    sections=[1],
+    labels=[10],
+    file_name="uploads/demo.pdf",
+    auto_summary=False,
+    auto_podcast=False,
+    auto_tag=False,
+)
+
+res = session.create_file_document(data=data)
+```
+
+执行文档向量检索：
+
+```python
+from revornix import Session
+from revornix.schema import DocumentSchema
+
+session = Session(
+    base_url="https://api.revornix.cn",
+    api_key="YOUR_API_KEY",
+)
+
+data = DocumentSchema.VectorSearchRequest(query="检索增强生成")
+res = session.search_document_vector(data=data)
+```
+
+## 当前能力范围
+
+`Session` 已覆盖以下常见能力：
+
+- 文件上传
+- 文档创建、详情、更新、删除、我的文档搜索、向量检索
+- 文档标签与专栏标签的创建、查询、删除
+- 专栏的创建、详情、更新、删除、搜索、发布、重新发布
+
+如果你需要更底层的字段说明，可继续查看 [三方 API](./api)。
+
+## 适合什么场景
+
+- 用 Python 脚本批量上传资料到 Revornix
+- 在后端任务、CI 或 cron 中自动创建、更新文档和专栏
+- 作为 OpenClaw、工作流引擎或自定义 Agent 的底层调用层
+
+## 相关链接
+
+- [三方 API](./api)
+- [OpenClaw Skill](./openclaw-skill)
+- [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)

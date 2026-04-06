@@ -1,0 +1,133 @@
+# Revornix Architecture Overview
+
+Last verified against the repository: 2026-04-06
+
+This page is based on the current monorepo layout, `docker-compose-local.yaml`, and the runtime entrypoints that are actually used today.
+
+## 1. Top-level repository layout
+
+```text
+Revornix/
+├── web/             # Main product frontend (Next.js App Router)
+├── api/             # Main FastAPI service
+├── celery-worker/   # Background workflows and heavy async jobs
+├── hot-news/        # Trending aggregation microservice
+├── docs/            # This Nextra documentation site
+├── assets/          # Shared static assets used by repository docs/branding
+├── volumes/         # Local persisted data for docker-compose-local
+└── docker-compose-local.yaml
+```
+
+## 2. Runtime services and responsibilities
+
+### `web`
+
+- Next.js 16 frontend for the real product UI.
+- Owns authentication pages, dashboard, documents, sections, Revornix AI, settings, billing entrypoints, and notification UI.
+- Reads `web/.env` and exposes selected values through `next.config.ts`.
+
+### `api`
+
+- FastAPI application with entrypoint at `api/main.py`.
+- Owns user/auth flows, documents, sections, graph APIs, AI routing, MCP server routes, notifications, payment-facing integration, and public/share endpoints.
+- Acts as the main synchronous orchestration layer for the product.
+
+### `celery-worker`
+
+- Handles long-running or expensive background jobs.
+- Owns workflows such as document conversion, embedding, summarization, graph building, section rendering, podcast generation, and notification delivery.
+- Runs from `celery-worker/common/celery/app.py`.
+
+### `hot-news`
+
+- Separate Node/Hono service for trending-topic aggregation.
+- Frontend consumes it through `NEXT_PUBLIC_HOT_NEWS_API_PREFIX`.
+- The code is kept in-repo under `hot-news/`, but it is still deployed and started as an independent service.
+
+### `docs`
+
+- Independent Nextra documentation app.
+- It is not part of the end-user product runtime path.
+- Its job is to describe the repo, features, deployment, and developer guidance.
+
+## 3. Data stores and shared infrastructure
+
+- PostgreSQL: primary relational business data.
+- Redis: cache plus Celery broker/backend.
+- Milvus: vector storage and retrieval.
+- Neo4j: graph storage and graph queries.
+- `file-backend` (MinIO): default built-in file system for uploaded/generated assets.
+- Milvus also has its own internal `minio` + `etcd` containers in local bootstrap.
+
+In local development, these infrastructure services are started through `docker-compose-local.yaml`. The application services themselves are still started manually.
+
+## 4. Core request and processing flow
+
+### User-facing request path
+
+1. The browser talks to `web`.
+2. `web` calls `api`.
+3. `api` reads or writes PostgreSQL / Redis / Milvus / Neo4j and returns the immediate response.
+
+### Async content workflow path
+
+1. A user action in `web` triggers an API mutation.
+2. `api` records state and enqueues work for Celery.
+3. `celery-worker` performs parsing, chunking, embedding, graph generation, illustration or podcast workflows, and writes results back.
+4. `web` polls or refetches API state and presents the updated result.
+
+### Hot-news path
+
+1. `web` calls the `hot-news` service directly through the configured public prefix.
+2. `hot-news` aggregates upstream ranking data and returns a normalized list.
+
+## 5. Current local deployment model
+
+The current repo does **not** use a single full-stack Docker Compose path for all app services.
+
+What exists today:
+
+- Local infrastructure bootstrap: `docker-compose-local.yaml`
+- Manual startup for:
+  - `api`
+  - `celery-worker`
+  - `web`
+  - `hot-news`
+  - `docs` when you want to run the docs site locally
+
+That means the most common local loop is:
+
+1. Start Postgres / Redis / Neo4j / Milvus / MinIO with `docker-compose-local.yaml`
+2. Initialize baseline data from `api`
+3. Start `api`, `celery-worker`, `hot-news`, and `web`
+
+## 6. Important implementation boundaries
+
+### AI and official hosted resources
+
+- The official hosted model and engine seed logic lives in `api/data/sql/create.py`.
+- The API controls access checks and usage recording.
+- The worker performs many of the actual downstream heavy jobs.
+
+### MCP support
+
+- Revornix acts as both MCP client and MCP server.
+- Server-side MCP routes live under `api/mcp_router/*`.
+- Product-facing MCP management UI lives in `web/src/app/(private)/setting/mcp`.
+
+### File systems
+
+- The built-in file backend is MinIO/S3-compatible.
+- The codebase also supports Aliyun OSS, AWS S3, and generic S3 adapters.
+- File-system abstractions exist in both `api/file/*` and `celery-worker/file/*`.
+
+## 7. What changed from older documentation
+
+Compared with earlier docs versions, the current repo no longer matches an "all services in one application compose file" mental model.
+
+The practical baseline now is:
+
+- infra with `docker-compose-local.yaml`
+- application services started manually
+- `docs/` as a separate Nextra app
+- `hot-news/` as a separate Node service inside the same monorepo

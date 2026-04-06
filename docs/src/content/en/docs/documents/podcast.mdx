@@ -1,0 +1,47 @@
+import { Callout } from 'nextra/components';
+import StaticImage from '../../../../components/static-image'
+
+# Podcast Generation
+
+<Callout>Podcast generation is an audio feature and consumes a large number of tokens. Use it based on your needs and keep an eye on token usage.</Callout>
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318191059633.png)
+
+Podcast generation is one of Revornix's first-class output formats for both documents and sections.
+
+## Configure the engine
+
+Before using this feature, configure the default podcast engine in Settings. The representative engines in the codebase include:
+
+- `Volc Podcast Engine`
+- `OpenAI Audio Engine`
+
+Using Volcengine as an example, you can register on the [Volcengine console](https://console.volcengine.com/speech/app) and obtain your AppID and Access Token.
+
+1. Go to the [Volcengine console](https://console.volcengine.com/speech/app) and click Create App.
+2. Fill in the configuration. Make sure to select the Doubao voice podcast model in the capability options, then click Confirm.
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251117210827919.png)
+3. Click the Doubao voice podcast model on the left, select your newly created app on the right, and enable the service.
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251117211117247.png)
+4. After the service is enabled, you can see your AppID and Access Token and token usage. Volcengine currently gives 1,000,000 free tokens, which does not go very far in practice, so use them sparingly.
+5. In Revornix, open Settings, go to the engine configuration page, select the ByteDance podcast engine, fill in the AppID and Access Token, and click Save.
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251117211931536.png)
+6. In Revornix Settings, find the podcast engine option and select the engine you just added.
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251117211729069.png)
+7. Save it, then choose it in the default podcast engine setting.
+
+## Document podcast
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318191243282.png)
+
+When creating a document, you can choose whether to auto-generate a podcast. If enabled, the document enters the podcast generation workflow after creation. If not, you can generate it manually from the document detail page.
+
+After success, the document detail page uses the built-in audio player directly.
+
+## Section podcast
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318191259734.png)
+
+When creating or configuring a section, you can choose whether to auto-update the section podcast. If enabled, section processing can continue into the podcast workflow whenever the section content changes. If not, you can generate or regenerate the section podcast manually from the section detail page.
+
+If the section content has changed after a podcast was generated, the UI can mark the podcast result as stale.

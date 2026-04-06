@@ -1,0 +1,37 @@
+---
+title: v0.4.0-beta1
+description: The first beta version of v0.4.0
+---
+import StaticImage from '../../../components/static-image'
+
+# Revornix-v0.4.0-beta1
+
+This version will be one of the beta releases before the official 0.4 release. There are expected to be 2–3 beta versions before the 0.4 stable release.
+
+Overall, there are no major breaking changes.
+
+During the development of this version, the author encountered quite a few issues =.=, which forced the planned official 0.4 release this month to be postponed to next month.
+
+Note: Revornix 0.4 series has not yet released any official Docker images. They will be published after size optimization. For now, please continue using local builds.
+
+## Highlights
+
+- Added **RSS functionality**. Now you can track updates on specific web pages by adding RSS subscriptions. The product now includes RSSHub-related Docker services, so any subscription sources supported by RSSHub can be seamlessly integrated into this project. You can also create custom RSS feeds to track any website. This feature will be gradually optimized in the v0.4 series to make it easier for users to monitor website updates.
+- Added **MinerU API engine**. You can now configure MinerU API as a parsing engine for faster and better parsing of documentation sites/files. To use this, you need to apply for a token from MinerU. Note that the token is valid for two weeks, so you must update it regularly. Application link: https://mineru.net/apiManage.
+- Added **iOS notification source**. If you are an Apple Developer, you can now add iOS notification sources in the Revornix notification source management section! You can also add iOS devices as notification targets by configuring the DeviceToken in the notification target management section.
+- Comprehensive testing: fixed most bugs, optimized most code, and improved stability.
+- Optimized MCP. The project now uses [mcp-use](https://github.com/mcp-use/mcp-use) as the default MCP reference library. This project supports both network-based and terminal output MCP servers. The author will also start contributing to this open-source project. However, this project currently still has many issues, so Revornix AI is still not recommended for deep use. Please stay tuned for updates.
+- **Revornix Chrome extension** is now officially open-sourced. GitHub: https://github.com/Qingyon-AI/Revornix-Chrome-Extension. The extension will be available on the Chrome Web Store later, but since the review process takes time, there is currently no download link. A notification will be published immediately after approval.
+- **Revornix PyPI package** is now officially open-sourced. GitHub: https://github.com/Qingyon-AI/Revornix-Python-Lib.
+- **Revornix NPM package** is now officially open-sourced. GitHub: https://github.com/Qingyon-AI/Revornix-Npm-Lib.
+- Initial development of the iOS app has been completed, but note that it is **not open-sourced for now**. Additionally, since publishing the iOS app to the App Store requires a complete application and Revornix currently does not have a cloud version as the default backend, the first stage review was rejected. Therefore, starting with the 0.4 series, the cloud version—originally scheduled for the 0.5 series—will be prioritized and released during the 0.4 series. The iOS app will be resubmitted for review and published to the App Store once the cloud version is live.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share ideas and collaborate!
+
+You can also raise new issues in the project’s **Issues** section.
+
+## Contribution
+
+Check out our [Contributor Guide](https://revornix.com/docs/developer/contribute) for more information.

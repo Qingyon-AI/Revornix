@@ -1,0 +1,13 @@
+import { Callout } from 'nextra/components';
+
+# Hot Search
+
+<Callout>Due to restrictions on major platforms, this feature is currently very unstable.</Callout>
+
+Revornix keeps hot-search aggregation in the separate `hot-news/` service. That service is built on top of [DailyHotApi](https://github.com/imsyy/DailyHotApi), so the ranking sources and stability characteristics still largely follow that upstream project.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
+
+### Developer note
+
+If you want to improve this feature, look at the `hot-news/` folder. In the current architecture it is treated as an independent Node microservice rather than a route inside the main FastAPI app.

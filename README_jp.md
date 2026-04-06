@@ -1,4 +1,4 @@
-![logo](./images/logo.png)
+![logo](./assets/logo.png)
 
 ![](https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff)
 ![](https://github.com/Qingyon-AI/Revornix/actions/workflows/release.yml/badge.svg?branch=release)

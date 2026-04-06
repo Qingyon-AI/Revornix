@@ -1,0 +1,106 @@
+import { Callout } from 'nextra/components';
+
+# Custom Model
+
+In the current Revornix product, models are no longer a single chat-only setting. Different workflows now consume different default models.  
+The two most important default model slots today are:
+
+- `Default Revornix AI model`
+- `Default document-reading / summary model`
+
+Those roles are now clearly separated.
+
+## 1. What the current model slots actually do
+
+### Default Revornix AI model
+
+This model is mainly used for Revornix AI interaction itself.  
+When you chat with Revornix AI in the product, this is the default model path.
+
+### Default document-reading / summary model
+
+This model now does much more than generate a summary.  
+In the current workflow it can participate in:
+
+- Document summarization
+- Title and description generation
+- Section content processing
+- Knowledge-graph-related extraction
+- Supporting text understanding inside some engine-driven flows
+
+<Callout>
+	So the document-reading or summary model is now better understood as a general content-understanding model, not just a summary generator.
+</Callout>
+
+## 2. Protocol support
+
+Custom models are still centered around OpenAI-compatible APIs.  
+If a third-party model can be exposed through an OpenAI-style API, it can be integrated into Revornix as a candidate model.
+
+## 3. Current configuration flow
+
+The model configuration flow is currently split into three layers:
+
+1. Create a model provider
+2. Add models under that provider
+3. Bind a model to a default usage slot
+
+In practice:
+
+- Provider name and description are mostly for your own organization
+- The model name must match the real upstream model name
+- After adding models, you still need to assign one in the default model selectors
+
+## 4. Current plan and accessibility rules
+
+Models now have more than visibility rules. They also carry access-level constraints.
+
+In the current code:
+
+- A model can declare `required_plan_level`
+- Updating default models performs an access check before saving
+- If the user's current plan does not satisfy that requirement, the model can appear in lists but still be disabled for actual selection or use
+
+That means:
+
+- You can browse public models from the model community
+- But default selection and real runtime usage still depend on current plan access
+
+## 5. Official hosted models
+
+The codebase now explicitly supports the concept of official hosted models.
+
+Important implications:
+
+- A model can be marked with `is_official_hosted`
+- Official hosted models can carry a `compute_point_multiplier`
+- In official deployments, the system seeds a built-in Revornix-operated model provider
+
+The current seeded official provider is:
+
+- `Revornix`
+
+The current seeded official model entry is:
+
+- `gpt-5.4`
+
+But this should be read as the current default seeded model entry in the repository, not as a promise that all platform traffic is permanently hard-routed to one single upstream model.
+
+## 6. Model community and forks
+
+The model community is still part of the product:
+
+- You can publish your own model provider
+- Other users can discover public model providers
+- To actually use someone else's provider in your own settings, you still need to fork it first
+
+Forking makes that provider part of your own available resource set. Without that step, the default model selectors will not treat it as one of your own usable resources.
+
+## 7. Boundary between models and engines
+
+In the current product, models and engines should not be treated as the same thing:
+
+- Models are mainly about LLM, reasoning, reading, and chat
+- Engines are mainly about specialized capabilities such as website parsing, file parsing, podcast synthesis, transcription, and image generation
+
+For many product features, you now need both a default model and one or more default engines instead of only configuring one side.

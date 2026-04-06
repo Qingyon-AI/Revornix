@@ -1,0 +1,134 @@
+import { Callout } from 'nextra/components';
+
+# Engines
+
+Engines are no longer just "document parsing tools." They now represent a broader set of specialized capability resources.  
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260406182947966.png)
+
+The main categories cover:
+
+- Website and file to Markdown conversion
+- Podcast generation
+- Image generation
+- Audio transcription
+
+These engines usually work together with default models to form complete workflows.
+
+## 1. Main engine categories
+
+| Engine category | Representative engines | Use case |
+| --- | --- | --- |
+| Markdown parsing | Markitdown, Jina, MinerU API | Convert websites and files into Markdown |
+| Podcast generation | Volc Podcast Engine, OpenAI Audio Engine | Document and section podcast output |
+| Image generation | Banana Image | Section illustrations and PPT slides |
+| Audio transcription | Volc STT Fast, Volc STT Standard | Audio-document transcription |
+
+## 2. Default engine slots are now split by responsibility
+
+The product no longer uses one generic "default engine" slot.  
+Settings split default engines into:
+
+- Default website parse engine
+- Default file parse engine
+- Default podcast engine
+- Default image generation engine
+- Default audio transcription engine
+
+Each of these defaults is validated for resource access before the setting is saved.
+
+## 3. Differences between parsing engines
+
+### Jina
+
+- Still mainly used for website extraction and parsing
+- Not a good primary choice for file parsing
+- Requires a Jina API key
+
+### Markitdown
+
+- Can handle both websites and files
+- Better image-related parsing works when `openai_api_key` is configured
+- Also depends on the user's default document-reading model in some flows
+
+### MinerU API
+
+- The official environment seeds an official hosted MinerU API engine
+- In the official initializer, it is the only seeded official engine with `FREE` plan access
+- It participates in website and file to Markdown workflows
+
+## 4. Role of podcast, transcription, and image engines
+
+### Podcast engines
+
+Podcast engines now power both document and section podcast flows.  
+If the default podcast engine is missing, both document-podcast and section-podcast entry points will warn that the required resource is not configured.
+
+Representative engines include:
+
+- `Volc Podcast Engine`
+- `OpenAI Audio Engine`
+
+In some modes, `Volc Podcast Engine` also depends on the default document-reading model to build dialogue-style podcast turns.
+
+### Transcription engines
+
+Audio documents depend on the default transcription engine to become usable text content.  
+The official seed includes:
+
+- `Official_Volc_Fast_STT`
+- `Official_Volc_Standard_STT`
+
+### Image generation engines
+
+Image generation is no longer only about section illustrations.
+
+It also affects:
+
+- Automatic section illustrations
+- PPT slide image generation for sections
+
+The official seed includes:
+
+- `Official_Banana_Image`
+
+## 5. Official hosted engines
+
+The codebase now treats engines as billable or plan-gated resources as well:
+
+- An engine can be marked `is_official_hosted`
+- It can define a `billing_mode`
+- It can define `billing_unit_price`
+- It can define a `compute_point_multiplier`
+
+So an engine now communicates more than "this capability exists." It can also express:
+
+- Whether the engine is officially hosted
+- How its usage converts into compute points
+- Which plan level is required to access it
+
+## 6. Official seeded engine set
+
+In official deployment initialization, the public seeded engines are:
+
+- `Official_Banana_Image`
+- `Official_Volc_TTS`
+- `Official_MinerU_API`
+- `Official_Volc_Fast_STT`
+- `Official_Volc_Standard_STT`
+
+Among them:
+
+- `Official_MinerU_API` is seeded with `FREE` plan access
+- The others are seeded with `PRO` plan access
+
+## 7. Engine community and forks
+
+- You can publish your own engines
+- Public engines can declare required plan levels
+- Other users can discover them in the community
+- To really use one as your own resource, you still need to fork it first
+
+<Callout>
+	So seeing an engine and being able to assign it as a default engine are now different things. Discovery, default selection, runtime access, and plan restrictions are connected.
+</Callout>

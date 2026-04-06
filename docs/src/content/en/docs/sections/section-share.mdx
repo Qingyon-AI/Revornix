@@ -1,0 +1,80 @@
+import { Callout } from 'nextra/components';
+
+# Section Sharing and Co-creation
+
+The section sharing mechanism is one of the core features of the section platform. It allows users to share their section content with other users or make it fully public. This increases engagement and interaction, and helps users promote their knowledge content.
+
+## Sharing methods
+
+Section sharing typically includes the following methods:
+
+1. Invite specific users and grant permissions.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251019200503986.png)
+
+You can click the share button at the bottom of a section, search for users on the same platform, select shared documents, and grant permissions. There are three default permission levels:
+
+- **Full access**: users can view, edit, and modify the section, and can re-share the section (invite others to co-create).
+- **Read-write**: users can view, edit, and modify the section.
+- **Read-only**: users can view the section but cannot edit or modify it.
+
+<Callout type='warning'>Only the section creator can remove shared users or modify their permissions. Non-creators cannot modify or remove a user's shared access after inviting them.</Callout>
+
+2. **Publish to the public network**: users can publish their section content publicly. This helps promote content and provides more learning resources. Once published, other users can find the section in the community list via search. High-quality sections may also be indexed by search engines based on user traffic, increasing exposure.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251019200949629.png)
+
+Revornix provides a refresh mechanism so users can regenerate the public URL unlimited times. Click the refresh button in the publish dialog and a new URL is created each time. The public view looks like this:
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192626882.png)
+
+## Community and public SEO pages
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260406220749997.png)
+
+Once a section is published, it becomes part of the public community surface, which is organized into three page layers:
+
+- Community page: `/community`, used to browse and search published sections
+- Public section page: `/section/[publish_uuid]`, used to display the public detail view of a published section
+- Public user page: `/user/[id]`, used to display a creator profile and that creator's published sections
+
+The community page shows:
+
+- The total number of published sections
+- Aggregate document and subscriber counts for the current result set
+- A keyword search entry
+- A list of public section cards
+
+The public section page shows:
+
+- Section title, description, cover, labels, creator, and update time
+- Public metrics such as document count, subscriber count, and comment count
+- The section Markdown body
+- Published podcast information
+- Section graph content
+- Related document lists
+- Comment and subscribe entry points
+
+The public section page uses the generated `publish_uuid` as its external identifier. As long as the published URL remains valid, external visitors can open the section directly.
+
+## Search and discovery
+
+The community page supports keyword search and pagination across public sections. Each public section card presents:
+
+- The section cover and title
+- The description and labels
+- The creator avatar and nickname
+- Document and subscriber counts
+- A subscribe button
+
+Clicking the creator avatar or nickname opens the corresponding public user page, where visitors can continue exploring that creator's public profile and published sections.
+
+## Subscription
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192803384.png)
+
+After a section is published, other users can view it and subscribe. Subscribing is simple: click the Subscribe button in the section action bar.
+
+After subscribing, the section appears in the Subscribed Sections list in the left menu, making it easy to track updates.
+
+If you also configure [notification tasks](../workspace/notification), you can pair section subscriptions with events such as `SectionUpdated` and `SectionSubscribed` and deliver those updates to email, Feishu, DingTalk, Telegram, or Apple devices.

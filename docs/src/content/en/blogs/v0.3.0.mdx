@@ -1,0 +1,69 @@
+# Revornix-v0.3.0
+
+The v0.3.0-beta iteration has finally ended, and we welcome the official release.
+
+## Upgrading from Older Versions
+
+**This update introduces breaking changes, and some designs are not compatible with previous versions. Please back up your original file system data before upgrading (in theory, if you're an existing user, it should be the `volumes/files` and `volumes/mysql` folders. Refer to the image below ⬇️ for actual location). After upgrading, please re-import your data.**
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507241710451.png)
+
+### How to Import Original Documents:
+
+Keep all files under the `volumes/files` folder with the original structure and upload them to the corresponding bucket in your new file system. Note: **do not upload the `files` folder itself**, only its contents into the target bucket.
+
+For example, if your new file system is the built-in Minio, simply access the local Minio web console at [http://localhost:9011](http://localhost:9011). The username and password are what you set as `FILE_SYSTEM_USER_NAME` and `FILE_SYSTEM_PASSWORD`. After logging in, locate your bucket — the bucket name is your unique account ID, which can be found at the bottom of your account page.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507271538564.png)
+
+Then batch upload all files under `volumes/files` (maintaining the original structure) to the corresponding bucket. Once the upload is complete, the file system migration is finished.
+
+### How to Migrate the Database:
+
+1. Install pgloader  
+You can install it via Homebrew on macOS or `apt-get` on Ubuntu.
+
+2. Write the migration script
+
+```
+LOAD DATABASE
+     FROM mysql://<your mysql username>:<your mysql password>@<your mysql server url>/<your mysql db_name>
+     INTO postgresql://<your postgres username>:<your postgres password>@<your postgres server url>/<your postgres db_name>
+
+WITH include no drop, create tables, create indexes, reset sequences, data only
+
+SET work_mem to '128MB', maintenance_work_mem to '512 MB'
+
+CAST type datetime to timestamptz
+     drop default drop not null using zero-dates-to-null,
+
+     type tinyint when (= precision 1) to boolean using tinyint-to-boolean
+
+ALTER schema '<your mysql db_name>' rename to 'public';
+```
+
+Save this as `migrate.load`.
+
+3. Run the migration  
+
+```shell
+pgloader migrate.load
+```
+
+## Highlights
+
+Custom file systems: now supports OSS (Aliyun), Amazon S3, local Minio, and other S3-compatible cloud storage services.
+
+- Database stack migration: from MySQL to PostgreSQL for better performance.
+- Optimized engine configuration options.
+- Fixed minor bugs and improved code stability.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share your ideas and collaborate!
+
+You can also submit new issues in the project’s Issues section.
+
+## Contribution
+
+Check out our [Contributor Guide](https://revornix.com/docs/developer/contribute) for more information.

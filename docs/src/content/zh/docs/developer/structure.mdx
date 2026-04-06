@@ -1,0 +1,132 @@
+# Revornix 项目架构概览
+
+最后按仓库代码核对时间：2026-04-06
+
+本页基于当前 monorepo 目录、`docker-compose-local.yaml` 以及实际仍在使用的运行入口整理。
+
+## 1. 仓库顶层结构
+
+```text
+Revornix/
+├── web/             # 主产品前端（Next.js App Router）
+├── api/             # 主 FastAPI 服务
+├── celery-worker/   # 后台工作流与异步重任务
+├── hot-news/        # 热搜聚合微服务
+├── docs/            # 当前这套 Nextra 文档站
+├── assets/          # 仓库内共享静态资源
+├── volumes/         # docker-compose-local 的本地持久化目录
+└── docker-compose-local.yaml
+```
+
+## 2. 运行时服务与职责
+
+### `web`
+
+- 基于 Next.js 16 的产品前端。
+- 负责登录、仪表盘、文档、专栏、Revornix AI、设置、账单入口、通知 UI 等用户界面。
+- 读取 `web/.env`，并通过 `next.config.ts` 注入前端运行所需变量。
+
+### `api`
+
+- 主同步业务层，入口在 `api/main.py`。
+- 负责用户与认证、文档、专栏、图谱 API、AI 路由、MCP 服务端路由、通知、支付系统对接、公开分享页等。
+
+### `celery-worker`
+
+- 负责长耗时或高成本异步任务。
+- 包括文档转换、切块、向量化、摘要、图谱、专栏渲染、播客生成、通知投递等工作流。
+- 启动入口在 `celery-worker/common/celery/app.py`。
+
+### `hot-news`
+
+- 独立的 Node/Hono 热搜聚合服务。
+- 前端通过 `NEXT_PUBLIC_HOT_NEWS_API_PREFIX` 调用它。
+- 虽然在同一个仓库里，但部署和启动上仍然是一个独立服务。
+
+### `docs`
+
+- 独立的 Nextra 文档站。
+- 不属于最终用户产品运行链路的一部分。
+- 主要用于说明仓库结构、功能、部署方式和开发指南。
+
+## 3. 数据存储与共享基础设施
+
+- PostgreSQL：主业务关系数据。
+- Redis：缓存，以及 Celery broker/backend。
+- Milvus：向量存储与检索。
+- Neo4j：图谱存储与查询。
+- `file-backend`（MinIO）：默认内置文件系统，用于上传与生成产物。
+- Milvus 在本地 bootstrap 时还依赖它自己的 `minio` 与 `etcd` 容器。
+
+本地开发下，这些基础设施通过 `docker-compose-local.yaml` 启动；应用服务本身仍然是手动启动。
+
+## 4. 核心请求与处理流
+
+### 用户请求主链路
+
+1. 浏览器访问 `web`
+2. `web` 调用 `api`
+3. `api` 读写 PostgreSQL / Redis / Milvus / Neo4j 并返回同步结果
+
+### 异步内容工作流链路
+
+1. 用户在 `web` 发起操作
+2. `api` 落库并投递 Celery 任务
+3. `celery-worker` 执行解析、切块、embedding、图谱、插图、播客等流程并回写结果
+4. `web` 通过轮询或重新拉取 API 状态展示最新结果
+
+### 热搜链路
+
+1. `web` 直接请求 `hot-news`
+2. `hot-news` 聚合上游榜单并返回统一格式数据
+
+## 5. 当前本地部署模型
+
+当前仓库**不是**“整套应用服务都通过一个 Compose 文件拉起”的模式。
+
+现在实际存在的是：
+
+- 基础设施 bootstrap：`docker-compose-local.yaml`
+- 手动启动的应用服务：
+  - `api`
+  - `celery-worker`
+  - `web`
+  - `hot-news`
+  - 以及需要时本地启动的 `docs`
+
+也就是说，最常见的本地流程是：
+
+1. 先用 `docker-compose-local.yaml` 拉起 Postgres / Redis / Neo4j / Milvus / MinIO
+2. 在 `api` 中做基础数据初始化
+3. 手动启动 `api`、`celery-worker`、`hot-news`、`web`
+
+## 6. 关键实现边界
+
+### AI 与官方托管资源
+
+- 官方模型与官方引擎的 seed 逻辑位于 `api/data/sql/create.py`
+- API 负责访问控制与用量记录
+- Worker 负责很多实际重任务执行
+
+### MCP 能力
+
+- Revornix 同时支持 MCP Client 和 MCP Server
+- 服务端路由位于 `api/mcp_router/*`
+- 产品里的 MCP 管理界面位于 `web/src/app/(private)/setting/mcp`
+
+### 文件系统能力
+
+- 内置文件系统基于 MinIO / S3 兼容协议
+- 代码同时支持 Aliyun OSS、AWS S3、Generic S3
+- 文件系统抽象在 `api/file/*` 与 `celery-worker/file/*` 两边都存在
+
+## 7. 与旧文档相比的变化
+
+和更早的说明相比，当前仓库已经不适合再用“整套应用服务都走 full compose”的心智模型来理解。
+
+现在更贴近实际的基准是：
+
+- 基础依赖由 `docker-compose-local.yaml` 负责
+- 应用服务手动启动
+- `docs/` 是独立文档站
+- `hot-news/` 是同仓库下的独立 Node 服务

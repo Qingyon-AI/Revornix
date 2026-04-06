@@ -1,0 +1,113 @@
+import { Callout } from 'nextra/components';
+import { Steps } from 'nextra/components';
+
+# Quick Start
+
+<Callout>
+	If you want to try the product directly first, go to <a href='https://app.revornix.com'>https://app.revornix.com</a>.
+	This page is mainly for local/self-hosted deployment.
+</Callout>
+
+## Manual Deployment Method
+
+<Callout>
+	We strongly recommend using conda to create a separate Python virtual environment for each service, because the Python dependencies of different services may conflict. If you prefer another Python virtual environment manager, feel free to use that instead.
+</Callout>
+
+<Steps>
+
+### Clone the repository to your local machine
+
+```shell
+git clone git@github.com:Qingyon-AI/Revornix.git
+cd Revornix
+```
+
+### Install and start the foundational services
+
+<Callout>
+	If you do not already have Postgres, Redis, Neo4j, MinIO, and Milvus running, use `docker-compose-local.yaml` together with `.env.local.example` to bootstrap the local infrastructure layer.
+</Callout>
+
+<Callout type='warning'>
+	Note: If some of these dependencies are already running on your machine, disable the corresponding services in `docker-compose-local.yaml` to avoid port conflicts and accidental data mixups.
+</Callout>
+
+Copy the example file and adjust it together with the [environment guide](environment). In the simplest local setup, the most important custom value is usually `OAUTH_SECRET_KEY`.
+
+```shell
+cp .env.local.example .env.local
+```
+
+Start the local infrastructure services.
+
+```shell
+docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
+```
+
+### Configure environment variables for each microservice
+
+```shell
+cp ./web/.env.example ./web/.env
+cp ./api/.env.example ./api/.env
+cp ./celery-worker/.env.example ./celery-worker/.env
+```
+
+`hot-news` does not currently ship a committed `.env.example`, so if you want custom configuration there, create `hot-news/.env` manually according to the variables described in the [environment guide](environment).
+
+Update each service's env file as needed. For details, see the [Revornix Environment Variables section](environment).
+
+<Callout type='warning'>
+	If you deploy manually, `OAUTH_SECRET_KEY` must be identical across API and Worker; otherwise, the authentication and internal service trust chain will break.
+</Callout>
+
+### Initialize the required baseline data
+
+```shell
+cd api
+python -m data.milvus.create
+python -m data.sql.create
+```
+
+### Start the core backend service
+
+```shell
+cd api
+conda create -n api python=3.11 -y
+conda activate api
+pip install -r ./requirements.txt
+fastapi run --port 8001
+```
+
+### Start the hot-search aggregation service
+
+```shell
+cd hot-news
+pnpm install
+pnpm build
+pnpm start
+```
+
+### Start the Celery task queue
+
+```shell
+cd celery-worker
+conda create -n celery-worker python=3.11 -y
+conda activate celery-worker
+pip install -r ./requirements.txt
+playwright install
+celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
+```
+
+### Start the frontend service
+
+```shell
+cd web
+pnpm install
+pnpm build
+pnpm start
+```
+
+</Steps>
+
+Once all services are running, open http://localhost:3000.
