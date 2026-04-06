@@ -1,0 +1,60 @@
+# Website Snapshots
+
+Website snapshots preserve the parsed result of a website document at different points in time, making it easier to review how the same URL looked in earlier conversions.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260406181338175.png)
+
+## 1. How snapshots are created
+
+Website snapshots are not created through a separate manual action. They are tied to the website-document Markdown conversion flow:
+
+1. Create a website document
+2. Parse the website and convert it into Markdown
+3. After conversion succeeds, the system automatically stores a website snapshot
+
+If the same website document is converted again successfully later, the system appends another snapshot record.
+
+## 2. What a snapshot contains
+
+Each website snapshot stores the data associated with that successful conversion:
+
+- The original URL
+- The parsed title at that time
+- The parsed description at that time
+- The parsed cover at that time
+- The corresponding Markdown file
+- The snapshot creation time
+
+That means you are not looking at a freshly fetched version of the page. You are looking at the historical content captured when that conversion finished.
+
+## 3. Where to view snapshots
+
+Website snapshots are shown on the **website document detail page**.
+
+When a website document has multiple successful conversions, the detail page shows a snapshot switcher so you can:
+
+- See how many snapshots are stored for that URL
+- Choose a snapshot by time
+- Read the Markdown content from that specific version
+
+After selecting a snapshot, the content area switches to that historical version instead of always showing the newest parsed result.
+
+## 4. Relationship with re-conversion
+
+Website snapshots are directly connected to "convert to Markdown again":
+
+- If the document has not been converted successfully yet, you can trigger conversion manually from the detail page
+- If you retry conversion and it succeeds, a new snapshot is added
+- Snapshot count grows with successful conversion runs
+
+So website snapshots are best understood as the version history of a website document rather than a separate bookmarking feature.
+
+## 5. Good use cases
+
+Website snapshots work especially well for:
+
+- Tracking how the same webpage changes over time
+- Reviewing the exact Markdown that entered the knowledge workflow during a past conversion
+- Comparing title, summary-like metadata, and cover changes across different points in time
+
+If the website document is also pushed into sections, those historical snapshots can help explain which version of the content later influenced summaries, graphs, or podcast outputs.

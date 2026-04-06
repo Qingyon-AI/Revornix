@@ -1,0 +1,37 @@
+---
+title: v0.4.0-beta1
+description: v0.4.0的第一个beta版本
+---
+import StaticImage from '../../../components/static-image'
+
+# Revornix-v0.4.0-beta1
+
+本版本将会是0.4正式版本推送之前的beta版本之一，0.4正式版本之前预计将会有2-3个beta。
+
+整体来说并没有太多的破坏式更新。
+
+作者在这个版本开发过程中遇到了不少的问题=。=故而原定于这个月的0.4正式版本被迫推迟，将在下个月发布。
+
+注意Revornix 0.4系列目前未发布任何Docker官方镜像，将会在优化体积后再发布，暂时请还是使用本地打包的方式。
+
+## 更新亮点
+
+- 补充了RSS功能，现在你可以通过增加RSS订阅来进行跟踪某个特定网页的更新了。目前产品内置了RSSHub的相关docker服务，所以只要是RssHub支持的订阅源，本项目都可以无缝接入，你也可以通过自己撰写RSS源的方式来增加自定义跟踪任意网页，在v0.4系列版本中我会逐渐优化这一部分，便于用户跟踪任意网站更新。
+- 补充`MineU API`引擎，现在你可以通过配置MinerU API方式作为解析引擎来更快、更好的解析文档网站/文件了。要使用这个，你需要向MinerU官方申请Token，注意该Token有效期为两周，所以你需要定时替换。申请链接：https://mineru.net/apiManage。
+- 补充iOS通知源，如果你是Apple Developer开发者，当前你可以通过Revornix通知源管理处增加iOS通知源了！同时可以在通知目标管理中通过配置DeviceToken来增加iOS设备作为通知目标。
+- 整体测试，修复大部分bugsss，优化大部分代码，提升稳定性。
+- 优化MCP，目前已使用[mcp-use](https://github.com/mcp-use/mcp-use)作为默认的MCP引用库，该项目同时支持网络方式和终端输出方式的MCP Server，作者本人也会开始参与该开源项目的研发，但目前看来该开源项目也有着非常多的问题，所以本系统的Revornix AI依然不建议深度使用，请静候通知。
+- Revornix的谷歌扩展插件正式开源，Github地址: https://github.com/Qingyon-AI/Revornix-Chrome-Extension。该插件后续将会上线谷歌浏览器插件市场，但由于审核时间较长，暂时无法提供下载链接，后续一经审核通过我会立即发布通知。
+- Revornix的Pypi包正式开源，Github地址：https://github.com/Qingyon-AI/Revornix-Python-Lib。
+- Revornix的Npm包正式开源，Github地址：https://github.com/Qingyon-AI/Revornix-Npm-Lib。
+- iOS端App初步开发已完成，但注意**暂不开源**，同时由于iOS端App上架应用市场需要应用完整，而目前Revornix并没有云版本作为默认后端支持所以导致一阶段审核目前已被拒退回。故而自0.4系列版本开始，原先定于0.5系列版本中的云版本将会被我提高优先级，会在0.4系列中上线Revornix云☁️，对应的iOS端App也会在云版本上线后同步推送审核并且上架应用市场。
+
+## 联系我们
+
+欢迎加入我们的 [Discord](https://discord.com/invite/3XZfz84aPN) 社区分享想法和协作！
+
+你可以在本项目的 Issues 区域提出新的问题。
+
+## 贡献
+
+欢迎查看我们的[贡献者指南](https://revornix.com/docs/developer/contribute)获取更多信息。

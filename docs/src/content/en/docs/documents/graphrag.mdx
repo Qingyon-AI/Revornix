@@ -1,0 +1,21 @@
+# Knowledge Graph
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
+
+Knowledge graphs are a core output in the Revornix document and section workflow.
+
+Document graphs and section graphs do not follow exactly the same flow:
+
+- Document graphs can be submitted manually from the document detail page and expose waiting, processing, failed, and success states.
+- Section graphs refresh along with section processing results and change with the section's document set.
+- The global graph endpoint returns graph data across the current user's document set.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193016359.png)
+
+The graph view supports:
+
+- Searching entity nodes
+- Clicking a node to inspect its source documents and chunks
+- Browsing document-level and section-level relationships at different scopes
+
+The graph data is stored in Neo4j and is built from document chunks, entities, and their relations.

@@ -1,0 +1,136 @@
+import { Callout } from 'nextra/components';
+import { ProcessDiagram } from '../../../../components/process-diagram';
+
+# Document Management
+
+Document management is no longer just "collect and read later." A document can move through parsing, summarization, embedding, knowledge-graph building, podcast generation, and section updates, and the UI exposes those task states directly.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318190625846.png)
+
+## 1. Document entry points
+
+The create page supports four document entry types:
+
+- Quick note
+- Link
+- File
+- Audio
+
+In practice:
+
+- Quick notes support direct Markdown authoring and a write/preview switch before submission.
+- Link documents depend on the website parsing engine.
+- File documents depend on the file parsing engine. The upload flow accepts common document and presentation formats, including `pdf / doc / docx / ppt / pptx / jpg / jpeg / png`.
+- Audio documents go through transcription first, then can continue into summary, graph, and podcast-related workflows.
+
+<Callout>
+	Except for quick notes, most document sources continue through the product as structured Markdown content plus their original source metadata.
+</Callout>
+
+## Document lifecycle sketch
+
+<ProcessDiagram
+	title='Document lifecycle'
+	steps={[
+		{ title: 'Enter the system', description: 'Quick note, website, file, and audio all act as document entry points.' },
+		{ title: 'Create the record', description: 'Metadata, source information, and initial tasks are stored.' },
+		{ title: 'Parse or transcribe', description: 'Each document type enters the matching parsing or transcription flow.' },
+		{ title: 'Generate core outputs', description: 'Markdown, summaries, and tags are filled in over time.' },
+		{ title: 'Continue into extensions', description: 'Embedding, graph, podcast, and section workflows continue from there.' },
+	]}
+/>
+
+## 2. Abilities you can configure at creation time
+
+Creating a document usually means submitting both the source and some workflow choices:
+
+- Labels
+- Bound sections
+- Auto summary
+- Auto tagging
+- Auto podcast
+
+If you enter document creation from a section detail page, that section can already be preselected so the new document joins that section immediately.
+
+## 3. The real workflow shown on the document detail page
+
+After a document is created, the detail page shows the live status of each async stage rather than only the final result. Common statuses include:
+
+- Conversion
+- Transcription for audio documents
+- Summary
+- Embedding
+- Knowledge graph
+- Podcast
+
+If a stage fails, the UI can expose retry actions. If a summary, graph, or podcast already exists but the document changed later, the detail page can also warn that the result is stale and should be regenerated.
+
+## 4. Main capabilities on the document detail page
+
+### Basics and configuration
+
+You can keep editing the title, description, labels, bound sections, and cover after collection.  
+These are not only presentation fields. They can affect downstream section updates and organization.
+
+### Supplemental notes
+
+You can add notes to a document for future reading and review.
+
+### Document knowledge graph
+
+Once graph generation succeeds, the detail page can show the document-specific graph and knowledge relationships.
+
+### Document podcast
+
+Documents can generate podcasts independently.  
+If auto podcast was not enabled at creation time, you can still trigger it manually from the detail page. After success, the built-in player plays the generated audio directly.
+
+### Related sections
+
+The document detail page shows which sections this document belongs to, and the configuration panel lets you rebind those relationships later.
+
+## 5. Search, filtering, and organization
+
+The document pages support:
+
+- Multiple list views such as mine / unread / read history / favorites
+- Label filtering
+- Ascending and descending time order
+- List search based on title and description
+
+Documents are not just static archives. They are upstream inputs for the rest of the knowledge workflow, so labels, read state, favorites, and section bindings all affect later organization.
+
+## 6. How documents connect to section workflows
+
+Documents and sections are now deeply coupled:
+
+<ProcessDiagram
+	title='When a document enters a section'
+	steps={[
+		{ title: 'Document is bound to a section', description: 'The relationship can be created from the document or the section side.' },
+		{ title: 'Section content changes', description: 'The section now has updated source material to aggregate.' },
+		{ title: 'Processing is queued again', description: 'The section re-enters the processing queue based on its trigger rules.' },
+		{ title: 'Derived outputs refresh', description: 'Markdown, podcast, PPT, and graph outputs may all update.' },
+	]}
+/>
+
+- You can bind sections during document creation
+- You can also add documents from the section detail page
+- Once a document enters a section, that section's Markdown, podcast, PPT, and graph results may need to refresh
+
+That makes document management an upstream part of the section workflow rather than an isolated feature.
+
+## 7. Storage split
+
+| Data | Storage |
+| --- | --- |
+| Document metadata | Postgres |
+| Original files / converted Markdown / related assets | [Custom File Service](../integrations/custom-file-system) |
+| Document vectors | Milvus |
+| Document knowledge graph | Neo4j |
+| Document podcast audio | [Custom File Service](../integrations/custom-file-system) |
+| Document covers and illustration-like assets | [Custom File Service](../integrations/custom-file-system) |
+
+<Callout>
+	Many document abilities depend on default resources configured in Settings, such as parse engines, summary models, and podcast engines. If these are missing, the create page and detail page will warn you directly.
+</Callout>

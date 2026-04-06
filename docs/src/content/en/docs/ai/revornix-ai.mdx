@@ -1,0 +1,78 @@
+# Revornix AI
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193157115.png)
+
+Revornix AI is no longer just an isolated chat box. It is built on top of several layers:
+
+- A default Revornix AI model
+- Document and section context
+- Vector retrieval
+- Knowledge graph expansion
+- MCP client and MCP server capability
+
+## 1. Default model slots
+
+To use Revornix AI properly, you need at least:
+
+- A `default Revornix AI model`
+
+And many deeper workflows also depend indirectly on:
+
+- A `default document-reading / summary model`
+
+That is because Revornix AI is not only generic chat. It shares the same knowledge production pipeline used by documents, sections, graphs, and podcast-related flows.
+
+## 2. Context sources
+
+Revornix AI does not rely on a static prompt alone.
+
+For document- and section-scoped scenarios, it can combine:
+
+- Document or section Markdown
+- Related document excerpts
+- Vector retrieval results
+- Knowledge graph expansion results
+- MCP-returned capability output
+
+That is why Revornix AI behaves more like an operator over your knowledge base rather than a standalone external assistant.
+
+## 3. MCP is still a core part of the stack
+
+On the client side, Revornix supports:
+
+- HTTP MCP
+- Std MCP
+
+On the server side, MCP capability is built into the API and mainly organized under:
+
+- `api/mcp_router/common`
+- `api/mcp_router/document`
+- `api/mcp_router/graph`
+
+Because of that, Revornix AI can both call into document and graph capabilities itself and be called by external MCP clients in return.
+
+## 4. Official hosted and self-configured resources now coexist
+
+Revornix AI does not depend on a single resource source.
+
+You can:
+
+- Configure your own model providers and models
+- Use public community models after forking them
+- Use official hosted models in official deployments
+
+Official initialization seeds:
+
+- The official provider `Revornix`
+- The default seeded official model entry `gpt-5.4`
+
+But that should not be read as a guarantee that all official routing is permanently hard-bound to one single upstream model name.
+
+## 5. Plan access and runtime limits
+
+Default Revornix AI model selection, actual runtime access, and some official hosted resources are connected to plan restrictions.
+
+So a more accurate mental model today is:
+
+- Revornix AI is a composite capability built from default models, default resources, knowledge context, and MCP
+- Availability depends not only on whether you configured an API key, but also on whether the selected resources are accessible under the current plan

@@ -1,0 +1,66 @@
+import { Callout } from 'nextra/components';
+
+# 文档收集
+
+Revornix 支持四类文档入口：**网站文档**、**速记文档**、**文件文档**、**音频文档**。
+
+<Callout type='warning'>
+	由于当前Jina引擎仅支持网站文档，所以若你需要使用文件文档，请修改文件转化引擎，切换为除了Jina以外的方式。
+</Callout>
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318185922606.png)
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318185922607.png)
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318185922609.png)
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318185922610.png)
+
+文档收录既可以直接在产品界面完成，也可以通过 API、SDK、插件和自动化工具接入。
+
+## Web 端收录
+
+### 配置说明
+
+- 链接：你要收录的网站地址。
+- 标签：文档标签，可添加多个，便于后续筛选与整理。
+- 自动打标：系统会根据文档内容，从你的标签列表中选择合适标签并自动打上。
+- 自动总结：系统会调用默认文档阅读 / 总结模型生成摘要，并覆盖标题、描述等总结字段。
+- 自动生成播客：系统会基于文档内容生成播客，并绑定到当前文档。
+- 推送专栏：可在创建时直接选择归属专栏，文档会进入对应专栏工作流。
+
+<Callout>
+	注意，如果你开启了自动总结，那么你所配置的网站标题、描述等内容将不会生效，而是由 AI 总结生成并替换。
+</Callout>
+
+## API 收录
+
+为了方便开发者**接入三方应用**或者**自行构建工作流**，Revornix 已开放 API 方式来进行文档的收录。
+
+你可以在左下角**用户头像** -> **账户** -> **APIKey 管理**中创建和管理 API Key。
+
+关于 API 方式的请求参数和返回范例，可参考[三方 API](../integrations/api)
+
+## Chrome 插件收录
+
+见对应插件源码详情页，[Revornix-Chrome-Extension](https://github.com/Qingyon-AI/Revornix-Chrome-Extension)
+
+## JS 包收录
+
+见对应 NPM 包详情页，[Revornix-Npm-Lib](https://github.com/Qingyon-AI/Revornix-Npm-Lib)
+
+## Python 库收录
+
+如果你需要在 Python 脚本、后端任务或 CI 工作流中完成文档收录，优先参考 [Python SDK 与 CLI](../integrations/python-sdk)。
+
+源码与安装说明见 [Revornix-Python-Lib](https://github.com/Qingyon-AI/Revornix-Python-Lib)。
+
+## OpenClaw Skill 收录
+
+如果你在 OpenClaw 中构建自动化代理，可直接接入 [OpenClaw Skill](../integrations/openclaw-skill)，由 Agent 直接调用 Revornix 的文档、专栏和标签能力。
+
+## 文件与音频的补充说明
+
+- 文件文档依赖默认文件解析引擎。
+- 音频文档依赖默认音频转写引擎，并会先上传到默认文件系统，再进入转写和后续处理链路。
+- Web 端文件上传入口支持常见文档与演示文件，包括 `pdf / doc / docx / ppt / pptx / jpg / jpeg / png`。

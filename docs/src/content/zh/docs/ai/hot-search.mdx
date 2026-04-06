@@ -1,0 +1,13 @@
+import { Callout } from 'nextra/components';
+
+# 热搜
+
+<Callout>由于各大平台的限制，热搜聚合结果可能出现波动或短时不可用。</Callout>
+
+Revornix 将热搜聚合能力放在独立的 `hot-news/` 服务中实现；这个服务建立在 [DailyHotApi](https://github.com/imsyy/DailyHotApi) 之上，因此榜单来源与稳定性特征会沿用上游项目。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
+
+### 开发者提示
+
+如果你想参与优化，这部分代码位于 `hot-news/` 目录。按项目架构，它是一个独立的 Node 微服务，而不是主 FastAPI 服务里的路由模块。

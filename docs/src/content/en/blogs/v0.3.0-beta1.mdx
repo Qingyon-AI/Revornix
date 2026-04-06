@@ -1,0 +1,44 @@
+---
+title: v0.3.0-beta1
+description: Major update with many feature changes. Added and optimized custom file system support.
+---
+
+import { Callout } from 'nextra/components';
+import StaticImage from '../../../components/static-image'
+
+# Revornix-v0.3.0-beta1
+
+<Callout type='warning'>
+	This version belongs to the 0.3.0-beta series. It contains many incomplete and experimental features. For testing only — **DO NOT** use in production!
+</Callout>
+
+## Upgrade from Previous Versions
+
+**This update is a breaking change. The file system design is incompatible with earlier versions. Please back up your existing file system data before upgrading** (typically located in the `volumes/files` folder if you're an older user — see the image below for reference ⬇️). After upgrading, you'll need to re-import your data.
+
+<StaticImage src="https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507241710451.png" className='size-50 mt-5' />
+
+How to import your old documents: First, compress and save your old documents locally (**make sure to keep the original file structure intact** — do not move or rename anything!). A script will be provided in the official release of v0.3.0 to help you import your old documents into the new file system easily.
+
+~Of course, if you're willing to try it yourself, feel free to do so. Just remember to back up your files. The migration itself isn't too complex — it just requires some patience to carefully compare the file system code between versions.~
+
+## What's New
+
+- The control panel now features quick setup options, making it easier for new users to configure and start using the app.
+- Added alerts in the control panel to show which parameters are still unset, with quick links to jump directly to the corresponding settings — significantly reducing confusion for new users.
+- Redesigned document detail page for a cleaner, more intuitive experience.
+- Support for customizable reading completion reasons (e.g., viewed details, scrolled to bottom, or marked manually).
+- Replaced the old built-in file system stack with MinIO for better performance and structure.
+- Added support for custom file systems — currently only Alibaba OSS and built-in MinIO are supported. More options will be available in the official v0.3.0 release.
+- Various bug fixes.
+- Codebase optimizations.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share your ideas and collaborate!
+
+You can also report issues in the project’s Issues section.
+
+## Contribute
+
+Check out our [Contributor Guide](https://revornix.com/docs/developer/contribute) for more information.

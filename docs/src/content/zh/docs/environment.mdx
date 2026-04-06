@@ -1,0 +1,291 @@
+# Revornix 环境变量说明
+
+最后按代码核对时间：2026-04-06
+
+这份文档按照仓库中的实际读取点整理，用来说明 Revornix 的环境变量结构与生效方式。
+
+推荐部署边界：
+
+- 应用服务使用手动方式启动：`api`、`celery-worker`、`web`、`hot-news`
+- 只保留“本地基础依赖”的 Docker 启动路径：`docker-compose-local.yaml` + `.env.local`
+- 整套应用服务不通过单一 Compose 文件统一拉起
+
+## 1. 配置入口
+
+| 场景 | 样例文件 | 实际文件 | 读取方式 | 备注 |
+| --- | --- | --- | --- | --- |
+| API 服务 | `api/.env.example` | `api/.env` | 多处 `load_dotenv(override=True)` | `.env` 里的值会覆盖外部同名环境变量 |
+| Celery Worker | `celery-worker/.env.example` | `celery-worker/.env` | 多处 `load_dotenv(override=True)` | 行为和 API 一致 |
+| Web 前端 | `web/.env.example` | `web/.env` | `next.config.ts` + Next 运行时 | 改完后通常需要重新 `build` |
+| Hot News 服务 | 未提交样例文件 | 如有需要可自行创建 `hot-news/.env` | `dotenv.config()` | 仓库未提供 `hot-news/.env.example` |
+| 本地基础依赖 Docker | `.env.local.example` | `.env.local` | `docker compose -f docker-compose-local.yaml --env-file .env.local up -d` | 仅用于 Postgres / Redis / Neo4j / MinIO / Milvus 等基础依赖 |
+
+补充说明：
+
+- 根目录的 `.env.example` 不参与这套配置路径。
+- `.env.local.example` 现在更像“本地一键起步聚合样例”；真正给应用服务用的仍然是各自目录下的 `.env`。
+- `hot-news` 如果需要单独配置变量，需要自行创建 `hot-news/.env`，因为仓库没有提供样例文件。
+
+## 2. 解析与生效规则
+
+### 2.1 API / Worker
+
+- `api` 和 `celery-worker` 的很多入口都调用了 `load_dotenv(override=True)`。
+- 这意味着：如果 `.env` 和外部 shell 环境变量同名，最终以 `.env` 为准。
+- 以下布尔判断现在支持大小写无关的真值：`1`、`true`、`yes`、`on`、`y`
+- 主要受此规则影响的开关包括：
+  - `API_SENTRY_ENABLE`
+  - `WORKER_SENTRY_ENABLE`
+  - `ALI_DASHSCOPE_EMBEDDING_ON`
+  - `OFFICIAL`
+  - `NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH`（前端 helper）
+- `BILIBILI_QR_LOGIN_ON_STARTUP`、`YOUTUBE_COOKIE_ON_STARTUP` 也接受大小写无关的布尔文本。
+
+### 2.2 Web
+
+- `web/next.config.ts` 会把前端所需环境变量注入构建产物。
+- `NEXT_PUBLIC_*` 是标准公开变量。
+- `UNION_PAY_API_PREFIX` 虽然不是 `NEXT_PUBLIC_*`，但也被 `next.config.ts` 显式注入了客户端 bundle。
+- 因此前端相关变量改动后，通常需要重新 `pnpm build`。
+
+### 2.3 Hot News
+
+- `hot-news` 使用 `dotenv.config()`，不会像 API / Worker 那样强制覆盖外部同名变量。
+- 这里的布尔变量解析更严格：只有字符串 `true`（大小写无关）会被当成真值；`1`、`yes` 不会生效。
+
+## 3. 启动时硬性依赖
+
+这里的“硬性依赖”指的是：按当前 import 链和启动路径，缺少后会在服务启动阶段直接报错，或者启动后马上不可用。
+
+### 3.1 API 当前启动就依赖
+
+- `OAUTH_SECRET_KEY`
+- `LANGFUSE_PUBLIC_KEY`
+- `LANGFUSE_SECRET_KEY`
+- `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB_URL` / `POSTGRES_DB`
+- `REDIS_URL` / `REDIS_PORT`
+- `MILVUS_CLUSTER_ENDPOINT` / `MILVUS_TOKEN`
+- `NEO4J_USER` / `NEO4J_PASS` / `NEO4J_URI`
+- `FILE_SYSTEM_SERVER_PUBLIC_URL` / `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD`
+- `APIKEY_ENCRYPT_KEY`
+- `ENGINE_CONFIG_ENCRYPT_KEY`
+- `FILE_SYSTEM_CONFIG_ENCRYPT_KEY`
+- `NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY`
+- `NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY`
+- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD`
+- `TENCENT_SECRET_ID` / `TENCENT_SECRET_KEY` / `TENCENT_SMS_SDK_APP_ID` / `TENCENT_SMS_APP_KEY` / `TENCENT_SMS_SIGN`
+
+原因不是“这些功能总会立刻被调用”，而是当前 API 的路由导入链已经把对应模块带起来了，例如：
+
+- `api/common/dependencies.py`
+- `api/common/encrypt.py`
+- `api/router/user.py`
+- `api/router/user_auth_phone.py`
+- `api/router/graph.py`
+
+### 3.2 Worker 当前启动就依赖
+
+- `OAUTH_SECRET_KEY`
+- `LANGFUSE_PUBLIC_KEY`
+- `LANGFUSE_SECRET_KEY`
+- `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB_URL` / `POSTGRES_DB`
+- `REDIS_URL` / `REDIS_PORT`
+- `MILVUS_CLUSTER_ENDPOINT` / `MILVUS_TOKEN`
+- `NEO4J_USER` / `NEO4J_PASS` / `NEO4J_URI`
+- `FILE_SYSTEM_SERVER_PUBLIC_URL` / `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD`
+- `APIKEY_ENCRYPT_KEY`
+- `ENGINE_CONFIG_ENCRYPT_KEY`
+- `FILE_SYSTEM_CONFIG_ENCRYPT_KEY`
+- `NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY`
+- `NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY`
+
+当前 Worker 启动链路会经过：
+
+- `celery-worker/common/celery/app.py`
+- `celery-worker/common/dependencies.py`
+- `celery-worker/common/encrypt.py`
+- `celery-worker/proxy/notification_proxy.py`
+- 多个 workflow / proxy / data 模块
+
+补充：
+
+- Worker 仓库里仍然存在 `SMTP_*`、`TENCENT_*` 的工具模块，但当前正常启动链路并不会 import 它们。
+- `ROOT_USER_NAME` / `ROOT_USER_PASSWORD` 不是 Worker 当前启动必填，它们主要用于 API 的初始化脚本。
+
+### 3.3 只在初始化脚本里硬性依赖
+
+| 变量 | 何时必填 | 主要读取点 | 说明 |
+| --- | --- | --- | --- |
+| `ROOT_USER_NAME` / `ROOT_USER_PASSWORD` | 运行 `python -m data.sql.create` 时 | `api/data/sql/create.py` | 创建 Root 用户 |
+| `OFFICIAL_MODEL_PROVIDER_API_KEY` / `OFFICIAL_MODEL_PROVIDER_BASE_URL` | `OFFICIAL` 开启且执行官方 seed 路径时 | `api/data/sql/create.py` | 初始化官方模型提供商 |
+
+## 4. 变量明细
+
+### 4.1 共享基础设施与安全变量
+
+| 变量 | 服务 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `OAUTH_SECRET_KEY` | api, worker | 启动必填 | 无 | `api/config/oauth2.py`, `api/common/jwt_utils.py`, `celery-worker/config/oauth2.py` | JWT 签名密钥；API 和 Worker 必须一致 |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB_URL` / `POSTGRES_DB` | api, worker | 启动必填 | 样例：`revornix` / `12345678` / `localhost` / `revornix` | `api/data/sql/base.py`, `celery-worker/data/sql/base.py`, `api/alembic/env.py` | PostgreSQL 连接 |
+| `REDIS_URL` / `REDIS_PORT` | api, worker | 启动必填 | 样例：`localhost` / `6379` | `api/common/redis.py`, `api/common/celery/app.py`, `celery-worker/common/celery/app.py` | API 缓存与 Celery broker/backend |
+| `MILVUS_CLUSTER_ENDPOINT` / `MILVUS_TOKEN` | api, worker | 启动必填 | 样例：`http://localhost:19530` / `root:Milvus` | `api/data/milvus/base.py`, `celery-worker/data/milvus/base.py` | 向量库 |
+| `NEO4J_USER` / `NEO4J_PASS` / `NEO4J_URI` | api, worker | 启动必填 | 样例：`neo4j` / `12345678` / `bolt://localhost:7687` | `api/data/neo4j/base.py`, `celery-worker/data/neo4j/base.py` | 图数据库 |
+| `FILE_SYSTEM_SERVER_PUBLIC_URL` / `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD` | api, worker | 启动必填 | 样例：本地 MinIO | `api/file/built_in_remote_file_service.py`, `celery-worker/file/built_in_remote_file_service.py` | 内置文件系统（MinIO/S3 兼容） |
+| `APIKEY_ENCRYPT_KEY` | api, worker | 启动必填 | 无 | `api/common/encrypt.py`, `celery-worker/common/encrypt.py` | API Key 加密主密钥 |
+| `ENGINE_CONFIG_ENCRYPT_KEY` | api, worker | 启动必填 | 无 | 同上 | 引擎配置加密主密钥 |
+| `FILE_SYSTEM_CONFIG_ENCRYPT_KEY` | api, worker | 启动必填 | 无 | 同上 | 文件系统配置加密主密钥 |
+| `NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY` | api, worker | 启动必填 | 无 | 同上 | 通知源配置加密主密钥 |
+| `NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY` | api, worker | 启动必填 | 无 | 同上 | 通知目标配置加密主密钥 |
+| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | api, worker | 启动必填 | 无 | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | 当前代码在导入阶段就强校验 |
+| `LANGFUSE_BASE_URL` | api, worker | 可选 | 无 | `api/config/langfuse.py`, `celery-worker/config/langfuse.py` | 当前代码只读入 config，仓库里暂无直接调用 |
+| `OFFICIAL` | api, worker | 可选 | 样例：`False` | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | 官方部署开关；走大小写无关布尔解析 |
+| `DEPLOY_HOSTS` | api（worker 当前仅保留配置项） | 可选 | config 默认 `localhost`，样例为官方域名列表 | `api/config/base.py`, `api/common/dependencies.py`, `celery-worker/config/base.py` | API 侧官方 host 判断；Worker 当前没有继续消费它 |
+| `UNION_PAY_URL_PREFIX` | api, worker | 功能级必填 | 无 | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | 会员/支付系统后端地址 |
+| `WEB_BASE_URL` | api, worker | 推荐配置 | 无 | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py` | 把相对链接补成完整通知链接 |
+
+### 4.2 认证、第三方登录与通知相关
+
+| 变量 | 服务 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | api | Google 登录时必填 | 无 | `api/router/user_auth_google.py` | Google OAuth 后端配置 |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | api | GitHub 登录时必填 | 无 | `api/router/user_auth_github.py` | GitHub OAuth 后端配置 |
+| `WECHAT_WEB_APP_ID` / `WECHAT_WEB_APP_SECRET` | api | 微信网页登录时必填 | 无 | `api/router/user_auth_wechat.py` | 微信网页登录 / 绑定 |
+| `WECHAT_MINI_APP_ID` / `WECHAT_MINI_APP_SECRET` | api | 微信小程序登录时必填 | 无 | `api/router/user_auth_wechat.py` | 小程序登录 |
+| `WECHAT_OFFICIAL_APP_ID` / `WECHAT_OFFICIAL_APP_SECRET` / `WECHAT_OFFICIAL_TOKEN` / `WECHAT_OFFICIAL_ENCODING_AES_KEY` | api | 公众号消息接入时必填 | 无 | `api/router/wechat_official.py` | 微信公众号安全模式与消息处理 |
+| `WECHAT_HTTP_TIMEOUT_SECONDS` | api | 可选 | `20` | `api/common/tp_auth/wechat_utils.py` | 微信 HTTP 请求超时秒数 |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` | api | 当前 API 启动必填 | 无 | `api/common/system_email/email.py`, `api/router/user.py`, `api/router/notification_target_manage.py` | 邮件验证码、通知邮箱 |
+| `TENCENT_SECRET_ID` / `TENCENT_SECRET_KEY` / `TENCENT_SMS_SDK_APP_ID` / `TENCENT_SMS_APP_KEY` / `TENCENT_SMS_SIGN` | api | 当前 API 启动必填 | 无 | `api/common/sms/tencent_sms.py`, `api/router/user_auth_phone.py` | 手机验证码 |
+| `IOS_DEEPLINK_SCHEME` | api, worker | 可选 | `revornix` | `api/notification/tool/apple.py`, `celery-worker/notification/tool/apple.py` | iOS 推送 deep link scheme |
+
+### 4.3 Bilibili / YouTube 凭证与启动鉴权
+
+| 变量 | 服务 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `REVORNIX_CREDENTIAL_DIR` | api, worker | 可选 | `~/.local/state/revornix` | `api/engine/video_plugins/bilibili_auth.py`, `api/engine/video_plugins/youtube_auth.py` | 凭证根目录 |
+| `BILIBILI_CREDENTIAL_ENCRYPT_KEY` | api, worker | 使用 Bilibili 凭证缓存时必填 | 无 | `*_bilibili_auth.py` | Bilibili 凭证文件加密 |
+| `BILIBILI_CREDENTIAL_FILE` | api, worker | 可选 | `${REVORNIX_CREDENTIAL_DIR}/bilibili_auth/credential.json` | 同上 | 自定义凭证文件路径 |
+| `BILIBILI_QR_LOGIN_ON_STARTUP` | api, worker | 可选 | `False` | 同上 | 启动时尝试二维码登录 |
+| `BILIBILI_QR_LOGIN_TIMEOUT_SECONDS` | api, worker | 可选 | `300` | 同上 | 二维码总超时 |
+| `BILIBILI_QR_LOGIN_POLL_TIMEOUT_SECONDS` | api, worker | 可选 | `8` | 同上 | 单次轮询超时 |
+| `YOUTUBE_CREDENTIAL_ENCRYPT_KEY` | api, worker | 使用 YouTube Cookie 缓存时建议单独设置 | 无 | `*_youtube_auth.py` | YouTube Cookie 加密；未设置时会回退到 `BILIBILI_CREDENTIAL_ENCRYPT_KEY` |
+| `YOUTUBE_CREDENTIAL_FILE` | api, worker | 可选 | `${REVORNIX_CREDENTIAL_DIR}/youtube_auth/cookie.json` | 同上 | 自定义 Cookie 缓存文件 |
+| `YOUTUBE_YTDLP_COOKIE_FILE` | api, worker | 可选 | 无 | 同上 | 供首次导入的外部 Cookie 文件路径 |
+| `YOUTUBE_COOKIE_ON_STARTUP` | api, worker | 可选 | `False` | 同上 | 启动时导入/加载 YouTube Cookie |
+
+### 4.4 可观测性、向量与 Worker 专属开关
+
+| 变量 | 服务 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `API_SENTRY_ENABLE` / `API_SENTRY_DSN` | api | 可选 | 默认关闭 | `api/main.py` | API Sentry 初始化 |
+| `WORKER_SENTRY_ENABLE` / `WORKER_SENTRY_DSN` | worker | 可选 | 默认关闭 | `celery-worker/common/celery/app.py` | Worker Sentry 初始化，已接入 CeleryIntegration |
+| `WORKFLOW_TIMING_VERBOSE` | worker | 可选 | `0` | `celery-worker/workflow/timing.py` | 输出详细 workflow timing 日志 |
+| `ALI_DASHSCOPE_EMBEDDING_ON` | api, worker | 可选 | `False` | `api/engine/embedding/factory.py`, `celery-worker/engine/embedding/factory.py` | 切换到阿里云百炼 embedding |
+| `ALI_DASHSCOPE_EMBEDDING_API_KEY` | api, worker | 上一项为真时必填 | 无 | `api/engine/embedding/qwen_cloud.py`, worker 同名文件 | 百炼 embedding API Key |
+| `WS_OFFLINE_CACHE_TTL_SECONDS` | api | 可选 | `86400` | `api/common/websocket.py` | WebSocket 离线消息缓存 TTL |
+| `WS_OFFLINE_CACHE_MAX_MESSAGES` | api | 可选 | `200` | `api/common/websocket.py` | WebSocket 离线消息保留条数 |
+
+### 4.5 官方部署和 seed 专属变量
+
+| 变量 | 服务 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `ROOT_USER_NAME` / `ROOT_USER_PASSWORD` | api | 初始化脚本必填 | 无 | `api/data/sql/create.py` | 创建 Root 用户与默认资源 |
+| `OFFICIAL_MODEL_PROVIDER_API_KEY` / `OFFICIAL_MODEL_PROVIDER_BASE_URL` | api | `OFFICIAL=true` 且 seed 官方模型时必填 | 无 | `api/data/sql/create.py` | 初始化官方模型提供商 |
+
+补充：
+
+- 这 4 个变量在样例里同时出现在 `celery-worker/.env.example`，但当前 Worker 正常启动链路并不会用到它们。
+
+### 4.6 Web 前端变量
+
+| 变量 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- |
+| `NEXT_PUBLIC_API_PREFIX` | 推荐必填 | `http://localhost:8001` | `web/next.config.ts`, `web/src/config/api.ts` | API 基础地址 |
+| `NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX` | 推荐必填 | `ws://localhost:8001/notification/ws` | 同上 | 通知 WebSocket 地址 |
+| `NEXT_PUBLIC_HOT_NEWS_API_PREFIX` | 推荐必填 | `http://localhost:6688` | 同上 | Hot News 服务地址 |
+| `NEXT_PUBLIC_WECHAT_APP_ID` | 第三方登录 UI 开启时必填 | 空 | `web/next.config.ts`, 登录/绑定组件 | 前端微信登录按钮用到的 app id |
+| `NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH` | 可选 | `false` | `web/src/lib/env.ts`, `email-login-form.tsx`, `phone-login-form.tsx`, `account/page.tsx` | 控制是否显示第三方登录/绑定 UI |
+| `NEXT_PUBLIC_HOST` | 推荐配置 | `http://localhost:3000` | `web/next.config.ts`, `section-publish.tsx` | 分享链接与前端自引用链接 |
+| `NEXT_PUBLIC_DEPLOY_HOSTS` | 可选 | 官方域名列表示例 | `web/src/lib/utils.ts`, `account/page.tsx` | 判断是否显示官方订阅能力 |
+| `UNION_PAY_API_PREFIX` | 支付/订阅相关功能必填 | 空 | `web/next.config.ts`, `web/src/api/user.ts`, `web/src/api/product.ts`, `web/src/api/order.ts` | 前端访问支付系统的 API 前缀 |
+| `NEXT_PUBLIC_GA_ID` | 可选 | 空 | `web/src/app/layout.tsx` | Google Analytics |
+
+## 5. Hot News 服务变量
+
+`hot-news` 当前都在 `hot-news/src/config.ts` 里统一解析。
+
+| 变量 | 默认值 | 主要用途 |
+| --- | --- | --- |
+| `NODE_ENV` | 启动脚本通常设为 `development` | `src/index.ts` 里只有 `development` / `docker` 会自动启动服务 |
+| `PORT` | `6688` | 服务端口 |
+| `DISALLOW_ROBOT` | `true` | `robots.txt` 是否禁止抓取 |
+| `CACHE_TTL` | `3600` | NodeCache / Redis 缓存 TTL |
+| `REQUEST_TIMEOUT` | `6000` | 抓取外部数据超时 |
+| `ALLOWED_DOMAIN` | `*` | CORS fallback 域 |
+| `ALLOWED_HOST` | `imsyy.top` | CORS host 白名单后缀 |
+| `USE_LOG_FILE` | `true` | 是否写入日志文件 |
+| `RSS_MODE` | `false` | 是否强制 RSS 模式 |
+| `REDIS_HOST` | `127.0.0.1` | Hot News 自己的 Redis 主机 |
+| `REDIS_PORT` | `6379` | Hot News 自己的 Redis 端口 |
+| `REDIS_PASSWORD` | 空 | Hot News 自己的 Redis 密码 |
+
+注意：
+
+- `hot-news` 的 `REDIS_HOST` / `REDIS_PORT` 和主项目 API / Worker 使用的 `REDIS_URL` / `REDIS_PORT` 不是同一套命名。
+- `hot-news` 的布尔解析只认 `true`，不认 `1` / `yes`。
+
+## 6. `.env.local` 与 `docker-compose-local.yaml`
+
+这个路径只负责本地基础依赖，不负责启动整套应用服务。
+
+### 6.1 真正被 `docker-compose-local.yaml` 消费的变量
+
+| 变量 | 用途 |
+| --- | --- |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Postgres 容器初始化 |
+| `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD` | MinIO 文件服务账号密码 |
+| `NEO4J_USER` / `NEO4J_PASS` | Neo4j 默认认证 |
+| `ETCD_AUTO_COMPACTION_MODE` / `ETCD_AUTO_COMPACTION_RETENTION` / `ETCD_QUOTA_BACKEND_BYTES` / `ETCD_SNAPSHOT_COUNT` | Milvus 依赖的 etcd 参数 |
+| `MILVUS_MINIO_USER_NAME` / `MILVUS_MINIO_PASSWORD` | Milvus 专用 MinIO |
+
+### 6.2 `.env.local.example` 里同时存在、但不由 compose-local 直接读取的变量
+
+这些变量主要是为了让你本地只看一个聚合样例，也能顺手给 `api/.env`、`celery-worker/.env`、`web/.env` 抄配置：
+
+- `POSTGRES_DB_URL`
+- `MILVUS_CLUSTER_ENDPOINT`
+- `MILVUS_TOKEN`
+- `FILE_SYSTEM_SERVER_PUBLIC_URL`
+- `NEO4J_URI`
+- `REDIS_URL`
+- 全部 `NEXT_PUBLIC_*`
+- 绝大多数 API / Worker 运行时变量
+
+### 6.3 当前 `.env.local.example` 里的辅助项
+
+| 变量 | 当前状态 |
+| --- | --- |
+| `HF_ENDPOINT` | 当前项目代码和 compose-local 都不直接读取；它更像是给第三方模型/下载工具使用的镜像辅助变量 |
+
+## 7. 推荐的本地配置顺序
+
+1. 先用 `.env.local` + `docker-compose-local.yaml` 拉起本地基础依赖，或者直接复用你本机已有的 Postgres / Redis / Neo4j / MinIO / Milvus。
+2. 再分别配置：
+   - `api/.env`
+   - `celery-worker/.env`
+   - `web/.env`
+   - `hot-news/.env`
+3. 手动部署时，至少保证这些跨服务变量一致：
+   - `OAUTH_SECRET_KEY`
+   - `POSTGRES_*`
+   - `REDIS_*`
+   - `MILVUS_*`
+   - `NEO4J_*`
+   - `FILE_SYSTEM_*`
+   - 各类加密主密钥
+
+如果只想先把本地最小可运行链路拉起来，优先保证：
+
+- API：数据库 / Redis / Milvus / Neo4j / File System / 加密主密钥 / SMTP / Tencent SMS / OAuth / Langfuse
+- Worker：数据库 / Redis / Milvus / Neo4j / File System / 加密主密钥 / OAuth / Langfuse
+- Web：`NEXT_PUBLIC_API_PREFIX` / `NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX` / `NEXT_PUBLIC_HOT_NEWS_API_PREFIX`
+- Hot News：默认值基本可直接启动

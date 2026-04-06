@@ -1,0 +1,167 @@
+import { Callout } from 'nextra/components';
+
+# 自定义文件系统
+
+<Callout type='warning'>
+	注意，当你更新文件系统后，原先系统中的文件（包括你所有的专栏/文档的原文件和转换后的markdown文件，以及所有的静态文件）并不会自动迁移到新的文件系统中去，你需要自行迁移，所以切换文件系统是一个影响极大的操作，一般情况下建议账户创建完成后设置，后续尽量避免切换文件系统。
+</Callout>
+
+Revornix 支持自定义文件存储位置，目前可安装的文件系统类型包括：
+
+- 系统内建文件系统（基于 MinIO）
+- 阿里云 OSS
+- 通用 S3 协议兼容服务
+- 亚马逊 S3
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010135024210.png)
+
+## 如何添加
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010135024211.png)
+
+添加文件系统非常简单，只需要进入设置页面，然后点击文件相关设置组下的我的文件系统右侧的前往管理按钮即可进入文件系统管理页面，然后点击增加文件系统按钮即可添加新的文件系统。
+
+## 配置参数讲解
+
+### 系统内建文件系统
+
+这是 Revornix 默认提供的文件系统，基于 MinIO，不需要额外填写配置。
+
+### 阿里云 OSS
+
+<Callout>
+	本存储方式使用的是STS授权方案用来确保权限最小化。阿里云的STS方案详情可参考官方文档：https://help.aliyun.com/zh/oss/developer-reference/use-temporary-access-credentials-provided-by-sts-to-access-oss
+</Callout>
+
+#### 实际步骤
+
+阿里云 OSS 创建 bucket 的过程较为直接，此处不再展开。重点是确保用于 STS 扮演的角色具备 Revornix 所需的对象读写能力。
+
+1. 创建用户
+
+基于最小化权限策略，该用户仅需具备扮演 STS 临时角色的权限即可，具体授权见第 5 步骤。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010171438412.png)
+
+2. 创建角色
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010171631703.png)
+
+3. 创建策略
+
+注意对照下图所给的权限和资源组适配你自己的 bucket 和用户，有所缺失都会导致失败。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010171754815.png)
+
+4. 将创建好的策略授权给角色
+
+5. 将临时扮演角色的权限授权给用户
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010171906040.png)
+
+#### Revornix 系统中的阿里云存储系统方式参数说明
+
+| 参数名 | 类型 | 描述 |
+| --- | --- | --- |
+| `user_access_key_id` | string | 阿里云用户的 AccessKey ID |
+| `user_access_key_secret` | string | 阿里云用户的 AccessKey Secret |
+| `role_arn` | string | 扮演角色的 ARN |
+| `region_id` | string | OSS Bucket 所在地域 |
+| `endpoint_url` | string | OSS Endpoint 地址 |
+| `bucket` | string | OSS Bucket 名称 |
+
+### 亚马逊 S3
+
+<Callout>
+	本存储方式使用的是STS授权方案用来确保权限最小化。AWS
+	S3的实际操作可参照这篇Medium上的文章：https://bharat-singh-06.medium.com/access-s3-bucket-through-sts-security-token-service-f6c613b5db5f
+</Callout>
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010212621095.png)
+
+#### 操作步骤
+
+AWS S3 创建 bucket 的过程同样较为直接。重点是正确配置对象存储访问权限和跨域上传能力，确保 Revornix 可以完成上传、读取和删除。
+
+Bucket policy 配置
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "Statement1",
+			"Effect": "Allow",
+			"Principal": "*",
+			"Action": "s3:GetObject",
+			"Resource": "arn:aws:s3:::your_bucket_name/*"
+		}
+	]
+}
+```
+
+CORS 配置
+
+```json
+[
+	{
+		"AllowedHeaders": ["*"],
+		"AllowedMethods": ["POST", "GET"],
+		"AllowedOrigins": ["*"],
+		"ExposeHeaders": ["ETag"],
+		"MaxAgeSeconds": 3000
+	}
+]
+```
+
+1. 创建用户
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010212902951.png)
+
+2. 创建角色
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010212955359.png)
+
+3. 创建策略
+
+注意严格对照我所设置的权限和资源，并依据你的资源组适配。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010213045318.png)
+
+4. 将创建好的策略授权给角色
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010213309793.png)
+
+5. 将临时扮演角色的权限授权给用户
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251010213221173.png)
+
+#### Revornix 系统中的 AWS S3 云存储系统方式参数说明
+
+| 参数名 | 类型 | 描述 |
+| --- | --- | --- |
+| `role_arn` | string | 扮演角色的 ARN |
+| `user_access_key_id` | string | 用户 AccessKey ID |
+| `user_access_key_secret` | string | 用户 AccessKey Secret |
+| `region_name` | string | Bucket 所在地域 |
+| `bucket` | string | Bucket 名称 |
+
+### 通用 S3 协议兼容服务
+
+所有只要支持 S3 协议的服务都可以使用该方式。
+
+这种方式要求对应凭据具备完整对象存储操作权限，包括上传、下载、删除和列表。由于权限范围更大，更适合作为兼容其他 S3 服务的通用接入方式。
+
+| 参数名 | 类型 | 描述 |
+| --- | --- | --- |
+| `user_access_key_id` | string | 访问凭据的 AccessKey ID |
+| `user_access_key_secret` | string | 访问凭据的 AccessKey Secret |
+| `region_name` | string | Bucket 所在地域 |
+| `endpoint_url` | string | Bucket Endpoint，需带 `https://` 前缀 |
+| `bucket` | string | Bucket 名称 |
+
+## 默认文件系统与切换
+
+- 用户可以安装多个文件系统，但真正用于上传、文档原文件、Markdown 产物、播客音频和图片资源的，是“默认文件系统”。
+- 切换默认文件系统时，历史文件不会自动迁移。
+- 文档上传、音频上传、专栏封面、头像等文件资源都会依赖默认文件系统。

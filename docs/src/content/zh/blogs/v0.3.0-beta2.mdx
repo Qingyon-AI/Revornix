@@ -1,0 +1,38 @@
+---
+title: v0.3.0-beta2
+description: 大量Bug修复和少量优化。
+---
+
+import { Callout } from 'nextra/components';
+import StaticImage from '../../../components/static-image'
+
+# Revornix-v0.3.0-beta2
+
+<Callout type='warning'>
+	此版本为0.3.0-beta系列版本，存在大量不完善的、待改进的地方，仅供体验玩耍，请勿在生产环境使用！
+</Callout>
+
+## 从0.2.*版本升级
+
+**此次版本更新迭代是破坏式更新，文件系统和过往设计并不兼容，在升级前请先将原先的文件系统数据备份（理论上如果你是老用户的话应该就是`volumes/files`文件夹，实际位置参考下图⬇️），升级后请重新导入数据。**
+
+<StaticImage src="https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/202507241710451.png" className='size-50 mt-5' />
+
+如何导入原文档：请先把原文档压缩打包存到本地（注意一定要保留**原有文件分布结构**千万别动！！！），我会在0.3.0正式版本发布的时候提供脚本便于你将原文档快速导入新文件系统中。
+
+~当然，如果你自己愿意尝试的话也可以自己试试，注意文件备份，其实单纯就迁移而言，并不算很复杂，只是需要一些耐心去仔细看看两个版本的文件系统代码区别~
+
+## 更新亮点
+
+- 优化文档解析引擎相关的配置交互逻辑。
+- 修复大量bugs，优化部分代码，提升稳定性。
+
+## 联系我们
+
+欢迎加入我们的 [Discord](https://discord.com/invite/3XZfz84aPN) 社区分享想法和协作！
+
+你可以在本项目的 Issues 区域提出新的问题。
+
+## 贡献
+
+欢迎查看我们的[贡献者指南](https://revornix.com/docs/developer/contribute)获取更多信息。

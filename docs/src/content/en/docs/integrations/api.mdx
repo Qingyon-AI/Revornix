@@ -1,0 +1,326 @@
+import { Callout } from 'nextra/components';
+import { ProcessDiagram } from '../../../../components/process-diagram';
+
+# Third-Party API
+
+This page documents the API Key endpoints under the `/tp` group. They are designed for backend integrations, automation workflows, and external systems, and they cover document ingestion, section processing, knowledge graph, and content-generation flows.
+
+**Every endpoint on this page requires the `API-KEY` request header.**
+
+| Header | Value |
+| --- | --- |
+| `API-KEY` | `your api key` |
+
+API keys can be created in Revornix via **Avatar (bottom-left) -> Account -> APIKey Management**.
+
+<Callout>
+  If you do not want to hand-write HTTP requests, start with [Python SDK and CLI](./python-sdk) or [OpenClaw Skill](./openclaw-skill).
+</Callout>
+
+## Common Conventions
+
+- All routes start with `/tp`.
+- Most endpoints use `POST` with a JSON request body.
+- `/tp/file/upload` uses `multipart/form-data`.
+- `/tp/document/create` reads the optional `X-User-Timezone` header to calculate daily API collection limits and monthly summary dates in the user's timezone.
+- `/tp/document/create` always persists `from_plat` as `api` on the backend, so clients do not need to send it.
+
+## Integration flow sketch
+
+<ProcessDiagram
+	title='Third-party API integration path'
+	steps={[
+		{ title: 'External system sends a request', description: 'The caller uses an API-KEY with the /tp endpoint group.' },
+		{ title: 'Upload or create content', description: 'Upload a file first or create documents and sections directly.' },
+		{ title: 'API stores state and tasks', description: 'The service persists state and queues async follow-up work.' },
+		{ title: 'Worker runs workflows', description: 'Document and section processing continue in the background.' },
+		{ title: 'Poll for results', description: 'The caller uses detail, search, or status endpoints to fetch outputs.' },
+	]}
+/>
+
+## Upload Endpoint
+
+### `POST /tp/file/upload`
+
+Upload a file into the calling user's default file system, then reference that path from `/tp/document/create` when creating a file document.
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `file` | File | Yes | Uploaded file |
+| `file_path` | string | Yes | Target path in the default file system |
+| `content_type` | string | Yes | MIME type |
+
+#### Requirements
+
+- The calling user must already have a default file system configured.
+- Both `file_path` and `content_type` are required fields.
+
+#### Example
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key"
+}
+files = {
+    "file": ("example.md", open("example.md", "rb"), "text/markdown")
+}
+data = {
+    "file_path": "/files/example.md",
+    "content_type": "text/markdown"
+}
+
+response = client.post(
+    "http://localhost:8001/tp/file/upload",
+    headers=headers,
+    files=files,
+    data=data,
+)
+```
+
+After upload, the usual next step is to call `/tp/document/create` and pass the uploaded `file_path` as the file document's `file_name`.
+
+## Section Endpoints
+
+### Core write endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/section/create` | Create a section |
+| `POST /tp/section/update` | Update section metadata and processing config |
+| `POST /tp/section/delete` | Delete a section |
+| `POST /tp/section/process/trigger` | Trigger one section processing run manually |
+| `POST /tp/section/document/retry` | Retry integration for a section document |
+| `POST /tp/section/podcast/generate` | Generate a section podcast |
+| `POST /tp/section/ppt/generate` | Generate a section PPT |
+| `POST /tp/section/publish` | Publish a section |
+| `POST /tp/section/republish` | Republish a section |
+
+### Query and interaction endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/section/detail` | Get section detail |
+| `POST /tp/section/date` | Get date-based section info |
+| `POST /tp/section/documents` | Get paginated section documents |
+| `POST /tp/section/ask` | Ask AI about a section |
+| `POST /tp/section/publish/get` | Get section publish status and publish info |
+| `POST /tp/section/mine/search` | Search sections I can access |
+| `POST /tp/section/mine/all` | Get all of my sections in a compact list |
+| `POST /tp/section/subscribed` | Get sections I subscribed to |
+| `POST /tp/section/public/search` | Search public sections |
+| `POST /tp/section/user/search` | Search sections owned by a user |
+
+### Comment endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/section/comment/create` | Create a section comment |
+| `POST /tp/section/comment/search` | Search section comments with pagination |
+| `POST /tp/section/comment/delete` | Delete a section comment |
+
+### Label endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/section/label/create` | Create a section label |
+| `POST /tp/section/label/list` | List section labels for the calling user |
+| `POST /tp/section/label/delete` | Delete section labels |
+
+### `POST /tp/section/create`
+
+Create a new section. This follows the same section processing model as the app, including trigger strategy, auto publish, auto podcast, and auto illustration settings.
+
+#### Key fields
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `title` | string | Yes | Section title |
+| `description` | string | Yes | Section description |
+| `cover` | string | No | Section cover |
+| `labels` | int[] | Yes | Section label IDs |
+| `auto_publish` | boolean | No | Whether to auto publish |
+| `auto_podcast` | boolean | No | Whether to auto-generate a podcast |
+| `auto_illustration` | boolean | No | Whether to auto-generate illustrations |
+| `process_task_trigger_type` | int | Yes | Processing trigger type, commonly scheduled or update-event based |
+| `process_task_trigger_scheduler` | string | No | Cron expression for scheduled processing |
+
+#### Example
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key"
+}
+
+response = client.post(
+    "http://localhost:8001/tp/section/create",
+    headers=headers,
+    json={
+        "title": "AI Product Watch",
+        "description": "Track news and deeper analysis around AI products",
+        "cover": "/covers/ai-weekly.png",
+        "labels": [1, 2],
+        "auto_publish": True,
+        "auto_podcast": True,
+        "auto_illustration": True,
+        "process_task_trigger_type": 1
+    },
+)
+```
+
+### `POST /tp/section/ppt/generate`
+
+Generate PPT output for a section. This works well after the section Markdown is ready and you want presentation-ready slides.
+
+#### Common field
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `section_id` | int | Yes | Target section ID |
+
+### `POST /tp/section/comment/search`
+
+Returns paginated section comments, which works well for comment feeds and moderation tools.
+
+#### Common fields
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `section_id` | int | Yes | Target section ID |
+| `start` | int | No | Cursor start |
+| `limit` | int | No | Page size |
+| `keyword` | string | No | Keyword filter |
+
+## Document Endpoints
+
+### Label endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/document/label/list` | List document labels |
+| `POST /tp/document/label/create` | Create a document label |
+| `POST /tp/document/label/delete` | Delete document labels |
+
+### Document write and processing endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/document/create` | Create a document |
+| `POST /tp/document/update` | Update document metadata |
+| `POST /tp/document/delete` | Delete documents |
+| `POST /tp/document/markdown/transform` | Trigger document Markdown conversion |
+| `POST /tp/document/ai/summary` | Generate AI summary |
+| `POST /tp/document/embedding` | Generate document embeddings |
+| `POST /tp/document/transcribe` | Transcribe an audio document |
+| `POST /tp/document/graph/generate` | Generate a document graph |
+| `POST /tp/document/podcast/generate` | Generate a document podcast |
+
+### Document query and search endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/document/detail` | Get document detail |
+| `POST /tp/document/ask` | Ask AI about a document |
+| `POST /tp/document/month/summary` | Get document month summary |
+| `POST /tp/document/unread/search` | Search unread documents |
+| `POST /tp/document/recent/search` | Search recently read documents |
+| `POST /tp/document/star/search` | Search starred documents |
+| `POST /tp/document/search/mine` | Search my documents |
+| `POST /tp/document/vector/search` | Search relevant chunks from the knowledge vector index |
+
+### Note endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/document/note/create` | Create a document note |
+| `POST /tp/document/note/search` | Search document notes with pagination |
+| `POST /tp/document/note/delete` | Delete document notes |
+
+### `POST /tp/document/create`
+
+Create a document using the same ingestion and processing flow as the app. The service always records `from_plat` as `api`.
+
+#### Key fields
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `category` | int | Yes | Document type |
+| `sections` | int[] | Yes | Target section IDs |
+| `labels` | int[] | Yes | Document label IDs |
+| `title` | string | No | Document title |
+| `description` | string | No | Document description |
+| `cover` | string | No | Document cover |
+| `content` | string | Conditionally required | Required for quick-note documents |
+| `url` | string | Conditionally required | Required for website documents |
+| `file_name` | string | Conditionally required | Required for file documents and should match the uploaded `file_path` |
+| `auto_summary` | boolean | No | Whether to auto-generate summary |
+| `auto_podcast` | boolean | No | Whether to auto-generate podcast |
+| `auto_tag` | boolean | No | Whether to auto-tag |
+
+#### Category mapping
+
+| `category` | Meaning |
+| --- | --- |
+| `0` | File document |
+| `1` | Website document |
+| `2` | Quick note document |
+| `3` | Audio document |
+
+#### Requirements
+
+- Clients do not need to send `from_plat`.
+- The service records `from_plat` as `api`.
+- On official deployments, this endpoint checks API document collection limits against the active plan.
+- On official deployments, website and file documents may also hit extra entitlement checks after higher accumulated counts.
+- If your workflow depends on day-based quota calculation, pass `X-User-Timezone` explicitly.
+
+#### Example
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key",
+    "X-User-Timezone": "Asia/Shanghai",
+}
+
+response = client.post(
+    "http://localhost:8001/tp/document/create",
+    headers=headers,
+    json={
+        "category": 1,
+        "url": "https://example.com/article",
+        "sections": [12],
+        "labels": [3],
+        "auto_summary": True,
+        "auto_podcast": False,
+        "auto_tag": True
+    },
+)
+```
+
+### `POST /tp/document/vector/search`
+
+Search the user's knowledge vector store for the most relevant chunks to a question. This works well for retrieval augmentation and external question-answering orchestration.
+
+### `POST /tp/document/note/search`
+
+Returns paginated note results with optional keyword filtering, which is useful for reading workspaces and annotation-style views.
+
+## Graph Endpoints
+
+| Route | Description |
+| --- | --- |
+| `POST /tp/graph/document` | Get the graph for one document |
+| `POST /tp/graph/section` | Get the graph for one section |
+| `POST /tp/graph/search` | Get the calling user's global graph |
+
+These endpoints return a unified graph response structure that can be used directly for knowledge graph visualization, node exploration, and graph browsers.
