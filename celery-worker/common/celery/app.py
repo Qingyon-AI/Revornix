@@ -1,39 +1,19 @@
-import psycopg
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import asyncio
 import os
+import threading
 from datetime import datetime, timezone
 
 from celery import Celery
 from celery.signals import worker_process_init, worker_ready
 
-import crud
 from common.env import is_env_enabled
 from common.logger import exception_logger, info_logger
 from config.redis import REDIS_PORT, REDIS_URL
 from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
-from data.sql.base import session_scope
-from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
-from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
-from enums.section import SectionPodcastStatus
-from workflow.document_embedding_workflow import run_document_embedding_workflow
-from workflow.document_graph_task_workflow import run_document_graph_task_workflow
-from workflow.document_podcast_workflow import run_document_podcast_workflow
-from workflow.document_process_status_workflow import run_document_process_status_workflow
-from workflow.document_process_workflow import run_document_process_workflow
-from workflow.document_summarize_workflow import run_document_summarize_workflow
-from workflow.notification_event_workflow import run_notification_event_workflow
-from workflow.section_podcast_workflow import run_section_podcast_workflow
-from workflow.section_ppt_workflow import run_section_ppt_workflow
-from workflow.section_process_status_workflow import run_section_process_status_workflow
-from workflow.section_process_workflow import (
-    run_finalize_section_images,
-    run_section_process_workflow,
-)
-from workflow.document_transcribe_workflow import run_document_transcribe_workflow
-from data.common import ensure_document_chunk_snapshot
+
 
 celery_app = Celery(
     "worker",
@@ -80,6 +60,20 @@ def _run(coro):
     return asyncio.run(coro)
 
 
+def _start_background_coroutine(target, *, name: str) -> None:
+    def _runner() -> None:
+        try:
+            _run(target())
+        except Exception as e:
+            exception_logger.error(f"{name} failed on worker startup: {e}")
+
+    threading.Thread(
+        target=_runner,
+        name=name,
+        daemon=True,
+    ).start()
+
+
 _initialize_worker_sentry()
 
 
@@ -90,14 +84,17 @@ def initialize_sentry_when_worker_process_init(**kwargs):
 
 @worker_ready.connect
 def initialize_bilibili_auth_when_worker_ready(**kwargs):
-    try:
-        _run(initialize_bilibili_auth_on_startup())
-    except Exception as e:
-        exception_logger.error(f"Failed to initialize bilibili auth on worker startup: {e}")
-    try:
-        _run(initialize_youtube_auth_on_startup())
-    except Exception as e:
-        exception_logger.error(f"Failed to initialize youtube auth on worker startup: {e}")
+    from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
+    from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
+
+    _start_background_coroutine(
+        initialize_bilibili_auth_on_startup,
+        name="worker-bilibili-auth-init",
+    )
+    _start_background_coroutine(
+        initialize_youtube_auth_on_startup,
+        name="worker-youtube-auth-init",
+    )
 
 
 @celery_app.task
@@ -110,6 +107,8 @@ def start_process_document(
     auto_tag: bool = False,
     override: dict | None = None,
 ):
+    from workflow.document_process_workflow import run_document_process_workflow
+
     _run(
         run_document_process_workflow(
             document_id=document_id,
@@ -130,6 +129,11 @@ def start_process_section(
     auto_podcast: bool = False,
     force_full_rebuild: bool = False,
 ):
+    import crud
+    from data.sql.base import session_scope
+    from enums.section import SectionPodcastStatus
+    from workflow.section_process_workflow import run_section_process_workflow
+
     _run(
         run_section_process_workflow(
             section_id=section_id,
@@ -169,6 +173,8 @@ def finalize_section_images(
     image_plans_payload: list[dict],
     engine_id: int,
 ):
+    from workflow.section_process_workflow import run_finalize_section_images
+
     _run(
         run_finalize_section_images(
             section_id=section_id,
@@ -188,6 +194,8 @@ def start_process_document_embedding(
     start_chunk_idx: int = 0,
     chunk_snapshot_path: str | None = None,
 ):
+    from workflow.document_embedding_workflow import run_document_embedding_workflow
+
     _run(
         run_document_embedding_workflow(
             document_id=document_id,
@@ -204,6 +212,8 @@ def start_process_document_graph(
     user_id: int,
     chunk_snapshot_path: str | None = None,
 ):
+    from workflow.document_graph_task_workflow import run_document_graph_task_workflow
+
     _run(
         run_document_graph_task_workflow(
             document_id=document_id,
@@ -219,6 +229,8 @@ def start_process_document_summarize(
     user_id: int,
     chunk_snapshot_path: str | None = None,
 ):
+    from workflow.document_summarize_workflow import run_document_summarize_workflow
+
     _run(
         run_document_summarize_workflow(
             document_id=document_id,
@@ -232,6 +244,8 @@ def start_process_document_transcribe(
     document_id: int,
     user_id: int,
 ):
+    from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+
     _run(
         run_document_transcribe_workflow(
             document_id=document_id,
@@ -244,6 +258,8 @@ def start_process_document_podcast(
     document_id: int,
     user_id: int,
 ):
+    from workflow.document_podcast_workflow import run_document_podcast_workflow
+
     _run(
         run_document_podcast_workflow(
             document_id=document_id,
@@ -257,6 +273,8 @@ def start_prepare_document_chunk_snapshot(
     document_id: int,
     user_id: int,
 ):
+    from data.common import ensure_document_chunk_snapshot
+
     try:
         _run(
             ensure_document_chunk_snapshot(
@@ -276,6 +294,8 @@ def update_document_process_status(
     document_id: int,
     status: int,
 ):
+    from workflow.document_process_status_workflow import run_document_process_status_workflow
+
     _run(
         run_document_process_status_workflow(
             document_id=document_id,
@@ -289,6 +309,8 @@ def start_process_section_podcast(
     section_id: int,
     user_id: int,
 ):
+    from workflow.section_podcast_workflow import run_section_podcast_workflow
+
     _run(
         run_section_podcast_workflow(
             section_id=section_id,
@@ -302,6 +324,8 @@ def start_process_section_ppt(
     section_id: int,
     user_id: int,
 ):
+    from workflow.section_ppt_workflow import run_section_ppt_workflow
+
     _run(
         run_section_ppt_workflow(
             section_id=section_id,
@@ -315,6 +339,8 @@ def update_section_process_status(
     section_id: int,
     status: int,
 ):
+    from workflow.section_process_status_workflow import run_section_process_status_workflow
+
     _run(
         run_section_process_status_workflow(
             section_id=section_id,
@@ -329,6 +355,8 @@ def start_trigger_user_notification_event(
     trigger_event_uuid: str,
     params: dict | None = None,
 ):
+    from workflow.notification_event_workflow import run_notification_event_workflow
+
     _run(
         run_notification_event_workflow(
             user_id=user_id,
@@ -339,6 +367,8 @@ def start_trigger_user_notification_event(
 
 
 if __name__ == "__main__":
+    from workflow.section_process_workflow import run_section_process_workflow
+
     _run(
         run_section_process_workflow(
             section_id=1,
