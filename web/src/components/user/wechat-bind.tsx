@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { WeChatInfo } from '@/generated';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
+import { buildWechatCallbackUrl } from '@/lib/oauth';
 
 const getWechatPlatformLabel = (
 	t: ReturnType<typeof useTranslations>,
@@ -42,8 +43,7 @@ const WeChatBind = () => {
 	const wechatInfos = mainUserInfo?.wechat_infos ?? [];
 
 	const wechatAuthUrl = useMemo(() => {
-		const origin = window.location.origin; // 这里一定有值（client）
-		const redirectUri = `${origin}/integrations/wechat/oauth/bind/callback`;
+		const redirectUri = buildWechatCallbackUrl('bind');
 
 		return `https://open.weixin.qq.com/connect/qrconnect?appid=${
 			process.env.NEXT_PUBLIC_WECHAT_APP_ID

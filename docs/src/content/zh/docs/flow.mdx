@@ -9,13 +9,14 @@ import { ProcessDiagram } from '../../../components/process-diagram';
 
 Revornix 当前运行时主要由以下部分组成：
 
+- `gateway`：统一公网入口与跨地域流量分发服务
 - `web`：用户可见的主产品前端
 - `api`：同步业务 API 与主编排入口
 - `celery-worker`：异步工作流与重任务执行层
 - `hot-news`：独立热搜聚合服务
 - PostgreSQL / Redis / Milvus / Neo4j / MinIO：底层数据与文件基础设施
 
-其中，`web` 负责交互与展示，`api` 负责状态变更与访问控制，`celery-worker` 负责长耗时处理，`hot-news` 负责热搜聚合。
+其中，`gateway` 负责公网入口和路径级分流，`web` 负责交互与展示，`api` 负责状态变更与访问控制，`celery-worker` 负责长耗时处理，`hot-news` 负责热搜聚合。
 
 ## 运行时示意
 
@@ -23,12 +24,12 @@ Revornix 当前运行时主要由以下部分组成：
 	title='主运行链路'
 	steps={[
 		{
-			title: '浏览器访问 web',
-			description: '用户在前端完成登录、阅读、配置和内容操作。',
+			title: '浏览器访问 gateway',
+			description: '用户始终先进入统一公网入口。',
 		},
 		{
-			title: 'web 调用 api',
-			description: '前端把状态变更、查询和 AI 请求交给主业务 API。',
+			title: 'gateway 分发到 web 或 api',
+			description: '页面流量进入 web，业务流量按路径进入国内或境外 API。',
 		},
 		{
 			title: 'api 协调存储与任务',
@@ -49,11 +50,12 @@ Revornix 当前运行时主要由以下部分组成：
 
 大多数产品页面都遵循同一条主链路：
 
-1. 浏览器访问 `web`
-2. `web` 根据页面动作调用 `api`
-3. `api` 查询或写入 PostgreSQL、Redis、Milvus、Neo4j、文件系统等后端资源
-4. `api` 返回同步结果
-5. `web` 刷新页面状态并展示结果
+1. 浏览器访问统一公网入口上的 `web`
+2. `web` 根据页面动作调用统一公网入口上的 `api`
+3. 如已启用网关，网关按路径把请求分发到国内或境外 API
+4. 目标 API 查询或写入 PostgreSQL、Redis、Milvus、Neo4j、文件系统等后端资源
+5. API 返回同步结果
+6. `web` 刷新页面状态并展示结果
 
 这条链路覆盖了登录、设置、文档列表、专栏详情、控制面板、Revornix AI 设置、通知管理等大多数同步交互。
 
@@ -174,7 +176,8 @@ Revornix AI 的运行依赖模型、引擎以及知识底座的共同配合：
 4. 手动启动 `celery-worker`
 5. 手动启动 `hot-news`
 6. 手动启动 `web`
-7. 需要预览文档站时，再单独启动 `docs`
+7. 需要统一公网入口时，再手动启动 `gateway`
+8. 需要预览文档站时，再单独启动 `docs`
 
 <Callout>
 当前仓库的实际运行模型是“基础设施通过 Compose 启动，应用服务分别手动启动”，而不是所有应用服务统一由单个 Compose 文件直接拉起。

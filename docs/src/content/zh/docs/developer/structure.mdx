@@ -8,6 +8,7 @@
 
 ```text
 Revornix/
+├── gateway/         # 统一公网入口网关服务
 ├── web/             # 主产品前端（Next.js App Router）
 ├── api/             # 主 FastAPI 服务
 ├── celery-worker/   # 后台工作流与异步重任务
@@ -26,10 +27,17 @@ Revornix/
 - 负责登录、仪表盘、文档、专栏、Revornix AI、设置、账单入口、通知 UI 等用户界面。
 - 读取 `web/.env`，并通过 `next.config.ts` 注入前端运行所需变量。
 
+### `gateway`
+
+- 统一公网入口网关服务，Go 实现位于 `gateway/cmd/gateway` 与 `gateway/internal/*`。
+- 负责把公网流量分发到 `web`、国内主 `api`、境外认证 `api` 与 `hot-news`。
+- 支持普通 HTTP 代理、WebSocket 透传、上游池、失败冷却与健康接口。
+
 ### `api`
 
 - 主同步业务层，入口在 `api/main.py`。
 - 负责用户与认证、文档、专栏、图谱 API、AI 路由、MCP 服务端路由、通知、支付系统对接、公开分享页等。
+- 在分区部署场景下，可以拆出一组专门负责 Google / GitHub 登录的境外 API 实例，并由网关按路径转发。
 
 ### `celery-worker`
 
@@ -64,9 +72,11 @@ Revornix/
 
 ### 用户请求主链路
 
-1. 浏览器访问 `web`
-2. `web` 调用 `api`
-3. `api` 读写 PostgreSQL / Redis / Milvus / Neo4j 并返回同步结果
+1. 浏览器访问 `gateway`
+2. `gateway` 把页面请求转发到 `web`
+3. `web` 调用统一公网入口上的 `api`
+4. `gateway` 按路径把请求转发到国内或境外 API
+5. `api` 读写 PostgreSQL / Redis / Milvus / Neo4j 并返回同步结果
 
 ### 异步内容工作流链路
 
