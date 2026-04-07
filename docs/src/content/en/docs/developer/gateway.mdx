@@ -1,0 +1,140 @@
+import { Callout } from 'nextra/components';
+import { ProcessDiagram } from '../../../../components/process-diagram';
+
+# Gateway Deployment
+
+When the main product services run in mainland China but Google / GitHub login needs overseas network access, Revornix works best with a "single public entrypoint + split backend services" deployment model.
+
+The goals are:
+
+- Users always access one consistent public domain set
+- OAuth callbacks still return to the same product entrypoint
+- A gateway routes requests to domestic or overseas services by path
+- Services can share one machine or be split across different machines
+
+The repository implementation lives under `gateway/`, so this is a runnable service rather than only a static config pattern.
+
+## Recommended boundary
+
+- `app.example.com`: unified public web entrypoint
+- `api.example.com`: unified public API entrypoint
+- Domestic services: `web`, main `api`, `celery-worker`, `hot-news`
+- Overseas services: the `api` instances that perform Google / GitHub token exchange and user info fetches
+
+The overseas part can be:
+
+- one dedicated overseas API server
+- a small group of auth-only API instances
+- a shared overseas machine that also hosts other services
+
+## Runtime overview
+
+<ProcessDiagram
+	title='Third-Party Login Gateway Flow'
+	steps={[
+		{
+			title: 'User opens the public domains',
+			description: 'The browser always talks to app.example.com and api.example.com.',
+		},
+		{
+			title: 'The frontend starts Google or GitHub login',
+			description: 'OAuth callback URLs are registered against the public entrypoint rather than a private machine address.',
+		},
+		{
+			title: 'The provider redirects back to the public entrypoint',
+			description: 'The callback page still lands on the same public frontend origin, so browser state stays consistent.',
+		},
+		{
+			title: 'The API gateway routes OAuth endpoints',
+			description: 'Only /user/create/google, /user/create/github, /user/bind/google, and /user/bind/github are forwarded to the overseas API.',
+		},
+		{
+			title: 'Everything else stays domestic',
+			description: 'Documents, sections, notifications, graphs, PPT, and WebSocket traffic continue to use the domestic main services.',
+		},
+	]}
+/>
+
+## Why the public entrypoint must stay unified
+
+If OAuth callback URLs are derived from whichever machine happens to serve the request, the system becomes fragile:
+
+- callback URLs change with deployment topology
+- Google / GitHub console registrations become hard to keep stable
+- callback pages may land on a different domain than the main app
+- browser login state and user flow become harder to preserve
+
+The repository now aligns with the unified-entrypoint model:
+
+- `web` uses `NEXT_PUBLIC_HOST` for third-party login entry and callback routing
+- `api` prefers `WEB_BASE_URL` when generating Google / GitHub callback URLs
+
+Both values should point to the public gateway-facing product URL, not an internal machine address.
+
+## Required configuration
+
+### Web
+
+- `NEXT_PUBLIC_HOST`: the public web entrypoint, for example `https://app.example.com`
+- `NEXT_PUBLIC_API_PREFIX`: the public API entrypoint, for example `https://api.example.com`
+
+### API / Worker
+
+- `WEB_BASE_URL`: the same public web entrypoint used by `NEXT_PUBLIC_HOST`, for example `https://app.example.com`
+
+<Callout type='warning'>
+`WEB_BASE_URL` should not be set to the private address of a domestic API machine. For Google / GitHub login, it now represents the public callback entrypoint.
+</Callout>
+
+## How the gateway should split traffic
+
+The recommended overseas-only routes are:
+
+- `/user/create/google`
+- `/user/create/github`
+- `/user/bind/google`
+- `/user/bind/github`
+
+Everything else should continue to use the domestic main API, including:
+
+- documents, sections, PPT, podcast, and graph workflows
+- notifications and WebSocket
+- MCP
+- membership, billing, and payment integration
+
+This keeps overseas traffic limited to the parts that actually need it.
+
+## Same server or different servers
+
+The model does not require one service per machine:
+
+- `web` and the domestic main `api` can share one domestic server
+- the overseas auth `api` can share a server with other overseas services
+- `web`, domestic `api`, overseas auth `api`, and `hot-news` can also be fully separated
+
+The gateway only needs stable upstream targets. Those upstreams may point to one machine or many.
+
+## Example included in the repository
+
+The repo now includes an Nginx sample:
+
+- [`deploy/gateway/nginx/revornix.gateway.conf.example`](/Users/kinda/Developer/Revornix/deploy/gateway/nginx/revornix.gateway.conf.example)
+
+It also includes the runnable Go gateway service itself:
+
+- [`gateway/README.md`](/Users/kinda/Developer/Revornix/gateway/README.md)
+- [`gateway/cmd/gateway/main.go`](/Users/kinda/Developer/Revornix/gateway/cmd/gateway/main.go)
+
+It demonstrates:
+
+- `app.example.com` proxying the frontend
+- `api.example.com` proxying the domestic main API by default
+- only Google / GitHub create and bind endpoints being routed to the overseas API
+
+## Suggested rollout order
+
+1. Pick the public domains first
+2. Point `NEXT_PUBLIC_HOST`, `NEXT_PUBLIC_API_PREFIX`, and `WEB_BASE_URL` at those public entrypoints
+3. Start with every route on one service set and verify the public entrypoints work
+4. Move only the Google / GitHub routes behind the API gateway to the overseas service
+5. Split more services later only if needed

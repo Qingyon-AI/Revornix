@@ -6,7 +6,7 @@
 
 推荐部署边界：
 
-- 应用服务使用手动方式启动：`api`、`celery-worker`、`web`、`hot-news`
+- 应用服务使用手动方式启动：`gateway`、`api`、`celery-worker`、`web`、`hot-news`
 - 只保留“本地基础依赖”的 Docker 启动路径：`docker-compose-local.yaml` + `.env.local`
 - 整套应用服务不通过单一 Compose 文件统一拉起
 
@@ -17,6 +17,7 @@
 | API 服务 | `api/.env.example` | `api/.env` | 多处 `load_dotenv(override=True)` | `.env` 里的值会覆盖外部同名环境变量 |
 | Celery Worker | `celery-worker/.env.example` | `celery-worker/.env` | 多处 `load_dotenv(override=True)` | 行为和 API 一致 |
 | Web 前端 | `web/.env.example` | `web/.env` | `next.config.ts` + Next 运行时 | 改完后通常需要重新 `build` |
+| Gateway 服务 | `gateway/.env.example` | `gateway/.env` | 内置轻量 `.env` 解析 + `go run ./cmd/gateway` | 统一公网入口、路径分流与跨地域认证代理 |
 | Hot News 服务 | 未提交样例文件 | 如有需要可自行创建 `hot-news/.env` | `dotenv.config()` | 仓库未提供 `hot-news/.env.example` |
 | 本地基础依赖 Docker | `.env.local.example` | `.env.local` | `docker compose -f docker-compose-local.yaml --env-file .env.local up -d` | 仅用于 Postgres / Redis / Neo4j / MinIO / Milvus 等基础依赖 |
 
@@ -45,13 +46,18 @@
 
 - `web/next.config.ts` 会把前端所需环境变量注入构建产物。
 - `NEXT_PUBLIC_*` 是标准公开变量。
-- `UNION_PAY_API_PREFIX` 虽然不是 `NEXT_PUBLIC_*`，但也被 `next.config.ts` 显式注入了客户端 bundle。
 - 因此前端相关变量改动后，通常需要重新 `pnpm build`。
 
 ### 2.3 Hot News
 
 - `hot-news` 使用 `dotenv.config()`，不会像 API / Worker 那样强制覆盖外部同名变量。
 - 这里的布尔变量解析更严格：只有字符串 `true`（大小写无关）会被当成真值；`1`、`yes` 不会生效。
+
+### 2.4 Gateway
+
+- `gateway` 使用内置的轻量 `.env` 解析，不依赖额外配置包。
+- 如果 shell 环境变量和 `gateway/.env` 同名，优先保留 shell 环境变量。
+- 适合把公网 host、路径前缀和上游池拆成不同环境配置。
 
 ## 3. 启动时硬性依赖
 
@@ -140,8 +146,7 @@
 | `LANGFUSE_BASE_URL` | api, worker | 可选 | 无 | `api/config/langfuse.py`, `celery-worker/config/langfuse.py` | 当前代码只读入 config，仓库里暂无直接调用 |
 | `OFFICIAL` | api, worker | 可选 | 样例：`False` | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | 官方部署开关；走大小写无关布尔解析 |
 | `DEPLOY_HOSTS` | api（worker 当前仅保留配置项） | 可选 | config 默认 `localhost`，样例为官方域名列表 | `api/config/base.py`, `api/common/dependencies.py`, `celery-worker/config/base.py` | API 侧官方 host 判断；Worker 当前没有继续消费它 |
-| `UNION_PAY_URL_PREFIX` | api, worker | 功能级必填 | 无 | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | 会员/支付系统后端地址 |
-| `WEB_BASE_URL` | api, worker | 推荐配置 | 无 | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py` | 把相对链接补成完整通知链接 |
+| `WEB_BASE_URL` | api, worker | 推荐配置 | 无 | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py`, `api/common/oauth_redirect.py` | 把相对链接补成完整通知链接，并作为 Google / GitHub OAuth 的统一公网回调入口 |
 
 ### 4.2 认证、第三方登录与通知相关
 
@@ -204,10 +209,26 @@
 | `NEXT_PUBLIC_HOT_NEWS_API_PREFIX` | 推荐必填 | `http://localhost:6688` | 同上 | Hot News 服务地址 |
 | `NEXT_PUBLIC_WECHAT_APP_ID` | 第三方登录 UI 开启时必填 | 空 | `web/next.config.ts`, 登录/绑定组件 | 前端微信登录按钮用到的 app id |
 | `NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH` | 可选 | `false` | `web/src/lib/env.ts`, `email-login-form.tsx`, `phone-login-form.tsx`, `account/page.tsx` | 控制是否显示第三方登录/绑定 UI |
-| `NEXT_PUBLIC_HOST` | 推荐配置 | `http://localhost:3000` | `web/next.config.ts`, `section-publish.tsx` | 分享链接与前端自引用链接 |
+| `NEXT_PUBLIC_HOST` | 推荐配置 | `http://localhost:3000` | `web/next.config.ts`, `section-publish.tsx`, `web/src/lib/oauth.ts` | 分享链接、前端自引用链接，以及第三方登录统一公网回调入口 |
 | `NEXT_PUBLIC_DEPLOY_HOSTS` | 可选 | 官方域名列表示例 | `web/src/lib/utils.ts`, `account/page.tsx` | 判断是否显示官方订阅能力 |
-| `UNION_PAY_API_PREFIX` | 支付/订阅相关功能必填 | 空 | `web/next.config.ts`, `web/src/api/user.ts`, `web/src/api/product.ts`, `web/src/api/order.ts` | 前端访问支付系统的 API 前缀 |
 | `NEXT_PUBLIC_GA_ID` | 可选 | 空 | `web/src/app/layout.tsx` | Google Analytics |
+
+### 4.7 Gateway 变量
+
+| 变量 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- |
+| `PORT` | 推荐配置 | `8787` | `gateway/src/config.js`, `gateway/src/index.js` | 网关监听端口 |
+| `GATEWAY_PUBLIC_API_HOSTS` | 按部署方式配置 | 空 | 同上 | 识别 API 公网 host |
+| `GATEWAY_PUBLIC_HOT_NEWS_HOSTS` | 按部署方式配置 | 空 | 同上 | 识别 Hot News 公网 host |
+| `GATEWAY_API_PATH_PREFIXES` | 单域名前缀部署时配置 | 空 | 同上 | 单域名下识别 API 路径前缀 |
+| `GATEWAY_HOT_NEWS_PATH_PREFIXES` | 单域名前缀部署时配置 | 空 | 同上 | 单域名下识别 Hot News 路径前缀 |
+| `GATEWAY_STRIP_API_PATH_PREFIX` | 可选 | `false` | `gateway/src/config.js`, `gateway/src/router.js` | 转发前是否去掉 API 前缀 |
+| `GATEWAY_STRIP_HOT_NEWS_PATH_PREFIX` | 可选 | `false` | 同上 | 转发前是否去掉 Hot News 前缀 |
+| `GATEWAY_API_UPSTREAMS` | 推荐必填 | `http://127.0.0.1:8001` | 同上 | 国内主 `api` 上游池，支持多地址 |
+| `GATEWAY_AUTH_API_UPSTREAMS` | 启用 Google / GitHub 跨地域登录时必填 | `http://127.0.0.1:8001` | 同上 | 境外认证 `api` 上游池 |
+| `GATEWAY_HOT_NEWS_UPSTREAMS` | 推荐配置 | `http://127.0.0.1:6688` | 同上 | `hot-news` 上游池 |
+| `GATEWAY_UPSTREAM_RETRY_COOLDOWN_MS` | 可选 | `30000` | `gateway/src/config.js`, `gateway/src/services.js` | 上游失败后的冷却时间 |
+| `GATEWAY_ENABLE_ACCESS_LOG` | 可选 | `true` | `gateway/src/config.js`, `gateway/src/index.js` | 是否输出访问日志 |
 
 ## 5. Hot News 服务变量
 

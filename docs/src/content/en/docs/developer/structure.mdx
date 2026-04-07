@@ -8,6 +8,7 @@ This page is based on the current monorepo layout, `docker-compose-local.yaml`, 
 
 ```text
 Revornix/
+├── gateway/         # Unified public-entry gateway service
 ├── web/             # Main product frontend (Next.js App Router)
 ├── api/             # Main FastAPI service
 ├── celery-worker/   # Background workflows and heavy async jobs
@@ -26,11 +27,18 @@ Revornix/
 - Owns authentication pages, dashboard, documents, sections, Revornix AI, settings, billing entrypoints, and notification UI.
 - Reads `web/.env` and exposes selected values through `next.config.ts`.
 
+### `gateway`
+
+- Unified public-entry gateway service implemented in Go under `gateway/cmd/gateway` and `gateway/internal/*`.
+- Routes public traffic to `web`, the domestic main `api`, the overseas auth `api`, and `hot-news`.
+- Supports HTTP proxying, WebSocket tunneling, upstream pools, cooldown after failures, and health endpoints.
+
 ### `api`
 
 - FastAPI application with entrypoint at `api/main.py`.
 - Owns user/auth flows, documents, sections, graph APIs, AI routing, MCP server routes, notifications, payment-facing integration, and public/share endpoints.
 - Acts as the main synchronous orchestration layer for the product.
+- In split deployments, a separate overseas API slice can be used specifically for Google / GitHub login while the gateway routes only those paths abroad.
 
 ### `celery-worker`
 
@@ -65,9 +73,11 @@ In local development, these infrastructure services are started through `docker-
 
 ### User-facing request path
 
-1. The browser talks to `web`.
-2. `web` calls `api`.
-3. `api` reads or writes PostgreSQL / Redis / Milvus / Neo4j and returns the immediate response.
+1. The browser talks to `gateway`.
+2. `gateway` forwards page traffic to `web`.
+3. `web` calls the public `api` entrypoint.
+4. `gateway` routes the API request to the domestic or overseas API by path.
+5. `api` reads or writes PostgreSQL / Redis / Milvus / Neo4j and returns the immediate response.
 
 ### Async content workflow path
 

@@ -9,6 +9,7 @@ import crud
 import schemas
 from common.dependencies import get_current_user, get_db, get_real_ip
 from common.jwt_utils import create_token
+from common.oauth_redirect import build_public_oauth_redirect_uri
 from common.tp_auth.github_utils import get_github_token, get_github_userInfo
 from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
 from schemas.error import CustomException
@@ -27,7 +28,10 @@ async def create_user_by_github(
     if GITHUB_CLIENT_ID is None or GITHUB_CLIENT_SECRET is None:
         raise CustomException(message="GitHub OAuth is not configured", code=500)
 
-    redirect_uri = str(request.base_url) + "integrations/github/oauth2/create/callback"
+    redirect_uri = build_public_oauth_redirect_uri(
+        request,
+        "integrations/github/oauth2/create/callback",
+    )
     token = await asyncio.to_thread(
         get_github_token,
         github_client_id=GITHUB_CLIENT_ID,
@@ -95,7 +99,10 @@ def bind_github(
     if db_github_user_exist is not None:
         raise CustomException(message="A GitHub account is already bound to this user", code=400)
 
-    redirect_uri = str(request.base_url) + "integrations/github/oauth2/bind/callback"
+    redirect_uri = build_public_oauth_redirect_uri(
+        request,
+        "integrations/github/oauth2/bind/callback",
+    )
     token = get_github_token(
         github_client_id=GITHUB_CLIENT_ID,
         github_client_secret=GITHUB_CLIENT_SECRET,

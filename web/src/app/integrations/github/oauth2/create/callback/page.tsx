@@ -1,18 +1,18 @@
 'use client';
 
 import { createUserByGithub } from '@/service/user';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { decodeRedirectState } from '@/lib/safe-redirect';
+import { buildPublicAppUrl } from '@/lib/oauth';
 
 const GitHubCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
-	const router = useRouter();
 
 	const code = searchParams.get('code');
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
@@ -22,20 +22,22 @@ const GitHubCreatePage = () => {
 		if (err || !res) {
 			toast.error(err.message);
 			await utils.sleep(1000);
-			router.replace(`/login?redirect_to=${encodeURIComponent(redirectTo)}`);
+			window.location.replace(
+				buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)
+			);
 			return;
 		}
 		Cookies.set('access_token', res.access_token, {
 			expires: res.expires_in / 1000,
 		});
 		Cookies.set('refresh_token', res.refresh_token);
-		router.replace(redirectTo);
 		refreshMainUserInfo();
+		window.location.replace(buildPublicAppUrl(redirectTo));
 	};
 
 	useEffect(() => {
 		if (!code) {
-			router.replace('/login');
+			window.location.replace(buildPublicAppUrl('/login'));
 			return;
 		}
 		onCreateGitHubUser(code);

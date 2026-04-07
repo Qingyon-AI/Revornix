@@ -8,6 +8,10 @@ import { Steps } from 'nextra/components';
 	本页主要用于本地/自部署场景。
 </Callout>
 
+<Callout>
+	如果你的主业务服务部署在中国大陆，但仍需启用 Google / GitHub 登录，请同时参考 [网关部署](developer/gateway) 页面，把统一公网入口和境外认证 API 一起规划进去。
+</Callout>
+
 ## 手动部署方式
 
 <Callout>
@@ -53,6 +57,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 cp ./web/.env.example ./web/.env
 cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./gateway/.env.example ./gateway/.env
 ```
 
 `hot-news` 当前仓库里没有提交 `.env.example`，如果你需要自定义它的配置，可以参考[Revornix 环境变量章节](environment)里的变量说明，手动创建 `hot-news/.env`。
@@ -110,6 +115,17 @@ pnpm build
 pnpm start
 ```
 
+### 启动网关服务（可选）
+
+```shell
+cd gateway
+go run ./cmd/gateway
+```
+
 </Steps>
 
-当你将所有服务都启动之后，访问 http://localhost:3000 即可看到前端页面。
+当你将所有服务都启动之后：
+
+- 前端访问入口始终是 http://localhost:3000
+- 如果启用了网关，它用于 API / Hot News 等后端流量分流（例如 http://localhost:8787）
+- 如果未启用网关，请把 `web/.env` 里的 `NEXT_PUBLIC_API_PREFIX`、`NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX`、`NEXT_PUBLIC_HOT_NEWS_API_PREFIX` 改成直连后端服务地址
