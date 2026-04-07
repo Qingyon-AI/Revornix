@@ -64,14 +64,25 @@ async def lifespan(app: FastAPI):
     try:
         if not scheduler.running:
             scheduler.start()
+            info_logger.info(format_log_message("scheduler_started"))
+        info_logger.info(format_log_message("bilibili_auth_starting"))
         await initialize_bilibili_auth_on_startup()
+        info_logger.info(format_log_message("bilibili_auth_initialized"))
+        info_logger.info(format_log_message("youtube_auth_starting"))
         await initialize_youtube_auth_on_startup()
+        info_logger.info(format_log_message("youtube_auth_initialized"))
         async with AsyncExitStack() as stack:
             # 这些 session manager 会在 FastAPI 停止时统一退出
             # 将 MCP 应用的 lifespan 加入栈，ExitStack 会负责顺序启动和清理
+            info_logger.info(format_log_message("common_mcp_lifespan_starting"))
             await stack.enter_async_context(common_mcp_app.lifespan(app))
+            info_logger.info(format_log_message("common_mcp_lifespan_started"))
+            info_logger.info(format_log_message("document_mcp_lifespan_starting"))
             await stack.enter_async_context(document_mcp_app.lifespan(app))
+            info_logger.info(format_log_message("document_mcp_lifespan_started"))
+            info_logger.info(format_log_message("graph_mcp_lifespan_starting"))
             await stack.enter_async_context(graph_mcp_app.lifespan(app))
+            info_logger.info(format_log_message("graph_mcp_lifespan_started"))
             info_logger.info(format_log_message("fastapi_lifespan_started"))
             yield
     finally:

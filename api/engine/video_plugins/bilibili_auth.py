@@ -65,6 +65,9 @@ class BilibiliCredentialManager:
     _lock_by_loop: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Lock] = (
         weakref.WeakKeyDictionary()
     )
+    _startup_task_by_loop: weakref.WeakKeyDictionary[
+        asyncio.AbstractEventLoop, asyncio.Task[None]
+    ] = weakref.WeakKeyDictionary()
 
     @classmethod
     def _get_lock(cls) -> asyncio.Lock:
@@ -591,9 +594,33 @@ class BilibiliCredentialManager:
             )
             return
 
-        await cls.ensure_credential(
-            allow_qr_login=True,
-            force_check=True,
+        loop = asyncio.get_running_loop()
+        existing_task = cls._startup_task_by_loop.get(loop)
+        if existing_task is not None and not existing_task.done():
+            info_logger.info("Bilibili startup auth task is already running.")
+            return
+
+        async def _run_startup_auth() -> None:
+            try:
+                await cls.ensure_credential(
+                    allow_qr_login=True,
+                    force_check=True,
+                )
+            except Exception:
+                info_logger.info("Bilibili auth initialization failed on startup.")
+            finally:
+                current_task = asyncio.current_task()
+                saved_task = cls._startup_task_by_loop.get(loop)
+                if current_task is not None and saved_task is current_task:
+                    cls._startup_task_by_loop.pop(loop, None)
+
+        startup_task = asyncio.create_task(
+            _run_startup_auth(),
+            name="bilibili-startup-auth",
+        )
+        cls._startup_task_by_loop[loop] = startup_task
+        info_logger.info(
+            "Bilibili startup auth scheduled in background; FastAPI startup will not wait for QR login."
         )
 
     @classmethod
