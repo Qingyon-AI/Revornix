@@ -148,7 +148,7 @@ cd celery-worker
 conda create -n celery-worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
-celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
+./start-worker.sh
 ```
 
 ### 8) フロントエンドを起動
