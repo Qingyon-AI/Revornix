@@ -8,6 +8,10 @@ import { Steps } from 'nextra/components';
 	This page is mainly for local/self-hosted deployment.
 </Callout>
 
+<Callout>
+	If your main business services run in mainland China but you still need Google / GitHub login, also read [Gateway Deployment](developer/gateway) so the public entrypoint and overseas auth API are planned together.
+</Callout>
+
 ## Manual Deployment Method
 
 <Callout>
@@ -51,6 +55,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 cp ./web/.env.example ./web/.env
 cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./gateway/.env.example ./gateway/.env
 ```
 
 `hot-news` does not currently ship a committed `.env.example`, so if you want custom configuration there, create `hot-news/.env` manually according to the variables described in the [environment guide](environment).
@@ -108,6 +113,17 @@ pnpm build
 pnpm start
 ```
 
+### Start the gateway service (optional)
+
+```shell
+cd gateway
+go run ./cmd/gateway
+```
+
 </Steps>
 
-Once all services are running, open http://localhost:3000.
+Once all services are running:
+
+- The frontend entrypoint is always http://localhost:3000
+- If you enable the gateway, use it for backend traffic splitting such as API / Hot News (for example http://localhost:8787)
+- If you do not enable the gateway, update `web/.env` so `NEXT_PUBLIC_API_PREFIX`, `NEXT_PUBLIC_NOTIFICATION_WS_API_PREFIX`, and `NEXT_PUBLIC_HOT_NEWS_API_PREFIX` point directly to backend services

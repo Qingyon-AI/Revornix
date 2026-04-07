@@ -6,7 +6,7 @@ This document is organized around the actual read points in the repository and d
 
 Recommended deployment boundaries:
 
-- Application services are started manually: `api`, `celery-worker`, `web`, `hot-news`
+- Application services are started manually: `gateway`, `api`, `celery-worker`, `web`, `hot-news`
 - Only the "local infrastructure dependencies" Docker path remains: `docker-compose-local.yaml` + `.env.local`
 - The full application is not started through one all-in-one Compose file
 
@@ -17,6 +17,7 @@ Recommended deployment boundaries:
 | API service | `api/.env.example` | `api/.env` | Multiple `load_dotenv(override=True)` calls | Values in `.env` override external environment variables with the same name |
 | Celery Worker | `celery-worker/.env.example` | `celery-worker/.env` | Multiple `load_dotenv(override=True)` calls | Same behavior as API |
 | Web frontend | `web/.env.example` | `web/.env` | `next.config.ts` + Next runtime | Changes usually require a rebuild |
+| Gateway service | `gateway/.env.example` | `gateway/.env` | Built-in lightweight `.env` parsing + `go run ./cmd/gateway` | Unified public entrypoint, path-based routing, and split-region auth proxy |
 | Hot News service | No committed sample file | `hot-news/.env` if you create one | `dotenv.config()` | This repo does not commit `hot-news/.env.example` |
 | Local infrastructure Docker | `.env.local.example` | `.env.local` | `docker compose -f docker-compose-local.yaml --env-file .env.local up -d` | Only used for infrastructure dependencies such as Postgres / Redis / Neo4j / MinIO / Milvus |
 
@@ -45,13 +46,18 @@ Additional notes:
 
 - `web/next.config.ts` injects frontend-required environment variables into the build output.
 - `NEXT_PUBLIC_*` variables follow the standard public-env convention.
-- `UNION_PAY_API_PREFIX` is not named `NEXT_PUBLIC_*`, but it is still explicitly injected into the client bundle by `next.config.ts`.
 - Because of that, changes to frontend-related variables usually require running `pnpm build` again.
 
 ### 2.3 Hot News
 
 - `hot-news` uses `dotenv.config()` and does not force `.env` values to override external variables the way API / Worker do.
 - Boolean parsing here is stricter: only the string `true` (case-insensitive) is treated as true. `1` and `yes` do not work.
+
+### 2.4 Gateway
+
+- `gateway` uses a lightweight built-in `.env` loader and does not rely on an extra config package.
+- If the shell environment and `gateway/.env` both define the same variable, the shell value is preserved.
+- This is useful when you want to separate public hosts, path prefixes, and upstream pools by environment.
 
 ## 3. Hard Startup Dependencies
 
@@ -140,8 +146,7 @@ Additional notes:
 | `LANGFUSE_BASE_URL` | api, worker | Optional | None | `api/config/langfuse.py`, `celery-worker/config/langfuse.py` | Currently only read into config; there is no direct call site in this repo yet |
 | `OFFICIAL` | api, worker | Optional | Example: `False` | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | Official deployment switch; uses case-insensitive boolean parsing |
 | `DEPLOY_HOSTS` | api (worker currently keeps config only) | Optional | Config default is `localhost`; the sample shows official domains | `api/config/base.py`, `api/common/dependencies.py`, `celery-worker/config/base.py` | Official-host detection on the API side; Worker does not currently consume it further |
-| `UNION_PAY_URL_PREFIX` | api, worker | Required for payment-related features | None | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | Backend address for membership / payment system |
-| `WEB_BASE_URL` | api, worker | Recommended | None | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py` | Expands relative links into full notification links |
+| `WEB_BASE_URL` | api, worker | Recommended | None | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py`, `api/common/oauth_redirect.py` | Expands relative links into full notification links and acts as the unified public callback base for Google / GitHub OAuth |
 
 ### 4.2 Authentication, third-party login, and notifications
 
@@ -204,10 +209,26 @@ Additional note:
 | `NEXT_PUBLIC_HOT_NEWS_API_PREFIX` | Recommended | `http://localhost:6688` | Same as above | Hot News service URL |
 | `NEXT_PUBLIC_WECHAT_APP_ID` | Required when third-party login UI is enabled | Empty | `web/next.config.ts`, login / binding components | App ID used by the frontend WeChat login button |
 | `NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH` | Optional | `false` | `web/src/lib/env.ts`, `email-login-form.tsx`, `phone-login-form.tsx`, `account/page.tsx` | Controls whether third-party login / binding UI is shown |
-| `NEXT_PUBLIC_HOST` | Recommended | `http://localhost:3000` | `web/next.config.ts`, `section-publish.tsx` | Share links and frontend self-references |
+| `NEXT_PUBLIC_HOST` | Recommended | `http://localhost:3000` | `web/next.config.ts`, `section-publish.tsx`, `web/src/lib/oauth.ts` | Share links, frontend self-references, and the unified public callback entrypoint for third-party login |
 | `NEXT_PUBLIC_DEPLOY_HOSTS` | Optional | Sample official domain list | `web/src/lib/utils.ts`, `account/page.tsx` | Determines whether official subscription features are shown |
-| `UNION_PAY_API_PREFIX` | Required for payment / subscription features | Empty | `web/next.config.ts`, `web/src/api/user.ts`, `web/src/api/product.ts`, `web/src/api/order.ts` | API prefix used by the frontend to access the payment system |
 | `NEXT_PUBLIC_GA_ID` | Optional | Empty | `web/src/app/layout.tsx` | Google Analytics |
+
+### 4.7 Gateway variables
+
+| Variable | Required level | Default / example | Main read points | Purpose |
+| --- | --- | --- | --- | --- |
+| `PORT` | Recommended | `8787` | `gateway/src/config.js`, `gateway/src/index.js` | Gateway listen port |
+| `GATEWAY_PUBLIC_API_HOSTS` | Set based on deployment | Empty | Same as above | Matches public API hosts |
+| `GATEWAY_PUBLIC_HOT_NEWS_HOSTS` | Set based on deployment | Empty | Same as above | Matches public hot-news hosts |
+| `GATEWAY_API_PATH_PREFIXES` | Set for single-domain prefix deployments | Empty | Same as above | Matches API path prefixes on a shared domain |
+| `GATEWAY_HOT_NEWS_PATH_PREFIXES` | Set for single-domain prefix deployments | Empty | Same as above | Matches hot-news path prefixes on a shared domain |
+| `GATEWAY_STRIP_API_PATH_PREFIX` | Optional | `false` | `gateway/src/config.js`, `gateway/src/router.js` | Whether the API prefix is stripped before proxying |
+| `GATEWAY_STRIP_HOT_NEWS_PATH_PREFIX` | Optional | `false` | Same as above | Whether the hot-news prefix is stripped before proxying |
+| `GATEWAY_API_UPSTREAMS` | Recommended | `http://127.0.0.1:8001` | Same as above | Upstream pool for the domestic main `api`; supports multiple addresses |
+| `GATEWAY_AUTH_API_UPSTREAMS` | Required when split-region Google / GitHub login is enabled | `http://127.0.0.1:8001` | Same as above | Upstream pool for the overseas auth `api` |
+| `GATEWAY_HOT_NEWS_UPSTREAMS` | Recommended | `http://127.0.0.1:6688` | Same as above | Upstream pool for `hot-news` |
+| `GATEWAY_UPSTREAM_RETRY_COOLDOWN_MS` | Optional | `30000` | `gateway/src/config.js`, `gateway/src/services.js` | Cooldown period after an upstream failure |
+| `GATEWAY_ENABLE_ACCESS_LOG` | Optional | `true` | `gateway/src/config.js`, `gateway/src/index.js` | Whether access logs are emitted |
 
 ## 5. Hot News Service Variables
 

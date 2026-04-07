@@ -9,6 +9,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
+import { buildOAuthCallbackUrl } from '@/lib/oauth';
 
 const GitHubBind = () => {
 	const t = useTranslations();
@@ -16,7 +17,7 @@ const GitHubBind = () => {
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const handleBindGitHub = () => {
 		// redirect the user to github
-		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/bind/callback`;
+		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${buildOAuthCallbackUrl('github', 'bind')}`;
 		window.location.assign(link);
 	};
 	const handleUnBindGitHub = async () => {

@@ -9,13 +9,14 @@ This page explains the main runtime paths in Revornix, from user requests to bac
 
 The current Revornix runtime is mainly composed of:
 
+- `gateway`: the unified public entrypoint and split-region routing layer
 - `web`: the main user-facing product frontend
 - `api`: the synchronous business API and orchestration entry
 - `celery-worker`: the async workflow and heavy-job execution layer
 - `hot-news`: the separate trending aggregation service
 - PostgreSQL / Redis / Milvus / Neo4j / MinIO: the underlying data and file infrastructure
 
-In practice, `web` handles interaction and presentation, `api` handles state changes and access control, `celery-worker` handles long-running processing, and `hot-news` handles trend aggregation.
+In practice, `gateway` owns the public entrypoint and path-level routing, `web` handles interaction and presentation, `api` handles state changes and access control, `celery-worker` handles long-running processing, and `hot-news` handles trend aggregation.
 
 ## Runtime sketch
 
@@ -23,12 +24,12 @@ In practice, `web` handles interaction and presentation, `api` handles state cha
 	title='Main runtime path'
 	steps={[
 		{
-			title: 'Browser opens web',
-			description: 'Users interact with the product frontend for reading, settings, and content actions.',
+			title: 'Browser opens gateway',
+			description: 'Users always enter the product through one public entrypoint.',
 		},
 		{
-			title: 'web calls api',
-			description: 'The frontend forwards state changes, queries, and AI requests to the main API.',
+			title: 'gateway routes to web or api',
+			description: 'Page traffic goes to web, while business traffic is routed to the domestic or overseas API by path.',
 		},
 		{
 			title: 'api coordinates storage and tasks',
@@ -49,11 +50,12 @@ In practice, `web` handles interaction and presentation, `api` handles state cha
 
 Most product pages follow the same main request path:
 
-1. The browser opens `web`
-2. `web` calls `api` based on the page action
-3. `api` reads from or writes to PostgreSQL, Redis, Milvus, Neo4j, and the file backend
-4. `api` returns the immediate response
-5. `web` refreshes local state and renders the result
+1. The browser opens `web` through the unified public entrypoint
+2. `web` calls the unified public `api` entrypoint based on the page action
+3. If a gateway is enabled, it routes the request to the domestic or overseas API by path
+4. The target API reads from or writes to PostgreSQL, Redis, Milvus, Neo4j, and the file backend
+5. The API returns the immediate response
+6. `web` refreshes local state and renders the result
 
 This path covers most synchronous interactions, including authentication, settings, document lists, section detail pages, the dashboard, Revornix AI settings, and notification management.
 
@@ -174,7 +176,8 @@ The most common local development startup order is:
 4. Start `celery-worker`
 5. Start `hot-news`
 6. Start `web`
-7. Start `docs` separately when you want to preview the documentation site
+7. Start `gateway` when you want a unified public entrypoint
+8. Start `docs` separately when you want to preview the documentation site
 
 <Callout>
 The current local runtime model is “infrastructure via Compose, application services started separately,” not “all application services launched directly from one Compose file.”

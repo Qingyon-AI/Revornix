@@ -3,14 +3,14 @@
 import { useUserContext } from '@/provider/user-provider';
 import { bindGoogle } from '@/service/user';
 import { utils } from '@kinda/utils';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { buildPublicAppUrl } from '@/lib/oauth';
 
 const GoogleBindPage = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
-	const router = useRouter();
 
 	const code = searchParams.get('code');
 
@@ -19,11 +19,11 @@ const GoogleBindPage = () => {
 		if (err || !res) {
 			toast.error(err.message);
 			await utils.sleep(1000);
-			router.push('/account');
+			window.location.replace(buildPublicAppUrl('/account'));
 			return;
 		}
-		router.push('/account');
 		refreshMainUserInfo();
+		window.location.replace(buildPublicAppUrl('/account'));
 	};
 
 	useEffect(() => {

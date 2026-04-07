@@ -39,6 +39,7 @@ import { useLoginProvider } from '@/provider/login-provider';
 import WechatIcon from '../icons/wechat-icon';
 import { encodeRedirectState, getSafeRedirectPage } from '@/lib/safe-redirect';
 import { isEnvEnabled } from '@/lib/env';
+import { buildOAuthCallbackUrl, buildWechatCallbackUrl } from '@/lib/oauth';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -108,16 +109,16 @@ const EmailLoginForm = () => {
 	};
 
 	const handleGoogleLogin = () => {
-		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${window.location.origin}/integrations/google/oauth2/create/callback&scope=openid email profile&response_type=code&state=${redirectState}`;
+		const link = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${buildOAuthCallbackUrl('google', 'create')}&scope=openid email profile&response_type=code&state=${redirectState}`;
 		window.location.assign(link);
 	};
 
 	const handleGitHubLogin = () => {
-		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${window.location.origin}/integrations/github/oauth2/create/callback&state=${redirectState}`;
+		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${buildOAuthCallbackUrl('github', 'create')}&state=${redirectState}`;
 		window.location.assign(link);
 	};
 
-	const wechatCreateRedirectUri = `${process.env.NEXT_PUBLIC_HOST}/integrations/wechat/oauth/create/callback`;
+	const wechatCreateRedirectUri = buildWechatCallbackUrl('create');
 
 	return (
 		<Form {...emailForm}>
