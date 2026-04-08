@@ -38,6 +38,7 @@ from router.user import _batch_sign_user_avatars
 from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
 from common.celery.app import start_trigger_user_notification_event
 from enums.notification import NotificationTriggerEventUUID
+from config.base import GATEWAY_INTERNAL_URL
 
 admin_router = APIRouter()
 
@@ -68,6 +69,25 @@ def _ensure_manageable_user(
             message="Administrators can only manage normal users.",
             code=403,
         )
+
+
+async def _fetch_gateway_anti_scrape_stats() -> schemas.admin.AdminAntiScrapeStatsResponse:
+    url = f"{GATEWAY_INTERNAL_URL.rstrip('/')}/gateway/anti-scrape"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(url)
+    if not response.is_success:
+        raise schemas.error.CustomException(
+            message="Failed to fetch gateway anti-scrape stats.",
+            code=response.status_code,
+        )
+    payload = response.json()
+    anti_scrape_payload = payload.get("antiScrape") if isinstance(payload, dict) else None
+    if not isinstance(anti_scrape_payload, dict):
+        raise schemas.error.CustomException(
+            message="Invalid gateway anti-scrape stats response.",
+            code=502,
+        )
+    return schemas.admin.AdminAntiScrapeStatsResponse.model_validate(anti_scrape_payload)
 
 
 async def _request_target_user_compute_payload(
@@ -385,6 +405,18 @@ async def _delete_user_with_related_resources(
                 "user_id": target_user_id,
             },
         )
+
+
+@admin_router.post(
+    "/security/anti-scrape",
+    response_model=schemas.admin.AdminAntiScrapeStatsResponse,
+)
+async def get_admin_anti_scrape_stats(
+    _request: schemas.admin.AdminAntiScrapeStatsRequest,
+    user: models.user.User = Depends(get_current_user),
+):
+    _ensure_privileged_user(user)
+    return await _fetch_gateway_anti_scrape_stats()
 
 
 @admin_router.post(

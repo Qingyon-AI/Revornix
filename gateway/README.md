@@ -17,6 +17,7 @@ This Go service is intended for setups where:
 - Routes normal product API traffic to the domestic main API
 - Routes `union-pay` traffic to the Java payment service
 - Routes hot-news traffic to the hot-news service
+- Blocks obvious scraping user agents and rate-limits high-risk public API paths
 - Does not proxy web app traffic (both local and production)
 - Supports multiple upstreams per service with cooldown after failure
 - Exposes local gateway inspection endpoints

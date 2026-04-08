@@ -16,6 +16,7 @@ import schemas
 from common.apscheduler.app import scheduler
 from common.env import is_env_enabled
 from common.logger import exception_logger, format_log_message, info_logger
+from common.request_protection import protect_request
 from common.redis import redis_pool
 from common.websocket import notificationManager
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
@@ -154,9 +155,14 @@ def read_openapi_yaml() -> Response:
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
+    rate_limit_state = await protect_request(request)
     response = await call_next(request)
     process_time = time.perf_counter() - start_time
     response.headers["Process-Time"] = str(process_time)
+    if rate_limit_state is not None:
+        response.headers["X-RateLimit-Limit"] = str(rate_limit_state.limit)
+        response.headers["X-RateLimit-Remaining"] = str(rate_limit_state.remaining)
+        response.headers["X-RateLimit-Reset"] = str(rate_limit_state.reset_after_seconds)
     return response
 
 @app.exception_handler(Exception)

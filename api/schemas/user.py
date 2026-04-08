@@ -1,8 +1,10 @@
 from datetime import datetime
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from .base import BaseModel
 from enums.section import UserSectionAuthority
+
+PUBLIC_PAGINATION_LIMIT = 20
 
 
 class BindEmailRequest(BaseModel):
@@ -16,7 +18,7 @@ class SearchUserRequest(BaseModel):
     filter_name: str
     filter_value: str
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     @field_validator('filter_name')
     def validate_filter_name(cls, v: str):
         if v not in ['nickname', 'email', 'uuid']:
@@ -100,13 +102,13 @@ class BindEmailVerifyRequest(BaseModel):
 class SearchUserFansRequest(BaseModel):
     user_id: int
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     keyword: str | None = None
 
 class SearchUserFollowsRequest(BaseModel):
     user_id: int
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     keyword: str | None = None
 
 class FollowUserRequest(BaseModel):

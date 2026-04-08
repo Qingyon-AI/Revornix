@@ -229,3 +229,34 @@ class AdminDocumentDetailResponse(DocumentDetailResponse):
 
 class AdminSectionDetailResponse(SectionInfo):
     pass
+
+
+class AdminAntiScrapeStatsRequest(BaseModel):
+    pass
+
+
+class AdminAntiScrapeSummaryWindow(BaseModel):
+    minutes: int
+    counts: dict[str, int]
+
+
+class AdminAntiScrapeEvent(BaseModel):
+    timestamp: datetime
+    event: str
+    policy: str
+    rule: str
+    method: str
+    host: str
+    path: str
+    service: str
+    clientIp: str
+    userAgentHash: str
+    limit: int | None = None
+    remaining: int | None = None
+    resetSeconds: int | None = None
+
+
+class AdminAntiScrapeStatsResponse(BaseModel):
+    timestamp: datetime
+    summary: list[AdminAntiScrapeSummaryWindow]
+    recentEvents: list[AdminAntiScrapeEvent]

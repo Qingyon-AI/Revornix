@@ -7,6 +7,8 @@ from .user import UserPublicInfo
 from enums.engine_enums import EngineCategory
 from enums.billing import EngineBillingMode
 
+PUBLIC_PAGINATION_LIMIT = 20
+
 
 class EngineProvidedInfo(BaseModel):
     id: int
@@ -123,7 +125,7 @@ class UsableEngineSearchRequest(BaseModel):
 class CommunityEngineSearchRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     filter_category: EngineCategory | None = None
 
 class EngineDeleteRequest(BaseModel):

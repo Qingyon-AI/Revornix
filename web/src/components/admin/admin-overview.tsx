@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, ShieldCheck, Users, Waypoints } from 'lucide-react';
+import { FileText, Shield, ShieldCheck, Users, Waypoints } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -22,6 +22,12 @@ const CARDS = [
 		titleKey: 'admin_overview_sections_title',
 		descriptionKey: 'admin_overview_sections_description',
 	},
+	{
+		href: '/admin/security',
+		icon: Shield,
+		titleKey: 'admin_overview_security_title',
+		descriptionKey: 'admin_overview_security_description',
+	},
 ];
 
 const AdminOverview = async () => {
@@ -42,7 +48,7 @@ const AdminOverview = async () => {
 				</p>
 			</div>
 
-			<div className='grid gap-4 lg:grid-cols-3'>
+			<div className='grid gap-4 lg:grid-cols-2 xl:grid-cols-4'>
 				{CARDS.map((card) => {
 					const Icon = card.icon;
 					return (
