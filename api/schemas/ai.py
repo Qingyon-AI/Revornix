@@ -5,6 +5,8 @@ from pydantic import ConfigDict, Field, model_validator
 from .base import BaseModel
 from .user import UserPublicInfo
 
+PUBLIC_PAGINATION_LIMIT = 20
+
 
 class ModelProviderForkRequest(BaseModel):
     provider_id: int
@@ -119,7 +121,7 @@ class ModelSearchResponse(BaseModel):
 class ModelProviderSearchRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
 
 class ModelUpdateRequest(BaseModel):
     id: int

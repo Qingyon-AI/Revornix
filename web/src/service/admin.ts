@@ -122,11 +122,43 @@ export type AdminSectionSummary = {
 	update_time?: string | null;
 };
 
+export type AdminAntiScrapeSummaryWindow = {
+	minutes: number;
+	counts: Record<string, number>;
+};
+
+export type AdminAntiScrapeEvent = {
+	timestamp: string;
+	event: string;
+	policy: string;
+	rule: string;
+	method: string;
+	host: string;
+	path: string;
+	service: string;
+	clientIp: string;
+	userAgentHash: string;
+	limit?: number | null;
+	remaining?: number | null;
+	resetSeconds?: number | null;
+};
+
+export type AdminAntiScrapeStatsResponse = {
+	timestamp: string;
+	summary: AdminAntiScrapeSummaryWindow[];
+	recentEvents: AdminAntiScrapeEvent[];
+};
+
 export const searchAdminUsers = async (
 	data: AdminUserSearchRequest,
 ): Promise<PaginationData<AdminUserSummary>> => {
 	return await request(adminApi.searchUsers, { data });
 };
+
+export const getAdminAntiScrapeStats =
+	async (): Promise<AdminAntiScrapeStatsResponse> => {
+		return await request(adminApi.getAntiScrapeStats, { data: {} });
+	};
 
 export const getAdminUserDetail = async (
 	user_id: number,

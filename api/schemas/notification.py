@@ -1,8 +1,12 @@
 from datetime import datetime
 from typing import Literal
 
+from pydantic import Field
+
 from .base import BaseModel
 from .user import UserPublicInfo
+
+PUBLIC_PAGINATION_LIMIT = 20
 
 class IOSTargetChangeCodeStatusRequest(BaseModel):
     code_uuid: str
@@ -23,12 +27,12 @@ class NotificationTargetForkRequest(BaseModel):
 class SearchNotificationTargetRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
 
 class SearchNotificationSourceRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
 
 class NotificationTaskBaseInfo(BaseModel):
     id: int
@@ -249,7 +253,7 @@ class NotificationRecordDetailRequest(BaseModel):
 class SearchNotificationRecordRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
 
 class ReadNotificationRecordRequest(BaseModel):
     notification_record_ids: list[int]

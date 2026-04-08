@@ -10,6 +10,8 @@ from enums.section import SectionProcessTriggerType, UserSectionRole, UserSectio
 from schemas.task import SectionPodcastTask, SectionProcessTask
 from schemas.user import SectionUserPublicInfo, UserPublicInfo
 
+PUBLIC_PAGINATION_LIMIT = 20
+
 
 class ImagePlan(BaseModel):
     id: str = Field(..., description="Unique id used in markdown marker [image-id: <id>]")
@@ -50,7 +52,7 @@ class RetrySectionDocumentRequest(BaseModel):
 class SectionDocumentRequest(BaseModel):
     section_id: int
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     desc: bool = True
     keyword: str | None = None
 
@@ -76,7 +78,7 @@ class SectionPublishRequest(BaseModel):
 class SectionUserRequest(BaseModel):
     section_id: int
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     keyword: str | None = None
     filter_roles: list[UserSectionRole] | None = None
 
@@ -123,7 +125,7 @@ class SectionCommentInfo(BaseModel):
 class SectionCommentSearchRequest(BaseModel):
     section_id: int
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     keyword: str | None = None
 
 class SectionCommentDeleteRequest(BaseModel):
@@ -141,7 +143,7 @@ class SearchUserSectionsRequest(BaseModel):
     user_id: int
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     label_ids: list[int] | None = None
     desc: bool = True
 
@@ -184,7 +186,7 @@ class SearchMineSectionsRequest(BaseModel):
 class SearchPublicSectionsRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
-    limit: int = 10
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     desc: bool = True
     label_ids: list[int] | None = None
 

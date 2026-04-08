@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"revornix-gateway/internal/config"
+	"revornix-gateway/internal/protection"
 	"revornix-gateway/internal/router"
 	"revornix-gateway/internal/upstream"
 )
@@ -17,6 +19,7 @@ type App struct {
 	config   config.Config
 	router   *router.Resolver
 	pool     *upstream.Pool
+	protect  *protection.Protector
 	services map[string][]*url.URL
 }
 
@@ -32,6 +35,7 @@ func New(cfg config.Config) *App {
 		config:   cfg,
 		router:   router.New(cfg),
 		pool:     upstream.New(cfg.UpstreamRetryCooldown, services),
+		protect:  protection.New(cfg.Protection),
 		services: services,
 	}
 }
@@ -53,6 +57,23 @@ func (a *App) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	route := a.router.Resolve(r.Host, r.URL.Path)
 	if a.config.EnableAccessLog {
 		log.Printf("[gateway] %s %s%s -> %s/%s", r.Method, r.Host, r.URL.Path, route.Type, route.Service)
+	}
+
+	if rateLimitState, statusCode, message := a.protect.Check(r, route); statusCode != 0 {
+		if rateLimitState != nil {
+			w.Header().Set("X-RateLimit-Limit", itoa(rateLimitState.Limit))
+			w.Header().Set("X-RateLimit-Remaining", itoa(max(rateLimitState.Remaining, 0)))
+			w.Header().Set("X-RateLimit-Reset", itoa(int(rateLimitState.ResetAfter.Seconds())))
+		}
+		writeJSON(w, statusCode, map[string]any{
+			"ok":      false,
+			"message": message,
+		})
+		return
+	} else if rateLimitState != nil {
+		w.Header().Set("X-RateLimit-Limit", itoa(rateLimitState.Limit))
+		w.Header().Set("X-RateLimit-Remaining", itoa(max(rateLimitState.Remaining, 0)))
+		w.Header().Set("X-RateLimit-Reset", itoa(int(rateLimitState.ResetAfter.Seconds())))
 	}
 
 	if route.Type == "local" {
@@ -106,6 +127,12 @@ func (a *App) serveLocal(w http.ResponseWriter, pathname string) {
 			"ok":        true,
 			"timestamp": time.Now().UTC().Format(time.RFC3339Nano),
 			"upstreams": a.pool.Snapshot(),
+		})
+	case "/gateway/anti-scrape":
+		writeJSON(w, http.StatusOK, map[string]any{
+			"ok":         true,
+			"timestamp":  time.Now().UTC().Format(time.RFC3339Nano),
+			"antiScrape": a.protect.StatsSnapshot(),
 		})
 	default:
 		http.Error(w, "not found", http.StatusNotFound)
@@ -204,4 +231,15 @@ func writeJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	_, _ = w.Write(body)
+}
+
+func itoa(v int) string {
+	return fmt.Sprintf("%d", v)
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

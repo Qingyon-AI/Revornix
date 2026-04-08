@@ -44,6 +44,7 @@ Revornix is an open-source, local-first AI information workspace. It helps you c
 ```text
 Revornix/
 ├── web/                  # Next.js frontend (user interaction + dashboard)
+├── gateway/              # Go public-entry gateway (routing, anti-scraping, upstream failover)
 ├── api/                  # FastAPI core backend (auth, documents, sections, AI APIs)
 ├── celery-worker/        # Async workflows (embedding, summary, graph, podcast, notifications)
 ├── hot-news/             # Trending aggregation service (based on DailyHotApi)
@@ -61,6 +62,7 @@ Revornix/
 - Illustration generation: generate and embed AI images into content.
 - Trending in one place: major platform hot lists via integrated DailyHotApi.
 - Responsive and multilingual: available on mobile/desktop with multi-language support.
+- Layered request protection: gateway-level anti-scraping and API-side rate limiting for high-risk public endpoints.
 
 ## Some UI
 
@@ -107,6 +109,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 
 ```shell
 cp ./web/.env.example ./web/.env
+cp ./gateway/.env.example ./gateway/.env
 cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
 ```
@@ -133,7 +136,16 @@ pip install -r ./requirements.txt
 fastapi run --port 8001
 ```
 
-### 6) Run trending aggregation service
+### 6) Run gateway service
+
+```shell
+cd gateway
+go run ./cmd/gateway
+```
+
+The gateway is optional for local development, but recommended for production. It handles public routing, failover, and the first layer of anti-scraping protection before traffic reaches `api/`.
+
+### 7) Run trending aggregation service
 
 ```shell
 cd hot-news
@@ -141,7 +153,7 @@ pnpm build
 pnpm start
 ```
 
-### 7) Run Celery worker
+### 8) Run Celery worker
 
 ```shell
 cd celery-worker
@@ -151,7 +163,7 @@ playwright install
 ./start-worker.sh
 ```
 
-### 8) Run frontend
+### 9) Run frontend
 
 ```shell
 cd web

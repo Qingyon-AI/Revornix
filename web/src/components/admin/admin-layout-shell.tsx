@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	FileText,
 	LayoutDashboard,
+	Shield,
 	ShieldCheck,
 	Users,
 	Waypoints,
@@ -38,6 +39,11 @@ const ADMIN_NAV_ITEMS = [
 		href: '/admin/sections',
 		icon: Waypoints,
 		labelKey: 'admin_nav_sections',
+	},
+	{
+		href: '/admin/security',
+		icon: Shield,
+		labelKey: 'admin_nav_security',
 	},
 ];
 

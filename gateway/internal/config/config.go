@@ -14,12 +14,30 @@ type Config struct {
 	Port                  int
 	EnableAccessLog       bool
 	UpstreamRetryCooldown time.Duration
+	Protection            ProtectionConfig
 	PublicHosts           PublicHosts
 	PathPrefixes          PathPrefixes
 	StripPrefix           StripPrefix
 	Services              Services
 	AuthRoutePaths        []string
 	LocalRoutePaths       []string
+}
+
+type ProtectionConfig struct {
+	SMSIPLimit           int
+	SMSWindow            time.Duration
+	SMSIPUALimit         int
+	SMSIPUAWindow        time.Duration
+	PublicIPLimit        int
+	PublicWindow         time.Duration
+	PublicIPUALimit      int
+	PublicIPUAWindow     time.Duration
+	AnonDetailIPLimit    int
+	AnonDetailWindow     time.Duration
+	AnonDetailIPUALimit  int
+	AnonDetailIPUAWindow time.Duration
+	OpenAPIPLimit        int
+	OpenAPIWindow        time.Duration
 }
 
 type PublicHosts struct {
@@ -60,6 +78,22 @@ func Load(envPath string) (Config, error) {
 		Port:                  getInt("PORT", 8787),
 		EnableAccessLog:       getBool("GATEWAY_ENABLE_ACCESS_LOG", true),
 		UpstreamRetryCooldown: time.Duration(getInt("GATEWAY_UPSTREAM_RETRY_COOLDOWN_MS", 30000)) * time.Millisecond,
+		Protection: ProtectionConfig{
+			SMSIPLimit:           getInt("GATEWAY_ANTI_SCRAPE_SMS_IP_LIMIT", 3),
+			SMSWindow:            time.Duration(getInt("GATEWAY_ANTI_SCRAPE_SMS_IP_WINDOW_SECONDS", 600)) * time.Second,
+			SMSIPUALimit:         getInt("GATEWAY_ANTI_SCRAPE_SMS_IP_UA_LIMIT", 2),
+			SMSIPUAWindow:        time.Duration(getInt("GATEWAY_ANTI_SCRAPE_SMS_IP_UA_WINDOW_SECONDS", 60)) * time.Second,
+			PublicIPLimit:        getInt("GATEWAY_ANTI_SCRAPE_PUBLIC_IP_LIMIT", 120),
+			PublicWindow:         time.Duration(getInt("GATEWAY_ANTI_SCRAPE_PUBLIC_IP_WINDOW_SECONDS", 300)) * time.Second,
+			PublicIPUALimit:      getInt("GATEWAY_ANTI_SCRAPE_PUBLIC_IP_UA_LIMIT", 30),
+			PublicIPUAWindow:     time.Duration(getInt("GATEWAY_ANTI_SCRAPE_PUBLIC_IP_UA_WINDOW_SECONDS", 60)) * time.Second,
+			AnonDetailIPLimit:    getInt("GATEWAY_ANTI_SCRAPE_ANON_DETAIL_IP_LIMIT", 90),
+			AnonDetailWindow:     time.Duration(getInt("GATEWAY_ANTI_SCRAPE_ANON_DETAIL_IP_WINDOW_SECONDS", 300)) * time.Second,
+			AnonDetailIPUALimit:  getInt("GATEWAY_ANTI_SCRAPE_ANON_DETAIL_IP_UA_LIMIT", 20),
+			AnonDetailIPUAWindow: time.Duration(getInt("GATEWAY_ANTI_SCRAPE_ANON_DETAIL_IP_UA_WINDOW_SECONDS", 60)) * time.Second,
+			OpenAPIPLimit:        getInt("GATEWAY_ANTI_SCRAPE_OPENAPI_IP_LIMIT", 5),
+			OpenAPIWindow:        time.Duration(getInt("GATEWAY_ANTI_SCRAPE_OPENAPI_IP_WINDOW_SECONDS", 60)) * time.Second,
+		},
 		PublicHosts: PublicHosts{
 			API:      getLowerList("GATEWAY_PUBLIC_API_HOSTS"),
 			HotNews:  getLowerList("GATEWAY_PUBLIC_HOT_NEWS_HOSTS"),
@@ -85,6 +119,7 @@ func Load(envPath string) (Config, error) {
 			"/gateway/health",
 			"/gateway/routes",
 			"/gateway/upstreams",
+			"/gateway/anti-scrape",
 		},
 	}
 

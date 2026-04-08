@@ -25,4 +25,5 @@ export default {
 	searchSections: API_PREFIX + '/admin/sections/search',
 	getSectionDetail: API_PREFIX + '/admin/sections/detail',
 	deleteSections: API_PREFIX + '/admin/sections/delete',
+	getAntiScrapeStats: API_PREFIX + '/admin/security/anti-scrape',
 };
