@@ -42,7 +42,7 @@ import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
-import CustomMarkdown from '@/components/ui/custom-markdown';
+import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import Link from 'next/link';
 import { isSeoNotFoundError } from '@/lib/seo';
 import { notFound } from 'next/navigation';
@@ -446,8 +446,9 @@ const SEOSectionDetail = async (props: {
 					<Card className={surfaceCardClassName}>
 						<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
 							<div className='prose prose-zinc max-w-none overflow-x-hidden dark:prose-invert prose-headings:scroll-mt-24 prose-p:leading-8 [&_h1]:break-words [&_h2]:break-words [&_h3]:break-words [&_h4]:break-words [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-								<CustomMarkdown
+								<TipTapMarkdownViewer
 									content={markdown ? markdown : t('section_no_md')}
+									ownerId={section?.creator?.id}
 								/>
 							</div>
 						</CardContent>

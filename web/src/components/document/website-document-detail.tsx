@@ -1,4 +1,4 @@
-import { cn, replaceImagePaths } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -17,9 +17,9 @@ import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { DocumentMdConvertStatus } from '@/enums/document';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
-import CustomMarkdown from '../ui/custom-markdown';
 import { useRef } from 'react';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
+import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
 import {
 	Select,
 	SelectContent,
@@ -146,7 +146,6 @@ const WebsiteDocumentDetail = ({
 				throw new Error(err.message);
 			}
 			if (typeof res === 'string') {
-				res = replaceImagePaths(res, document.creator.id);
 				setMarkdown(res);
 				setMarkdownGetError(undefined);
 				setMarkdownRendered(true);
@@ -362,7 +361,10 @@ const WebsiteDocumentDetail = ({
 					)}
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose prose-zinc mx-auto max-w-[880px] dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl xl:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-							<CustomMarkdown content={markdown} />
+							<TipTapMarkdownViewer
+								content={markdown}
+								ownerId={document?.creator.id}
+							/>
 							<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 								{t('document_ai_tips')}
 							</div>

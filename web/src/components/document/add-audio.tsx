@@ -46,6 +46,7 @@ import {
 } from '@/lib/document-media';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import DocumentCreateAdvancedSection from './document-create-advanced-section';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -263,7 +264,7 @@ const AddAudio = () => {
 			/>
 			<Form {...form}>
 				<form onSubmit={onSubmitMessageForm} className='flex h-full min-h-0 flex-col overflow-hidden'>
-					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
+					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-hidden pr-1'>
 						{!fileParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
@@ -299,8 +300,9 @@ const AddAudio = () => {
 								</AlertDescription>
 							</Alert>
 						)}
-						<Field>
+						<Field className='min-h-0 flex-1'>
 							<AudioRecord
+								className='h-full min-h-[320px]'
 								maxDurationMs={AUDIO_DOCUMENT_MAX_DURATION_MS}
 								onRecordReady={(result: AudioRecordResult) => {
 									if (lastUploadedRef.current?.sourceUrl !== result.url) {
@@ -316,226 +318,66 @@ const AddAudio = () => {
 									}}
 								/>
 						</Field>
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-							<FormField
-								name='auto_summary'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem className='rounded-lg border border-input p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_ai_summary')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={documentReaderUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => {
-														field.onChange(e);
-													}}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_ai_summary_description')}
-											</FormDescription>
-											{documentReaderUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{documentReaderModel.subscriptionLocked
-															? t('default_resource_subscription_locked')
-															: t('document_create_ai_summary_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								name='auto_transcribe'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem className='rounded-lg border border-input p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_auto_transcribe')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={transcribeEngineUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => {
-														field.onChange(e);
-													}}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_auto_transcribe_description')}
-											</FormDescription>
-											{transcribeEngineUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{transcribeEngine.subscriptionLocked
-															? t('default_resource_subscription_locked')
-															: t('document_create_auto_transcribe_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
-										</FormItem>
-									);
-								}}
-							/>
-						</div>
-						<div className='flex md:flex-row md:items-center flex-col gap-5 w-full'>
-							{labels ? (
-								<FormField
-									control={form.control}
-									name='labels'
-									render={({ field }) => {
-										return (
-											<FormItem className='gap-0 flex-1'>
-												<MultipleSelector
-													onCreate={async ({ label }) => {
-														await mutateCreateDocumentLabel.mutateAsync({
-															name: label,
-														});
-													}}
-													options={labels.data.map((label) => {
-														return {
-															label: label.name,
-															value: label.id.toString(),
-														};
-													})}
-													onChange={(value) => {
-														field.onChange(
-															value.map(({ label, value }) => Number(value)),
-														);
-													}}
-													value={
-														field.value
-															? field.value.map((item) => item.toString())
-															: []
-													}
-													placeholder={t('document_create_label_placeholder')}
-												/>
-											</FormItem>
-										);
-									}}
-								/>
-							) : (
-								<SelectorSkeleton />
-							)}
-							<FormField
-								name='auto_tag'
-								control={form.control}
-								render={({ field }) => {
-									return (
-										<FormItem className='p-2 rounded-md border border-input flex flex-row items-center relative'>
-											<FormLabel htmlFor='auto_tag'>
-												{t('document_create_auto_tag')}
-												<Tooltip>
-													<TooltipTrigger>
-														<Info size={15} />
-													</TooltipTrigger>
-													<TooltipContent>
-														{t('document_create_auto_tag_description')}
-													</TooltipContent>
-												</Tooltip>
-											</FormLabel>
-											<Switch
-												id='auto_tag'
-												className='ml-auto'
-												disabled={
-													(documentReaderUnavailable && !field.value) ||
-													!form.watch('auto_transcribe')
-												}
-												checked={field.value}
-												onCheckedChange={(e) => {
-													field.onChange(e);
-												}}
-											/>
-											{documentReaderUnavailable && (
-												<Tooltip>
-													<TooltipTrigger>
-														<OctagonAlert className='h-4 w-4 text-destructive!' />
-													</TooltipTrigger>
-													<TooltipContent>
-														{documentReaderModel.subscriptionLocked
-															? t('default_resource_subscription_locked')
-															: t('document_create_auto_tag_engine_unset')}
-													</TooltipContent>
-												</Tooltip>
-											)}
-											{!form.watch('auto_transcribe') && (
-												<Tooltip>
-													<TooltipTrigger>
-														<OctagonAlert className='h-4 w-4 text-destructive!' />
-													</TooltipTrigger>
-													<TooltipContent>
-														{t('document_create_auto_tag_with_transcribe')}
-													</TooltipContent>
-												</Tooltip>
-											)}
-										</FormItem>
-									);
-								}}
-							/>
-						</div>
-						{sections ? (
-							<FormField
-								control={form.control}
-								name='sections'
-								render={({ field }) => {
-									return (
-										<FormItem className='space-y-0'>
-											<MultipleSelector
-												options={sections.data.map((section) => {
-													return {
-														label: section.title,
-														value: section.id.toString(),
-													};
-												})}
-												onChange={(value) => {
-													field.onChange(
-														value.map(({ label, value }) => Number(value)),
-													);
-												}}
-												value={
-													field.value
-														? field.value.map((item) => item.toString())
-														: []
-												}
-												placeholder={t('document_create_section_choose')}
-											/>
-										</FormItem>
-									);
-								}}
-							/>
-						) : (
-							<SelectorSkeleton />
-						)}
 					</div>
-					<Button
-						type='submit'
-						className='mt-5 w-full shrink-0'
-						disabled={
-							submitting ||
-							fileParseEngineUnavailable ||
-							(form.watch('auto_summary') && documentReaderUnavailable) ||
-							(form.watch('auto_transcribe') && transcribeEngineUnavailable) ||
-							(form.watch('auto_tag') &&
-								(documentReaderUnavailable ||
-									transcribeEngineUnavailable ||
-									!form.watch('auto_transcribe'))) ||
-							!audioResult
-						}>
-						{t('document_create_submit')}
-						{submitting && <Loader2 className='size-4 animate-spin' />}
-					</Button>
+					<div className='sticky bottom-0 z-10 shrink-0 bg-card/95 pt-4 backdrop-blur supports-[backdrop-filter]:bg-card/80'>
+						<DocumentCreateAdvancedSection>
+							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+								<FormField name='auto_summary' control={form.control} render={({ field }) => (
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center'><FormLabel className='flex flex-row gap-1 items-center'>{t('document_create_ai_summary')}<Sparkles size={15} /></FormLabel><Switch disabled={documentReaderUnavailable && !field.value} checked={field.value} onCheckedChange={(e) => field.onChange(e)} /></div>
+										<FormDescription>{t('document_create_ai_summary_description')}</FormDescription>
+										{documentReaderUnavailable && <Alert className='bg-destructive/10 dark:bg-destructive/20'><OctagonAlert className='h-4 w-4 text-destructive!' /><AlertDescription>{documentReaderModel.subscriptionLocked ? t('default_resource_subscription_locked') : t('document_create_ai_summary_engine_unset')}</AlertDescription></Alert>}
+									</FormItem>
+								)} />
+								<FormField name='auto_transcribe' control={form.control} render={({ field }) => (
+									<FormItem className='rounded-lg border border-input p-3'>
+										<div className='flex flex-row gap-1 items-center'><FormLabel className='flex flex-row gap-1 items-center'>{t('document_create_auto_transcribe')}<Sparkles size={15} /></FormLabel><Switch disabled={transcribeEngineUnavailable && !field.value} checked={field.value} onCheckedChange={(e) => field.onChange(e)} /></div>
+										<FormDescription>{t('document_create_auto_transcribe_description')}</FormDescription>
+										{transcribeEngineUnavailable && <Alert className='bg-destructive/10 dark:bg-destructive/20'><OctagonAlert className='h-4 w-4 text-destructive!' /><AlertDescription>{transcribeEngine.subscriptionLocked ? t('default_resource_subscription_locked') : t('document_create_auto_transcribe_engine_unset')}</AlertDescription></Alert>}
+									</FormItem>
+								)} />
+							</div>
+							<div className='flex w-full flex-col gap-5 xl:flex-row xl:items-center'>
+								{labels ? <FormField control={form.control} name='labels' render={({ field }) => (
+									<FormItem className='min-w-0 flex-1 gap-0'>
+										<MultipleSelector onCreate={async ({ label }) => { await mutateCreateDocumentLabel.mutateAsync({ name: label }); }} options={labels.data.map((label) => ({ label: label.name, value: label.id.toString() }))} onChange={(value) => field.onChange(value.map(({ value }) => Number(value)))} value={field.value ? field.value.map((item) => item.toString()) : []} placeholder={t('document_create_label_placeholder')} />
+									</FormItem>
+								)} /> : <SelectorSkeleton />}
+								<FormField name='auto_tag' control={form.control} render={({ field }) => (
+									<FormItem className='w-full shrink-0 rounded-md border border-input p-3 xl:w-auto xl:min-w-[240px]'>
+										<div className='flex flex-row items-center'>
+											<FormLabel htmlFor='auto_tag'>{t('document_create_auto_tag')}<Tooltip><TooltipTrigger><Info size={15} /></TooltipTrigger><TooltipContent>{t('document_create_auto_tag_description')}</TooltipContent></Tooltip></FormLabel>
+											<Switch id='auto_tag' className='ml-auto' disabled={(documentReaderUnavailable && !field.value) || !form.watch('auto_transcribe')} checked={field.value} onCheckedChange={(e) => field.onChange(e)} />
+											{documentReaderUnavailable && <Tooltip><TooltipTrigger><OctagonAlert className='ml-2 h-4 w-4 text-destructive!' /></TooltipTrigger><TooltipContent>{documentReaderModel.subscriptionLocked ? t('default_resource_subscription_locked') : t('document_create_auto_tag_engine_unset')}</TooltipContent></Tooltip>}
+											{!form.watch('auto_transcribe') && <Tooltip><TooltipTrigger><OctagonAlert className='ml-2 h-4 w-4 text-destructive!' /></TooltipTrigger><TooltipContent>{t('document_create_auto_tag_with_transcribe')}</TooltipContent></Tooltip>}
+										</div>
+									</FormItem>
+								)} />
+							</div>
+							{sections ? <FormField control={form.control} name='sections' render={({ field }) => (
+								<FormItem className='space-y-0'>
+									<MultipleSelector options={sections.data.map((section) => ({ label: section.title, value: section.id.toString() }))} onChange={(value) => field.onChange(value.map(({ value }) => Number(value)))} value={field.value ? field.value.map((item) => item.toString()) : []} placeholder={t('document_create_section_choose')} />
+								</FormItem>
+							)} /> : <SelectorSkeleton />}
+						</DocumentCreateAdvancedSection>
+						<Button
+							type='submit'
+							className='mt-4 w-full'
+							disabled={
+								submitting ||
+								fileParseEngineUnavailable ||
+								(form.watch('auto_summary') && documentReaderUnavailable) ||
+								(form.watch('auto_transcribe') && transcribeEngineUnavailable) ||
+								(form.watch('auto_tag') &&
+									(documentReaderUnavailable ||
+										transcribeEngineUnavailable ||
+										!form.watch('auto_transcribe'))) ||
+								!audioResult
+							}>
+							{t('document_create_submit')}
+							{submitting && <Loader2 className='size-4 animate-spin' />}
+						</Button>
+					</div>
 				</form>
 			</Form>
 		</>
