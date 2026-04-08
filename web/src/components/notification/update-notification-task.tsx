@@ -41,6 +41,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import SelectEmpty from '../ui/select-empty';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -278,9 +279,9 @@ const UpdateNotificationTask = ({
 													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectGroup>
-														{mineNotificationSources?.data.map(
-															(item, index) => {
+													{mineNotificationSources?.data.length ? (
+														<SelectGroup>
+															{mineNotificationSources.data.map((item, index) => {
 																return (
 																	<SelectItem
 																		value={item.id.toString()}
@@ -288,9 +289,11 @@ const UpdateNotificationTask = ({
 																		{item.title}
 																	</SelectItem>
 																);
-															},
-														)}
-													</SelectGroup>
+															})}
+														</SelectGroup>
+													) : (
+														<SelectEmpty message={t('setting_notification_source_manage_empty')} />
+													)}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -320,9 +323,9 @@ const UpdateNotificationTask = ({
 													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectGroup>
-														{mineNotificationTargets?.data.map(
-															(item, index) => {
+													{mineNotificationTargets?.data.length ? (
+														<SelectGroup>
+															{mineNotificationTargets.data.map((item, index) => {
 																return (
 																	<SelectItem
 																		value={item.id.toString()}
@@ -330,9 +333,11 @@ const UpdateNotificationTask = ({
 																		{item.title}
 																	</SelectItem>
 																);
-															},
-														)}
-													</SelectGroup>
+															})}
+														</SelectGroup>
+													) : (
+														<SelectEmpty message={t('setting_notification_target_manage_empty')} />
+													)}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -425,28 +430,32 @@ const UpdateNotificationTask = ({
 														</SelectValue>
 													</SelectTrigger>
 													<SelectContent className='w-full'>
-														<SelectGroup>
-															{triggerEvents?.data.map((item, index) => {
-																return (
-																	<SelectItem
-																		key={index}
-																		value={item.id.toString()}>
-																		<div className='flex flex-col w-fit'>
-																			<div className='font-bold text-xs w-fit'>
-																				{locale === 'zh'
-																					? item.name_zh
-																					: item.name}
+														{triggerEvents?.data.length ? (
+															<SelectGroup>
+																{triggerEvents.data.map((item, index) => {
+																	return (
+																		<SelectItem
+																			key={index}
+																			value={item.id.toString()}>
+																			<div className='flex flex-col w-fit'>
+																				<div className='font-bold text-xs w-fit'>
+																					{locale === 'zh'
+																						? item.name_zh
+																						: item.name}
+																				</div>
+																				<div className='font-bold text-xs text-muted-foreground w-fit'>
+																					{locale === 'zh'
+																						? item.description_zh
+																						: item.description}
+																				</div>
 																			</div>
-																			<div className='font-bold text-xs text-muted-foreground w-fit'>
-																				{locale === 'zh'
-																					? item.description_zh
-																					: item.description}
-																			</div>
-																		</div>
-																	</SelectItem>
-																);
-															})}
-														</SelectGroup>
+																		</SelectItem>
+																	);
+																})}
+															</SelectGroup>
+														) : (
+															<SelectEmpty message={t('select_empty')} />
+														)}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -551,9 +560,9 @@ const UpdateNotificationTask = ({
 															</SelectValue>
 														</SelectTrigger>
 														<SelectContent className='w-full'>
-															<SelectGroup>
-																{notificationTemplates?.data.map(
-																	(item, index) => {
+															{notificationTemplates?.data.length ? (
+																<SelectGroup>
+																	{notificationTemplates.data.map((item, index) => {
 																		return (
 																			<SelectItem
 																				key={index}
@@ -572,9 +581,11 @@ const UpdateNotificationTask = ({
 																				</div>
 																			</SelectItem>
 																		);
-																	},
-																)}
-															</SelectGroup>
+																	})}
+																</SelectGroup>
+															) : (
+																<SelectEmpty message={t('select_empty')} />
+															)}
 														</SelectContent>
 													</Select>
 													<FormMessage />

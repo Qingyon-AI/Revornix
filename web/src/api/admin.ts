@@ -1,0 +1,28 @@
+import { API_PREFIX } from '@/config/api';
+
+export default {
+	searchUsers: API_PREFIX + '/admin/users/search',
+	getUserDetail: API_PREFIX + '/admin/users/detail',
+	createUser: API_PREFIX + '/admin/users/create',
+	updateUser: API_PREFIX + '/admin/users/update',
+	uploadUserAvatar: API_PREFIX + '/admin/users/avatar/upload',
+	uploadUserNotificationCover: API_PREFIX + '/admin/users/notifications/cover/upload',
+	getUserComputeInfo: API_PREFIX + '/admin/users/compute/info',
+	getUserComputeLedger: API_PREFIX + '/admin/users/compute/ledger',
+	searchUserNotificationSources: API_PREFIX + '/admin/users/notifications/sources',
+	searchUserNotificationTargets: API_PREFIX + '/admin/users/notifications/targets',
+	getUserUsableNotificationSources: API_PREFIX + '/admin/users/notifications/source/usable',
+	getUserUsableNotificationTargets: API_PREFIX + '/admin/users/notifications/target/usable',
+	getUserNotificationTasks: API_PREFIX + '/admin/users/notifications/task/mine',
+	getUserNotificationTaskDetail: API_PREFIX + '/admin/users/notifications/task/detail',
+	addUserNotificationTask: API_PREFIX + '/admin/users/notifications/task/add',
+	updateUserNotificationTask: API_PREFIX + '/admin/users/notifications/task/update',
+	deleteUserNotificationTask: API_PREFIX + '/admin/users/notifications/task/delete',
+	deleteUser: API_PREFIX + '/admin/users/delete',
+	searchDocuments: API_PREFIX + '/admin/documents/search',
+	getDocumentDetail: API_PREFIX + '/admin/documents/detail',
+	deleteDocuments: API_PREFIX + '/admin/documents/delete',
+	searchSections: API_PREFIX + '/admin/sections/search',
+	getSectionDetail: API_PREFIX + '/admin/sections/detail',
+	deleteSections: API_PREFIX + '/admin/sections/delete',
+};

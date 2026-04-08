@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # Section Creation
 
@@ -24,29 +23,23 @@ The trigger mode is especially important because it determines when the section'
 
 ## Post-creation processing sketch
 
-<ProcessDiagram
-	title='Post-creation section flow'
-	steps={[
-		{ title: 'Create the section', description: 'Start with title, description, labels, and cover.' },
-		{ title: 'Configure the strategy', description: 'Set trigger mode, auto publish, auto podcast, and auto illustration.' },
-		{ title: 'Wait for processing conditions', description: 'Add documents or wait for the scheduled run time.' },
-		{ title: 'Generate the body', description: 'The worker aggregates documents and produces section Markdown.' },
-		{ title: 'Generate derived outputs', description: 'Illustration, podcast, PPT, and graph workflows continue from there.' },
-		{ title: 'Enter public interaction', description: 'Publishing, subscribing, commenting, and public access build on this output.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Create the section<br/>Start with title, description, labels, and cover"] --> B["Configure the strategy<br/>Set trigger mode, auto publish, auto podcast, and auto illustration"]
+    B --> C["Wait for processing conditions<br/>Add documents or wait for the scheduled run time"]
+    C --> D["Generate the body<br/>The worker aggregates documents and produces section Markdown"]
+    D --> E["Generate derived outputs<br/>Illustration, podcast, PPT, and graph workflows continue from there"]
+    E --> F["Enter public interaction<br/>Publishing, subscribing, commenting, and public access build on this output"]
+```
 
 ## 2. The two current processing trigger modes
 
 In the current codebase, section processing supports two modes:
 
-<ProcessDiagram
-	title='Trigger mode comparison'
-	steps={[
-		{ title: 'Event trigger', description: 'The section is reprocessed when its document set changes.' },
-		{ title: 'Scheduled trigger', description: 'The section is processed when the configured cron time arrives.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Event trigger<br/>The section is reprocessed when its document set changes"] --> B["Scheduled trigger<br/>The section is processed when the configured cron time arrives"]
+```
 
 - Event trigger: the section is reprocessed when section content changes, such as after documents are added or bindings are updated.
 - Scheduled trigger: the section runs at a configured time, which works well for daily digests, weekly summaries, and other timed outputs.

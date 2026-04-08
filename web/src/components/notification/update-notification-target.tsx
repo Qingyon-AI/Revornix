@@ -40,6 +40,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import SelectEmpty from '../ui/select-empty';
 import { useUserContext } from '@/provider/user-provider';
 import {
 	Empty,
@@ -421,9 +422,9 @@ const UpdateNotificationTarget = ({
 																/>
 															</SelectTrigger>
 															<SelectContent className='w-full'>
-																<SelectGroup>
-																	{providedNotificationTargets?.data.map(
-																		(item) => {
+																{providedNotificationTargets?.data.length ? (
+																	<SelectGroup>
+																		{providedNotificationTargets.data.map((item) => {
 																			return (
 																				<SelectItem
 																					key={item.id}
@@ -433,9 +434,11 @@ const UpdateNotificationTarget = ({
 																						: item.name}
 																				</SelectItem>
 																			);
-																		},
-																	)}
-																</SelectGroup>
+																		})}
+																	</SelectGroup>
+																) : (
+																	<SelectEmpty message={t('setting_notification_target_manage_empty')} />
+																)}
 															</SelectContent>
 														</Select>
 													</div>

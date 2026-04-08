@@ -38,6 +38,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../ui/select';
+import SelectEmpty from '../ui/select-empty';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Textarea } from '../ui/textarea';
@@ -201,9 +202,9 @@ const AddNotificationSource = () => {
 															/>
 														</SelectTrigger>
 														<SelectContent className='w-full'>
-															<SelectGroup>
-																{providedNotificationSources?.data.map(
-																	(item) => {
+															{providedNotificationSources?.data.length ? (
+																<SelectGroup>
+																	{providedNotificationSources.data.map((item) => {
 																		return (
 																			<SelectItem
 																				key={item.id}
@@ -213,9 +214,11 @@ const AddNotificationSource = () => {
 																					: item.name}
 																			</SelectItem>
 																		);
-																	},
-																)}
-															</SelectGroup>
+																	})}
+																</SelectGroup>
+															) : (
+																<SelectEmpty message={t('setting_notification_source_manage_empty')} />
+															)}
 														</SelectContent>
 													</Select>
 												</div>

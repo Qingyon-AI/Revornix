@@ -1,4 +1,5 @@
 from . import (
+    admin,
     ai,
     api_key,
     celery,
@@ -18,6 +19,7 @@ from . import (
 
 __all__ = [
     "ai",
+    "admin",
     "api_key",
     "celery",
     "common",

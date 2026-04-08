@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # Document Management
 
@@ -29,16 +28,13 @@ In practice:
 
 ## Document lifecycle sketch
 
-<ProcessDiagram
-	title='Document lifecycle'
-	steps={[
-		{ title: 'Enter the system', description: 'Quick note, website, file, and audio all act as document entry points.' },
-		{ title: 'Create the record', description: 'Metadata, source information, and initial tasks are stored.' },
-		{ title: 'Parse or transcribe', description: 'Each document type enters the matching parsing or transcription flow.' },
-		{ title: 'Generate core outputs', description: 'Markdown, summaries, and tags are filled in over time.' },
-		{ title: 'Continue into extensions', description: 'Embedding, graph, podcast, and section workflows continue from there.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Enter the system<br/>Quick note, website, file, and audio all act as document entry points"] --> B["Create the record<br/>Metadata, source information, and initial tasks are stored"]
+    B --> C["Parse or transcribe<br/>Each document type enters the matching parsing or transcription flow"]
+    C --> D["Generate core outputs<br/>Markdown, summaries, and tags are filled in over time"]
+    D --> E["Continue into extensions<br/>Embedding, graph, podcast, and section workflows continue from there"]
+```
 
 ## 2. Abilities you can configure at creation time
 
@@ -104,15 +100,12 @@ Documents are not just static archives. They are upstream inputs for the rest of
 
 Documents and sections are now deeply coupled:
 
-<ProcessDiagram
-	title='When a document enters a section'
-	steps={[
-		{ title: 'Document is bound to a section', description: 'The relationship can be created from the document or the section side.' },
-		{ title: 'Section content changes', description: 'The section now has updated source material to aggregate.' },
-		{ title: 'Processing is queued again', description: 'The section re-enters the processing queue based on its trigger rules.' },
-		{ title: 'Derived outputs refresh', description: 'Markdown, podcast, PPT, and graph outputs may all update.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Document is bound to a section<br/>The relationship can be created from the document or the section side"] --> B["Section content changes<br/>The section now has updated source material to aggregate"]
+    B --> C["Processing is queued again<br/>The section re-enters the processing queue based on its trigger rules"]
+    C --> D["Derived outputs refresh<br/>Markdown, podcast, PPT, and graph outputs may all update"]
+```
 
 - You can bind sections during document creation
 - You can also add documents from the section detail page
