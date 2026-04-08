@@ -106,12 +106,12 @@ const NotificationRecordCard = ({
 	return (
 		<>
 			<Dialog open={showNotification} onOpenChange={setShowNotification}>
-				<DialogContent className='max-h-[80vh] overflow-auto flex flex-col'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{notification.title}</DialogTitle>
 					</DialogHeader>
-
-					<div className='flex-1 overflow-auto flex flex-col gap-2'>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						<div className='flex flex-col gap-2'>
 						{notification.cover && (
 							<img
 								src={replacePath(notification.cover, notification.creator.id)}
@@ -120,19 +120,19 @@ const NotificationRecordCard = ({
 							/>
 						)}
 						<div>{notification.content}</div>
+						{notification.link && (
+							<Link href={notification.link}>
+								<Button
+									size='sm'
+									variant={'link'}
+									className='h-fit w-fit p-0 underline'>
+									{t('notification_record_go_to_link')}
+								</Button>
+							</Link>
+						)}
+						</div>
 					</div>
-					{notification.link && (
-						<Link href={notification.link}>
-							<Button
-								size='sm'
-								variant={'link'}
-								className='p-0 m-0 w-fit h-fit underline'>
-								{t('notification_record_go_to_link')}
-							</Button>
-						</Link>
-					)}
-					<Separator />
-					<DialogFooter className='flex justify-between! items-center'>
+					<DialogFooter className='sticky bottom-0 z-10 flex items-center justify-between! border-t border-border/60 bg-background px-6 py-4'>
 						<div className='flex flex-row gap-2 items-center text-muted-foreground text-xs'>
 							<Avatar
 								className='size-7 cursor-pointer'

@@ -42,17 +42,17 @@ const DeleteUserButton = ({ className }: { className?: string }) => {
 			<Dialog
 				open={showDeleteUserDialog}
 				onOpenChange={setShowDeleteUserDialog}>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('warning')}</DialogTitle>
 					</DialogHeader>
-					<div>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 						<p className='mb-2'>{t('account_delete_alert')}</p>
 						<p className='text-sm text-muted-foreground font-bold'>
 							{t('account_delete_alert_description')}
 						</p>
 					</div>
-					<DialogFooter>
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button
 							variant='destructive'
 							onClick={onDeleteUser}

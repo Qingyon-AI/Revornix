@@ -69,14 +69,15 @@ const SectionOperateDelete = ({
 						{t('section_delete')}
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('section_delete_alert_title')}</DialogTitle>
 						<DialogDescription>
 							{t('section_delete_alert_detail')}
 						</DialogDescription>
 					</DialogHeader>
-					<DialogFooter>
+					<div className='min-h-0 flex-1 px-6 py-5' />
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<DialogClose asChild>
 							<Button variant={'secondary'}>
 								{t('section_delete_cancel')}

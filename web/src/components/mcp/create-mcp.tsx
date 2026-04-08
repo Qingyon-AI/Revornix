@@ -153,13 +153,16 @@ const CreateMcp = () => {
 					<PlusCircle />
 				</Button>
 			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
+			<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{t('mcp_server_create_form_title')}</DialogTitle>
 				</DialogHeader>
-				<div>
-					<Form {...mcpCreateForm}>
-						<form onSubmit={handleMCPCreateFormSubmit} className='space-y-4'>
+				<Form {...mcpCreateForm}>
+					<form
+						onSubmit={handleMCPCreateFormSubmit}
+						className='flex min-h-0 flex-1 flex-col'>
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<div className='space-y-4'>
 							<FormField
 								name='category'
 								control={mcpCreateForm.control}
@@ -323,7 +326,9 @@ const CreateMcp = () => {
 									/>
 								</>
 							)}
-							<DialogFooter>
+							</div>
+						</div>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 								<DialogClose asChild>
 									<Button type='button' variant={'secondary'}>
 										{t('mcp_server_create_form_cancel')}
@@ -340,7 +345,6 @@ const CreateMcp = () => {
 							</DialogFooter>
 						</form>
 					</Form>
-				</div>
 			</DialogContent>
 		</Dialog>
 	);

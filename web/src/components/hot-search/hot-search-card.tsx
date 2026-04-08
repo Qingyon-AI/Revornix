@@ -37,11 +37,12 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 	return (
 		<>
 			<Dialog open={showDialog} onOpenChange={setShowDialog}>
-				<DialogContent className='max-h-[80%] flex flex-col'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{website.title}</DialogTitle>
 					</DialogHeader>
-					<div className='flex-1 overflow-auto flex flex-col gap-2'>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						<div className='flex flex-col gap-2'>
 						{website.data.map((item, index) => {
 							return (
 								<div key={index}>
@@ -64,8 +65,9 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 								</div>
 							);
 						})}
+						</div>
 					</div>
-					<DialogFooter>
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<div className='text-xs text-muted-foreground'>
 							{t('hot_search_last_update')}
 							{formatDistance(new Date(website.updateTime), new Date(), {

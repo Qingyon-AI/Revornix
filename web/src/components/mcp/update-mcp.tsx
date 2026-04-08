@@ -204,32 +204,32 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 						<Pencil />
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('mcp_server_update_form_title')}</DialogTitle>
 					</DialogHeader>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						{!data && isFetching && (
+							<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+								<span>{t('loading')}</span>
+								<Spinner />
+							</div>
+						)}
 
-					{!data && isFetching && (
-						<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
-							<span>{t('loading')}</span>
-							<Spinner />
-						</div>
-					)}
+						{!data && isError && error && (
+							<Empty>
+								<EmptyHeader>
+									<EmptyMedia variant='icon'>
+										<XCircleIcon />
+									</EmptyMedia>
+									<EmptyDescription>{error.message}</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						)}
 
-					{!data && isError && error && (
-						<Empty>
-							<EmptyHeader>
-								<EmptyMedia variant='icon'>
-									<XCircleIcon />
-								</EmptyMedia>
-								<EmptyDescription>{error.message}</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
-					)}
-
-					{isSuccess && data && (
-						<Form {...form}>
-							<form onSubmit={handleMCPUpdateFormSubmit} className='space-y-4'>
+						{isSuccess && data && (
+							<Form {...form}>
+								<form onSubmit={handleMCPUpdateFormSubmit} className='space-y-4'>
 								<FormField
 									name='category'
 									control={form.control}
@@ -404,7 +404,7 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										/>
 									</>
 								)}
-								<DialogFooter>
+								<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 									<DialogClose asChild>
 										<Button type='button' variant={'secondary'}>
 											{t('mcp_server_update_form_cancel')}
@@ -419,9 +419,10 @@ const UpdateMcp = ({ mcp_id }: { mcp_id: number }) => {
 										)}
 									</Button>
 								</DialogFooter>
-							</form>
-						</Form>
-					)}
+								</form>
+							</Form>
+						)}
+					</div>
 				</DialogContent>
 			</Dialog>
 		</>

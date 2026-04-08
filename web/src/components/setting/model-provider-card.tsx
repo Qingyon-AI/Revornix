@@ -138,14 +138,15 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									<XCircleIcon className='size-4' />
 								</Button>
 							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
+							<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+								<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 									<DialogTitle>{t('warning')}</DialogTitle>
 									<DialogDescription>
 										{t('setting_model_provider_delete_warning_description')}
 									</DialogDescription>
 								</DialogHeader>
-								<DialogFooter>
+								<div className='min-h-0 flex-1 px-6 py-5' />
+								<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 									<Button
 										variant='destructive'
 										type='button'
@@ -181,24 +182,22 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									{t('setting_model_models_configure')}
 								</Button>
 							</DialogTrigger>
-							<DialogContent className='max-h-[88vh] max-w-5xl flex flex-col p-0'>
-								<DialogHeader>
-									<div className='px-6 pt-6'>
-										<DialogTitle>
+							<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-5xl'>
+								<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+									<DialogTitle>
 										{t('setting_model_models_configure')}
-										</DialogTitle>
-										<DialogDescription>
+									</DialogTitle>
+									<DialogDescription>
 										{t('setting_model_models_configure_description')}
-										</DialogDescription>
-									</div>
+									</DialogDescription>
 								</DialogHeader>
-								<div className='flex min-h-0 flex-1 flex-col px-6 pb-6 overflow-auto'>
+								<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 									{models?.data?.length === 0 && (
 										<div className='rounded-xl border border-dashed border-input/70 bg-muted/40 p-4 text-sm text-center text-muted-foreground'>
 											{t('setting_model_empty')}
 										</div>
 									)}
-									<div className='mt-4 flex items-center justify-between gap-3'>
+									<div className='flex items-center justify-between gap-3'>
 										<div className='text-sm text-muted-foreground'>
 											{t('setting_model_collection_manage_hint')}
 										</div>
@@ -213,7 +212,7 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 											<PlusCircle className='ml-1 size-4' />
 										</Button>
 									</div>
-									<div className='mt-4 flex-1 space-y-3 pr-1'>
+									<div className='mt-4 space-y-3 pr-1'>
 										{models &&
 											models.data?.map((model, index) => {
 												return <ModelCard key={index} model={model} />;

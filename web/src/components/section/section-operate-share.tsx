@@ -61,11 +61,12 @@ const SectionOperateShare = ({
 						)}
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='max-h-[90vh] flex flex-col overflow-auto'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-3xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('section_share')}</DialogTitle>
 					</DialogHeader>
-					<Tabs defaultValue='share' className='flex-1 overflow-auto'>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						<Tabs defaultValue='share' className='flex min-h-0 flex-1 flex-col'>
 						<TabsList className='w-full'>
 							<TabsTrigger value='share'>{t('section_share')}</TabsTrigger>
 							<TabsTrigger value='publish'>{t('section_publish')}</TabsTrigger>
@@ -91,8 +92,8 @@ const SectionOperateShare = ({
 							</div>
 						</TabsContent>
 					</Tabs>
-					<Separator />
-					<DialogFooter>
+					</div>
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>

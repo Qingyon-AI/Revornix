@@ -6,6 +6,7 @@ import {
 	DialogClose,
 	DialogContent,
 	DialogFooter,
+	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
 import {
@@ -184,21 +185,25 @@ const AddNotificationTask = () => {
 				<PlusCircleIcon />
 			</Button>
 			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-				<DialogContent className='flex flex-col max-h-[80vh]'>
-					<DialogTitle>
-						{t('setting_notification_task_manage_add_label')}
-					</DialogTitle>
-					<Alert>
-						<Info />
-						<AlertDescription>
-							{t('setting_notification_task_manage_add_alert')}
-						</AlertDescription>
-					</Alert>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-4xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+						<DialogTitle>
+							{t('setting_notification_task_manage_add_label')}
+						</DialogTitle>
+						<Alert>
+							<Info />
+							<AlertDescription>
+								{t('setting_notification_task_manage_add_alert')}
+							</AlertDescription>
+						</Alert>
+					</DialogHeader>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
-							className='space-y-3 flex-1 overflow-auto px-1'
+							className='flex min-h-0 flex-1 flex-col'
 							id='add-notification-task-form'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='space-y-3'>
 							<FormField
 								name='title'
 								control={form.control}
@@ -668,9 +673,9 @@ const AddNotificationTask = () => {
 									);
 								}}
 							/>
-						</form>
-					</Form>
-					<DialogFooter>
+								</div>
+							</div>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button
 							type='submit'
 							form='add-notification-task-form'
@@ -683,7 +688,9 @@ const AddNotificationTask = () => {
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
-					</DialogFooter>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 		</>

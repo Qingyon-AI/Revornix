@@ -126,10 +126,7 @@ const DEFAULT_FORM_STATE: UserFormState = {
 	is_forbidden: false,
 };
 
-const getRoleMeta = (
-	role: number,
-	t: ReturnType<typeof useTranslations>,
-) => {
+const getRoleMeta = (role: number, t: ReturnType<typeof useTranslations>) => {
 	switch (role) {
 		case UserRole.ROOT:
 			return {
@@ -146,8 +143,7 @@ const getRoleMeta = (
 		default:
 			return {
 				label: t('user_detail_role_user'),
-				className:
-					'border-border/60 bg-background/70 text-muted-foreground',
+				className: 'border-border/60 bg-background/70 text-muted-foreground',
 			};
 	}
 };
@@ -291,11 +287,7 @@ const resolveLedgerType = (
 	};
 };
 
-const AdminUserComputeLedgerTable = ({
-	userId,
-}: {
-	userId: number;
-}) => {
+const AdminUserComputeLedgerTable = ({ userId }: { userId: number }) => {
 	const t = useTranslations();
 	const [filter, setFilter] = useState<LedgerFilter>('all');
 	const [page, setPage] = useState(0);
@@ -340,14 +332,29 @@ const AdminUserComputeLedgerTable = ({
 					}}
 					className='gap-0'>
 					<TabsList>
-						<TabsTrigger value='all'>{t('account_compute_ledger_filter_all')}</TabsTrigger>
-						<TabsTrigger value='income'>{t('account_compute_ledger_filter_income')}</TabsTrigger>
-						<TabsTrigger value='expense'>{t('account_compute_ledger_filter_expense')}</TabsTrigger>
+						<TabsTrigger value='all'>
+							{t('account_compute_ledger_filter_all')}
+						</TabsTrigger>
+						<TabsTrigger value='income'>
+							{t('account_compute_ledger_filter_income')}
+						</TabsTrigger>
+						<TabsTrigger value='expense'>
+							{t('account_compute_ledger_filter_expense')}
+						</TabsTrigger>
 					</TabsList>
 				</Tabs>
 				<div className='text-right text-xs text-muted-foreground'>
-					<p>{t('account_compute_ledger_total', { total: total.toLocaleString() })}</p>
-					<p>{t('account_compute_ledger_page_range', { start: startIndex.toLocaleString(), end: endIndex.toLocaleString() })}</p>
+					<p>
+						{t('account_compute_ledger_total', {
+							total: total.toLocaleString(),
+						})}
+					</p>
+					<p>
+						{t('account_compute_ledger_page_range', {
+							start: startIndex.toLocaleString(),
+							end: endIndex.toLocaleString(),
+						})}
+					</p>
 				</div>
 			</div>
 			<Table>
@@ -357,13 +364,17 @@ const AdminUserComputeLedgerTable = ({
 						<TableHead>{t('account_compute_ledger_change')}</TableHead>
 						<TableHead>{t('account_compute_ledger_reason')}</TableHead>
 						<TableHead>{t('account_compute_ledger_expire_time')}</TableHead>
-						<TableHead className='text-right'>{t('account_compute_ledger_balance_after')}</TableHead>
+						<TableHead className='text-right'>
+							{t('account_compute_ledger_balance_after')}
+						</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{items.length === 0 ? (
 						<TableRow>
-							<TableCell colSpan={5} className='py-6 text-center text-sm text-muted-foreground'>
+							<TableCell
+								colSpan={5}
+								className='py-6 text-center text-sm text-muted-foreground'>
 								{filter === 'all'
 									? t('account_compute_ledger_empty')
 									: t('account_compute_ledger_empty_filtered')}
@@ -371,7 +382,11 @@ const AdminUserComputeLedgerTable = ({
 						</TableRow>
 					) : null}
 					{items.map((item: AdminUserComputeLedgerItem) => {
-						const ledgerType = resolveLedgerType(t, item.source, item.delta_points);
+						const ledgerType = resolveLedgerType(
+							t,
+							item.source,
+							item.delta_points,
+						);
 						return (
 							<TableRow key={item.id}>
 								<TableCell className='text-xs text-muted-foreground whitespace-normal'>
@@ -389,7 +404,9 @@ const AdminUserComputeLedgerTable = ({
 								</TableCell>
 								<TableCell className='max-w-[260px] whitespace-normal'>
 									<div className='flex flex-col gap-1'>
-										<Badge variant='outline' className={cn('w-fit', ledgerType.className)}>
+										<Badge
+											variant='outline'
+											className={cn('w-fit', ledgerType.className)}>
 											{ledgerType.label}
 										</Badge>
 										<p className='break-all text-sm'>
@@ -420,11 +437,16 @@ const AdminUserComputeLedgerTable = ({
 						variant='outline'
 						size='sm'
 						disabled={page === 0 || isFetching}
-						onClick={() => setPage((currentPage) => Math.max(0, currentPage - 1))}>
+						onClick={() =>
+							setPage((currentPage) => Math.max(0, currentPage - 1))
+						}>
 						{t('account_compute_ledger_prev_page')}
 					</Button>
 					<span className='min-w-24 text-center text-xs text-muted-foreground'>
-						{t('account_compute_ledger_page_status', { page: page + 1, total: totalPages })}
+						{t('account_compute_ledger_page_status', {
+							page: page + 1,
+							total: totalPages,
+						})}
 					</span>
 					<Button
 						type='button'
@@ -475,107 +497,113 @@ const UserFormDialog = ({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className='max-w-2xl rounded-[28px]'>
-				<DialogHeader>
+			<DialogContent className='flex max-h-[90vh] max-w-2xl flex-col gap-0 overflow-hidden rounded-[28px] p-0'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
-				<div className='grid gap-4 sm:grid-cols-2'>
-					<div className='grid gap-2'>
-						<Label>{t('account_nickname')}</Label>
-						<Input
-							value={form.nickname}
-							onChange={(event) =>
-								onFormChange({ nickname: event.target.value })
-							}
-						/>
-					</div>
-					<div className='grid gap-2'>
-						<Label>{t('account_email')}</Label>
-						<Input
-							type='email'
-							value={form.email}
-							onChange={(event) => onFormChange({ email: event.target.value })}
-						/>
-					</div>
-					<div className='grid gap-2'>
-						<Label>{t('account_password')}</Label>
-						<Input
-							type='password'
-							value={form.password}
-							onChange={(event) =>
-								onFormChange({ password: event.target.value })
-							}
-							placeholder={
-								isEdit ? t('admin_users_password_placeholder') : undefined
-							}
-						/>
-					</div>
-					<div className='grid gap-2'>
-						<Label>{t('user_detail_role')}</Label>
-						<Select
-							value={form.role}
-							onValueChange={(value) => onFormChange({ role: value })}>
-							<SelectTrigger className='w-full'>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value={String(UserRole.USER)}>
-									{t('user_detail_role_user')}
-								</SelectItem>
-								{canManagePrivilegedRoles ? (
-									<SelectItem value={String(UserRole.ADMIN)}>
-										{t('user_detail_role_admin')}
-									</SelectItem>
-								) : null}
-								{canManagePrivilegedRoles ? (
-									<SelectItem value={String(UserRole.ROOT)}>
-										{t('user_detail_role_root')}
-									</SelectItem>
-								) : null}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className='grid gap-2 sm:col-span-2'>
-						<Label>{t('account_slogan')}</Label>
-						<Input
-							value={form.slogan}
-							onChange={(event) => onFormChange({ slogan: event.target.value })}
-						/>
-					</div>
-					<AvatarField
-						avatar={form.avatar}
-						avatarPreviewUrl={form.avatarPreviewUrl}
-						previewOwnerId={previewOwnerId}
-						nickname={form.nickname}
-						onSelectFile={onAvatarSelect}
-						onReset={onAvatarReset}
-						disabled={isPending}
-					/>
-					{isEdit ? (
-						<div className='grid gap-2 sm:col-span-2'>
-							<Label>{t('admin_users_status_label')}</Label>
+				<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+					<div className='grid gap-4 sm:grid-cols-2'>
+						<div className='grid gap-2'>
+							<Label>{t('account_nickname')}</Label>
+							<Input
+								value={form.nickname}
+								onChange={(event) =>
+									onFormChange({ nickname: event.target.value })
+								}
+							/>
+						</div>
+						<div className='grid gap-2'>
+							<Label>{t('account_email')}</Label>
+							<Input
+								type='email'
+								value={form.email}
+								onChange={(event) =>
+									onFormChange({ email: event.target.value })
+								}
+							/>
+						</div>
+						<div className='grid gap-2'>
+							<Label>{t('account_password')}</Label>
+							<Input
+								type='password'
+								value={form.password}
+								onChange={(event) =>
+									onFormChange({ password: event.target.value })
+								}
+								placeholder={
+									isEdit ? t('admin_users_password_placeholder') : undefined
+								}
+							/>
+						</div>
+						<div className='grid gap-2'>
+							<Label>{t('user_detail_role')}</Label>
 							<Select
-								value={form.is_forbidden ? 'forbidden' : 'active'}
-								onValueChange={(value) =>
-									onFormChange({ is_forbidden: value === 'forbidden' })
-								}>
+								value={form.role}
+								onValueChange={(value) => onFormChange({ role: value })}>
 								<SelectTrigger className='w-full'>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value='active'>
-										{t('admin_users_status_active')}
+									<SelectItem value={String(UserRole.USER)}>
+										{t('user_detail_role_user')}
 									</SelectItem>
-									<SelectItem value='forbidden'>
-										{t('admin_users_status_forbidden')}
-									</SelectItem>
+									{canManagePrivilegedRoles ? (
+										<SelectItem value={String(UserRole.ADMIN)}>
+											{t('user_detail_role_admin')}
+										</SelectItem>
+									) : null}
+									{canManagePrivilegedRoles ? (
+										<SelectItem value={String(UserRole.ROOT)}>
+											{t('user_detail_role_root')}
+										</SelectItem>
+									) : null}
 								</SelectContent>
 							</Select>
 						</div>
-					) : null}
+						<div className='grid gap-2 sm:col-span-2'>
+							<Label>{t('account_slogan')}</Label>
+							<Input
+								value={form.slogan}
+								onChange={(event) =>
+									onFormChange({ slogan: event.target.value })
+								}
+							/>
+						</div>
+						<AvatarField
+							avatar={form.avatar}
+							avatarPreviewUrl={form.avatarPreviewUrl}
+							previewOwnerId={previewOwnerId}
+							nickname={form.nickname}
+							onSelectFile={onAvatarSelect}
+							onReset={onAvatarReset}
+							disabled={isPending}
+						/>
+						{isEdit ? (
+							<div className='grid gap-2 sm:col-span-2'>
+								<Label>{t('admin_users_status_label')}</Label>
+								<Select
+									value={form.is_forbidden ? 'forbidden' : 'active'}
+									onValueChange={(value) =>
+										onFormChange({ is_forbidden: value === 'forbidden' })
+									}>
+									<SelectTrigger className='w-full'>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value='active'>
+											{t('admin_users_status_active')}
+										</SelectItem>
+										<SelectItem value='forbidden'>
+											{t('admin_users_status_forbidden')}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						) : null}
+					</div>
 				</div>
-				<DialogFooter>
+				<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 					<Button variant='outline' onClick={() => onOpenChange(false)}>
 						{t('cancel')}
 					</Button>
@@ -606,10 +634,13 @@ const AdminUsersPage = () => {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [viewUserId, setViewUserId] = useState<number | null>(null);
 	const [editUserId, setEditUserId] = useState<number | null>(null);
-	const [deleteTarget, setDeleteTarget] = useState<AdminUserSummary | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<AdminUserSummary | null>(
+		null,
+	);
 	const [pendingUserAction, setPendingUserAction] =
 		useState<PendingUserAction>(null);
-	const [createForm, setCreateForm] = useState<UserFormState>(DEFAULT_FORM_STATE);
+	const [createForm, setCreateForm] =
+		useState<UserFormState>(DEFAULT_FORM_STATE);
 	const [editForm, setEditForm] = useState<UserFormState>(DEFAULT_FORM_STATE);
 	const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false);
 
@@ -618,9 +649,7 @@ const AdminUsersPage = () => {
 			keyword: submittedKeyword || undefined,
 			role: submittedRole === 'all' ? undefined : Number(submittedRole),
 			is_forbidden:
-				submittedStatus === 'all'
-					? undefined
-					: submittedStatus === 'forbidden',
+				submittedStatus === 'all' ? undefined : submittedStatus === 'forbidden',
 			page_num: pageNum,
 			page_size: Number(pageSize),
 		};
@@ -704,10 +733,7 @@ const AdminUsersPage = () => {
 		}
 	};
 
-	const updateFormAvatar = (
-		form: UserFormState,
-		file: File,
-	): UserFormState => {
+	const updateFormAvatar = (form: UserFormState, file: File): UserFormState => {
 		revokePreviewUrl(form.avatarPreviewUrl);
 		return {
 			...form,
@@ -746,7 +772,11 @@ const AdminUsersPage = () => {
 	};
 
 	const handleCreateSubmit = async () => {
-		if (!createForm.nickname.trim() || !createForm.email.trim() || !createForm.password.trim()) {
+		if (
+			!createForm.nickname.trim() ||
+			!createForm.email.trim() ||
+			!createForm.password.trim()
+		) {
 			toast.error(t('admin_users_form_required'));
 			return;
 		}
@@ -772,12 +802,19 @@ const AdminUsersPage = () => {
 			}
 			toast.success(t('admin_users_create_success'));
 			setCreateOpen(false);
-			setCreateForm((current) => resetFormAvatar({ ...DEFAULT_FORM_STATE, avatarPreviewUrl: current.avatarPreviewUrl }));
+			setCreateForm((current) =>
+				resetFormAvatar({
+					...DEFAULT_FORM_STATE,
+					avatarPreviewUrl: current.avatarPreviewUrl,
+				}),
+			);
 			queryClient.invalidateQueries({ queryKey: ['admin-users'] });
 			queryClient.invalidateQueries({ queryKey: ['admin-user-detail'] });
 			queryClient.invalidateQueries({ queryKey: ['admin-user-edit-detail'] });
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : t('something_wrong'));
+			toast.error(
+				error instanceof Error ? error.message : t('something_wrong'),
+			);
 		} finally {
 			setIsAvatarSubmitting(false);
 		}
@@ -812,12 +849,19 @@ const AdminUsersPage = () => {
 			});
 			toast.success(t('admin_users_update_success'));
 			setEditUserId(null);
-			setEditForm((current) => resetFormAvatar({ ...DEFAULT_FORM_STATE, avatarPreviewUrl: current.avatarPreviewUrl }));
+			setEditForm((current) =>
+				resetFormAvatar({
+					...DEFAULT_FORM_STATE,
+					avatarPreviewUrl: current.avatarPreviewUrl,
+				}),
+			);
 			queryClient.invalidateQueries({ queryKey: ['admin-users'] });
 			queryClient.invalidateQueries({ queryKey: ['admin-user-detail'] });
 			queryClient.invalidateQueries({ queryKey: ['admin-user-edit-detail'] });
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : t('something_wrong'));
+			toast.error(
+				error instanceof Error ? error.message : t('something_wrong'),
+			);
 		} finally {
 			setIsAvatarSubmitting(false);
 		}
@@ -848,7 +892,11 @@ const AdminUsersPage = () => {
 							placeholder={t('admin_users_search_placeholder')}
 							className='h-10 rounded-xl xl:max-w-md'
 						/>
-						<Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as RoleFilterValue)}>
+						<Select
+							value={roleFilter}
+							onValueChange={(value) =>
+								setRoleFilter(value as RoleFilterValue)
+							}>
 							<SelectTrigger className='w-full xl:w-[180px]'>
 								<SelectValue placeholder={t('admin_users_filter_role')} />
 							</SelectTrigger>
@@ -859,7 +907,11 @@ const AdminUsersPage = () => {
 								<SelectItem value='3'>{t('user_detail_role_user')}</SelectItem>
 							</SelectContent>
 						</Select>
-						<Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilterValue)}>
+						<Select
+							value={statusFilter}
+							onValueChange={(value) =>
+								setStatusFilter(value as StatusFilterValue)
+							}>
 							<SelectTrigger className='w-full xl:w-[180px]'>
 								<SelectValue placeholder={t('admin_users_status_label')} />
 							</SelectTrigger>
@@ -883,7 +935,9 @@ const AdminUsersPage = () => {
 							disabled={usersQuery.isFetching}
 							className='rounded-xl'>
 							<RefreshCw
-								className={usersQuery.isFetching ? 'size-4 animate-spin' : 'size-4'}
+								className={
+									usersQuery.isFetching ? 'size-4 animate-spin' : 'size-4'
+								}
 							/>
 							{t('refresh')}
 						</Button>
@@ -934,7 +988,9 @@ const AdminUsersPage = () => {
 									<Users />
 								</EmptyMedia>
 								<EmptyTitle>{t('admin_empty_title')}</EmptyTitle>
-								<EmptyDescription>{t('admin_users_empty_description')}</EmptyDescription>
+								<EmptyDescription>
+									{t('admin_users_empty_description')}
+								</EmptyDescription>
 							</EmptyHeader>
 						</Empty>
 					) : (
@@ -986,13 +1042,19 @@ const AdminUsersPage = () => {
 												</TableCell>
 												<TableCell>{user.email || '-'}</TableCell>
 												<TableCell>
-													<Badge className={cn('rounded-full border', roleMeta.className)}>
+													<Badge
+														className={cn(
+															'rounded-full border',
+															roleMeta.className,
+														)}>
 														{roleMeta.label}
 													</Badge>
 												</TableCell>
 												<TableCell>
 													<Badge
-														variant={user.is_forbidden ? 'destructive' : 'outline'}
+														variant={
+															user.is_forbidden ? 'destructive' : 'outline'
+														}
 														className='rounded-full'>
 														{user.is_forbidden
 															? t('admin_users_status_forbidden')
@@ -1001,7 +1063,8 @@ const AdminUsersPage = () => {
 												</TableCell>
 												<TableCell>
 													<div className='text-xs text-muted-foreground'>
-														{t('user_fans')} {user.fans} / {t('user_follows')} {user.follows}
+														{t('user_fans')} {user.fans} / {t('user_follows')}{' '}
+														{user.follows}
 													</div>
 												</TableCell>
 												<TableCell>
@@ -1018,7 +1081,8 @@ const AdminUsersPage = () => {
 															</Link>
 														</Button>
 														<Button variant='outline' size='sm' asChild>
-															<Link href={`/admin/users/${user.id}/notifications`}>
+															<Link
+																href={`/admin/users/${user.id}/notifications`}>
 																<BellRing className='size-4' />
 															</Link>
 														</Button>
@@ -1061,9 +1125,7 @@ const AdminUsersPage = () => {
 									<Button
 										variant='outline'
 										onClick={() => setPageNum((current) => current + 1)}
-										disabled={
-											pageNum >= (usersQuery.data?.total_pages ?? 1)
-										}>
+										disabled={pageNum >= (usersQuery.data?.total_pages ?? 1)}>
 										{t('next_page')}
 									</Button>
 								</div>
@@ -1078,7 +1140,12 @@ const AdminUsersPage = () => {
 				onOpenChange={(open) => {
 					if (!open) {
 						setCreateOpen(false);
-						setCreateForm((current) => resetFormAvatar({ ...DEFAULT_FORM_STATE, avatarPreviewUrl: current.avatarPreviewUrl }));
+						setCreateForm((current) =>
+							resetFormAvatar({
+								...DEFAULT_FORM_STATE,
+								avatarPreviewUrl: current.avatarPreviewUrl,
+							}),
+						);
 						return;
 					}
 					setCreateOpen(true);
@@ -1096,7 +1163,11 @@ const AdminUsersPage = () => {
 					setCreateForm((current) => resetFormAvatar(current))
 				}
 				onSubmit={() => setPendingUserAction('create')}
-				isPending={createMutation.isPending || updateMutation.isPending || isAvatarSubmitting}
+				isPending={
+					createMutation.isPending ||
+					updateMutation.isPending ||
+					isAvatarSubmitting
+				}
 				submitLabel={t('create')}
 				canManagePrivilegedRoles={canManagePrivilegedRoles}
 				previewOwnerId={null}
@@ -1119,111 +1190,121 @@ const AdminUsersPage = () => {
 				onAvatarSelect={(file) =>
 					setEditForm((current) => updateFormAvatar(current, file))
 				}
-				onAvatarReset={() =>
-					setEditForm((current) => resetFormAvatar(current))
-				}
+				onAvatarReset={() => setEditForm((current) => resetFormAvatar(current))}
 				onSubmit={() => setPendingUserAction('update')}
-				isPending={createMutation.isPending || updateMutation.isPending || isAvatarSubmitting}
+				isPending={
+					createMutation.isPending ||
+					updateMutation.isPending ||
+					isAvatarSubmitting
+				}
 				submitLabel={t('save')}
 				isEdit
 				canManagePrivilegedRoles={canManagePrivilegedRoles}
 				previewOwnerId={editUserId}
 			/>
 
-			<Dialog open={viewUserId != null} onOpenChange={(open) => !open && setViewUserId(null)}>
-				<DialogContent className='max-w-2xl rounded-[28px]'>
-					<DialogHeader>
+			<Dialog
+				open={viewUserId != null}
+				onOpenChange={(open) => !open && setViewUserId(null)}>
+				<DialogContent className='flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-[28px] p-0'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('admin_users_view_title')}</DialogTitle>
-						<DialogDescription>{t('admin_users_view_description')}</DialogDescription>
+						<DialogDescription>
+							{t('admin_users_view_description')}
+						</DialogDescription>
 					</DialogHeader>
 					{viewUserQuery.isLoading || !viewUserQuery.data ? (
-						<Skeleton className='h-56 rounded-[24px]' />
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<Skeleton className='h-56 rounded-[24px]' />
+						</div>
 					) : (
-						<div className='space-y-4'>
-							<div className='grid gap-4 sm:grid-cols-2'>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
-								<div className='flex items-center gap-4'>
-									<Avatar className='size-16 border border-border/60'>
-										<AvatarImage
-											src={replacePath(
-												viewUserQuery.data.avatar,
-												viewUserQuery.data.id,
-											)}
-											alt={viewUserQuery.data.nickname}
-										/>
-										<AvatarFallback>
-											{viewUserQuery.data.nickname.slice(0, 1)}
-										</AvatarFallback>
-									</Avatar>
-									<div>
-										<div className='text-lg font-semibold'>
-											{viewUserQuery.data.nickname}
-										</div>
-										<div className='text-sm text-muted-foreground'>
-											{viewUserQuery.data.email || '-'}
-										</div>
-										<div className='mt-2'>
-											<Badge
-												className={cn(
-													'rounded-full border',
-													getRoleMeta(viewUserQuery.data.role, t).className,
-												)}>
-												{getRoleMeta(viewUserQuery.data.role, t).label}
-											</Badge>
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<div className='grid gap-4 sm:grid-cols-2 py-5'>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
+									<div className='flex items-center gap-4'>
+										<Avatar className='size-16 border border-border/60'>
+											<AvatarImage
+												src={replacePath(
+													viewUserQuery.data.avatar,
+													viewUserQuery.data.id,
+												)}
+												alt={viewUserQuery.data.nickname}
+											/>
+											<AvatarFallback>
+												{viewUserQuery.data.nickname.slice(0, 1)}
+											</AvatarFallback>
+										</Avatar>
+										<div>
+											<div className='text-lg font-semibold'>
+												{viewUserQuery.data.nickname}
+											</div>
+											<div className='text-sm text-muted-foreground'>
+												{viewUserQuery.data.email || '-'}
+											</div>
+											<div className='mt-2'>
+												<Badge
+													className={cn(
+														'rounded-full border',
+														getRoleMeta(viewUserQuery.data.role, t).className,
+													)}>
+													{getRoleMeta(viewUserQuery.data.role, t).label}
+												</Badge>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>UUID</div>
-								<div className='mt-2 break-all text-sm font-medium'>
-									{viewUserQuery.data.uuid}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>UUID</div>
+									<div className='mt-2 break-all text-sm font-medium'>
+										{viewUserQuery.data.uuid}
+									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('admin_users_status_label')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_users_status_label')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{viewUserQuery.data.is_forbidden
+											? t('admin_users_status_forbidden')
+											: t('admin_users_status_active')}
+									</div>
 								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{viewUserQuery.data.is_forbidden
-										? t('admin_users_status_forbidden')
-										: t('admin_users_status_active')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('user_fans')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{viewUserQuery.data.fans}
+									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('user_fans')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('user_follows')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{viewUserQuery.data.follows}
+									</div>
 								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{viewUserQuery.data.fans}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
+									<div className='text-xs text-muted-foreground'>
+										{t('account_slogan')}
+									</div>
+									<div className='mt-2 text-sm leading-6'>
+										{viewUserQuery.data.slogan || t('user_no_slogan')}
+									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('user_follows')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
+									<div className='text-xs text-muted-foreground'>
+										{t('account_compute_points_remaining')}
+									</div>
+									<div className='mt-2 text-2xl font-semibold'>
+										{viewUserComputeInfoQuery.isLoading
+											? '--'
+											: (
+													viewUserComputeInfoQuery.data?.available_points ?? 0
+												).toLocaleString()}
+									</div>
 								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{viewUserQuery.data.follows}
-								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
-								<div className='text-xs text-muted-foreground'>
-									{t('account_slogan')}
-								</div>
-								<div className='mt-2 text-sm leading-6'>
-									{viewUserQuery.data.slogan || t('user_no_slogan')}
-								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
-								<div className='text-xs text-muted-foreground'>
-									{t('account_compute_points_remaining')}
-								</div>
-								<div className='mt-2 text-2xl font-semibold'>
-									{viewUserComputeInfoQuery.isLoading
-										? '--'
-										: (viewUserComputeInfoQuery.data?.available_points ?? 0).toLocaleString()}
-								</div>
-							</div>
 							</div>
 							<div className='space-y-2'>
 								<div className='text-sm font-medium'>
@@ -1233,15 +1314,17 @@ const AdminUsersPage = () => {
 							</div>
 						</div>
 					)}
-					<DialogFooter>
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button variant='outline' asChild>
-							<Link href={`/admin/users/${viewUserId ?? viewUserQuery.data?.id ?? ''}/notifications`}>
+							<Link
+								href={`/admin/users/${viewUserId ?? viewUserQuery.data?.id ?? ''}/notifications`}>
 								<BellRing className='size-4' />
 								{t('admin_manage_notifications')}
 							</Link>
 						</Button>
 						<Button variant='outline' asChild>
-							<Link href={`/user/detail/${viewUserId ?? viewUserQuery.data?.id ?? ''}`}>
+							<Link
+								href={`/user/detail/${viewUserId ?? viewUserQuery.data?.id ?? ''}`}>
 								<ExternalLink className='size-4' />
 								{t('admin_open_detail_page')}
 							</Link>
@@ -1288,7 +1371,9 @@ const AdminUsersPage = () => {
 								}
 								await handleUpdateSubmit();
 							}}>
-							{createMutation.isPending || updateMutation.isPending || isAvatarSubmitting ? (
+							{createMutation.isPending ||
+							updateMutation.isPending ||
+							isAvatarSubmitting ? (
 								<Loader2 className='size-4 animate-spin' />
 							) : null}
 							{t('confirm')}

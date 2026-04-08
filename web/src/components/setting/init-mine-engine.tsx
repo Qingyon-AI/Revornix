@@ -360,7 +360,7 @@ const InitMineEngine = () => {
 										{t('setting_engine_page_mine_engine_is_public_tips')}
 									</FormDescription>
 									{field.value && (
-										<div className='grid gap-3 rounded-xl border border-input/70 bg-background/60 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-center'>
+										<div className='flex flex-row justify-between gap-3 rounded-xl border border-input/70 bg-background/60 p-3'>
 											<div className='space-y-1'>
 												<div className='text-sm font-medium'>
 													{t('setting_required_plan_level_label')}
@@ -384,7 +384,7 @@ const InitMineEngine = () => {
 													form.watch('required_plan_level') ??
 														AccessPlanLevel.FREE,
 												)}>
-												<SelectTrigger className='w-full'>
+												<SelectTrigger className='w-fit'>
 													<SelectValue
 														placeholder={t(
 															'setting_required_plan_level_placeholder',

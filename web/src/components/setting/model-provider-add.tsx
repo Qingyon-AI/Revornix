@@ -22,6 +22,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -106,16 +107,17 @@ const ModelProviderAddButton = () => {
 						<PlusCircleIcon />
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('setting_model_provider_add')}</DialogTitle>
 						<DialogDescription>
 							{t('setting_model_provider_add_description')}
 						</DialogDescription>
 					</DialogHeader>
-					<div>
-						<Form {...form}>
-							<form className='flex flex-col gap-5' onSubmit={handleSubmit}>
+					<Form {...form}>
+						<form className='flex min-h-0 flex-1 flex-col' onSubmit={handleSubmit}>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='flex flex-col gap-5'>
 								<FormField
 									control={form.control}
 									name='name'
@@ -222,15 +224,18 @@ const ModelProviderAddButton = () => {
 										);
 									}}
 								/>
+								</div>
+							</div>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 								<Button type='submit' disabled={submitUpdating}>
 									{t('save')}
 									{submitUpdating && (
 										<Loader2 className='h-4 w-4 animate-spin' />
 									)}
 								</Button>
-							</form>
-						</Form>
-					</div>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 		</>

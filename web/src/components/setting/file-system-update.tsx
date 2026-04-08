@@ -181,9 +181,8 @@ const FileSystemUpdate = ({
 			<DialogTrigger asChild>
 				<Button className='text-xs shadow-none'>{t('config')}</Button>
 			</DialogTrigger>
-			<DialogContent
-				className='max-h-[80vh] overflow-auto flex flex-col'>
-				<DialogHeader>
+			<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-3xl'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{t('config')}</DialogTitle>
 					{file_system_detail && (
 						<DialogDescription>
@@ -197,34 +196,35 @@ const FileSystemUpdate = ({
 					)}
 				</DialogHeader>
 
-				{!file_system_detail && isFetchingFileSystemDetail && (
-					<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
-						<span>{t('loading')}</span>
-						<Spinner />
-					</div>
-				)}
-
-				{!file_system_detail &&
-					isErrorFileSystemDetail &&
-					errorFileSystemDetail && (
-						<Empty>
-							<EmptyHeader>
-								<EmptyMedia variant='icon'>
-									<XCircleIcon />
-								</EmptyMedia>
-								<EmptyDescription>
-									{errorFileSystemDetail.message}
-								</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
+				<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+					{!file_system_detail && isFetchingFileSystemDetail && (
+						<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+							<span>{t('loading')}</span>
+							<Spinner />
+						</div>
 					)}
 
-				{isSuccessFileSystemDetail && file_system_detail && (
-					<Form {...form}>
-						<form
-							onSubmit={handleSubmit}
-							id='update_form'
-							className='space-y-5 flex-1 overflow-auto'>
+					{!file_system_detail &&
+						isErrorFileSystemDetail &&
+						errorFileSystemDetail && (
+							<Empty>
+								<EmptyHeader>
+									<EmptyMedia variant='icon'>
+										<XCircleIcon />
+									</EmptyMedia>
+									<EmptyDescription>
+										{errorFileSystemDetail.message}
+									</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						)}
+
+					{isSuccessFileSystemDetail && file_system_detail && (
+						<Form {...form}>
+							<form
+								onSubmit={handleSubmit}
+								id='update_form'
+								className='space-y-5'>
 							<FormItem>
 								<div className='grid grid-cols-12 gap-2'>
 									<FormLabel className='col-span-3'>
@@ -369,13 +369,12 @@ const FileSystemUpdate = ({
 									</div>
 								</>
 							)}
-						</form>
-					</Form>
-				)}
+							</form>
+						</Form>
+					)}
+				</div>
 
-				<Separator />
-
-				<DialogFooter className='flex flex-row items-center justify-end'>
+				<DialogFooter className='sticky bottom-0 z-10 flex flex-row items-center justify-end border-t border-border/60 bg-background px-6 py-4'>
 					<DialogClose asChild>
 						<Button type='button' variant={'secondary'}>
 							{t('cancel')}

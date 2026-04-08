@@ -34,7 +34,7 @@ const ModelPolicyFields = ({
 				name='required_plan_level'
 				control={form.control}
 				render={({ field }) => (
-					<div className='flex flex-row items-center gap-4 rounded-xl border border-input/70 bg-background/60 p-4'>
+					<div className='flex flex-row justify-between items-center gap-4 rounded-xl border border-input/70 bg-background/60 p-4'>
 						<div className='min-w-0 space-y-1'>
 							<div className='text-sm font-medium'>
 								{t('setting_required_plan_level_label')}
@@ -74,7 +74,7 @@ const ModelPolicyFields = ({
 					name='is_official_hosted'
 					control={form.control}
 					render={({ field }) => (
-						<div className='flex flex-row gap-4 items-center'>
+						<div className='flex flex-row justify-between gap-4 items-center'>
 							<div className='min-w-0 space-y-1'>
 								<div className='text-sm font-medium'>
 									{t('setting_official_hosted_label')}
@@ -92,7 +92,7 @@ const ModelPolicyFields = ({
 					)}
 				/>
 				{officialHosted && (
-					<div className='flex flex-row gap-4 items-center'>
+					<div className='flex flex-row justify-between gap-4 items-center'>
 						<div className='min-w-0 space-y-1'>
 							<div className='text-sm font-medium'>
 								{t('setting_compute_point_multiplier_label')}

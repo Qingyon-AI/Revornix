@@ -397,15 +397,17 @@ const DocumentContainer = ({ id }: { id: number }) => {
 													/>
 												</Button>
 											</DialogTrigger>
-											<DialogContent className='flex h-[82vh] w-[min(1440px,96vw)] max-w-[min(1440px,96vw)] flex-col sm:max-w-[min(1440px,96vw)]'>
-												<DialogHeader>
+											<DialogContent className='flex h-[82vh] w-[min(1440px,96vw)] max-w-[min(1440px,96vw)] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-[min(1440px,96vw)]'>
+												<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 													<DialogTitle>{t('document_graph')}</DialogTitle>
 													<DialogDescription>
 														{t('document_graph_description')}
 													</DialogDescription>
 												</DialogHeader>
-												<div className='min-h-[360px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-													<DocumentGraph document_id={id} showSearch />
+												<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+													<div className='min-h-[360px] h-full overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
+														<DocumentGraph document_id={id} showSearch />
+													</div>
 												</div>
 											</DialogContent>
 										</Dialog>
