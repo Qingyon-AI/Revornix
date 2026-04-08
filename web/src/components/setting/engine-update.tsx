@@ -216,8 +216,8 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			<DialogTrigger asChild>
 				<Button className='text-xs shadow-none'>{t('config')}</Button>
 			</DialogTrigger>
-			<DialogContent className='max-h-[80vh] flex flex-col'>
-				<DialogHeader>
+			<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-3xl'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{t('config')}</DialogTitle>
 					{engine_info && (
 						<DialogDescription>
@@ -228,30 +228,31 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 					)}
 				</DialogHeader>
 
-				{!engine_info && isFetchingEngineInfo && (
-					<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
-						<span>{t('loading')}</span>
-						<Spinner />
-					</div>
-				)}
+				<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+					{!engine_info && isFetchingEngineInfo && (
+						<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+							<span>{t('loading')}</span>
+							<Spinner />
+						</div>
+					)}
 
-				{!engine_info && isErrorEngineInfo && errorEngineInfo && (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<XCircleIcon />
-							</EmptyMedia>
-							<EmptyDescription>{errorEngineInfo.message}</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-				)}
+					{!engine_info && isErrorEngineInfo && errorEngineInfo && (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<XCircleIcon />
+								</EmptyMedia>
+								<EmptyDescription>{errorEngineInfo.message}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
+					)}
 
-				{isSuccessEngineInfo && engine_info && (
-					<Form {...form}>
-						<form
-							onSubmit={handleSubmit}
-							id='update_form'
-							className='space-y-5 flex-1 overflow-auto'>
+					{isSuccessEngineInfo && engine_info && (
+						<Form {...form}>
+							<form
+								onSubmit={handleSubmit}
+								id='update_form'
+								className='space-y-5'>
 							<Field className='grid grid-cols-12 gap-2'>
 								<FieldLabel className='col-span-3'>
 									{t('setting_engine_page_engine_form_engine_category')}
@@ -438,7 +439,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 														)}
 													</FormDescription>
 													{isPublic && (
-														<div className='grid gap-3 rounded-xl border border-input/70 bg-background/60 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-center'>
+														<div className='flex flex-row justify-between gap-3 rounded-xl border border-input/70 bg-background/60 p-3'>
 															<div className='space-y-1'>
 																<div className='text-sm font-medium'>
 																	{t('setting_required_plan_level_label')}
@@ -467,7 +468,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 																	form.watch('required_plan_level') ??
 																		AccessPlanLevel.FREE,
 																)}>
-																<SelectTrigger className='w-full'>
+																<SelectTrigger className='w-fit'>
 																	<SelectValue
 																		placeholder={t(
 																			'setting_required_plan_level_placeholder',
@@ -502,12 +503,11 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 									/>
 								</>
 							)}
-						</form>
-					</Form>
-				)}
-
-				<Separator />
-				<DialogFooter className='flex flex-row items-center justify-end'>
+							</form>
+						</Form>
+					)}
+				</div>
+				<DialogFooter className='sticky bottom-0 z-10 flex flex-row items-center justify-end border-t border-border/60 bg-background px-6 py-4'>
 					{!authorized && (
 						<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 							<ShieldAlert className='size-4' />

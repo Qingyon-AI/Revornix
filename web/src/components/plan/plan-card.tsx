@@ -215,14 +215,15 @@ const PlanCard = ({
 						setIntervalTime(undefined);
 					}
 				}}>
-				<DialogContent className='max-h-[80vh] overflow-auto'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-lg'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('order_info')}</DialogTitle>
 						<DialogDescription>
 							{t('account_plan_pay_warning')}
 						</DialogDescription>
 					</DialogHeader>
-					<div className='relative w-full'>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						<div className='relative w-full'>
 						{!prepayBackData && (
 							<div className='flex flex-row justify-center items-center h-[200px]'>
 								<Loader2 className='size-4 animate-spin' />
@@ -280,20 +281,22 @@ const PlanCard = ({
 								</TableBody>
 							</Table>
 						)}
+						</div>
 					</div>
 				</DialogContent>
 			</Dialog>
 
 			<Dialog open={showPayDialog} onOpenChange={setShowPayDialog}>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-lg'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('account_plan_subscribe_plan')}</DialogTitle>
 						<DialogDescription className='text-muted-foreground text-sm'>
 							{t('account_plan_pay_way_choose_description')}
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className='w-full grid grid-cols-1 md:grid-cols-3 gap-2'>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+					<div className='grid w-full grid-cols-1 gap-2 md:grid-cols-3 pb-2'>
 						<Button
 							className='relative'
 							disabled={currencyCode !== 'CNY'}
@@ -339,23 +342,24 @@ const PlanCard = ({
 						</Button>
 					</div>
 
-					<div className='text-muted-foreground text-xs flex flex-row gap-1'>
+					<div className='text-muted-foreground text-xs flex flex-row gap-1 pb-2'>
 						<Info size={15} />
 						{t('account_plan_pay_way_choose_advice')}
 					</div>
 					{(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
 						PrePayProductRequestDTOCategoryEnum.UserPlan && (
-							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground mb-2'>
 								{t('account_plan_subscription_checkout_notice')}
 							</div>
 						)}
 					{(category ?? PrePayProductRequestDTOCategoryEnum.UserPlan) ===
 						PrePayProductRequestDTOCategoryEnum.UserPlan &&
 						product_uuid === ProductPlan.MAX && (
-							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+							<div className='rounded-xl border border-dashed border-border/70 bg-muted/40 px-3 py-2 text-xs leading-5 text-muted-foreground mb-2'>
 								{t('account_plan_upgrade_points_notice')}
 							</div>
 						)}
+					</div>
 				</DialogContent>
 			</Dialog>
 

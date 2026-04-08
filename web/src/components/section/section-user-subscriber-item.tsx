@@ -16,6 +16,7 @@ import {
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
 } from '../ui/dialog';
@@ -97,12 +98,15 @@ const SectionSubscriberItem = ({
 						<XCircleIcon />
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
-					<DialogTitle>{t('warning')}</DialogTitle>
-					<DialogDescription>
-						{t('section_subscribers_delete_description')}
-					</DialogDescription>
-					<DialogFooter>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+						<DialogTitle>{t('warning')}</DialogTitle>
+						<DialogDescription>
+							{t('section_subscribers_delete_description')}
+						</DialogDescription>
+					</DialogHeader>
+					<div className='min-h-0 flex-1 px-6 py-5' />
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button
 							variant='destructive'
 							onClick={handleDeleteSectionUser}

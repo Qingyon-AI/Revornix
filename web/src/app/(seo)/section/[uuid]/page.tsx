@@ -506,8 +506,8 @@ const SEOSectionDetail = async (props: {
 										<Expand className='size-4 text-muted-foreground' />
 									</Button>
 								</DialogTrigger>
-								<DialogContent className='flex h-[70vh] min-h-[420px] flex-col sm:h-[min(88vh,720px)] sm:min-h-[560px] sm:max-w-[min(1200px,92vw)]'>
-									<DialogHeader>
+								<DialogContent className='flex h-[70vh] min-h-[420px] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:h-[min(88vh,720px)] sm:min-h-[560px] sm:max-w-[min(1200px,92vw)]'>
+									<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 										<DialogTitle>{t('section_graph')}</DialogTitle>
 										<DialogDescription>
 											{t('section_graph_description')}
@@ -519,14 +519,16 @@ const SEOSectionDetail = async (props: {
 											</div>
 										) : null}
 									</DialogHeader>
-									<div className='min-h-[320px] flex-1 overflow-hidden rounded-2xl border border-border/60 bg-background/60 sm:min-h-[420px]'>
-										{section ? (
-											<SectionGraphSEO
-												section_id={section.id}
-												showSearch
-												showStaleHint={false}
-											/>
-										) : null}
+									<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+										<div className='min-h-[320px] h-full overflow-hidden rounded-2xl border border-border/60 bg-background/60 sm:min-h-[420px]'>
+											{section ? (
+												<SectionGraphSEO
+													section_id={section.id}
+													showSearch
+													showStaleHint={false}
+												/>
+											) : null}
+										</div>
 									</div>
 								</DialogContent>
 							</Dialog>

@@ -5,6 +5,7 @@ import {
 	Dialog,
 	DialogClose,
 	DialogContent,
+	DialogHeader,
 	DialogDescription,
 	DialogFooter,
 	DialogTitle,
@@ -162,18 +163,22 @@ const AddNotificationSource = () => {
 						<PlusCircleIcon />
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='max-h-[80vh] flex flex-col'>
-					<DialogTitle>
-						{t('setting_notification_source_manage_add_form_label')}
-					</DialogTitle>
-					<DialogDescription>
-						{t('setting_notification_source_manage_form_alert')}
-					</DialogDescription>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+						<DialogTitle>
+							{t('setting_notification_source_manage_add_form_label')}
+						</DialogTitle>
+						<DialogDescription>
+							{t('setting_notification_source_manage_form_alert')}
+						</DialogDescription>
+					</DialogHeader>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
-							className='space-y-3 flex-1 overflow-y-auto'
+							className='flex min-h-0 flex-1 flex-col'
 							id='add-notification-source-form'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='space-y-3'>
 							<FormField
 								name='notification_source_provided_id'
 								control={form.control}
@@ -338,10 +343,9 @@ const AddNotificationSource = () => {
 									);
 								}}
 							/>
-						</form>
-					</Form>
-					<Separator />
-					<DialogFooter>
+								</div>
+							</div>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button
 							type='submit'
 							form='add-notification-source-form'
@@ -354,7 +358,9 @@ const AddNotificationSource = () => {
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
-					</DialogFooter>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 		</>

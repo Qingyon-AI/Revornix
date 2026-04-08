@@ -108,14 +108,14 @@ const NicknameUpdate = () => {
 			<Dialog
 				open={showNicknameUpdateFormDialog}
 				onOpenChange={setShowNicknameUpdateFormDialog}>
-				<DialogContent
-					className='sm:max-w-md'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('account_nickname_update')}</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={onSubmitNicknameUpdateForm} className='space-y-5'>
-							<div className='space-y-5'>
+						<form onSubmit={onSubmitNicknameUpdateForm} className='flex min-h-0 flex-1 flex-col'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='space-y-5'>
 								<FormField
 									control={form.control}
 									name='nickname'
@@ -136,8 +136,9 @@ const NicknameUpdate = () => {
 										</FormItem>
 									)}
 								/>
+								</div>
 							</div>
-							<DialogFooter className='sm:justify-end'>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4 sm:justify-end'>
 								<Button type='submit' disabled={formSubmitStatus}>
 									{t('account_nickname_update_confirm')}
 									{formSubmitStatus && (

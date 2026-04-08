@@ -114,14 +114,15 @@ const ApiKeyPage = () => {
 						<DialogTrigger asChild>
 							<Button variant={'destructive'}>{t('delete')}</Button>
 						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
+						<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+							<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 								<DialogTitle>{t('account_api_key_delete')}</DialogTitle>
 								<DialogDescription>
 									{t('account_api_key_delete_description')}
 								</DialogDescription>
 							</DialogHeader>
-							<DialogFooter>
+							<div className='min-h-0 flex-1 px-6 py-5' />
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 								<DialogClose asChild>
 									<Button variant={'secondary'}>{t('cancel')}</Button>
 								</DialogClose>
@@ -215,12 +216,13 @@ const ApiKeyPage = () => {
 						<DialogTrigger asChild>
 							<Button variant={'outline'}>{t('account_api_key_add')}</Button>
 						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
+						<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+							<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 								<DialogTitle>{t('account_api_key_add')}</DialogTitle>
 							</DialogHeader>
 							<Form {...form}>
-								<form onSubmit={handleSubmitAddApiKey}>
+								<form onSubmit={handleSubmitAddApiKey} className='flex min-h-0 flex-1 flex-col'>
+									<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 									<FormField
 										name='description'
 										control={form.control}
@@ -234,7 +236,8 @@ const ApiKeyPage = () => {
 											);
 										}}
 									/>
-									<DialogFooter className='mt-4'>
+									</div>
+									<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 										<DialogClose asChild>
 											<Button type='button' variant={'secondary'}>
 												{t('account_api_key_add_cancel')}

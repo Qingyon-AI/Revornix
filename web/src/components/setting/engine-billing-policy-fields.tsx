@@ -1,6 +1,9 @@
 'use client';
 
-import { EngineBillingMode, EngineBillingModeList } from '@/enums/engine-billing';
+import {
+	EngineBillingMode,
+	EngineBillingModeList,
+} from '@/enums/engine-billing';
 import {
 	Select,
 	SelectContent,
@@ -37,7 +40,7 @@ const EngineBillingPolicyFields = ({
 				name='is_official_hosted'
 				control={form.control}
 				render={({ field }) => (
-					<div className='grid gap-3 md:items-center'>
+					<div className='flex flex-row justify-between gap-3 items-center'>
 						<div className='space-y-1'>
 							<div className='text-sm font-medium'>
 								{t('setting_official_hosted_label')}
@@ -62,24 +65,24 @@ const EngineBillingPolicyFields = ({
 						name='billing_mode'
 						control={form.control}
 						render={({ field }) => (
-							<div className='flex flex-row items-center gap-3'>
+							<div className='flex flex-row justify-between items-center gap-3'>
 								<div className='space-y-1'>
 									<div className='text-sm font-medium'>
 										{t('setting_engine_billing_mode_label')}
 									</div>
 									<p className='text-xs text-muted-foreground'>
-										{t(`setting_engine_billing_mode_${billingMode}_description`)}
+										{t(
+											`setting_engine_billing_mode_${billingMode}_description`,
+										)}
 									</p>
 								</div>
 								<Select
 									disabled={disabled}
 									value={String(field.value ?? EngineBillingMode.TOKEN)}
 									onValueChange={(value) => field.onChange(Number(value))}>
-									<SelectTrigger className='w-full'>
+									<SelectTrigger className='w-fit'>
 										<SelectValue
-											placeholder={t(
-												'setting_engine_billing_mode_placeholder',
-											)}
+											placeholder={t('setting_engine_billing_mode_placeholder')}
 										/>
 									</SelectTrigger>
 									<SelectContent>
@@ -99,26 +102,27 @@ const EngineBillingPolicyFields = ({
 						name='billing_unit_price'
 						control={form.control}
 						render={({ field }) => (
-							<div className='flex flex-row gap-3 items-center'>
+							<div className='flex flex-row justify-between gap-3 items-center'>
 								<div className='space-y-1'>
 									<div className='text-sm font-medium'>
 										{t('setting_engine_billing_unit_price_label')}
 									</div>
 									<p className='text-xs text-muted-foreground'>
 										{t('setting_engine_billing_unit_price_hint', {
-											unit: t(`setting_engine_billing_mode_${billingMode}_unit`),
+											unit: t(
+												`setting_engine_billing_mode_${billingMode}_unit`,
+											),
 										})}
 									</p>
 								</div>
 								<Input
+									className='w-fit'
 									disabled={disabled}
 									type='number'
 									min='0.1'
 									step='0.1'
 									value={field.value ?? 1}
-									onChange={(e) =>
-										field.onChange(Number(e.target.value || 1))
-									}
+									onChange={(e) => field.onChange(Number(e.target.value || 1))}
 									placeholder={t(
 										'setting_engine_billing_unit_price_placeholder',
 									)}
@@ -130,7 +134,7 @@ const EngineBillingPolicyFields = ({
 						name='compute_point_multiplier'
 						control={form.control}
 						render={({ field }) => (
-							<div className='flex flex-row gap-3 items-center'>
+							<div className='flex flex-row justify-between gap-3 items-center'>
 								<div className='space-y-1'>
 									<div className='text-sm font-medium'>
 										{t('setting_compute_point_multiplier_label')}
@@ -140,14 +144,13 @@ const EngineBillingPolicyFields = ({
 									</p>
 								</div>
 								<Input
+									className='w-fit'
 									disabled={disabled}
 									type='number'
 									min='0.1'
 									step='0.1'
 									value={field.value ?? 1}
-									onChange={(e) =>
-										field.onChange(Number(e.target.value || 1))
-									}
+									onChange={(e) => field.onChange(Number(e.target.value || 1))}
 									placeholder={t(
 										'setting_compute_point_multiplier_placeholder',
 									)}
@@ -155,7 +158,7 @@ const EngineBillingPolicyFields = ({
 							</div>
 						)}
 					/>
-					<div className='grid gap-3 rounded-lg border border-dashed border-input/70 bg-muted/40 p-3 md:grid-cols-[minmax(0,1fr)_320px] md:items-start'>
+					<div className='flex flex-row justify-between gap-3 rounded-lg border border-dashed border-input/70 bg-muted/40 p-3 items-start'>
 						<div className='space-y-1'>
 							<div className='text-sm font-medium'>
 								{t('setting_engine_billing_preview_label')}

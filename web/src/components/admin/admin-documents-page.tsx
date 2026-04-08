@@ -319,58 +319,62 @@ const AdminDocumentsPage = () => {
 			<Dialog
 				open={viewDocumentId != null}
 				onOpenChange={(open) => !open && setViewDocumentId(null)}>
-				<DialogContent className='max-w-3xl rounded-[28px]'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] max-w-3xl flex-col gap-0 overflow-hidden rounded-[28px] p-0'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('admin_documents_view_title')}</DialogTitle>
 						<DialogDescription>
 							{t('admin_documents_view_description')}
 						</DialogDescription>
 					</DialogHeader>
 					{detailQuery.isLoading || !detailQuery.data ? (
-						<Skeleton className='h-64 rounded-[24px]' />
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<Skeleton className='h-64 rounded-[24px]' />
+						</div>
 					) : (
-						<div className='grid gap-4 sm:grid-cols-2'>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
-								<div className='text-lg font-semibold'>{detailQuery.data.title}</div>
-								<div className='mt-2 text-sm leading-6 text-muted-foreground'>
-									{detailQuery.data.description || '-'}
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<div className='grid gap-4 sm:grid-cols-2'>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4 sm:col-span-2'>
+									<div className='text-lg font-semibold'>{detailQuery.data.title}</div>
+									<div className='mt-2 text-sm leading-6 text-muted-foreground'>
+										{detailQuery.data.description || '-'}
+									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('admin_documents_table_category')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_documents_table_category')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{getCategoryLabel(detailQuery.data.category, t)}
+									</div>
 								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{getCategoryLabel(detailQuery.data.category, t)}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_documents_table_creator')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{detailQuery.data.creator.nickname}
+									</div>
 								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('admin_documents_table_creator')}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_documents_table_source')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{detailQuery.data.from_plat}
+									</div>
 								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{detailQuery.data.creator.nickname}
-								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('admin_documents_table_source')}
-								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{detailQuery.data.from_plat}
-								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
-								<div className='text-xs text-muted-foreground'>
-									{t('admin_documents_table_section_count')}
-								</div>
-								<div className='mt-2 text-sm font-medium'>
-									{detailQuery.data.sections?.length ?? 0}
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_documents_table_section_count')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{detailQuery.data.sections?.length ?? 0}
+									</div>
 								</div>
 							</div>
 						</div>
 					)}
-					<DialogFooter>
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button variant='outline' asChild>
 							<Link href={`/document/detail/${viewDocumentId ?? detailQuery.data?.id ?? ''}`}>
 								<ExternalLink className='size-4' />

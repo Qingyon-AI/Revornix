@@ -116,9 +116,8 @@ const MineFileSystemAddCard = ({}: {}) => {
 			<Dialog
 				open={showMineFileSystemAddDialog}
 				onOpenChange={setShowMineFileSystemAddDialog}>
-				<DialogContent
-					className='max-h-[80vh] overflow-auto flex flex-col'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-3xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>
 							{t('setting_file_system_page_file_system_add_title')}
 						</DialogTitle>
@@ -128,9 +127,11 @@ const MineFileSystemAddCard = ({}: {}) => {
 					</DialogHeader>
 					<Form {...form}>
 						<form
-							className='flex flex-col gap-5 flex-1 overflow-auto'
+							className='flex min-h-0 flex-1 flex-col'
 							id='install_form'
 							onSubmit={handleSubmit}>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='flex flex-col gap-5'>
 							<FormField
 								control={form.control}
 								name='file_system_id'
@@ -300,10 +301,9 @@ const MineFileSystemAddCard = ({}: {}) => {
 									</div>
 								</>
 							)}
-						</form>
-					</Form>
-					<Separator />
-					<DialogFooter className='flex flex-row items-center justify-end'>
+								</div>
+							</div>
+							<DialogFooter className='sticky bottom-0 z-10 flex flex-row items-center justify-end border-t border-border/60 bg-background px-6 py-4'>
 						<DialogClose asChild>
 							<Button type='button' variant={'secondary'}>
 								{t('cancel')}
@@ -318,7 +318,9 @@ const MineFileSystemAddCard = ({}: {}) => {
 								<Loader2 className='animate-spin' />
 							)}
 						</Button>
-					</DialogFooter>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 			<Card className='h-full'>

@@ -185,36 +185,37 @@ const ModelProviderUpdate = ({
 					{t('setting_model_provider_configure')}
 				</Button>
 			</DialogTrigger>
-				<DialogContent>
-				<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{modelProvider?.name}</DialogTitle>
 					<DialogDescription className='break-all'>
 						{modelProvider?.description}
 					</DialogDescription>
 				</DialogHeader>
-				{!modelProvider && isFetching && (
-					<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
-						<span>{t('loading')}</span>
-						<Spinner />
-					</div>
-				)}
+				<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+					{!modelProvider && isFetching && (
+						<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+							<span>{t('loading')}</span>
+							<Spinner />
+						</div>
+					)}
 
-				{!modelProvider && isError && error && (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<XCircleIcon />
-							</EmptyMedia>
-							<EmptyDescription>{error.message}</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-				)}
-				{isSuccess && modelProvider && (
-					<Form {...form}>
-						<form
-							className='flex flex-col gap-5'
-							onSubmit={handleSubmit}
-							id='update_form'>
+					{!modelProvider && isError && error && (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<XCircleIcon />
+								</EmptyMedia>
+								<EmptyDescription>{error.message}</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
+					)}
+					{isSuccess && modelProvider && (
+						<Form {...form}>
+							<form
+								className='flex flex-col gap-5'
+								onSubmit={handleSubmit}
+								id='update_form'>
 							<FormField
 								control={form.control}
 								name='name'
@@ -338,11 +339,11 @@ const ModelProviderUpdate = ({
 										/>
 									</>
 								)}
-						</form>
-					</Form>
-				)}
-				<Separator />
-				<DialogFooter className='flex flex-row items-center'>
+							</form>
+						</Form>
+					)}
+				</div>
+				<DialogFooter className='sticky bottom-0 z-10 flex flex-row items-center border-t border-border/60 bg-background px-6 py-4'>
 					{!authorized && (
 						<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 							<ShieldAlert className='size-4' />

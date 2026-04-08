@@ -140,8 +140,8 @@ const EmailBindCloud = () => {
 			)}
 
 			<Dialog open={showBindEmailDialog} onOpenChange={setShowBindEmailDialog}>
-				<DialogContent className='sm:max-w-md'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>
 							{mainUserInfo?.email_info
 								? t('account_email_update')
@@ -154,8 +154,9 @@ const EmailBindCloud = () => {
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={onSubmitBindEmailForm} className='space-y-5'>
-							<div className='grid gap-4'>
+						<form onSubmit={onSubmitBindEmailForm} className='flex min-h-0 flex-1 flex-col'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='grid gap-4'>
 								<FormField
 									control={form.control}
 									name='email'
@@ -204,8 +205,9 @@ const EmailBindCloud = () => {
 										</FormItem>
 									)}
 								/>
+								</div>
 							</div>
-							<DialogFooter className='sm:justify-end'>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4 sm:justify-end'>
 								<Button type='submit' disabled={bindingEmail}>
 									{t('account_email_update_confirm')}
 									{bindingEmail && <Loader2 className='size-4 animate-spin' />}

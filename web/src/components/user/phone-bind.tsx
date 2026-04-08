@@ -154,16 +154,17 @@ const PhoneBind = () => {
 			<Dialog
 				open={showPhoneBindFormDialog}
 				onOpenChange={setShowPhoneBindFormDialog}>
-				<DialogContent className='sm:max-w-md'>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('account_go_bind')}</DialogTitle>
 						<DialogDescription>
 							{t('account_phone_bind_form_description')}
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={onSubmitPhoneBindForm} className='space-y-5'>
-							<div className='space-y-5'>
+						<form onSubmit={onSubmitPhoneBindForm} className='flex min-h-0 flex-1 flex-col'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='space-y-5'>
 								<FormField
 									control={form.control}
 									name='phone'
@@ -214,8 +215,9 @@ const PhoneBind = () => {
 										</FormItem>
 									)}
 								/>
+								</div>
 							</div>
-							<DialogFooter className='sm:justify-end'>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4 sm:justify-end'>
 								<Button type='submit' disabled={bindingPhone}>
 									{t('confirm')}
 									{bindingPhone && <Loader2 className='size-4 animate-spin' />}

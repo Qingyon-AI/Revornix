@@ -6,6 +6,7 @@ import {
 	DialogClose,
 	DialogContent,
 	DialogFooter,
+	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
@@ -365,35 +366,37 @@ const UpdateNotificationSource = ({
 				<DialogTrigger asChild>
 					<Button variant={'outline'}>{t('edit')}</Button>
 				</DialogTrigger>
-				<DialogContent className='max-h-[80vh] overflow-auto'>
-					<DialogTitle>
-						{t('setting_notification_source_manage_update_form_label')}
-					</DialogTitle>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+						<DialogTitle>
+							{t('setting_notification_source_manage_update_form_label')}
+						</DialogTitle>
+					</DialogHeader>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						{!data && isFetching && (
+							<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+								<span>{t('loading')}</span>
+								<Spinner />
+							</div>
+						)}
 
-					{!data && isFetching && (
-						<div className='bg-muted text-xs text-muted-foreground p-5 rounded flex flex-row items-center justify-center gap-2'>
-							<span>{t('loading')}</span>
-							<Spinner />
-						</div>
-					)}
+						{!data && isError && error && (
+							<Empty>
+								<EmptyHeader>
+									<EmptyMedia variant='icon'>
+										<XCircleIcon />
+									</EmptyMedia>
+									<EmptyDescription>{error.message}</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						)}
 
-					{!data && isError && error && (
-						<Empty>
-							<EmptyHeader>
-								<EmptyMedia variant='icon'>
-									<XCircleIcon />
-								</EmptyMedia>
-								<EmptyDescription>{error.message}</EmptyDescription>
-							</EmptyHeader>
-						</Empty>
-					)}
-
-					{isSuccess && data && (
-						<Form {...form}>
-							<form
-								onSubmit={onSubmitForm}
-								className='space-y-3'
-								id='update-form'>
+						{isSuccess && data && (
+							<Form {...form}>
+								<form
+									onSubmit={onSubmitForm}
+									className='space-y-3'
+									id='update-form'>
 								<FormField
 									name='notification_source_id'
 									control={form.control}
@@ -553,12 +556,11 @@ const UpdateNotificationSource = ({
 										/>
 									</>
 								)}
-							</form>
-						</Form>
-					)}
-
-					<Separator />
-					<DialogFooter className='flex flex-row items-center justify-end'>
+								</form>
+							</Form>
+						)}
+					</div>
+					<DialogFooter className='sticky bottom-0 z-10 flex flex-row items-center justify-end border-t border-border/60 bg-background px-6 py-4'>
 						{!authorized && (
 							<Alert className='bg-amber-600/10 dark:bg-amber-600/15 text-amber-500 border-amber-500/50 dark:border-amber-600/50'>
 								<ShieldAlert className='size-4' />

@@ -112,14 +112,15 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 						{t('user_cancel_follow')}
 					</Button>
 				</DialogTrigger>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('tip')}</DialogTitle>
 						<DialogDescription>
 							{t('user_cancel_follow_confirm_alert')}
 						</DialogDescription>
 					</DialogHeader>
-					<DialogFooter>
+					<div className='min-h-0 flex-1 px-6 py-5' />
+					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<DialogClose asChild>
 							<Button variant={'secondary'}>{t('cancel')}</Button>
 						</DialogClose>

@@ -79,13 +79,14 @@ const AddDocumentLabelDialog = ({
 	};
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
-				<DialogHeader>
+			<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
+				<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 					<DialogTitle>{t('document_create_label_create_title')}</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
-					<form onSubmit={onSubmitLabelForm}>
-						<FormField
+					<form onSubmit={onSubmitLabelForm} className='flex min-h-0 flex-1 flex-col'>
+						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+							<FormField
 							name='name'
 							control={form.control}
 							render={({ field }) => {
@@ -101,8 +102,9 @@ const AddDocumentLabelDialog = ({
 									</FormItem>
 								);
 							}}
-						/>
-						<DialogFooter className='mt-5'>
+							/>
+						</div>
+						<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 							<Button type='submit' disabled={mutate.isPending}>
 								{t('document_create_label_create_submit')}
 								{mutate.isPending && <Loader2 />}

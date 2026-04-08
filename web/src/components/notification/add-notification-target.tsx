@@ -5,6 +5,7 @@ import {
 	Dialog,
 	DialogClose,
 	DialogContent,
+	DialogHeader,
 	DialogDescription,
 	DialogFooter,
 	DialogTitle,
@@ -165,18 +166,22 @@ const AddNotificationTarget = () => {
 						form.reset(defaultFormValues);
 					}
 				}}>
-				<DialogContent>
-					<DialogTitle>
-						{t('setting_notification_target_manage_add_form_label')}
-					</DialogTitle>
-					<DialogDescription>
-						{t('setting_notification_target_manage_form_desc')}
-					</DialogDescription>
+				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
+					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+						<DialogTitle>
+							{t('setting_notification_target_manage_add_form_label')}
+						</DialogTitle>
+						<DialogDescription>
+							{t('setting_notification_target_manage_form_desc')}
+						</DialogDescription>
+					</DialogHeader>
 					<Form {...form}>
 						<form
 							onSubmit={onSubmitForm}
-							className='space-y-3'
+							className='flex min-h-0 flex-1 flex-col'
 							id='add-notification-target-form'>
+							<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+								<div className='space-y-3'>
 							<FormField
 								name='notification_target_provided_id'
 								control={form.control}
@@ -348,9 +353,9 @@ const AddNotificationTarget = () => {
 									);
 								}}
 							/>
-						</form>
-					</Form>
-					<DialogFooter>
+								</div>
+							</div>
+							<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button
 							type='submit'
 							form='add-notification-target-form'
@@ -363,7 +368,9 @@ const AddNotificationTarget = () => {
 						<DialogClose asChild>
 							<Button variant='outline'>{t('cancel')}</Button>
 						</DialogClose>
-					</DialogFooter>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 		</>
