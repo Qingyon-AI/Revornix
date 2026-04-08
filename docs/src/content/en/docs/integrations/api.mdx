@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # Third-Party API
 
@@ -27,16 +26,13 @@ API keys can be created in Revornix via **Avatar (bottom-left) -> Account -> API
 
 ## Integration flow sketch
 
-<ProcessDiagram
-	title='Third-party API integration path'
-	steps={[
-		{ title: 'External system sends a request', description: 'The caller uses an API-KEY with the /tp endpoint group.' },
-		{ title: 'Upload or create content', description: 'Upload a file first or create documents and sections directly.' },
-		{ title: 'API stores state and tasks', description: 'The service persists state and queues async follow-up work.' },
-		{ title: 'Worker runs workflows', description: 'Document and section processing continue in the background.' },
-		{ title: 'Poll for results', description: 'The caller uses detail, search, or status endpoints to fetch outputs.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["External system sends a request<br/>The caller uses an API-KEY with the /tp endpoint group"] --> B["Upload or create content<br/>Upload a file first or create documents and sections directly"]
+    B --> C["API stores state and tasks<br/>The service persists state and queues async follow-up work"]
+    C --> D["Worker runs workflows<br/>Document and section processing continue in the background"]
+    D --> E["Poll for results<br/>The caller uses detail, search, or status endpoints to fetch outputs"]
+```
 
 ## Upload Endpoint
 

@@ -25,6 +25,7 @@ from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from mcp_router.graph import graph_mcp_router
 from router.ai import ai_router
+from router.admin import admin_router
 from router.api_key import api_key_router
 from router.document import document_router
 from router.engine import engine_router
@@ -120,6 +121,7 @@ app.add_middleware(
 
 app.include_router(user_router, prefix="/user", tags=["user"])
 app.include_router(user_auth_router, prefix="/user", tags=["user"])
+app.include_router(admin_router, prefix="/admin", tags=["admin"])
 app.include_router(document_router, prefix="/document", tags=["document"])
 app.include_router(ai_router, prefix="/ai", tags=["ai"])
 app.include_router(notification_router, prefix="/notification", tags=["notification"])

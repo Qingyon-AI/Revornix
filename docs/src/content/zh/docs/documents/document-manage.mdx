@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # 文档管理
 
@@ -29,16 +28,13 @@ import { ProcessDiagram } from '../../../../components/process-diagram';
 
 ## 文档生命周期示意
 
-<ProcessDiagram
-	title='文档生命周期'
-	steps={[
-		{ title: '进入系统', description: '速记、链接、文件和音频都可以成为文档入口。' },
-		{ title: '创建记录', description: '文档元数据、来源信息和初始任务被创建。' },
-		{ title: '解析或转写', description: '不同类型文档进入相应的解析或音频转写流程。' },
-		{ title: '生成核心产物', description: 'Markdown、摘要、标签等内容逐步补齐。' },
-		{ title: '进入扩展链路', description: '向量化、图谱、播客和专栏联动继续推进。' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["进入系统<br/>速记、链接、文件和音频都可以成为文档入口"] --> B["创建记录<br/>文档元数据、来源信息和初始任务被创建"]
+    B --> C["解析或转写<br/>不同类型文档进入相应的解析或音频转写流程"]
+    C --> D["生成核心产物<br/>Markdown、摘要、标签等内容逐步补齐"]
+    D --> E["进入扩展链路<br/>向量化、图谱、播客和专栏联动继续推进"]
+```
 
 ## 2. 创建时可直接配置的能力
 
@@ -104,15 +100,12 @@ import { ProcessDiagram } from '../../../../components/process-diagram';
 
 文档和专栏是双向关联的：
 
-<ProcessDiagram
-	title='文档进入专栏后的联动'
-	steps={[
-		{ title: '文档加入专栏', description: '绑定关系在文档端或专栏端完成。' },
-		{ title: '专栏内容发生变化', description: '专栏的文档集和可汇总内容被更新。' },
-		{ title: '重新进入处理队列', description: '专栏处理任务会按触发规则重新运行。' },
-		{ title: '衍生成果刷新', description: 'Markdown、播客、PPT 和图谱都可能同步更新。' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["文档加入专栏<br/>绑定关系在文档端或专栏端完成"] --> B["专栏内容发生变化<br/>专栏的文档集和可汇总内容被更新"]
+    B --> C["重新进入处理队列<br/>专栏处理任务会按触发规则重新运行"]
+    C --> D["衍生成果刷新<br/>Markdown、播客、PPT 和图谱都可能同步更新"]
+```
 
 - 创建文档时可以直接指定专栏
 - 也可以在专栏详情页里把文档加入专栏

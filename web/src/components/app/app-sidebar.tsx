@@ -8,7 +8,8 @@ import {
 	LifeBuoy,
 	PlusCircle,
 	ChartNetwork,
-	SatelliteDish
+	SatelliteDish,
+	ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { NavUser } from '@/components/user/nav-user';
@@ -30,9 +31,13 @@ import AddDocumentBox from '../document/add-document-box';
 import Image from 'next/image';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
+import { useUserContext } from '@/provider/user-provider';
+import { isPrivilegedUser } from '@/lib/subscription';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
+	const showAdminEntry = isPrivilegedUser(mainUserInfo);
 	return (
 		<Sidebar {...props}>
 			<SidebarHeader className='p-3'>
@@ -107,6 +112,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 									</div>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
+							{showAdminEntry && (
+								<SidebarMenuItem>
+									<SidebarMenuButton asChild>
+										<div className='w-full'>
+											<ShieldCheck />
+											<Link href={'/admin'} className='w-full'>
+												{t('sidebar_admin_console')}
+											</Link>
+										</div>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							)}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>

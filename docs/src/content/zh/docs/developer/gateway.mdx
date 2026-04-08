@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # 网关部署
 
@@ -29,31 +28,13 @@ import { ProcessDiagram } from '../../../../components/process-diagram';
 
 ## 运行示意
 
-<ProcessDiagram
-	title='第三方登录网关链路'
-	steps={[
-		{
-			title: '用户访问统一公网域名',
-			description: '浏览器始终打开 app.example.com 和 api.example.com。',
-		},
-		{
-			title: '前端发起 Google 或 GitHub 登录',
-			description: 'OAuth 回调地址固定注册为统一公网入口，不直接暴露内网或机房地址。',
-		},
-		{
-			title: '第三方平台回调到公网入口',
-			description: '回调页仍由统一前端入口承接，浏览器 cookie 和站点上下文保持一致。',
-		},
-		{
-			title: 'API 网关转发 OAuth 接口',
-			description: '只有 /user/create/google、/user/create/github、/user/bind/google、/user/bind/github 被转发到境外 API。',
-		},
-		{
-			title: '其余业务继续走国内服务',
-			description: '文档、专栏、通知、图谱、PPT、WebSocket 等链路仍由国内主服务承接。',
-		},
-	]}
-/>
+```mermaid
+flowchart LR
+    A["用户访问统一公网域名<br/>浏览器始终打开 app.example.com 和 api.example.com"] --> B["前端发起 Google 或 GitHub 登录<br/>OAuth 回调地址固定注册为统一公网入口，不直接暴露内网或机房地址"]
+    B --> C["第三方平台回调到公网入口<br/>回调页仍由统一前端入口承接，浏览器 cookie 和站点上下文保持一致"]
+    C --> D["API 网关转发 OAuth 接口<br/>只有 /user/create/google、/user/create/github、/user/bind/google、/user/bind/github 被转发到境外 API"]
+    D --> E["其余业务继续走国内服务<br/>文档、专栏、通知、图谱、PPT、WebSocket 等链路仍由国内主服务承接"]
+```
 
 ## 为什么要统一公网入口
 

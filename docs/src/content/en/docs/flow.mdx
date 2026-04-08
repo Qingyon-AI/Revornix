@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../components/process-diagram';
 
 # Runtime Flow
 
@@ -20,31 +19,13 @@ In practice, `gateway` owns the public entrypoint and path-level routing, `web` 
 
 ## Runtime sketch
 
-<ProcessDiagram
-	title='Main runtime path'
-	steps={[
-		{
-			title: 'Browser opens gateway',
-			description: 'Users always enter the product through one public entrypoint.',
-		},
-		{
-			title: 'gateway routes to web or api',
-			description: 'Page traffic goes to web, while business traffic is routed to the domestic or overseas API by path.',
-		},
-		{
-			title: 'api coordinates storage and tasks',
-			description: 'It reads and writes core stores and creates async tasks when needed.',
-		},
-		{
-			title: 'celery-worker runs heavy workflows',
-			description: 'It handles document conversion, section generation, podcast, graph, PPT, and notifications.',
-		},
-		{
-			title: 'web refreshes results',
-			description: 'The frontend refetches state and renders the latest output.',
-		},
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Browser opens gateway<br/>Users always enter the product through one public entrypoint"] --> B["gateway routes to web or api<br/>Page traffic goes to web, while business traffic is routed to the domestic or overseas API by path"]
+    B --> C["api coordinates storage and tasks<br/>It reads and writes core stores and creates async tasks when needed"]
+    C --> D["celery-worker runs heavy workflows<br/>It handles document conversion, section generation, podcast, graph, PPT, and notifications"]
+    D --> E["web refreshes results<br/>The frontend refetches state and renders the latest output"]
+```
 
 ## 1. User-facing request path
 
@@ -63,16 +44,13 @@ This path covers most synchronous interactions, including authentication, settin
 
 Document capabilities usually follow a two-part model: synchronous creation plus asynchronous enrichment.
 
-<ProcessDiagram
-	title='Document processing flow'
-	steps={[
-		{ title: 'Submit document', description: 'Quick note, website, file, and audio entry types are supported.' },
-		{ title: 'API creates record and task', description: 'Validation, persistence, and original file storage happen here.' },
-		{ title: 'Worker enriches the content', description: 'Parsing, transcription, summary, embedding, and graph workflows run asynchronously.' },
-		{ title: 'Results are written back', description: 'Processed outputs return to the database and file storage.' },
-		{ title: 'Frontend renders the result', description: 'The UI shows live statuses, retry actions, and final outputs.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Submit document<br/>Quick note, website, file, and audio entry types are supported"] --> B["API creates record and task<br/>Validation, persistence, and original file storage happen here"]
+    B --> C["Worker enriches the content<br/>Parsing, transcription, summary, embedding, and graph workflows run asynchronously"]
+    C --> D["Results are written back<br/>Processed outputs return to the database and file storage"]
+    D --> E["Frontend renders the result<br/>The UI shows live statuses, retry actions, and final outputs"]
+```
 
 1. The user submits a link, file, audio source, or quick note in `web`
 2. `api` performs permission checks, default-resource checks, document creation, and original file storage
@@ -94,15 +72,12 @@ Once completed, a document can gradually support:
 
 Sections also split into synchronous configuration and asynchronous generation.
 
-<ProcessDiagram
-	title='Section processing flow'
-	steps={[
-		{ title: 'Configure section', description: 'Save metadata, labels, automation switches, and trigger mode.' },
-		{ title: 'Processing is triggered', description: 'The section starts from an event trigger or a scheduled trigger.' },
-		{ title: 'Worker generates outputs', description: 'Markdown, illustrations, podcast, graph, and PPT are generated here.' },
-		{ title: 'Section detail refreshes', description: 'The page renders the latest body, media, comments, and subscription state.' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["Configure section<br/>Save metadata, labels, automation switches, and trigger mode"] --> B["Processing is triggered<br/>The section starts from an event trigger or a scheduled trigger"]
+    B --> C["Worker generates outputs<br/>Markdown, illustrations, podcast, graph, and PPT are generated here"]
+    C --> D["Section detail refreshes<br/>The page renders the latest body, media, comments, and subscription state"]
+```
 
 1. A user creates or updates section configuration
 2. `api` saves section metadata, labels, collaboration state, trigger mode, and schedule settings

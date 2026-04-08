@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../../components/process-diagram';
 
 # Gateway Deployment
 
@@ -29,31 +28,13 @@ The overseas part can be:
 
 ## Runtime overview
 
-<ProcessDiagram
-	title='Third-Party Login Gateway Flow'
-	steps={[
-		{
-			title: 'User opens the public domains',
-			description: 'The browser always talks to app.example.com and api.example.com.',
-		},
-		{
-			title: 'The frontend starts Google or GitHub login',
-			description: 'OAuth callback URLs are registered against the public entrypoint rather than a private machine address.',
-		},
-		{
-			title: 'The provider redirects back to the public entrypoint',
-			description: 'The callback page still lands on the same public frontend origin, so browser state stays consistent.',
-		},
-		{
-			title: 'The API gateway routes OAuth endpoints',
-			description: 'Only /user/create/google, /user/create/github, /user/bind/google, and /user/bind/github are forwarded to the overseas API.',
-		},
-		{
-			title: 'Everything else stays domestic',
-			description: 'Documents, sections, notifications, graphs, PPT, and WebSocket traffic continue to use the domestic main services.',
-		},
-	]}
-/>
+```mermaid
+flowchart LR
+    A["User opens the public domains<br/>The browser always talks to app.example.com and api.example.com"] --> B["The frontend starts Google or GitHub login<br/>OAuth callback URLs are registered against the public entrypoint rather than a private machine address"]
+    B --> C["The provider redirects back to the public entrypoint<br/>The callback page still lands on the same public frontend origin, so browser state stays consistent"]
+    C --> D["The API gateway routes OAuth endpoints<br/>Only /user/create/google, /user/create/github, /user/bind/google, and /user/bind/github are forwarded to the overseas API"]
+    D --> E["Everything else stays domestic<br/>Documents, sections, notifications, graphs, PPT, and WebSocket traffic continue to use the domestic main services"]
+```
 
 ## Why the public entrypoint must stay unified
 

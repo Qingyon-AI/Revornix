@@ -1,5 +1,4 @@
 import { Callout } from 'nextra/components';
-import { ProcessDiagram } from '../../../components/process-diagram';
 
 # 运行流程
 
@@ -20,31 +19,13 @@ Revornix 当前运行时主要由以下部分组成：
 
 ## 运行时示意
 
-<ProcessDiagram
-	title='主运行链路'
-	steps={[
-		{
-			title: '浏览器访问 gateway',
-			description: '用户始终先进入统一公网入口。',
-		},
-		{
-			title: 'gateway 分发到 web 或 api',
-			description: '页面流量进入 web，业务流量按路径进入国内或境外 API。',
-		},
-		{
-			title: 'api 协调存储与任务',
-			description: '同步读写数据库、向量库、图谱库和文件系统，并创建异步任务。',
-		},
-		{
-			title: 'celery-worker 执行重任务',
-			description: '处理文档转换、专栏生成、播客、图谱、PPT 和通知投递。',
-		},
-		{
-			title: 'web 刷新结果',
-			description: '前端重新拉取状态并展示最新内容。',
-		},
-	]}
-/>
+```mermaid
+flowchart LR
+    A["浏览器访问 gateway<br/>用户始终先进入统一公网入口"] --> B["gateway 分发到 web 或 api<br/>页面流量进入 web，业务流量按路径进入国内或境外 API"]
+    B --> C["api 协调存储与任务<br/>同步读写数据库、向量库、图谱库和文件系统，并创建异步任务"]
+    C --> D["celery-worker 执行重任务<br/>处理文档转换、专栏生成、播客、图谱、PPT 和通知投递"]
+    D --> E["web 刷新结果<br/>前端重新拉取状态并展示最新内容"]
+```
 
 ## 1. 用户访问主链路
 
@@ -63,16 +44,13 @@ Revornix 当前运行时主要由以下部分组成：
 
 文档相关能力通常包含“同步落库 + 异步加工”两段：
 
-<ProcessDiagram
-	title='文档处理流程'
-	steps={[
-		{ title: '提交文档', description: '支持速记、链接、文件和音频入口。' },
-		{ title: 'API 创建记录与任务', description: '完成校验、落库和原始文件写入。' },
-		{ title: 'Worker 执行异步加工', description: '解析、转写、摘要、向量化、图谱等流程继续推进。' },
-		{ title: '结果回写', description: '处理产物回写数据库和文件系统。' },
-		{ title: '前端展示结果', description: '详情页展示阶段状态、重试入口和最终结果。' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["提交文档<br/>支持速记、链接、文件和音频入口"] --> B["API 创建记录与任务<br/>完成校验、落库和原始文件写入"]
+    B --> C["Worker 执行异步加工<br/>解析、转写、摘要、向量化、图谱等流程继续推进"]
+    C --> D["结果回写<br/>处理产物回写数据库和文件系统"]
+    D --> E["前端展示结果<br/>详情页展示阶段状态、重试入口和最终结果"]
+```
 
 1. 用户在 `web` 中提交链接、文件、音频或快速笔记
 2. `api` 完成权限校验、默认资源校验、文档记录创建和原始文件写入
@@ -94,15 +72,12 @@ Revornix 当前运行时主要由以下部分组成：
 
 专栏流程同样分为同步配置与异步生成两部分：
 
-<ProcessDiagram
-	title='专栏处理流程'
-	steps={[
-		{ title: '配置专栏', description: '保存基础信息、标签、自动开关和触发方式。' },
-		{ title: '触发处理', description: '通过事件触发或定时调度启动专栏处理。' },
-		{ title: 'Worker 生成内容', description: '输出 Markdown、插图、播客、图谱和 PPT。' },
-		{ title: '专栏详情页刷新', description: '页面展示正文、媒体区、评论和订阅状态。' },
-	]}
-/>
+```mermaid
+flowchart LR
+    A["配置专栏<br/>保存基础信息、标签、自动开关和触发方式"] --> B["触发处理<br/>通过事件触发或定时调度启动专栏处理"]
+    B --> C["Worker 生成内容<br/>输出 Markdown、插图、播客、图谱和 PPT"]
+    C --> D["专栏详情页刷新<br/>页面展示正文、媒体区、评论和订阅状态"]
+```
 
 1. 用户创建或更新专栏配置
 2. `api` 保存专栏基础信息、标签、协作关系、处理触发方式与调度信息
