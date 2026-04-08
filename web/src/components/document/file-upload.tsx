@@ -129,7 +129,7 @@ const FileUpload = ({
 		<div
 			onClick={handleOnUploadFile}
 			className={cn(
-				'relative p-5 rounded border border-input flex justify-center items-center flex-col text-xs gap-2 text-muted-foreground cursor-pointer hover:bg-muted',
+				'relative p-5 rounded-xl border border-input flex justify-center items-center flex-col text-xs gap-2 text-muted-foreground cursor-pointer hover:bg-muted',
 				className,
 			)}>
 			{uploadingStatus && (

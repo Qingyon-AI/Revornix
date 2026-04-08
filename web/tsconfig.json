@@ -26,6 +26,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@tiptap/core": [
+        "./node_modules/.pnpm/@tiptap+core@3.22.3_@tiptap+pm@3.22.3/node_modules/@tiptap/core"
+      ],
       "#site/content": [
         "./.velite"
       ],

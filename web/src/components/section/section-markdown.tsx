@@ -6,12 +6,12 @@ import { useTranslations } from 'next-intl';
 import { SectionProcessStatus } from '@/enums/section';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
-import { cn, replaceImagePaths } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 import { Alert, AlertDescription } from '../ui/alert';
-import CustomMarkdown from '../ui/custom-markdown';
+import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
 import { Skeleton } from '../ui/skeleton';
 
 const SectionMarkdownSkeleton = ({ className }: { className?: string }) => {
@@ -130,11 +130,7 @@ const SectionMarkdown = ({
 				throw new Error(`Request failed with status ${response.status}`);
 			}
 			const content = await response.text();
-			setMarkdown(
-				section.creator?.id !== undefined
-					? replaceImagePaths(content, section.creator.id)
-					: content,
-			);
+			setMarkdown(content);
 			loadedMarkdownSourceKeyRef.current = sourceKey;
 			failedMarkdownSourceKeyRef.current = undefined;
 			setPlaceholderPollingDelay(
@@ -290,7 +286,10 @@ const SectionMarkdown = ({
 						</div>
 					) : null}
 					<div className='prose prose-zinc mx-auto max-w-[880px] overflow-x-hidden pb-6 dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl sm:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-						<CustomMarkdown content={markdown || t('section_no_md')} />
+						<TipTapMarkdownViewer
+							content={markdown || t('section_no_md')}
+							ownerId={section?.creator?.id}
+						/>
 						<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 							{t('section_ai_tips')}
 						</div>

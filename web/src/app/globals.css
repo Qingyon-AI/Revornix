@@ -174,3 +174,126 @@
 	overflow: auto;
 	padding: 5px;
 }
+
+.rev-mermaid .ant-mermaid-code,
+.rev-mermaid .ant-mermaid-graph {
+	background: var(--card) !important;
+	border-color: var(--border) !important;
+}
+
+.dark .rev-mermaid .ant-mermaid-header {
+	background: var(--muted) !important;
+	color: var(--foreground) !important;
+	border-color: var(--border) !important;
+}
+
+.dark .rev-mermaid .ant-mermaid-code pre,
+.dark .rev-mermaid .ant-mermaid-code code,
+.dark .rev-mermaid .ant-mermaid-code pre[class*='language-'],
+.dark .rev-mermaid .ant-mermaid-code code[class*='language-'],
+.dark .rev-mermaid .ant-mermaid-code .ant-code-highlighter-code {
+	background: transparent !important;
+	color: var(--foreground) !important;
+}
+
+.dark .rev-mermaid .ant-mermaid-code .token {
+	color: inherit !important;
+}
+
+/* TipTap code-block syntax highlighting (lowlight / highlight.js classes). */
+.hljs {
+	color: #24292f;
+	background: transparent;
+}
+.hljs-comment,
+.hljs-quote {
+	color: #6e7781;
+	font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+	color: #cf222e;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+	color: #0550ae;
+}
+.hljs-string,
+.hljs-doctag {
+	color: #0a7f42;
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+	color: #8250df;
+}
+.hljs-type,
+.hljs-class .hljs-title {
+	color: #953800;
+}
+.hljs-attribute,
+.hljs-name,
+.hljs-tag {
+	color: #116329;
+}
+.hljs-meta,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+	color: #9a6700;
+}
+.hljs-regexp,
+.hljs-link {
+	color: #0a3069;
+}
+
+.dark .hljs {
+	color: #e6edf3;
+	background: transparent;
+}
+.dark .hljs-comment,
+.dark .hljs-quote {
+	color: #8b949e;
+}
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-subst {
+	color: #ff7b72;
+}
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-tag .hljs-attr {
+	color: #79c0ff;
+}
+.dark .hljs-string,
+.dark .hljs-doctag {
+	color: #a5d6a7;
+}
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-selector-id {
+	color: #d2a8ff;
+}
+.dark .hljs-type,
+.dark .hljs-class .hljs-title {
+	color: #ffa657;
+}
+.dark .hljs-attribute,
+.dark .hljs-name,
+.dark .hljs-tag {
+	color: #7ee787;
+}
+.dark .hljs-meta,
+.dark .hljs-selector-attr,
+.dark .hljs-selector-pseudo {
+	color: #e3b341;
+}
+.dark .hljs-regexp,
+.dark .hljs-link {
+	color: #a5d6ff;
+}

@@ -124,13 +124,13 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 				<Button
 					variant='outline'
 					role='combobox'
-					className='flex flex-row justify-between flex-1 items-center'>
+					className='h-auto min-h-9 w-full flex-1 items-center justify-between whitespace-normal py-2'>
 					{value.length === 0 && (
-						<span className='text-muted-foreground'>{placeholder}</span>
+						<span className='py-0.5 text-muted-foreground'>{placeholder}</span>
 					)}
 
 					{value.length > 0 && (
-						<span className='flex-1 flex flex-row gap-1 flex-wrap'>
+						<span className='flex flex-1 flex-row flex-wrap items-center gap-1 py-0.5'>
 							{value.map((val) => (
 								<Badge
 									key={val}
@@ -146,7 +146,7 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 						</span>
 					)}
 
-					<ChevronsUpDown className='opacity-50 ml-2 shrink-0' />
+					<ChevronsUpDown className='ml-2 shrink-0 opacity-50' />
 				</Button>
 			</PopoverTrigger>
 

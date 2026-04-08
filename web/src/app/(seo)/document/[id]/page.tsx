@@ -1,5 +1,5 @@
 import AudioPlayer from '@/components/ui/audio-player';
-import CustomMarkdown from '@/components/ui/custom-markdown';
+import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import JsonLd from '@/components/seo/json-ld';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -280,10 +280,11 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							</CardHeader>
 							<CardContent className='px-5 pb-6 pt-5 sm:px-6 sm:pb-7'>
 								<div className='prose prose-zinc max-w-none dark:prose-invert prose-headings:break-words prose-p:leading-8 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-									<CustomMarkdown
+									<TipTapMarkdownViewer
 										content={
 											markdown || document.description || t('document_no_md')
 										}
+										ownerId={document.creator.id}
 									/>
 								</div>
 								<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>

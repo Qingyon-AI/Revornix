@@ -83,7 +83,12 @@ export const replaceImagePaths = (content: string, owner_id: number) => {
 }
 
 export const replacePath = (path: string, owner_id: number) => {
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (
+    path.startsWith('http://') ||
+    path.startsWith('https://') ||
+    path.startsWith('data:') ||
+    path.startsWith('blob:')
+  ) {
     return path
   }
   return `${process.env.NEXT_PUBLIC_API_PREFIX}/file-system/url/resolve?path=${path}&owner_id=${owner_id}`;

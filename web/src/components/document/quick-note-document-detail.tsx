@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
-import CustomMarkdown from '../ui/custom-markdown';
 import { useTranslations } from 'next-intl';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
+import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
 
 const QuickDocumentDetail = ({
 	id,
@@ -81,12 +81,13 @@ const QuickDocumentDetail = ({
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
 						<div className='prose prose-zinc mx-auto max-w-[880px] dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl xl:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-							<CustomMarkdown
+							<TipTapMarkdownViewer
 								content={
 									document?.quick_note_info?.content
 										? document.quick_note_info.content
 										: t('document_no_md')
 								}
+								ownerId={document?.creator.id}
 							/>
 						</div>
 						<div
