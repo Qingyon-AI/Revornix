@@ -1541,6 +1541,8 @@
     "editor_continue_instruction_placeholder": "补充要求，例如：更有故事感、适合产品文档、控制在两段内",
     "editor_continue_generating": "续写中",
     "editor_continue_generate": "生成续写",
+    "editor_continue_stop": "中断续写",
+    "editor_continue_waiting_inline": "AI 正在续写这一段，内容返回后会自动补到这里……",
     "editor_illustration_title": "AI 文档插图",
     "editor_illustration_description": "选择一个图片引擎生成插图，并直接插入当前文档。",
     "editor_illustration_prompt_required": "请先填写插图提示词",
