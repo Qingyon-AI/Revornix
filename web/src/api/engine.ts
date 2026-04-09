@@ -10,4 +10,5 @@ export default {
     deleteEngine: API_PREFIX + '/engine/delete',
     getProvidedEngines: API_PREFIX + '/engine/provided',
     getEngineBillingAudit: API_PREFIX + '/engine/billing-audit',
+    generateImageWithDefaultEngine: API_PREFIX + '/engine/image-generate',
 } 

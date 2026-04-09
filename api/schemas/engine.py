@@ -59,6 +59,22 @@ class EngineCreateRequest(BaseModel):
 class EngineDetailRequest(BaseModel):
     engine_id: int
 
+class ImageGenerateRequest(BaseModel):
+    prompt: str
+
+    @model_validator(mode="after")
+    def normalize_prompt(self):
+        self.prompt = self.prompt.strip()
+        return self
+
+class ImageGenerateResponse(BaseModel):
+    success: bool = True
+    message: str = "Success"
+    code: int = 200
+    prompt: str
+    image_markdown: str
+    data_url: str
+
 class EngineDetail(BaseModel):
     id: int
     uuid: str

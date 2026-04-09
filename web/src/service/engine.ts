@@ -13,6 +13,19 @@ export type BillingAuditIssueDTO = {
     description: string
 }
 
+export type GenerateImageWithDefaultEngineRequest = {
+    prompt: string
+}
+
+export type GenerateImageWithDefaultEngineResponse = {
+    success: boolean
+    message: string
+    code: number
+    prompt: string
+    image_markdown: string
+    data_url: string
+}
+
 export const getEngineDetail = async (data: EngineDetailRequest): Promise<EngineDetail> => {
     return await request(engineApi.getEngineDetail, {
         data
@@ -63,4 +76,12 @@ export const deleteEngine = async (data: EngineDeleteRequest): Promise<NormalRes
 
 export const getEngineBillingAudit = async (): Promise<{ items: BillingAuditIssueDTO[] }> => {
     return await request(engineApi.getEngineBillingAudit)
+}
+
+export const generateImageWithDefaultEngine = async (
+    data: GenerateImageWithDefaultEngineRequest,
+): Promise<GenerateImageWithDefaultEngineResponse> => {
+    return await request(engineApi.generateImageWithDefaultEngine, {
+        data,
+    })
 }

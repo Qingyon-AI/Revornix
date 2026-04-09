@@ -36,6 +36,14 @@ def _canonical_query_string(params: dict[str, str]) -> str:
     )
 
 
+def _safe_json(response: httpx.Response) -> dict | None:
+    try:
+        payload = response.json()
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
 def _guess_content_type(*, header_value: str | None, image_url: str) -> str:
     if header_value:
         content_type = header_value.split(";", 1)[0].strip().lower()
@@ -148,6 +156,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
             body.update(raw_extra_body)
 
         body_json = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+        body_sha256 = _sha256_hex(body_json)
 
         request_time = datetime.now(timezone.utc)
         x_date = request_time.strftime("%Y%m%dT%H%M%SZ")
@@ -163,11 +172,12 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
         canonical_headers = (
             f"content-type:application/json\n"
             f"host:{host}\n"
+            f"x-content-sha256:{body_sha256}\n"
             f"x-date:{x_date}\n"
         )
-        signed_headers = "content-type;host;x-date"
+        signed_headers = "content-type;host;x-content-sha256;x-date"
         canonical_request = (
-            f"POST\n/\n{query}\n{canonical_headers}\n{signed_headers}\n{_sha256_hex(body_json)}"
+            f"POST\n/\n{query}\n{canonical_headers}\n{signed_headers}\n{body_sha256}"
         )
         credential_scope = f"{short_date}/{region}/{service}/request"
         string_to_sign = (
@@ -202,12 +212,19 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
                     headers={
                         "Content-Type": "application/json",
                         "Host": host,
+                        "X-Content-Sha256": body_sha256,
                         "X-Date": x_date,
                         "Authorization": authorization,
                     },
                     content=body_json.encode("utf-8"),
                 )
-                response.raise_for_status()
+                if response.is_error:
+                    error_payload = _safe_json(response)
+                    raise Exception(
+                        "Volc image generation http error: "
+                        f"status={response.status_code}, "
+                        f"body={error_payload if error_payload is not None else response.text[:500]}"
+                    )
                 response_data = _normalize_response_payload(response.json())
 
                 if response_data.get("code") not in (None, 10000, "10000"):
