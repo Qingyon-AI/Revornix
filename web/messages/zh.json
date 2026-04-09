@@ -42,6 +42,8 @@
     "editor_highlight": "高亮",
     "editor_highlight_color": "高亮颜色",
     "editor_clear_highlight_color": "清除高亮颜色",
+    "card_view_grid": "网格视图",
+    "card_view_list": "列表视图",
     "document_status_stale": "已过期",
     "loading": "加载中",
     "copy_successfully": "复制成功",

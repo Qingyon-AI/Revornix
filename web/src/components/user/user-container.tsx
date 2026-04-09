@@ -12,8 +12,10 @@ import { useInView } from 'react-intersection-observer';
 import { searchUserSection } from '@/service/section';
 import SectionCard from '../section/section-card';
 import SectionCardSkeleton from '../section/section-card-skeleton';
+import SectionListTable from '../section/section-list-table';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
+import CardViewToggle from '../ui/card-view-toggle';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
@@ -37,7 +39,6 @@ import {
 	CardTitle,
 } from '../ui/card';
 import {
-	AtSign,
 	BookMarked,
 	Search,
 	Shield,
@@ -48,10 +49,12 @@ import {
 } from 'lucide-react';
 import { cn, replacePath } from '@/lib/utils';
 import { UserRole } from '@/enums/user';
+import { useCardViewMode } from '@/hooks/use-card-view-mode';
 
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const { viewMode, setViewMode } = useCardViewMode('section-list-view-mode');
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
@@ -205,8 +208,7 @@ const UserContainer = ({ id }: { id: number }) => {
 			default:
 				return {
 					label: t('user_detail_role_user'),
-					className:
-						'border-border/60 bg-background/75 text-muted-foreground',
+					className: 'border-border/60 bg-background/75 text-muted-foreground',
 				};
 		}
 	}, [t, userInfo?.role]);
@@ -282,7 +284,9 @@ const UserContainer = ({ id }: { id: number }) => {
 											</Badge>
 										</div>
 										<p className='max-w-3xl text-base leading-7 text-muted-foreground'>
-											{userInfo.slogan ? userInfo.slogan : t('user_slogan_empty')}
+											{userInfo.slogan
+												? userInfo.slogan
+												: t('user_slogan_empty')}
 										</p>
 									</div>
 									<div className='flex flex-wrap gap-2.5'>
@@ -403,13 +407,19 @@ const UserContainer = ({ id }: { id: number }) => {
 									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 										{t('user_detail_section_total')}
 									</div>
-									<div className='mt-2 text-3xl font-semibold'>{totalSections}</div>
+									<div className='mt-2 text-3xl font-semibold'>
+										{totalSections}
+									</div>
 								</div>
 								<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
 									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
 										{keyword
-											? t('user_detail_sections_result', { count: totalSections })
-											: t('user_detail_sections_total', { count: totalSections })}
+											? t('user_detail_sections_result', {
+													count: totalSections,
+												})
+											: t('user_detail_sections_total', {
+													count: totalSections,
+												})}
 									</div>
 									<div className='mt-2 text-base leading-7 text-muted-foreground'>
 										{keyword
@@ -435,18 +445,17 @@ const UserContainer = ({ id }: { id: number }) => {
 										{t('user_detail_sections_description')}
 									</p>
 								</div>
-								<div className='w-full max-w-md'>
-									<div className='relative'>
+								<div className='flex w-full max-w-md items-center gap-3'>
+									<div className='relative flex-1'>
 										<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
 										<Input
 											value={keyword}
 											onChange={(e) => setKeyword(e.target.value)}
-											placeholder={t(
-												'user_detail_sections_search_placeholder',
-											)}
+											placeholder={t('user_detail_sections_search_placeholder')}
 											className='h-11 rounded-2xl border-border/60 bg-background/70 pl-9'
 										/>
 									</div>
+									<CardViewToggle value={viewMode} onChange={setViewMode} />
 								</div>
 							</div>
 						</div>
@@ -467,25 +476,48 @@ const UserContainer = ({ id }: { id: number }) => {
 									</div>
 								</div>
 							) : (
-								<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-									{sections.map((section, index) => {
-										return (
-											<div
-												className='h-full'
-												key={section.id}
-												ref={index === sections.length - 1 ? bottomRef : undefined}>
-												<SectionCard section={section} />
-											</div>
-										);
-									})}
+								<div
+									className={
+										viewMode === 'grid'
+											? 'grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'
+											: 'flex flex-col gap-4'
+									}>
+									{viewMode === 'grid' ? (
+										sections.map((section, index) => {
+											return (
+												<div
+													className='h-full'
+													key={section.id}
+													ref={
+														index === sections.length - 1
+															? bottomRef
+															: undefined
+													}>
+													<SectionCard section={section} />
+												</div>
+											);
+										})
+									) : (
+										<>
+											<SectionListTable sections={sections} />
+											<div ref={bottomRef} className='h-px w-full' />
+										</>
+									)}
 									{isFetchingSections && !data
 										? [...Array(6)].map((_, index) => {
-												return <SectionCardSkeleton key={index} />;
+												return (
+													<SectionCardSkeleton key={index} layout={viewMode} />
+												);
 											})
 										: null}
 									{isFetchingNextPage && data
 										? [...Array(3)].map((_, index) => {
-												return <SectionCardSkeleton key={`next-${index}`} />;
+												return (
+													<SectionCardSkeleton
+														key={`next-${index}`}
+														layout={viewMode}
+													/>
+												);
 											})
 										: null}
 								</div>

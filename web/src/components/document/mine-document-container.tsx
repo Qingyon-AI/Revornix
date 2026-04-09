@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import DocumentCard from '@/components/document/document-card';
 import DocumentCardSkeleton from '@/components/document/document-card-skeleton';
+import DocumentListTable from '@/components/document/document-list-table';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
 	Popover,
@@ -30,7 +31,7 @@ import {
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
-import { Separator } from '../ui/separator';
+import CardViewToggle from '@/components/ui/card-view-toggle';
 import {
 	Empty,
 	EmptyContent,
@@ -40,10 +41,12 @@ import {
 } from '@/components/ui/empty';
 import Link from 'next/link';
 import { useUserContext } from '@/provider/user-provider';
+import { useCardViewMode } from '@/hooks/use-card-view-mode';
 
 const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { viewMode, setViewMode } = useCardViewMode('document-list-view-mode');
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const [desc, setDesc] = useState(true);
@@ -73,7 +76,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 						keyword: keyword,
 						label_ids: labelIds,
 						desc: desc,
-				  }
+					}
 				: undefined;
 		},
 	});
@@ -96,14 +99,14 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 
 	return (
 		<>
-			<Separator className='mb-5' />
-			<div className='flex flex-row px-5 pb-5 gap-3'>
+			<div className='sticky top-0 z-20 flex flex-row gap-3 px-5 py-4 backdrop-blur border-t border-border/75'>
 				<Input
 					placeholder={t('document_search_placeholder')}
 					value={keyword}
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
-				<div className='flex flex-row gap-3'>
+				<div className='flex flex-row gap-3 shrink-0'>
+					<CardViewToggle value={viewMode} onChange={setViewMode} />
 					<Popover>
 						<PopoverTrigger asChild>
 							<Button size={'icon'} variant={'outline'}>
@@ -236,29 +239,40 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 					</EmptyContent>
 				</Empty>
 			)}
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4 px-5 pb-5'>
-				{documents &&
-					documents.map((document, index) => {
-						return (
-							<div
-								className='h-full'
-								key={index}
-								ref={index === documents.length - 1 ? bottomRef : undefined}>
-								<DocumentCard document={document} />
-							</div>
-						);
-					})}
+			<div className='px-5 pb-5'>
+				{viewMode === 'grid' ? (
+					<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+						{documents &&
+							documents.map((document, index) => {
+								return (
+									<div
+										className='h-full'
+										key={index}
+										ref={
+											index === documents.length - 1 ? bottomRef : undefined
+										}>
+										<DocumentCard document={document} />
+									</div>
+								);
+							})}
+					</div>
+				) : (
+					<>
+						<DocumentListTable documents={documents} />
+						<div ref={bottomRef} className='h-px w-full' />
+					</>
+				)}
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <DocumentCardSkeleton key={index} />;
+							return <DocumentCardSkeleton key={index} layout={viewMode} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <DocumentCardSkeleton key={index} />;
+							return <DocumentCardSkeleton key={index} layout={viewMode} />;
 						})}
 					</>
 				)}
