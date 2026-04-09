@@ -17,6 +17,9 @@ import { useUserContext } from '@/provider/user-provider';
 import { DocumentTranscribeStatus } from '@/enums/document';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
 import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
+import EngineSelect from '@/components/ai/engine-select';
+import { EngineCategory } from '@/enums/engine';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 
 const AudioDocumentDetail = ({
 	id,
@@ -29,6 +32,10 @@ const AudioDocumentDetail = ({
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const [selectedEngineId, setSelectedEngineId] = useState<number | null>(
+		mainUserInfo?.default_audio_transcribe_engine_id ?? null,
+	);
+	const [isTranscribeDialogOpen, setIsTranscribeDialogOpen] = useState(false);
 	const queryClient = getQueryClient();
 	const contentFallbackMinHeightClassName =
 		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
@@ -54,6 +61,10 @@ const AudioDocumentDetail = ({
 	}, delay);
 
 	useEffect(() => {
+		setSelectedEngineId(mainUserInfo?.default_audio_transcribe_engine_id ?? null);
+	}, [mainUserInfo?.default_audio_transcribe_engine_id]);
+
+	useEffect(() => {
 		if (shouldPollDocumentDetail(document)) {
 			setDelay(1000);
 		} else {
@@ -70,6 +81,7 @@ const AudioDocumentDetail = ({
 		const [res, err] = await utils.to(
 			transcribeDocument({
 				document_id: id,
+				engine_id: selectedEngineId ?? undefined,
 			}),
 		);
 		if (err) {
@@ -81,6 +93,7 @@ const AudioDocumentDetail = ({
 		setMarkdown(undefined);
 		toast.success(t('document_transform_again'));
 		setDelay(1000);
+		setIsTranscribeDialogOpen(false);
 	};
 
 	const onGetMarkdown = async () => {
@@ -132,7 +145,7 @@ const AudioDocumentDetail = ({
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleReTranscribeDocument();
+								setIsTranscribeDialogOpen(true);
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -162,7 +175,7 @@ const AudioDocumentDetail = ({
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleReTranscribeDocument();
+								setIsTranscribeDialogOpen(true);
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -181,7 +194,7 @@ const AudioDocumentDetail = ({
 							className='h-fit p-0 text-xs'
 							disabled={markdownTransforming}
 							onClick={() => {
-								handleReTranscribeDocument();
+								setIsTranscribeDialogOpen(true);
 							}}>
 							{t('retry')}
 							{markdownTransforming && (
@@ -213,6 +226,28 @@ const AudioDocumentDetail = ({
 					</div>
 				</div>
 			)}
+			<ResourceConfirmDialog
+				open={isTranscribeDialogOpen}
+				onOpenChange={setIsTranscribeDialogOpen}
+				title={t('retry')}
+				description={t('resource_dialog_transcribe_description')}
+				confirmLabel={t('retry')}
+				confirmDisabled={!selectedEngineId}
+				confirmLoading={markdownTransforming}
+				onConfirm={() => {
+					void handleReTranscribeDocument();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+					<EngineSelect
+						category={EngineCategory.STT}
+						value={selectedEngineId}
+						onChange={setSelectedEngineId}
+						className='w-full'
+						placeholder={t('setting_default_engine_choose')}
+					/>
+				</div>
+			</ResourceConfirmDialog>
 		</div>
 	);
 };

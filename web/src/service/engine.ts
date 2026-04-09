@@ -15,6 +15,7 @@ export type BillingAuditIssueDTO = {
 
 export type GenerateImageWithDefaultEngineRequest = {
     prompt: string
+    engine_id?: number
 }
 
 export type GenerateImageWithDefaultEngineResponse = {

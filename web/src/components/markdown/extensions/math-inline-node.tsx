@@ -9,7 +9,7 @@ import {
 	type NodeViewProps,
 } from '@tiptap/react';
 import katex from 'katex';
-import { extractInlineMath } from '@/lib/math';
+import { extractInlineMath, findInlineMathStart } from '@/lib/math';
 import {
 	Popover,
 	PopoverContent,
@@ -187,7 +187,7 @@ const MathInlineNode = Node.create({
 	markdownTokenizer: {
 		name: 'mathInline',
 		level: 'inline',
-		start: '$',
+		start: findInlineMathStart,
 		tokenize(src) {
 			const parsed = extractInlineMath(src);
 			if (!parsed) {
@@ -211,7 +211,7 @@ const MathInlineNode = Node.create({
 	renderMarkdown(node) {
 		const formula =
 			typeof node.attrs?.formula === 'string' ? node.attrs.formula : '';
-		return `$${formula}$`;
+		return `\\(${formula}\\)`;
 	},
 });
 

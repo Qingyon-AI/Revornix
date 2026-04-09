@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import EntityGraphCanvas, {
 	type GraphCanvasLink,
@@ -18,6 +18,9 @@ import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
+import AIModelSelect from '@/components/ai/model-select';
+import { useUserContext } from '@/provider/user-provider';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 
 const resolveGraphGenerateErrorMessage = (
 	message: string | undefined,
@@ -43,6 +46,15 @@ const DocumentGraph = ({
 	showSearch?: boolean;
 }) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
+	const [selectedModelId, setSelectedModelId] = useState<number | null>(
+		mainUserInfo?.default_document_reader_model_id ?? null,
+	);
+	const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+	useEffect(() => {
+		setSelectedModelId(mainUserInfo?.default_document_reader_model_id ?? null);
+	}, [mainUserInfo?.default_document_reader_model_id]);
 
 	const {
 		data: document,
@@ -71,8 +83,10 @@ const DocumentGraph = ({
 		mutationFn: () =>
 			generateDocumentGraph({
 				document_id,
+				model_id: selectedModelId ?? undefined,
 			}),
 		onSuccess() {
+			setIsGenerateDialogOpen(false);
 			toast.success(t('document_graph_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', document_id],
@@ -119,6 +133,7 @@ const DocumentGraph = ({
 	);
 
 	return (
+		<>
 		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
 			{!document && !isDocumentDetailError ? (
 				<Skeleton className='h-full w-full rounded-2xl' />
@@ -149,14 +164,10 @@ const DocumentGraph = ({
 										variant='outline'
 										size='sm'
 										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-										disabled={mutateGenerateDocumentGraph.isPending}
 										title={t('document_graph_generate')}
 										onClick={() => {
-											mutateGenerateDocumentGraph.mutate();
+											setIsGenerateDialogOpen(true);
 										}}>
-										{mutateGenerateDocumentGraph.isPending ? (
-											<Loader2 className='size-4 animate-spin' />
-										) : null}
 										{t('document_graph_generate')}
 									</Button>
 									<p className='max-w-md text-center text-xs leading-5 text-muted-foreground'>
@@ -199,14 +210,10 @@ const DocumentGraph = ({
 										variant='outline'
 										size='sm'
 										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-										disabled={mutateGenerateDocumentGraph.isPending}
 										title={t('document_graph_regenerate')}
 										onClick={() => {
-											mutateGenerateDocumentGraph.mutate();
+											setIsGenerateDialogOpen(true);
 										}}>
-										{mutateGenerateDocumentGraph.isPending ? (
-											<Loader2 className='size-4 animate-spin' />
-										) : null}
 										{t('document_graph_regenerate')}
 									</Button>
 									<p className='max-w-md text-center text-xs leading-5 text-muted-foreground'>
@@ -244,6 +251,28 @@ const DocumentGraph = ({
 				</>
 			) : null}
 		</div>
+		<ResourceConfirmDialog
+			open={isGenerateDialogOpen}
+			onOpenChange={setIsGenerateDialogOpen}
+			title={t('document_graph_generate')}
+			description={t('resource_dialog_graph_description')}
+			confirmLabel={t('document_graph_generate')}
+			confirmDisabled={!selectedModelId}
+			confirmLoading={mutateGenerateDocumentGraph.isPending}
+			onConfirm={() => {
+				mutateGenerateDocumentGraph.mutate();
+			}}>
+			<div className='space-y-2'>
+				<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
+				<AIModelSelect
+					value={selectedModelId}
+					onChange={setSelectedModelId}
+					className='w-full'
+					placeholder={t('setting_default_model_choose')}
+				/>
+			</div>
+		</ResourceConfirmDialog>
+		</>
 	);
 };
 

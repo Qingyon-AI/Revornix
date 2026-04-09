@@ -167,7 +167,10 @@ async def generate_podcast(
 
     if user.default_user_file_system is None:
         raise schemas.error.CustomException('Default file system is not configured', code=400)
-    if user.default_podcast_user_engine_id is None:
+    selected_engine_id = (
+        generate_podcast_request.engine_id or user.default_podcast_user_engine_id
+    )
+    if selected_engine_id is None:
         raise schemas.error.CustomException(
             'Default podcast engine is not configured',
             code=400,
@@ -175,7 +178,7 @@ async def generate_podcast(
     await ensure_engine_access(
         db=db,
         user=user,
-        engine_id=user.default_podcast_user_engine_id,
+        engine_id=selected_engine_id,
     )
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
@@ -211,7 +214,11 @@ async def generate_podcast(
         db_exist_podcast_task.update_time = now
     db.commit()
 
-    start_process_section_podcast.delay(db_section.id, user.id)
+    start_process_section_podcast.delay(
+        db_section.id,
+        user.id,
+        engine_id=selected_engine_id,
+    )
     return schemas.common.SuccessResponse()
 
 
@@ -233,20 +240,24 @@ async def generate_ppt(
         raise schemas.error.CustomException('Section markdown is not ready', code=409)
     if user.default_user_file_system is None:
         raise schemas.error.CustomException('Default file system is not configured', code=400)
-    if user.default_document_reader_model_id is None:
+    selected_model_id = generate_ppt_request.model_id or user.default_document_reader_model_id
+    selected_image_engine_id = (
+        generate_ppt_request.image_engine_id or user.default_image_generate_engine_id
+    )
+    if selected_model_id is None:
         raise schemas.error.CustomException('Default document reader model is not configured', code=400)
-    if user.default_image_generate_engine_id is None:
+    if selected_image_engine_id is None:
         raise schemas.error.CustomException('Default image generate engine is not configured', code=400)
 
     await ensure_model_access(
         db=db,
         user=user,
-        model_id=user.default_document_reader_model_id,
+        model_id=selected_model_id,
     )
     await ensure_engine_access(
         db=db,
         user=user,
-        engine_id=user.default_image_generate_engine_id,
+        engine_id=selected_image_engine_id,
     )
 
     existing_status = await _get_section_ppt_manifest_status(
@@ -274,7 +285,12 @@ async def generate_ppt(
         },
     )
 
-    start_process_section_ppt.delay(db_section.id, user.id)
+    start_process_section_ppt.delay(
+        db_section.id,
+        user.id,
+        model_id=selected_model_id,
+        image_engine_id=selected_image_engine_id,
+    )
     return schemas.common.SuccessResponse()
 
 
@@ -294,14 +310,37 @@ async def trigger_section_process(
         raise schemas.error.CustomException('Only the section creator can trigger processing', code=403)
     if user.default_user_file_system is None:
         raise schemas.error.CustomException('Default file system is not configured', code=400)
-    if user.default_document_reader_model_id is None:
+    selected_model_id = trigger_process_request.model_id or user.default_document_reader_model_id
+    selected_image_engine_id = (
+        trigger_process_request.image_engine_id or user.default_image_generate_engine_id
+    )
+    selected_podcast_engine_id = (
+        trigger_process_request.podcast_engine_id or user.default_podcast_user_engine_id
+    )
+    if selected_model_id is None:
         raise schemas.error.CustomException('Default document reader model is not configured', code=400)
 
     await ensure_model_access(
         db=db,
         user=user,
-        model_id=user.default_document_reader_model_id,
+        model_id=selected_model_id,
     )
+    if db_section.auto_illustration:
+        if selected_image_engine_id is None:
+            raise schemas.error.CustomException('Default image generate engine is not configured', code=400)
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=selected_image_engine_id,
+        )
+    if db_section.auto_podcast:
+        if selected_podcast_engine_id is None:
+            raise schemas.error.CustomException('Default podcast engine is not configured', code=400)
+        await ensure_engine_access(
+            db=db,
+            user=user,
+            engine_id=selected_podcast_engine_id,
+        )
 
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
         db=db,
@@ -331,6 +370,9 @@ async def trigger_section_process(
         'user_id': user.id,
         'auto_podcast': db_section.auto_podcast,
         'force_full_rebuild': True,
+        'model_id': selected_model_id,
+        'image_engine_id': selected_image_engine_id,
+        'podcast_engine_id': selected_podcast_engine_id,
     })
     return schemas.common.SuccessResponse()
 

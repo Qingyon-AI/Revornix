@@ -12,6 +12,10 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+	extractCustomBlockTag,
+	findCustomBlockTagStart,
+} from '@/lib/markdown-custom-block';
 import BlockNodeShell from './block-node-shell';
 
 const DEFAULT_DRAWING_WIDTH = 960;
@@ -306,6 +310,36 @@ const DrawingNode = Node.create({
 		return ReactNodeViewRenderer(DrawingNodeView);
 	},
 
+	markdownTokenName: 'drawing',
+
+	markdownTokenizer: {
+		name: 'drawing',
+		level: 'block',
+		start: findCustomBlockTagStart('drawing-node'),
+		tokenize(src) {
+			const parsed = extractCustomBlockTag(src, 'drawing-node');
+			if (!parsed) {
+				return undefined;
+			}
+
+			return {
+				type: 'drawing',
+				raw: parsed.raw,
+				attrs: parsed.attributes,
+				tokens: [],
+			};
+		},
+	},
+
+	parseMarkdown(token, helpers) {
+		const attrs = (token as { attrs?: Record<string, string> }).attrs ?? {};
+		return helpers.createNode('drawing', {
+			dataUrl: decodeDataUrl(attrs['data-url'] ?? ''),
+			width: Number(attrs['data-width'] ?? DEFAULT_DRAWING_WIDTH),
+			height: Number(attrs['data-height'] ?? DEFAULT_DRAWING_HEIGHT),
+		});
+	},
+
 	renderMarkdown(node) {
 		const dataUrl =
 			typeof node.attrs?.dataUrl === 'string' ? node.attrs.dataUrl : '';
@@ -318,7 +352,7 @@ const DrawingNode = Node.create({
 				? node.attrs.height
 				: DEFAULT_DRAWING_HEIGHT;
 
-		return `\n<drawing-node data-url="${encodeDataUrl(dataUrl)}" data-width="${width}" data-height="${height}"></drawing-node>\n`;
+		return `<drawing-node data-url="${encodeDataUrl(dataUrl)}" data-width="${width}" data-height="${height}"></drawing-node>`;
 	},
 });
 

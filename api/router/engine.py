@@ -384,7 +384,12 @@ async def generate_image_with_default_engine(
             code=400,
             message="Prompt cannot be empty",
         )
-    if user.default_image_generate_engine_id is None:
+    selected_engine_id = (
+        image_generate_request.engine_id
+        if image_generate_request.engine_id is not None
+        else user.default_image_generate_engine_id
+    )
+    if selected_engine_id is None:
         raise schemas.error.CustomException(
             code=400,
             message="Default image generate engine is not configured",
@@ -393,12 +398,12 @@ async def generate_image_with_default_engine(
     await ensure_engine_access(
         db=db,
         user=user,
-        engine_id=user.default_image_generate_engine_id,
+        engine_id=selected_engine_id,
     )
 
     engine = await EngineProxy.create_image_generate_engine(
         user_id=user.id,
-        engine_id=user.default_image_generate_engine_id,
+        engine_id=selected_engine_id,
     )
     image_markdown = engine.generate_image(image_generate_request.prompt)
     if image_markdown is None:

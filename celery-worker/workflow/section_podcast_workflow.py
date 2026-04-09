@@ -59,9 +59,10 @@ async def _init_section_podcast_task(
             raise Exception("The user who want to process section is not found")
         if db_user.default_user_file_system is None:
             raise Exception("The user who want to process section has not set default user file system")
-        if db_user.default_podcast_user_engine_id is None:
+        if state.get("engine_id") is None and db_user.default_podcast_user_engine_id is None:
             raise Exception("The user who want to process section has not set default podcast user engine")
-        state["engine_id"] = db_user.default_podcast_user_engine_id
+        if state.get("engine_id") is None:
+            state["engine_id"] = db_user.default_podcast_user_engine_id
 
         db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
             db=db,
@@ -242,7 +243,8 @@ def get_section_podcast_workflow():
 async def run_section_podcast_workflow(
     *,
     section_id: int,
-    user_id: int
+    user_id: int,
+    engine_id: int | None = None,
 ) -> None:
     workflow = get_section_podcast_workflow()
     try:
@@ -252,6 +254,7 @@ async def run_section_podcast_workflow(
             payload={
                 "section_id": section_id,
                 "user_id": user_id,
+                "engine_id": engine_id,
             },
         )
     except Exception as e:

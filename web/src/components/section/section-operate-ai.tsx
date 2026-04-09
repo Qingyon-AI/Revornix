@@ -21,6 +21,7 @@ import type {
 	AIWorkflow,
 	Message,
 } from '@/types/ai';
+import AIModelSelect from '@/components/ai/model-select';
 import MessageCard from '../revornixai/message-card';
 import { Button } from '../ui/button';
 import {
@@ -133,8 +134,15 @@ const SectionOperateAI = ({
 	const [input, setInput] = useState('');
 	const [enableMcp, setEnableMcp] = useState(false);
 	const [isSending, setIsSending] = useState(false);
+	const [selectedModelId, setSelectedModelId] = useState<number | null>(
+		mainUserInfo?.default_revornix_model_id ?? null,
+	);
 
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		setSelectedModelId(mainUserInfo?.default_revornix_model_id ?? null);
+	}, [mainUserInfo?.default_revornix_model_id]);
 
 	useEffect(() => {
 		messageEndRef.current?.scrollIntoView({
@@ -385,6 +393,7 @@ const SectionOperateAI = ({
 	const sendMessage = async (
 		payloadMessages: Message[],
 		enable_mcp: boolean,
+		model_id: number | null,
 	) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -413,6 +422,7 @@ const SectionOperateAI = ({
 					images: message.images,
 				})),
 				enable_mcp,
+				model_id,
 			}),
 		});
 
@@ -434,11 +444,14 @@ const SectionOperateAI = ({
 		if (!trimmedInput && imagePaths.length === 0) {
 			return;
 		}
-		if (!mainUserInfo?.default_revornix_model_id) {
-			toast.error(t('revornix_ai_model_not_set'));
+		if (!selectedModelId) {
+			toast.error(t('select_model_first'));
 			return;
 		}
-		if (revornixModel.subscriptionLocked) {
+		if (
+			selectedModelId === mainUserInfo?.default_revornix_model_id &&
+			revornixModel.subscriptionLocked
+		) {
 			toast.error(t('default_resource_subscription_locked'));
 			return;
 		}
@@ -456,7 +469,7 @@ const SectionOperateAI = ({
 		setIsSending(true);
 
 		try {
-			await sendMessage(nextMessages, enableMcp);
+			await sendMessage(nextMessages, enableMcp, selectedModelId);
 		} catch (error: any) {
 			toast.error(error?.message || t('section_ai_send_failed'));
 			console.error(error);
@@ -488,6 +501,16 @@ const SectionOperateAI = ({
 					</SheetDescription>
 					<div className='rounded-lg border border-border/60 bg-card/65 px-3 py-2 text-xs leading-5 text-muted-foreground'>
 						{t('section_ai_session_notice')}
+					</div>
+					<div className='space-y-2'>
+						<div className='text-sm font-medium text-foreground'>{t('use_model')}</div>
+						<AIModelSelect
+							value={selectedModelId}
+							onChange={setSelectedModelId}
+							disabled={isSending}
+							className='w-full'
+							placeholder={t('choose_conversation_model')}
+						/>
 					</div>
 				</SheetHeader>
 
@@ -596,8 +619,9 @@ const SectionOperateAI = ({
 									isSending ||
 									(input.trim().length === 0 && imagePaths.length === 0) ||
 									isUploadingImages ||
-									revornixModel.loading ||
-									revornixModel.subscriptionLocked
+									!selectedModelId ||
+									(selectedModelId === mainUserInfo?.default_revornix_model_id &&
+										(revornixModel.loading || revornixModel.subscriptionLocked))
 								}>
 								<Send />
 							</Button>

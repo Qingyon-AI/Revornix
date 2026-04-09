@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AlertCircleIcon, Loader2, RefreshCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -11,7 +11,6 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { getSectionDetail, triggerSectionProcess } from '@/service/section';
-import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 
 import { Button } from '../ui/button';
 import {
@@ -24,6 +23,9 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '../ui/alert-dialog';
+import AIModelSelect from '@/components/ai/model-select';
+import EngineSelect from '@/components/ai/engine-select';
+import { EngineCategory } from '@/enums/engine';
 
 const SectionOperateProcess = ({
 	section_id,
@@ -37,8 +39,32 @@ const SectionOperateProcess = ({
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
-	const { documentReaderModel } = useDefaultResourceAccess();
 	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [selectedModelId, setSelectedModelId] = useState<number | null>(
+		mainUserInfo?.default_document_reader_model_id ?? null,
+	);
+	const [selectedImageEngineId, setSelectedImageEngineId] = useState<number | null>(
+		mainUserInfo?.default_image_generate_engine_id ?? null,
+	);
+	const [selectedPodcastEngineId, setSelectedPodcastEngineId] = useState<number | null>(
+		mainUserInfo?.default_podcast_user_engine_id ?? null,
+	);
+
+	useEffect(() => {
+		setSelectedModelId(mainUserInfo?.default_document_reader_model_id ?? null);
+	}, [mainUserInfo?.default_document_reader_model_id]);
+
+	useEffect(() => {
+		setSelectedImageEngineId(
+			mainUserInfo?.default_image_generate_engine_id ?? null,
+		);
+	}, [mainUserInfo?.default_image_generate_engine_id]);
+
+	useEffect(() => {
+		setSelectedPodcastEngineId(
+			mainUserInfo?.default_podcast_user_engine_id ?? null,
+		);
+	}, [mainUserInfo?.default_podcast_user_engine_id]);
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', section_id],
@@ -49,6 +75,9 @@ const SectionOperateProcess = ({
 		mutationFn: () =>
 			triggerSectionProcess({
 				section_id,
+				model_id: selectedModelId ?? undefined,
+				image_engine_id: selectedImageEngineId ?? undefined,
+				podcast_engine_id: selectedPodcastEngineId ?? undefined,
 			}),
 		onSuccess() {
 			toast.success(t('section_process_manual_trigger_success'));
@@ -70,9 +99,13 @@ const SectionOperateProcess = ({
 	const isProcessing =
 		section?.process_task?.status === SectionProcessStatus.PROCESSING;
 	const isRunning = isQueued || isProcessing;
+	const needsImageEngine = Boolean(section?.auto_illustration);
+	const needsPodcastEngine = Boolean(section?.auto_podcast);
 	const canTrigger =
 		Boolean(mainUserInfo?.default_user_file_system) &&
-		documentReaderModel.accessible &&
+		Boolean(selectedModelId) &&
+		(!needsImageEngine || Boolean(selectedImageEngineId)) &&
+		(!needsPodcastEngine || Boolean(selectedPodcastEngineId)) &&
 		!isRunning;
 	const buttonLabel = mutation.isPending
 		? t('section_process_status_doing')
@@ -110,11 +143,46 @@ const SectionOperateProcess = ({
 						<AlertDialogDescription>
 							{t('section_process_confirm_restart_description')}
 						</AlertDialogDescription>
+						<div className='space-y-3 pt-2'>
+							<div>
+								<p className='mb-1 text-sm text-muted-foreground'>{t('use_model')}</p>
+								<AIModelSelect
+									value={selectedModelId}
+									onChange={setSelectedModelId}
+									className='w-full'
+									placeholder={t('setting_default_model_choose')}
+								/>
+							</div>
+							{needsImageEngine ? (
+								<div>
+									<p className='mb-1 text-sm text-muted-foreground'>{t('setting_default_engine')}</p>
+									<EngineSelect
+										category={EngineCategory.IMAGE_GENERATE}
+										value={selectedImageEngineId}
+										onChange={setSelectedImageEngineId}
+										className='w-full'
+										placeholder={t('setting_default_engine_choose')}
+									/>
+								</div>
+							) : null}
+							{needsPodcastEngine ? (
+								<div>
+									<p className='mb-1 text-sm text-muted-foreground'>{t('setting_default_engine')}</p>
+									<EngineSelect
+										category={EngineCategory.TTS}
+										value={selectedPodcastEngineId}
+										onChange={setSelectedPodcastEngineId}
+										className='w-full'
+										placeholder={t('setting_default_engine_choose')}
+									/>
+								</div>
+							) : null}
+						</div>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
 						<AlertDialogAction
-							disabled={mutation.isPending}
+							disabled={mutation.isPending || !canTrigger}
 							onClick={() => mutation.mutate()}>
 							{t('confirm')}
 							{mutation.isPending && (

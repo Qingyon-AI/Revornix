@@ -786,7 +786,8 @@ def update_ai_model_provider(
 
 async def create_agent(
     user_id: int,
-    enable_mcp: bool = False
+    enable_mcp: bool = False,
+    model_id: int | None = None,
 ):
     """Create an MCP agent with Revornix auth rules and structured tool artifacts."""
     db = session_scope()
@@ -797,12 +798,12 @@ async def create_agent(
         )
         if user is None:
             raise schemas.error.CustomException("User not found", code=404)
-        model_id = user.default_revornix_model_id
-        if model_id is None:
+        resolved_model_id = model_id if model_id is not None else user.default_revornix_model_id
+        if resolved_model_id is None:
             raise schemas.error.CustomException("The user has not set a default model", code=400)
         model_configuration = (await AIModelProxy.create(
             user_id=user_id,
-            model_id=model_id
+            model_id=resolved_model_id
         )).get_configuration()
 
         api_key = SecretStr(model_configuration.api_key if model_configuration.api_key is not None else "")
@@ -870,7 +871,7 @@ async def create_agent(
         agent = MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS)
         agent.adapter = StructuredLangChainAdapter(disallowed_tools=agent.disallowed_tools)
         agent.adapter._record_telemetry = False
-        return agent, model_id
+        return agent, resolved_model_id
     except Exception as e:
         exception_logger.error(
             format_log_message("ai_agent_create_failed", user_id=user_id, error=e)
@@ -1101,7 +1102,12 @@ async def ask_ai(
         if message.role in {"user", "assistant"}
     ]
 
-    if user.default_revornix_model_id is None:
+    selected_model_id = (
+        chat_messages.model_id
+        if chat_messages.model_id is not None
+        else user.default_revornix_model_id
+    )
+    if selected_model_id is None:
         raise schemas.error.CustomException(
             "The user has not set a default model",
             code=400,
@@ -1123,6 +1129,7 @@ async def ask_ai(
         agent, model_id = await create_agent(
             user_id=user.id,
             enable_mcp=chat_messages.enable_mcp,
+            model_id=selected_model_id,
         )
     except Exception as e:
         raise schemas.error.CustomException(

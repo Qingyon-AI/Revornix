@@ -61,6 +61,7 @@ class EngineDetailRequest(BaseModel):
 
 class ImageGenerateRequest(BaseModel):
     prompt: str
+    engine_id: int | None = None
 
     @model_validator(mode="after")
     def normalize_prompt(self):

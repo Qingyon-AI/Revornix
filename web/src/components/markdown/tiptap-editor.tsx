@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -9,6 +9,7 @@ import {
 	Highlighter,
 	Bold,
 	Code2,
+	Expand,
 	Italic,
 	Heading1,
 	Heading2,
@@ -21,6 +22,7 @@ import {
 	Sparkles,
 	Square,
 	Strikethrough,
+	Shrink,
 	Sigma,
 	Table2,
 	Type,
@@ -40,6 +42,11 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '@/components/ui/hybrid-tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -51,7 +58,6 @@ import ImageNode from './extensions/image-node';
 import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
 import VideoEmbedNode from './extensions/video-embed-node';
-import MathInlineNode from './extensions/math-inline-node';
 import MathBlockNode from './extensions/math-block-node';
 import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
@@ -62,7 +68,10 @@ import { generateImageWithDefaultEngine } from '@/service/engine';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { FileService } from '@/lib/file';
+import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import type { AIEvent } from '@/types/ai';
+import AIModelSelect from '@/components/ai/model-select';
+import ImageEngineSelect from '@/components/ai/image-engine-select';
 
 type TipTapEditorProps = {
 	value?: string;
@@ -170,7 +179,47 @@ const TipTapEditor = ({
 	const [illustrationPrompt, setIllustrationPrompt] = useState('');
 	const [isContinuing, setIsContinuing] = useState(false);
 	const [isGeneratingIllustration, setIsGeneratingIllustration] = useState(false);
+	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
+	const [selectedContinuationModelId, setSelectedContinuationModelId] = useState<
+		number | null
+	>(mainUserInfo?.default_revornix_model_id ?? null);
+	const [selectedIllustrationEngineId, setSelectedIllustrationEngineId] = useState<
+		number | null
+	>(mainUserInfo?.default_image_generate_engine_id ?? null);
 	const resolvedOwnerId = ownerId ?? mainUserInfo?.id;
+
+	useEffect(() => {
+		setSelectedContinuationModelId(
+			mainUserInfo?.default_revornix_model_id ?? null,
+		);
+	}, [mainUserInfo?.default_revornix_model_id]);
+
+	useEffect(() => {
+		setSelectedIllustrationEngineId(
+			mainUserInfo?.default_image_generate_engine_id ?? null,
+		);
+	}, [mainUserInfo?.default_image_generate_engine_id]);
+
+	useEffect(() => {
+		if (!isFallbackFullscreen) {
+			document.body.style.overflow = '';
+			return;
+		}
+
+		document.body.style.overflow = 'hidden';
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				setIsFallbackFullscreen(false);
+			}
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		return () => {
+			document.body.style.overflow = '';
+			window.removeEventListener('keydown', onKeyDown);
+		};
+	}, [isFallbackFullscreen]);
 
 	const syncPlaceholderState = (editorInstance: {
 		isEmpty: boolean;
@@ -211,20 +260,19 @@ const TipTapEditor = ({
 			DrawingNode,
 			TableNode,
 			VideoEmbedNode,
-			MathInlineNode,
 			MathBlockNode,
 			TextColorMark,
 			TextHighlightMark,
 			MermaidCodeBlock,
 			Markdown,
 		],
-		content: value,
+		content: normalizeEditorMarkdown(value),
 		contentType: 'markdown',
 		onCreate: ({ editor }) => {
 			syncPlaceholderState(editor);
 		},
 		onUpdate: ({ editor }) => {
-			onChange?.(editor.getMarkdown());
+			onChange?.(normalizeEditorMarkdown(editor.getMarkdown()));
 			syncPlaceholderState(editor);
 		},
 	}, [resolvedOwnerId]);
@@ -278,14 +326,9 @@ const TipTapEditor = ({
 		editor
 			?.chain()
 			.focus()
-			.insertContent([
-				{
-					type: 'drawing',
-				},
-				{
-					type: 'paragraph',
-				},
-			])
+			.insertContent({
+				type: 'drawing',
+			})
 			.run();
 	};
 
@@ -293,14 +336,9 @@ const TipTapEditor = ({
 		editor
 			?.chain()
 			.focus()
-			.insertContent([
-				{
-					type: 'tableNode',
-				},
-				{
-					type: 'paragraph',
-				},
-			])
+			.insertContent({
+				type: 'tableNode',
+			})
 			.run();
 	};
 
@@ -363,6 +401,10 @@ const TipTapEditor = ({
 			'h-8 gap-2 rounded-md border border-border/60 px-2 text-xs',
 			isActive && 'border-foreground/30 bg-accent text-accent-foreground',
 		);
+
+	const handleToggleFullscreen = async () => {
+		setIsFallbackFullscreen((current) => !current);
+	};
 
 	const applyTextColor = (color: string) => {
 		editor?.chain().focus().setMark('textColor', { color }).run();
@@ -532,18 +574,21 @@ const TipTapEditor = ({
 		const selectionContext =
 			aiSelectionRef.current?.context?.trim() || getSelectedContext();
 		if (!selectionContext) {
-			toast.error('请先选中文案，或把光标放在要续写的段落里');
+			toast.error(t('editor_continue_select_text_first'));
 			return;
 		}
-		if (!mainUserInfo?.default_revornix_model_id) {
-			toast.error(t('revornix_ai_model_not_set'));
+		if (!selectedContinuationModelId) {
+			toast.error(t('editor_continue_select_model_first'));
 			return;
 		}
-		if (!revornixModel.accessible) {
+		if (
+			selectedContinuationModelId === mainUserInfo?.default_revornix_model_id &&
+			!revornixModel.accessible
+		) {
 			toast.error(
 				revornixModel.subscriptionLocked
 					? t('revornix_ai_access_hint')
-					: '当前默认聊天模型不可用',
+					: t('editor_default_chat_model_unavailable'),
 			);
 			return;
 		}
@@ -555,7 +600,7 @@ const TipTapEditor = ({
 			const insertionTarget =
 				aiSelectionRef.current?.to ?? editor?.state.selection.to ?? null;
 			if (!editor || insertionTarget === null) {
-				throw new Error('无法插入续写内容');
+				throw new Error(t('editor_continue_insert_failed'));
 			}
 
 			streamingInsertRangeRef.current = {
@@ -608,6 +653,7 @@ const TipTapEditor = ({
 					signal: continueAbortControllerRef.current.signal,
 					body: JSON.stringify({
 						enable_mcp: false,
+						model_id: selectedContinuationModelId,
 						messages: [
 							{
 								chat_id: crypto.randomUUID(),
@@ -622,7 +668,7 @@ const TipTapEditor = ({
 			}
 
 			if (response.status !== 200) {
-				let errorMessage = 'AI 续写失败';
+				let errorMessage = t('editor_continue_failed');
 				try {
 					errorMessage = (await response.json()).message || errorMessage;
 				} catch (error) {
@@ -641,7 +687,7 @@ const TipTapEditor = ({
 				AI_CONTINUATION_MAX_CHARS,
 			);
 			if (!continuation) {
-				throw new Error('模型没有返回可插入的内容');
+				throw new Error(t('editor_continue_empty_result'));
 			}
 
 			replaceStreamingContinuation(continuation);
@@ -650,12 +696,12 @@ const TipTapEditor = ({
 		} catch (error: any) {
 			if ((error as DOMException)?.name === 'AbortError') {
 				if (continueAbortReasonRef.current === 'timeout') {
-					toast.error('AI 续写请求超时，请检查默认模型配置后重试');
+					toast.error(t('editor_continue_timeout'));
 				}
 				return;
 			}
 			console.error(error);
-			toast.error(error?.message || 'AI 续写失败');
+			toast.error(error?.message || t('editor_continue_failed'));
 		} finally {
 			continueAbortControllerRef.current = null;
 			continueAbortReasonRef.current = null;
@@ -667,14 +713,21 @@ const TipTapEditor = ({
 	const generateIllustration = async () => {
 		const prompt = illustrationPrompt.trim();
 		if (!prompt) {
-			toast.error('请先填写插图提示词');
+			toast.error(t('editor_illustration_prompt_required'));
 			return;
 		}
-		if (!imageGenerateEngine.accessible) {
+		if (!selectedIllustrationEngineId) {
+			toast.error(t('editor_illustration_select_engine_first'));
+			return;
+		}
+		if (
+			selectedIllustrationEngineId === mainUserInfo?.default_image_generate_engine_id &&
+			!imageGenerateEngine.accessible
+		) {
 			toast.error(
 				imageGenerateEngine.subscriptionLocked
 					? t('section_form_auto_illustration_engine_unset')
-					: '当前默认插图生成引擎不可用',
+					: t('editor_default_illustration_engine_unavailable'),
 			);
 			return;
 		}
@@ -686,9 +739,13 @@ const TipTapEditor = ({
 		setIsGeneratingIllustration(true);
 		try {
 			const image = await withTimeout(
-				() => generateImageWithDefaultEngine({ prompt }),
+				() =>
+					generateImageWithDefaultEngine({
+						prompt,
+						engine_id: selectedIllustrationEngineId,
+					}),
 				AI_ILLUSTRATION_TIMEOUT_MS,
-				'插图生成请求超时，请检查默认图片引擎配置后重试',
+				t('editor_illustration_timeout'),
 			);
 			const extension =
 				image.data_url.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,/)?.[1] ??
@@ -711,18 +768,13 @@ const TipTapEditor = ({
 			editor
 				.chain()
 				.focus()
-				.insertContentAt(insertionTarget, [
-					{
-						type: 'image',
-						attrs: {
-							src: filePath,
-							alt: prompt.slice(0, 80),
-						},
+				.insertContentAt(insertionTarget, {
+					type: 'image',
+					attrs: {
+						src: filePath,
+						alt: prompt.slice(0, 80),
 					},
-					{
-						type: 'paragraph',
-					},
-				])
+				})
 				.run();
 
 			setIsIllustrationDialogOpen(false);
@@ -765,18 +817,13 @@ const TipTapEditor = ({
 			editor
 				?.chain()
 				.focus()
-				.insertContent([
-					{
-						type: 'image',
-						attrs: {
-							src: filePath,
-							alt: file.name,
-						},
+				.insertContent({
+					type: 'image',
+					attrs: {
+						src: filePath,
+						alt: file.name,
 					},
-					{
-						type: 'paragraph',
-					},
-				])
+				})
 				.run();
 		} catch (error) {
 			console.error(error);
@@ -787,10 +834,15 @@ const TipTapEditor = ({
 		}
 	};
 
+	const showFullscreen = isFallbackFullscreen;
+	const fullscreenLabel = showFullscreen ? t('exit_fullscreen') : t('enter_fullscreen');
+
 	return (
 		<div
 			className={cn(
 				'relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-background',
+				isFallbackFullscreen &&
+					'fixed inset-0 z-50 h-screen rounded-none border-0 bg-background',
 				className
 			)}>
 			<div className='flex items-center gap-1 border-b border-border/60 bg-muted/30 px-2 py-1.5'>
@@ -861,7 +913,7 @@ const TipTapEditor = ({
 					</PopoverTrigger>
 					<PopoverContent
 						align='start'
-						className='w-52 space-y-3 p-3'
+						className='w-56 space-y-3 p-3'
 						onOpenAutoFocus={(event) => event.preventDefault()}>
 						<div className='space-y-2'>
 							<p className='text-xs font-medium text-muted-foreground'>文字颜色</p>
@@ -920,7 +972,7 @@ const TipTapEditor = ({
 					</PopoverTrigger>
 					<PopoverContent
 						align='start'
-						className='w-52 space-y-3 p-3'
+						className='w-56 space-y-3 p-3'
 						onOpenAutoFocus={(event) => event.preventDefault()}>
 						<div className='space-y-2'>
 							<p className='text-xs font-medium text-muted-foreground'>高亮颜色</p>
@@ -1084,42 +1136,43 @@ const TipTapEditor = ({
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName()}
-					title='插入行内公式'
-					onMouseDown={preserveEditorSelection}
-					onClick={() =>
-						editor
-							?.chain()
-							.focus()
-							.insertContent({
-								type: 'mathInline',
-								attrs: { formula: 'a^2+b^2=c^2' },
-							})
-							.run()
-					}>
-					<Sigma className='size-4' />
-				</Button>
-				<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName()}
 					title='插入块级公式'
 					onMouseDown={preserveEditorSelection}
 					onClick={() =>
 						editor
 							?.chain()
 							.focus()
-							.insertContent([
-								{
-									type: 'mathBlock',
-									attrs: { formula: '\\int_0^1 x^2 \\\\, dx' },
-								},
-								{ type: 'paragraph' },
-							])
+							.insertContent({
+								type: 'mathBlock',
+								attrs: { formula: '\\int_0^1 x^2 \\\\, dx' },
+							})
 							.run()
 					}>
 					<Sigma className='size-4 rotate-180' />
 				</Button>
+				<div className='ml-auto' />
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName()}
+							title={fullscreenLabel}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => {
+								void handleToggleFullscreen();
+							}}>
+							{showFullscreen ? (
+								<Shrink className='size-4' />
+							) : (
+								<Expand className='size-4' />
+							)}
+							<span className='sr-only'>{fullscreenLabel}</span>
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>{fullscreenLabel}</TooltipContent>
+				</Tooltip>
 				{enableImageUpload && (
 					<input
 						ref={imageInputRef}
@@ -1176,10 +1229,20 @@ const TipTapEditor = ({
 								))}
 							</div>
 						</div>
+						<div className='space-y-2'>
+							<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
+							<AIModelSelect
+								value={selectedContinuationModelId}
+								onChange={setSelectedContinuationModelId}
+								disabled={isContinuing}
+								className='w-full'
+								placeholder={t('choose_continue_model')}
+							/>
+						</div>
 						<Textarea
 							value={continueInstruction}
 							onChange={(event) => setContinueInstruction(event.target.value)}
-							placeholder='补充要求，例如：更有故事感、适合产品文档、控制在两段内'
+							placeholder={t('editor_continue_instruction_placeholder')}
 							className='min-h-28'
 						/>
 					</div>
@@ -1189,7 +1252,7 @@ const TipTapEditor = ({
 							variant='outline'
 							onClick={() => setIsContinueDialogOpen(false)}
 							disabled={isContinuing}>
-							取消
+							{t('cancel')}
 						</Button>
 						<Button
 							type='button'
@@ -1198,10 +1261,10 @@ const TipTapEditor = ({
 							{isContinuing ? (
 								<>
 									<Loader2 className='mr-2 size-4 animate-spin' />
-									续写中
+									{t('editor_continue_generating')}
 								</>
 							) : (
-								'生成续写'
+								t('editor_continue_generate')
 							)}
 						</Button>
 					</DialogFooter>
@@ -1217,24 +1280,36 @@ const TipTapEditor = ({
 				}}>
 				<DialogContent className='sm:max-w-xl'>
 					<DialogHeader>
-						<DialogTitle>AI 文档插图</DialogTitle>
+						<DialogTitle>{t('editor_illustration_title')}</DialogTitle>
 						<DialogDescription>
-							使用默认插图生成引擎生成一张图片，并直接插入当前文档。
+							{t('editor_illustration_description')}
 						</DialogDescription>
 					</DialogHeader>
-					<Textarea
-						value={illustrationPrompt}
-						onChange={(event) => setIllustrationPrompt(event.target.value)}
-						placeholder='描述想要的插图内容、风格、构图和氛围'
-						className='min-h-40'
-					/>
+					<div className='space-y-3'>
+						<div className='space-y-2'>
+							<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+							<ImageEngineSelect
+								value={selectedIllustrationEngineId}
+								onChange={setSelectedIllustrationEngineId}
+								disabled={isGeneratingIllustration}
+								className='w-full'
+								placeholder={t('choose_illustration_engine')}
+							/>
+						</div>
+						<Textarea
+							value={illustrationPrompt}
+							onChange={(event) => setIllustrationPrompt(event.target.value)}
+							placeholder={t('editor_illustration_prompt_placeholder')}
+							className='min-h-40'
+						/>
+					</div>
 					<DialogFooter>
 						<Button
 							type='button'
 							variant='outline'
 							onClick={() => setIsIllustrationDialogOpen(false)}
 							disabled={isGeneratingIllustration}>
-							取消
+							{t('cancel')}
 						</Button>
 						<Button
 							type='button'

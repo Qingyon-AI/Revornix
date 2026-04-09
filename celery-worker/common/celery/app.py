@@ -128,6 +128,9 @@ def start_process_section(
     user_id: int,
     auto_podcast: bool = False,
     force_full_rebuild: bool = False,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
+    podcast_engine_id: int | None = None,
 ):
     import crud
     from data.sql.base import session_scope
@@ -140,6 +143,9 @@ def start_process_section(
             user_id=user_id,
             auto_podcast=auto_podcast,
             force_full_rebuild=force_full_rebuild,
+            model_id=model_id,
+            image_engine_id=image_engine_id,
+            podcast_engine_id=podcast_engine_id,
         )
     )
     if auto_podcast:
@@ -161,7 +167,11 @@ def start_process_section(
                 db_podcast_task.podcast_file_name = None
                 db_podcast_task.update_time = now
             db.commit()
-        start_process_section_podcast.delay(section_id, user_id)
+        start_process_section_podcast.delay(
+            section_id,
+            user_id,
+            engine_id=podcast_engine_id,
+        )
 
 
 @celery_app.task
@@ -211,6 +221,7 @@ def start_process_document_graph(
     document_id: int,
     user_id: int,
     chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
 ):
     from workflow.document_graph_task_workflow import run_document_graph_task_workflow
 
@@ -219,6 +230,7 @@ def start_process_document_graph(
             document_id=document_id,
             user_id=user_id,
             chunk_snapshot_path=chunk_snapshot_path,
+            model_id=model_id,
         )
     )
 
@@ -228,6 +240,7 @@ def start_process_document_summarize(
     document_id: int,
     user_id: int,
     chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
 ):
     from workflow.document_summarize_workflow import run_document_summarize_workflow
 
@@ -236,6 +249,7 @@ def start_process_document_summarize(
             document_id=document_id,
             user_id=user_id,
             chunk_snapshot_path=chunk_snapshot_path,
+            model_id=model_id,
         )
     )
 
@@ -243,6 +257,7 @@ def start_process_document_summarize(
 def start_process_document_transcribe(
     document_id: int,
     user_id: int,
+    engine_id: int | None = None,
 ):
     from workflow.document_transcribe_workflow import run_document_transcribe_workflow
 
@@ -250,6 +265,7 @@ def start_process_document_transcribe(
         run_document_transcribe_workflow(
             document_id=document_id,
             user_id=user_id,
+            engine_id=engine_id,
         )
     )
 
@@ -257,6 +273,7 @@ def start_process_document_transcribe(
 def start_process_document_podcast(
     document_id: int,
     user_id: int,
+    engine_id: int | None = None,
 ):
     from workflow.document_podcast_workflow import run_document_podcast_workflow
 
@@ -264,6 +281,7 @@ def start_process_document_podcast(
         run_document_podcast_workflow(
             document_id=document_id,
             user_id=user_id,
+            engine_id=engine_id,
         )
     )
 
@@ -308,6 +326,7 @@ def update_document_process_status(
 def start_process_section_podcast(
     section_id: int,
     user_id: int,
+    engine_id: int | None = None,
 ):
     from workflow.section_podcast_workflow import run_section_podcast_workflow
 
@@ -315,6 +334,7 @@ def start_process_section_podcast(
         run_section_podcast_workflow(
             section_id=section_id,
             user_id=user_id,
+            engine_id=engine_id,
         )
     )
 
@@ -323,6 +343,8 @@ def start_process_section_podcast(
 def start_process_section_ppt(
     section_id: int,
     user_id: int,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
 ):
     from workflow.section_ppt_workflow import run_section_ppt_workflow
 
@@ -330,6 +352,8 @@ def start_process_section_ppt(
         run_section_ppt_workflow(
             section_id=section_id,
             user_id=user_id,
+            model_id=model_id,
+            image_engine_id=image_engine_id,
         )
     )
 
