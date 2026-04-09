@@ -638,6 +638,19 @@ def update_document(
         db_document.description = document_update_request.description
     if document_update_request.cover is not None:
         db_document.cover = document_update_request.cover
+    if document_update_request.content is not None:
+        if db_document.category != DocumentCategory.QUICK_NOTE:
+            raise schemas.error.CustomException(
+                "Only quick note documents support direct content updates",
+                code=400,
+            )
+        db_quick_note_document = crud.document.get_quick_note_document_by_document_id(
+            db=db,
+            document_id=document_update_request.document_id,
+        )
+        if db_quick_note_document is None:
+            raise schemas.error.CustomException("Quick note content not found", code=404)
+        db_quick_note_document.content = document_update_request.content
     if document_update_request.labels is not None:
         exist_document_labels = crud.document.get_document_labels_by_document_id(
             db=db,

@@ -40,6 +40,7 @@ import { cn, replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DocumentGraphStatus } from '@/enums/document';
 import GraphTaskCard from '@/components/graph/graph-task-card';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
 
 const DocumentDetailSkeleton = () => {
 	return (
@@ -166,8 +167,15 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.cover && document.creator
 			? replacePath(document.cover, document.creator.id)
 			: null;
+	const freshnessState = getDocumentFreshnessState(document);
 	const graphCardState =
+		freshnessState.graphStale &&
 		document?.graph_task?.status === DocumentGraphStatus.SUCCESS
+			? {
+					badge: t('document_status_stale'),
+					tone: 'warning' as const,
+				}
+			: document?.graph_task?.status === DocumentGraphStatus.SUCCESS
 			? {
 					badge: t('document_graph_status_success'),
 					tone: 'success' as const,
@@ -383,6 +391,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 									title={t('document_graph')}
 									description={t('document_graph_description')}
 									badge={graphCardState.badge}
+									hint={
+										freshnessState.graphStale
+											? t('document_graph_stale_hint')
+											: undefined
+									}
 									tone={graphCardState.tone}
 									action={
 										<Dialog>

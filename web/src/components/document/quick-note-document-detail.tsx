@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail } from '@/service/document';
+import { getDocumentDetail, updateDocument } from '@/service/document';
 import 'katex/dist/katex.min.css';
 import { Skeleton } from '../ui/skeleton';
 import { useInView } from 'react-intersection-observer';
@@ -10,7 +10,7 @@ import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
-import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
+import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 
 const QuickDocumentDetail = ({
 	id,
@@ -65,6 +65,17 @@ const QuickDocumentDetail = ({
 		onFinishRead && onFinishRead();
 	}, [inView, markdownRendered, onFinishRead]);
 
+	const handleSaveMarkdown = async (content: string) => {
+		await updateDocument({
+			document_id: id,
+			content,
+		});
+		queryClient.invalidateQueries({
+			queryKey: ['getDocumentDetail', id],
+			exact: true,
+		});
+	};
+
 	return (
 		<div className={cn('h-full w-full relative', className)}>
 			{isError && error && (
@@ -80,16 +91,15 @@ const QuickDocumentDetail = ({
 			{!isError && (
 				<div className='w-full h-full flex flex-col'>
 					<div className='flex-1 overflow-auto relative'>
-						<div className='prose prose-zinc mx-auto max-w-[880px] dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl xl:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-							<TipTapMarkdownViewer
-								content={
-									document?.quick_note_info?.content
-										? document.quick_note_info.content
-										: t('document_no_md')
-								}
-								ownerId={document?.creator.id}
-							/>
-						</div>
+						<EditableMarkdownPanel
+							content={
+								document?.quick_note_info?.content
+									? document.quick_note_info.content
+									: t('document_no_md')
+							}
+							ownerId={document?.creator.id}
+							onSave={handleSaveMarkdown}
+						/>
 						<div
 							ref={bottomRef}
 							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'

@@ -134,7 +134,7 @@ const TaskStateCard = ({
 				{hint ? (
 					<div
 						className={cn(
-							'w-full rounded-[16px] border px-3 py-1.5 text-xs leading-5',
+							'w-full rounded-[14px] border px-3 py-2 text-xs leading-5 text-left',
 							toneClasses.hint,
 						)}>
 						{hint}
@@ -195,12 +195,13 @@ const TaskStateCard = ({
 				{hint ? (
 					<div
 						className={cn(
-							'rounded-[16px] border px-3 py-1.5 text-xs leading-5',
+							'rounded-[14px] border px-3 py-2 text-xs leading-5',
 							toneClasses.hint,
 						)}>
 						{hint}
 					</div>
 				) : null}
+
 			</div>
 		</div>
 	);

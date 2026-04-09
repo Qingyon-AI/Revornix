@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -180,6 +181,7 @@ const TipTapEditor = ({
 	const [isContinuing, setIsContinuing] = useState(false);
 	const [isGeneratingIllustration, setIsGeneratingIllustration] = useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
 	const [selectedContinuationModelId, setSelectedContinuationModelId] = useState<
 		number | null
 	>(mainUserInfo?.default_revornix_model_id ?? null);
@@ -199,6 +201,10 @@ const TipTapEditor = ({
 			mainUserInfo?.default_image_generate_engine_id ?? null,
 		);
 	}, [mainUserInfo?.default_image_generate_engine_id]);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	useEffect(() => {
 		if (!isFallbackFullscreen) {
@@ -837,13 +843,13 @@ const TipTapEditor = ({
 	const showFullscreen = isFallbackFullscreen;
 	const fullscreenLabel = showFullscreen ? t('exit_fullscreen') : t('enter_fullscreen');
 
-	return (
+	const editorShell = (
 		<div
 			className={cn(
 				'relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-background',
+				className,
 				isFallbackFullscreen &&
-					'fixed inset-0 z-50 h-screen rounded-none border-0 bg-background',
-				className
+					'fixed inset-0 z-50 h-screen rounded-none border-0 bg-background'
 			)}>
 			<div className='flex items-center gap-1 border-b border-border/60 bg-muted/30 px-2 py-1.5'>
 				<Button
@@ -898,10 +904,10 @@ const TipTapEditor = ({
 							className={getColorTriggerClassName(
 								Boolean(resolvedToolbarState.activeTextColor),
 							)}
-							title='文字颜色'
+							title={t('editor_text_color')}
 							onMouseDown={preserveEditorSelection}>
 							<Type className='size-3.5' />
-							<span>文字色</span>
+							<span>{t('editor_text_color')}</span>
 							<span
 								className='size-3 rounded-full border border-border/70'
 								style={{
@@ -916,7 +922,9 @@ const TipTapEditor = ({
 						className='w-56 space-y-3 p-3'
 						onOpenAutoFocus={(event) => event.preventDefault()}>
 						<div className='space-y-2'>
-							<p className='text-xs font-medium text-muted-foreground'>文字颜色</p>
+							<p className='text-xs font-medium text-muted-foreground'>
+								{t('editor_text_color')}
+							</p>
 							<div className='flex flex-wrap gap-2'>
 								{TEXT_COLORS.map((color) => (
 									<button
@@ -929,7 +937,7 @@ const TipTapEditor = ({
 												: 'border-border/60'
 										)}
 										style={{ backgroundColor: color }}
-										title={`文字颜色 ${color}`}
+										title={`${t('editor_text_color')} ${color}`}
 										aria-label={`Set text color ${color}`}
 										onMouseDown={(event) => event.preventDefault()}
 										onClick={() => applyTextColor(color)}
@@ -942,10 +950,10 @@ const TipTapEditor = ({
 							variant='outline'
 							size='sm'
 							className='w-full'
-							title='清除文字颜色'
+							title={t('editor_clear_text_color')}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={clearTextColor}>
-							清除文字颜色
+							{t('editor_clear_text_color')}
 						</Button>
 					</PopoverContent>
 				</Popover>
@@ -957,10 +965,10 @@ const TipTapEditor = ({
 							className={getColorTriggerClassName(
 								Boolean(resolvedToolbarState.activeHighlightColor),
 							)}
-							title='文字高亮'
+							title={t('editor_highlight')}
 							onMouseDown={preserveEditorSelection}>
 							<Highlighter className='size-3.5' />
-							<span>高亮</span>
+							<span>{t('editor_highlight')}</span>
 							<span
 								className='size-3 rounded-sm border border-border/70'
 								style={{
@@ -975,7 +983,9 @@ const TipTapEditor = ({
 						className='w-56 space-y-3 p-3'
 						onOpenAutoFocus={(event) => event.preventDefault()}>
 						<div className='space-y-2'>
-							<p className='text-xs font-medium text-muted-foreground'>高亮颜色</p>
+							<p className='text-xs font-medium text-muted-foreground'>
+								{t('editor_highlight_color')}
+							</p>
 							<div className='flex flex-wrap gap-2'>
 								{HIGHLIGHT_COLORS.map((color) => (
 									<button
@@ -988,7 +998,7 @@ const TipTapEditor = ({
 												: 'border-border/60'
 										)}
 										style={{ backgroundColor: color }}
-										title={`高亮颜色 ${color}`}
+										title={`${t('editor_highlight_color')} ${color}`}
 										aria-label={`Set highlight color ${color}`}
 										onMouseDown={(event) => event.preventDefault()}
 										onClick={() => applyHighlightColor(color)}
@@ -1001,10 +1011,10 @@ const TipTapEditor = ({
 							variant='outline'
 							size='sm'
 							className='w-full'
-							title='清除高亮颜色'
+							title={t('editor_clear_highlight_color')}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={clearHighlightColor}>
-							清除高亮颜色
+							{t('editor_clear_highlight_color')}
 						</Button>
 					</PopoverContent>
 				</Popover>
@@ -1329,6 +1339,12 @@ const TipTapEditor = ({
 			</Dialog>
 		</div>
 	);
+
+	if (isFallbackFullscreen && isMounted) {
+		return createPortal(editorShell, document.body);
+	}
+
+	return editorShell;
 };
 
 export default TipTapEditor;

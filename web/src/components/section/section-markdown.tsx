@@ -3,15 +3,19 @@ import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
-import { SectionProcessStatus } from '@/enums/section';
+import { SectionProcessStatus, UserSectionAuthority } from '@/enums/section';
+import { FileService } from '@/lib/file';
+import { getQueryClient } from '@/lib/get-query-client';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn } from '@/lib/utils';
-import { getSectionDetail } from '@/service/section';
+import { useUserContext } from '@/provider/user-provider';
+import { getUserFileSystemDetail } from '@/service/file-system';
+import { getSectionDetail, updateSection } from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 import { Alert, AlertDescription } from '../ui/alert';
-import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
+import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import { Skeleton } from '../ui/skeleton';
 
 const SectionMarkdownSkeleton = ({ className }: { className?: string }) => {
@@ -58,6 +62,8 @@ const SectionMarkdown = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
+	const queryClient = getQueryClient();
+	const { mainUserInfo } = useUserContext();
 	const {
 		data: section,
 		isFetching,
@@ -69,6 +75,20 @@ const SectionMarkdown = ({
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
 		},
+	});
+	const { data: userFileSystemDetail } = useQuery({
+		queryKey: [
+			'getUserFileSystemDetail',
+			mainUserInfo?.id,
+			mainUserInfo?.default_user_file_system,
+		],
+		queryFn: () =>
+			getUserFileSystemDetail({
+				user_file_system_id: mainUserInfo!.default_user_file_system!,
+			}),
+		enabled:
+			mainUserInfo?.id !== undefined &&
+			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
 	const [markdown, setMarkdown] = useState<string>();
@@ -92,6 +112,11 @@ const SectionMarkdown = ({
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
+	const canEditMarkdown =
+		Boolean(section?.md_file_name) &&
+		(section?.authority === UserSectionAuthority.FULL_ACCESS ||
+			section?.authority === UserSectionAuthority.READ_AND_WRITE ||
+			section?.creator?.id === mainUserInfo?.id);
 
 	const containsImagePlaceholder = (content?: string) =>
 		Boolean(content?.includes('section-image-placeholder:'));
@@ -229,6 +254,39 @@ const SectionMarkdown = ({
 	const contentFallbackMinHeightClassName =
 		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 
+	const handleSaveMarkdown = async (content: string) => {
+		if (!section?.md_file_name || !userFileSystemDetail?.file_system_id) {
+			throw new Error(t('document_markdown_file_missing'));
+		}
+
+		const fileName =
+			section.md_file_name.split('/').pop() || `section-${id}.md`;
+		const fileService = new FileService(userFileSystemDetail.file_system_id);
+		const file = new File([content], fileName, {
+			type: 'text/markdown;charset=utf-8',
+		});
+
+		await fileService.uploadFile(section.md_file_name, file);
+		await updateSection({
+			section_id: id,
+			title: section.title,
+			description: section.description,
+			cover: section.cover ?? null,
+			labels: section.labels?.map((label) => label.id) ?? [],
+			auto_podcast: section.auto_podcast,
+			auto_illustration: section.auto_illustration,
+			process_task_trigger_type: section.process_task_trigger_type ?? null,
+			process_task_trigger_scheduler:
+				section.process_task_trigger_scheduler ?? null,
+		});
+		setMarkdown(content);
+		setMarkdownGetError(undefined);
+		queryClient.invalidateQueries({
+			queryKey: ['getSectionDetail', id],
+			exact: true,
+		});
+	};
+
 	return (
 		<div className={cn('relative flex min-h-full w-full flex-col', className)}>
 			{showEmpty ? (
@@ -285,15 +343,17 @@ const SectionMarkdown = ({
 							</Alert>
 						</div>
 					) : null}
-					<div className='prose prose-zinc mx-auto max-w-[880px] overflow-x-hidden pb-6 dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl sm:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
-						<TipTapMarkdownViewer
-							content={markdown || t('section_no_md')}
-							ownerId={section?.creator?.id}
-						/>
-						<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
-							{t('section_ai_tips')}
-						</div>
-					</div>
+					<EditableMarkdownPanel
+						content={markdown}
+						ownerId={section?.creator?.id}
+						editable={canEditMarkdown}
+						onSave={handleSaveMarkdown}
+						viewerFooter={
+							<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+								{t('section_ai_tips')}
+							</div>
+						}
+					/>
 				</div>
 			) : null}
 		</div>

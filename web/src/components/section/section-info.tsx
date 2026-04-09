@@ -23,9 +23,6 @@ import {
 	UserSectionAuthority,
 } from '@/enums/section';
 import { formatInUserTimeZone, toDate } from '@/lib/time';
-import { getSectionFreshnessState } from '@/lib/result-freshness';
-import { getSectionAutomationWarnings } from '@/lib/section-automation';
-import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { useUserContext } from '@/provider/user-provider';
 import { cn, replacePath } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
@@ -78,7 +75,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
-	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 
 	const {
 		data: section,
@@ -136,8 +132,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 			: undefined;
 	const creatorId = section.creator?.id ?? fallbackCreator?.id;
 	const isOwner = creatorId !== undefined && creatorId === mainUserInfo?.id;
-	const hasPodcastEngine =
-		podcastEngine.configured && !podcastEngine.subscriptionLocked;
 	const creatorNickname =
 		section.creator?.nickname ?? fallbackCreator?.nickname ?? '--';
 	const creatorAvatar = section.creator?.avatar ?? fallbackCreator?.avatar;
@@ -162,14 +156,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 			</div>
 		);
 	};
-	const effectivePodcastStatus =
-		section.podcast_task?.status ??
-		(section.auto_podcast &&
-		hasPodcastEngine &&
-		section.process_task &&
-		section.process_task.status < SectionProcessStatus.SUCCESS
-			? SectionPodcastStatus.WAIT_TO
-			: undefined);
+	const effectivePodcastStatus = section.podcast_task?.status;
 	const documentIntegrationStatus = (() => {
 		const summary = section.document_integration;
 		if (!summary || (section.documents_count ?? 0) <= 0) {
@@ -248,29 +235,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 			node: ReturnType<typeof renderStatusBadge>;
 		} => Boolean(item),
 	);
-	const automationWarnings = getSectionAutomationWarnings({
-		autoPodcast: section.auto_podcast,
-		autoIllustration: section.auto_illustration,
-		hasPodcastEngine,
-		hasImageEngine:
-			imageGenerateEngine.configured &&
-			!imageGenerateEngine.subscriptionLocked,
-	});
-	const warningMessages = isOwner
-		? [
-				automationWarnings.missingPodcastEngine
-					? t('section_form_auto_podcast_engine_unset')
-					: null,
-				automationWarnings.missingIllustrationEngine
-					? t('section_form_auto_illustration_engine_unset')
-					: null,
-			].filter((message): message is string => Boolean(message))
-		: [];
-	const freshnessState = getSectionFreshnessState(section);
-	const staleWarningMessages = [
-		freshnessState.markdownStale ? t('section_markdown_stale_warning') : null,
-	].filter((message): message is string => Boolean(message));
-
 	return (
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
 			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
@@ -374,19 +338,6 @@ const SectionInfo = ({ id }: { id: number }) => {
 				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 					{statusBadges.map((badge) => (
 						<div key={badge.key}>{badge.node}</div>
-					))}
-				</div>
-			) : null}
-
-			{warningMessages.length + staleWarningMessages.length > 0 ? (
-				<div className='space-y-2'>
-					{[...warningMessages, ...staleWarningMessages].map((message, index) => (
-						<Alert
-							key={`${index}-${message}`}
-							className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
-							<AlertTriangle className='size-4 text-current' />
-							<AlertDescription>{message}</AlertDescription>
-						</Alert>
 					))}
 				</div>
 			) : null}
