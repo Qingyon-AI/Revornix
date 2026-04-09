@@ -9,7 +9,6 @@ import { enUS } from 'date-fns/locale/en-US';
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-	AlertTriangle,
 	BookMarked,
 	CalendarClock,
 	CalendarDays,
@@ -43,7 +42,6 @@ import {
 } from '@/enums/document';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Alert, AlertDescription } from '../ui/alert';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -187,11 +185,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const statusActionClassName =
 		'h-auto p-0 text-xs font-medium text-muted-foreground underline underline-offset-4';
 	const freshnessState = getDocumentFreshnessState(data);
-	const warningMessages = [
-		freshnessState.summaryStale ? t('document_summary_stale_warning') : null,
-		freshnessState.graphStale ? t('document_graph_stale_warning') : null,
-		freshnessState.podcastStale ? t('document_podcast_stale_warning') : null,
-	].filter((message): message is string => Boolean(message));
 
 	const renderStatusBadge = (
 		label: string,
@@ -216,14 +209,17 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		data.embedding_task
 			? renderStatusBadge(
 					t('document_embedding_status'),
-					data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO
+					freshnessState.embeddingStale
+						? t('document_status_stale')
+						: data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO
 						? t('document_embedding_status_todo')
 						: data.embedding_task.status === DocumentEmbeddingStatus.Embedding
 							? t('document_embedding_status_doing')
 							: data.embedding_task.status === DocumentEmbeddingStatus.SUCCESS
 								? t('document_embedding_status_success')
 								: t('document_embedding_status_failed'),
-					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ? (
+					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ||
+					freshnessState.embeddingStale ? (
 						<Button
 							variant='link'
 							size='sm'
@@ -256,7 +252,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		data.graph_task
 			? renderStatusBadge(
 					t('document_graph_status'),
-					data.graph_task.status === DocumentGraphStatus.WAIT_TO
+					freshnessState.graphStale
+						? t('document_status_stale')
+						: data.graph_task.status === DocumentGraphStatus.WAIT_TO
 						? t('document_graph_status_todo')
 						: data.graph_task.status === DocumentGraphStatus.BUILDING
 							? t('document_graph_status_doing')
@@ -268,7 +266,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		data.summarize_task
 			? renderStatusBadge(
 					t('document_summarize_status'),
-					data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO
+					freshnessState.summaryStale
+						? t('document_status_stale')
+						: data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO
 						? t('document_summarize_status_todo')
 						: data.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING
 							? t('document_summarize_status_doing')
@@ -292,7 +292,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		data.podcast_task
 			? renderStatusBadge(
 					t('document_podcast_status'),
-					data.podcast_task.status === DocumentPodcastStatus.WAIT_TO
+					freshnessState.podcastStale
+						? t('document_status_stale')
+						: data.podcast_task.status === DocumentPodcastStatus.WAIT_TO
 						? t('document_podcast_status_todo')
 						: data.podcast_task.status === DocumentPodcastStatus.GENERATING
 							? t('document_podcast_status_doing')
@@ -387,12 +389,16 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		}
 
 		return (
-			<TaskStateCard
-				variant='panel'
-				icon={Sparkles}
-				badge={t('document_summarize_status_success')}
-				title={t('ai_summary_ready')}
-				tone={freshnessState.summaryStale ? 'warning' : 'success'}
+				<TaskStateCard
+					variant='panel'
+					icon={Sparkles}
+					badge={
+						freshnessState.summaryStale
+							? t('document_status_stale')
+							: t('document_summarize_status_success')
+					}
+					title={t('ai_summary_ready')}
+					tone={freshnessState.summaryStale ? 'warning' : 'success'}
 				hint={
 					freshnessState.summaryStale
 						? t('document_summary_stale_hint')
@@ -515,19 +521,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			{statusBadges.length > 0 ? (
 				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 					{statusBadges}
-				</div>
-			) : null}
-
-			{warningMessages.length > 0 ? (
-				<div className='space-y-2'>
-					{warningMessages.map((message) => (
-						<Alert
-							key={message}
-							className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
-							<AlertTriangle className='size-4 text-current' />
-							<AlertDescription>{message}</AlertDescription>
-						</Alert>
-					))}
 				</div>
 			) : null}
 

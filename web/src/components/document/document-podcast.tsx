@@ -127,7 +127,11 @@ const DocumentPodcast = ({
 						document?.podcast_task?.podcast_file_name && (
 							<TaskStateCard
 								icon={AudioLines}
-								badge={t('document_podcast_status_success')}
+								badge={
+									freshnessState.podcastStale
+										? t('document_status_stale')
+										: t('document_podcast_status_success')
+								}
 								title={t('document_podcast_ready')}
 								tone={freshnessState.podcastStale ? 'warning' : 'success'}
 								className={className}

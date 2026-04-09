@@ -239,6 +239,7 @@ const SectionMedia = ({
 			</div>
 		) : undefined;
 	const pptHintMessages = [
+		freshnessState.pptStale ? t('section_ppt_stale_hint') : null,
 		isOwner && !selectedPptModelId ? t('section_ppt_reader_model_unset') : null,
 		isOwner && !selectedPptImageEngineId ? t('section_ppt_image_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
@@ -319,7 +320,11 @@ const SectionMedia = ({
 			section.podcast_task.podcast_file_name ? (
 				<TaskStateCard
 					icon={AudioLines}
-					badge={t('document_podcast_status_success')}
+					badge={
+						freshnessState.podcastStale
+							? t('document_status_stale')
+							: t('document_podcast_status_success')
+					}
 					title={t('section_podcast_ready')}
 					tone={freshnessState.podcastStale ? 'warning' : 'success'}
 					className={surfaceCardClassName}
@@ -457,12 +462,16 @@ const SectionMedia = ({
 			{pptPreview?.status === 'success' ? (
 				<TaskStateCard
 					icon={Presentation}
-					badge={t('section_ppt_status_success')}
+					badge={
+						freshnessState.pptStale
+							? t('document_status_stale')
+							: t('section_ppt_status_success')
+					}
 					title={pptPreview.title || t('section_ppt_preview_title')}
 					description={
 						pptPreview.subtitle || t('section_ppt_preview_description')
 					}
-					tone='success'
+					tone={freshnessState.pptStale ? 'warning' : 'success'}
 					hint={pptHint}
 					className={surfaceCardClassName}
 					action={

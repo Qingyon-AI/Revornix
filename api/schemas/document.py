@@ -32,6 +32,7 @@ class DocumentUpdateRequest(BaseModel):
     cover: str | None = None
     labels: list[int] | None = None
     sections: list[int] | None = None
+    content: str | None = None
 
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]

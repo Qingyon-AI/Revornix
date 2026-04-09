@@ -55,6 +55,12 @@ export interface DocumentUpdateRequest {
      * @memberof DocumentUpdateRequest
      */
     sections?: Array<number> | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentUpdateRequest
+     */
+    content?: string | null;
 }
 
 /**
@@ -81,6 +87,7 @@ export function DocumentUpdateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'cover': json['cover'] == null ? undefined : json['cover'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'sections': json['sections'] == null ? undefined : json['sections'],
+        'content': json['content'] == null ? undefined : json['content'],
     };
 }
 
@@ -101,6 +108,6 @@ export function DocumentUpdateRequestToJSONTyped(value?: DocumentUpdateRequest |
         'cover': value['cover'],
         'labels': value['labels'],
         'sections': value['sections'],
+        'content': value['content'],
     };
 }
-

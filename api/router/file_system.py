@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import cast
+from urllib.parse import parse_qs, unquote, urlparse
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile, Query
 from fastapi.responses import RedirectResponse
@@ -20,6 +21,25 @@ from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 file_system_router = APIRouter()
 
 
+def _normalize_presign_file_path(path: str, bucket: str | None = None) -> str:
+    path = (path or "").strip()
+    if not path:
+        raise schemas.error.CustomException(code=400, message="Path is required")
+
+    if path.startswith(("http://", "https://")):
+        parsed = urlparse(path)
+        query = parse_qs(parsed.query)
+        if "path" in query and query["path"]:
+            path = query["path"][0]
+        else:
+            normalized_path = unquote(parsed.path.lstrip("/"))
+            if bucket and normalized_path.startswith(f"{bucket}/"):
+                normalized_path = normalized_path[len(bucket) + 1 :]
+            path = normalized_path
+
+    return _normalize_and_validate_path(path)
+
+
 @file_system_router.post("/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
 async def get_presigned_url(
     presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
@@ -29,14 +49,18 @@ async def get_presigned_url(
     file_service = await FileSystemProxy.create(
         user_id=current_user.id
     )
+    normalized_file_path = _normalize_presign_file_path(
+        presign_upload_url_request.file_path,
+        bucket=getattr(file_service, "bucket", None),
+    )
     response = file_service.presign_put_url(
-        file_path=presign_upload_url_request.file_path,
+        file_path=normalized_file_path,
         content_type=presign_upload_url_request.content_type,
         expires_in=3600
     )
     return schemas.file_system.PresignUploadURLResponse(
         upload_url=response.upload_url,
-        file_path=presign_upload_url_request.file_path,
+        file_path=normalized_file_path,
         fields=response.fields,
         expiration=response.expiration
     )

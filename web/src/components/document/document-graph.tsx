@@ -226,27 +226,23 @@ const DocumentGraph = ({
 					{isGraphReady && isFetched && nodes.length === 0 ? (
 						<GraphStatePanel
 							icon={Sparkles}
-							badge={t('document_graph_status_success')}
+							badge={
+								freshnessState.graphStale
+									? t('document_status_stale')
+									: t('document_graph_status_success')
+							}
 							title={t('document_graph_data_empty')}
 							description={t('document_graph_description')}
 							tone={freshnessState.graphStale ? 'warning' : 'success'}
 						/>
 					) : null}
 					{isGraphReady && nodes.length > 0 ? (
-						<>
-							{freshnessState.graphStale ? (
-								<div className='pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 shadow-sm dark:text-amber-200'>
-									<AlertCircle className='size-3.5' />
-									<span>{t('document_graph_stale_hint')}</span>
-								</div>
-							) : null}
-							<EntityGraphCanvas
-								nodes={nodes}
-								edges={edges}
-								className='h-full w-full'
-								showSearch={showSearch}
-							/>
-						</>
+						<EntityGraphCanvas
+							nodes={nodes}
+							edges={edges}
+							className='h-full w-full'
+							showSearch={showSearch}
+						/>
 					) : null}
 				</>
 			) : null}

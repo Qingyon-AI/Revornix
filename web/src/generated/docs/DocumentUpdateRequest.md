@@ -12,6 +12,7 @@ Name | Type
 `cover` | string
 `labels` | Array&lt;number&gt;
 `sections` | Array&lt;number&gt;
+`content` | string
 
 ## Example
 
@@ -26,6 +27,7 @@ const example = {
   "cover": null,
   "labels": null,
   "sections": null,
+  "content": null,
 } satisfies DocumentUpdateRequest
 
 console.log(example)
@@ -40,5 +42,4 @@ console.log(exampleParsed)
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
