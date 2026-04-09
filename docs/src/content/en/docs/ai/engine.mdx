@@ -21,7 +21,7 @@ These engines usually work together with default models to form complete workflo
 | --- | --- | --- |
 | Markdown parsing | Markitdown, Jina, MinerU API | Convert websites and files into Markdown |
 | Podcast generation | Volc Podcast Engine, OpenAI Audio Engine | Document and section podcast output |
-| Image generation | Banana Image | Section illustrations and PPT slides |
+| Image generation | Banana Image, Bailian Image, Volc Image | Section illustrations and PPT slides |
 | Audio transcription | Volc STT Fast, Volc STT Standard | Audio-document transcription |
 
 ## 2. Default engine slots are now split by responsibility
@@ -91,6 +91,46 @@ It also affects:
 The official seed includes:
 
 - `Official_Banana_Image`
+- `Official_Bailian_Image`
+- `Official_Volc_Image`
+
+You can also add your own image engines, for example:
+
+- `Banana Image`
+- `Bailian Image`
+- `Volc Image`
+
+`Bailian Image` is based on Alibaba Cloud Bailian's synchronous `Qwen-Image` text-to-image API. The current implementation expects these engine config fields:
+
+- `api_key`
+- `base_url`
+- `model_name`
+
+Optional fields:
+
+- `size`
+- `negative_prompt`
+- `prompt_extend`
+- `watermark`
+- `seed`
+
+`Volc Image` is wired to the Volcengine OpenAPI image generation service and currently uses the signed OpenAPI request flow. The required engine config fields are:
+
+- `access_key_id`
+- `secret_access_key`
+- `req_key`
+
+Common optional fields:
+
+- `base_url`
+- `region`
+- `service`
+- `action`
+- `version`
+- `model_version`
+- `size`
+- `negative_prompt`
+- `seed`
 
 ## 5. Official hosted engines
 
@@ -112,6 +152,8 @@ So an engine now communicates more than "this capability exists." It can also ex
 In official deployment initialization, the public seeded engines are:
 
 - `Official_Banana_Image`
+- `Official_Bailian_Image`
+- `Official_Volc_Image`
 - `Official_Volc_TTS`
 - `Official_MinerU_API`
 - `Official_Volc_Fast_STT`

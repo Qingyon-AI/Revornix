@@ -21,7 +21,7 @@ import { Callout } from 'nextra/components';
 | --- | --- | --- |
 | Markdown 解析 | Markitdown、Jina、MinerU API | 网站 / 文件转 Markdown |
 | 播客生成 | Volc Podcast Engine、OpenAI Audio Engine | 文档 / 专栏播客 |
-| 图片生成 | Banana Image | 专栏插图、PPT 幻灯片图 |
+| 图片生成 | Banana Image、Bailian Image、Volc Image | 专栏插图、PPT 幻灯片图 |
 | 音频转写 | Volc STT Fast、Volc STT Standard | 音频文档转文字 |
 
 ## 2. 默认引擎位现在已经拆细
@@ -90,6 +90,46 @@ import { Callout } from 'nextra/components';
 官方初始化中包含：
 
 - `Official_Banana_Image`
+- `Official_Bailian_Image`
+- `Official_Volc_Image`
+
+你也可以自行新增其他生图引擎，例如：
+
+- `Banana Image`
+- `Bailian Image`
+- `Volc Image`
+
+其中 `Bailian Image` 基于阿里云百炼 `Qwen-Image` 文生图同步接口，当前实现需要在引擎配置中提供：
+
+- `api_key`
+- `base_url`
+- `model_name`
+
+并支持以下可选参数：
+
+- `size`
+- `negative_prompt`
+- `prompt_extend`
+- `watermark`
+- `seed`
+
+`Volc Image` 基于火山引擎 OpenAPI 图像生成服务接入，当前实现默认按 OpenAPI 签名方式调用，需要在引擎配置中提供：
+
+- `access_key_id`
+- `secret_access_key`
+- `req_key`
+
+常用可配字段包括：
+
+- `base_url`
+- `region`
+- `service`
+- `action`
+- `version`
+- `model_version`
+- `size`
+- `negative_prompt`
+- `seed`
 
 ## 5. 官方托管引擎
 
@@ -111,6 +151,8 @@ import { Callout } from 'nextra/components';
 在官方部署初始化里，会创建这些官方公开引擎：
 
 - `Official_Banana_Image`
+- `Official_Bailian_Image`
+- `Official_Volc_Image`
 - `Official_Volc_TTS`
 - `Official_MinerU_API`
 - `Official_Volc_Fast_STT`

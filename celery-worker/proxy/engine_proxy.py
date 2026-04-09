@@ -149,6 +149,12 @@ class EngineProxy:
         if engine_provided_uuid == EngineProvided.Volc_TTS.meta.uuid:
             from engine.tts.volc.tts import VolcTTSEngine
             engine = VolcTTSEngine()
+        elif engine_provided_uuid == EngineProvided.Volc_Image.meta.uuid:
+            from engine.image_generate.volc import VolcImageGenerateEngine
+            engine = VolcImageGenerateEngine()
+        elif engine_provided_uuid == EngineProvided.Bailian_Image.meta.uuid:
+            from engine.image_generate.bailian import BailianImageGenerateEngine
+            engine = BailianImageGenerateEngine()
         elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
             from engine.image_generate.banana import BananaImageGenerateEngine
             engine = BananaImageGenerateEngine()
