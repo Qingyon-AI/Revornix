@@ -30,7 +30,7 @@ const PrivateLayoutShell = ({
 					<div className='absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent' />
 				</div>
 
-				<header className='sticky top-0 z-20 px-5 pt-3 pb-3'>
+				<header className='sticky top-0 z-20 px-5 pt-3 pb-3 backdrop-blur'>
 					<div className='flex min-h-13 items-center justify-between rounded-2xl border border-border/60 bg-card/80 px-3 shadow-[0_16px_36px_-30px_rgba(15,23,42,0.32)] backdrop-blur-xl'>
 						<div className='flex gap-1.5 items-center flex-1'>
 							<SidebarTrigger className='size-6 rounded-xl' />

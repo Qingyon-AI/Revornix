@@ -59,7 +59,6 @@ const EnginePage = () => {
 
 	return (
 		<>
-			<Separator className='mb-5' />
 			<div className='flex flex-row px-5 pb-5 gap-3'>
 				<Alert className='bg-emerald-600/10 dark:bg-emerald-600/15 text-emerald-500 border-none'>
 					<Info className='size-4' />

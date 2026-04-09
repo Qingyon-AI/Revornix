@@ -2,6 +2,7 @@
 
 import SectionCard from '@/components/section/section-card';
 import SectionCardSkeleton from '@/components/section/section-card-skeleton';
+import SectionListTable from '@/components/section/section-list-table';
 import { getMineLabels, searchMineSection } from '@/service/section';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -30,7 +31,7 @@ import {
 	SheetTrigger,
 } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
-import { Separator } from '../ui/separator';
+import CardViewToggle from '@/components/ui/card-view-toggle';
 import {
 	Empty,
 	EmptyContent,
@@ -39,9 +40,11 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import Link from 'next/link';
+import { useCardViewMode } from '@/hooks/use-card-view-mode';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
+	const { viewMode, setViewMode } = useCardViewMode('section-list-view-mode');
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const [desc, setDesc] = useState(true);
@@ -94,14 +97,14 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 
 	return (
 		<>
-			<Separator className='mb-5' />
-			<div className='flex flex-row px-5 pb-5 gap-3'>
+			<div className='sticky top-0 z-20 flex flex-row gap-3 px-5 py-4 backdrop-blur border-t border-border/75'>
 				<Input
 					placeholder={t('section_search_placeholder')}
 					value={keyword}
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
-				<div className='flex flex-row gap-3'>
+				<div className='flex flex-row gap-3 shrink-0'>
+					<CardViewToggle value={viewMode} onChange={setViewMode} />
 					<Popover>
 						<PopoverTrigger asChild>
 							<Button size={'icon'} variant={'outline'}>
@@ -234,29 +237,40 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 					</EmptyContent>
 				</Empty>
 			)}
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4 px-5 pb-5'>
-				{sections &&
-					sections.map((section, index) => {
-						return (
-							<div
-								className='h-full'
-								key={section.id}
-								ref={index === sections.length - 1 ? bottomRef : undefined}>
-								<SectionCard section={section} />
-							</div>
-						);
-					})}
+			<div className='px-5 pb-5'>
+				{viewMode === 'grid' ? (
+					<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+						{sections &&
+							sections.map((section, index) => {
+								return (
+									<div
+										className='h-full'
+										key={section.id}
+										ref={
+											index === sections.length - 1 ? bottomRef : undefined
+										}>
+										<SectionCard section={section} />
+									</div>
+								);
+							})}
+					</div>
+				) : (
+					<>
+						<SectionListTable sections={sections} />
+						<div ref={bottomRef} className='h-px w-full' />
+					</>
+				)}
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <SectionCardSkeleton key={index} />;
+							return <SectionCardSkeleton key={index} layout={viewMode} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <SectionCardSkeleton key={index} />;
+							return <SectionCardSkeleton key={index} layout={viewMode} />;
 						})}
 					</>
 				)}

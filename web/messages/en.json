@@ -42,6 +42,8 @@
     "editor_highlight": "Highlight",
     "editor_highlight_color": "Highlight Color",
     "editor_clear_highlight_color": "Clear Highlight Color",
+    "card_view_grid": "Grid view",
+    "card_view_list": "List view",
     "document_status_stale": "Stale",
     "loading": "Loading",
     "copy_successfully": "Copy Successfully",
