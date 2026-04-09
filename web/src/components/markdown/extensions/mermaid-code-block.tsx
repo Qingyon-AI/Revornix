@@ -21,6 +21,8 @@ import {
 import { common, createLowlight } from 'lowlight';
 
 const lowlight = createLowlight(common);
+const DIAGRAM_PANEL_MAX_HEIGHT = 360;
+const DIAGRAM_SOURCE_MAX_HEIGHT = 360;
 
 const CODE_BLOCK_LANGUAGES = [
 	{ value: 'plaintext', label: 'Plain Text' },
@@ -150,7 +152,9 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 
 	const renderMermaidSource = () => {
 		return (
-			<div className='overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'>
+			<div
+				className='overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'
+				style={{ maxHeight: `${DIAGRAM_SOURCE_MAX_HEIGHT}px` }}>
 				<div
 					className='flex items-center justify-between border-b border-white/10 px-3 py-1.5'
 					contentEditable={false}>
@@ -165,15 +169,17 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 						</div>
 					</div>
 				</div>
-				<div className='flex min-h-[112px]'>
+				<div className='flex min-h-[112px] max-h-[inherit]'>
 					<div
-						className='flex w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
+						className='flex w-9 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
 						contentEditable={false}>
 						{sourceLines.map((_, index) => (
 							<div key={index}>{index + 1}</div>
 						))}
 					</div>
-					<NodeViewContent className='min-w-0 flex-1 whitespace-pre px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-[92px] [&_.ProseMirror]:outline-none' />
+					<div className='min-w-0 flex-1 overflow-auto'>
+						<NodeViewContent className='min-w-0 whitespace-pre px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-[92px] [&_.ProseMirror]:outline-none' />
+					</div>
 				</div>
 			</div>
 		);
@@ -230,6 +236,7 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 				className={`grid gap-2.5 p-2.5 ${isCodeBlockHidden ? '' : 'md:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.9fr)]'} md:items-stretch`}>
 				<div
 					className='overflow-hidden rounded-[0.8rem] border border-emerald-200/70 bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(248,250,252,0.96))] bg-[size:18px_18px,18px_18px,auto,auto] shadow-inner dark:border-emerald-500/20 dark:bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(180deg,_rgba(9,14,24,0.98),_rgba(15,23,42,0.95))] dark:bg-[size:18px_18px,18px_18px,auto,auto]'
+					style={{ maxHeight: `${DIAGRAM_PANEL_MAX_HEIGHT}px` }}
 					contentEditable={false}>
 					<div className='flex items-center justify-between border-b border-border/50 p-1.5'>
 						<div className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300'>
@@ -244,7 +251,7 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 									: 'Start typing Mermaid syntax'}
 						</div>
 					</div>
-					<div className='overflow-auto p-1.5 pt-0'>
+					<div className='overflow-auto p-1.5 pt-0' style={{ maxHeight: `${DIAGRAM_PANEL_MAX_HEIGHT - 44}px` }}>
 						{!hasDiagramContent ? (
 							<div className='flex min-h-[116px] flex-col items-center justify-center rounded-[0.65rem] border border-dashed border-emerald-300/70 bg-background/70 px-3 text-center dark:border-emerald-500/30 dark:bg-slate-950/40'>
 								<div className='flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'>

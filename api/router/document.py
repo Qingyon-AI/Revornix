@@ -196,7 +196,8 @@ async def create_ai_summary(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
-    if user.default_document_reader_model_id is None:
+    selected_model_id = ai_summary_request.model_id or user.default_document_reader_model_id
+    if selected_model_id is None:
         raise schemas.error.CustomException(
             "Default document reader model is not configured",
             code=400,
@@ -204,7 +205,7 @@ async def create_ai_summary(
     await ensure_model_access(
         db=db,
         user=user,
-        model_id=user.default_document_reader_model_id,
+        model_id=selected_model_id,
     )
 
     db_exist_summarize_task = crud.task.get_document_summarize_task_by_document_id(
@@ -233,7 +234,8 @@ async def create_ai_summary(
     workflow = chain(
         start_process_document_summarize.si(
             document_id=db_document.id,
-            user_id=user.id
+            user_id=user.id,
+            model_id=selected_model_id,
         ),
         update_document_process_status.si(
             document_id=db_document.id,
@@ -307,7 +309,10 @@ async def transcribe_audio_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
-    if user.default_audio_transcribe_engine_id is None:
+    selected_engine_id = (
+        transcribe_request.engine_id or user.default_audio_transcribe_engine_id
+    )
+    if selected_engine_id is None:
         raise schemas.error.CustomException(
             "Default audio transcribe engine is not configured",
             code=400,
@@ -315,7 +320,7 @@ async def transcribe_audio_document(
     await ensure_engine_access(
         db=db,
         user=user,
-        engine_id=user.default_audio_transcribe_engine_id,
+        engine_id=selected_engine_id,
     )
 
     db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
@@ -343,7 +348,8 @@ async def transcribe_audio_document(
     workflow = chain(
         start_process_document_transcribe.si(
             document_id=db_document.id,
-            user_id=user.id
+            user_id=user.id,
+            engine_id=selected_engine_id,
         ),
         update_document_process_status.si(
             document_id=db_document.id,
@@ -368,6 +374,17 @@ async def generate_graph(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    selected_model_id = graph_generate_request.model_id or user.default_document_reader_model_id
+    if selected_model_id is None:
+        raise schemas.error.CustomException(
+            "Default document reader model is not configured",
+            code=400,
+        )
+    await ensure_model_access(
+        db=db,
+        user=user,
+        model_id=selected_model_id,
+    )
 
     db_graph_generate_task = crud.task.get_document_graph_task_by_document_id(
         db=db,
@@ -394,7 +411,8 @@ async def generate_graph(
     workflow = chain(
         start_process_document_graph.si(
             document_id=db_document.id,
-            user_id=user.id
+            user_id=user.id,
+            model_id=selected_model_id,
         ),
         update_document_process_status.si(
             document_id=db_document.id,
@@ -422,7 +440,10 @@ async def generate_podcast(
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
         raise schemas.error.CustomException("Default file system is not configured", code=400)
-    if user.default_podcast_user_engine_id is None:
+    selected_engine_id = (
+        generate_podcast_request.engine_id or user.default_podcast_user_engine_id
+    )
+    if selected_engine_id is None:
         raise schemas.error.CustomException(
             "Default podcast engine is not configured",
             code=400,
@@ -430,7 +451,7 @@ async def generate_podcast(
     await ensure_engine_access(
         db=db,
         user=user,
-        engine_id=user.default_podcast_user_engine_id,
+        engine_id=selected_engine_id,
     )
 
     db_exist_podcast_task = crud.task.get_document_podcast_task_by_document_id(
@@ -459,7 +480,8 @@ async def generate_podcast(
     workflow = chain(
         start_process_document_podcast.si(
             document_id=db_document.id,
-            user_id=user.id
+            user_id=user.id,
+            engine_id=selected_engine_id,
         ),
         update_document_process_status.si(
             document_id=db_document.id,

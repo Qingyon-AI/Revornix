@@ -123,9 +123,10 @@ async def _init_podcast_task(
             raise Exception("The document's creator is not found")
         if db_user.default_user_file_system is None:
             raise Exception("The document's creator has not set the default file system")
-        if db_user.default_podcast_user_engine_id is None:
+        if state.get("engine_id") is None and db_user.default_podcast_user_engine_id is None:
             raise Exception("The document's creator has not set the default podcast generate engine")
-        state["engine_id"] = db_user.default_podcast_user_engine_id
+        if state.get("engine_id") is None:
+            state["engine_id"] = db_user.default_podcast_user_engine_id
 
         # 3) 获取/创建task 标记为进行时
         db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
@@ -349,7 +350,8 @@ def get_document_podcast_workflow():
 async def run_document_podcast_workflow(
     *,
     document_id: int,
-    user_id: int
+    user_id: int,
+    engine_id: int | None = None,
 ) -> None:
     workflow = get_document_podcast_workflow()
     try:
@@ -359,6 +361,7 @@ async def run_document_podcast_workflow(
             payload={
                 "document_id": document_id,
                 "user_id": user_id,
+                "engine_id": engine_id,
             },
         )
     except Exception as e:

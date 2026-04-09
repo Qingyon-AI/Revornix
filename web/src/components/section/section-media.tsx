@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
 import {
 	AudioLines,
 	ChevronLeft,
@@ -27,7 +26,6 @@ import {
 	getMineUserRoleAndAuthority,
 	getSectionDetail,
 } from '@/service/section';
-import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 
 import AudioPlayer from '../ui/audio-player';
@@ -37,6 +35,10 @@ import ImagePreview from '../ui/image-preview';
 import { Skeleton } from '../ui/skeleton';
 import AudioStatusCard from '../ui/audio-status-card';
 import TaskStateCard from '../ui/task-state-card';
+import EngineSelect from '@/components/ai/engine-select';
+import AIModelSelect from '@/components/ai/model-select';
+import { EngineCategory } from '@/enums/engine';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 
 const fallbackCover =
 	'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png';
@@ -51,9 +53,34 @@ const SectionMedia = ({
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
-	const { podcastEngine, imageGenerateEngine, documentReaderModel } =
-		useDefaultResourceAccess();
 	const [pptSlideIndex, setPptSlideIndex] = useState(0);
+	const [selectedPodcastEngineId, setSelectedPodcastEngineId] = useState<number | null>(
+		mainUserInfo?.default_podcast_user_engine_id ?? null,
+	);
+	const [selectedPptModelId, setSelectedPptModelId] = useState<number | null>(
+		mainUserInfo?.default_document_reader_model_id ?? null,
+	);
+	const [selectedPptImageEngineId, setSelectedPptImageEngineId] = useState<number | null>(
+		mainUserInfo?.default_image_generate_engine_id ?? null,
+	);
+	const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState(false);
+	const [isPptDialogOpen, setIsPptDialogOpen] = useState(false);
+
+	useEffect(() => {
+		setSelectedPodcastEngineId(
+			mainUserInfo?.default_podcast_user_engine_id ?? null,
+		);
+	}, [mainUserInfo?.default_podcast_user_engine_id]);
+
+	useEffect(() => {
+		setSelectedPptModelId(mainUserInfo?.default_document_reader_model_id ?? null);
+	}, [mainUserInfo?.default_document_reader_model_id]);
+
+	useEffect(() => {
+		setSelectedPptImageEngineId(
+			mainUserInfo?.default_image_generate_engine_id ?? null,
+		);
+	}, [mainUserInfo?.default_image_generate_engine_id]);
 
 	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', section_id],
@@ -79,8 +106,10 @@ const SectionMedia = ({
 		mutationFn: () =>
 			generateSectionPodcast({
 				section_id,
+				engine_id: selectedPodcastEngineId ?? undefined,
 			}),
 		onSuccess() {
+			setIsPodcastDialogOpen(false);
 			toast.success(t('section_podcast_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionDetail', section_id],
@@ -100,8 +129,11 @@ const SectionMedia = ({
 		mutationFn: () =>
 			generateSectionPpt({
 				section_id,
+				model_id: selectedPptModelId ?? undefined,
+				image_engine_id: selectedPptImageEngineId ?? undefined,
 			}),
 		onSuccess() {
+			setIsPptDialogOpen(false);
 			toast.success(t('section_ppt_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionDetail', section_id],
@@ -182,12 +214,9 @@ const SectionMedia = ({
 	const ownershipResolved =
 		mainUserInfo !== undefined &&
 		(isCreatorById || isRoleFetched || isRoleError);
-	const canGeneratePodcast =
-		podcastEngine.configured &&
-		!podcastEngine.loading &&
-		!podcastEngine.subscriptionLocked;
+	const canGeneratePodcast = Boolean(selectedPodcastEngineId);
 	const canGeneratePpt =
-		imageGenerateEngine.accessible && documentReaderModel.accessible;
+		Boolean(selectedPptModelId) && Boolean(selectedPptImageEngineId);
 	const canSubmitPpt = canGeneratePpt && Boolean(section.md_file_name);
 	const cover = getSectionCoverSrc(section) ?? fallbackCover;
 	const hasPendingAutoPodcastFlow =
@@ -199,57 +228,32 @@ const SectionMedia = ({
 	const freshnessState = getSectionFreshnessState(section);
 	const podcastHintMessages = [
 		freshnessState.podcastStale ? t('section_podcast_stale_hint') : null,
-		isOwner && !canGeneratePodcast
-			? podcastEngine.subscriptionLocked
-				? t('hosted_feature_compute_fallback_hint')
-				: t('section_form_auto_podcast_engine_unset')
-			: null,
+		isOwner && !canGeneratePodcast ? t('section_form_auto_podcast_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
 	const podcastHint =
 		podcastHintMessages.length > 0 ? (
-			<div className='space-y-1'>
+			<div className='space-y-3'>
 				{podcastHintMessages.map((message) => (
 					<p key={message}>{message}</p>
 				))}
 			</div>
 		) : undefined;
 	const pptHintMessages = [
-		isOwner && !documentReaderModel.accessible
-			? documentReaderModel.subscriptionLocked
-				? t('hosted_feature_compute_fallback_hint')
-				: t('section_ppt_reader_model_unset')
-			: null,
-		isOwner && !imageGenerateEngine.accessible
-			? imageGenerateEngine.subscriptionLocked
-				? t('hosted_feature_compute_fallback_hint')
-				: t('section_ppt_image_engine_unset')
-			: null,
+		isOwner && !selectedPptModelId ? t('section_ppt_reader_model_unset') : null,
+		isOwner && !selectedPptImageEngineId ? t('section_ppt_image_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
 	const pptHint =
 		pptHintMessages.length > 0 ? (
-			<div className='space-y-1'>
+			<div className='space-y-3'>
 				{pptHintMessages.map((message) => (
 					<p key={message}>{message}</p>
 				))}
 			</div>
 		) : undefined;
-	const shouldShowDocumentReaderSettingsAction =
-		isOwner && !documentReaderModel.accessible && !documentReaderModel.loading;
-	const shouldShowImageEngineSettingsAction =
-		isOwner && !imageGenerateEngine.accessible && !imageGenerateEngine.loading;
-	const pptSettingsHref = shouldShowImageEngineSettingsAction
-		? '/setting#default_image_generate_engine_choose'
-		: shouldShowDocumentReaderSettingsAction
-			? '/setting#default_document_summary_model_choose'
-			: null;
-	const pptSettingsAction = pptSettingsHref ? (
-		<Button
-			asChild
-			variant='outline'
-			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'>
-			<Link href={pptSettingsHref}>{t('section_ppt_open_settings')}</Link>
-		</Button>
-	) : null;
+	const pptSettingsAction = null;
+	const pptDialogActionLabel = pptPreview
+		? t('section_ppt_regenerate')
+		: t('section_ppt_generate');
 
 	return (
 		<div className='space-y-4'>
@@ -279,8 +283,8 @@ const SectionMedia = ({
 					title={t('section_podcast_unset')}
 					description={t('section_podcast_placeholder_description')}
 					actionLabel={t('section_podcast_generate')}
-					onAction={() => mutateGeneratePodcast.mutate()}
-					actionDisabled={!canGeneratePodcast}
+					onAction={() => setIsPodcastDialogOpen(true)}
+					actionDisabled={false}
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={surfaceCardClassName}
@@ -325,14 +329,8 @@ const SectionMedia = ({
 							<Button
 								variant='outline'
 								className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-								onClick={() => mutateGeneratePodcast.mutate()}
-								disabled={
-									!canGeneratePodcast ||
-									mutateGeneratePodcast.isPending
-								}>
-								{mutateGeneratePodcast.isPending ? (
-									<Loader2 className='size-4 animate-spin' />
-								) : null}
+								onClick={() => setIsPodcastDialogOpen(true)}
+								disabled={false}>
 								{t('section_podcast_regenerate')}
 							</Button>
 						) : undefined
@@ -354,8 +352,8 @@ const SectionMedia = ({
 					title={t('section_podcast_failed')}
 					description={t('section_podcast_failed_description')}
 					actionLabel={isOwner ? t('section_podcast_regenerate') : undefined}
-					onAction={isOwner ? () => mutateGeneratePodcast.mutate() : undefined}
-					actionDisabled={!isOwner || !canGeneratePodcast}
+					onAction={isOwner ? () => setIsPodcastDialogOpen(true) : undefined}
+					actionDisabled={false}
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone='danger'
 					hint={podcastHint}
@@ -389,11 +387,8 @@ const SectionMedia = ({
 							<Button
 								variant='outline'
 								className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-								onClick={() => mutateGeneratePpt.mutate()}
-								disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
-								{mutateGeneratePpt.isPending ? (
-									<Loader2 className='size-4 animate-spin' />
-								) : null}
+								onClick={() => setIsPptDialogOpen(true)}
+								disabled={false}>
 								{t('section_ppt_generate')}
 							</Button>
 						</>
@@ -474,7 +469,7 @@ const SectionMedia = ({
 						<>
 							{pptSettingsAction}
 							{pptPreview.pptx_url ? (
-								<Button
+							<Button
 									asChild
 									variant='outline'
 									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'>
@@ -490,11 +485,8 @@ const SectionMedia = ({
 								<Button
 									variant='outline'
 									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-									onClick={() => mutateGeneratePpt.mutate()}
-									disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
-									{mutateGeneratePpt.isPending ? (
-										<Loader2 className='size-4 animate-spin' />
-									) : null}
+									onClick={() => setIsPptDialogOpen(true)}
+									disabled={false}>
 									{t('section_ppt_regenerate')}
 								</Button>
 							) : null}
@@ -595,18 +587,70 @@ const SectionMedia = ({
 								<Button
 									variant='outline'
 									className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-									onClick={() => mutateGeneratePpt.mutate()}
-									disabled={!canSubmitPpt || mutateGeneratePpt.isPending}>
-									{mutateGeneratePpt.isPending ? (
-										<Loader2 className='size-4 animate-spin' />
-									) : null}
-									{t('section_ppt_regenerate')}
-								</Button>
-							</>
+								onClick={() => setIsPptDialogOpen(true)}
+								disabled={false}>
+								{t('section_ppt_regenerate')}
+							</Button>
+						</>
 						) : undefined
 					}
 				/>
 			) : null}
+			<ResourceConfirmDialog
+				open={isPodcastDialogOpen}
+				onOpenChange={setIsPodcastDialogOpen}
+				title={t('section_podcast_generate')}
+				description={t('resource_dialog_podcast_description')}
+				confirmLabel={t('section_podcast_generate')}
+				confirmDisabled={!selectedPodcastEngineId}
+				confirmLoading={mutateGeneratePodcast.isPending}
+				onConfirm={() => {
+					mutateGeneratePodcast.mutate();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+					<EngineSelect
+						category={EngineCategory.TTS}
+						value={selectedPodcastEngineId}
+						onChange={setSelectedPodcastEngineId}
+						className='w-full'
+						placeholder={t('setting_default_engine_choose')}
+					/>
+				</div>
+			</ResourceConfirmDialog>
+			<ResourceConfirmDialog
+				open={isPptDialogOpen}
+				onOpenChange={setIsPptDialogOpen}
+				title={pptDialogActionLabel}
+				description={t('resource_dialog_ppt_description')}
+				confirmLabel={pptDialogActionLabel}
+				confirmDisabled={!selectedPptModelId || !selectedPptImageEngineId || !section.md_file_name}
+				confirmLoading={mutateGeneratePpt.isPending}
+				onConfirm={() => {
+					mutateGeneratePpt.mutate();
+				}}>
+				<div className='space-y-4'>
+					<div className='space-y-2'>
+						<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
+						<AIModelSelect
+							value={selectedPptModelId}
+							onChange={setSelectedPptModelId}
+							className='w-full'
+							placeholder={t('setting_default_model_choose')}
+						/>
+					</div>
+					<div className='space-y-2'>
+						<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+						<EngineSelect
+							category={EngineCategory.IMAGE_GENERATE}
+							value={selectedPptImageEngineId}
+							onChange={setSelectedPptImageEngineId}
+							className='w-full'
+							placeholder={t('setting_default_engine_choose')}
+						/>
+					</div>
+				</div>
+			</ResourceConfirmDialog>
 		</div>
 	);
 };

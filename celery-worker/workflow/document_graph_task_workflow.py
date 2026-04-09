@@ -55,7 +55,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     if document_id is None or user_id is None:
         raise Exception("Document graph workflow missing document_id or user_id")
 
-    model_id: int | None = None
+    model_id: int | None = state.get("model_id")
     access_token: str | None = None
     deployed_by_official = check_deployed_by_official_in_fuc()
     is_admin_or_root = False
@@ -78,13 +78,14 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         is_admin_or_root = db_user.role in (UserRole.ADMIN, UserRole.ROOT)
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to summarize document has not set default user file system")
-        if db_user.default_document_reader_model_id is None:
+        if model_id is None and db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
         if deployed_by_official and not is_admin_or_root:
             access_token, _ = create_token(
                 user=db_user
             )
-        model_id = db_user.default_document_reader_model_id
+        if model_id is None:
+            model_id = db_user.default_document_reader_model_id
     finally:
         db.close()
 
@@ -365,6 +366,7 @@ async def run_document_graph_task_workflow(
     document_id: int,
     user_id: int,
     chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
 ) -> None:
     workflow = get_document_graph_task_workflow()
     try:
@@ -375,6 +377,7 @@ async def run_document_graph_task_workflow(
                 "document_id": document_id,
                 "user_id": user_id,
                 "chunk_snapshot_path": chunk_snapshot_path,
+                "model_id": model_id,
             },
         )
     except Exception as e:

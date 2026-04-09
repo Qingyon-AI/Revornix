@@ -41,9 +41,13 @@ class SectionUserRoleAndAuthorityResponse(BaseModel):
 
 class GenerateSectionPodcastRequest(BaseModel):
     section_id: int
+    engine_id: int | None = None
 
 class TriggerSectionProcessRequest(BaseModel):
     section_id: int
+    model_id: int | None = None
+    image_engine_id: int | None = None
+    podcast_engine_id: int | None = None
 
 class RetrySectionDocumentRequest(BaseModel):
     section_id: int
@@ -155,6 +159,7 @@ class SectionAskRequest(BaseModel):
     section_id: int
     messages: list[ChatItem]
     enable_mcp: bool = False
+    model_id: int | None = None
 
 
 class SectionAskChunkCitation(BaseModel):
@@ -276,6 +281,8 @@ class SectionDeleteRequest(BaseModel):
 
 class GenerateSectionPptRequest(BaseModel):
     section_id: int
+    model_id: int | None = None
+    image_engine_id: int | None = None
 
 class DaySectionRequest(BaseModel):
     date: str

@@ -7,11 +7,14 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
-import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { useEffect, useState } from 'react';
 import AudioStatusCard from '../ui/audio-status-card';
 import { Button } from '../ui/button';
 import { AudioLines, Loader2 } from 'lucide-react';
 import TaskStateCard from '../ui/task-state-card';
+import EngineSelect from '@/components/ai/engine-select';
+import { EngineCategory } from '@/enums/engine';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 
 const DocumentPodcast = ({
 	document_id,
@@ -24,7 +27,14 @@ const DocumentPodcast = ({
 	const queryClient = getQueryClient();
 
 	const { mainUserInfo } = useUserContext();
-	const { podcastEngine } = useDefaultResourceAccess();
+	const [selectedEngineId, setSelectedEngineId] = useState<number | null>(
+		mainUserInfo?.default_podcast_user_engine_id ?? null,
+	);
+	const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+	useEffect(() => {
+		setSelectedEngineId(mainUserInfo?.default_podcast_user_engine_id ?? null);
+	}, [mainUserInfo?.default_podcast_user_engine_id]);
 
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', document_id],
@@ -35,8 +45,10 @@ const DocumentPodcast = ({
 		mutationFn: () =>
 			generateDocumentPodcast({
 				document_id: document_id,
+				engine_id: selectedEngineId ?? undefined,
 			}),
 		onSuccess(data, variables, onMutateResult, context) {
+			setIsGenerateDialogOpen(false);
 			toast.success(t('document_podcast_generate_task_submitted'));
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', document_id],
@@ -54,22 +66,15 @@ const DocumentPodcast = ({
 		},
 	});
 
-	const canGeneratePodcast =
-		podcastEngine.configured &&
-		!podcastEngine.loading &&
-		!podcastEngine.subscriptionLocked;
+	const canGeneratePodcast = Boolean(selectedEngineId);
 	const freshnessState = getDocumentFreshnessState(document);
 	const podcastHintMessages = [
 		freshnessState.podcastStale ? t('document_podcast_stale_hint') : null,
-		!canGeneratePodcast
-			? podcastEngine.subscriptionLocked
-				? t('hosted_feature_compute_fallback_hint')
-				: t('document_create_auto_podcast_engine_unset')
-			: null,
+		!canGeneratePodcast ? t('document_create_auto_podcast_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
 	const podcastHint =
 		podcastHintMessages.length > 0 ? (
-			<div className='space-y-1'>
+			<div className='space-y-3'>
 				{podcastHintMessages.map((message) => (
 					<p key={message}>{message}</p>
 				))}
@@ -84,8 +89,8 @@ const DocumentPodcast = ({
 					title={t('document_podcast_unset')}
 					description={t('document_podcast_placeholder_description')}
 					actionLabel={t('document_podcast_generate')}
-					onAction={() => mutateGeneratePodcast.mutate()}
-					actionDisabled={!canGeneratePodcast}
+					onAction={() => setIsGenerateDialogOpen(true)}
+					actionDisabled={false}
 					actionLoading={mutateGeneratePodcast.isPending}
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={className}
@@ -131,14 +136,8 @@ const DocumentPodcast = ({
 									<Button
 										variant='outline'
 										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-										onClick={() => mutateGeneratePodcast.mutate()}
-										disabled={
-											!canGeneratePodcast ||
-											mutateGeneratePodcast.isPending
-										}>
-										{mutateGeneratePodcast.isPending ? (
-											<Loader2 className='size-4 animate-spin' />
-										) : null}
+										onClick={() => setIsGenerateDialogOpen(true)}
+										disabled={false}>
 										{t('document_podcast_regenerate')}
 									</Button>
 								}>
@@ -161,8 +160,8 @@ const DocumentPodcast = ({
 							title={t('document_podcast_failed')}
 							description={t('document_podcast_failed_description')}
 							actionLabel={t('document_podcast_regenerate')}
-							onAction={() => mutateGeneratePodcast.mutate()}
-							actionDisabled={!canGeneratePodcast}
+							onAction={() => setIsGenerateDialogOpen(true)}
+							actionDisabled={false}
 							actionLoading={mutateGeneratePodcast.isPending}
 							tone='danger'
 							className={className}
@@ -171,6 +170,28 @@ const DocumentPodcast = ({
 					)}
 				</>
 			)}
+			<ResourceConfirmDialog
+				open={isGenerateDialogOpen}
+				onOpenChange={setIsGenerateDialogOpen}
+				title={t('document_podcast_generate')}
+				description={t('resource_dialog_podcast_description')}
+				confirmLabel={t('document_podcast_generate')}
+				confirmDisabled={!selectedEngineId}
+				confirmLoading={mutateGeneratePodcast.isPending}
+				onConfirm={() => {
+					mutateGeneratePodcast.mutate();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+					<EngineSelect
+						category={EngineCategory.TTS}
+						value={selectedEngineId}
+						onChange={setSelectedEngineId}
+						className='w-full'
+						placeholder={t('setting_default_engine_choose')}
+					/>
+				</div>
+			</ResourceConfirmDialog>
 		</>
 	);
 };

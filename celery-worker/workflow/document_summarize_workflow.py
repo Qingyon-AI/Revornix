@@ -65,9 +65,10 @@ async def _init_summarize_task(
             raise Exception("The user which you want to summarize document is not found")
         if db_user.default_user_file_system is None:
             raise Exception("The user which you want to summarize document has not set default user file system")
-        if db_user.default_document_reader_model_id is None:
+        if state.get("model_id") is None and db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to summarize document has not set default document reader model")
-        state["model_id"] = db_user.default_document_reader_model_id
+        if state.get("model_id") is None:
+            state["model_id"] = db_user.default_document_reader_model_id
 
         db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
             db=db,
@@ -313,6 +314,7 @@ async def run_document_summarize_workflow(
     document_id: int,
     user_id: int,
     chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
 ) -> None:
     workflow = get_document_summarize_workflow()
     try:
@@ -323,6 +325,7 @@ async def run_document_summarize_workflow(
                 "document_id": document_id,
                 "user_id": user_id,
                 "chunk_snapshot_path": chunk_snapshot_path,
+                "model_id": model_id,
             },
         )
     except Exception as e:

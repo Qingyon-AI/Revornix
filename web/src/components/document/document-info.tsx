@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
@@ -47,6 +48,9 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import TaskStateCard from '../ui/task-state-card';
+import AIModelSelect from '@/components/ai/model-select';
+import { useUserContext } from '@/provider/user-provider';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 
 const MetaBadge = ({ children }: { children: ReactNode }) => {
 	return (
@@ -89,6 +93,17 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const locale = useLocale();
 	const queryClient = getQueryClient();
+	const { mainUserInfo } = useUserContext();
+	const [selectedSummaryModelId, setSelectedSummaryModelId] = useState<number | null>(
+		mainUserInfo?.default_document_reader_model_id ?? null,
+	);
+	const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+
+	useEffect(() => {
+		setSelectedSummaryModelId(
+			mainUserInfo?.default_document_reader_model_id ?? null,
+		);
+	}, [mainUserInfo?.default_document_reader_model_id]);
 
 	const { data, isPending, isError, error } = useQuery({
 		queryKey: ['getDocumentDetail', id],
@@ -99,8 +114,10 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		mutationFn: () =>
 			summaryDocumentContentByAi({
 				document_id: id,
+				model_id: selectedSummaryModelId ?? undefined,
 			}),
 		onSuccess() {
+			setIsSummaryDialogOpen(false);
 			toast.success(t('ai_summary_submit'));
 			queryClient.invalidateQueries({
 				queryKey: ['getDocumentDetail', id],
@@ -304,7 +321,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
 			disabled={mutateSummaryDocument.isPending}
 			onClick={() => {
-				mutateSummaryDocument.mutate();
+				setIsSummaryDialogOpen(true);
 			}}>
 			{mutateSummaryDocument.isPending ? (
 				<Loader2 className='size-4 animate-spin' />
@@ -391,6 +408,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	};
 
 	return (
+		<>
 		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
 			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
 				<div className='space-y-2'>
@@ -515,6 +533,28 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 			{renderSummaryCard()}
 		</div>
+		<ResourceConfirmDialog
+			open={isSummaryDialogOpen}
+			onOpenChange={setIsSummaryDialogOpen}
+			title={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
+			description={t('resource_dialog_summary_description')}
+			confirmLabel={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
+			confirmDisabled={!selectedSummaryModelId}
+			confirmLoading={mutateSummaryDocument.isPending}
+			onConfirm={() => {
+				mutateSummaryDocument.mutate();
+			}}>
+			<div className='space-y-2'>
+				<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
+				<AIModelSelect
+					value={selectedSummaryModelId}
+					onChange={setSelectedSummaryModelId}
+					className='w-full'
+					placeholder={t('setting_default_model_choose')}
+				/>
+			</div>
+		</ResourceConfirmDialog>
+		</>
 	);
 };
 

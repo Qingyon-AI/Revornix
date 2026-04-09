@@ -159,6 +159,7 @@ class ChatItem(BaseModel):
 class ChatMessages(BaseModel):
     messages: list[ChatItem]
     enable_mcp: bool = False
+    model_id: int | None = None
 
 
 class BillingAuditIssue(BaseModel):

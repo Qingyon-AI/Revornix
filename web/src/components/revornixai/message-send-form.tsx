@@ -44,6 +44,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { settingAnchorHrefs } from '@/lib/setting-navigation';
+import AIModelSelect from '@/components/ai/model-select';
+import { useEffect, useState } from 'react';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -56,19 +58,22 @@ const MessageSendForm = () => {
 	});
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel } = useDefaultResourceAccess();
+	const [selectedModelId, setSelectedModelId] = useState<number | null>(
+		mainUserInfo?.default_revornix_model_id ?? null,
+	);
 
 	const { data: default_llm_model } = useQuery({
 		queryKey: [
-			'getRevornixDefaultModel',
-			mainUserInfo?.default_revornix_model_id,
+			'getRevornixSelectedModel',
+			selectedModelId,
 		],
 		queryFn: () => {
-			if (!mainUserInfo?.default_revornix_model_id) {
+			if (!selectedModelId) {
 				return;
 			}
-			return getAiModel({ model_id: mainUserInfo?.default_revornix_model_id });
+			return getAiModel({ model_id: selectedModelId });
 		},
-		enabled: !!mainUserInfo?.default_revornix_model_id,
+		enabled: !!selectedModelId,
 	});
 
 	const addSession = useAiChatStore((s) => s.addSession);
@@ -210,6 +215,9 @@ const MessageSendForm = () => {
 			enable_mcp: false,
 		},
 	});
+	useEffect(() => {
+		setSelectedModelId(mainUserInfo?.default_revornix_model_id ?? null);
+	}, [mainUserInfo?.default_revornix_model_id]);
 	const enableMcp = form.watch('enable_mcp');
 
 	const onSubmitMessageForm = async (
@@ -233,7 +241,7 @@ const MessageSendForm = () => {
 			return;
 		}
 		// 如果用户没有设置默认交互模型则引导用户前往设置
-		if (!mainUserInfo?.default_revornix_model_id) {
+		if (!selectedModelId) {
 			toast.error(t('revornix_ai_model_not_set'), {
 				action: {
 					label: t('revornix_ai_default_model_goto'),
@@ -244,7 +252,10 @@ const MessageSendForm = () => {
 			});
 			return;
 		}
-		if (revornixModel.subscriptionLocked) {
+		if (
+			selectedModelId === mainUserInfo?.default_revornix_model_id &&
+			revornixModel.subscriptionLocked
+		) {
 			toast.error(t('revornix_ai_access_hint'), {
 				action: {
 					label: t('revornix_ai_default_model_goto'),
@@ -294,6 +305,7 @@ const MessageSendForm = () => {
 		mutateSendMessage.mutate({
 			messages: messagesToSend,
 			enable_mcp: values.enable_mcp,
+			model_id: selectedModelId,
 			onEvent: createAIResponseEventHandler(targetSessionId),
 		});
 		clearAttachments();
@@ -341,10 +353,12 @@ const MessageSendForm = () => {
 	const fetchStream = async ({
 		messages,
 		enable_mcp,
+		model_id,
 		onEvent,
 	}: {
 		messages: Message[];
 		enable_mcp: boolean;
+		model_id: number | null;
 		onEvent: (event: AIEvent) => void;
 	}) => {
 		const headers = new Headers();
@@ -360,6 +374,7 @@ const MessageSendForm = () => {
 			body: JSON.stringify({
 				messages,
 				enable_mcp,
+				model_id,
 			}),
 		});
 		if (response.status !== 200) {
@@ -399,10 +414,11 @@ const MessageSendForm = () => {
 	const messageValue = form.watch('message');
 	const canSubmit =
 		(messageValue.trim().length > 0 || imagePaths.length > 0) &&
+		Boolean(selectedModelId) &&
 		!mutateSendMessage.isPending &&
 		!isUploadingImages &&
-		!revornixModel.loading &&
-		!revornixModel.subscriptionLocked;
+		(selectedModelId !== mainUserInfo?.default_revornix_model_id ||
+			(!revornixModel.loading && !revornixModel.subscriptionLocked));
 	const defaultModelName = default_llm_model?.name
 		? default_llm_model.name
 		: t('setting_revornix_model_empty');
@@ -410,19 +426,18 @@ const MessageSendForm = () => {
 	const renderDesktopToolbar = () => {
 		return (
 			<div className='p-2 flex flex-wrap items-center gap-1.5 border-t border-b border-border/60'>
-				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs'>
+				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 text-xs'>
 					<span className='shrink-0 text-muted-foreground'>
-						{t('revornix_ai_default_model')}
+						{t('use_model')}
 					</span>
-					<span className='truncate font-medium text-foreground'>
-						{defaultModelName}
-					</span>
-					<span className='h-3.5 w-px shrink-0 bg-border' />
-					<Link
-						href={settingAnchorHrefs.defaultRevornixAIModel}
-						className='shrink-0 text-xs text-muted-foreground transition-colors hover:text-foreground'>
-						{t('revornix_ai_default_model_goto')}
-					</Link>
+					<AIModelSelect
+						value={selectedModelId}
+						onChange={setSelectedModelId}
+						disabled={mutateSendMessage.isPending}
+						variant='inline'
+						size='sm'
+						placeholder={t('setting_model_select')}
+					/>
 				</div>
 				<FormField
 					control={form.control}
@@ -496,16 +511,23 @@ const MessageSendForm = () => {
 						<div className='space-y-3 overflow-auto px-4 py-4'>
 							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
 								<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-									{t('revornix_ai_default_model')}
+									{t('use_model')}
 								</div>
-								<div className='mt-2 text-base font-semibold'>
-									{defaultModelName}
+								<div className='mt-3'>
+									<AIModelSelect
+										value={selectedModelId}
+										onChange={setSelectedModelId}
+										disabled={mutateSendMessage.isPending}
+										variant='panel'
+										className='w-full'
+										placeholder={t('setting_model_select')}
+									/>
 								</div>
-								<Link
-									href={settingAnchorHrefs.defaultRevornixAIModel}
-									className='mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4'>
-									{t('revornix_ai_default_model_goto')}
-								</Link>
+								<div className='mt-2 text-xs text-muted-foreground'>
+									{t('current_default_model', {
+										model: defaultModelName,
+									})}
+								</div>
 							</div>
 							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
 								<div className='flex items-start justify-between gap-3'>

@@ -12,6 +12,10 @@ import { Check, PlayCircle } from 'lucide-react';
 
 import BlockNodeShell from './block-node-shell';
 import {
+	extractCustomBlockTag,
+	findCustomBlockTagStart,
+} from '@/lib/markdown-custom-block';
+import {
 	ensureVideoEmbedDefaults,
 	parseVideoEmbedUrl,
 	type VideoEmbedProvider,
@@ -61,7 +65,7 @@ const VideoEmbedNodeView = ({
 		<NodeViewWrapper>
 			<BlockNodeShell
 				selected={selected}
-				className='my-0 max-w-full'
+				className='mt-0 mb-2 max-w-full'
 				contentClassName='overflow-hidden bg-background p-3'>
 				<div className='mb-3 flex items-center gap-2 text-sm font-medium text-foreground'>
 					<PlayCircle className='size-4 text-primary' />
@@ -213,17 +217,43 @@ const VideoEmbedNode = Node.create({
 							url: parsed.url,
 							embedUrl: parsed.embedUrl,
 						});
-						const paragraph = state.schema.nodes.paragraph?.create();
-						let tr = state.tr.replaceSelectionWith(node);
-						if (paragraph) {
-							tr = tr.insert(tr.selection.to, paragraph);
-						}
-						dispatch(tr.scrollIntoView());
+						dispatch(state.tr.replaceSelectionWith(node).scrollIntoView());
 						return true;
 					},
 				},
 			}),
 		];
+	},
+
+	markdownTokenName: 'videoEmbed',
+
+	markdownTokenizer: {
+		name: 'videoEmbed',
+		level: 'block',
+		start: findCustomBlockTagStart('video-embed'),
+		tokenize(src) {
+			const parsed = extractCustomBlockTag(src, 'video-embed');
+			if (!parsed) {
+				return undefined;
+			}
+
+			return {
+				type: 'videoEmbed',
+				raw: parsed.raw,
+				attrs: parsed.attributes,
+				tokens: [],
+			};
+		},
+	},
+
+	parseMarkdown(token, helpers) {
+		const attrs = (token as { attrs?: Record<string, string> }).attrs ?? {};
+		return helpers.createNode('videoEmbed', {
+			provider: attrs['data-provider'] ?? 'youtube',
+			videoId: attrs['data-video-id'] ?? '',
+			url: attrs['data-url'] ?? '',
+			embedUrl: attrs['data-embed-url'] ?? '',
+		});
 	},
 
 	renderMarkdown(node) {
@@ -235,7 +265,7 @@ const VideoEmbedNode = Node.create({
 		const embedUrl =
 			typeof node.attrs?.embedUrl === 'string' ? node.attrs.embedUrl : '';
 
-		return `\n<video-embed data-provider="${provider}" data-video-id="${videoId}" data-url="${url}" data-embed-url="${embedUrl}"></video-embed>\n`;
+		return `<video-embed data-provider="${provider}" data-video-id="${videoId}" data-url="${url}" data-embed-url="${embedUrl}"></video-embed>`;
 	},
 });
 

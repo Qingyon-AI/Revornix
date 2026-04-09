@@ -49,10 +49,10 @@ async def _init_transcribe_task(
         )
         if db_user is None:
             raise Exception("The user which you want to process document is not found")
-        if db_user.default_audio_transcribe_engine_id is None:
+        if state.get("engine_id") is None and db_user.default_audio_transcribe_engine_id is None:
             raise Exception("The user which you want to process document has not set default audio transcribe user engine")
-
-        state["engine_id"] = db_user.default_audio_transcribe_engine_id
+        if state.get("engine_id") is None:
+            state["engine_id"] = db_user.default_audio_transcribe_engine_id
 
         db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
             db=db,
@@ -162,7 +162,8 @@ def get_document_transcribe_workflow():
 async def run_document_transcribe_workflow(
     *,
     document_id: int,
-    user_id: int
+    user_id: int,
+    engine_id: int | None = None,
 ) -> None:
     workflow = get_document_transcribe_workflow()
     try:
@@ -172,6 +173,7 @@ async def run_document_transcribe_workflow(
             payload={
                 "document_id": document_id,
                 "user_id": user_id,
+                "engine_id": engine_id,
             },
         )
     except Exception as e:

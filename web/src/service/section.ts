@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, GenerateSectionPodcastRequest, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -12,10 +12,20 @@ export type RetrySectionDocumentRequest = {
 
 export type TriggerSectionProcessRequest = {
     section_id: number
+    model_id?: number
+    image_engine_id?: number
+    podcast_engine_id?: number
 }
 
 export type GenerateSectionPptRequest = {
     section_id: number
+    model_id?: number
+    image_engine_id?: number
+}
+
+export type GenerateSectionPodcastRequest = {
+    section_id: number
+    engine_id?: number
 }
 
 export type SectionPptSlide = {

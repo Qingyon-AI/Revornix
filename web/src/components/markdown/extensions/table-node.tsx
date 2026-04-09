@@ -12,6 +12,10 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+	extractCustomBlockTag,
+	findCustomBlockTagStart,
+} from '@/lib/markdown-custom-block';
 import BlockNodeShell from './block-node-shell';
 
 type TableCellRow = string[];
@@ -582,9 +586,37 @@ const TableNode = Node.create({
 		return ReactNodeViewRenderer(TableNodeView);
 	},
 
+	markdownTokenName: 'tableNode',
+
+	markdownTokenizer: {
+		name: 'tableNode',
+		level: 'block',
+		start: findCustomBlockTagStart('quick-table'),
+		tokenize(src) {
+			const parsed = extractCustomBlockTag(src, 'quick-table');
+			if (!parsed) {
+				return undefined;
+			}
+
+			return {
+				type: 'tableNode',
+				raw: parsed.raw,
+				attrs: parsed.attributes,
+				tokens: [],
+			};
+		},
+	},
+
+	parseMarkdown(token, helpers) {
+		const attrs = (token as { attrs?: Record<string, string> }).attrs ?? {};
+		return helpers.createNode('tableNode', {
+			content: decodeTableContent(attrs['data-content'] ?? ''),
+		});
+	},
+
 	renderMarkdown(node) {
 		const content = normalizeTableContent(node.attrs?.content);
-		return `\n<quick-table data-content="${encodeTableContent(content)}"></quick-table>\n`;
+		return `<quick-table data-content="${encodeTableContent(content)}"></quick-table>`;
 	},
 });
 

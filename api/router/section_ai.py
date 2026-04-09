@@ -678,6 +678,7 @@ async def ask_section_ai(
         agent, model_id = await create_agent(
             user_id=user.id,
             enable_mcp=section_ask_request.enable_mcp,
+            model_id=section_ask_request.model_id,
         )
     except Exception as e:
         raise schemas.error.CustomException(message=str(e), code=400) from e

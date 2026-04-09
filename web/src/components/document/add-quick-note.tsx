@@ -32,11 +32,15 @@ import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import TipTapEditor from '../markdown/tiptap-editor';
 import DocumentCreateAdvancedSection from './document-create-advanced-section';
 
 const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
 const QUICK_NOTE_AUTO_SAVE_DELAY = 1200;
+
+const normalizeQuickNoteContent = (content: string) =>
+	normalizeEditorMarkdown(content);
 
 const AddQuickNote = () => {
 	const searchParams = useSearchParams();
@@ -156,7 +160,7 @@ const AddQuickNote = () => {
 	const buildDraftPayload = useCallback(
 		(values: Partial<z.infer<typeof formSchema>>) => {
 			return {
-				content: values.content ?? '',
+				content: normalizeQuickNoteContent(values.content ?? ''),
 				title: values.title ?? undefined,
 				description: values.description ?? undefined,
 				labels: Array.isArray(values.labels) ? values.labels : [],

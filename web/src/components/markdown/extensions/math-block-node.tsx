@@ -10,7 +10,10 @@ import katex from 'katex';
 import { AlertCircle, ChevronDown, Grid3X3, Sigma, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
-import { extractBlockMath } from '@/lib/math';
+import { extractBlockMath, findBlockMathStart } from '@/lib/math';
+
+const MATH_PANEL_MAX_HEIGHT = 320;
+const MATH_SOURCE_MAX_HEIGHT = 320;
 
 const MathBlockView = ({
 	node,
@@ -79,6 +82,7 @@ const MathBlockView = ({
 				className={`grid gap-2.5 p-2.5 ${isCodeHidden ? '' : 'md:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.9fr)]'} md:items-stretch`}>
 				<div
 					className='overflow-hidden rounded-[0.8rem] border border-sky-200/70 bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(248,250,252,0.96))] bg-[size:18px_18px,18px_18px,auto,auto] shadow-inner'
+					style={{ maxHeight: `${MATH_PANEL_MAX_HEIGHT}px` }}
 					contentEditable={false}>
 					<div className='flex items-center justify-between border-b border-border/50 p-1.5'>
 						<div className='inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700'>
@@ -93,7 +97,7 @@ const MathBlockView = ({
 									: 'Start typing LaTeX'}
 						</div>
 					</div>
-					<div className='overflow-auto p-1.5 pt-0'>
+					<div className='overflow-auto p-1.5 pt-0' style={{ maxHeight: `${MATH_PANEL_MAX_HEIGHT - 44}px` }}>
 						{!formula.trim() ? (
 							<div className='flex min-h-[116px] flex-col items-center justify-center rounded-[0.65rem] border border-dashed border-sky-300/70 bg-background/70 px-3 text-center'>
 								<div className='flex size-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600'>
@@ -130,7 +134,9 @@ const MathBlockView = ({
 					</div>
 				</div>
 				{isEditable && !isCodeHidden ? (
-					<div className='flex h-full min-h-[172px] flex-col overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'>
+					<div
+						className='flex h-full min-h-[172px] flex-col overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'
+						style={{ maxHeight: `${MATH_SOURCE_MAX_HEIGHT}px` }}>
 						<div
 							className='flex items-center justify-between border-b border-white/10 px-3 py-1.5'
 							contentEditable={false}>
@@ -146,7 +152,7 @@ const MathBlockView = ({
 								$$
 							</div>
 						</div>
-						<div className='flex min-h-[112px] flex-1 items-stretch'>
+						<div className='flex min-h-[112px] flex-1 items-stretch overflow-hidden'>
 							<div
 								className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
 								contentEditable={false}>
@@ -154,14 +160,14 @@ const MathBlockView = ({
 									<div key={index}>{index + 1}</div>
 								))}
 							</div>
-							<div className='flex flex-1 bg-white/[0.02]'>
+							<div className='flex flex-1 overflow-auto bg-white/[0.02]'>
 								<textarea
 									value={formula}
 									onChange={(event) =>
 										updateAttributes({ formula: event.target.value })
 									}
 									onMouseDown={(event) => event.stopPropagation()}
-									className='block h-full min-h-[112px] w-full flex-1 resize-none bg-transparent px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 outline-none placeholder:text-zinc-500'
+									className='block h-full min-h-[112px] w-full flex-1 resize-none overflow-auto bg-transparent px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 outline-none placeholder:text-zinc-500'
 									placeholder={'\\int_0^1 x^2 \\, dx'}
 								/>
 							</div>
@@ -209,7 +215,7 @@ const MathBlockNode = Node.create({
 	markdownTokenizer: {
 		name: 'mathBlock',
 		level: 'block',
-		start: '$$',
+		start: findBlockMathStart,
 		tokenize(src) {
 			const parsed = extractBlockMath(src);
 			if (!parsed) {
@@ -234,7 +240,7 @@ const MathBlockNode = Node.create({
 	renderMarkdown(node) {
 		const formula =
 			typeof node.attrs?.formula === 'string' ? node.attrs.formula : '';
-		return `$$\n${formula}\n$$`;
+		return `\\[\n${formula}\n\\]`;
 	},
 });
 

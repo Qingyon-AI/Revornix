@@ -223,7 +223,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
                     raise Exception(
                         "Volc image generation http error: "
                         f"status={response.status_code}, "
-                        f"body={error_payload if error_payload is not None else response.text[:500]}"
+                        f"body={error_payload if error_payload is not None else response.text}"
                     )
                 response_data = _normalize_response_payload(response.json())
 

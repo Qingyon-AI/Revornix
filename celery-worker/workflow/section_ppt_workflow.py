@@ -185,12 +185,14 @@ async def _plan_section_ppt(
     *,
     user_id: int,
     markdown: str,
+    model_id: int | None = None,
 ) -> PptPlanResult:
     with session_scope() as db:
         db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
     if db_user is None:
         raise RuntimeError("User not found")
-    if db_user.default_document_reader_model_id is None:
+    resolved_model_id = model_id or db_user.default_document_reader_model_id
+    if resolved_model_id is None:
         raise RuntimeError("Default document reader model not set")
 
     planner_markdown = _compact_markdown(markdown, PPT_PLANNER_MAX_CHARS)
@@ -201,7 +203,7 @@ async def _plan_section_ppt(
     model_conf = (
         await AIModelProxy.create(
             user_id=user_id,
-            model_id=db_user.default_document_reader_model_id,
+            model_id=resolved_model_id,
         )
     ).get_configuration()
 
@@ -227,7 +229,7 @@ async def _plan_section_ppt(
             )
             persist_model_usage_from_completion(
                 user_id=user_id,
-                model_id=db_user.default_document_reader_model_id,
+                model_id=resolved_model_id,
                 completion=completion,
                 source="plan_section_ppt",
             )
@@ -306,6 +308,8 @@ async def run_section_ppt_workflow(
     *,
     section_id: int,
     user_id: int,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
 ) -> None:
     remote_file_service = await FileSystemProxy.create(user_id=user_id)
     manifest_path = _get_section_ppt_manifest_path(section_id)
@@ -318,9 +322,9 @@ async def run_section_ppt_workflow(
             raise RuntimeError("User not found")
         if db_section is None:
             raise RuntimeError("Section not found")
-        if db_user.default_image_generate_engine_id is None:
+        resolved_image_engine_id = image_engine_id or db_user.default_image_generate_engine_id
+        if resolved_image_engine_id is None:
             raise RuntimeError("Default image generate engine not set")
-        image_engine_id = db_user.default_image_generate_engine_id
 
     initial_manifest = {
         "version": PPT_MANIFEST_VERSION,
@@ -350,6 +354,7 @@ async def run_section_ppt_workflow(
         plan = await _plan_section_ppt(
             user_id=user_id,
             markdown=markdown,
+            model_id=model_id,
         )
         manifest = {
             **initial_manifest,
@@ -376,7 +381,7 @@ async def run_section_ppt_workflow(
 
         engine = await EngineProxy.create_image_generate_engine(
             user_id=user_id,
-            engine_id=image_engine_id,
+            engine_id=resolved_image_engine_id,
         )
         semaphore = asyncio.Semaphore(
             min(PPT_GENERATE_CONCURRENCY, max(1, len(plan.slides)))

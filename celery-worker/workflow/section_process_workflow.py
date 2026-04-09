@@ -1079,16 +1079,22 @@ async def _load_context(
         )
         if db_user is None:
             raise Exception("The user who want to process section is not found")
-        if db_user.default_document_reader_model_id is None:
+        resolved_model_id = (
+            state.get("default_document_reader_model_id")
+            or db_user.default_document_reader_model_id
+        )
+        if resolved_model_id is None:
             raise Exception("The user who want to process section has not set default document reader model")
         if db_user.default_user_file_system is None:
             raise Exception("The user who want to process section has not set default user file system")
 
         state["section_md_file_name"] = db_section.md_file_name
         state["auto_illustration"] = db_section.auto_illustration
-        state["default_document_reader_model_id"] = db_user.default_document_reader_model_id
-        state["default_image_generate_engine_id"] = db_user.default_image_generate_engine_id
-        state["default_podcast_user_engine_id"] = db_user.default_podcast_user_engine_id
+        state["default_document_reader_model_id"] = resolved_model_id
+        if state.get("default_image_generate_engine_id") is None:
+            state["default_image_generate_engine_id"] = db_user.default_image_generate_engine_id
+        if state.get("default_podcast_user_engine_id") is None:
+            state["default_podcast_user_engine_id"] = db_user.default_podcast_user_engine_id
 
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
             db=db,
@@ -1580,6 +1586,9 @@ async def run_section_process_workflow(
     user_id: int,
     auto_podcast: bool = False,
     force_full_rebuild: bool = False,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
+    podcast_engine_id: int | None = None,
 ) -> None:
     workflow = get_section_process_workflow()
     try:
@@ -1591,6 +1600,9 @@ async def run_section_process_workflow(
                 "user_id": user_id,
                 "auto_podcast": auto_podcast,
                 "force_full_rebuild": force_full_rebuild,
+                "default_document_reader_model_id": model_id,
+                "default_image_generate_engine_id": image_engine_id,
+                "default_podcast_user_engine_id": podcast_engine_id,
             },
         )
     except Exception as e:

@@ -1,9 +1,29 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, DocumentAiSummaryRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, GenerateDocumentPodcastRequest, DocumentMarkdownConvertRequest, DocumentGraphGenerateRequest, DocumentEmbeddingRequest, DocumentTranscribeRequest } from '@/generated'
+import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest } from '@/generated'
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
+
+export type DocumentAiSummaryRequest = {
+    document_id: number
+    model_id?: number
+}
+
+export type GenerateDocumentPodcastRequest = {
+    document_id: number
+    engine_id?: number
+}
+
+export type DocumentGraphGenerateRequest = {
+    document_id: number
+    model_id?: number
+}
+
+export type DocumentTranscribeRequest = {
+    document_id: number
+    engine_id?: number
+}
 
 export const transcribeDocument = async (data: DocumentTranscribeRequest): Promise<NormalResponse> => {
     return await request(documentApi.transcribeDocument, {

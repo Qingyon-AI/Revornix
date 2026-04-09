@@ -24,7 +24,7 @@ const ImageNodeView = ({
 		<NodeViewWrapper>
 			<BlockNodeShell
 				selected={selected}
-				className='my-0 w-fit max-w-full'
+				className='mt-0 mb-2 w-fit max-w-full'
 				contentClassName='inline-block max-w-full overflow-hidden bg-background'>
 				{resolvedSrc ? (
 					<img

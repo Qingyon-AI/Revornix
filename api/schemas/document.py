@@ -19,9 +19,11 @@ from .user import UserPublicInfo
 
 class DocumentGraphGenerateRequest(BaseModel):
     document_id: int
+    model_id: int | None = None
 
 class GenerateDocumentPodcastRequest(BaseModel):
     document_id: int
+    engine_id: int | None = None
 
 class DocumentUpdateRequest(BaseModel):
     document_id: int
@@ -39,18 +41,21 @@ class DocumentEmbeddingRequest(BaseModel):
 
 class DocumentTranscribeRequest(BaseModel):
     document_id: int
+    engine_id: int | None = None
 
 class DocumentMarkdownConvertRequest(BaseModel):
     document_id: int
 
 class DocumentAiSummaryRequest(BaseModel):
     document_id: int
+    model_id: int | None = None
 
 
 class DocumentAskRequest(BaseModel):
     document_id: int
     messages: list["ChatItem"]
     enable_mcp: bool = False
+    model_id: int | None = None
 
 class BaseSectionInfo(BaseModel):
     id: int
