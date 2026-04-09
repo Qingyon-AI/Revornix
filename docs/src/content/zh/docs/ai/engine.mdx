@@ -36,7 +36,26 @@ import { Callout } from 'nextra/components';
 
 这些默认位都会在写入设置前做一次资源访问校验。
 
-## 3. 解析类引擎的差异
+## 3. 引擎配置项总览
+
+和模型不同，引擎的配置项不是统一固定的，而是按引擎类型和供应商实现决定。  
+当前用户最常接触到的引擎配置项，大致可以理解成下面几类：
+
+- 鉴权字段：例如 `api_key`、`token`、`access_token`
+- 路由字段：例如 `base_url`、`region`、`service`、`action`、`version`
+- 模型或能力字段：例如 `model_name`、`req_key`
+- 生成控制字段：例如 `size`、`negative_prompt`、`seed`
+- 音频控制字段：例如 `audio_config`、`speaker_info`
+- 透传扩展字段：例如 `extra_body`
+
+更直白地说：
+
+- 鉴权字段决定“你有没有权限调用”
+- 路由字段决定“请求发到哪里”
+- 能力字段决定“到底调用哪条模型或能力”
+- 控制字段决定“结果偏成什么样”
+
+## 4. 解析类引擎的差异
 
 ### Jina
 
@@ -44,11 +63,19 @@ import { Callout } from 'nextra/components';
 - 不适合作为文件解析的主引擎
 - 需要配置 Jina API Key
 
+字段说明：
+
+- `api_key`：Jina Reader 的鉴权密钥。没有它就无法通过 `Authorization` 头调用解析接口。
+
 ### Markitdown
 
 - 可处理网站和文件
 - 如果要更好地处理图片相关内容，建议配置 `openai_api_key`
 - 还会联动用户的默认文档阅读模型
+
+字段说明：
+
+- `openai_api_key`：传给 MarkItDown 内部 LLM 客户端的 OpenAI 密钥。它主要用于增强对复杂网页、文件和图片内容的理解，不是 Revornix 自己默认阅读模型的替代品。
 
 ### MinerU API
 
@@ -56,7 +83,12 @@ import { Callout } from 'nextra/components';
 - 在官方初始化里，它是唯一被 seed 为 `FREE` 等级可用的官方引擎
 - 它也会参与网站 / 文件转 Markdown 这类工作流
 
-## 4. 播客、转写和生图引擎的作用
+字段说明：
+
+- `token`：MinerU API 的访问令牌，用于请求官方接口。
+- `uid`：MinerU 侧用户标识，会参与某些请求校验和 checksum 计算。
+
+## 5. 播客、转写和生图引擎的作用
 
 ### 播客引擎
 
@@ -70,6 +102,35 @@ import { Callout } from 'nextra/components';
 
 其中 `Volc Podcast Engine` 在某些模式下还会联动你的默认文档阅读模型来生成对话式播客结构。
 
+#### OpenAI Audio Engine 配置项
+
+- `base_url`：OpenAI 兼容音频接口根地址。
+- `api_key`：调用音频接口的密钥。
+- `model_name`：本次请求使用的模型名，决定用哪一个支持 `modalities=["text","audio"]` 的上游模型。
+
+#### Volc Podcast Engine 配置项
+
+- `appid`：火山播客 TTS 应用 ID。
+- `access_token`：火山播客 TTS 访问令牌。
+- `base_url`：WebSocket 接入地址，默认是官方播客 TTS 地址。
+- `generation_mode`：生成模式。当前实现主要区分 `prompt` 和 `dialogue`。
+- `speaker_info`：说话人配置，最核心的是里面的 `speakers` 数组，用来指定两位主播声音。
+- `audio_config`：音频输出配置，常见字段是 `format`、`sample_rate`、`speech_rate`。
+- `use_head_music`：是否自动加片头音乐。
+- `use_tail_music`：是否自动加片尾音乐。
+- `aigc_watermark`：是否附加 AIGC 水印标记。
+- `dialogue_model_id`：在 `dialogue` 模式下用于生成双人播客台词的模型 ID；如果不填，会回退到用户默认文档阅读模型。
+- `scene`：在 prompt 模式下给上游的场景提示，默认 `deep_research`。
+- `input_info`：补充输入控制项，最终会并入请求体。
+- `aigc_metadata`：补充 AIGC 元数据透传字段。
+
+其中更关键的字段可以这样理解：
+
+- `appid` / `access_token`：解决“能不能连上”
+- `generation_mode`：解决“生成单段 prompt 播客，还是先产出对话轮次”
+- `speaker_info`：解决“谁来播、用什么声音播”
+- `audio_config`：解决“最终音频怎么导出”
+
 ### 音频转写引擎
 
 音频文档会依赖默认转写引擎完成文字化。  
@@ -77,6 +138,30 @@ import { Callout } from 'nextra/components';
 
 - `Official_Volc_Fast_STT`
 - `Official_Volc_Standard_STT`
+
+这两类火山转写当前暴露给用户的核心配置项相同：
+
+- `token`：火山语音转写接口访问令牌。
+- `appid`：火山语音应用 ID。
+
+它们的区别不在字段名，而在调用的后端能力：
+
+- `Volc Fast STT`：偏快速返回，适合两小时以内音频
+- `Volc Standard STT`：支持更长音频，并通过提交后轮询结果的方式返回
+
+### 图像理解引擎
+
+当前还有一类辅助型引擎是图像理解，引擎内置实现包括：
+
+- `Kimi Image Understand`
+
+它的配置项包括：
+
+- `api_key`：图像理解模型接口密钥
+- `base_url`：OpenAI 兼容或 Kimi 兼容接口根地址
+- `model_name`：实际调用的图像理解模型名
+
+这类引擎的作用不是生成图片，而是把图片内容转成可嵌入 Markdown 的文本描述。
 
 ### 图片生成引擎
 
@@ -99,19 +184,75 @@ import { Callout } from 'nextra/components';
 - `Bailian Image`
 - `Volc Image`
 
-其中 `Bailian Image` 基于阿里云百炼 `Qwen-Image` 文生图同步接口，当前实现需要在引擎配置中提供：
+这三类内置生图实现的接入方式并不相同，建议按下表理解：
+
+| 引擎 | 实现方式 | 必填配置 | 常用可选配置 |
+| --- | --- | --- | --- |
+| `Banana Image` | 走 OpenAI Compatible `chat.completions`，要求模型直接返回 base64 markdown image | `api_key`、`base_url`、`model_name` | 无强制额外字段，通常由上游兼容服务自行决定 |
+| `Bailian Image` | 基于阿里云百炼 `Qwen-Image` 同步文生图接口 | `api_key` | `base_url`、`model_name`、`size`、`negative_prompt`、`prompt_extend`、`watermark`、`seed` |
+| `Volc Image` | 基于火山引擎 OpenAPI 图像生成服务，走签名请求 | `access_key_id`、`secret_access_key`、`req_key` | `base_url`、`region`、`service`、`action`、`version`、`model_version`、`negative_prompt`、`size`、`seed`、`scale`、`ddim_steps`、`width`、`height`、`use_pre_llm`、`return_url`、`extra_body` |
+
+### Banana Image
+
+`Banana Image` 当前实现本质上是一个“OpenAI 兼容图像生成适配器”。  
+它不会直接调用某个固定厂商的生图接口，而是要求你提供一个支持 `chat.completions` 的兼容服务，并让该服务返回以下格式：
+
+```md
+![image](data:image/png;base64,...)
+```
+
+因此当前实现需要在引擎配置中提供：
 
 - `api_key`
 - `base_url`
 - `model_name`
 
+字段说明：
+
+- `api_key`：调用上游兼容服务时使用的鉴权密钥。如果服务端不认匿名调用，这项通常必填。
+- `base_url`：OpenAI 兼容接口的根地址，例如你的自建网关、第三方代理或兼容服务入口。Revornix 会基于它去调用 `chat.completions`。
+- `model_name`：实际请求的模型名。它决定最终走哪个上游图像模型，也决定上游是否真的能按要求返回 markdown image。
+
+它更适合这些场景：
+
+- 你已经有兼容 OpenAI SDK 的图像模型网关
+- 你想把 Google Gemini / 其他兼容服务包装成统一生图入口
+- 你希望复用现有 OpenAI 兼容鉴权与路由体系
+
+### Bailian Image
+
+`Bailian Image` 基于阿里云百炼 `Qwen-Image` 文生图同步接口，当前实现需要在引擎配置中提供：
+
+- `api_key`
+
 并支持以下可选参数：
 
+- `base_url`
+- `model_name`
 - `size`
 - `negative_prompt`
 - `prompt_extend`
 - `watermark`
 - `seed`
+
+如果你不主动覆盖，当前实现会默认使用：
+
+- `base_url = https://dashscope.aliyuncs.com`
+- `model_name = qwen-image-2.0`
+- `size = 2048*2048`
+
+字段说明：
+
+- `api_key`：百炼平台的鉴权密钥，没有它就无法调用接口。
+- `base_url`：百炼服务入口地址。默认就是官方地址，只有在你走代理、网关或私有转发时才需要改。
+- `model_name`：具体使用的百炼图像模型名。默认是 `qwen-image-2.0`，如果后面切换到新模型，可以在这里覆盖。
+- `size`：输出图尺寸，格式通常类似 `1024*1024`、`2048*2048`。尺寸越大，生成成本和耗时通常也越高。
+- `negative_prompt`：负向提示词，用来明确告诉模型“不要出现什么元素、风格或缺陷”。
+- `prompt_extend`：是否允许服务端自动扩展提示词。开启后更容易出丰富画面，但也可能弱化你原始 prompt 的精确控制。
+- `watermark`：是否给输出图增加水印。这个行为由百炼接口本身控制。
+- `seed`：随机种子。固定后更利于复现相近结果，不固定则更偏向每次出不同图。
+
+### Volc Image
 
 `Volc Image` 基于火山引擎 OpenAPI 图像生成服务接入，当前实现默认按 OpenAPI 签名方式调用，需要在引擎配置中提供：
 
@@ -131,7 +272,47 @@ import { Callout } from 'nextra/components';
 - `negative_prompt`
 - `seed`
 
-## 5. 官方托管引擎
+此外当前实现还支持：
+
+- `scale`
+- `ddim_steps`
+- `width`
+- `height`
+- `use_pre_llm`
+- `return_url`
+- `extra_body`
+
+如果你只想先跑通最小配置，通常准备这三项就够了：
+
+- `access_key_id`
+- `secret_access_key`
+- `req_key`
+
+剩余字段更多是为了适配不同的火山视觉模型、路由区域和高级参数。
+
+字段说明：
+
+- `access_key_id`：火山引擎 OpenAPI 的访问密钥 ID，用于签名请求。
+- `secret_access_key`：和 `access_key_id` 配套的私钥，用于生成签名。
+- `req_key`：这次请求要走的图像能力 key，通常直接决定调用的是哪条视觉生成链路。
+- `base_url`：火山视觉 OpenAPI 的根地址。默认是官方地址，除非你走企业代理或特殊网关，一般不用改。
+- `region`：签名所用地域，默认 `cn-north-1`。如果你的能力部署在其他区域，这项要和实际区域一致。
+- `service`：签名所用服务名，默认 `cv`。除非火山接口规范变了，否则通常不需要动。
+- `action`：调用的 OpenAPI 动作名，默认 `CVProcess`。只有你接的是不同 action 时才需要调整。
+- `version`：OpenAPI 版本号，默认 `2022-08-31`。主要用于适配不同版本接口。
+- `model_version`：火山视觉内部模型版本标识。用于在同一条能力下切换更具体的模型版本。
+- `size`：快捷设置输出图尺寸，适合接口本身支持统一尺寸参数时使用。
+- `negative_prompt`：负向提示词，用来压制不希望出现的元素、构图或风格。
+- `seed`：随机种子，用于复现实验结果。
+- `scale`：提示词引导强度，通常数值越高，模型越倾向贴近 prompt。
+- `ddim_steps`：采样步数，通常会影响画质、细节和耗时。
+- `width`：显式指定输出图宽度。
+- `height`：显式指定输出图高度。
+- `use_pre_llm`：是否在正式生成前先做一次提示词预处理或扩写，适合想让 prompt 自动润色的场景。
+- `return_url`：是否优先让接口返回图片 URL。如果关闭，某些能力可能更倾向直接回传 base64。
+- `extra_body`：额外透传到请求体里的原始 JSON 对象。适合火山接口新增参数、而 Revornix 这层暂时还没单独暴露字段时使用。
+
+## 6. 官方托管引擎
 
 引擎支持“官方托管”标记：
 
@@ -146,7 +327,7 @@ import { Callout } from 'nextra/components';
 - 这个引擎如何换算积分
 - 这个引擎需要什么套餐等级
 
-## 6. 官方引擎清单
+## 7. 官方引擎清单
 
 在官方部署初始化里，会创建这些官方公开引擎：
 
@@ -163,7 +344,7 @@ import { Callout } from 'nextra/components';
 - `Official_MinerU_API` 初始化为 `FREE` 级别
 - 其余几项初始化为 `PRO` 级别
 
-## 7. 引擎社区与 Fork
+## 8. 引擎社区与 Fork
 
 - 你可以把自己的引擎设为公开
 - 公开引擎可以设置所需套餐等级
