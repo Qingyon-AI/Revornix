@@ -584,7 +584,7 @@ const TableNode = Node.create({
 
 	renderMarkdown(node) {
 		const content = normalizeTableContent(node.attrs?.content);
-		return `<quick-table data-content="${encodeTableContent(content)}"></quick-table>`;
+		return `\n<quick-table data-content="${encodeTableContent(content)}"></quick-table>\n`;
 	},
 });
 

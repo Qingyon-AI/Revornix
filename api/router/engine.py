@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
@@ -13,6 +14,7 @@ from common.dependencies import (
     get_db,
     get_user_plan_level_in_func,
 )
+from common.resource_plan_access import ensure_engine_access
 from common.jwt_utils import create_token
 from common.subscription_access import (
     SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
@@ -23,9 +25,13 @@ from common.subscription_access import (
 from enums.engine_enums import UserEngineRole
 from enums.user import UserRole
 from common.encrypt import decrypt_engine_config, encrypt_engine_config
+from proxy.engine_proxy import EngineProxy
 
 engine_router = APIRouter()
 SUBSCRIPTION_GATE_ENABLED = check_deployed_by_official_in_fuc()
+DATA_URL_PATTERN = re.compile(
+    r"data:image\/(?:png|jpeg|jpg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+"
+)
 
 
 def _is_privileged_user(user: models.user.User) -> bool:
@@ -366,6 +372,53 @@ def get_engine_detail(
             db_engine,
             include_config_json=True,
         )
+
+@engine_router.post("/image-generate", response_model=schemas.engine.ImageGenerateResponse)
+async def generate_image_with_default_engine(
+    image_generate_request: schemas.engine.ImageGenerateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user),
+):
+    if not image_generate_request.prompt:
+        raise schemas.error.CustomException(
+            code=400,
+            message="Prompt cannot be empty",
+        )
+    if user.default_image_generate_engine_id is None:
+        raise schemas.error.CustomException(
+            code=400,
+            message="Default image generate engine is not configured",
+        )
+
+    await ensure_engine_access(
+        db=db,
+        user=user,
+        engine_id=user.default_image_generate_engine_id,
+    )
+
+    engine = await EngineProxy.create_image_generate_engine(
+        user_id=user.id,
+        engine_id=user.default_image_generate_engine_id,
+    )
+    image_markdown = engine.generate_image(image_generate_request.prompt)
+    if image_markdown is None:
+        raise schemas.error.CustomException(
+            code=502,
+            message="Image generation failed",
+        )
+
+    match = DATA_URL_PATTERN.search(image_markdown)
+    if match is None:
+        raise schemas.error.CustomException(
+            code=502,
+            message="Image generation returned an invalid payload",
+        )
+
+    return schemas.engine.ImageGenerateResponse(
+        prompt=image_generate_request.prompt,
+        image_markdown=image_markdown,
+        data_url=match.group(0),
+    )
 
 @engine_router.post("/provided", response_model=schemas.engine.EngineProvidedSearchResponse)
 def provide_document_parse_engine(

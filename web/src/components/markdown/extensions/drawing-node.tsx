@@ -318,7 +318,7 @@ const DrawingNode = Node.create({
 				? node.attrs.height
 				: DEFAULT_DRAWING_HEIGHT;
 
-		return `<drawing-node data-url="${encodeDataUrl(dataUrl)}" data-width="${width}" data-height="${height}"></drawing-node>`;
+		return `\n<drawing-node data-url="${encodeDataUrl(dataUrl)}" data-width="${width}" data-height="${height}"></drawing-node>\n`;
 	},
 });
 
