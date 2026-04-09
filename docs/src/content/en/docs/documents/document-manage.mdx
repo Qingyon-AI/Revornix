@@ -18,6 +18,7 @@ The create page supports four document entry types:
 In practice:
 
 - Quick notes support direct Markdown authoring and a write/preview switch before submission.
+- The quick-note editor also supports full-page fullscreen editing for longer drafting sessions.
 - Link documents depend on the website parsing engine.
 - File documents depend on the file parsing engine. The upload flow accepts common document and presentation formats, including `pdf / doc / docx / ppt / pptx / jpg / jpeg / png`.
 - Audio documents go through transcription first, then can continue into summary, graph, and podcast-related workflows.
@@ -67,6 +68,19 @@ If a stage fails, the UI can expose retry actions. If a summary, graph, or podca
 
 You can keep editing the title, description, labels, bound sections, and cover after collection.  
 These are not only presentation fields. They can affect downstream section updates and organization.
+
+### Re-editing the Markdown body
+
+Documents whose main body is stored as Markdown can now be edited directly from the detail page instead of requiring a fresh re-import:
+
+- Quick notes support direct Markdown re-editing.
+- Website and file documents can also revise the parsed Markdown after ingestion finishes.
+- The editor supports writing, preview, and full-page fullscreen editing for longer body edits.
+- Saving updates the current document body in place rather than creating a duplicate copy.
+
+<Callout>
+	Once Markdown is edited manually, Revornix marks results derived from the previous body as stale. That includes embeddings, AI summaries, knowledge graphs, podcasts, and section-side derived outputs that depend on the document body.
+</Callout>
 
 ### Supplemental notes
 

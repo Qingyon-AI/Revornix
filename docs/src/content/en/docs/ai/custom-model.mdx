@@ -51,7 +51,58 @@ In practice:
 - The model name must match the real upstream model name
 - After adding models, you still need to assign one in the default model selectors
 
-## 4. Current plan and accessibility rules
+## 4. What each model-related config field means
+
+The fields users directly fill in are mainly split into two layers:
+
+### Model provider fields
+
+These are the fields you enter when creating a model provider.
+
+- `name`: The provider label used for your own organization, such as `OpenAI Official`, `OpenRouter`, or `My Gateway`.
+- `description`: A human-readable note about what this provider is for. It does not directly change runtime behavior.
+- `api_key`: The credential used to authenticate against that provider. In practice this is usually required if the upstream does not allow anonymous access.
+- `base_url`: The provider root URL. Revornix currently consumes models through an OpenAI-compatible API style, so this is usually the root of a compatible endpoint.
+- `is_public`: Whether the provider should be published to the community. Other users may discover and fork it, but they do not directly inherit your private credential values.
+
+Among these fields, the ones that directly affect runtime calls are:
+
+- `api_key`
+- `base_url`
+
+### Model fields
+
+These are the fields you enter when adding a model under a provider.
+
+- `name`: The real upstream model name, which becomes the `model` value in runtime requests. Examples include `gpt-5.4`, `gpt-4o-mini`, `claude-3-7-sonnet`, or `qwen-max`.
+- `description`: A human-friendly note to help you distinguish model roles, such as “best for chat,” “cheap test model,” or “long-document summarization.”
+- `required_plan_level`: The plan level required to access this model. This is mainly used for access checks and default-selection eligibility.
+- `is_official_hosted`: Whether the model is officially hosted by the platform. This matters more for platform operations and billing than for the upstream request itself.
+- `compute_point_multiplier`: The usage multiplier used for platform-side compute-point accounting. It does not change the upstream model behavior.
+
+Among these fields, the one that directly affects the upstream request is:
+
+- `name`
+
+<Callout>
+	A practical mental model is: provider fields decide where the request goes and how it authenticates; model fields decide which exact upstream model is called.
+</Callout>
+
+## 5. The three model fields users most often care about
+
+If you are integrating a standard OpenAI-compatible model source, the three fields you will care about most are:
+
+- `api_key`: The credential proving you are allowed to call the upstream.
+- `base_url`: The root URL deciding where the request is sent.
+- `model_name` / model `name`: The exact model identifier that decides which model actually runs.
+
+In plain language:
+
+- `api_key` decides “are you allowed to use it”
+- `base_url` decides “where the request goes”
+- `model_name` decides “which model actually runs”
+
+## 6. Current plan and accessibility rules
 
 Models now have more than visibility rules. They also carry access-level constraints.
 
@@ -66,7 +117,7 @@ That means:
 - You can browse public models from the model community
 - But default selection and real runtime usage still depend on current plan access
 
-## 5. Official hosted models
+## 7. Official hosted models
 
 The codebase now explicitly supports the concept of official hosted models.
 
@@ -86,7 +137,7 @@ The current seeded official model entry is:
 
 But this should be read as the current default seeded model entry in the repository, not as a promise that all platform traffic is permanently hard-routed to one single upstream model.
 
-## 6. Model community and forks
+## 8. Model community and forks
 
 The model community is still part of the product:
 
@@ -96,7 +147,7 @@ The model community is still part of the product:
 
 Forking makes that provider part of your own available resource set. Without that step, the default model selectors will not treat it as one of your own usable resources.
 
-## 7. Boundary between models and engines
+## 9. Boundary between models and engines
 
 In the current product, models and engines should not be treated as the same thing:
 
