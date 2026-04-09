@@ -1541,6 +1541,8 @@
     "editor_continue_instruction_placeholder": "Add extra requirements, for example: more narrative, suitable for product docs, keep it within two paragraphs",
     "editor_continue_generating": "Generating",
     "editor_continue_generate": "Generate continuation",
+    "editor_continue_stop": "Stop continuation",
+    "editor_continue_waiting_inline": "AI is continuing this passage. The generated text will appear here automatically...",
     "editor_illustration_title": "AI Document Illustration",
     "editor_illustration_description": "Choose an image engine to generate an illustration and insert it directly into the current document.",
     "editor_illustration_prompt_required": "Please enter an illustration prompt first",

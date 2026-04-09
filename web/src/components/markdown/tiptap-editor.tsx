@@ -55,6 +55,7 @@ import { useQuery } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
 
 import MermaidCodeBlock from './extensions/mermaid-code-block';
+import AiContinuationPlaceholderNode from './extensions/ai-continuation-placeholder-node';
 import ImageNode from './extensions/image-node';
 import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
@@ -171,6 +172,7 @@ const TipTapEditor = ({
 	const continueAbortControllerRef = useRef<AbortController | null>(null);
 	const continueAbortReasonRef = useRef<'user' | 'timeout' | null>(null);
 	const streamingInsertRangeRef = useRef<{ from: number; to: number } | null>(null);
+	const hasStreamedContinuationRef = useRef(false);
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
 	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] = useState(false);
@@ -263,6 +265,7 @@ const TipTapEditor = ({
 			ImageNode.configure({
 				ownerId: resolvedOwnerId,
 			}),
+			AiContinuationPlaceholderNode,
 			DrawingNode,
 			TableNode,
 			VideoEmbedNode,
@@ -428,6 +431,21 @@ const TipTapEditor = ({
 		editor?.chain().focus().unsetMark('textHighlight').run();
 	};
 
+	const getContinuationInsertionTarget = () => {
+		if (!editor) {
+			return null;
+		}
+
+		const targetPosition =
+			aiSelectionRef.current?.to ?? editor.state.selection.to;
+		const resolvedPosition = editor.state.doc.resolve(targetPosition);
+		if (resolvedPosition.depth === 0) {
+			return targetPosition;
+		}
+
+		return resolvedPosition.after(resolvedPosition.depth);
+	};
+
 	const replaceStreamingContinuation = (text: string) => {
 		if (!editor || !streamingInsertRangeRef.current) {
 			return;
@@ -459,6 +477,35 @@ const TipTapEditor = ({
 			from,
 			to: from + replacementLength,
 		};
+	};
+
+	const insertContinuationPlaceholder = (message: string) => {
+		if (!editor || !streamingInsertRangeRef.current) {
+			return;
+		}
+
+		const { from, to } = streamingInsertRangeRef.current;
+		editor.commands.insertContentAt({ from, to }, {
+			type: 'aiContinuationPlaceholder',
+			attrs: { message },
+		});
+		const placeholderNode = editor.state.doc.nodeAt(from);
+		const placeholderSize = placeholderNode?.type.name === 'aiContinuationPlaceholder'
+			? placeholderNode.nodeSize
+			: 1;
+		streamingInsertRangeRef.current = {
+			from,
+			to: from + placeholderSize,
+		};
+	};
+
+	const clearStreamingContinuation = () => {
+		if (!editor || !streamingInsertRangeRef.current) {
+			return;
+		}
+
+		const { from, to } = streamingInsertRangeRef.current;
+		editor.commands.deleteRange({ from, to });
 	};
 
 	const stopAiContinuation = () => {
@@ -603,8 +650,7 @@ const TipTapEditor = ({
 		setContinuePreview('');
 		setIsContinueDialogOpen(false);
 		try {
-			const insertionTarget =
-				aiSelectionRef.current?.to ?? editor?.state.selection.to ?? null;
+			const insertionTarget = getContinuationInsertionTarget();
 			if (!editor || insertionTarget === null) {
 				throw new Error(t('editor_continue_insert_failed'));
 			}
@@ -613,6 +659,8 @@ const TipTapEditor = ({
 				from: insertionTarget,
 				to: insertionTarget,
 			};
+			hasStreamedContinuationRef.current = false;
+			insertContinuationPlaceholder(t('editor_continue_waiting_inline'));
 
 			const headers = new Headers();
 			headers.append('Content-Type', 'application/json');
@@ -686,6 +734,7 @@ const TipTapEditor = ({
 			const continuation = clampContinuationText(
 				await readAiTextResponse(response, {
 					onStreamText: (text) => {
+						hasStreamedContinuationRef.current = true;
 						setContinuePreview(text);
 						replaceStreamingContinuation(text);
 					},
@@ -701,14 +750,21 @@ const TipTapEditor = ({
 			setContinuePreview('');
 		} catch (error: any) {
 			if ((error as DOMException)?.name === 'AbortError') {
+				if (!hasStreamedContinuationRef.current) {
+					clearStreamingContinuation();
+				}
 				if (continueAbortReasonRef.current === 'timeout') {
 					toast.error(t('editor_continue_timeout'));
 				}
 				return;
 			}
+			if (!hasStreamedContinuationRef.current) {
+				clearStreamingContinuation();
+			}
 			console.error(error);
 			toast.error(error?.message || t('editor_continue_failed'));
 		} finally {
+			hasStreamedContinuationRef.current = false;
 			continueAbortControllerRef.current = null;
 			continueAbortReasonRef.current = null;
 			streamingInsertRangeRef.current = null;
@@ -1107,15 +1163,28 @@ const TipTapEditor = ({
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName()}
-					title={isContinuing ? '停止 AI 续写' : 'AI 续写'}
+					title={isContinuing ? t('editor_continue_generating') : 'AI 续写'}
 					onMouseDown={preserveEditorSelection}
-					onClick={isContinuing ? stopAiContinuation : openContinueDialog}>
+					onClick={openContinueDialog}
+					disabled={isContinuing}>
 					{isContinuing ? (
-						<Square className='size-3.5 fill-current' />
+						<Loader2 className='size-4 animate-spin' />
 					) : (
 						<MessageSquarePlus className='size-4' />
 					)}
 				</Button>
+				{isContinuing ? (
+					<Button
+						type='button'
+						variant='ghost'
+						size='icon'
+						className={getToolbarButtonClassName()}
+						title={t('editor_continue_stop')}
+						onMouseDown={preserveEditorSelection}
+						onClick={stopAiContinuation}>
+						<Square className='size-3.5 fill-current' />
+					</Button>
+				) : null}
 				<Button
 					type='button'
 					variant='ghost'
