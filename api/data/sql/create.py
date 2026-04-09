@@ -18,7 +18,9 @@ from common.dependencies import check_deployed_by_official_in_fuc
 deployed_by_official = check_deployed_by_official_in_fuc()
 
 # ---------------- Engines ----------------
+from engine.image_generate.bailian import BailianImageGenerateEngine
 from engine.image_generate.banana import BananaImageGenerateEngine
+from engine.image_generate.volc import VolcImageGenerateEngine
 from engine.image_understand.kimi import KimiImageUnderstandEngine
 from engine.markdown.jina import JinaEngine
 from engine.markdown.markitdown import MarkitdownEngine
@@ -209,6 +211,8 @@ async def seed_database(db: Session):
         MarkitdownEngine(),
         MineruApiEngine(),
         VolcTTSEngine(),
+        VolcImageGenerateEngine(),
+        BailianImageGenerateEngine(),
         BananaImageGenerateEngine(),
         KimiImageUnderstandEngine(),
         OpenAIAudioEngine(),
@@ -317,7 +321,9 @@ async def seed_database(db: Session):
 
         # Engines（注意：这里要从 engine_provided 表取 id，别查 engine 表）
         engines: list[Engine] = [
-            Engine.Official_Banana_Image, 
+            Engine.Official_Banana_Image,
+            Engine.Official_Bailian_Image,
+            Engine.Official_Volc_Image,
             Engine.Official_Volc_TTS,
             Engine.Official_MinerU_API,
             Engine.Official_Volc_Fast_STT,

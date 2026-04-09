@@ -55,9 +55,19 @@ class EngineProvided(Enum):
         name='Volc_STT_Fast',
         category=EngineCategory.STT
     )
+    Volc_Image = EngineProvidedMeta(
+        uuid='7f09db37f3f04b23832a518f5f25fa9b',
+        name='Volc_Image',
+        category=EngineCategory.IMAGE_GENERATE
+    )
     Banana_Image = EngineProvidedMeta(
         uuid='9f1fb0005a99483da191a38af6dc7a23',
         name='Banana_Image',
+        category=EngineCategory.IMAGE_GENERATE
+    )
+    Bailian_Image = EngineProvidedMeta(
+        uuid='d5daed7e73144af3b2ad7410976f9424',
+        name='Bailian_Image',
         category=EngineCategory.IMAGE_GENERATE
     )
     Kimi_Image_Understand = EngineProvidedMeta(
@@ -102,6 +112,18 @@ class Engine(Enum):
         name='Official_Banana_Image',
         description='Official Nana Banana Pro image generation configuration item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Banana_Image
+    )
+    Official_Bailian_Image = EngineMeta(
+        uuid='c6ef0f4c98524002b0f5a278f4f55f1b',
+        name='Official_Bailian_Image',
+        description='Official Bailian Qwen-Image generation configuration item, only available for subscribed users (limited amount)',
+        engine_provided=EngineProvided.Bailian_Image
+    )
+    Official_Volc_Image = EngineMeta(
+        uuid='5fc1f77f7b5f4fd49e40d35d4b8bc3b7',
+        name='Official_Volc_Image',
+        description='Official Volc image generation configuration item, only available for subscribed users (limited amount)',
+        engine_provided=EngineProvided.Volc_Image
     )
     Official_MinerU_API = EngineMeta(
         uuid='ced93e31c89944e79fece83dcc95f4df',
