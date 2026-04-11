@@ -235,6 +235,13 @@ class SearchMyStarDocumentsRequest(BaseModel):
     label_ids: list[int] | None = None
     desc: bool = True
 
+class SearchPublicDocumentsRequest(BaseModel):
+    keyword: str | None = None
+    start: int | None = None
+    limit: int = 10
+    label_ids: list[int] | None = None
+    desc: bool = True
+
 class DocumentInfo(BaseModel):
     id: int
     creator_id: int

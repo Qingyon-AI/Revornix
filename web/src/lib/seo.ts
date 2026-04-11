@@ -9,6 +9,7 @@ import {
 	InifiniteScrollPagnitionSectionCommentInfo,
 	InifiniteScrollPagnitionSectionInfo,
 	InifiniteScrollPagnitionSectionDocumentInfo,
+	InifiniteScrollPagnitionDocumentInfo,
 	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
@@ -39,6 +40,8 @@ export type PublicDocumentSectionInfo = SchemasDocumentBaseSectionInfo & {
 export type PublicDocumentDetail = Omit<DocumentDetailResponse, 'sections'> & {
 	sections?: PublicDocumentSectionInfo[];
 };
+
+export type PublicDocumentPagination = InifiniteScrollPagnitionDocumentInfo;
 
 export const getPublicSectionHref = (section: {
 	publish_uuid?: string | null;
@@ -77,6 +80,18 @@ export const fetchPublicDocumentDetail = async (
 	data: DocumentDetailRequest,
 ): Promise<PublicDocumentDetail> => {
 	return await serverRequest(documentApi.documentDetail, {
+		data,
+	});
+};
+
+export const fetchPublicDocuments = async (data: {
+	start?: number;
+	limit: number;
+	keyword?: string;
+	label_ids?: number[];
+	desc?: boolean;
+}): Promise<PublicDocumentPagination> => {
+	return await serverRequest(documentApi.searchPublicDocument, {
 		data,
 	});
 };

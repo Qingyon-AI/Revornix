@@ -250,6 +250,117 @@ def get_publish_documents_by_document_ids(
     )
     return query.all()
 
+def search_published_documents(
+    db: Session,
+    start: int | None = None,
+    limit: int = 10,
+    label_ids: list[int] | None = None,
+    keyword: str | None = None,
+    desc: bool = True,
+):
+    query = db.query(models.document.Document)
+    query = query.join(
+        models.document.PublishDocument,
+        models.document.PublishDocument.document_id == models.document.Document.id,
+    )
+    query = query.filter(
+        models.document.Document.delete_at.is_(None),
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f"%{keyword}%"),
+                models.document.Document.description.like(f"%{keyword}%"),
+            )
+        )
+    if label_ids is not None:
+        query = query.join(models.document.DocumentLabel)
+        query = query.filter(
+            models.document.DocumentLabel.label_id.in_(label_ids),
+            models.document.DocumentLabel.delete_at.is_(None),
+        )
+    if desc:
+        query = query.order_by(models.document.Document.id.desc())
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+    if start is not None:
+        if desc:
+            query = query.filter(models.document.Document.id <= start)
+        else:
+            query = query.filter(models.document.Document.id >= start)
+    query = query.distinct(models.document.Document.id)
+    query = query.limit(limit)
+    return query.all()
+
+def count_published_documents(
+    db: Session,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+):
+    query = db.query(models.document.Document)
+    query = query.join(
+        models.document.PublishDocument,
+        models.document.PublishDocument.document_id == models.document.Document.id,
+    )
+    query = query.filter(
+        models.document.Document.delete_at.is_(None),
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f"%{keyword}%"),
+                models.document.Document.description.like(f"%{keyword}%"),
+            )
+        )
+    if label_ids is not None:
+        query = query.join(models.document.DocumentLabel)
+        query = query.filter(
+            models.document.DocumentLabel.label_id.in_(label_ids),
+            models.document.DocumentLabel.delete_at.is_(None),
+        )
+    query = query.distinct(models.document.Document.id)
+    return query.count()
+
+def search_next_published_document(
+    db: Session,
+    document: models.document.Document,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True,
+):
+    query = db.query(models.document.Document)
+    query = query.join(
+        models.document.PublishDocument,
+        models.document.PublishDocument.document_id == models.document.Document.id,
+    )
+    query = query.filter(
+        models.document.Document.delete_at.is_(None),
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(
+            or_(
+                models.document.Document.title.like(f"%{keyword}%"),
+                models.document.Document.description.like(f"%{keyword}%"),
+            )
+        )
+    if label_ids is not None:
+        query = query.join(models.document.DocumentLabel)
+        query = query.filter(
+            models.document.DocumentLabel.label_id.in_(label_ids),
+            models.document.DocumentLabel.delete_at.is_(None),
+        )
+    if desc:
+        query = query.order_by(models.document.Document.id.desc())
+        query = query.filter(models.document.Document.id < document.id)
+    else:
+        query = query.order_by(models.document.Document.id.asc())
+        query = query.filter(models.document.Document.id > document.id)
+    query = query.distinct(models.document.Document.id)
+    return query.first()
+
 def get_website_document_by_user_id_and_url(
     db: Session,
     user_id: int,
