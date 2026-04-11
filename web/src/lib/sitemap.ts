@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { unstable_cache } from 'next/cache';
 import {
+	fetchPublicDocuments,
 	fetchPublicSectionDocuments,
 	fetchPublicSections,
 	type PublicSectionInfo,
@@ -139,6 +140,52 @@ const fetchAllPublicSectionDocuments = async (sectionId: number) => {
 	return documents;
 };
 
+const fetchAllPublicDocuments = async () => {
+	const documents: Awaited<ReturnType<typeof fetchPublicDocuments>>['elements'] =
+		[];
+	let start: number | undefined;
+	const seenStarts = new Set<number | undefined>();
+
+	while (true) {
+		if (seenStarts.has(start)) {
+			console.error(
+				'[SEO] Repeated public document pagination cursor detected while generating sitemap:',
+				start,
+			);
+			break;
+		}
+		seenStarts.add(start);
+
+		const response = await fetchPublicDocuments({
+			start,
+			limit: SECTION_PAGE_SIZE,
+			desc: true,
+		});
+
+		documents.push(...(response.elements ?? []));
+
+		if (
+			!response.has_more ||
+			response.next_start === undefined ||
+			response.next_start === null
+		) {
+			break;
+		}
+
+		if (response.next_start === start) {
+			console.error(
+				'[SEO] Public document pagination did not advance while generating sitemap:',
+				start,
+			);
+			break;
+		}
+
+		start = response.next_start;
+	}
+
+	return documents;
+};
+
 const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 	const entries = new Map<string, MetadataRoute.Sitemap[number]>();
 
@@ -183,6 +230,24 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 
 	for (const [creatorId, lastModified] of creatorLatestUpdate.entries()) {
 		addEntry(entries, `/user/${creatorId}`, lastModified, 'weekly', 0.7);
+	}
+
+	try {
+		const publicDocuments = await fetchAllPublicDocuments();
+		for (const document of publicDocuments) {
+			addEntry(
+				entries,
+				`/document/${document.id}`,
+				document.update_time ?? document.create_time,
+				'monthly',
+				0.6,
+			);
+		}
+	} catch (error) {
+		console.error(
+			'[SEO] Failed to fetch public documents for sitemap:',
+			error,
+		);
 	}
 
 	const documentSections = publicSections.filter(

@@ -618,6 +618,52 @@ async def search_my_star_documents(
         next_start=next_start
     )
 
+@document_query_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+async def search_public_documents(
+    search_public_documents_request: schemas.document.SearchPublicDocumentsRequest,
+    db: Session = Depends(get_db),
+):
+    db_documents = crud.document.search_published_documents(
+        db=db,
+        start=search_public_documents_request.start,
+        limit=search_public_documents_request.limit,
+        keyword=search_public_documents_request.keyword,
+        label_ids=search_public_documents_request.label_ids,
+        desc=search_public_documents_request.desc,
+    )
+    documents = await get_document_infos(db=db, documents=db_documents)
+
+    next_document = None
+    if (
+        search_public_documents_request.limit > 0
+        and len(db_documents) == search_public_documents_request.limit
+    ):
+        next_document = crud.document.search_next_published_document(
+            db=db,
+            document=db_documents[-1],
+            keyword=search_public_documents_request.keyword,
+            label_ids=search_public_documents_request.label_ids,
+            desc=search_public_documents_request.desc,
+        )
+    has_more, next_start = resolve_infinite_scroll_meta(
+        page_item_count=len(documents),
+        limit=search_public_documents_request.limit,
+        next_item_id=next_document.id if next_document is not None else None,
+    )
+    total = crud.document.count_published_documents(
+        db=db,
+        keyword=search_public_documents_request.keyword,
+        label_ids=search_public_documents_request.label_ids,
+    )
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=documents,
+        start=search_public_documents_request.start,
+        limit=search_public_documents_request.limit,
+        has_more=has_more,
+        next_start=next_start,
+    )
+
 @document_query_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
 def search_knowledge_vector(
     vector_search_request: schemas.document.VectorSearchRequest,
