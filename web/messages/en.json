@@ -1613,6 +1613,8 @@
     "editor_default_illustration_engine_unavailable": "The current default illustration engine is unavailable",
     "editor_illustration_timeout": "The illustration request timed out. Please check the default image engine configuration and try again",
     "editor_illustration_prompt_placeholder": "Describe the subject, style, composition, and mood you want for the illustration",
+    "editor_illustration_generating": "Generating",
+    "editor_illustration_generate": "Generate illustration",
     "resource_action_notice": "This action will consume the currently selected AI model or engine resources. Please confirm before continuing.",
     "resource_dialog_graph_description": "Please confirm which model to use before generating the knowledge graph.",
     "resource_dialog_podcast_description": "Please confirm which speech engine to use before generating the podcast.",

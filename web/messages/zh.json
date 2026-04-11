@@ -1613,6 +1613,8 @@
     "editor_default_illustration_engine_unavailable": "当前默认插图生成引擎不可用",
     "editor_illustration_timeout": "插图生成请求超时，请检查默认图片引擎配置后重试",
     "editor_illustration_prompt_placeholder": "描述想要的插图内容、风格、构图和氛围",
+    "editor_illustration_generating": "生成中",
+    "editor_illustration_generate": "生成插图",
     "resource_action_notice": "该操作会消耗你当前选择的 AI 模型或引擎资源，请确认后再继续。",
     "resource_dialog_graph_description": "生成知识图谱前，请先确认本次要使用的模型。",
     "resource_dialog_podcast_description": "生成播客前，请先确认本次要使用的语音引擎。",
