@@ -31,10 +31,12 @@ const SectionOperateProcess = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -128,7 +130,7 @@ const SectionOperateProcess = ({
 				) : (
 					<RefreshCcw />
 				)}
-				{buttonLabel}
+				{iconOnly ? <span className='sr-only'>{buttonLabel}</span> : buttonLabel}
 			</Button>
 
 			<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>

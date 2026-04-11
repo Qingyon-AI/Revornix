@@ -11,6 +11,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
+import useDocumentMarkdownEditable from '@/hooks/use-document-markdown-editable';
 
 const QuickDocumentDetail = ({
 	id,
@@ -33,6 +34,10 @@ const QuickDocumentDetail = ({
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
+	});
+	const { canEditMarkdown } = useDocumentMarkdownEditable({
+		documentId: id,
+		ownerId: document?.creator.id,
 	});
 
 	const [delay, setDelay] = useState<number>();
@@ -99,6 +104,7 @@ const QuickDocumentDetail = ({
 							}
 							ownerId={document?.creator.id}
 							onSave={handleSaveMarkdown}
+							editable={canEditMarkdown}
 						/>
 						<div
 							ref={bottomRef}

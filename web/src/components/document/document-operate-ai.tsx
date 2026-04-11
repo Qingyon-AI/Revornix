@@ -106,12 +106,14 @@ const DocumentOperateAI = ({
 	disabled,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	document_id: number;
 	document_title?: string;
 	disabled?: boolean;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const queryClient = useQueryClient();
@@ -485,7 +487,7 @@ const DocumentOperateAI = ({
 					disabled={disabled}
 					onClick={onTriggerClick}>
 					<Bot />
-					{t('document_ai_ask')}
+					{iconOnly ? <span className='sr-only'>{t('document_ai_ask')}</span> : t('document_ai_ask')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>

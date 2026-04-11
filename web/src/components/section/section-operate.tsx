@@ -78,10 +78,12 @@ const SectionOperate = ({
 
 	const actionButtonClassName =
 		'h-11 w-full justify-center rounded-[20px] border border-border/50 bg-background/40 px-3.5 text-center text-xs font-medium text-foreground shadow-none transition-colors hover:bg-background/80 sm:text-sm';
+	const desktopIconButtonClassName =
+		'h-11 w-full justify-center rounded-[20px] border border-border/50 bg-background/40 px-0 text-center text-xs font-medium text-foreground shadow-none transition-colors hover:bg-background/80 [&_svg]:size-4.5';
 	const mobileActionButtonClassName =
 		'h-14 w-full justify-start gap-3 rounded-[20px] border border-border/70 bg-background/70 px-4 text-left text-sm font-medium text-foreground shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:bg-background/90 dark:bg-background/45 dark:hover:bg-background/60 [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground';
 	const desktopDockClassName =
-		'grid w-full grid-cols-2 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65 sm:grid-cols-3 xl:grid-cols-7';
+		'grid w-full gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65';
 
 	const isCreatorById =
 		Boolean(section?.creator?.id !== undefined) &&
@@ -143,6 +145,67 @@ const SectionOperate = ({
 	if (!section) {
 		return null;
 	}
+
+	const desktopActions = [
+		<SectionOperateComment
+			key='comment'
+			section_id={id}
+			className={desktopIconButtonClassName}
+			iconOnly
+		/>,
+		<SectionOperateAI
+			key='ai'
+			section_id={id}
+			section_title={section.title}
+			disabled={!section.md_file_name && section.documents_count === 0}
+			className={desktopIconButtonClassName}
+			iconOnly
+		/>,
+		<SectionDocument
+			key='documents'
+			section_id={id}
+			className={desktopIconButtonClassName}
+			iconOnly
+		/>,
+		...(ownershipResolved
+			? isOwner
+				? [
+						<SectionOperateProcess
+							key='process'
+							section_id={id}
+							className={desktopIconButtonClassName}
+							iconOnly
+						/>,
+						<SectionOperateShare
+							key='share'
+							section_id={id}
+							className={desktopIconButtonClassName}
+							showPublishBadge={false}
+							iconOnly
+						/>,
+						<SectionOperateDelete
+							key='delete'
+							section_id={id}
+							className={desktopIconButtonClassName}
+							iconOnly
+						/>,
+						<SectionOperateConfiguration
+							key='config'
+							section_id={id}
+							className={desktopIconButtonClassName}
+							iconOnly
+						/>,
+					]
+				: [
+						<SectionOperateSubscribe
+							key='subscribe'
+							section_id={id}
+							className={desktopIconButtonClassName}
+							iconOnly
+						/>,
+					]
+			: []),
+	];
 
 	if (isCompactViewport) {
 		return (
@@ -284,46 +347,12 @@ const SectionOperate = ({
 	}
 
 	return (
-		<div className={cn(desktopDockClassName, className)}>
-			<SectionOperateComment
-				section_id={id}
-				className={actionButtonClassName}
-			/>
-			<SectionOperateAI
-				section_id={id}
-				section_title={section.title}
-				disabled={!section.md_file_name && section.documents_count === 0}
-				className={actionButtonClassName}
-			/>
-			<SectionDocument section_id={id} className={actionButtonClassName} />
-			{ownershipResolved ? (
-				isOwner ? (
-				<>
-					<SectionOperateProcess
-						section_id={id}
-						className={actionButtonClassName}
-					/>
-					<SectionOperateShare
-						section_id={id}
-						className={actionButtonClassName}
-						showPublishBadge={false}
-					/>
-					<SectionOperateDelete
-						section_id={id}
-						className={actionButtonClassName}
-					/>
-					<SectionOperateConfiguration
-						section_id={id}
-						className={actionButtonClassName}
-					/>
-				</>
-				) : (
-				<SectionOperateSubscribe
-					section_id={id}
-					className={actionButtonClassName}
-				/>
-				)
-			) : null}
+		<div
+			className={cn(desktopDockClassName, className)}
+			style={{
+				gridTemplateColumns: `repeat(${Math.max(desktopActions.length, 1)}, minmax(0, 1fr))`,
+			}}>
+			{desktopActions}
 		</div>
 	);
 };

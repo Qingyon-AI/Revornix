@@ -64,8 +64,8 @@ const VideoEmbedNodeView = ({
 	return (
 		<NodeViewWrapper>
 			<BlockNodeShell
-				selected={selected}
-				className='mt-0 mb-2 max-w-full'
+				selected={selected && isEditable}
+				className='max-w-full'
 				contentClassName='overflow-hidden bg-background p-3'>
 				<div className='mb-3 flex items-center gap-2 text-sm font-medium text-foreground'>
 					<PlayCircle className='size-4 text-primary' />

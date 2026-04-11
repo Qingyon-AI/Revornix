@@ -22,33 +22,32 @@ def _ensure_document_access(
     document_creator_id: int,
     user_id: int | None,
 ) -> None:
-    if user_id is not None and document_creator_id == user_id:
-        return
-
-    db_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
+    db_published_document = crud.document.get_publish_document_by_document_id(
         db=db,
         document_id=document_id,
     )
-    if db_published_section_documents:
+    if user_id is not None and document_creator_id == user_id:
+        return
+    if db_published_document is not None:
         return
 
     if user_id is None:
         ensure_document_access(
             is_creator=False,
-            has_public_section=False,
-            has_related_section=False,
+            has_public_document=False,
+            has_document_collaborator=False,
         )
         return
 
-    db_user_published_section_documents = crud.document.get_published_section_of_the_document_by_document_id(
+    db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
         db=db,
-        document_id=document_id,
         user_id=user_id,
+        document_id=document_id,
     )
     ensure_document_access(
         is_creator=False,
-        has_public_section=bool(db_published_section_documents),
-        has_related_section=bool(db_user_published_section_documents),
+        has_public_document=False,
+        has_document_collaborator=db_user_document is not None,
     )
 
 
@@ -259,6 +258,20 @@ async def get_document_detail(
         for section in db_sections
         if section.id in visible_section_ids
     ]
+    collaborator_rows = crud.document.search_users_and_document_users_by_document_id(
+        db=db,
+        document_id=document_id,
+        limit=100,
+    )
+    collaborators = []
+    for db_user, db_user_document in collaborator_rows:
+        collaborator = schemas.user.UserPublicInfo.model_validate(db_user)
+        if collaborator.avatar is not None:
+            collaborator.avatar = await get_remote_file_signed_url(
+                user_id=collaborator.id,
+                file_name=collaborator.avatar,
+            )
+        collaborators.append(collaborator)
     db_labels = crud.document.get_labels_by_document_id(
         db=db,
         document_id=document_id,
@@ -273,6 +286,7 @@ async def get_document_detail(
         id=document.id,
         labels=labels,
         sections=sections,
+        users=collaborators,
         title=document.title,
         category=document.category,
         description=document.description,

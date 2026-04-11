@@ -303,26 +303,30 @@ async def section_document_request(
         db=db,
         section_id=section_document_request.section_id,
     )
+    db_member_users = crud.section.get_users_for_section_by_section_id(
+        db=db,
+        section_id=section_document_request.section_id,
+        filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
+    )
+    member_user_ids = [db_user.id for db_user in db_member_users]
+    has_member_access = user is not None and user.id in member_user_ids
     if db_publish_section is None:
-        db_users = crud.section.get_users_for_section_by_section_id(
-            db=db,
-            section_id=section_document_request.section_id,
-            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
-        )
         ensure_private_section_access(
             user_id=user.id if user is not None else None,
-            member_user_ids=[db_user.id for db_user in db_users],
+            member_user_ids=member_user_ids,
         )
 
     has_more = False
     next_start = None
+    published_only = db_publish_section is not None and not has_member_access
     db_documents = crud.document.search_section_documents(
         db=db,
         section_id=section_document_request.section_id,
         start=section_document_request.start,
         limit=section_document_request.limit,
         keyword=section_document_request.keyword,
-        desc=section_document_request.desc
+        desc=section_document_request.desc,
+        published_only=published_only,
     )
 
     document_ids = [document.id for document in db_documents]
@@ -364,14 +368,16 @@ async def section_document_request(
             section_id=section_document_request.section_id,
             document=db_documents[-1],
             keyword=section_document_request.keyword,
-            desc=section_document_request.desc
+            desc=section_document_request.desc,
+            published_only=published_only,
         )
         has_more = next_document is not None
         next_start = next_document.id if next_document is not None else None
     total = crud.document.count_section_documents(
         db=db,
         section_id=section_document_request.section_id,
-        keyword=section_document_request.keyword
+        keyword=section_document_request.keyword,
+        published_only=published_only,
     )
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,

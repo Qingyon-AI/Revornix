@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { followUser } from '@/service/user';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -106,36 +107,33 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 					<span className='font-bold ml-1'>{user.follows}</span>
 				</p>
 			</div>
-			<Dialog onOpenChange={setShowCancelDialog} open={showCancelDialog}>
-				<DialogTrigger asChild>
+			<AlertDialog onOpenChange={setShowCancelDialog} open={showCancelDialog}>
+				<AlertDialogTrigger asChild>
 					<Button variant={'outline'} className='shadow-none'>
 						{t('user_cancel_follow')}
 					</Button>
-				</DialogTrigger>
-				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
-					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-						<DialogTitle>{t('tip')}</DialogTitle>
-						<DialogDescription>
+				</AlertDialogTrigger>
+				<AlertDialogContent className='rounded-[28px] sm:max-w-md'>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t('tip')}</AlertDialogTitle>
+						<AlertDialogDescription>
 							{t('user_cancel_follow_confirm_alert')}
-						</DialogDescription>
-					</DialogHeader>
-					<div className='min-h-0 flex-1 px-6 py-5' />
-					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
-						<DialogClose asChild>
-							<Button variant={'secondary'}>{t('cancel')}</Button>
-						</DialogClose>
-						<Button
-							variant={'destructive'}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+						<AlertDialogAction
+							className='bg-destructive text-white hover:bg-destructive/90'
 							onClick={handleCancelFollow}
 							disabled={cancelFollowMutation.isPending}>
 							{t('confirm')}
 							{cancelFollowMutation.isPending && (
 								<Loader2 className='animate-spin' />
 							)}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Card>
 	);
 };

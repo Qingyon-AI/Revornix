@@ -30,7 +30,7 @@ const GraphStatePanel = ({
 }: GraphStatePanelProps) => {
 	return (
 		<TaskStateCard
-			variant='panel'
+			variant='plain'
 			layout='centered'
 			icon={Icon}
 			badge={badge}

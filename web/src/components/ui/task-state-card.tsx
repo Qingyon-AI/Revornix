@@ -62,7 +62,7 @@ type TaskStateCardProps = {
 	action?: ReactNode;
 	children?: ReactNode;
 	tone?: TaskStateTone;
-	variant?: 'card' | 'panel';
+	variant?: 'card' | 'panel' | 'plain';
 	layout?: 'inline' | 'centered';
 	className?: string;
 	bodyClassName?: string;
@@ -88,9 +88,12 @@ const TaskStateCard = ({
 }: TaskStateCardProps) => {
 	const toneClasses = toneClassNames[tone];
 	const isPanel = variant === 'panel';
+	const isPlain = variant === 'plain';
 
 	const wrapperClassName = cn(
-		isPanel
+		isPlain
+			? 'h-full w-full'
+			: isPanel
 			? `h-full w-full overflow-hidden rounded-[22px] border border-border/60 backdrop-blur-sm ${toneClasses.panel}`
 			: 'gap-0 p-0 overflow-hidden rounded-[26px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur',
 		className,
@@ -209,14 +212,16 @@ const TaskStateCard = ({
 	const body = children ? (
 		<div
 			className={cn(
-				'border-t border-border/60 px-4 pb-4 pt-3.5 sm:px-[18px] sm:pb-[18px]',
+				isPlain
+					? 'px-4 pb-4 pt-3.5 sm:px-[18px] sm:pb-[18px]'
+					: 'border-t border-border/60 px-4 pb-4 pt-3.5 sm:px-[18px] sm:pb-[18px]',
 				bodyClassName,
 			)}>
 			{children}
 		</div>
 	) : null;
 
-	if (isPanel) {
+	if (isPanel || isPlain) {
 		return (
 			<div className={wrapperClassName}>
 				{content}

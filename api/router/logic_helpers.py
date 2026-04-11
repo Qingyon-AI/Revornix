@@ -66,9 +66,28 @@ def ensure_private_section_access(
 def ensure_document_access(
     *,
     is_creator: bool,
-    has_public_section: bool,
-    has_related_section: bool,
+    has_public_document: bool,
+    has_document_collaborator: bool,
 ) -> None:
-    if is_creator or has_public_section or has_related_section:
+    if is_creator or has_public_document or has_document_collaborator:
         return
     raise schemas.error.CustomException("You don't have permission to access this document", code=403)
+
+
+def ensure_document_write_access(
+    *,
+    is_creator: bool,
+    has_document_write_access: bool,
+) -> None:
+    if is_creator or has_document_write_access:
+        return
+    raise schemas.error.CustomException("You don't have permission to update this document", code=403)
+
+
+def ensure_document_manage_access(
+    *,
+    is_creator: bool,
+) -> None:
+    if is_creator:
+        return
+    raise schemas.error.CustomException("You don't have permission to manage this document", code=403)

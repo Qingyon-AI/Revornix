@@ -78,10 +78,12 @@ const DocumentConfiguration = ({
 	document_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	document_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -228,11 +230,12 @@ const DocumentConfiguration = ({
 			}}>
 			<SheetTrigger asChild>
 				<Button
+					title={t('document_configuration_title')}
 					className={cn('w-full text-xs', className)}
 					variant={'ghost'}
 					onClick={onTriggerClick}>
 					<Pencil />
-					{t('document_configuration_title')}
+					{iconOnly ? <span className='sr-only'>{t('document_configuration_title')}</span> : t('document_configuration_title')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>

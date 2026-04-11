@@ -40,6 +40,7 @@ import {
 	getSiteOrigin,
 	toIsoDate,
 } from '@/lib/seo-metadata';
+import ImageWithFallback from '@/components/ui/image-with-fallback';
 
 type Params = Promise<{ id: string }>;
 
@@ -189,7 +190,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 				<Card
 					className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
 					<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
-					<CardContent className='grid gap-6 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1.35fr)_340px] lg:px-10'>
+					<CardContent className='px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
 						<div className='space-y-5'>
 							<div className='flex flex-wrap items-center gap-2'>
 								<Badge
@@ -208,9 +209,26 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 								</p>
 							</div>
 
+							<div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground'>
+								<div className='inline-flex items-center gap-2'>
+									<CalendarClock className='size-4' />
+									<span>{t('seo_document_updated_at')}</span>
+									<span className='text-foreground/85'>
+										{formatSeoDate(document.update_time, locale)}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-2'>
+									<CalendarDays className='size-4' />
+									<span>{t('seo_document_created_at')}</span>
+									<span className='text-foreground/85'>
+										{formatSeoDate(document.create_time, locale)}
+									</span>
+								</div>
+							</div>
+
 							<Link
 								href={`/user/${document.creator.id}`}
-								className='inline-flex items-center gap-3 rounded-full border border-border/60 bg-background/65 px-3 py-2 transition-colors hover:bg-background/90'>
+								className='inline-flex items-center gap-3 rounded-full border border-border/50 bg-background/45 px-3 py-2 transition-colors hover:bg-background/70'>
 								<Avatar className='size-8'>
 									<AvatarImage
 										src={creatorAvatar}
@@ -231,27 +249,6 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 								</div>
 							</Link>
 						</div>
-
-						<div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-1'>
-							<div className='rounded-[24px] border border-border/60 bg-background/65 px-4 py-4 backdrop-blur h-fit'>
-								<div className='flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground'>
-									<CalendarClock className='size-3.5' />
-									<span>{t('seo_document_updated_at')}</span>
-								</div>
-								<div className='mt-2 text-lg font-semibold'>
-									{formatSeoDate(document.update_time, locale)}
-								</div>
-							</div>
-							<div className='rounded-[24px] border border-border/60 bg-background/65 px-4 py-4 backdrop-blur h-fit'>
-								<div className='flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground'>
-									<CalendarDays className='size-3.5' />
-									<span>{t('seo_document_created_at')}</span>
-								</div>
-								<div className='mt-2 text-lg font-semibold'>
-									{formatSeoDate(document.create_time, locale)}
-								</div>
-							</div>
-						</div>
 					</CardContent>
 				</Card>
 
@@ -260,35 +257,29 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						{coverSrc ? (
 							<Card className='overflow-hidden rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)] py-0'>
 								<CardContent className='p-0'>
-									<img
+									<ImageWithFallback
 										src={coverSrc}
 										alt={document.title}
 										className='h-[220px] w-full object-cover object-top sm:h-[300px]'
+										fallbackClassName='h-[220px] w-full sm:h-[300px]'
+										fallbackSvgClassName='max-w-[220px] p-6'
 									/>
 								</CardContent>
 							</Card>
 						) : null}
 
 						<Card className='rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)]'>
-							<CardHeader className='gap-2 px-5 pt-5 pb-0 sm:px-6 sm:pt-6'>
-								<CardTitle className='text-2xl tracking-tight'>
-									{t('seo_document_content')}
-								</CardTitle>
-								<CardDescription className='leading-6'>
-									{t('seo_document_content_description')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='px-5 pb-6 pt-5 sm:px-6 sm:pb-7'>
-								<div className='prose prose-zinc max-w-none dark:prose-invert prose-headings:break-words prose-p:leading-8 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
+							<CardContent>
+								<div className='max-w-none overflow-x-hidden'>
 									<TipTapMarkdownViewer
 										content={
 											markdown || document.description || t('document_no_md')
 										}
 										ownerId={document.creator.id}
 									/>
-								</div>
-								<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
-									{t('document_ai_tips')}
+									<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
+										{t('document_ai_tips')}
+									</div>
 								</div>
 							</CardContent>
 						</Card>
@@ -334,6 +325,15 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 										/>
 									</div>
 								) : null}
+								{!document.website_info?.url &&
+								!document.file_info?.file_name &&
+								!primaryAudioSrc ? (
+									<div className='rounded-[24px] border border-border/60 bg-background/55 p-4 text-sm leading-7 text-muted-foreground'>
+										{document.category === DocumentCategory.QUICK_NOTE
+											? t('seo_document_source_quick_note')
+											: t('seo_document_source_default')}
+									</div>
+								) : null}
 							</CardContent>
 						</Card>
 
@@ -364,7 +364,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 										</Link>
 									))
 								) : (
-									<div className='rounded-[22px] border border-dashed border-border/70 bg-muted/20 px-4 py-5 text-sm text-muted-foreground'>
+									<div className='rounded-[24px] border border-border/60 bg-background/55 p-4 text-sm leading-7 text-muted-foreground'>
 										{t('seo_document_related_sections_empty')}
 									</div>
 								)}

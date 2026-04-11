@@ -224,9 +224,9 @@
 | `GATEWAY_HOT_NEWS_PATH_PREFIXES` | 单域名前缀部署时配置 | 空 | 同上 | 单域名下识别 Hot News 路径前缀 |
 | `GATEWAY_STRIP_API_PATH_PREFIX` | 可选 | `false` | `gateway/src/config.js`, `gateway/src/router.js` | 转发前是否去掉 API 前缀 |
 | `GATEWAY_STRIP_HOT_NEWS_PATH_PREFIX` | 可选 | `false` | 同上 | 转发前是否去掉 Hot News 前缀 |
-| `GATEWAY_API_UPSTREAMS` | 推荐必填 | `http://127.0.0.1:8001` | 同上 | 国内主 `api` 上游池，支持多地址 |
-| `GATEWAY_AUTH_API_UPSTREAMS` | 启用 Google / GitHub 跨地域登录时必填 | `http://127.0.0.1:8001` | 同上 | 境外认证 `api` 上游池 |
-| `GATEWAY_HOT_NEWS_UPSTREAMS` | 推荐配置 | `http://127.0.0.1:6688` | 同上 | `hot-news` 上游池 |
+| `GATEWAY_API_UPSTREAMS` | 推荐必填 | `http://localhost:8001` | 同上 | 国内主 `api` 上游池，支持多地址 |
+| `GATEWAY_AUTH_API_UPSTREAMS` | 启用 Google / GitHub 跨地域登录时必填 | `http://localhost:8001` | 同上 | 境外认证 `api` 上游池 |
+| `GATEWAY_HOT_NEWS_UPSTREAMS` | 推荐配置 | `http://localhost:6688` | 同上 | `hot-news` 上游池 |
 | `GATEWAY_UPSTREAM_RETRY_COOLDOWN_MS` | 可选 | `30000` | `gateway/src/config.js`, `gateway/src/services.js` | 上游失败后的冷却时间 |
 | `GATEWAY_ENABLE_ACCESS_LOG` | 可选 | `true` | `gateway/src/config.js`, `gateway/src/index.js` | 是否输出访问日志 |
 
@@ -245,7 +245,7 @@
 | `ALLOWED_HOST` | `imsyy.top` | CORS host 白名单后缀 |
 | `USE_LOG_FILE` | `true` | 是否写入日志文件 |
 | `RSS_MODE` | `false` | 是否强制 RSS 模式 |
-| `REDIS_HOST` | `127.0.0.1` | Hot News 自己的 Redis 主机 |
+| `REDIS_HOST` | `localhost` | Hot News 自己的 Redis 主机 |
 | `REDIS_PORT` | `6379` | Hot News 自己的 Redis 端口 |
 | `REDIS_PASSWORD` | 空 | Hot News 自己的 Redis 密码 |
 

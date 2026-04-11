@@ -3,7 +3,6 @@
 import type { SectionInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
-import { Badge } from '@/components/ui/badge';
 import {
 	Table,
 	TableBody,
@@ -12,6 +11,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import SectionVisibilityHint from './section-visibility-hint';
 
 const SectionListTable = ({ sections }: { sections: SectionInfo[] }) => {
 	const t = useTranslations();
@@ -46,15 +46,9 @@ const SectionListTable = ({ sections }: { sections: SectionInfo[] }) => {
 							</TableCell>
 							<TableCell>{section.creator.nickname}</TableCell>
 							<TableCell>
-								{section.publish_uuid ? (
-									<Badge className='rounded-full bg-emerald-500/12 text-emerald-700 dark:text-emerald-300'>
-										{t('admin_sections_publish_published')}
-									</Badge>
-								) : (
-									<Badge variant='outline' className='rounded-full'>
-										{t('admin_sections_publish_private')}
-									</Badge>
-								)}
+								<SectionVisibilityHint
+									isPublished={Boolean(section.publish_uuid)}
+								/>
 							</TableCell>
 							<TableCell>
 								<div className='text-xs text-muted-foreground'>

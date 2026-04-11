@@ -224,9 +224,9 @@ Additional note:
 | `GATEWAY_HOT_NEWS_PATH_PREFIXES` | Set for single-domain prefix deployments | Empty | Same as above | Matches hot-news path prefixes on a shared domain |
 | `GATEWAY_STRIP_API_PATH_PREFIX` | Optional | `false` | `gateway/src/config.js`, `gateway/src/router.js` | Whether the API prefix is stripped before proxying |
 | `GATEWAY_STRIP_HOT_NEWS_PATH_PREFIX` | Optional | `false` | Same as above | Whether the hot-news prefix is stripped before proxying |
-| `GATEWAY_API_UPSTREAMS` | Recommended | `http://127.0.0.1:8001` | Same as above | Upstream pool for the domestic main `api`; supports multiple addresses |
-| `GATEWAY_AUTH_API_UPSTREAMS` | Required when split-region Google / GitHub login is enabled | `http://127.0.0.1:8001` | Same as above | Upstream pool for the overseas auth `api` |
-| `GATEWAY_HOT_NEWS_UPSTREAMS` | Recommended | `http://127.0.0.1:6688` | Same as above | Upstream pool for `hot-news` |
+| `GATEWAY_API_UPSTREAMS` | Recommended | `http://localhost:8001` | Same as above | Upstream pool for the domestic main `api`; supports multiple addresses |
+| `GATEWAY_AUTH_API_UPSTREAMS` | Required when split-region Google / GitHub login is enabled | `http://localhost:8001` | Same as above | Upstream pool for the overseas auth `api` |
+| `GATEWAY_HOT_NEWS_UPSTREAMS` | Recommended | `http://localhost:6688` | Same as above | Upstream pool for `hot-news` |
 | `GATEWAY_UPSTREAM_RETRY_COOLDOWN_MS` | Optional | `30000` | `gateway/src/config.js`, `gateway/src/services.js` | Cooldown period after an upstream failure |
 | `GATEWAY_ENABLE_ACCESS_LOG` | Optional | `true` | `gateway/src/config.js`, `gateway/src/index.js` | Whether access logs are emitted |
 
@@ -245,7 +245,7 @@ Additional note:
 | `ALLOWED_HOST` | `imsyy.top` | Allowed suffix for CORS host whitelist |
 | `USE_LOG_FILE` | `true` | Whether to write log files |
 | `RSS_MODE` | `false` | Whether to force RSS mode |
-| `REDIS_HOST` | `127.0.0.1` | Redis host used by Hot News itself |
+| `REDIS_HOST` | `localhost` | Redis host used by Hot News itself |
 | `REDIS_PORT` | `6379` | Redis port used by Hot News itself |
 | `REDIS_PASSWORD` | Empty | Redis password used by Hot News itself |
 

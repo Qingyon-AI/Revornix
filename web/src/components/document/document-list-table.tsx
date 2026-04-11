@@ -6,6 +6,7 @@ import { formatInUserTimeZone } from '@/lib/time';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { Badge } from '@/components/ui/badge';
+import DocumentVisibilityHint from './document-visibility-hint';
 import {
 	Table,
 	TableBody,
@@ -43,6 +44,7 @@ const DocumentListTable = ({ documents }: { documents: DocumentInfo[] }) => {
 							{t('admin_documents_table_title')}
 						</TableHead>
 						<TableHead>{t('admin_documents_table_category')}</TableHead>
+						<TableHead>{t('admin_sections_table_publish')}</TableHead>
 						<TableHead>{t('admin_documents_table_source')}</TableHead>
 						<TableHead>{t('admin_documents_table_section_count')}</TableHead>
 						<TableHead>{t('document_last_update')}</TableHead>
@@ -68,6 +70,9 @@ const DocumentListTable = ({ documents }: { documents: DocumentInfo[] }) => {
 								<Badge variant='outline' className='rounded-full'>
 									{getCategoryLabel(document.category)}
 								</Badge>
+							</TableCell>
+							<TableCell>
+								<DocumentVisibilityHint documentId={document.id} />
 							</TableCell>
 							<TableCell>{document.from_plat}</TableCell>
 							<TableCell>{document.sections?.length ?? 0}</TableCell>

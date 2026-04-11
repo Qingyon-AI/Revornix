@@ -13,7 +13,7 @@ type GraphTaskCardProps = {
 	hint?: ReactNode;
 	tone?: TaskStateTone;
 	action?: ReactNode;
-	children: ReactNode;
+	children?: ReactNode;
 	className?: string;
 	bodyClassName?: string;
 };

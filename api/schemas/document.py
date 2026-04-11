@@ -1,10 +1,11 @@
 from datetime import date as date_type
 from datetime import datetime
 
-from pydantic import field_serializer, ConfigDict, model_validator
+from pydantic import Field, field_serializer, ConfigDict, model_validator
 
 from .base import BaseModel
 from .ai import ChatItem
+from enums.document import UserDocumentAuthority
 from .task import (
     DocumentConvertTask,
     DocumentEmbeddingTask,
@@ -16,6 +17,8 @@ from .task import (
 )
 from .user import UserPublicInfo
 
+PUBLIC_PAGINATION_LIMIT = 20
+
 
 class DocumentGraphGenerateRequest(BaseModel):
     document_id: int
@@ -24,6 +27,61 @@ class DocumentGraphGenerateRequest(BaseModel):
 class GenerateDocumentPodcastRequest(BaseModel):
     document_id: int
     engine_id: int | None = None
+
+class DocumentPublishRequest(BaseModel):
+    document_id: int
+    status: bool
+
+class DocumentPublishGetRequest(BaseModel):
+    document_id: int
+
+class DocumentPublishGetResponse(BaseModel):
+    status: bool
+    create_time: datetime | None = None
+    update_time: datetime | None = None
+
+class MineDocumentAuthorityRequest(BaseModel):
+    document_id: int
+
+class DocumentUserAuthorityResponse(BaseModel):
+    document_id: int
+    user_id: int
+    authority: UserDocumentAuthority
+    is_creator: bool = False
+
+class DocumentUserRequest(BaseModel):
+    document_id: int
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+    keyword: str | None = None
+
+class DocumentUserDeleteRequest(BaseModel):
+    document_id: int
+    user_id: int
+
+class DocumentUserAddRequest(BaseModel):
+    document_id: int
+    user_id: int
+    authority: UserDocumentAuthority
+
+class DocumentUserModifyRequest(BaseModel):
+    document_id: int
+    user_id: int
+    authority: UserDocumentAuthority
+
+class DocumentCollaboratorPublicInfo(BaseModel):
+    id: int
+    avatar: str
+    nickname: str
+    slogan: str | None = None
+    authority: UserDocumentAuthority | None = None
+    create_time: datetime
+    update_time: datetime | None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
 
 class DocumentUpdateRequest(BaseModel):
     document_id: int

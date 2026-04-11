@@ -48,7 +48,7 @@ export const config: Config = {
   ALLOWED_HOST: getEnvVariable("ALLOWED_HOST") || "imsyy.top",
   USE_LOG_FILE: getBooleanEnvVariable("USE_LOG_FILE", true),
   RSS_MODE: getBooleanEnvVariable("RSS_MODE", false),
-  REDIS_HOST: getEnvVariable("REDIS_HOST") || "127.0.0.1",
+  REDIS_HOST: getEnvVariable("REDIS_HOST") || "localhost",
   REDIS_PORT: getNumericEnvVariable("REDIS_PORT", 6379),
   REDIS_PASSWORD: getEnvVariable("REDIS_PASSWORD") || "",
 };

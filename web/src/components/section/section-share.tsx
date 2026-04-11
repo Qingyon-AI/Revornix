@@ -164,12 +164,12 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
 	return (
-		<div className='flex flex-col gap-5 flex-1'>
+		<div className='flex flex-1 flex-col gap-5'>
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitForm}
 					id='add-form'
-					className='flex flex-row gap-2 items-center w-full relative'>
+					className='flex w-full flex-col gap-2 rounded-[20px] border border-border/60 bg-background/55 p-3 lg:flex-row lg:items-center'>
 					<FormField
 						name='user_id'
 						control={form.control}
@@ -181,7 +181,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 										<Button
 											variant='outline'
 											role='combobox'
-											className='flex flex-row justify-between flex-1 overflow-hidden'>
+											className='flex w-full flex-1 flex-row justify-between overflow-hidden'>
 											<span
 												className={cn('truncate flex-1 text-left', {
 													'text-muted-foreground font-normal': !field.value,
@@ -277,7 +277,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 								<Select
 									value={field.value.toString()}
 									onValueChange={(e) => field.onChange(Number(e) as 0 | 1 | 2)}>
-									<SelectTrigger>
+									<SelectTrigger className='w-full lg:w-[180px]'>
 										<SelectValue
 											placeholder={t('section_share_user_authority')}
 										/>
@@ -299,7 +299,10 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 							);
 						}}
 					/>
-					<Button form='add-form' type='submit'>
+					<Button
+						form='add-form'
+						type='submit'
+						className='rounded-full lg:px-5'>
 						{t('section_share_user_invite')}
 					</Button>
 				</form>

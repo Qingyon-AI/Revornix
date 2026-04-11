@@ -112,7 +112,9 @@ const parseSSEPayloads = (buffer: string) =>
 		.split('\n\n')
 		.map((chunk) => chunk.trim())
 		.filter(Boolean)
-		.map((chunk) => (chunk.startsWith('data:') ? chunk.slice(5).trim() : chunk));
+		.map((chunk) =>
+			chunk.startsWith('data:') ? chunk.slice(5).trim() : chunk,
+		);
 
 const buildParagraphNodesFromText = (text: string) => {
 	const normalizedParagraphs = text
@@ -162,8 +164,22 @@ const TipTapEditor = ({
 	enableDrawing = false,
 	ownerId,
 }: TipTapEditorProps) => {
-	const TEXT_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
-	const HIGHLIGHT_COLORS = ['#fef08a', '#fed7aa', '#bfdbfe', '#bbf7d0', '#fecdd3', '#e9d5ff'];
+	const TEXT_COLORS = [
+		'#ef4444',
+		'#f97316',
+		'#eab308',
+		'#22c55e',
+		'#3b82f6',
+		'#8b5cf6',
+	];
+	const HIGHLIGHT_COLORS = [
+		'#fef08a',
+		'#fed7aa',
+		'#bfdbfe',
+		'#bbf7d0',
+		'#fecdd3',
+		'#e9d5ff',
+	];
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel, imageGenerateEngine } = useDefaultResourceAccess();
@@ -171,25 +187,30 @@ const TipTapEditor = ({
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
 	const continueAbortControllerRef = useRef<AbortController | null>(null);
 	const continueAbortReasonRef = useRef<'user' | 'timeout' | null>(null);
-	const streamingInsertRangeRef = useRef<{ from: number; to: number } | null>(null);
+	const streamingInsertRangeRef = useRef<{ from: number; to: number } | null>(
+		null,
+	);
 	const hasStreamedContinuationRef = useRef(false);
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
-	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] = useState(false);
-	const [continuePreset, setContinuePreset] = useState<ContinuePreset>('expand');
+	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] =
+		useState(false);
+	const [continuePreset, setContinuePreset] =
+		useState<ContinuePreset>('expand');
 	const [continueInstruction, setContinueInstruction] = useState('');
 	const [, setContinuePreview] = useState('');
 	const [illustrationPrompt, setIllustrationPrompt] = useState('');
 	const [isContinuing, setIsContinuing] = useState(false);
-	const [isGeneratingIllustration, setIsGeneratingIllustration] = useState(false);
+	const [isGeneratingIllustration, setIsGeneratingIllustration] =
+		useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [isMounted, setIsMounted] = useState(false);
-	const [selectedContinuationModelId, setSelectedContinuationModelId] = useState<
-		number | null
-	>(mainUserInfo?.default_revornix_model_id ?? null);
-	const [selectedIllustrationEngineId, setSelectedIllustrationEngineId] = useState<
-		number | null
-	>(mainUserInfo?.default_image_generate_engine_id ?? null);
+	const [selectedContinuationModelId, setSelectedContinuationModelId] =
+		useState<number | null>(mainUserInfo?.default_revornix_model_id ?? null);
+	const [selectedIllustrationEngineId, setSelectedIllustrationEngineId] =
+		useState<number | null>(
+			mainUserInfo?.default_image_generate_engine_id ?? null,
+		);
 	const resolvedOwnerId = ownerId ?? mainUserInfo?.id;
 
 	useEffect(() => {
@@ -258,33 +279,36 @@ const TipTapEditor = ({
 			mainUserInfo?.default_user_file_system !== undefined,
 	});
 
-	const editor = useEditor({
-		immediatelyRender: false,
-		extensions: [
-			StarterKit.configure({ codeBlock: false }),
-			ImageNode.configure({
-				ownerId: resolvedOwnerId,
-			}),
-			AiContinuationPlaceholderNode,
-			DrawingNode,
-			TableNode,
-			VideoEmbedNode,
-			MathBlockNode,
-			TextColorMark,
-			TextHighlightMark,
-			MermaidCodeBlock,
-			Markdown,
-		],
-		content: normalizeEditorMarkdown(value),
-		contentType: 'markdown',
-		onCreate: ({ editor }) => {
-			syncPlaceholderState(editor);
+	const editor = useEditor(
+		{
+			immediatelyRender: false,
+			extensions: [
+				StarterKit.configure({ codeBlock: false }),
+				ImageNode.configure({
+					ownerId: resolvedOwnerId,
+				}),
+				AiContinuationPlaceholderNode,
+				DrawingNode,
+				TableNode,
+				VideoEmbedNode,
+				MathBlockNode,
+				TextColorMark,
+				TextHighlightMark,
+				MermaidCodeBlock,
+				Markdown,
+			],
+			content: normalizeEditorMarkdown(value),
+			contentType: 'markdown',
+			onCreate: ({ editor }) => {
+				syncPlaceholderState(editor);
+			},
+			onUpdate: ({ editor }) => {
+				onChange?.(normalizeEditorMarkdown(editor.getMarkdown()));
+				syncPlaceholderState(editor);
+			},
 		},
-		onUpdate: ({ editor }) => {
-			onChange?.(normalizeEditorMarkdown(editor.getMarkdown()));
-			syncPlaceholderState(editor);
-		},
-	}, [resolvedOwnerId]);
+		[resolvedOwnerId],
+	);
 
 	const toolbarState = useEditorState({
 		editor,
@@ -388,7 +412,7 @@ const TipTapEditor = ({
 		setIllustrationPrompt(
 			context
 				? `为下面这段文档内容生成一张风格统一、适合作为插图的图片：\n\n${context}`
-				: '生成一张适合插入当前文档的插图，风格简洁、现代、编辑风友好。'
+				: '生成一张适合插入当前文档的插图，风格简洁、现代、编辑风友好。',
 		);
 		setIsIllustrationDialogOpen(true);
 	};
@@ -402,7 +426,8 @@ const TipTapEditor = ({
 	const getToolbarButtonClassName = (isActive?: boolean) =>
 		cn(
 			'size-8',
-			isActive && 'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground'
+			isActive &&
+				'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground',
 		);
 
 	const getColorTriggerClassName = (isActive?: boolean) =>
@@ -455,7 +480,9 @@ const TipTapEditor = ({
 		const clampedText = clampContinuationText(text, AI_CONTINUATION_MAX_CHARS);
 		const paragraphNodes = buildParagraphNodesFromText(clampedText);
 		const replacementContent =
-			paragraphNodes.length > 0 ? paragraphNodes : [{ type: 'paragraph' as const }];
+			paragraphNodes.length > 0
+				? paragraphNodes
+				: [{ type: 'paragraph' as const }];
 
 		editor.commands.insertContentAt({ from, to }, replacementContent);
 
@@ -467,7 +494,7 @@ const TipTapEditor = ({
 				'content' in node && Array.isArray(node.content) ? node.content : [];
 			const textLength = paragraphContent.reduce(
 				(total: number, child: { type: string; text?: string }) =>
-					total + (child.type === 'text' ? child.text?.length ?? 0 : 0),
+					total + (child.type === 'text' ? (child.text?.length ?? 0) : 0),
 				0,
 			);
 			return size + textLength + 2;
@@ -485,14 +512,18 @@ const TipTapEditor = ({
 		}
 
 		const { from, to } = streamingInsertRangeRef.current;
-		editor.commands.insertContentAt({ from, to }, {
-			type: 'aiContinuationPlaceholder',
-			attrs: { message },
-		});
+		editor.commands.insertContentAt(
+			{ from, to },
+			{
+				type: 'aiContinuationPlaceholder',
+				attrs: { message },
+			},
+		);
 		const placeholderNode = editor.state.doc.nodeAt(from);
-		const placeholderSize = placeholderNode?.type.name === 'aiContinuationPlaceholder'
-			? placeholderNode.nodeSize
-			: 1;
+		const placeholderSize =
+			placeholderNode?.type.name === 'aiContinuationPlaceholder'
+				? placeholderNode.nodeSize
+				: 1;
 		streamingInsertRangeRef.current = {
 			from,
 			to: from + placeholderSize,
@@ -783,7 +814,8 @@ const TipTapEditor = ({
 			return;
 		}
 		if (
-			selectedIllustrationEngineId === mainUserInfo?.default_image_generate_engine_id &&
+			selectedIllustrationEngineId ===
+				mainUserInfo?.default_image_generate_engine_id &&
 			!imageGenerateEngine.accessible
 		) {
 			toast.error(
@@ -793,7 +825,10 @@ const TipTapEditor = ({
 			);
 			return;
 		}
-		if (!mainUserInfo?.default_user_file_system || !userFileSystemDetail?.file_system_id) {
+		if (
+			!mainUserInfo?.default_user_file_system ||
+			!userFileSystemDetail?.file_system_id
+		) {
 			toast.error(t('error_default_file_system_not_found'));
 			return;
 		}
@@ -862,7 +897,10 @@ const TipTapEditor = ({
 			return;
 		}
 
-		if (!mainUserInfo?.default_user_file_system || !userFileSystemDetail?.file_system_id) {
+		if (
+			!mainUserInfo?.default_user_file_system ||
+			!userFileSystemDetail?.file_system_id
+		) {
 			toast.error(t('error_default_file_system_not_found'));
 			event.target.value = '';
 			return;
@@ -897,22 +935,26 @@ const TipTapEditor = ({
 	};
 
 	const showFullscreen = isFallbackFullscreen;
-	const fullscreenLabel = showFullscreen ? t('exit_fullscreen') : t('enter_fullscreen');
+	const fullscreenLabel = showFullscreen
+		? t('exit_fullscreen')
+		: t('enter_fullscreen');
 
 	const editorShell = (
 		<div
 			className={cn(
 				'relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-background',
+				showFullscreen &&
+					'rounded-none border-0 bg-background shadow-none',
 				className,
-				isFallbackFullscreen &&
-					'fixed inset-0 z-50 h-screen rounded-none border-0 bg-background'
 			)}>
 			<div className='flex items-center gap-1 border-b border-border/60 bg-muted/30 px-2 py-1.5'>
 				<Button
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isBoldActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isBoldActive,
+					)}
 					title='加粗'
 					aria-pressed={resolvedToolbarState.isBoldActive}
 					onMouseDown={preserveEditorSelection}
@@ -923,7 +965,9 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isItalicActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isItalicActive,
+					)}
 					title='斜体'
 					aria-pressed={resolvedToolbarState.isItalicActive}
 					onMouseDown={preserveEditorSelection}
@@ -934,7 +978,9 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isUnderlineActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isUnderlineActive,
+					)}
 					title='下划线'
 					aria-pressed={resolvedToolbarState.isUnderlineActive}
 					onMouseDown={preserveEditorSelection}
@@ -945,7 +991,9 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isStrikeActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isStrikeActive,
+					)}
 					title='删除线'
 					aria-pressed={resolvedToolbarState.isStrikeActive}
 					onMouseDown={preserveEditorSelection}
@@ -990,7 +1038,7 @@ const TipTapEditor = ({
 											'size-6 rounded-full border transition-transform hover:scale-110',
 											resolvedToolbarState.activeTextColor === color
 												? 'border-foreground ring-2 ring-ring/40'
-												: 'border-border/60'
+												: 'border-border/60',
 										)}
 										style={{ backgroundColor: color }}
 										title={`${t('editor_text_color')} ${color}`}
@@ -1051,7 +1099,7 @@ const TipTapEditor = ({
 											'size-6 rounded-md border transition-transform hover:scale-110',
 											resolvedToolbarState.activeHighlightColor === color
 												? 'border-foreground ring-2 ring-ring/40'
-												: 'border-border/60'
+												: 'border-border/60',
 										)}
 										style={{ backgroundColor: color }}
 										title={`${t('editor_highlight_color')} ${color}`}
@@ -1078,29 +1126,39 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isHeading1Active)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isHeading1Active,
+					)}
 					title='一级标题'
 					aria-pressed={resolvedToolbarState.isHeading1Active}
 					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}>
+					onClick={() =>
+						editor?.chain().focus().toggleHeading({ level: 1 }).run()
+					}>
 					<Heading1 className='size-4' />
 				</Button>
 				<Button
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isHeading2Active)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isHeading2Active,
+					)}
 					title='二级标题'
 					aria-pressed={resolvedToolbarState.isHeading2Active}
 					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>
+					onClick={() =>
+						editor?.chain().focus().toggleHeading({ level: 2 }).run()
+					}>
 					<Heading2 className='size-4' />
 				</Button>
 				<Button
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isBulletListActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isBulletListActive,
+					)}
 					title='无序列表'
 					aria-pressed={resolvedToolbarState.isBulletListActive}
 					onMouseDown={preserveEditorSelection}
@@ -1111,7 +1169,9 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isOrderedListActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isOrderedListActive,
+					)}
 					title='有序列表'
 					aria-pressed={resolvedToolbarState.isOrderedListActive}
 					onMouseDown={preserveEditorSelection}
@@ -1122,7 +1182,9 @@ const TipTapEditor = ({
 					type='button'
 					variant='ghost'
 					size='icon'
-					className={getToolbarButtonClassName(resolvedToolbarState.isCodeBlockActive)}
+					className={getToolbarButtonClassName(
+						resolvedToolbarState.isCodeBlockActive,
+					)}
 					title='代码块'
 					aria-pressed={resolvedToolbarState.isCodeBlockActive}
 					onMouseDown={preserveEditorSelection}
@@ -1264,7 +1326,7 @@ const TipTapEditor = ({
 			</div>
 			<EditorContent
 				editor={editor}
-				className='min-h-0 flex-1 overflow-auto p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:max-w-[52rem] [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[15px] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:max-h-[32rem] [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-xl [&_.ProseMirror_img]:border [&_.ProseMirror_img]:border-border/60 [&_.ProseMirror_img]:object-contain [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
+				className='min-h-0 flex-1 overflow-auto p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[15px] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:max-h-[32rem] [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-contain [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
 			/>
 			<Dialog
 				open={isContinueDialogOpen}
@@ -1285,7 +1347,8 @@ const TipTapEditor = ({
 					</DialogHeader>
 					<div className='space-y-3'>
 						<div className='rounded-xl border border-border/60 bg-muted/30 p-3 text-sm text-muted-foreground'>
-							{getSelectedContext() || '当前没有可用上下文，请先选中文案或把光标放到目标段落中。'}
+							{getSelectedContext() ||
+								'当前没有可用上下文，请先选中文案或把光标放到目标段落中。'}
 						</div>
 						<div className='space-y-2'>
 							<p className='text-sm font-medium text-foreground'>预设动作</p>
@@ -1300,7 +1363,7 @@ const TipTapEditor = ({
 											'h-8 rounded-full border px-3 text-xs',
 											continuePreset === option.id
 												? 'border-foreground/20 bg-accent text-accent-foreground'
-												: 'border-border/60 bg-background text-muted-foreground'
+												: 'border-border/60 bg-background text-muted-foreground',
 										)}
 										onClick={() => setContinuePreset(option.id)}>
 										{option.label}
@@ -1309,7 +1372,9 @@ const TipTapEditor = ({
 							</div>
 						</div>
 						<div className='space-y-2'>
-							<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
+							<p className='text-sm font-medium text-foreground'>
+								{t('use_model')}
+							</p>
 							<AIModelSelect
 								value={selectedContinuationModelId}
 								onChange={setSelectedContinuationModelId}
@@ -1366,7 +1431,9 @@ const TipTapEditor = ({
 					</DialogHeader>
 					<div className='space-y-3'>
 						<div className='space-y-2'>
-							<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+							<p className='text-sm font-medium text-foreground'>
+								{t('use_engine')}
+							</p>
 							<ImageEngineSelect
 								value={selectedIllustrationEngineId}
 								onChange={setSelectedIllustrationEngineId}
@@ -1410,7 +1477,14 @@ const TipTapEditor = ({
 	);
 
 	if (isFallbackFullscreen && isMounted) {
-		return createPortal(editorShell, document.body);
+		return createPortal(
+			<div className='fixed inset-0 z-50 bg-background'>
+				<div className='flex h-full w-full min-h-0'>
+					{editorShell}
+				</div>
+			</div>,
+			document.body,
+		);
 	}
 
 	return editorShell;

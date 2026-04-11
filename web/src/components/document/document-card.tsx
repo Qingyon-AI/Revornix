@@ -7,6 +7,8 @@ import { DocumentCategory } from '@/enums/document';
 import { CardViewMode } from '@/lib/card-view-mode';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
+import DocumentVisibilityHint from './document-visibility-hint';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 const DocumentCard = ({
 	document,
@@ -29,10 +31,11 @@ const DocumentCard = ({
 						: t('document_category_others');
 
 	const cover = document?.cover ? (
-		<img
+		<ImageWithFallback
 			src={replacePath(document.cover, document.creator_id)}
 			alt='cover'
 			className='h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105'
+			fallbackSvgClassName='max-w-[120px] p-4'
 		/>
 	) : (
 		<div className='flex h-full w-full items-center justify-center bg-card/60'>
@@ -66,7 +69,7 @@ const DocumentCard = ({
 								{categoryLabel}
 							</div>
 						</div>
-						<p className='mt-1 line-clamp-1 text-xs leading-5 text-muted-foreground sm:text-sm'>
+						<p className='mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-5 text-muted-foreground sm:text-sm'>
 							{document.description
 								? document.description
 								: t('document_no_description')}
@@ -93,7 +96,7 @@ const DocumentCard = ({
 												router.push(`/document/mine?label_id=${label.id}`);
 											}}
 											key={index}
-											className='w-fit rounded-md border border-border/50 bg-card/75 px-2 py-0.5 text-[11px] text-muted-foreground'>
+											className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-[11px] text-muted-foreground'>
 											{`# ${label.name}`}
 										</div>
 									);
@@ -102,8 +105,11 @@ const DocumentCard = ({
 						) : null}
 					</div>
 					<div className='hidden justify-end sm:flex'>
-						<div className='rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-[11px] text-muted-foreground'>
-							{categoryLabel}
+						<div className='flex flex-wrap justify-end gap-2'>
+							<DocumentVisibilityHint documentId={document.id} />
+							<div className='rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-[11px] text-muted-foreground'>
+								{categoryLabel}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -120,7 +126,7 @@ const DocumentCard = ({
 				<h1 className='line-clamp-2 text-base font-semibold leading-6'>
 					{document.title ? document.title : t('document_no_title')}
 				</h1>
-				<p className='flex-1 line-clamp-3 text-sm/6 text-muted-foreground'>
+				<p className='flex-1 overflow-hidden text-sm leading-6 text-muted-foreground max-h-[4.5rem]'>
 					{document.description
 						? document.description
 						: t('document_no_description')}
@@ -136,7 +142,7 @@ const DocumentCard = ({
 										router.push(`/document/mine?label_id=${label.id}`);
 									}}
 									key={index}
-									className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
+									className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 									{`# ${label.name}`}
 								</div>
 							);
@@ -144,17 +150,18 @@ const DocumentCard = ({
 					</div>
 				)}
 				<div className='mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground'>
-					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1'>
+					<DocumentVisibilityHint documentId={document.id} />
+					<div className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1'>
 						{t('document_from_plat') + ': '}
 						{document.from_plat}
 					</div>
-					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1'>
+					<div className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1'>
 						{t('document_category') + ': '}
 						{categoryLabel}
 					</div>
 				</div>
 				<div className='flex flex-wrap gap-2 text-xs text-muted-foreground'>
-					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1'>
+					<div className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1'>
 						{t('document_last_update') + ': '}
 						{document.create_time &&
 							formatInUserTimeZone(document.create_time, 'MM-dd HH:mm')}

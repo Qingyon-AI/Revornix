@@ -349,7 +349,7 @@ const SectionMarkdown = ({
 						editable={canEditMarkdown}
 						onSave={handleSaveMarkdown}
 						viewerFooter={
-							<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+							<div className='mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 								{t('section_ai_tips')}
 							</div>
 						}

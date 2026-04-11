@@ -9,10 +9,39 @@ from common.dependencies import get_current_user, get_db
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
-from router.logic_helpers import group_document_ids_by_category
+from router.logic_helpers import ensure_document_access, group_document_ids_by_category
 from schemas.common import SuccessResponse
 
 document_interaction_manage_router = APIRouter()
+
+
+def _ensure_document_interaction_access(
+    *,
+    db: Session,
+    document_id: int,
+    document_creator_id: int,
+    user_id: int,
+) -> None:
+    if document_creator_id == user_id:
+        return
+
+    db_publish_document = crud.document.get_publish_document_by_document_id(
+        db=db,
+        document_id=document_id,
+    )
+    if db_publish_document is not None:
+        return
+
+    db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
+        db=db,
+        user_id=user_id,
+        document_id=document_id,
+    )
+    ensure_document_access(
+        is_creator=False,
+        has_public_document=False,
+        has_document_collaborator=db_user_document is not None,
+    )
 
 
 def _load_owned_documents_or_raise(
@@ -47,6 +76,12 @@ def star_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("The document is not found", code=404)
+    _ensure_document_interaction_access(
+        db=db,
+        document_id=db_document.id,
+        document_creator_id=db_document.creator_id,
+        user_id=user.id,
+    )
     if star_request.status is False:
         crud.document.unstar_document_by_document_id(
             db=db,
@@ -75,6 +110,12 @@ def read_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("The document is not found", code=404)
+    _ensure_document_interaction_access(
+        db=db,
+        document_id=db_document.id,
+        document_creator_id=db_document.creator_id,
+        user_id=user.id,
+    )
     if read_request.status is False:
         crud.document.unread_document_by_document_id(
             db=db,

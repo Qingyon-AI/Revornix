@@ -1,7 +1,8 @@
 'use client';
 
+import type { InifiniteScrollPagnitionSectionDocumentInfo } from '@/generated';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { searchSectionDocuments } from '@/service/section';
+import { searchPublicSectionDocuments, searchSectionDocuments } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
@@ -11,12 +12,20 @@ import { useTranslations } from 'next-intl';
 const SectionDocumentsList = ({
 	section_id,
 	publicMode = false,
+	initialData,
 }: {
 	section_id: number;
 	publicMode?: boolean;
+	initialData?: InifiniteScrollPagnitionSectionDocumentInfo;
 }) => {
 	const t = useTranslations();
 	const { ref: bottomRef, inView } = useInView();
+	const initialPageParam = {
+		limit: 10,
+		section_id: section_id,
+		keyword: '',
+		desc: true,
+	};
 	const {
 		data,
 		isFetchingNextPage,
@@ -26,13 +35,19 @@ const SectionDocumentsList = ({
 		hasNextPage,
 	} = useInfiniteQuery({
 		queryKey: ['searchSectionDocument', section_id, ''],
-		queryFn: (pageParam) => searchSectionDocuments({ ...pageParam.pageParam }),
-		initialPageParam: {
-			limit: 10,
-			section_id: section_id,
-			keyword: '',
-			desc: true,
-		},
+		queryFn: (pageParam) =>
+			publicMode
+				? searchPublicSectionDocuments({ ...pageParam.pageParam })
+				: searchSectionDocuments({ ...pageParam.pageParam }),
+		initialPageParam,
+		initialData: initialData
+			? {
+					pages: [initialData],
+					pageParams: [initialPageParam],
+				}
+			: undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
 				? {
@@ -69,7 +84,9 @@ const SectionDocumentsList = ({
 				})}
 			{isSuccess && documents && documents.length === 0 && (
 				<p className='flex-1 flex justify-center items-center text-sm text-muted-foreground'>
-					{t('section_no_documents')}
+					{publicMode
+						? t('section_no_public_documents')
+						: t('section_no_documents')}
 				</p>
 			)}
 			{isFetching && !data && (

@@ -16,10 +16,12 @@ const SectionOperateComment = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	return (
@@ -31,7 +33,7 @@ const SectionOperateComment = ({
 					className={cn('w-full flex-1 text-xs', className)}
 					onClick={onTriggerClick}>
 					<MessageCircleMore />
-					{t('section_comments')}
+					{iconOnly ? <span className='sr-only'>{t('section_comments')}</span> : t('section_comments')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>

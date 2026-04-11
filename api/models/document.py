@@ -15,7 +15,17 @@ class UserDocument(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
-    authority: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: owner')
+    authority: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: full access/owner, 1: read and write, 2: read only')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class PublishDocument(Base):
+    __tablename__ = "publish_document"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

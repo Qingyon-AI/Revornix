@@ -2,7 +2,10 @@ from enum import IntEnum
 
 
 class UserDocumentAuthority(IntEnum):
+    FULL_ACCESS = 0
     OWNER = 0
+    READ_AND_WRITE = 1
+    READ_ONLY = 2
 
 class DocumentCategory(IntEnum):
     FILE = 0

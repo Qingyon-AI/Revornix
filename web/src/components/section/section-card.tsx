@@ -14,6 +14,8 @@ import SectionCardPodcast from './section-card-podcast';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import { replacePath } from '@/lib/utils';
 import { CardViewMode } from '@/lib/card-view-mode';
+import SectionVisibilityHint from './section-visibility-hint';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 const SectionCard = ({
 	section,
@@ -54,10 +56,11 @@ const SectionCard = ({
 	});
 
 	const cover = coverSrc ? (
-		<img
+		<ImageWithFallback
 			src={coverSrc}
 			alt='cover'
 			className='h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105'
+			fallbackSvgClassName='max-w-[120px] p-4'
 		/>
 	) : (
 		<div className='flex h-full w-full items-center justify-center bg-card/60'>
@@ -89,7 +92,7 @@ const SectionCard = ({
 								</div>
 							) : null}
 						</div>
-						<p className='mt-1 line-clamp-1 text-xs leading-5 text-muted-foreground sm:text-sm'>
+						<p className='mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-5 text-muted-foreground sm:text-sm'>
 							{section.description
 								? section.description
 								: t('section_description_empty')}
@@ -97,13 +100,13 @@ const SectionCard = ({
 						<div className='mt-2 flex flex-wrap gap-1.5'>
 							{section.labels?.slice(0, 3).map((label) => {
 								return (
-									<div
-										key={label.id}
-										className='w-fit rounded-md border border-border/50 bg-card/75 px-2 py-0.5 text-[11px] text-muted-foreground'>
-										{label.name}
-									</div>
-								);
-							})}
+								<div
+									key={label.id}
+									className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-[11px] text-muted-foreground'>
+									{label.name}
+								</div>
+							);
+						})}
 							{warningBadges.slice(0, 1).map((warning) => (
 								<div
 									key={warning}
@@ -135,7 +138,7 @@ const SectionCard = ({
 							</Avatar>
 							<span className='line-clamp-1'>{relativeTime}</span>
 						</div>
-						<div className='justify-self-start rounded-md border border-border/50 bg-card/75 px-2 py-0.5 sm:justify-self-end'>
+						<div className='justify-self-start rounded-full border border-border/50 bg-card/75 px-2.5 py-1 sm:justify-self-end'>
 							{t('section_card_documents_count', {
 								section_documents_count: section.documents_count
 									? section.documents_count
@@ -153,11 +156,16 @@ const SectionCard = ({
 						</div>
 					</div>
 					<div className='hidden justify-end sm:flex'>
-						{warningBadges.length > 1 ? (
-							<div className='rounded-md border border-amber-500/35 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300'>
-								+{warningBadges.length - 1}
-							</div>
-						) : null}
+						<div className='flex flex-wrap justify-end gap-2'>
+							<SectionVisibilityHint
+								isPublished={Boolean(section.publish_uuid)}
+							/>
+							{warningBadges.length > 1 ? (
+								<div className='rounded-md border border-amber-500/35 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300'>
+									+{warningBadges.length - 1}
+								</div>
+							) : null}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -185,7 +193,7 @@ const SectionCard = ({
 							</div>
 						</div>
 					) : null}
-					<p className='flex-1 line-clamp-3 text-sm/6 text-muted-foreground'>
+					<p className='flex-1 overflow-hidden text-sm leading-6 text-muted-foreground max-h-[4.5rem]'>
 						{section.description
 							? section.description
 							: t('section_description_empty')}
@@ -194,13 +202,13 @@ const SectionCard = ({
 						<div className='flex flex-wrap gap-2'>
 							{section.labels.map((label) => {
 								return (
-									<div
-										key={label.id}
-										className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
-										{label.name}
-									</div>
-								);
-							})}
+								<div
+									key={label.id}
+									className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
+									{label.name}
+								</div>
+							);
+						})}
 						</div>
 					)}
 					{warningBadges.length > 0 ? (
@@ -217,7 +225,7 @@ const SectionCard = ({
 					) : null}
 				</Link>
 				<SectionCardPodcast section={section} />
-				<div className='mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground'>
+				<div className='mt-auto flex flex-col gap-2 text-xs text-muted-foreground'>
 					<div className='flex min-w-0 items-center gap-2'>
 						<Avatar
 							className='size-5'
@@ -236,22 +244,32 @@ const SectionCard = ({
 								{section?.creator.nickname.slice(0, 1) ?? '?'}
 							</AvatarFallback>
 						</Avatar>
-						<span className='line-clamp-1'>
-							{relativeTime}
-						</span>
+						<div className='min-w-0 flex-1'>
+							<div className='truncate text-foreground'>
+								{section?.creator.nickname ?? '?'}
+							</div>
+							<div className='truncate text-[11px] text-muted-foreground'>
+								{relativeTime}
+							</div>
+						</div>
 					</div>
-					<div className='shrink-0 rounded-lg border border-border/50 bg-card/75 px-2.5 py-1'>
-						{t('section_card_documents_count', {
-							section_documents_count: section.documents_count
-								? section.documents_count
-								: 0,
-						})}
-						{' · '}
-						{t('section_card_subscribers_count', {
-							section_subscribers_count: section.subscribers_count
-								? section.subscribers_count
-								: 0,
-						})}
+					<div className='flex flex-wrap gap-2'>
+						<SectionVisibilityHint
+							isPublished={Boolean(section.publish_uuid)}
+						/>
+						<div className='rounded-full border border-border/50 bg-card/75 px-2.5 py-1'>
+							{t('section_card_documents_count', {
+								section_documents_count: section.documents_count
+									? section.documents_count
+									: 0,
+							})}
+							{' · '}
+							{t('section_card_subscribers_count', {
+								section_subscribers_count: section.subscribers_count
+									? section.subscribers_count
+									: 0,
+							})}
+						</div>
 					</div>
 				</div>
 			</div>

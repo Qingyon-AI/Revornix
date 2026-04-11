@@ -1,5 +1,6 @@
 'use client';
 
+import type { GraphResponse, SectionInfo } from '@/generated';
 import { memo, useMemo } from 'react';
 
 import EntityGraphCanvas, {
@@ -10,8 +11,8 @@ import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionProcessStatus } from '@/enums/section';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
-import { getSectionDetail } from '@/service/section';
-import { searchSectionGraph } from '@/service/graph';
+import { searchPublicSectionGraph, searchSectionGraph } from '@/service/graph';
+import { getPublicSectionDetail, getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -20,10 +21,16 @@ const SectionGraphSEO = ({
 	section_id,
 	showSearch = false,
 	showStaleHint = true,
+	initialSection,
+	initialGraph,
+	publicMode = false,
 }: {
 	section_id: number;
 	showSearch?: boolean;
 	showStaleHint?: boolean;
+	initialSection?: SectionInfo | null;
+	initialGraph?: GraphResponse | null;
+	publicMode?: boolean;
 }) => {
 	const t = useTranslations();
 	const {
@@ -31,8 +38,18 @@ const SectionGraphSEO = ({
 		isError: isSectionDetailError,
 		error: sectionDetailError,
 	} = useQuery({
-		queryKey: ['getSectionDetail', section_id],
-		queryFn: () => getSectionDetail({ section_id }),
+		queryKey: publicMode
+			? ['getPublicSectionDetail', section_id]
+			: ['getSectionDetail', section_id],
+		queryFn: () =>
+			publicMode
+				? getPublicSectionDetail({ section_id })
+				: getSectionDetail({ section_id }),
+		initialData: initialSection ?? undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
+		enabled: !(publicMode && Boolean(initialSection)),
+		staleTime: publicMode && initialSection ? Infinity : undefined,
 	});
 	const processStatus =
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
@@ -45,11 +62,22 @@ const SectionGraphSEO = ({
 			: null;
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchDocumentGraph', section_id, processStatus],
+		queryKey: publicMode
+			? ['searchPublicSectionGraph', section_id, processStatus]
+			: ['searchDocumentGraph', section_id, processStatus],
 		queryFn: async () =>
-			searchSectionGraph({
-				section_id,
-			}),
+			publicMode
+				? searchPublicSectionGraph({
+						section_id,
+					})
+				: searchSectionGraph({
+						section_id,
+					}),
+		initialData: initialGraph ?? undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
+		enabled: !(publicMode && Boolean(initialGraph)),
+		staleTime: publicMode && initialGraph ? Infinity : undefined,
 	});
 
 	const nodes: GraphCanvasNode[] = useMemo(

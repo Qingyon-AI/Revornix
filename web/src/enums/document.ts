@@ -5,6 +5,13 @@ export enum DocumentCategory {
     AUDIO = 3
 }
 
+export enum UserDocumentAuthority {
+    FULL_ACCESS = 0,
+    OWNER = 0,
+    READ_AND_WRITE = 1,
+    READ_ONLY = 2,
+}
+
 export enum DocumentMdConvertStatus {
     WAIT_TO = 0,
     CONVERTING = 1,

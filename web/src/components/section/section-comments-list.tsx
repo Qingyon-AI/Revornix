@@ -1,7 +1,8 @@
 'use client';
 
+import type { InifiniteScrollPagnitionSectionCommentInfo } from '@/generated';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { searchSectionComment } from '@/service/section';
+import { searchPublicSectionComment, searchSectionComment } from '@/service/section';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
@@ -15,21 +16,41 @@ import {
 import { MessageSquareText } from 'lucide-react';
 import SectionCommentCard from './section-comment-card';
 
-const SectionCommentsList = ({ section_id }: { section_id: number }) => {
+const SectionCommentsList = ({
+	section_id,
+	initialData,
+	publicMode = false,
+}: {
+	section_id: number;
+	initialData?: InifiniteScrollPagnitionSectionCommentInfo;
+	publicMode?: boolean;
+}) => {
 	const t = useTranslations();
 	const keyword = '';
+	const initialPageParam = {
+		limit: 10,
+		keyword: keyword,
+		section_id: section_id,
+	};
 
 	const { ref: bottomRef, inView } = useInView();
 
 	const { data, isFetchingNextPage, isFetching, fetchNextPage, hasNextPage } =
 		useInfiniteQuery({
 			queryKey: ['searchSectionComment', keyword, section_id],
-			queryFn: (pageParam) => searchSectionComment({ ...pageParam.pageParam }),
-			initialPageParam: {
-				limit: 10,
-				keyword: keyword,
-				section_id: section_id,
-			},
+			queryFn: (pageParam) =>
+				publicMode
+					? searchPublicSectionComment({ ...pageParam.pageParam })
+					: searchSectionComment({ ...pageParam.pageParam }),
+			initialPageParam,
+			initialData: initialData
+				? {
+						pages: [initialData],
+						pageParams: [initialPageParam],
+					}
+				: undefined,
+			retry: publicMode ? false : undefined,
+			refetchOnWindowFocus: publicMode ? false : undefined,
 			getNextPageParam: (lastPage) => {
 				return lastPage.has_more
 					? {

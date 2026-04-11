@@ -7,6 +7,8 @@ import { SectionDocumentInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { formatInUserTimeZone } from '@/lib/time';
+import DocumentVisibilityHint from '../document/document-visibility-hint';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 const SectionDocumentCard = ({
 	document,
@@ -40,10 +42,11 @@ const SectionDocumentCard = ({
 					</div>
 				</div>
 				{document.cover && (
-					<img
+					<ImageWithFallback
 						src={document.cover}
 						alt='cover'
 						className='relative h-14 w-14 shrink-0 rounded-xl object-cover'
+						fallbackSvgClassName='p-2'
 					/>
 				)}
 			</div>
@@ -64,6 +67,7 @@ const SectionDocumentCard = ({
 
 			<div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
 				<div className='flex min-w-0 flex-wrap items-center gap-2'>
+					<DocumentVisibilityHint documentId={document.id} />
 					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')

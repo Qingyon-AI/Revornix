@@ -264,18 +264,34 @@ const UnReadDocumentPage = () => {
 					</>
 				)}
 				{isFetching && !data && (
-					<>
-						{[...Array(12)].map((number, index) => {
-							return <DocumentCardSkeleton key={index} layout={viewMode} />;
-						})}
-					</>
+					viewMode === 'grid' ? (
+						<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+							{[...Array(12)].map((number, index) => {
+								return <DocumentCardSkeleton key={index} layout={viewMode} />;
+							})}
+						</div>
+					) : (
+						<div className='flex flex-col gap-4'>
+							{[...Array(12)].map((number, index) => {
+								return <DocumentCardSkeleton key={index} layout={viewMode} />;
+							})}
+						</div>
+					)
 				)}
 				{isFetchingNextPage && data && (
-					<>
-						{[...Array(12)].map((number, index) => {
-							return <DocumentCardSkeleton key={index} layout={viewMode} />;
-						})}
-					</>
+					viewMode === 'grid' ? (
+						<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+							{[...Array(12)].map((number, index) => {
+								return <DocumentCardSkeleton key={index} layout={viewMode} />;
+							})}
+						</div>
+					) : (
+						<div className='mt-4 flex flex-col gap-4'>
+							{[...Array(12)].map((number, index) => {
+								return <DocumentCardSkeleton key={index} layout={viewMode} />;
+							})}
+						</div>
+					)
 				)}
 			</div>
 		</>

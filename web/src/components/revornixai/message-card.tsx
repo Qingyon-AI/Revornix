@@ -462,8 +462,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 				{message.role === 'user' && renderMessageImages()}
 				<div
 					className={cn(
-						'prose max-w-none break-words dark:prose-invert',
-						message.role === 'assistant' && 'prose-p:leading-7 prose-headings:tracking-tight',
+						'max-w-none break-words',
 						message.role === 'user' && message.images?.length ? 'mt-4' : undefined,
 					)}>
 					<CustomMarkdown content={message.content} />
