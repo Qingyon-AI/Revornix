@@ -219,14 +219,11 @@ const SectionMarkdown = ({
 		void onGetMarkdown(markdownSourceKey, markdownUrl, true);
 	}, [markdownSourceKey, markdownUrl, processStatus]);
 
-	useInterval(
-		() => {
-			const { sourceKey, sourceUrl } = latestMarkdownSourceRef.current;
-			if (!sourceKey || !sourceUrl) return;
-			void onGetMarkdown(sourceKey, sourceUrl, true);
-		},
-		placeholderPollingDelay,
-	);
+	useInterval(() => {
+		const { sourceKey, sourceUrl } = latestMarkdownSourceRef.current;
+		if (!sourceKey || !sourceUrl) return;
+		void onGetMarkdown(sourceKey, sourceUrl, true);
+	}, placeholderPollingDelay);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =
@@ -333,7 +330,7 @@ const SectionMarkdown = ({
 			) : null}
 
 			{markdown !== undefined ? (
-				<div className='relative w-full'>
+				<>
 					{freshnessState.markdownStale ? (
 						<div className='mx-auto mb-4 w-full max-w-[880px]'>
 							<Alert className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
@@ -349,12 +346,12 @@ const SectionMarkdown = ({
 						editable={canEditMarkdown}
 						onSave={handleSaveMarkdown}
 						viewerFooter={
-							<div className='mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+							<div className='my-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 								{t('section_ai_tips')}
 							</div>
 						}
 					/>
-				</div>
+				</>
 			) : null}
 		</div>
 	);

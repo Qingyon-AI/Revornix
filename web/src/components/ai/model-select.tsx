@@ -80,8 +80,8 @@ const AIModelSelect = ({
 				size={size}
 				className={
 					variant === 'inline'
-						? `h-8 min-h-8 rounded-full border-0 bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0 ${className ?? ''}`
-						: `h-10 rounded-[18px] border-border/60 bg-background/70 px-3.5 shadow-none transition-colors hover:bg-background ${className ?? ''}`
+						? `h-8 min-h-8 rounded-full border-0 bg-transparent! px-0 py-0 text-xs shadow-none focus-visible:ring-0 ${className ?? ''}`
+						: `h-10 rounded-[18px] border-border/60 px-3.5 shadow-none transition-colors hover:bg-background ${className ?? ''}`
 				}>
 				<SelectValue placeholder={placeholder ?? t('setting_model_select')} />
 			</SelectTrigger>

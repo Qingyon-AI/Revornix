@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
 import CardViewToggle from '@/components/ui/card-view-toggle';
+import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
 import {
 	Empty,
 	EmptyContent,
@@ -254,12 +255,19 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 								);
 							})}
 					</div>
-				) : (
+				) : data ? (
 					<>
-						<SectionListTable sections={sections} />
+						<SectionListTable
+							sections={sections}
+							footer={
+								isFetchingNextPage && data ? (
+									<ListLoadingIndicator />
+								) : undefined
+							}
+						/>
 						<div ref={bottomRef} className='h-px w-full' />
 					</>
-				)}
+				) : null}
 				{isFetching && !data && (
 					viewMode === 'grid' ? (
 						<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
@@ -268,27 +276,18 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 							})}
 						</div>
 					) : (
-						<div className='flex flex-col gap-4'>
-							{[...Array(12)].map((number, index) => {
-								return <SectionCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
+						<SectionListTable
+							sections={[]}
+							footer={<ListLoadingIndicator centered />}
+						/>
 					)
 				)}
-				{isFetchingNextPage && data && (
-					viewMode === 'grid' ? (
-						<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-							{[...Array(12)].map((number, index) => {
-								return <SectionCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
-					) : (
-						<div className='mt-4 flex flex-col gap-4'>
-							{[...Array(12)].map((number, index) => {
-								return <SectionCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
-					)
+				{isFetchingNextPage && data && viewMode === 'grid' && (
+					<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+						{[...Array(12)].map((number, index) => {
+							return <SectionCardSkeleton key={index} layout={viewMode} />;
+						})}
+					</div>
 				)}
 			</div>
 		</>

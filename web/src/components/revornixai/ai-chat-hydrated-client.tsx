@@ -7,7 +7,7 @@ const AIChatHydratedClient = ({ children }: { children: React.ReactNode }) => {
 
 	if (!_hasHydrated) return null;
 
-	return children;
+	return <>{children}</>;
 };
 
 export default AIChatHydratedClient;

@@ -108,14 +108,11 @@ const SectionContainer = ({ id }: { id: number }) => {
 		width: 0,
 	});
 
-	const mainCardMinHeightClassName =
-		'min-h-[calc(100dvh-7rem)] sm:min-h-[calc(100dvh-7.25rem)]';
 	const surfaceCardClassName =
 		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur';
 	const mainSurfaceClassName = cn(
-		`bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_24%)] ${surfaceCardClassName}`,
+		`bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_24%)]`,
 	);
-	const mainContentClassName = cn(mainCardMinHeightClassName, 'p-4 sm:p-5 lg:p-6');
 
 	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -135,24 +132,24 @@ const SectionContainer = ({ id }: { id: number }) => {
 					tone: 'warning' as const,
 				}
 			: section?.process_task?.status === SectionProcessStatus.SUCCESS
-			? {
-					badge: t('document_graph_status_success'),
-					tone: 'success' as const,
-				}
-			: section?.process_task?.status === SectionProcessStatus.FAILED
 				? {
-						badge: t('document_graph_status_failed'),
-						tone: 'danger' as const,
+						badge: t('document_graph_status_success'),
+						tone: 'success' as const,
 					}
-				: section?.process_task?.status === SectionProcessStatus.PROCESSING
+				: section?.process_task?.status === SectionProcessStatus.FAILED
 					? {
-							badge: t('document_graph_status_doing'),
-							tone: 'default' as const,
+							badge: t('document_graph_status_failed'),
+							tone: 'danger' as const,
 						}
-					: {
-							badge: t('document_graph_status_todo'),
-							tone: 'warning' as const,
-						};
+					: section?.process_task?.status === SectionProcessStatus.PROCESSING
+						? {
+								badge: t('document_graph_status_doing'),
+								tone: 'default' as const,
+							}
+						: {
+								badge: t('document_graph_status_todo'),
+								tone: 'warning' as const,
+							};
 
 	const [delay, setDelay] = useState<number | undefined>();
 	useInterval(() => {
@@ -259,34 +256,33 @@ const SectionContainer = ({ id }: { id: number }) => {
 	}, [isCompactViewport, sidebarState, section?.id]);
 
 	return (
-		<div className='relative'>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 pb-6 pt-0 sm:px-5 lg:px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,392px)] xl:items-start'>
+		<>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,392px)] xl:items-start'>
 				<div ref={mainColumnRef} className='relative min-w-0'>
-					<div className={mainSurfaceClassName}>
-						<div className={mainContentClassName}>
-							{isPending && !section ? <SectionDetailSkeleton /> : null}
-							{sectionCoverSrc ? (
-								<div className='mx-auto mb-6 w-full max-w-[880px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
-									<div className='relative'>
-										<ImageWithFallback
-											src={sectionCoverSrc}
-											alt={section?.title || t('section_title_empty')}
-											className='max-h-[320px] w-full object-cover sm:max-h-[380px]'
-											fallbackClassName='max-h-[320px] w-full sm:max-h-[380px]'
-											fallbackSvgClassName='max-w-[240px] p-6'
-										/>
-										<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
-									</div>
+					<>
+						{isPending && !section ? <SectionDetailSkeleton /> : null}
+						{sectionCoverSrc ? (
+							<div className='mx-auto mb-6 w-full overflow-hidden bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
+								<div className='relative'>
+									<ImageWithFallback
+										src={sectionCoverSrc}
+										alt={section?.title || t('section_title_empty')}
+										className='max-h-[300px] w-full object-cover sm:max-h-[360px]'
+										fallbackClassName='max-h-[300px] w-full sm:max-h-[360px]'
+										fallbackSvgClassName='max-w-[240px] p-6'
+									/>
+									<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
 								</div>
-							) : null}
-							<SectionMarkdown id={id} />
-						</div>
-					</div>
+							</div>
+						) : null}
+						<SectionMarkdown id={id} />
+					</>
 				</div>
 
 				{!isCompactViewport ? (
 					<div className='relative min-w-0 space-y-5 xl:sticky xl:top-0'>
-						<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
+						<Card
+							className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
 							<SectionInfo id={id} />
 						</Card>
 
@@ -330,11 +326,11 @@ const SectionContainer = ({ id }: { id: number }) => {
 											</DialogHeader>
 											<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 												<div className='min-h-[360px] h-full overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-												<SectionGraph
-													section_id={id}
-													showSearch
-													showStaleHint={false}
-												/>
+													<SectionGraph
+														section_id={id}
+														showSearch
+														showStaleHint={false}
+													/>
 												</div>
 											</div>
 										</DialogContent>
@@ -356,27 +352,23 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 			{section && isCompactViewport ? (
 				<div className='pointer-events-none fixed bottom-4 right-4 z-40'>
-					<div className='pointer-events-auto'>
-						<SectionOperate id={id} />
-					</div>
+					<SectionOperate id={id} />
 				</div>
 			) : null}
 
 			{section && !isCompactViewport && dockBounds.width > 0 ? (
 				<div
-					className='pointer-events-none fixed bottom-4 z-40 sm:bottom-8'
+					className='pointer-events-none sticky bottom-0 z-40'
 					style={{
 						left: `${dockBounds.left}px`,
 						width: `${dockBounds.width}px`,
 					}}>
-					<div className='px-4 sm:px-5 lg:px-6'>
-						<div className='pointer-events-auto mx-auto w-full max-w-[880px]'>
-							<SectionOperate id={id} />
-						</div>
+					<div className='pointer-events-auto w-full'>
+						<SectionOperate id={id} />
 					</div>
 				</div>
 			) : null}
-		</div>
+		</>
 	);
 };
 

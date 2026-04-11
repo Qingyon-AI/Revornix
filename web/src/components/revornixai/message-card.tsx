@@ -342,7 +342,7 @@ const MessageCard = ({ message }: { message: Message }) => {
 			})}>
 			<div
 				className={cn(
-					'min-w-0 overflow-hidden rounded-[26px] border px-3.5 py-3 shadow-sm transition-colors md:px-5 md:py-4',
+					'min-w-0 overflow-hidden rounded-[26px] border px-3.5 py-3 shadow-sm transition-colors',
 					message.role === 'user'
 						? 'max-w-[min(82%,760px)] border-primary/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.04),rgba(15,23,42,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]'
 						: 'max-w-[min(92%,1080px)] border-border/70 bg-card/95',
