@@ -63,10 +63,7 @@ const MessageSendForm = () => {
 	);
 
 	const { data: default_llm_model } = useQuery({
-		queryKey: [
-			'getRevornixSelectedModel',
-			selectedModelId,
-		],
+		queryKey: ['getRevornixSelectedModel', selectedModelId],
 		queryFn: () => {
 			if (!selectedModelId) {
 				return;
@@ -425,7 +422,7 @@ const MessageSendForm = () => {
 
 	const renderDesktopToolbar = () => {
 		return (
-			<div className='p-2 flex flex-wrap items-center gap-1.5 border-t border-b border-border/60'>
+			<div className='p-2 flex flex-wrap items-center gap-1.5 border-b border-border/60'>
 				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 text-xs'>
 					<span className='shrink-0 text-muted-foreground'>
 						{t('use_model')}
@@ -582,101 +579,94 @@ const MessageSendForm = () => {
 							name='message'
 							render={({ field }) => (
 								<FormItem className='flex-1'>
-									<div className='relative'>
-										{attachments.length > 0 && mainUserInfo?.id ? (
-											<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
-												{attachments.map((attachment) => (
-													<div
-														key={attachment.path}
-														className='group relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
-														<img
-															src={replacePath(
-																attachment.path,
-																mainUserInfo.id,
-															)}
-															alt={attachment.name}
-															className='h-full w-full object-cover'
-														/>
-														<button
-															type='button'
-															className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
-															onClick={() => removeAttachment(attachment.path)}
-															aria-label={t('delete')}>
-															<X className='size-3' />
-														</button>
-													</div>
-												))}
-											</div>
-										) : null}
-										<Textarea
-											className={`bg-transparent! resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
-													isMobile
-														? 'min-h-[88px] max-h-[144px] pb-[3.25rem]'
-														: 'min-h-[78px] max-h-[140px] pb-[3.25rem] pr-[3.5rem]'
-												}`}
-											placeholder={t('revornix_ai_message_placeholder')}
-											disabled={mutateSendMessage.isPending}
-											{...field}
-											onKeyDown={(e) => {
-												if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-													e.preventDefault();
-													form.handleSubmit(
-														onFormValidateSuccess,
-														onFormValidateError,
-													)();
-												}
-											}}
-										/>
-										<div className='absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-2'>
-											<div className='flex min-h-9 items-center gap-2'>
-												<Button
-													type='button'
-													size='sm'
-													variant='link'
-													className='h-9 rounded-full text-[11px] text-muted-foreground'
-													onClick={openPicker}
-													disabled={
-														mutateSendMessage.isPending || isUploadingImages
-													}>
-													{isUploadingImages ? (
-														<Loader2 className='size-3.5 animate-spin' />
-													) : (
-														<ImagePlus className='size-3.5' />
-													)}
-													<span>{t('upload_image')}</span>
-												</Button>
-											</div>
-											<div className='flex flex-row items-center gap-2'>
-												{!isMobile ? (
-													<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
-														<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
-															<span className='text-xs font-bold'>⌘</span>
-															<span className='font-bold'>Enter</span>
-														</kbd>
-														<span>{t('revornix_ai_quickly_send')}</span>
-													</div>
-												) : null}
-												<Button
-													type='submit'
-													size='icon'
-													variant='default'
-													disabled={!canSubmit}
-													className='size-9 rounded-[14px]'>
-													<Send className='size-4' />
-												</Button>
-											</div>
+									{attachments.length > 0 && mainUserInfo?.id ? (
+										<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
+											{attachments.map((attachment) => (
+												<div
+													key={attachment.path}
+													className='group relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
+													<img
+														src={replacePath(attachment.path, mainUserInfo.id)}
+														alt={attachment.name}
+														className='h-full w-full object-cover'
+													/>
+													<button
+														type='button'
+														className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
+														onClick={() => removeAttachment(attachment.path)}
+														aria-label={t('delete')}>
+														<X className='size-3' />
+													</button>
+												</div>
+											))}
 										</div>
-										<input
-											ref={imageInputRef}
-											type='file'
-											accept='image/*'
-											multiple
-											className='hidden'
-											onChange={(event) => {
-												void handleFileChange(event);
-											}}
-										/>
+									) : null}
+									<Textarea
+										className={`bg-transparent! resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
+											isMobile
+												? 'min-h-[120px] max-h-[220px] pb-[3.25rem]'
+												: 'min-h-[112px] max-h-[240px] pb-[3.25rem] pr-[3.5rem]'
+										}`}
+										placeholder={t('revornix_ai_message_placeholder')}
+										disabled={mutateSendMessage.isPending}
+										{...field}
+										onKeyDown={(e) => {
+											if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+												e.preventDefault();
+												form.handleSubmit(
+													onFormValidateSuccess,
+													onFormValidateError,
+												)();
+											}
+										}}
+									/>
+									<div className='absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-2 z-1'>
+										<Button
+											type='button'
+											size='sm'
+											variant='outline'
+											className='h-9 rounded-full text-[11px]'
+											onClick={openPicker}
+											disabled={
+												mutateSendMessage.isPending || isUploadingImages
+											}>
+											{isUploadingImages ? (
+												<Loader2 className='size-3.5 animate-spin' />
+											) : (
+												<ImagePlus className='size-3.5' />
+											)}
+											<span>{t('upload_image')}</span>
+										</Button>
+										<div className='flex flex-row items-center gap-2'>
+											{!isMobile ? (
+												<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
+													<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
+														<span className='text-xs font-bold'>⌘</span>
+														<span className='font-bold'>Enter</span>
+													</kbd>
+													<span>{t('revornix_ai_quickly_send')}</span>
+												</div>
+											) : null}
+											<Button
+												type='submit'
+												size='icon'
+												variant='default'
+												disabled={!canSubmit}
+												className='size-9 rounded-[14px]'>
+												<Send className='size-4' />
+											</Button>
+										</div>
 									</div>
+									<input
+										ref={imageInputRef}
+										type='file'
+										accept='image/*'
+										multiple
+										className='hidden'
+										onChange={(event) => {
+											void handleFileChange(event);
+										}}
+									/>
 								</FormItem>
 							)}
 						/>

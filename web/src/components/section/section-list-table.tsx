@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import type { SectionInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
@@ -13,7 +14,13 @@ import {
 } from '@/components/ui/table';
 import SectionVisibilityHint from './section-visibility-hint';
 
-const SectionListTable = ({ sections }: { sections: SectionInfo[] }) => {
+const SectionListTable = ({
+	sections,
+	footer,
+}: {
+	sections: SectionInfo[];
+	footer?: ReactNode;
+}) => {
 	const t = useTranslations();
 	const router = useRouter();
 
@@ -65,6 +72,7 @@ const SectionListTable = ({ sections }: { sections: SectionInfo[] }) => {
 					))}
 				</TableBody>
 			</Table>
+			{footer ? <div className='border-t border-border/60 px-2 pt-3'>{footer}</div> : null}
 		</div>
 	);
 };

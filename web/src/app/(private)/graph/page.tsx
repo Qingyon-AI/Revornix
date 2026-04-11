@@ -45,8 +45,8 @@ const GraphPage = () => {
 		})) ?? [];
 
 	return (
-		<div className='flex h-full min-w-0 w-full flex-col px-5 pb-5'>
-			<div className='relative flex min-h-0 min-w-0 flex-1 items-center justify-center'>
+		<div className='flex min-h-0 min-w-0 flex-1 w-full flex-col px-5 pb-5'>
+			<div className='relative flex min-h-0 min-w-0 flex-1'>
 				{isLoading ? (
 					<div className='h-full w-full'>
 						<Skeleton className='h-full w-full rounded-2xl' />

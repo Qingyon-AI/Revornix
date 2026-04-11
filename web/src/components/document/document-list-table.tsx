@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import type { DocumentInfo } from '@/generated';
 import { formatInUserTimeZone } from '@/lib/time';
@@ -16,7 +17,13 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-const DocumentListTable = ({ documents }: { documents: DocumentInfo[] }) => {
+const DocumentListTable = ({
+	documents,
+	footer,
+}: {
+	documents: DocumentInfo[];
+	footer?: ReactNode;
+}) => {
 	const t = useTranslations();
 	const router = useRouter();
 
@@ -86,6 +93,7 @@ const DocumentListTable = ({ documents }: { documents: DocumentInfo[] }) => {
 					))}
 				</TableBody>
 			</Table>
+			{footer ? <div className='border-t border-border/60 px-2 pt-3'>{footer}</div> : null}
 		</div>
 	);
 };

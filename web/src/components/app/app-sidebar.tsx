@@ -68,7 +68,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				<AddDocumentBox />
+				<div className='px-3'>
+					<AddDocumentBox />
+				</div>
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>

@@ -8,7 +8,7 @@ const AddDocumentBox = () => {
 	return (
 		<>
 			<Link href={'/document/create'}>
-				<Card className='p-5 m-5 md:m-0'>
+				<Card className='p-5 m-5 md:m-0 shadow-none'>
 					<div className='flex flex-col items-center justify-center gap-2 text-sm'>
 						<CirclePlus />
 						{t('sidebar_add_document')}

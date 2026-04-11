@@ -92,9 +92,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const locale = useLocale();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
-	const [selectedSummaryModelId, setSelectedSummaryModelId] = useState<number | null>(
-		mainUserInfo?.default_document_reader_model_id ?? null,
-	);
+	const [selectedSummaryModelId, setSelectedSummaryModelId] = useState<
+		number | null
+	>(mainUserInfo?.default_document_reader_model_id ?? null);
 	const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
 
 	useEffect(() => {
@@ -212,14 +212,14 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					freshnessState.embeddingStale
 						? t('document_status_stale')
 						: data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO
-						? t('document_embedding_status_todo')
-						: data.embedding_task.status === DocumentEmbeddingStatus.Embedding
-							? t('document_embedding_status_doing')
-							: data.embedding_task.status === DocumentEmbeddingStatus.SUCCESS
-								? t('document_embedding_status_success')
-								: t('document_embedding_status_failed'),
+							? t('document_embedding_status_todo')
+							: data.embedding_task.status === DocumentEmbeddingStatus.Embedding
+								? t('document_embedding_status_doing')
+								: data.embedding_task.status === DocumentEmbeddingStatus.SUCCESS
+									? t('document_embedding_status_success')
+									: t('document_embedding_status_failed'),
 					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ||
-					freshnessState.embeddingStale ? (
+						freshnessState.embeddingStale ? (
 						<Button
 							variant='link'
 							size='sm'
@@ -255,12 +255,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					freshnessState.graphStale
 						? t('document_status_stale')
 						: data.graph_task.status === DocumentGraphStatus.WAIT_TO
-						? t('document_graph_status_todo')
-						: data.graph_task.status === DocumentGraphStatus.BUILDING
-							? t('document_graph_status_doing')
-							: data.graph_task.status === DocumentGraphStatus.SUCCESS
-								? t('document_graph_status_success')
-								: t('document_graph_status_failed'),
+							? t('document_graph_status_todo')
+							: data.graph_task.status === DocumentGraphStatus.BUILDING
+								? t('document_graph_status_doing')
+								: data.graph_task.status === DocumentGraphStatus.SUCCESS
+									? t('document_graph_status_success')
+									: t('document_graph_status_failed'),
 				)
 			: null,
 		data.summarize_task
@@ -269,12 +269,13 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					freshnessState.summaryStale
 						? t('document_status_stale')
 						: data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO
-						? t('document_summarize_status_todo')
-						: data.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING
-							? t('document_summarize_status_doing')
-							: data.summarize_task.status === DocumentSummarizeStatus.SUCCESS
-								? t('document_summarize_status_success')
-								: t('document_summarize_status_failed'),
+							? t('document_summarize_status_todo')
+							: data.summarize_task.status ===
+								  DocumentSummarizeStatus.SUMMARIZING
+								? t('document_summarize_status_doing')
+								: data.summarize_task.status === DocumentSummarizeStatus.SUCCESS
+									? t('document_summarize_status_success')
+									: t('document_summarize_status_failed'),
 				)
 			: null,
 		data.convert_task
@@ -295,12 +296,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					freshnessState.podcastStale
 						? t('document_status_stale')
 						: data.podcast_task.status === DocumentPodcastStatus.WAIT_TO
-						? t('document_podcast_status_todo')
-						: data.podcast_task.status === DocumentPodcastStatus.GENERATING
-							? t('document_podcast_status_doing')
-							: data.podcast_task.status === DocumentPodcastStatus.SUCCESS
-								? t('document_podcast_status_success')
-								: t('document_podcast_status_failed'),
+							? t('document_podcast_status_todo')
+							: data.podcast_task.status === DocumentPodcastStatus.GENERATING
+								? t('document_podcast_status_doing')
+								: data.podcast_task.status === DocumentPodcastStatus.SUCCESS
+									? t('document_podcast_status_success')
+									: t('document_podcast_status_failed'),
 				)
 			: null,
 		data.process_task
@@ -389,16 +390,16 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		}
 
 		return (
-				<TaskStateCard
-					variant='panel'
-					icon={Sparkles}
-					badge={
-						freshnessState.summaryStale
-							? t('document_status_stale')
-							: t('document_summarize_status_success')
-					}
-					title={t('ai_summary_ready')}
-					tone={freshnessState.summaryStale ? 'warning' : 'success'}
+			<TaskStateCard
+				variant='panel'
+				icon={Sparkles}
+				badge={
+					freshnessState.summaryStale
+						? t('document_status_stale')
+						: t('document_summarize_status_success')
+				}
+				title={t('ai_summary_ready')}
+				tone={freshnessState.summaryStale ? 'warning' : 'success'}
 				hint={
 					freshnessState.summaryStale
 						? t('document_summary_stale_hint')
@@ -415,138 +416,130 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 	return (
 		<>
-		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-				<div className='space-y-2'>
-					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
-						{title}
-					</h2>
-					<p className='break-words text-sm leading-7 text-muted-foreground'>
-						{description}
-					</p>
+			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
+				<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+					<div className='space-y-2'>
+						<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
+							{title}
+						</h2>
+						<p className='break-words text-sm leading-7 text-muted-foreground'>
+							{description}
+						</p>
+					</div>
+
+					{data.creator ? (
+						<Link
+							href={`/user/detail/${data.creator.id}`}
+							className='group flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors hover:bg-background/65'>
+							<Avatar className='size-10 ring-1 ring-border/60'>
+								<AvatarImage
+									src={replacePath(data.creator.avatar, data.creator.id)}
+									alt='avatar'
+									className='size-10 object-cover'
+								/>
+								<AvatarFallback className='size-10 font-semibold'>
+									{data.creator.nickname.slice(0, 1) ?? '?'}
+								</AvatarFallback>
+							</Avatar>
+							<div className='min-w-0'>
+								<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
+									{data.creator.nickname}
+								</p>
+								<p className='truncate text-xs text-muted-foreground'>
+									{t('section_updated_at')}: {lastActiveDistance}
+								</p>
+							</div>
+						</Link>
+					) : null}
+
+					<div className='flex flex-wrap gap-1.5'>
+						<MetaBadge>
+							{t('document_category')}: {categoryLabel}
+						</MetaBadge>
+						<MetaBadge>
+							{t('document_from_plat')}: {fromPlatLabel}
+						</MetaBadge>
+					</div>
 				</div>
 
-				{data.creator ? (
-					<Link
-						href={`/user/detail/${data.creator.id}`}
-						className='group flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors hover:bg-background/65'>
-						<Avatar className='size-10 ring-1 ring-border/60'>
-							<AvatarImage
-								src={replacePath(data.creator.avatar, data.creator.id)}
-								alt='avatar'
-								className='size-10 object-cover'
-							/>
-							<AvatarFallback className='size-10 font-semibold'>
-								{data.creator.nickname.slice(0, 1) ?? '?'}
-							</AvatarFallback>
-						</Avatar>
-						<div className='min-w-0'>
-							<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
-								{data.creator.nickname}
-							</p>
-							<p className='truncate text-xs text-muted-foreground'>
-								{t('section_updated_at')}: {lastActiveDistance}
-							</p>
+				{data.sections && data.sections.length > 0 ? (
+					<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+						<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
+							<BookMarked className='size-3.5' />
+							<p>{t('document_related_sections')}</p>
 						</div>
-					</Link>
+						<div className='flex flex-wrap gap-2'>
+							{data.sections.map((section) => {
+								return (
+									<Link
+										key={section.id}
+										href={`/section/detail/${section.id}`}
+										className='inline-flex items-center rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background/85 hover:text-foreground'>
+										<BookMarked className='mr-1.5 size-3.5' />
+										{section.title}
+									</Link>
+								);
+							})}
+						</div>
+					</div>
 				) : null}
 
-				<div className='flex flex-wrap gap-1.5'>
-					<MetaBadge>
-						{t('document_category')}: {categoryLabel}
-					</MetaBadge>
-					<MetaBadge>
-						{t('document_from_plat')}: {fromPlatLabel}
-					</MetaBadge>
-				</div>
-			</div>
-
-			{data.sections && data.sections.length > 0 ? (
-				<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-					<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
-						<BookMarked className='size-3.5' />
-						<p>{t('document_related_sections')}</p>
-					</div>
-					<div className='flex flex-wrap gap-2'>
-						{data.sections.map((section) => {
-							return (
-								<Link
-									key={section.id}
-									href={`/section/detail/${section.id}`}
-									className='inline-flex items-center rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background/85 hover:text-foreground'>
-									<BookMarked className='mr-1.5 size-3.5' />
-									{section.title}
-								</Link>
-							);
+				{data.labels && data.labels.length > 0 ? (
+					<div className='flex flex-wrap gap-1.5'>
+						{data.labels.map((label) => {
+							return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
 						})}
 					</div>
-				</div>
-			) : null}
+				) : null}
 
-			{data.labels && data.labels.length > 0 ? (
-				<div className='flex flex-wrap gap-1.5'>
-					{data.labels.map((label) => {
-						return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
-					})}
+				<div className='grid grid-cols-2 gap-3'>
+					<InfoMetric
+						icon={CalendarClock}
+						label={t('section_updated_at')}
+						value={lastActiveDistance}
+						hint={
+							lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
+						}
+					/>
+					<InfoMetric
+						icon={CalendarDays}
+						label={t('section_info_created_at')}
+						value={createdAtText}
+						hint={createdAtHint}
+					/>
 				</div>
-			) : null}
 
-			<div className='grid grid-cols-2 gap-3'>
-				<InfoMetric
-					icon={CalendarClock}
-					label={t('section_updated_at')}
-					value={lastActiveDistance}
-					hint={
-						lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
-					}
-				/>
-				<InfoMetric
-					icon={CalendarDays}
-					label={t('section_info_created_at')}
-					value={createdAtText}
-					hint={createdAtHint}
-				/>
-				<InfoMetric
-					icon={Layers3}
-					label={t('document_category')}
-					value={categoryLabel}
-				/>
-				<InfoMetric
-					icon={Globe2}
-					label={t('document_from_plat')}
-					value={fromPlatLabel}
-				/>
+				{statusBadges.length > 0 ? (
+					<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+						{statusBadges}
+					</div>
+				) : null}
+
+				{renderSummaryCard()}
 			</div>
-
-			{statusBadges.length > 0 ? (
-				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-					{statusBadges}
+			<ResourceConfirmDialog
+				open={isSummaryDialogOpen}
+				onOpenChange={setIsSummaryDialogOpen}
+				title={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
+				description={t('resource_dialog_summary_description')}
+				confirmLabel={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
+				confirmDisabled={!selectedSummaryModelId}
+				confirmLoading={mutateSummaryDocument.isPending}
+				onConfirm={() => {
+					mutateSummaryDocument.mutate();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>
+						{t('use_model')}
+					</p>
+					<AIModelSelect
+						value={selectedSummaryModelId}
+						onChange={setSelectedSummaryModelId}
+						className='w-full'
+						placeholder={t('setting_default_model_choose')}
+					/>
 				</div>
-			) : null}
-
-			{renderSummaryCard()}
-		</div>
-		<ResourceConfirmDialog
-			open={isSummaryDialogOpen}
-			onOpenChange={setIsSummaryDialogOpen}
-			title={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
-			description={t('resource_dialog_summary_description')}
-			confirmLabel={data.summarize_task ? t('ai_resummary') : t('ai_summary')}
-			confirmDisabled={!selectedSummaryModelId}
-			confirmLoading={mutateSummaryDocument.isPending}
-			onConfirm={() => {
-				mutateSummaryDocument.mutate();
-			}}>
-			<div className='space-y-2'>
-				<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
-				<AIModelSelect
-					value={selectedSummaryModelId}
-					onChange={setSelectedSummaryModelId}
-					className='w-full'
-					placeholder={t('setting_default_model_choose')}
-				/>
-			</div>
-		</ResourceConfirmDialog>
+			</ResourceConfirmDialog>
 		</>
 	);
 };

@@ -574,7 +574,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 						width: `${dockBounds.width}px`,
 					}}>
 					<div className='px-4 sm:px-5 lg:px-6'>
-						<div className='pointer-events-auto mx-auto w-full max-w-[880px]'>
+						<div className='pointer-events-auto mx-auto w-full'>
 							<DocumentOperate id={id} />
 						</div>
 					</div>

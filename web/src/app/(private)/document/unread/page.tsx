@@ -7,6 +7,7 @@ import DocumentCard from '@/components/document/document-card';
 import DocumentCardSkeleton from '@/components/document/document-card-skeleton';
 import DocumentListTable from '@/components/document/document-list-table';
 import CardViewToggle from '@/components/ui/card-view-toggle';
+import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -257,12 +258,19 @@ const UnReadDocumentPage = () => {
 								);
 							})}
 					</div>
-				) : (
+				) : data ? (
 					<>
-						<DocumentListTable documents={documents} />
+						<DocumentListTable
+							documents={documents}
+							footer={
+								isFetchingNextPage && data ? (
+									<ListLoadingIndicator />
+								) : undefined
+							}
+						/>
 						<div ref={bottomRef} className='h-px w-full' />
 					</>
-				)}
+				) : null}
 				{isFetching && !data && (
 					viewMode === 'grid' ? (
 						<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
@@ -271,27 +279,18 @@ const UnReadDocumentPage = () => {
 							})}
 						</div>
 					) : (
-						<div className='flex flex-col gap-4'>
-							{[...Array(12)].map((number, index) => {
-								return <DocumentCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
+						<DocumentListTable
+							documents={[]}
+							footer={<ListLoadingIndicator centered />}
+						/>
 					)
 				)}
-				{isFetchingNextPage && data && (
-					viewMode === 'grid' ? (
-						<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-							{[...Array(12)].map((number, index) => {
-								return <DocumentCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
-					) : (
-						<div className='mt-4 flex flex-col gap-4'>
-							{[...Array(12)].map((number, index) => {
-								return <DocumentCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
-					)
+				{isFetchingNextPage && data && viewMode === 'grid' && (
+					<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
+						{[...Array(12)].map((number, index) => {
+							return <DocumentCardSkeleton key={index} layout={viewMode} />;
+						})}
+					</div>
 				)}
 			</div>
 		</>

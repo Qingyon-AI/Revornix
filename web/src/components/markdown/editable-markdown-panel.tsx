@@ -27,7 +27,7 @@ type EditableMarkdownPanelProps = {
 };
 
 const viewerClassName =
-	'mx-auto max-w-[880px] overflow-x-hidden pb-6 sm:pb-14';
+	'mx-auto max-w-[880px] overflow-x-hidden';
 
 const EditableMarkdownPanel = ({
 	content,
