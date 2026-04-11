@@ -153,7 +153,7 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 	const renderMermaidSource = () => {
 		return (
 			<div
-				className='overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'
+				className='flex h-full min-h-[172px] flex-col overflow-hidden rounded-[0.75rem] border border-zinc-800/80 bg-zinc-950 text-zinc-100'
 				style={{ maxHeight: `${DIAGRAM_SOURCE_MAX_HEIGHT}px` }}>
 				<div
 					className='flex items-center justify-between border-b border-white/10 px-3 py-1.5'
@@ -169,16 +169,16 @@ const MermaidCodeBlockView = ({ node, editor }: NodeViewProps) => {
 						</div>
 					</div>
 				</div>
-				<div className='flex min-h-[112px] max-h-[inherit]'>
+				<div className='flex min-h-[112px] flex-1 items-stretch overflow-auto'>
 					<div
-						className='flex w-9 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
+						className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
 						contentEditable={false}>
 						{sourceLines.map((_, index) => (
 							<div key={index}>{index + 1}</div>
 						))}
 					</div>
-					<div className='min-w-0 flex-1 overflow-auto'>
-						<NodeViewContent className='min-w-0 whitespace-pre px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-[92px] [&_.ProseMirror]:outline-none' />
+					<div className='flex flex-1 overflow-auto bg-white/[0.02]'>
+						<NodeViewContent className='block min-h-[112px] w-full flex-1 whitespace-pre px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-full [&_.ProseMirror]:outline-none' />
 					</div>
 				</div>
 			</div>

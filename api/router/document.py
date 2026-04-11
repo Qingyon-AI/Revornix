@@ -40,16 +40,45 @@ from enums.document import (
     DocumentPodcastStatus,
     DocumentProcessStatus,
     DocumentSummarizeStatus,
+    UserDocumentAuthority,
 )
 from enums.section import SectionDocumentIntegration, SectionProcessTriggerType
 from router.document_interaction_manage import document_interaction_manage_router
 from router.document_ai import document_ai_router
+from router.document_publish_manage import document_publish_manage_router
+from router.document_user_manage import document_user_manage_router
+from router.document_user_query import document_user_query_router
 from router.document_query import document_query_router
+from router.logic_helpers import ensure_document_manage_access, ensure_document_write_access
 
 document_router = APIRouter()
 document_router.include_router(document_query_router)
 document_router.include_router(document_interaction_manage_router)
 document_router.include_router(document_ai_router)
+document_router.include_router(document_publish_manage_router)
+document_router.include_router(document_user_manage_router)
+document_router.include_router(document_user_query_router)
+
+
+def _get_document_collaborator(
+    *,
+    db: Session,
+    document_id: int,
+    user_id: int,
+) -> models.document.UserDocument | None:
+    return crud.document.get_user_document_by_user_id_and_document_id(
+        db=db,
+        user_id=user_id,
+        document_id=document_id,
+    )
+
+
+def _has_document_write_access(authority: int | None) -> bool:
+    return authority in [
+        UserDocumentAuthority.OWNER,
+        UserDocumentAuthority.FULL_ACCESS,
+        UserDocumentAuthority.READ_AND_WRITE,
+    ]
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 def get_label_summary(
@@ -196,6 +225,17 @@ async def create_ai_summary(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
     selected_model_id = ai_summary_request.model_id or user.default_document_reader_model_id
     if selected_model_id is None:
         raise schemas.error.CustomException(
@@ -259,6 +299,17 @@ async def create_embedding(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
 
     db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
         db=db,
@@ -309,6 +360,17 @@ async def transcribe_audio_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
     selected_engine_id = (
         transcribe_request.engine_id or user.default_audio_transcribe_engine_id
     )
@@ -374,6 +436,17 @@ async def generate_graph(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
     selected_model_id = graph_generate_request.model_id or user.default_document_reader_model_id
     if selected_model_id is None:
         raise schemas.error.CustomException(
@@ -436,6 +509,17 @@ async def generate_podcast(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
 
     # podcast必须要存储系统，所以检查用户的存储系统配置
     if user.default_user_file_system is None:
@@ -575,6 +659,17 @@ async def transform_markdown(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
 
     if user.default_user_file_system is None:
         raise schemas.error.CustomException("Default file system is not configured", code=400)
@@ -627,9 +722,18 @@ def update_document(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
-
-    if db_document.creator_id != user.id:
-        raise schemas.error.CustomException("You don't have permission to update this document", code=403)
+    collaborator = _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    is_creator = db_document.creator_id == user.id
+    ensure_document_write_access(
+        is_creator=is_creator,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
 
     section_process_tasks = None
     if document_update_request.title is not None:
@@ -675,6 +779,7 @@ def update_document(
             label_ids=labels_to_delete
         )
     if document_update_request.sections is not None:
+        ensure_document_manage_access(is_creator=is_creator)
         # 去重
         document_update_request.sections = list(dict.fromkeys(
             document_update_request.sections

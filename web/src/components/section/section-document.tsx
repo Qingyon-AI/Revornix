@@ -18,10 +18,17 @@ import {
 	retrySectionDocumentIntegration,
 	searchSectionDocuments,
 } from '@/service/section';
+import { getDocumentPublish, publishDocument } from '@/service/document';
 import SectionDocumentCard from './section-document-card';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
-import { Loader2, PlusCircleIcon, RotateCcw, TableOfContentsIcon } from 'lucide-react';
+import {
+	Globe,
+	Loader2,
+	PlusCircleIcon,
+	RotateCcw,
+	TableOfContentsIcon,
+} from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
@@ -41,10 +48,12 @@ const SectionDocument = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -127,6 +136,97 @@ const SectionDocument = ({
 		},
 	});
 
+	const publishAllDocumentsMutation = useMutation({
+		mutationFn: async () => {
+			const results = await Promise.allSettled(
+				documents.map(async (document) => {
+					const publishInfo = await getDocumentPublish({
+						document_id: document.id,
+					});
+
+					if (publishInfo.status) {
+						return {
+							alreadyPublished: true,
+							publishedNow: false,
+						};
+					}
+
+					await publishDocument({
+						document_id: document.id,
+						status: true,
+					});
+
+					return {
+						alreadyPublished: false,
+						publishedNow: true,
+					};
+				}),
+			);
+
+			let publishedCount = 0;
+			let alreadyPublishedCount = 0;
+			let failedCount = 0;
+
+			results.forEach((result, index) => {
+				const documentId = documents[index]?.id;
+				if (documentId) {
+					queryClient.invalidateQueries({
+						queryKey: ['getDocumentPublish', documentId],
+					});
+				}
+
+				if (result.status === 'fulfilled') {
+					if (result.value.alreadyPublished) {
+						alreadyPublishedCount += 1;
+					}
+					if (result.value.publishedNow) {
+						publishedCount += 1;
+					}
+				} else {
+					failedCount += 1;
+				}
+			});
+
+			return {
+				publishedCount,
+				alreadyPublishedCount,
+				failedCount,
+			};
+		},
+		onSuccess(summary) {
+			queryClient.invalidateQueries({
+				queryKey: ['searchSectionDocument', section_id],
+			});
+
+			if (summary.failedCount === 0 && summary.publishedCount === 0) {
+				toast.info(t('section_documents_publish_all_already_public'));
+				return;
+			}
+
+			if (summary.failedCount === 0) {
+				toast.success(
+					t('section_documents_publish_all_success', {
+						count: summary.publishedCount,
+						already: summary.alreadyPublishedCount,
+					}),
+				);
+				return;
+			}
+
+			toast.warning(
+				t('section_documents_publish_all_partial', {
+					count: summary.publishedCount,
+					already: summary.alreadyPublishedCount,
+					failed: summary.failedCount,
+				}),
+			);
+		},
+		onError(error) {
+			console.error(error);
+			toast.error(t('section_documents_publish_all_failed'));
+		},
+	});
+
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
 	}, [inView, isFetching, hasNextPage]);
@@ -140,7 +240,7 @@ const SectionDocument = ({
 					className={cn('w-full flex-1 text-xs', className)}
 					onClick={onTriggerClick}>
 					<TableOfContentsIcon />
-					{t('section_documents')}
+					{iconOnly ? <span className='sr-only'>{t('section_documents')}</span> : t('section_documents')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>
@@ -237,14 +337,30 @@ const SectionDocument = ({
 				</div>
 				{canAddDocument && (
 					<div className='shrink-0 border-t border-border/60 bg-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-5 sm:pb-5'>
-						<Button
-							className='w-full rounded-2xl'
-							onClick={() => {
-								handleAddDocument(section_id.toString());
-							}}>
-							{t('section_documents_add')}
-							<PlusCircleIcon />
-						</Button>
+						<div className='flex flex-col gap-2'>
+							{documents.length > 0 ? (
+								<Button
+									variant='outline'
+									className='w-full rounded-2xl'
+									onClick={() => publishAllDocumentsMutation.mutate()}
+									disabled={publishAllDocumentsMutation.isPending}>
+									{publishAllDocumentsMutation.isPending ? (
+										<Loader2 className='animate-spin' />
+									) : (
+										<Globe />
+									)}
+									{t('section_documents_publish_all')}
+								</Button>
+							) : null}
+							<Button
+								className='w-full rounded-2xl'
+								onClick={() => {
+									handleAddDocument(section_id.toString());
+								}}>
+								{t('section_documents_add')}
+								<PlusCircleIcon />
+							</Button>
+						</div>
 					</div>
 				)}
 			</SheetContent>

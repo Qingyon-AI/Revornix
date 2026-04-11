@@ -98,26 +98,22 @@ def _ensure_document_ai_access(
     if document_creator_id == user_id:
         return
 
-    db_published_section_documents = (
-        crud.document.get_published_section_of_the_document_by_document_id(
-            db=db,
-            document_id=document_id,
-        )
+    db_published_document = crud.document.get_publish_document_by_document_id(
+        db=db,
+        document_id=document_id,
     )
-    if db_published_section_documents:
+    if db_published_document is not None:
         return
 
-    db_user_published_section_documents = (
-        crud.document.get_published_section_of_the_document_by_document_id(
-            db=db,
-            document_id=document_id,
-            user_id=user_id,
-        )
+    db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
+        db=db,
+        document_id=document_id,
+        user_id=user_id,
     )
     ensure_document_access(
         is_creator=False,
-        has_public_section=bool(db_published_section_documents),
-        has_related_section=bool(db_user_published_section_documents),
+        has_public_document=False,
+        has_document_collaborator=db_user_document is not None,
     )
 
 

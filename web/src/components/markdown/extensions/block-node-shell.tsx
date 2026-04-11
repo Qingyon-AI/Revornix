@@ -18,11 +18,11 @@ const BlockNodeShell = ({
 	contentClassName,
 }: BlockNodeShellProps) => {
 	return (
-		<div className={cn('my-4', className)}>
+		<div className={cn('pb-2.5', className)}>
 			<div
 				className={cn(
 					'rounded-2xl border border-border/60 bg-muted/20',
-					selected && 'ring-2 ring-ring/50',
+					selected && 'ring-1 ring-ring/50',
 					contentClassName,
 				)}>
 				{children}

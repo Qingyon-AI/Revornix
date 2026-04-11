@@ -13,6 +13,7 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
@@ -41,10 +42,16 @@ import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import SectionDocumentsList from '@/components/section/section-documents-list';
-import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
+import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import Link from 'next/link';
-import { isSeoNotFoundError } from '@/lib/seo';
+import {
+	fetchPublicSectionComments,
+	fetchPublicSectionDocuments,
+	fetchPublicSectionGraph,
+	fetchRemoteTextContent,
+	isSeoNotFoundError,
+} from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import GraphTaskCard from '@/components/graph/graph-task-card';
 import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
@@ -56,6 +63,8 @@ import {
 	toIsoDate,
 } from '@/lib/seo-metadata';
 import { getSectionCoverSrc } from '@/lib/section-cover';
+import { replacePath } from '@/lib/utils';
+import ImageWithFallback from '@/components/ui/image-with-fallback';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -189,34 +198,6 @@ const SEOSectionDetail = async (props: {
 	let markdown: string | null = null;
 	let section: SectionInfoType | null = null;
 
-	const getFileContent = async (
-		file_path: string,
-	): Promise<string | Blob | ArrayBuffer> => {
-		const url = `${file_path}`;
-		const res = await fetch(url);
-		if (!res.ok) {
-			const errorText = await res.text().catch(() => 'Unknown error');
-			throw new Error(`Request failed with status ${res.status}: ${errorText}`);
-		}
-		const contentType = res.headers.get('Content-Type') || '';
-		if (contentType.includes('application/json')) {
-			return await res.json();
-		}
-		if (contentType.includes('text/')) {
-			return await res.text();
-		}
-		if (
-			contentType.includes('application/octet-stream') ||
-			contentType.includes('image/') ||
-			contentType.includes('audio/') ||
-			contentType.includes('video/')
-		) {
-			return await res.blob(); // 可用作下载、预览等
-		}
-		// 默认用 ArrayBuffer 处理
-		return await res.arrayBuffer();
-	};
-
 	const [section_res, section_err] = await utils.to(
 		getSectionDetail({ uuid: uuid }),
 	);
@@ -233,14 +214,41 @@ const SEOSectionDetail = async (props: {
 	}
 
 	if (section_res && section_res.md_file_name) {
-		const [markdown_res, markdown_err] = await utils.to(
-			getFileContent(section_res.md_file_name),
+		const [markdown_res] = await utils.to(
+			fetchRemoteTextContent(section_res.md_file_name),
 		);
-		if (markdown_err) {
-			throw new Error('Something is wrong while getting the markdown file');
-		}
-		markdown = markdown_res as string;
+		markdown = markdown_res ?? null;
 	}
+
+	const [initialCommentsRes, initialDocumentsRes, initialGraphRes] =
+		section_res?.id
+			? await Promise.all([
+					utils.to(
+						fetchPublicSectionComments({
+							section_id: section_res.id,
+							keyword: '',
+							limit: 10,
+						}),
+					),
+					utils.to(
+						fetchPublicSectionDocuments({
+							section_id: section_res.id,
+							keyword: '',
+							desc: true,
+							limit: 10,
+						}),
+					),
+					utils.to(
+						fetchPublicSectionGraph({
+							section_id: section_res.id,
+						}),
+					),
+				])
+			: [[null, null], [null, null], [null, null]];
+
+	const initialComments = initialCommentsRes[0] ?? undefined;
+	const initialDocuments = initialDocumentsRes[0] ?? undefined;
+	const initialGraph = initialGraphRes[0] ?? undefined;
 
 	const sectionTitle = section?.title || t('section_title_empty');
 	const sectionDescription =
@@ -248,6 +256,10 @@ const SEOSectionDetail = async (props: {
 	const updatedAt = formatSectionDate(section?.update_time, locale);
 	const createdAt = formatSectionDate(section?.create_time, locale);
 	const sectionCover = getSectionCoverSrc(section);
+	const creatorAvatar =
+		section?.creator?.avatar && section?.creator?.id
+			? replacePath(section.creator.avatar, section.creator.id)
+			: undefined;
 	const sectionSchema =
 		section && section.creator
 			? {
@@ -361,10 +373,12 @@ const SEOSectionDetail = async (props: {
 					<div className='space-y-5 sm:space-y-6'>
 						{sectionCover ? (
 							<div className='relative overflow-hidden rounded-[28px] border border-border/60 bg-background/50 shadow-[0_20px_50px_-34px_rgba(15,23,42,0.7)]'>
-								<img
+								<ImageWithFallback
 									src={sectionCover}
 									alt={sectionTitle}
 									className='h-[180px] w-full object-cover object-top sm:h-[220px] xl:h-[260px]'
+									fallbackClassName='h-[180px] w-full sm:h-[220px] xl:h-[260px]'
+									fallbackSvgClassName='max-w-[220px] p-6'
 								/>
 								<div className='absolute inset-0 bg-gradient-to-r from-black/28 via-black/6 to-black/22' />
 							</div>
@@ -396,12 +410,25 @@ const SEOSectionDetail = async (props: {
 								{section?.creator ? (
 									<Link
 										href={`/user/${section.creator.id}`}
-										className='inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-background/90'>
-										<Users className='size-4' />
-										<span>{t('section_creator')}</span>
-										<span className='font-medium text-foreground'>
-											{section.creator.nickname}
-										</span>
+										className='inline-flex items-center gap-3 rounded-full border border-border/50 bg-background/45 px-3 py-2 transition-colors hover:bg-background/70'>
+										<Avatar className='size-8'>
+											<AvatarImage
+												src={creatorAvatar}
+												alt={section.creator.nickname}
+												className='object-cover'
+											/>
+											<AvatarFallback className='font-semibold'>
+												{section.creator.nickname.slice(0, 1)}
+											</AvatarFallback>
+										</Avatar>
+										<div className='text-left'>
+											<div className='text-xs text-muted-foreground'>
+												{t('section_creator')}
+											</div>
+											<div className='text-sm text-foreground'>
+												{section.creator.nickname}
+											</div>
+										</div>
 									</Link>
 								) : null}
 								{section?.id ? (
@@ -445,7 +472,7 @@ const SEOSectionDetail = async (props: {
 				<div className='min-w-0 space-y-6'>
 					<Card className={surfaceCardClassName}>
 						<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
-							<div className='prose prose-zinc max-w-none overflow-x-hidden dark:prose-invert prose-headings:scroll-mt-24 prose-p:leading-8 [&_h1]:break-words [&_h2]:break-words [&_h3]:break-words [&_h4]:break-words [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words'>
+							<div className='max-w-none overflow-x-hidden'>
 								<TipTapMarkdownViewer
 									content={markdown ? markdown : t('section_no_md')}
 									ownerId={section?.creator?.id}
@@ -480,7 +507,11 @@ const SEOSectionDetail = async (props: {
 										</div>
 									</div>
 								)}
-								<SectionCommentsList section_id={section.id} />
+								<SectionCommentsList
+									section_id={section.id}
+									initialData={initialComments}
+									publicMode
+								/>
 							</CardContent>
 						</Card>
 					) : null}
@@ -527,6 +558,9 @@ const SEOSectionDetail = async (props: {
 													section_id={section.id}
 													showSearch
 													showStaleHint={false}
+													initialSection={section}
+													initialGraph={initialGraph}
+													publicMode
 												/>
 											) : null}
 										</div>
@@ -539,6 +573,9 @@ const SEOSectionDetail = async (props: {
 								<SectionGraphSEO
 									section_id={section.id}
 									showStaleHint={false}
+									initialSection={section}
+									initialGraph={initialGraph}
+									publicMode
 								/>
 							) : null}
 						</div>
@@ -557,6 +594,7 @@ const SEOSectionDetail = async (props: {
 									<SectionDocumentsList
 										section_id={section.id}
 										publicMode
+										initialData={initialDocuments}
 									/>
 								) : null}
 							</div>

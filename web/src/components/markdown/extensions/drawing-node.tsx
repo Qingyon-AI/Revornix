@@ -206,7 +206,7 @@ const DrawingNodeView = ({
 	return (
 		<NodeViewWrapper>
 			<BlockNodeShell
-				selected={selected}
+				selected={selected && isEditable}
 				contentClassName='p-3'>
 			<div className='mb-3 flex items-center justify-between gap-3'>
 				<div className='flex items-center gap-2 text-sm font-medium text-foreground'>

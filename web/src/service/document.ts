@@ -10,6 +10,75 @@ export type DocumentAiSummaryRequest = {
     model_id?: number
 }
 
+export type DocumentPublishRequest = {
+    document_id: number
+    status: boolean
+}
+
+export type DocumentPublishGetRequest = {
+    document_id: number
+}
+
+export type DocumentPublishGetResponse = {
+    status: boolean
+    create_time?: string | null
+    update_time?: string | null
+}
+
+export type MineDocumentAuthorityRequest = {
+    document_id: number
+}
+
+export type DocumentUserAuthorityResponse = {
+    document_id: number
+    user_id: number
+    authority: number
+    is_creator: boolean
+}
+
+export type DocumentUserRequest = {
+    document_id: number
+    start?: number
+    limit?: number
+    keyword?: string
+}
+
+export type DocumentUserAddRequest = {
+    document_id: number
+    user_id: number
+    authority: 0 | 1 | 2
+}
+
+export type DocumentUserModifyRequest = {
+    document_id: number
+    user_id: number
+    authority: 0 | 1 | 2
+}
+
+export type DocumentUserDeleteRequest = {
+    document_id: number
+    user_id: number
+}
+
+export type DocumentCollaboratorPublicInfo = {
+    id: number
+    avatar: string
+    nickname: string
+    slogan?: string | null
+    authority?: 0 | 1 | 2 | null
+    create_time: string
+    update_time?: string | null
+}
+
+export type InfiniteScrollPagination<T> = {
+    total: number
+    start?: number | null
+    limit: number
+    has_more: boolean
+    next_start?: number | null
+    elements: T[]
+}
+
 export type GenerateDocumentPodcastRequest = {
     document_id: number
     engine_id?: number
@@ -51,6 +120,48 @@ export const generateDocumentPodcast = async (data: GenerateDocumentPodcastReque
 
 export const generateDocumentGraph = async (data: DocumentGraphGenerateRequest): Promise<NormalResponse> => {
     return await request(documentApi.generateDocumentGraph, {
+        data
+    })
+}
+
+export const publishDocument = async (data: DocumentPublishRequest): Promise<NormalResponse> => {
+    return await request(documentApi.publishDocument, {
+        data
+    })
+}
+
+export const getDocumentPublish = async (data: DocumentPublishGetRequest): Promise<DocumentPublishGetResponse> => {
+    return await request(documentApi.getDocumentPublish, {
+        data
+    })
+}
+
+export const getMineDocumentAuthority = async (data: MineDocumentAuthorityRequest): Promise<DocumentUserAuthorityResponse> => {
+    return await request(documentApi.getMineDocumentAuthority, {
+        data
+    })
+}
+
+export const getDocumentUser = async (data: DocumentUserRequest): Promise<InfiniteScrollPagination<DocumentCollaboratorPublicInfo>> => {
+    return await request(documentApi.getDocumentUser, {
+        data
+    })
+}
+
+export const addDocumentUser = async (data: DocumentUserAddRequest): Promise<NormalResponse> => {
+    return await request(documentApi.addDocumentUser, {
+        data
+    })
+}
+
+export const modifyDocumentUser = async (data: DocumentUserModifyRequest): Promise<NormalResponse> => {
+    return await request(documentApi.modifyDocumentUser, {
+        data
+    })
+}
+
+export const deleteDocumentUser = async (data: DocumentUserDeleteRequest): Promise<NormalResponse> => {
+    return await request(documentApi.deleteDocumentUser, {
         data
     })
 }

@@ -12,7 +12,7 @@ const AiContinuationPlaceholderView = ({ node }: NodeViewProps) => {
 	const message =
 		typeof node.attrs.message === 'string' && node.attrs.message.trim()
 			? node.attrs.message
-			: 'AI 正在续写这一段，内容返回后会自动补到这里……';
+			: 'AI is writting...';
 
 	return (
 		<NodeViewWrapper

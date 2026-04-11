@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSectionDetail } from '@/service/section';
 import { getSectionCoverSrc } from '@/lib/section-cover';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 import SectionGraph from './section-graph';
 import SectionInfo from './section-info';
@@ -53,6 +54,46 @@ const SectionGraphCardSkeleton = ({
 				<Skeleton className='h-[300px] w-full rounded-[24px]' />
 			</div>
 		</Card>
+	);
+};
+
+const SectionDetailSkeleton = () => {
+	return (
+		<div className='mx-auto flex h-full w-full max-w-[880px] flex-col gap-6'>
+			<div className='flex flex-wrap gap-2'>
+				<Skeleton className='h-7 w-20 rounded-full' />
+				<Skeleton className='h-7 w-24 rounded-full' />
+				<Skeleton className='h-7 w-16 rounded-full' />
+			</div>
+			<div className='space-y-3'>
+				<Skeleton className='h-12 w-[70%] rounded-2xl sm:h-14' />
+				<Skeleton className='h-5 w-[42%] rounded-full' />
+			</div>
+			<Skeleton className='aspect-[16/7] w-full rounded-[28px]' />
+			<div className='space-y-5 rounded-[28px] border border-border/60 bg-background/35 p-5 sm:p-6'>
+				<div className='space-y-3'>
+					<Skeleton className='h-5 w-full rounded-full' />
+					<Skeleton className='h-5 w-full rounded-full' />
+					<Skeleton className='h-5 w-[88%] rounded-full' />
+					<Skeleton className='h-5 w-[74%] rounded-full' />
+				</div>
+				<div className='space-y-3 pt-2'>
+					<Skeleton className='h-8 w-40 rounded-2xl' />
+					<Skeleton className='h-5 w-full rounded-full' />
+					<Skeleton className='h-5 w-full rounded-full' />
+					<Skeleton className='h-5 w-[82%] rounded-full' />
+				</div>
+				<div className='space-y-3 pt-2'>
+					<Skeleton className='h-8 w-32 rounded-2xl' />
+					<Skeleton className='h-5 w-full rounded-full' />
+					<Skeleton className='h-5 w-[90%] rounded-full' />
+					<Skeleton className='h-5 w-[70%] rounded-full' />
+				</div>
+				<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
+					<Skeleton className='mx-auto h-4 w-56 rounded-full sm:w-72' />
+				</div>
+			</div>
+		</div>
 	);
 };
 
@@ -223,13 +264,16 @@ const SectionContainer = ({ id }: { id: number }) => {
 				<div ref={mainColumnRef} className='relative min-w-0'>
 					<div className={mainSurfaceClassName}>
 						<div className={mainContentClassName}>
+							{isPending && !section ? <SectionDetailSkeleton /> : null}
 							{sectionCoverSrc ? (
 								<div className='mx-auto mb-6 w-full max-w-[880px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
 									<div className='relative'>
-										<img
+										<ImageWithFallback
 											src={sectionCoverSrc}
 											alt={section?.title || t('section_title_empty')}
 											className='max-h-[320px] w-full object-cover sm:max-h-[380px]'
+											fallbackClassName='max-h-[320px] w-full sm:max-h-[380px]'
+											fallbackSvgClassName='max-w-[240px] p-6'
 										/>
 										<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
 									</div>

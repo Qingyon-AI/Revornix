@@ -124,19 +124,19 @@ func Load(envPath string) (Config, error) {
 	}
 
 	var err error
-	cfg.Services.API, err = getURLList("GATEWAY_API_UPSTREAMS", "http://127.0.0.1:8001")
+	cfg.Services.API, err = getURLList("GATEWAY_API_UPSTREAMS", "http://localhost:8001")
 	if err != nil {
 		return Config{}, err
 	}
-	cfg.Services.AuthAPI, err = getURLList("GATEWAY_AUTH_API_UPSTREAMS", "http://127.0.0.1:8001")
+	cfg.Services.AuthAPI, err = getURLList("GATEWAY_AUTH_API_UPSTREAMS", "http://localhost:8001")
 	if err != nil {
 		return Config{}, err
 	}
-	cfg.Services.HotNews, err = getURLList("GATEWAY_HOT_NEWS_UPSTREAMS", "http://127.0.0.1:6688")
+	cfg.Services.HotNews, err = getURLList("GATEWAY_HOT_NEWS_UPSTREAMS", "http://localhost:6688")
 	if err != nil {
 		return Config{}, err
 	}
-	cfg.Services.UnionPay, err = getURLList("GATEWAY_UNION_PAY_UPSTREAMS", "http://127.0.0.1:8080")
+	cfg.Services.UnionPay, err = getURLList("GATEWAY_UNION_PAY_UPSTREAMS", "http://localhost:8080")
 	if err != nil {
 		return Config{}, err
 	}

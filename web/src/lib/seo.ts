@@ -1,15 +1,20 @@
 import documentApi from '@/api/document';
+import graphApi from '@/api/graph';
 import sectionApi from '@/api/section';
 import userApi from '@/api/user';
 import {
 	DocumentDetailRequest,
 	DocumentDetailResponse,
+	GraphResponse,
+	InifiniteScrollPagnitionSectionCommentInfo,
 	InifiniteScrollPagnitionSectionInfo,
 	InifiniteScrollPagnitionSectionDocumentInfo,
 	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
+	SectionCommentSearchRequest,
 	SectionDocumentRequest,
+	SectionGraphRequest,
 	SectionInfo,
 	UserInfoRequest,
 	UserPublicInfo,
@@ -84,6 +89,22 @@ export const fetchPublicSectionDocuments = async (
 	});
 };
 
+export const fetchPublicSectionComments = async (
+	data: SectionCommentSearchRequest,
+): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+	return await serverRequest(sectionApi.searchComment, {
+		data,
+	});
+};
+
+export const fetchPublicSectionGraph = async (
+	data: SectionGraphRequest,
+): Promise<GraphResponse> => {
+	return await serverRequest(graphApi.searchSectionGraph, {
+		data,
+	});
+};
+
 export const fetchRemoteTextContent = async (
 	url: string | null | undefined,
 ): Promise<string | null> => {
@@ -99,11 +120,17 @@ export const fetchRemoteTextContent = async (
 	}
 
 	const contentType = response.headers.get('Content-Type') || '';
-	if (!contentType.includes('text/')) {
+	if (
+		contentType.includes('application/json') ||
+		contentType.includes('image/') ||
+		contentType.includes('audio/') ||
+		contentType.includes('video/')
+	) {
 		return null;
 	}
 
-	return await response.text();
+	const text = await response.text();
+	return text.length > 0 ? text : null;
 };
 
 export const formatSeoDate = (

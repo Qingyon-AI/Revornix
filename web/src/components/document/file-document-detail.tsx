@@ -26,6 +26,7 @@ import { useRef } from 'react';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
+import useDocumentMarkdownEditable from '@/hooks/use-document-markdown-editable';
 
 const FileDocumentDetail = ({
 	id,
@@ -53,6 +54,10 @@ const FileDocumentDetail = ({
 	} = useQuery({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
+	});
+	const { canEditMarkdown } = useDocumentMarkdownEditable({
+		documentId: id,
+		ownerId: document?.creator.id,
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
@@ -325,8 +330,9 @@ const FileDocumentDetail = ({
 							content={markdown}
 							ownerId={document?.creator.id}
 							onSave={handleSaveMarkdown}
+							editable={canEditMarkdown}
 							viewerFooter={
-								<div className='not-prose mt-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+								<div className='mt-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 									{t('document_ai_tips')}
 								</div>
 							}

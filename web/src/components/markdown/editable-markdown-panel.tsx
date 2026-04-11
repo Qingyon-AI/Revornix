@@ -27,7 +27,7 @@ type EditableMarkdownPanelProps = {
 };
 
 const viewerClassName =
-	'prose prose-zinc mx-auto max-w-[880px] overflow-x-hidden pb-6 dark:prose-invert prose-headings:scroll-mt-24 prose-headings:break-words prose-h1:text-3xl prose-h1:font-semibold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-a:text-primary prose-strong:text-foreground prose-img:rounded-2xl sm:pb-14 [&_li]:break-words [&_p]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_table]:w-full [&_table]:table-fixed [&_td]:break-words [&_th]:break-words';
+	'mx-auto max-w-[880px] overflow-x-hidden pb-6 sm:pb-14';
 
 const EditableMarkdownPanel = ({
 	content,
@@ -163,7 +163,7 @@ const EditableMarkdownPanel = ({
 							enableImageUpload={enableImageUpload}
 							enableDrawing={enableDrawing}
 							placeholder={t('markdown_edit_placeholder')}
-							className='h-[calc(100dvh-18rem)] min-h-[28rem]'
+							className='min-h-[32rem]'
 						/>
 					</div>
 				</div>

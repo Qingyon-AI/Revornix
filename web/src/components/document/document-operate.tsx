@@ -1,13 +1,22 @@
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import {
 	AudioLines,
 	FolderCheck,
@@ -74,6 +83,7 @@ import DocumentGraph from './document-graph';
 import DocumentPodcast from './document-podcast';
 import DocumentAudio from './document-audio';
 import DocumentOperateAI from './document-operate-ai';
+import DocumentOperateShare from './document-operate-share';
 import {
 	DocumentMdConvertStatus,
 	DocumentTranscribeStatus,
@@ -413,10 +423,12 @@ const DocumentOperate = ({
 
 	const actionButtonClassName =
 		'h-11 w-full justify-center rounded-[20px] border border-border/50 bg-background/40 px-3.5 text-center text-xs font-medium text-foreground shadow-none transition-colors hover:bg-background/80 sm:text-sm';
+	const desktopIconButtonClassName =
+		'h-11 w-full justify-center rounded-[20px] border border-border/50 bg-background/40 px-0 text-center text-xs font-medium text-foreground shadow-none transition-colors hover:bg-background/80 [&_svg]:size-4.5';
 	const mobileActionButtonClassName =
 		'h-14 w-full justify-start gap-3 rounded-[20px] border border-border/70 bg-background/70 px-4 text-left text-sm font-medium text-foreground shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:bg-background/90 dark:bg-background/45 dark:hover:bg-background/60 [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground';
 	const desktopDockClassName =
-		'grid w-full grid-cols-2 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65 sm:grid-cols-3 xl:grid-cols-7';
+		'grid w-full gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65';
 	const closeMobileMenu = () => {
 		setShowMobileMenu(false);
 	};
@@ -458,6 +470,7 @@ const DocumentOperate = ({
 	const renderOriginAction = (
 		buttonClassName: string,
 		onClick?: () => void,
+		iconOnly = false,
 	) => {
 		if (data?.category === DocumentCategory.WEBSITE && data.website_info) {
 			return (
@@ -468,9 +481,7 @@ const DocumentOperate = ({
 						target='_blank'
 						onClick={onClick}>
 						<LinkIcon />
-						<span className='truncate'>
-							{t('website_document_go_to_origin')}
-						</span>
+						{iconOnly ? <span className='sr-only'>{t('website_document_go_to_origin')}</span> : <span className='truncate'>{t('website_document_go_to_origin')}</span>}
 					</Link>
 				</Button>
 			);
@@ -485,7 +496,7 @@ const DocumentOperate = ({
 						href={data.file_info?.file_name ?? '#'}
 						onClick={onClick}>
 						<LinkIcon />
-						<span className='truncate'>{t('file_document_go_to_origin')}</span>
+						{iconOnly ? <span className='sr-only'>{t('file_document_go_to_origin')}</span> : <span className='truncate'>{t('file_document_go_to_origin')}</span>}
 					</Link>
 				</Button>
 			);
@@ -497,6 +508,7 @@ const DocumentOperate = ({
 	const renderStarAction = (
 		buttonClassName: string,
 		onClick?: () => void,
+		iconOnly = false,
 	) => {
 		if (data?.is_star) {
 			return (
@@ -509,7 +521,7 @@ const DocumentOperate = ({
 					}}
 					className={buttonClassName}>
 					<StarOff />
-					<span className='truncate'>{t('document_star_cancel')}</span>
+					{iconOnly ? <span className='sr-only'>{t('document_star_cancel')}</span> : <span className='truncate'>{t('document_star_cancel')}</span>}
 				</Button>
 			);
 		}
@@ -524,7 +536,7 @@ const DocumentOperate = ({
 				}}
 				className={buttonClassName}>
 				<Star />
-				<span className='truncate'>{t('document_star')}</span>
+				{iconOnly ? <span className='sr-only'>{t('document_star')}</span> : <span className='truncate'>{t('document_star')}</span>}
 			</Button>
 		);
 	};
@@ -532,6 +544,7 @@ const DocumentOperate = ({
 	const renderReadAction = (
 		buttonClassName: string,
 		onClick?: () => void,
+		iconOnly = false,
 	) => {
 		if (data?.is_read) {
 			return (
@@ -544,7 +557,7 @@ const DocumentOperate = ({
 					}}
 					className={buttonClassName}>
 					<FolderOutput />
-					<span className='truncate'>{t('document_unread')}</span>
+					{iconOnly ? <span className='sr-only'>{t('document_unread')}</span> : <span className='truncate'>{t('document_unread')}</span>}
 				</Button>
 			);
 		}
@@ -559,7 +572,7 @@ const DocumentOperate = ({
 				}}
 				className={buttonClassName}>
 				<FolderCheck />
-				<span className='truncate'>{t('document_read')}</span>
+				{iconOnly ? <span className='sr-only'>{t('document_read')}</span> : <span className='truncate'>{t('document_read')}</span>}
 			</Button>
 		);
 	};
@@ -567,6 +580,7 @@ const DocumentOperate = ({
 	const renderNotesAction = (
 		buttonClassName: string,
 		onTriggerClick?: () => void,
+		iconOnly = false,
 	) => {
 		return (
 			<Sheet>
@@ -577,7 +591,7 @@ const DocumentOperate = ({
 						className={buttonClassName}
 						onClick={onTriggerClick}>
 						<NotebookPen />
-						<span className='truncate'>{t('document_notes_title')}</span>
+						{iconOnly ? <span className='sr-only'>{t('document_notes_title')}</span> : <span className='truncate'>{t('document_notes_title')}</span>}
 					</Button>
 				</SheetTrigger>
 				<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
@@ -598,6 +612,7 @@ const DocumentOperate = ({
 	const renderAiAction = (
 		buttonClassName: string,
 		onTriggerClick?: () => void,
+		iconOnly = false,
 	) => {
 		return (
 			<DocumentOperateAI
@@ -606,6 +621,26 @@ const DocumentOperate = ({
 				disabled={isDocumentAiDisabled}
 				className={buttonClassName}
 				onTriggerClick={onTriggerClick}
+				iconOnly={iconOnly}
+			/>
+		);
+	};
+
+	const renderShareAction = (
+		buttonClassName: string,
+		onTriggerClick?: () => void,
+		iconOnly = false,
+	) => {
+		if (data?.creator.id !== mainUserInfo?.id) {
+			return null;
+		}
+
+		return (
+			<DocumentOperateShare
+				document_id={id}
+				className={buttonClassName}
+				onTriggerClick={onTriggerClick}
+				iconOnly={iconOnly}
 			/>
 		);
 	};
@@ -613,55 +648,54 @@ const DocumentOperate = ({
 	const renderDeleteAction = (
 		buttonClassName: string,
 		onTriggerClick?: () => void,
+		iconOnly = false,
 	) => {
 		if (data?.creator.id !== mainUserInfo?.id) {
 			return null;
 		}
 
 		return (
-			<Dialog
+			<AlertDialog
 				open={showDeleteDocumentDialog}
 				onOpenChange={setShowDeleteDocumentDialog}>
-				<DialogTrigger asChild>
+				<AlertDialogTrigger asChild>
 					<Button
 						title={t('document_delete')}
 						variant='ghost'
 						className={buttonClassName}
 						onClick={onTriggerClick}>
 						<Trash />
-						<span className='truncate'>{t('document_delete')}</span>
+						{iconOnly ? <span className='sr-only'>{t('document_delete')}</span> : <span className='truncate'>{t('document_delete')}</span>}
 					</Button>
-				</DialogTrigger>
-				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
-					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-						<DialogTitle>{t('document_delete')}</DialogTitle>
-						<DialogDescription>
+				</AlertDialogTrigger>
+				<AlertDialogContent className='rounded-[28px] sm:max-w-md'>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t('document_delete')}</AlertDialogTitle>
+						<AlertDialogDescription>
 							{t('document_delete_alert_description')}
-						</DialogDescription>
-					</DialogHeader>
-					<div className='min-h-0 flex-1 px-6 py-5' />
-					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
-						<DialogClose asChild>
-							<Button variant='outline'>{t('document_delete_cancel')}</Button>
-						</DialogClose>
-						<Button
-							variant='destructive'
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t('document_delete_cancel')}</AlertDialogCancel>
+						<AlertDialogAction
+							className='bg-destructive text-white hover:bg-destructive/90'
 							onClick={() => mutateDelete.mutate()}
 							disabled={mutateDelete.isPending}>
 							{t('document_delete_confirm')}
 							{mutateDelete.isPending ? (
 								<Loader2 className='size-4 animate-spin' />
 							) : null}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		);
 	};
 
 	const renderConfigurationAction = (
 		buttonClassName: string,
 		onTriggerClick?: () => void,
+		iconOnly = false,
 	) => {
 		if (data?.creator.id !== mainUserInfo?.id) {
 			return null;
@@ -672,6 +706,7 @@ const DocumentOperate = ({
 				document_id={id}
 				className={buttonClassName}
 				onTriggerClick={onTriggerClick}
+				iconOnly={iconOnly}
 			/>
 		);
 	};
@@ -695,6 +730,17 @@ const DocumentOperate = ({
 			</Button>
 		);
 	};
+
+	const desktopActions = [
+		renderOriginAction(desktopIconButtonClassName, undefined, true),
+		renderShareAction(desktopIconButtonClassName, undefined, true),
+		renderAiAction(desktopIconButtonClassName, undefined, true),
+		renderStarAction(desktopIconButtonClassName, undefined, true),
+		renderReadAction(desktopIconButtonClassName, undefined, true),
+		renderNotesAction(desktopIconButtonClassName, undefined, true),
+		renderDeleteAction(desktopIconButtonClassName, undefined, true),
+		renderConfigurationAction(desktopIconButtonClassName, undefined, true),
+	].filter(Boolean);
 
 	return (
 		<>
@@ -756,6 +802,10 @@ const DocumentOperate = ({
 											</p>
 											<div className='grid grid-cols-2 gap-2.5'>
 												{renderOriginAction(
+													mobileActionButtonClassName,
+													closeMobileMenu,
+												)}
+												{renderShareAction(
 													mobileActionButtonClassName,
 													closeMobileMenu,
 												)}
@@ -821,14 +871,12 @@ const DocumentOperate = ({
 							</Sheet>
 						</>
 					) : (
-						<div className={cn(desktopDockClassName, className)}>
-							{renderOriginAction(actionButtonClassName)}
-							{renderAiAction(actionButtonClassName)}
-							{renderStarAction(actionButtonClassName)}
-							{renderReadAction(actionButtonClassName)}
-							{renderNotesAction(actionButtonClassName)}
-							{renderDeleteAction(actionButtonClassName)}
-							{renderConfigurationAction(actionButtonClassName)}
+						<div
+							className={cn(desktopDockClassName, className)}
+							style={{
+								gridTemplateColumns: `repeat(${Math.max(desktopActions.length, 1)}, minmax(0, 1fr))`,
+							}}>
+							{desktopActions}
 						</div>
 					)}
 				</>

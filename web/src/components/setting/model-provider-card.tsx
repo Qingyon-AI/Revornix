@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -28,6 +27,17 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Globe2Icon, Loader2, PlusCircle, XCircleIcon } from 'lucide-react';
 import { ModelProvider } from '@/generated';
 import { Separator } from '../ui/separator';
@@ -126,10 +136,10 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 								</Badge>
 							)}
 						</div>
-						<Dialog
+						<AlertDialog
 							open={showDeleteModelProviderDialog}
 							onOpenChange={setShowDeleteModelProviderDialog}>
-							<DialogTrigger asChild>
+							<AlertDialogTrigger asChild>
 								<Button
 									size={'icon'}
 									type='button'
@@ -137,18 +147,18 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 									className='ml-auto'>
 									<XCircleIcon className='size-4' />
 								</Button>
-							</DialogTrigger>
-							<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
-								<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-									<DialogTitle>{t('warning')}</DialogTitle>
-									<DialogDescription>
+							</AlertDialogTrigger>
+							<AlertDialogContent className='rounded-[28px] sm:max-w-md'>
+								<AlertDialogHeader>
+									<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
+									<AlertDialogDescription>
 										{t('setting_model_provider_delete_warning_description')}
-									</DialogDescription>
-								</DialogHeader>
-								<div className='min-h-0 flex-1 px-6 py-5' />
-								<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
-									<Button
-										variant='destructive'
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+									<AlertDialogAction
+										className='bg-destructive text-white hover:bg-destructive/90'
 										type='button'
 										disabled={mutateDeleteModelProvider.isPending}
 										onClick={() => {
@@ -160,13 +170,10 @@ const ModelProviderCard = ({ modelProvider }: ModelCardProps) => {
 										{mutateDeleteModelProvider.isPending && (
 											<Loader2 className='h-4 w-4 animate-spin' />
 										)}
-									</Button>
-									<DialogClose asChild>
-										<Button variant='default'>{t('cancel')}</Button>
-									</DialogClose>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 					</CardTitle>
 					<CardDescription className='break-all flex-1'>
 						{modelProvider.description}

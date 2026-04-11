@@ -4,6 +4,7 @@ import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
 import { request } from '@/lib/request';
+import { publicRequest } from '@/lib/request-public';
 
 export type RetrySectionDocumentRequest = {
     section_id: number
@@ -150,6 +151,12 @@ export const getSectionDetail = async (data: SectionDetailRequest): Promise<Sect
     })
 }
 
+export const getPublicSectionDetail = async (data: SectionDetailRequest): Promise<SectionDetailWithPpt> => {
+    return await publicRequest(sectionApi.getSectionDetail, {
+        data
+    })
+}
+
 export const getSEOSectionDetail = async (data: SectionSeoDetailRequest): Promise<SectionDetailWithPpt> => {
     return await request(sectionApi.getSEOSectionDetail, {
         data
@@ -170,6 +177,12 @@ export const deleteSectionComment = async (data: SectionCommentDeleteRequest): P
 
 export const searchSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
     return await request(sectionApi.searchComment, {
+        data
+    })
+}
+
+export const searchPublicSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+    return await publicRequest(sectionApi.searchComment, {
         data
     })
 }
@@ -224,6 +237,12 @@ export const getSectionPublish = async (data: SectionPublishGetRequest): Promise
 
 export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
     return await request(sectionApi.searchSectionDocuments, {
+        data
+    })
+}
+
+export const searchPublicSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
+    return await publicRequest(sectionApi.searchSectionDocuments, {
         data
     })
 }

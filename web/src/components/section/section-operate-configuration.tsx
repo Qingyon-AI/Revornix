@@ -105,10 +105,12 @@ const SectionOperateConfiguration = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 
@@ -249,11 +251,12 @@ const SectionOperateConfiguration = ({
 			}}>
 			<SheetTrigger asChild>
 				<Button
+					title={t('section_configuration_label')}
 					className={cn('text-xs', className)}
 					variant={'ghost'}
 					onClick={onTriggerClick}>
 					<PencilIcon />
-					{t('section_configuration_label')}
+					{iconOnly ? <span className='sr-only'>{t('section_configuration_label')}</span> : t('section_configuration_label')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>

@@ -56,11 +56,11 @@ const MathInlineView = ({
 		<NodeViewWrapper as='span' className='mx-1 inline-block max-w-full align-middle'>
 			<Popover open={isEditable ? isEditing : false} onOpenChange={setIsEditing}>
 				<PopoverTrigger asChild>
-					<button
-						type='button'
-						className={`inline-flex max-w-full items-center rounded-md border px-2 py-[0.12rem] align-baseline leading-none transition-all ${
-							selected ? 'ring-2 ring-ring/30' : ''
-						} ${
+						<button
+							type='button'
+							className={`inline-flex max-w-full items-center rounded-md border px-2 py-[0.12rem] align-baseline leading-none transition-all ${
+								selected && isEditable ? 'ring-2 ring-ring/30' : ''
+							} ${
 							renderError
 								? 'border-rose-300 bg-rose-50/90 text-rose-700 dark:border-rose-500/30 dark:bg-rose-950/20 dark:text-rose-200'
 								: 'border-sky-200/70 bg-sky-50/60 text-slate-900 dark:border-sky-500/30 dark:bg-sky-950/20 dark:text-slate-50'

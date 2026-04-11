@@ -21,15 +21,16 @@ import { Button } from '../ui/button';
 import { Loader2, XCircleIcon } from 'lucide-react';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '../ui/dialog';
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '../ui/alert-dialog';
 import { useState } from 'react';
 import {
 	filterInfiniteQueryElements,
@@ -165,36 +166,33 @@ const SectionMemberItem = ({
 						</SelectGroup>
 					</SelectContent>
 				</Select>
-				<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-					<DialogTrigger asChild>
+				<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+					<AlertDialogTrigger asChild>
 						<Button size={'icon'} variant={'secondary'}>
 							<XCircleIcon />
 						</Button>
-					</DialogTrigger>
-					<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
-						<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-							<DialogTitle>{t('warning')}</DialogTitle>
-							<DialogDescription>
+					</AlertDialogTrigger>
+					<AlertDialogContent className='rounded-[28px] sm:max-w-md'>
+						<AlertDialogHeader>
+							<AlertDialogTitle>{t('warning')}</AlertDialogTitle>
+							<AlertDialogDescription>
 								{t('section_participants_delete_description')}
-							</DialogDescription>
-						</DialogHeader>
-						<div className='min-h-0 flex-1 px-6 py-5' />
-						<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
-							<Button
-								variant='destructive'
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+							<AlertDialogAction
+								className='bg-destructive text-white hover:bg-destructive/90'
 								onClick={handleDeleteSectionUser}
 								disabled={mutateDeleteSectionUser.isPending}>
 								{t('confirm')}
 								{mutateDeleteSectionUser.isPending && (
 									<Loader2 className='animate-spin' />
 								)}
-							</Button>
-							<DialogClose asChild>
-								<Button variant='default'>{t('cancel')}</Button>
-							</DialogClose>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</div>
 		</div>
 	);

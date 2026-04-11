@@ -151,6 +151,19 @@ def create_user_document(
     db.flush()
     return db_user_document
 
+def create_publish_document(
+    db: Session,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    db_publish_document = models.document.PublishDocument(
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(db_publish_document)
+    db.flush()
+    return db_publish_document
+
 def create_document_labels(
     db: Session,
     document_id: int,
@@ -198,6 +211,45 @@ def get_user_document_by_user_id_and_document_id(
     )
     return query.one_or_none()
 
+def get_user_documents_by_document_ids_and_user_id(
+    db: Session,
+    document_ids: list[int],
+    user_id: int,
+):
+    if not document_ids:
+        return []
+    query = db.query(models.document.UserDocument)
+    query = query.filter(
+        models.document.UserDocument.document_id.in_(document_ids),
+        models.document.UserDocument.user_id == user_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
+    return query.all()
+
+def get_publish_document_by_document_id(
+    db: Session,
+    document_id: int,
+):
+    query = db.query(models.document.PublishDocument)
+    query = query.filter(
+        models.document.PublishDocument.document_id == document_id,
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    return query.one_or_none()
+
+def get_publish_documents_by_document_ids(
+    db: Session,
+    document_ids: list[int],
+):
+    if not document_ids:
+        return []
+    query = db.query(models.document.PublishDocument)
+    query = query.filter(
+        models.document.PublishDocument.document_id.in_(document_ids),
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    return query.all()
+
 def get_website_document_by_user_id_and_url(
     db: Session,
     user_id: int,
@@ -228,6 +280,90 @@ def get_sections_by_document_id(
                          models.section.Section.delete_at.is_(None))
     return query.all()
 
+def search_users_and_document_users_by_document_id(
+    db: Session,
+    document_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+):
+    query = db.query(models.user.User, models.document.UserDocument)
+    query = query.join(
+        models.document.UserDocument,
+        models.document.UserDocument.user_id == models.user.User.id,
+    )
+    query = query.join(
+        models.document.Document,
+        models.document.Document.id == models.document.UserDocument.document_id,
+    )
+    query = query.filter(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
+        models.document.Document.delete_at.is_(None),
+        models.user.User.id != models.document.Document.creator_id,
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    query = query.order_by(models.document.UserDocument.id.desc())
+    if start is not None:
+        query = query.filter(models.document.UserDocument.id <= start)
+    query = query.limit(limit)
+    return query.all()
+
+def search_next_user_and_document_user_by_document_id(
+    db: Session,
+    document_id: int,
+    user_document: models.document.UserDocument,
+    keyword: str | None = None,
+):
+    query = db.query(models.user.User, models.document.UserDocument)
+    query = query.join(
+        models.document.UserDocument,
+        models.document.UserDocument.user_id == models.user.User.id,
+    )
+    query = query.join(
+        models.document.Document,
+        models.document.Document.id == models.document.UserDocument.document_id,
+    )
+    query = query.filter(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
+        models.document.Document.delete_at.is_(None),
+        models.user.User.id != models.document.Document.creator_id,
+        models.document.UserDocument.id < user_document.id,
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    query = query.order_by(models.document.UserDocument.id.desc())
+    return query.first()
+
+def count_users_and_document_users_by_document_id(
+    db: Session,
+    document_id: int,
+    keyword: str | None = None,
+):
+    query = db.query(models.document.UserDocument.id)
+    query = query.join(
+        models.user.User,
+        models.document.UserDocument.user_id == models.user.User.id,
+    )
+    query = query.join(
+        models.document.Document,
+        models.document.Document.id == models.document.UserDocument.document_id,
+    )
+    query = query.filter(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
+        models.document.Document.delete_at.is_(None),
+        models.user.User.id != models.document.Document.creator_id,
+    )
+    if keyword is not None and len(keyword) > 0:
+        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+    return query.count()
+
 def get_document_summary_by_user_id(
     db: Session,
     user_id: int,
@@ -256,13 +392,20 @@ def search_section_documents(
     start: int | None = None,
     limit: int = 10,
     keyword: str | None = None,
-    desc: bool = True
+    desc: bool = True,
+    published_only: bool = False,
 ):
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
+    if published_only:
+        query = query.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if desc:
@@ -283,13 +426,20 @@ def search_next_section_document(
     section_id: int,
     document: models.document.Document,
     keyword: str | None = None,
-    desc: bool = True
+    desc: bool = True,
+    published_only: bool = False,
 ):
     query = db.query(models.document.Document)
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
+    if published_only:
+        query = query.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     if desc:
@@ -303,13 +453,20 @@ def search_next_section_document(
 def count_section_documents(
     db: Session,
     section_id: int,
-    keyword: str | None = None
+    keyword: str | None = None,
+    published_only: bool = False,
 ):
     query = db.query(func.count(models.document.Document.id))
     query = query.join(models.section.SectionDocument, models.document.Document.id == models.section.SectionDocument.document_id)
     query = query.filter(models.section.SectionDocument.section_id == section_id,
                          models.section.SectionDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
+    if published_only:
+        query = query.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     return query.count()
@@ -1099,6 +1256,34 @@ def delete_labels_by_label_ids(
                          models.document.Label.user_id == user_id,
                          models.document.Label.delete_at.is_(None))
     query = query.update({models.document.Label.delete_at: now}, synchronize_session=False)
+    db.flush()
+
+def delete_published_document_by_document_id(
+    db: Session,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.PublishDocument)
+    query = query.filter(
+        models.document.PublishDocument.document_id == document_id,
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    query.update({models.document.PublishDocument.delete_at: now}, synchronize_session=False)
+    db.flush()
+
+def delete_user_document_by_document_id_and_user_id(
+    db: Session,
+    document_id: int,
+    user_id: int,
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(models.document.UserDocument)
+    query = query.filter(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.user_id == user_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
+    query.update({models.document.UserDocument.delete_at: now}, synchronize_session=False)
     db.flush()
 
 def delete_document_labels_by_document_ids(

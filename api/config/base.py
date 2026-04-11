@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 WEB_BASE_URL = os.environ.get('WEB_BASE_URL')
-GATEWAY_INTERNAL_URL = os.environ.get('GATEWAY_INTERNAL_URL', 'http://127.0.0.1:8787')
+GATEWAY_INTERNAL_URL = os.environ.get('GATEWAY_INTERNAL_URL', 'http://localhost:8787')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

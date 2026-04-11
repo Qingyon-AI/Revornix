@@ -9,10 +9,12 @@ import {
 
 import { replacePath } from '@/lib/utils';
 import BlockNodeShell from './block-node-shell';
+import ImageWithFallback from '@/components/ui/image-with-fallback';
 
 const ImageNodeView = ({
 	node,
 	extension,
+	editor,
 	selected,
 }: NodeViewProps) => {
 	const src = typeof node.attrs.src === 'string' ? node.attrs.src : '';
@@ -23,14 +25,16 @@ const ImageNodeView = ({
 	return (
 		<NodeViewWrapper>
 			<BlockNodeShell
-				selected={selected}
-				className='mt-0 mb-2 w-fit max-w-full'
-				contentClassName='inline-block max-w-full overflow-hidden bg-background'>
+				selected={selected && editor.isEditable}
+				className='w-full max-w-full'
+				contentClassName='max-w-full overflow-hidden bg-background'>
 				{resolvedSrc ? (
-					<img
+					<ImageWithFallback
 						src={resolvedSrc}
 						alt={alt}
 						className='!my-0 block h-auto max-h-[32rem] w-full max-w-full rounded-2xl object-contain shadow-sm'
+						fallbackClassName='min-h-40 rounded-2xl border border-dashed border-border/70'
+						fallbackSvgClassName='max-w-[240px] p-5'
 					/>
 				) : (
 					<div className='flex min-h-40 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/30 px-4 text-sm text-muted-foreground'>
@@ -89,7 +93,7 @@ const ImageNode = Node.create<{
 			mergeAttributes(HTMLAttributes, {
 				src: resolvedSrc,
 				class:
-					'my-4 max-h-[32rem] w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-sm',
+					'max-h-[32rem] w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-sm',
 			}),
 		];
 	},

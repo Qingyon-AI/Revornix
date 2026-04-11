@@ -18,10 +18,12 @@ const SectionOperateSubscribe = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -86,6 +88,7 @@ const SectionOperateSubscribe = ({
 
 	return (
 		<Button
+			title={section?.is_subscribed ? t('section_unsubscribe') : mainUserInfo ? t('section_subscribe') : t('seo_nav_login_in')}
 			className={cn('text-xs', className)}
 			variant={'ghost'}
 			disabled={subscribing}
@@ -96,12 +99,12 @@ const SectionOperateSubscribe = ({
 			{section?.is_subscribed ? (
 				<>
 					<BellOffIcon />
-					{t('section_unsubscribe')}
+					{iconOnly ? <span className='sr-only'>{t('section_unsubscribe')}</span> : t('section_unsubscribe')}
 				</>
 			) : (
 				<>
 					<BellPlusIcon />
-					{mainUserInfo ? t('section_subscribe') : t('seo_nav_login_in')}
+					{iconOnly ? <span className='sr-only'>{mainUserInfo ? t('section_subscribe') : t('seo_nav_login_in')}</span> : mainUserInfo ? t('section_subscribe') : t('seo_nav_login_in')}
 				</>
 			)}
 			{subscribing && <Loader2 className='animate-spin' />}

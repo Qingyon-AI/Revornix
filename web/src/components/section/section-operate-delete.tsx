@@ -4,15 +4,15 @@ import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '../ui/dialog';
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '../ui/alert-dialog';
 import { Loader2, TrashIcon } from 'lucide-react';
 import { deleteSection } from '@/service/section';
 import { useRouter } from 'nextjs-toploader/app';
@@ -23,10 +23,12 @@ const SectionOperateDelete = ({
 	section_id,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -58,42 +60,40 @@ const SectionOperateDelete = ({
 		router.back();
 	};
 	return (
-		<>
-			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-				<DialogTrigger asChild>
-					<Button
-						variant={'ghost'}
-						className={cn('text-xs', className)}
-						onClick={onTriggerClick}>
-						<TrashIcon />
-						{t('section_delete')}
-					</Button>
-				</DialogTrigger>
-				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-md'>
-					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-						<DialogTitle>{t('section_delete_alert_title')}</DialogTitle>
-						<DialogDescription>
-							{t('section_delete_alert_detail')}
-						</DialogDescription>
-					</DialogHeader>
-					<div className='min-h-0 flex-1 px-6 py-5' />
-					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
-						<DialogClose asChild>
-							<Button variant={'secondary'}>
-								{t('section_delete_cancel')}
-							</Button>
-						</DialogClose>
-						<Button
-							variant={'destructive'}
-							onClick={handleDeleteSection}
-							disabled={deleting}>
-							{t('section_delete_confirm')}
-							{deleting && <Loader2 className='animate-spin' />}
+		<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+			<AlertDialogTrigger asChild>
+				<Button
+					title={t('section_delete')}
+					variant={'ghost'}
+					className={cn('text-xs', className)}
+					onClick={onTriggerClick}>
+					<TrashIcon />
+					{iconOnly ? <span className='sr-only'>{t('section_delete')}</span> : t('section_delete')}
+				</Button>
+			</AlertDialogTrigger>
+			<AlertDialogContent className='rounded-[28px] sm:max-w-md'>
+				<AlertDialogHeader>
+					<AlertDialogTitle>{t('section_delete_alert_title')}</AlertDialogTitle>
+					<AlertDialogDescription>
+						{t('section_delete_alert_detail')}
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel asChild>
+						<Button variant={'secondary'}>
+							{t('section_delete_cancel')}
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</>
+					</AlertDialogCancel>
+					<Button
+						variant={'destructive'}
+						onClick={handleDeleteSection}
+						disabled={deleting}>
+						{t('section_delete_confirm')}
+						{deleting && <Loader2 className='animate-spin' />}
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 };
 

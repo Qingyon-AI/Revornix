@@ -280,7 +280,7 @@ const TableNodeView = ({
 	return (
 		<NodeViewWrapper>
 			<BlockNodeShell
-				selected={selected}
+				selected={selected && isEditable}
 				contentClassName='p-3'>
 			<div className='mb-3 flex items-center justify-between gap-3'>
 				<div className='flex items-center gap-2 text-sm font-medium text-foreground'>
@@ -339,7 +339,7 @@ const TableNodeView = ({
 				)}
 			</div>
 			<div className='overflow-x-auto rounded-xl border border-border/70 bg-background'>
-				<table className='w-full min-w-[520px] border-collapse'>
+				<table className='my-0 w-full min-w-[520px] border-collapse'>
 					<tbody>
 						{isEditable && (
 							<tr className='border-b border-border/60 bg-muted/15'>

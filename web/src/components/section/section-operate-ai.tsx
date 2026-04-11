@@ -110,12 +110,14 @@ const SectionOperateAI = ({
 	disabled,
 	className,
 	onTriggerClick,
+	iconOnly = false,
 }: {
 	section_id: number;
 	section_title?: string;
 	disabled?: boolean;
 	className?: string;
 	onTriggerClick?: () => void;
+	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -488,7 +490,7 @@ const SectionOperateAI = ({
 					disabled={disabled}
 					onClick={onTriggerClick}>
 					<Bot />
-					{t('section_ai_ask')}
+					{iconOnly ? <span className='sr-only'>{t('section_ai_ask')}</span> : t('section_ai_ask')}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
