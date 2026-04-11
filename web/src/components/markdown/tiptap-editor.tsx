@@ -1464,10 +1464,10 @@ const TipTapEditor = ({
 							{isGeneratingIllustration ? (
 								<>
 									<Loader2 className='mr-2 size-4 animate-spin' />
-									生成中
+									{t('editor_illustration_generating')}
 								</>
 							) : (
-								'生成插图'
+								t('editor_illustration_generate')
 							)}
 						</Button>
 					</DialogFooter>
