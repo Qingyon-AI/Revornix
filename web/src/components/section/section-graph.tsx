@@ -77,19 +77,17 @@ const SectionGraph = ({
 			})) ?? [],
 		[data?.edges]
 	);
+	const graphErrorMessage = isSectionDetailError
+		? sectionDetailError.message
+		: isError
+			? error.message
+			: null;
+	const hasGraphError = Boolean(graphErrorMessage);
 
 	return (
 		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
 			{!section && !isSectionDetailError ? (
 				<Skeleton className='h-full w-full rounded-2xl' />
-			) : null}
-			{isSectionDetailError ? (
-				<div className='text-sm text-muted-foreground'>
-					Error: {sectionDetailError.message}
-				</div>
-			) : null}
-			{isError ? (
-				<div className='text-sm text-muted-foreground'>Error: {error.message}</div>
 			) : null}
 			{isLoading && !nodes.length ? <Skeleton className='h-full w-full rounded-2xl' /> : null}
 			{nodes.length > 0 ? (
@@ -107,6 +105,16 @@ const SectionGraph = ({
 						showSearch={showSearch}
 					/>
 				</>
+			) : null}
+			{!nodes.length && hasGraphError ? (
+				<GraphStatePanel
+					icon={AlertCircle}
+					badge={t('document_graph_status_failed')}
+					title={t('section_graph_failed')}
+					description={graphErrorMessage ?? t('section_graph_description')}
+					iconClassName='text-destructive'
+					tone='danger'
+				/>
 			) : null}
 			{!nodes.length && isSectionProcessing ? (
 				<GraphStatePanel
@@ -128,7 +136,7 @@ const SectionGraph = ({
 					}
 				/>
 			) : null}
-			{!nodes.length && isSectionFailed ? (
+			{!nodes.length && !hasGraphError && isSectionFailed ? (
 				<GraphStatePanel
 					icon={AlertCircle}
 					badge={t('document_graph_status_failed')}
@@ -138,7 +146,11 @@ const SectionGraph = ({
 					tone='danger'
 				/>
 			) : null}
-			{isFetched && !nodes.length && !isSectionProcessing && !isSectionFailed ? (
+			{isFetched &&
+			!nodes.length &&
+			!hasGraphError &&
+			!isSectionProcessing &&
+			!isSectionFailed ? (
 				<GraphStatePanel
 					icon={Sparkles}
 					badge={t('document_graph_status_success')}
