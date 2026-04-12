@@ -154,7 +154,7 @@ const EditableMarkdownPanel = ({
 							{t('markdown_edit_stale_hint')}
 						</AlertDescription>
 					</Alert>
-					<div className='overflow-hidden rounded-[28px] border border-border/60 bg-background/75 shadow-sm'>
+					<div className='overflow-hidden rounded-[28px] border border-border/60 bg-background/75 shadow-sm mb-5'>
 						<TipTapEditor
 							key={editorInstanceKey}
 							value={draft}

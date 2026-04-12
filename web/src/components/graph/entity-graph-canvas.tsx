@@ -1042,9 +1042,7 @@ const EntityGraphCanvas = ({
 	return (
 		<div
 			className={cn(
-				'relative h-full min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-sm',
-				'before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.18),transparent_42%)]',
-				'dark:before:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_38%)]',
+				'relative h-full min-h-[24rem] overflow-hidden rounded-2xl bg-card/80 shadow-sm',
 				'after:pointer-events-none after:absolute after:inset-0 after:opacity-40 after:[background-image:linear-gradient(to_right,rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.08)_1px,transparent_1px)] after:[background-size:36px_36px]',
 				className
 			)}>

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Expand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
@@ -12,86 +11,64 @@ import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRightSidebar } from '@/provider/right-sidebar-provider';
 import { getSectionDetail } from '@/service/section';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import ImageWithFallback from '../ui/image-with-fallback';
 
-import SectionGraph from './section-graph';
-import SectionInfo from './section-info';
 import SectionMarkdown from './section-markdown';
-import SectionMedia from './section-media';
 import SectionOperate from './section-operate';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '../ui/dialog';
 import { useSidebar } from '../ui/sidebar';
-import GraphTaskCard from '@/components/graph/graph-task-card';
-
-const SectionGraphCardSkeleton = ({
-	surfaceCardClassName,
-}: {
-	surfaceCardClassName: string;
-}) => {
-	return (
-		<Card className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
-			<div className='flex items-start justify-between gap-4 border-b border-border/60 px-4 pb-0 pt-4 sm:px-5 sm:pt-5'>
-				<div className='space-y-2 pb-4'>
-					<Skeleton className='h-6 w-28 rounded-xl' />
-					<Skeleton className='h-4 w-48 rounded-full' />
-				</div>
-				<Skeleton className='size-10 shrink-0 rounded-2xl' />
-			</div>
-
-			<div className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
-				<Skeleton className='h-[300px] w-full rounded-[24px]' />
-			</div>
-		</Card>
-	);
-};
+import SectionDetailSidebar from './section-detail-sidebar';
 
 const SectionDetailSkeleton = () => {
 	return (
-		<div className='mx-auto flex h-full w-full max-w-[880px] flex-col gap-6'>
-			<div className='flex flex-wrap gap-2'>
-				<Skeleton className='h-7 w-20 rounded-full' />
-				<Skeleton className='h-7 w-24 rounded-full' />
-				<Skeleton className='h-7 w-16 rounded-full' />
+		<div className='mx-auto flex h-full w-full max-w-[980px] flex-col gap-6'>
+			<div className='overflow-hidden rounded-[28px] border border-border/60 bg-background/40 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
+				<Skeleton className='aspect-[16/6.5] w-full rounded-none sm:aspect-[16/6]' />
 			</div>
-			<div className='space-y-3'>
-				<Skeleton className='h-12 w-[70%] rounded-2xl sm:h-14' />
-				<Skeleton className='h-5 w-[42%] rounded-full' />
+
+			<div className='space-y-5'>
+				<div className='mx-auto w-full max-w-[880px] space-y-4'>
+					<Skeleton className='h-4 w-40 rounded-full' />
+					<div className='space-y-3'>
+						<Skeleton className='h-8 w-[72%] rounded-2xl sm:h-10' />
+						<Skeleton className='h-5 w-[92%] rounded-full' />
+						<Skeleton className='h-5 w-[68%] rounded-full' />
+					</div>
+					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
+						<Skeleton className='mx-auto h-4 w-64 rounded-full sm:w-80' />
+					</div>
+				</div>
+
+				<div className='mx-auto w-full max-w-[880px] space-y-6 rounded-[28px] border border-border/60 bg-background/30 p-5 sm:p-6'>
+					<div className='space-y-3'>
+						<Skeleton className='h-5 w-full rounded-full' />
+						<Skeleton className='h-5 w-full rounded-full' />
+						<Skeleton className='h-5 w-[86%] rounded-full' />
+						<Skeleton className='h-5 w-[72%] rounded-full' />
+					</div>
+					<div className='space-y-3'>
+						<Skeleton className='h-5 w-[94%] rounded-full' />
+						<Skeleton className='h-5 w-full rounded-full' />
+						<Skeleton className='h-5 w-[82%] rounded-full' />
+					</div>
+					<div className='space-y-3'>
+						<Skeleton className='h-5 w-full rounded-full' />
+						<Skeleton className='h-5 w-[90%] rounded-full' />
+						<Skeleton className='h-5 w-[78%] rounded-full' />
+					</div>
+					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
+						<Skeleton className='mx-auto h-4 w-56 rounded-full sm:w-72' />
+					</div>
+				</div>
 			</div>
-			<Skeleton className='aspect-[16/7] w-full rounded-[28px]' />
-			<div className='space-y-5 rounded-[28px] border border-border/60 bg-background/35 p-5 sm:p-6'>
-				<div className='space-y-3'>
-					<Skeleton className='h-5 w-full rounded-full' />
-					<Skeleton className='h-5 w-full rounded-full' />
-					<Skeleton className='h-5 w-[88%] rounded-full' />
-					<Skeleton className='h-5 w-[74%] rounded-full' />
-				</div>
-				<div className='space-y-3 pt-2'>
-					<Skeleton className='h-8 w-40 rounded-2xl' />
-					<Skeleton className='h-5 w-full rounded-full' />
-					<Skeleton className='h-5 w-full rounded-full' />
-					<Skeleton className='h-5 w-[82%] rounded-full' />
-				</div>
-				<div className='space-y-3 pt-2'>
-					<Skeleton className='h-8 w-32 rounded-2xl' />
-					<Skeleton className='h-5 w-full rounded-full' />
-					<Skeleton className='h-5 w-[90%] rounded-full' />
-					<Skeleton className='h-5 w-[70%] rounded-full' />
-				</div>
-				<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-					<Skeleton className='mx-auto h-4 w-56 rounded-full sm:w-72' />
-				</div>
+
+			<div className='border-t border-border/60 grid w-full grid-cols-7 gap-2 bg-background/55 p-2.5 backdrop-blur-xl'>
+				{Array.from({ length: 7 }).map((_, index) => (
+					<Skeleton key={index} className='h-11 w-full rounded-[20px]' />
+				))}
 			</div>
 		</div>
 	);
@@ -101,6 +78,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { state: sidebarState } = useSidebar();
+	const { open: rightSidebarOpen, setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
 	const mainColumnRef = useRef<HTMLDivElement | null>(null);
 	const [dockBounds, setDockBounds] = useState({
@@ -109,10 +87,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 	});
 
 	const surfaceCardClassName =
-		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur';
-	const mainSurfaceClassName = cn(
-		`bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_24%)]`,
-	);
+		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur shadow-none';
 
 	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -177,6 +152,35 @@ const SectionContainer = ({ id }: { id: number }) => {
 		section?.podcast_task?.status,
 		section?.process_task?.status,
 	]);
+
+	useEffect(() => {
+		setContent(
+			<SectionDetailSidebar
+				id={id}
+				isPending={isPending}
+				hasSection={Boolean(section)}
+				graphBadge={graphCardState.badge}
+				graphTone={graphCardState.tone}
+				graphStale={freshnessState.graphStale}
+				surfaceCardClassName={surfaceCardClassName}
+			/>,
+		);
+	}, [
+		freshnessState.graphStale,
+		graphCardState.badge,
+		graphCardState.tone,
+		id,
+		isPending,
+		section,
+		setContent,
+		surfaceCardClassName,
+	]);
+
+	useEffect(() => {
+		return () => {
+			clearContent();
+		};
+	}, [clearContent, id]);
 
 	useEffect(() => {
 		let animationFrameId: number | null = null;
@@ -253,16 +257,16 @@ const SectionContainer = ({ id }: { id: number }) => {
 			resizeObserver.disconnect();
 			window.removeEventListener('resize', updateDockBounds);
 		};
-	}, [isCompactViewport, sidebarState, section?.id]);
+	}, [isCompactViewport, rightSidebarOpen, sidebarState, section?.id]);
 
 	return (
 		<>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,392px)] xl:items-start'>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0'>
 				<div ref={mainColumnRef} className='relative min-w-0'>
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
-							<div className='mx-auto mb-6 w-full overflow-hidden bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
+							<div className='mx-auto mb-6 w-full overflow-hidden bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
 								<div className='relative'>
 									<ImageWithFallback
 										src={sectionCoverSrc}
@@ -279,75 +283,6 @@ const SectionContainer = ({ id }: { id: number }) => {
 					</>
 				</div>
 
-				{!isCompactViewport ? (
-					<div className='relative min-w-0 space-y-5 xl:sticky xl:top-0'>
-						<Card
-							className={`overflow-hidden gap-0 py-0 ${surfaceCardClassName}`}>
-							<SectionInfo id={id} />
-						</Card>
-
-						{isPending && !section ? (
-							<SectionGraphCardSkeleton
-								surfaceCardClassName={surfaceCardClassName}
-							/>
-						) : (
-							<GraphTaskCard
-								title={t('section_graph')}
-								description={t('section_graph_description')}
-								badge={graphCardState.badge}
-								hint={
-									freshnessState.graphStale
-										? t('section_graph_stale_hint')
-										: undefined
-								}
-								tone={graphCardState.tone}
-								action={
-									<Dialog>
-										<DialogTrigger asChild>
-											<Button
-												className='size-8 shrink-0 rounded-2xl border-border/70 bg-background/65 shadow-none hover:bg-background'
-												size='icon'
-												variant='outline'>
-												<Expand size={4} className='text-muted-foreground' />
-											</Button>
-										</DialogTrigger>
-										<DialogContent className='flex h-[82vh] w-[min(1440px,96vw)] max-w-[min(1440px,96vw)] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-[min(1440px,96vw)]'>
-											<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-												<DialogTitle>{t('section_graph')}</DialogTitle>
-												<DialogDescription>
-													{t('section_graph_description')}
-												</DialogDescription>
-												{freshnessState.graphStale ? (
-													<div className='flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm leading-6 text-amber-800 dark:text-amber-200'>
-														<AlertCircle className='mt-0.5 size-4 shrink-0' />
-														<span>{t('section_graph_stale_hint')}</span>
-													</div>
-												) : null}
-											</DialogHeader>
-											<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-												<div className='min-h-[360px] h-full overflow-hidden rounded-2xl border border-border/60 bg-background/45'>
-													<SectionGraph
-														section_id={id}
-														showSearch
-														showStaleHint={false}
-													/>
-												</div>
-											</div>
-										</DialogContent>
-									</Dialog>
-								}>
-								<div className='h-[300px] overflow-hidden rounded-[20px] border border-border/60 bg-background/35'>
-									<SectionGraph section_id={id} showStaleHint={false} />
-								</div>
-							</GraphTaskCard>
-						)}
-
-						<SectionMedia
-							section_id={id}
-							surfaceCardClassName={surfaceCardClassName}
-						/>
-					</div>
-				) : null}
 			</div>
 
 			{section && isCompactViewport ? (

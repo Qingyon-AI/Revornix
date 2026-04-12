@@ -285,7 +285,7 @@ const SectionMarkdown = ({
 	};
 
 	return (
-		<div className={cn('relative flex min-h-full w-full flex-col', className)}>
+		<div className={cn('relative flex w-full flex-col', className)}>
 			{showEmpty ? (
 				<div
 					className={cn(
