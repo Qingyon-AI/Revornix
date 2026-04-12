@@ -406,7 +406,7 @@ const WebsiteDocumentDetail = ({
 							onSave={handleSaveMarkdown}
 							editable={canEditMarkdown}
 							viewerFooter={
-								<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+								<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground'>
 									{t('document_ai_tips')}
 								</div>
 							}
