@@ -61,7 +61,9 @@ const AudioDocumentDetail = ({
 	}, delay);
 
 	useEffect(() => {
-		setSelectedEngineId(mainUserInfo?.default_audio_transcribe_engine_id ?? null);
+		setSelectedEngineId(
+			mainUserInfo?.default_audio_transcribe_engine_id ?? null,
+		);
 	}, [mainUserInfo?.default_audio_transcribe_engine_id]);
 
 	useEffect(() => {
@@ -127,11 +129,7 @@ const AudioDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div
-			className={cn(
-				'relative flex w-full flex-col gap-4',
-				className,
-			)}>
+		<div className={cn('h-full w-full relative', className)}>
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.TRANSCRIBING && (
@@ -210,20 +208,16 @@ const AudioDocumentDetail = ({
 					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
 				)}
 			{markdown && !isError && (
-				<div className='flex min-h-0 w-full flex-1 flex-col'>
-					<div className='flex-1 overflow-auto relative'>
-						<div className='mx-auto max-w-[880px] overflow-x-hidden xl:pb-14'>
-							<TipTapMarkdownViewer content={markdown} />
-							<div className='mt-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
-								{t('document_ai_tips')}
-							</div>
-						</div>
-						<div
-							ref={bottomRef}
-							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
-						/>
+				<>
+					<TipTapMarkdownViewer content={markdown} />
+					<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+						{t('document_ai_tips')}
 					</div>
-				</div>
+					<div
+						ref={bottomRef}
+						className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
+					/>
+				</>
 			)}
 			<ResourceConfirmDialog
 				open={isTranscribeDialogOpen}
@@ -237,7 +231,9 @@ const AudioDocumentDetail = ({
 					void handleReTranscribeDocument();
 				}}>
 				<div className='space-y-2'>
-					<p className='text-sm font-medium text-foreground'>{t('use_engine')}</p>
+					<p className='text-sm font-medium text-foreground'>
+						{t('use_engine')}
+					</p>
 					<EngineSelect
 						category={EngineCategory.STT}
 						value={selectedEngineId}

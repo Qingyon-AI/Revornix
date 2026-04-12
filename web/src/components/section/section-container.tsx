@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -19,7 +19,6 @@ import ImageWithFallback from '../ui/image-with-fallback';
 import SectionMarkdown from './section-markdown';
 import SectionOperate from './section-operate';
 import { Skeleton } from '../ui/skeleton';
-import { useSidebar } from '../ui/sidebar';
 import SectionDetailSidebar from './section-detail-sidebar';
 
 const SectionDetailSkeleton = () => {
@@ -77,14 +76,8 @@ const SectionDetailSkeleton = () => {
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const { state: sidebarState } = useSidebar();
-	const { open: rightSidebarOpen, setContent, clearContent } = useRightSidebar();
+	const { setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
-	const mainColumnRef = useRef<HTMLDivElement | null>(null);
-	const [dockBounds, setDockBounds] = useState({
-		left: 0,
-		width: 0,
-	});
 
 	const surfaceCardClassName =
 		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur shadow-none';
@@ -182,87 +175,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 		};
 	}, [clearContent, id]);
 
-	useEffect(() => {
-		let animationFrameId: number | null = null;
-		let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-		const updateDockBounds = () => {
-			if (!mainColumnRef.current) {
-				return;
-			}
-
-			const rect = mainColumnRef.current.getBoundingClientRect();
-			setDockBounds((currentBounds) => {
-				if (
-					Math.abs(currentBounds.left - rect.left) < 0.5 &&
-					Math.abs(currentBounds.width - rect.width) < 0.5
-				) {
-					return currentBounds;
-				}
-
-				return {
-					left: rect.left,
-					width: rect.width,
-				};
-			});
-		};
-
-		const syncDockBoundsDuringTransition = (duration = 260) => {
-			if (animationFrameId !== null) {
-				cancelAnimationFrame(animationFrameId);
-			}
-			if (timeoutId !== null) {
-				clearTimeout(timeoutId);
-			}
-
-			const startedAt = performance.now();
-
-			const tick = () => {
-				updateDockBounds();
-
-				if (performance.now() - startedAt < duration) {
-					animationFrameId = requestAnimationFrame(tick);
-					return;
-				}
-
-				animationFrameId = null;
-			};
-
-			animationFrameId = requestAnimationFrame(tick);
-			timeoutId = setTimeout(() => {
-				updateDockBounds();
-			}, duration);
-		};
-
-		updateDockBounds();
-		syncDockBoundsDuringTransition();
-
-		const resizeObserver = new ResizeObserver(() => {
-			updateDockBounds();
-		});
-
-		if (mainColumnRef.current) {
-			resizeObserver.observe(mainColumnRef.current);
-		}
-
-		window.addEventListener('resize', updateDockBounds);
-
-		return () => {
-			if (animationFrameId !== null) {
-				cancelAnimationFrame(animationFrameId);
-			}
-			if (timeoutId !== null) {
-				clearTimeout(timeoutId);
-			}
-			resizeObserver.disconnect();
-			window.removeEventListener('resize', updateDockBounds);
-		};
-	}, [isCompactViewport, rightSidebarOpen, sidebarState, section?.id]);
-
 	return (
 		<>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 flex-1 min-h-0'>
-				<div ref={mainColumnRef} className='relative min-w-0 px-5 overflow-hidden'>
+			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col pt-0'>
+				<div className='relative min-h-0 min-w-0 flex-1 px-5 overflow-hidden'>
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
@@ -283,24 +199,18 @@ const SectionContainer = ({ id }: { id: number }) => {
 					</>
 				</div>
 
+				{section && !isCompactViewport ? (
+					<div className='pointer-events-none sticky bottom-0 z-40 mt-auto'>
+						<div className='pointer-events-auto w-full'>
+							<SectionOperate id={id} />
+						</div>
+					</div>
+				) : null}
 			</div>
 
 			{section && isCompactViewport ? (
 				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
 					<SectionOperate id={id} />
-				</div>
-			) : null}
-
-			{section && !isCompactViewport && dockBounds.width > 0 ? (
-				<div
-					className='pointer-events-none sticky bottom-0 z-40'
-					style={{
-						left: `${dockBounds.left}px`,
-						width: `${dockBounds.width}px`,
-					}}>
-					<div className='pointer-events-auto w-full'>
-						<SectionOperate id={id} />
-					</div>
 				</div>
 			) : null}
 		</>
