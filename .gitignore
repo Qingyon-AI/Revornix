@@ -18,3 +18,4 @@ neo4j/plugins/*
 .vscode/
 .ruff_cache/
 .claude/
+.pnpm-store/
