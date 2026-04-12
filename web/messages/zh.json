@@ -126,6 +126,7 @@
     "init_setting_footer_pending": "还剩 {count} 项未完成，你可以先继续使用，之后再回来补齐。",
     "init_setting_footer_done": "初始化已完成，现在可以开始正常使用。",
     "init_setting_continue_later": "稍后再配",
+    "init_setting_default_file_system": "默认文件系统",
     "init_setting_default_file_system_description": "所有上传文件、生成内容和文档资产都会优先落到这里，建议先确认默认存储位置。",
     "init_setting_file_system_missing_hint": "当前没有可选文件系统。请先确认系统已为你初始化默认文件系统，稍后它会自动出现在这里。",
     "init_setting_revornix_ai_model_description": "这是 Revornix 内部对话、问答和联动能力的默认模型，决定你主要的 AI 交互体验。",

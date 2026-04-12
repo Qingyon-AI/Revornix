@@ -126,6 +126,7 @@
     "init_setting_footer_pending": "{count} required choices are still unfinished. You can keep using the app now and come back later.",
     "init_setting_footer_done": "Setup is complete. You can start using the app normally now.",
     "init_setting_continue_later": "Maybe later",
+    "init_setting_default_file_system": "Default file system",
     "init_setting_default_file_system_description": "Uploads, generated assets, and document files will default to this storage. Pick the place you want the system to use first.",
     "init_setting_file_system_missing_hint": "There is no file system available yet. Please confirm the system has created your default file system and it should appear here automatically.",
     "init_setting_revornix_ai_model_description": "This is the default model for Revornix chat, questions, and assistant workflows. It defines the main AI interaction experience.",
