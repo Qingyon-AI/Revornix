@@ -28,7 +28,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
-import AddDocumentLabelDialog from '@/components/document/add-document-label-dialog';
 import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUserContext } from '@/provider/user-provider';
@@ -80,7 +79,6 @@ const AddLink = () => {
 			auto_tag: false,
 		},
 	});
-	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -154,16 +152,11 @@ const AddLink = () => {
 
 	return (
 		<>
-			<AddDocumentLabelDialog
-				open={showAddLabelDialog}
-				onOpenChange={setShowAddLabelDialog}
-			/>
-
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
 					className='flex h-full min-h-0 flex-col overflow-hidden'>
-					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-hidden pr-1'>
+					<div className='flex w-full min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
 						{!websiteParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
@@ -211,7 +204,7 @@ const AddLink = () => {
 											placeholder={t('document_create_link_placeholder')}
 											{...field}
 											fieldSizing='fixed'
-											className='h-full min-h-[320px] flex-1 resize-none'
+											className='h-full min-h-[320px] flex-1 resize-none rounded-xl'
 										/>
 										<FormMessage />
 									</FormItem>
@@ -219,7 +212,7 @@ const AddLink = () => {
 							}}
 						/>
 					</div>
-					<div className='sticky bottom-0 z-10 shrink-0 bg-card/95 pt-4 backdrop-blur supports-[backdrop-filter]:bg-card/80'>
+					<div className='sticky bottom-0 z-10 shrink-0 pt-4 backdrop-blur'>
 						<DocumentCreateAdvancedSection>
 							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
 								<FormField

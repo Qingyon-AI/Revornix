@@ -79,7 +79,6 @@ const AddQuickNote = () => {
 			auto_tag: false,
 		},
 	});
-	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 	const restoredDraftKeyRef = useRef<string | null>(null);
 	const lastSavedDraftRef = useRef<string>('');
 	const [editorInstanceKey, setEditorInstanceKey] = useState(0);
@@ -335,38 +334,32 @@ const AddQuickNote = () => {
 
 	return (
 		<>
-			<AddLabelDialog
-				open={showAddLabelDialog}
-				onOpenChange={setShowAddLabelDialog}
-			/>
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex h-full min-h-0 flex-col overflow-hidden'>
-					<div className='flex w-full min-h-0 flex-1 flex-col overflow-hidden pr-1'>
-						<FormField
-							control={form.control}
-							name='content'
-							render={({ field }) => {
-								return (
-									<FormItem className='flex min-h-0 flex-1 flex-col'>
-										<TipTapEditor
-											key={editorInstanceKey}
-											value={field.value}
-											onChange={field.onChange}
-											placeholder={t('document_create_note_placeholded')}
-											className='h-full min-h-[320px] flex-1'
-											enableImageUpload
-											enableDrawing
-											ownerId={mainUserInfo?.id}
-										/>
-										<FormMessage />
-									</FormItem>
-								);
-							}}
-						/>
-					</div>
-					<div className='sticky bottom-0 z-10 pt-4 shrink-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80'>
+					className='flex h-full w-full min-h-0 flex-col overflow-hidden'>
+					<FormField
+						control={form.control}
+						name='content'
+						render={({ field }) => {
+							return (
+								<FormItem className='flex h-full min-h-0 flex-1 flex-col'>
+									<TipTapEditor
+										key={editorInstanceKey}
+										value={field.value}
+										onChange={field.onChange}
+										placeholder={t('document_create_note_placeholded')}
+										className='h-full min-h-[320px] flex-1'
+										enableImageUpload
+										enableDrawing
+										ownerId={mainUserInfo?.id}
+									/>
+									<FormMessage />
+								</FormItem>
+							);
+						}}
+					/>
+					<div className='shrink-0 pt-4 backdrop-blur'>
 						<DocumentCreateAdvancedSection>
 							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
 								<FormField

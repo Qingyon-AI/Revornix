@@ -587,7 +587,7 @@ const AudioRecord = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-col gap-4 rounded-lg border border-input bg-background p-4 h-full',
+				'flex flex-col gap-4 rounded-xl border border-input bg-background p-4 h-full',
 				className,
 			)}>
 			<div className='flex items-center justify-between'>
