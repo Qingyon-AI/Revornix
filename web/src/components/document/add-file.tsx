@@ -81,7 +81,6 @@ const AddFile = () => {
 			auto_tag: false,
 		},
 	});
-	const [showAddLabelDialog, setShowAddLabelDialog] = useState(false);
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -155,15 +154,11 @@ const AddFile = () => {
 
 	return (
 		<>
-			<AddLabelDialog
-				open={showAddLabelDialog}
-				onOpenChange={setShowAddLabelDialog}
-			/>
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
 					className='flex h-full min-h-0 flex-col overflow-hidden'>
-					<div className='flex w-full min-h-0 flex-1 flex-col gap-5 overflow-hidden pr-1'>
+					<div className='flex w-full min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
 						{!fileParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
@@ -222,7 +217,7 @@ const AddFile = () => {
 							}}
 						/>
 					</div>
-					<div className='sticky bottom-0 z-10 shrink-0 bg-card/95 pt-4 backdrop-blur supports-[backdrop-filter]:bg-card/80'>
+					<div className='sticky bottom-0 z-10 shrink-0 pt-4 backdrop-blur'>
 						<DocumentCreateAdvancedSection>
 							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
 								<FormField

@@ -12,11 +12,11 @@ const CreatePage = async (props: { searchParams: SearchParams }) => {
 	await props.searchParams;
 	const t = await getTranslations();
 	return (
-		<div className='w-full flex-1 min-h-0 overflow-hidden bg-[radial-gradient(circle_at_top,_hsl(var(--muted))_0%,_transparent_60%)] px-4 pb-4 md:px-6 md:pb-6'>
+		<div className='flex h-[calc(100svh-4.75rem)] max-h-[calc(100svh-4.75rem)] min-h-0 flex-1 flex-col overflow-hidden'>
 			<Tabs
 				defaultValue={'quick-note'}
-				className='h-full min-h-0 grid grid-cols-1 gap-4 overflow-hidden lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-6'>
-				<aside className='flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-2 backdrop-blur-sm'>
+				className='grid h-full min-h-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-4 overflow-hidden px-5 pb-4 md:pb-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] lg:gap-6'>
+				<aside className='relative flex h-fit flex-col rounded-2xl border border-border/60 bg-card/80 p-2 lg:min-h-0 lg:h-full'>
 					<div className='px-3 pb-2 pt-2'>
 						<p className='text-sm font-semibold'>{t('document_create')}</p>
 						<p className='mt-1 text-xs text-muted-foreground'>
@@ -52,22 +52,22 @@ const CreatePage = async (props: { searchParams: SearchParams }) => {
 				</aside>
 				<TabsContent
 					value='quick-note'
-					className='mt-0 h-full min-h-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm md:p-5'>
+					className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<AddQuickNote />
 				</TabsContent>
 				<TabsContent
 					value='link'
-					className='mt-0 h-full min-h-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm md:p-5'>
+					className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<AddLink />
 				</TabsContent>
 				<TabsContent
 					value='file'
-					className='mt-0 h-full min-h-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm md:p-5'>
+					className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<AddFile />
 				</TabsContent>
 				<TabsContent
 					value='audio'
-					className='mt-0 h-full min-h-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm md:p-5'>
+					className='flex h-full min-h-0 flex-col overflow-hidden'>
 					<AddAudio />
 				</TabsContent>
 			</Tabs>
