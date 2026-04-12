@@ -63,7 +63,7 @@ const SectionDetailSidebar = ({
 	const t = useTranslations();
 
 	return (
-		<div className='space-y-5'>
+		<div className='space-y-5 p-4'>
 			<SectionInfo id={id} />
 
 			{isPending && !hasSection ? (

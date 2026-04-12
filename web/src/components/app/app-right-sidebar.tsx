@@ -61,7 +61,7 @@ export const AppRightSidebar = () => {
 			/>
 				<aside
 				className={cn(
-					'p-3 fixed inset-y-0 right-0 z-10 hidden w-[var(--right-sidebar-width)] shrink-0 border-l border-border transition-transform duration-200 ease-linear xl:flex',
+					'fixed inset-y-0 right-0 z-10 hidden w-[var(--right-sidebar-width)] shrink-0 border-l border-border transition-transform duration-200 ease-linear xl:flex',
 					open ? 'translate-x-0' : 'translate-x-[calc(100%+0.5rem)]',
 				)}
 				style={
