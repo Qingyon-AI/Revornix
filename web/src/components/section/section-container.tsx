@@ -177,12 +177,12 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	return (
 		<>
-			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col pt-0'>
-				<div className='relative min-h-0 min-w-0 flex-1 px-5 overflow-hidden'>
+			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
+				<div className='min-h-0 flex-1 overflow-hidden'>
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
-							<div className='mx-auto mb-6 w-full max-w-[980px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
+							<div className='mx-auto mb-6 w-full max-w-[980px] overflow-hidden rounded-[28px] shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
 								<div className='relative'>
 									<ImageWithFallback
 										src={sectionCoverSrc}

@@ -285,7 +285,7 @@ const SectionMarkdown = ({
 	};
 
 	return (
-		<div className={cn('relative flex w-full flex-col', className)}>
+		<div className={cn(className)}>
 			{showEmpty ? (
 				<div
 					className={cn(
@@ -346,7 +346,7 @@ const SectionMarkdown = ({
 						editable={canEditMarkdown}
 						onSave={handleSaveMarkdown}
 						viewerFooter={
-							<div className='my-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+							<div className='my-4 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground'>
 								{t('section_ai_tips')}
 							</div>
 						}
