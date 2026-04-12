@@ -56,17 +56,21 @@ const InfoMetric = ({
 	hint?: string;
 }) => {
 	return (
-		<div className='rounded-2xl border border-border/60 bg-background/35 p-3'>
-			<div className='flex items-center gap-2 text-xs text-muted-foreground'>
-				<div className='flex size-7 items-center justify-center rounded-xl bg-background/65'>
+		<div className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+			<div className='flex items-start gap-2.5'>
+				<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/55 text-muted-foreground'>
 					<Icon className='size-3.5' />
 				</div>
-				<span>{label}</span>
+				<div className='min-w-0 space-y-0.5'>
+					<p className='text-[11px] leading-5 text-muted-foreground'>{label}</p>
+					<div className='text-sm font-semibold leading-5'>{value}</div>
+					{hint ? (
+						<p className='truncate text-[11px] leading-5 text-muted-foreground/85'>
+							{hint}
+						</p>
+					) : null}
+				</div>
 			</div>
-			<div className='text-base font-semibold'>{value}</div>
-			{hint ? (
-				<p className='mt-1 text-xs text-muted-foreground'>{hint}</p>
-			) : null}
 		</div>
 	);
 };
@@ -90,18 +94,19 @@ const SectionInfo = ({ id }: { id: number }) => {
 	if (isFetching && !isFetched) {
 		return (
 			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-				<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+				<div className='space-y-4'>
 					<div className='space-y-2'>
-						<Skeleton className='h-8 w-3/4 rounded-2xl' />
+						<Skeleton className='h-9 w-[78%] rounded-2xl' />
+						<Skeleton className='h-4 w-24 rounded-full' />
 						<Skeleton className='h-4 w-full rounded-full' />
-						<Skeleton className='h-4 w-5/6 rounded-full' />
+						<Skeleton className='h-4 w-[84%] rounded-full' />
 					</div>
 
 					<div className='flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5'>
 						<Skeleton className='size-10 rounded-full' />
 						<div className='min-w-0 flex-1 space-y-2'>
 							<Skeleton className='h-4 w-28 rounded-full' />
-							<Skeleton className='h-3 w-36 rounded-full' />
+							<Skeleton className='h-3 w-24 rounded-full' />
 						</div>
 					</div>
 				</div>
@@ -113,10 +118,26 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</div>
 
 				<div className='grid grid-cols-2 gap-3'>
-					<Skeleton className='h-28 w-full rounded-2xl' />
-					<Skeleton className='h-28 w-full rounded-2xl' />
-					<Skeleton className='h-28 w-full rounded-2xl' />
-					<Skeleton className='h-28 w-full rounded-2xl' />
+					{Array.from({ length: 4 }).map((_, index) => (
+						<div
+							key={index}
+							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+							<div className='flex items-start gap-2.5'>
+								<Skeleton className='size-6 shrink-0 rounded-lg' />
+								<div className='min-w-0 flex-1 space-y-1.5'>
+									<Skeleton className='h-3 w-18 rounded-full' />
+									<Skeleton className='h-4 w-24 rounded-full' />
+									<Skeleton className='h-3 w-28 rounded-full' />
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+
+				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+					<Skeleton className='h-9 w-32 rounded-full' />
+					<Skeleton className='h-9 w-36 rounded-full' />
+					<Skeleton className='h-9 w-32 rounded-full' />
 				</div>
 			</div>
 		);
@@ -191,11 +212,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 						t('section_process_status'),
 						section.process_task.status === SectionProcessStatus.WAIT_TO
 							? t('section_process_status_todo')
-							: section.process_task.status ===
-									  SectionProcessStatus.PROCESSING
+							: section.process_task.status === SectionProcessStatus.PROCESSING
 								? t('section_process_status_doing')
-								: section.process_task.status ===
-										  SectionProcessStatus.SUCCESS
+								: section.process_task.status === SectionProcessStatus.SUCCESS
 									? t('section_process_status_success')
 									: t('section_process_status_failed'),
 					),
@@ -217,11 +236,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 						t('section_podcast_status'),
 						effectivePodcastStatus === SectionPodcastStatus.WAIT_TO
 							? t('section_podcast_status_todo')
-							: effectivePodcastStatus ===
-									  SectionPodcastStatus.GENERATING
+							: effectivePodcastStatus === SectionPodcastStatus.GENERATING
 								? t('section_podcast_status_doing')
-								: effectivePodcastStatus ===
-										  SectionPodcastStatus.SUCCESS
+								: effectivePodcastStatus === SectionPodcastStatus.SUCCESS
 									? t('section_podcast_status_success')
 									: t('section_podcast_status_failed'),
 					),
@@ -236,68 +253,74 @@ const SectionInfo = ({ id }: { id: number }) => {
 		} => Boolean(item),
 	);
 	return (
-		<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-			<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-				<div className='space-y-2'>
-					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
-						{title}
-					</h2>
-					{section.is_day_section ? (
-						<div className='flex flex-wrap gap-2'>
-							<InfoBadge>{t('section_day_badge')}</InfoBadge>
-						</div>
-					) : null}
-					<p className='text-sm leading-7 text-muted-foreground'>
-						{description}
-					</p>
-				</div>
-
-				{creatorId !== undefined ? (
-					<Link
-						href={`/user/detail/${creatorId}`}
-						className={`${creatorCardClassName} hover:bg-background/65`}>
-						<Avatar className='size-10 ring-1 ring-border/60'>
-							<AvatarImage
-								src={
-									creatorAvatar
-										? replacePath(creatorAvatar, creatorId)
-										: undefined
-								}
-								alt='avatar'
-								className='size-10 object-cover'
-							/>
-							<AvatarFallback className='size-10 font-semibold'>
-								{creatorNickname.slice(0, 1) ?? '?'}
-							</AvatarFallback>
-						</Avatar>
-						<div className='min-w-0'>
-							<p className='truncate text-sm font-medium'>{creatorNickname}</p>
-							<p className='truncate text-xs text-muted-foreground'>
-								{t('section_updated_at')}: {lastActiveDistance}
-							</p>
-						</div>
-					</Link>
-				) : (
-					<div className={creatorCardClassName}>
-						<Avatar className='size-10 ring-1 ring-border/60'>
-							<AvatarImage
-								src={undefined}
-								alt='avatar'
-								className='size-10 object-cover'
-							/>
-							<AvatarFallback className='size-10 font-semibold'>
-								{creatorNickname.slice(0, 1) ?? '?'}
-							</AvatarFallback>
-						</Avatar>
-						<div className='min-w-0'>
-							<p className='truncate text-sm font-medium'>{creatorNickname}</p>
-							<p className='truncate text-xs text-muted-foreground'>
-								{t('section_updated_at')}: {lastActiveDistance}
-							</p>
-						</div>
+		<>
+			<div className='space-y-2'>
+				<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
+					{title}
+				</h2>
+				{section.is_day_section ? (
+					<div className='flex flex-wrap gap-2'>
+						<InfoBadge>{t('section_day_badge')}</InfoBadge>
 					</div>
-				)}
+				) : null}
+				<p className='text-sm leading-7 text-muted-foreground'>{description}</p>
 			</div>
+
+			{section.is_day_section ? (
+				<Alert className='border-emerald-500/30 bg-emerald-500/8 text-emerald-800 dark:text-emerald-200'>
+					<AlertTriangle className='size-4 text-current' />
+					<AlertDescription>
+						<span className='font-medium'>{t('section_day_notice_title')}</span>{' '}
+						{t('section_day_notice_description')}
+					</AlertDescription>
+				</Alert>
+			) : null}
+
+			{creatorId !== undefined ? (
+				<Link
+					href={`/user/detail/${creatorId}`}
+					className={`${creatorCardClassName} hover:bg-background/65`}>
+					<Avatar className='size-10 ring-1 ring-border/60'>
+						<AvatarImage
+							src={
+								creatorAvatar
+									? replacePath(creatorAvatar, creatorId)
+									: undefined
+							}
+							alt='avatar'
+							className='size-10 object-cover'
+						/>
+						<AvatarFallback className='size-10 font-semibold'>
+							{creatorNickname.slice(0, 1) ?? '?'}
+						</AvatarFallback>
+					</Avatar>
+					<div className='min-w-0'>
+						<p className='truncate text-sm font-medium'>{creatorNickname}</p>
+						<p className='truncate text-xs text-muted-foreground'>
+							{t('section_updated_at')}: {lastActiveDistance}
+						</p>
+					</div>
+				</Link>
+			) : (
+				<div className={creatorCardClassName}>
+					<Avatar className='size-10 ring-1 ring-border/60'>
+						<AvatarImage
+							src={undefined}
+							alt='avatar'
+							className='size-10 object-cover'
+						/>
+						<AvatarFallback className='size-10 font-semibold'>
+							{creatorNickname.slice(0, 1) ?? '?'}
+						</AvatarFallback>
+					</Avatar>
+					<div className='min-w-0'>
+						<p className='truncate text-sm font-medium'>{creatorNickname}</p>
+						<p className='truncate text-xs text-muted-foreground'>
+							{t('section_updated_at')}: {lastActiveDistance}
+						</p>
+					</div>
+				</div>
+			)}
 
 			{section.labels && section.labels.length > 0 ? (
 				<div className='flex flex-wrap gap-1.5'>
@@ -341,18 +364,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 					))}
 				</div>
 			) : null}
-
-			{section.is_day_section ? (
-				<Alert className='border-emerald-500/30 bg-emerald-500/8 text-emerald-800 dark:text-emerald-200'>
-					<AlertTriangle className='size-4 text-current' />
-					<AlertDescription>
-						<span className='font-medium'>{t('section_day_notice_title')}</span>
-						{' '}
-						{t('section_day_notice_description')}
-					</AlertDescription>
-				</Alert>
-			) : null}
-		</div>
+		</>
 	);
 };
 
