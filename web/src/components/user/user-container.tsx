@@ -177,6 +177,9 @@ const UserContainer = ({ id }: { id: number }) => {
 			});
 		},
 		onSuccess() {
+			queryClient.invalidateQueries({ queryKey: ['userInfo', id] });
+			queryClient.invalidateQueries({ queryKey: userFollowsQueryKey });
+			queryClient.invalidateQueries({ queryKey: userFansQueryKey });
 			refreshMainUserInfo();
 		},
 	});
@@ -499,8 +502,10 @@ const UserContainer = ({ id }: { id: number }) => {
 										})
 									) : (
 										<>
-											<SectionListTable sections={sections} />
-											<div ref={bottomRef} className='h-px w-full' />
+											<SectionListTable
+												sections={sections}
+												lastRowRef={bottomRef}
+											/>
 										</>
 									)}
 									{isFetchingSections && !data

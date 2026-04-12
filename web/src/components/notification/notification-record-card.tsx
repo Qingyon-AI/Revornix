@@ -2,7 +2,7 @@ import {
 	deleteNotificationRecords,
 	readNotificationRecords,
 } from '@/service/notification';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +31,85 @@ import {
 } from '@/lib/infinite-query-cache';
 import { useUserContext } from '@/provider/user-provider';
 import { formatInUserTimeZone } from '@/lib/time';
+
+const HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
+
+const sanitizeNotificationHtml = (content: string) => {
+	if (typeof window === 'undefined' || !content) {
+		return content;
+	}
+
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(content, 'text/html');
+
+	doc
+		.querySelectorAll(
+			'script,style,iframe,object,embed,form,input,button,textarea,select,option,link,meta,base,svg,math',
+		)
+		.forEach((element) => element.remove());
+
+	doc.querySelectorAll('*').forEach((element) => {
+		[...element.attributes].forEach((attribute) => {
+			const attributeName = attribute.name.toLowerCase();
+			const attributeValue = attribute.value.trim();
+
+			if (
+				attributeName.startsWith('on') ||
+				attributeName === 'style' ||
+				attributeName === 'srcdoc'
+			) {
+				element.removeAttribute(attribute.name);
+				return;
+			}
+
+			if (
+				attributeName === 'href' ||
+				attributeName === 'src' ||
+				attributeName === 'xlink:href' ||
+				attributeName === 'formaction'
+			) {
+				const normalizedValue = attributeValue.toLowerCase();
+				const isSafeAnchor = attributeName === 'href' && normalizedValue.startsWith('#');
+				const isSafeRelativePath =
+					normalizedValue.startsWith('/') ||
+					normalizedValue.startsWith('./') ||
+					normalizedValue.startsWith('../');
+				const isSafeAbsoluteUrl =
+					normalizedValue.startsWith('http://') ||
+					normalizedValue.startsWith('https://') ||
+					normalizedValue.startsWith('mailto:') ||
+					normalizedValue.startsWith('tel:');
+				const isSafeImageDataUrl =
+					attributeName === 'src' && normalizedValue.startsWith('data:image/');
+
+				if (
+					!isSafeAnchor &&
+					!isSafeRelativePath &&
+					!isSafeAbsoluteUrl &&
+					!isSafeImageDataUrl
+				) {
+					element.removeAttribute(attribute.name);
+				}
+			}
+		});
+
+		if (element instanceof HTMLAnchorElement && element.target === '_blank') {
+			element.rel = 'noopener noreferrer';
+		}
+	});
+
+	return doc.body.innerHTML;
+};
+
+const getNotificationPreviewText = (content: string) => {
+	if (typeof window === 'undefined' || !content || !HTML_TAG_PATTERN.test(content)) {
+		return content;
+	}
+
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(content, 'text/html');
+	return doc.body.textContent?.trim() ?? content;
+};
 
 const NotificationRecordCard = ({
 	notification,
@@ -103,12 +182,35 @@ const NotificationRecordCard = ({
 		},
 	});
 	const [showNotification, setShowNotification] = useState(false);
+	const notificationContent = notification.content ?? '';
+	const sanitizedContent = useMemo(() => {
+		return sanitizeNotificationHtml(notificationContent);
+	}, [notificationContent]);
+	const previewContent = useMemo(() => {
+		return getNotificationPreviewText(notificationContent);
+	}, [notificationContent]);
+	const isHtmlContent = useMemo(() => {
+		return HTML_TAG_PATTERN.test(notificationContent);
+	}, [notificationContent]);
+
 	return (
 		<>
 			<Dialog open={showNotification} onOpenChange={setShowNotification}>
 				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
 					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-						<DialogTitle>{notification.title}</DialogTitle>
+						<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+							<DialogTitle className='min-w-0'>{notification.title}</DialogTitle>
+							{notification.link ? (
+								<Link href={notification.link} className='shrink-0'>
+									<Button
+										size='sm'
+										variant='outline'
+										className='rounded-full'>
+										{t('notification_record_go_to_link')}
+									</Button>
+								</Link>
+							) : null}
+						</div>
 					</DialogHeader>
 					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 						<div className='flex flex-col gap-2'>
@@ -119,16 +221,15 @@ const NotificationRecordCard = ({
 								className='rounded aspect-video w-full object-cover'
 							/>
 						)}
-						<div>{notification.content}</div>
-						{notification.link && (
-							<Link href={notification.link}>
-								<Button
-									size='sm'
-									variant={'link'}
-									className='h-fit w-fit p-0 underline'>
-									{t('notification_record_go_to_link')}
-								</Button>
-							</Link>
+						{isHtmlContent ? (
+							<div
+								className='prose prose-sm max-w-none break-words dark:prose-invert prose-a:text-primary prose-img:rounded-xl'
+								dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+							/>
+						) : (
+							<div className='whitespace-pre-wrap break-words'>
+								{notificationContent}
+							</div>
 						)}
 						</div>
 					</div>
@@ -214,7 +315,7 @@ const NotificationRecordCard = ({
 						<div className='flex flex-col gap-2 w-full flex-1'>
 							<p className='font-bold'>{notification.title}</p>
 							<p className='text-sm font-semibold line-clamp-3'>
-								{notification.content}
+								{previewContent}
 							</p>
 							{notification.link && (
 								<Link href={notification.link} className='w-fit'>

@@ -97,7 +97,7 @@ const RecentReadDocumentPage = () => {
 
 	useEffect(() => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
-	}, [inView, isFetching, hasNextPage]);
+	}, [fetchNextPage, hasNextPage, inView, isFetching]);
 
 	return (
 		<>
@@ -262,13 +262,13 @@ const RecentReadDocumentPage = () => {
 					<>
 						<DocumentListTable
 							documents={documents}
+							lastRowRef={bottomRef}
 							footer={
 								isFetchingNextPage && data ? (
 									<ListLoadingIndicator />
 								) : undefined
 							}
 						/>
-						<div ref={bottomRef} className='h-px w-full' />
 					</>
 				) : null}
 				{isFetching && !data && (

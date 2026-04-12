@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import type { DocumentInfo } from '@/generated';
 import { formatInUserTimeZone } from '@/lib/time';
@@ -20,9 +20,11 @@ import {
 const DocumentListTable = ({
 	documents,
 	footer,
+	lastRowRef,
 }: {
 	documents: DocumentInfo[];
 	footer?: ReactNode;
+	lastRowRef?: Ref<HTMLTableRowElement>;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -58,9 +60,10 @@ const DocumentListTable = ({
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{documents.map((document) => (
+					{documents.map((document, index) => (
 						<TableRow
 							key={document.id}
+							ref={index === documents.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/document/detail/${document.id}`)}>
 							<TableCell className='whitespace-normal'>

@@ -262,7 +262,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 	return (
 		<>
 			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0'>
-				<div ref={mainColumnRef} className='relative min-w-0'>
+				<div ref={mainColumnRef} className='relative min-w-0 px-5'>
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (

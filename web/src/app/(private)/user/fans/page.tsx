@@ -83,7 +83,7 @@ const UserFans = () => {
 					users.map((user, index) => {
 						return (
 							<div
-								key={index}
+								key={user.id}
 								ref={index === users.length - 1 ? bottomRef : undefined}>
 								<UserFanCard user={user} />
 							</div>
