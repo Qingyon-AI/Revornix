@@ -385,9 +385,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	return (
 		<>
-		<div className='relative'>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0'>
-				<div ref={mainColumnRef} className='relative min-w-0 px-5'>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 flex-1 min-h-0'>
+				<div ref={mainColumnRef} className='relative min-w-0 px-5 overflow-hidden'>
 					<div className='hidden'>
 						<DocumentGraph
 							document_id={id}
@@ -431,7 +430,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			</div>
 
 			{document && isCompactViewport ? (
-				<div className='pointer-events-none fixed bottom-4 right-4 z-40'>
+				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
 					<div className='pointer-events-auto'>
 						<DocumentOperate id={id} />
 					</div>
@@ -450,7 +449,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					</div>
 				</div>
 			) : null}
-		</div>
 		<ResourceConfirmDialog
 			open={isGraphGenerateDialogOpen}
 			onOpenChange={setIsGraphGenerateDialogOpen}

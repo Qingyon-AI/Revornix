@@ -261,8 +261,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	return (
 		<>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0'>
-				<div ref={mainColumnRef} className='relative min-w-0 px-5'>
+			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 flex-1 min-h-0'>
+				<div ref={mainColumnRef} className='relative min-w-0 px-5 overflow-hidden'>
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
@@ -286,7 +286,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 			</div>
 
 			{section && isCompactViewport ? (
-				<div className='pointer-events-none fixed bottom-4 right-4 z-40'>
+				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
 					<SectionOperate id={id} />
 				</div>
 			) : null}
