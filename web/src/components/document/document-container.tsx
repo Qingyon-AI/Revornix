@@ -16,7 +16,7 @@ import {
 	DocumentInfo as DocumentListItem,
 	InifiniteScrollPagnitionDocumentInfo,
 } from '@/generated';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
@@ -26,7 +26,6 @@ import { toast } from 'sonner';
 import AudioDocumentDetail from './audio-document-detail';
 import DocumentOperate from './document-operate';
 import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
-import { useSidebar } from '../ui/sidebar';
 import { Skeleton } from '../ui/skeleton';
 import { replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -94,14 +93,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
-	const { state: sidebarState } = useSidebar();
-	const { open: rightSidebarOpen, setContent, clearContent } = useRightSidebar();
+	const { setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
-	const mainColumnRef = useRef<HTMLDivElement | null>(null);
-	const [dockBounds, setDockBounds] = useState({
-		left: 0,
-		width: 0,
-	});
 	const [selectedGraphModelId, setSelectedGraphModelId] = useState<number | null>(
 		mainUserInfo?.default_document_reader_model_id ?? null,
 	);
@@ -306,87 +299,10 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		};
 	}, [clearContent, id]);
 
-	useEffect(() => {
-		let animationFrameId: number | null = null;
-		let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-		const updateDockBounds = () => {
-			if (!mainColumnRef.current) {
-				return;
-			}
-
-			const rect = mainColumnRef.current.getBoundingClientRect();
-			setDockBounds((currentBounds) => {
-				if (
-					Math.abs(currentBounds.left - rect.left) < 0.5 &&
-					Math.abs(currentBounds.width - rect.width) < 0.5
-				) {
-					return currentBounds;
-				}
-
-				return {
-					left: rect.left,
-					width: rect.width,
-				};
-			});
-		};
-
-		const syncDockBoundsDuringTransition = (duration = 260) => {
-			if (animationFrameId !== null) {
-				cancelAnimationFrame(animationFrameId);
-			}
-			if (timeoutId !== null) {
-				clearTimeout(timeoutId);
-			}
-
-			const startedAt = performance.now();
-
-			const tick = () => {
-				updateDockBounds();
-
-				if (performance.now() - startedAt < duration) {
-					animationFrameId = requestAnimationFrame(tick);
-					return;
-				}
-
-				animationFrameId = null;
-			};
-
-			animationFrameId = requestAnimationFrame(tick);
-			timeoutId = setTimeout(() => {
-				updateDockBounds();
-			}, duration);
-		};
-
-		updateDockBounds();
-		syncDockBoundsDuringTransition();
-
-		const resizeObserver = new ResizeObserver(() => {
-			updateDockBounds();
-		});
-
-		if (mainColumnRef.current) {
-			resizeObserver.observe(mainColumnRef.current);
-		}
-
-		window.addEventListener('resize', updateDockBounds);
-
-		return () => {
-			if (animationFrameId !== null) {
-				cancelAnimationFrame(animationFrameId);
-			}
-			if (timeoutId !== null) {
-				clearTimeout(timeoutId);
-			}
-			resizeObserver.disconnect();
-			window.removeEventListener('resize', updateDockBounds);
-		};
-	}, [document?.id, isCompactViewport, rightSidebarOpen, sidebarState]);
-
 	return (
 		<>
-			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0 flex-1 min-h-0'>
-				<div ref={mainColumnRef} className='relative min-w-0 px-5 overflow-hidden'>
+			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
+				<div className='min-h-0 flex-1 overflow-hidden'>
 					<div className='hidden'>
 						<DocumentGraph
 							document_id={id}
@@ -401,7 +317,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 						</div>
 					)}
 					{documentCoverSrc ? (
-						<div className='mx-auto mb-6 w-full max-w-[980px] overflow-hidden rounded-[28px] border border-border/60 bg-background/45 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
+						<div className='mx-auto mb-6 w-full max-w-[980px] rounded-[28px] overflow-hidden shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
 							<div className='relative'>
 								<ImageWithFallback
 									src={documentCoverSrc}
@@ -427,24 +343,19 @@ const DocumentContainer = ({ id }: { id: number }) => {
 						<AudioDocumentDetail onFinishRead={handleFinishRead} id={id} />
 					)}
 				</div>
+
+				{document && !isCompactViewport ? (
+					<div className='pointer-events-none sticky bottom-0 z-40 mt-auto'>
+						<div className='pointer-events-auto w-full'>
+							<DocumentOperate id={id} />
+						</div>
+					</div>
+				) : null}
 			</div>
 
 			{document && isCompactViewport ? (
 				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
 					<div className='pointer-events-auto'>
-						<DocumentOperate id={id} />
-					</div>
-				</div>
-			) : null}
-
-			{document && !isCompactViewport && dockBounds.width > 0 ? (
-				<div
-					className='pointer-events-none sticky bottom-0 z-40'
-					style={{
-						left: `${dockBounds.left}px`,
-						width: `${dockBounds.width}px`,
-					}}>
-					<div className='pointer-events-auto w-full'>
 						<DocumentOperate id={id} />
 					</div>
 				</div>

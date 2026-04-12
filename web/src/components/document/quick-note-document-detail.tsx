@@ -94,24 +94,22 @@ const QuickDocumentDetail = ({
 			)}
 			{isFetching && !isRefetching && <Skeleton className='w-full h-full' />}
 			{!isError && (
-				<div className='w-full h-full flex flex-col'>
-					<div className='flex-1 overflow-auto relative'>
-						<EditableMarkdownPanel
-							content={
-								document?.quick_note_info?.content
-									? document.quick_note_info.content
-									: t('document_no_md')
-							}
-							ownerId={document?.creator.id}
-							onSave={handleSaveMarkdown}
-							editable={canEditMarkdown}
-						/>
-						<div
-							ref={bottomRef}
-							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
-						/>
-					</div>
-				</div>
+				<>
+					<EditableMarkdownPanel
+						content={
+							document?.quick_note_info?.content
+								? document.quick_note_info.content
+								: t('document_no_md')
+						}
+						ownerId={document?.creator.id}
+						onSave={handleSaveMarkdown}
+						editable={canEditMarkdown}
+					/>
+					<div
+						ref={bottomRef}
+						className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
+					/>
+				</>
 			)}
 		</div>
 	);

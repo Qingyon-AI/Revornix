@@ -175,7 +175,8 @@ const FileDocumentDetail = ({
 		}
 
 		const fileName =
-			document.convert_task.md_file_name.split('/').pop() || `document-${id}.md`;
+			document.convert_task.md_file_name.split('/').pop() ||
+			`document-${id}.md`;
 		const fileService = new FileService(userFileSystemDetail.file_system_id);
 		const file = new File([content], fileName, {
 			type: 'text/markdown;charset=utf-8',
@@ -235,11 +236,7 @@ const FileDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div
-			className={cn(
-				'relative flex w-full flex-col gap-4',
-				className,
-			)}>
+		<div className={cn('h-full w-full relative', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className={statusContainerClassName}>
 					{error?.message ?? <p>{markdownGetError}</p>}
@@ -323,25 +320,23 @@ const FileDocumentDetail = ({
 					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
 				)}
 			{markdown && !isError && !markdownGetError && (
-				<div className='flex min-h-0 w-full flex-1 flex-col'>
-					<div className='flex-1 overflow-auto relative'>
-						<EditableMarkdownPanel
-							content={markdown}
-							ownerId={document?.creator.id}
-							onSave={handleSaveMarkdown}
-							editable={canEditMarkdown}
-							viewerFooter={
-								<div className='mt-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
-									{t('document_ai_tips')}
-								</div>
-							}
-						/>
-						<div
-							ref={bottomRef}
-							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
-						/>
-					</div>
-				</div>
+				<>
+					<EditableMarkdownPanel
+						content={markdown}
+						ownerId={document?.creator.id}
+						onSave={handleSaveMarkdown}
+						editable={canEditMarkdown}
+						viewerFooter={
+							<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+								{t('document_ai_tips')}
+							</div>
+						}
+					/>
+					<div
+						ref={bottomRef}
+						className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
+					/>
+				</>
 			)}
 		</div>
 	);

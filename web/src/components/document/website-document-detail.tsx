@@ -118,7 +118,9 @@ const WebsiteDocumentDetail = ({
 		(document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS
 			? document.convert_task?.md_file_name
 			: undefined);
-	const stableMarkdownSourceKey = toStableMarkdownSourceKey(activeMarkdownFileName);
+	const stableMarkdownSourceKey = toStableMarkdownSourceKey(
+		activeMarkdownFileName,
+	);
 	const markdownSourceKey =
 		stableMarkdownSourceKey && userFileSystemDetail?.file_system_id
 			? `${userFileSystemDetail.file_system_id}:${stableMarkdownSourceKey}`
@@ -259,7 +261,10 @@ const WebsiteDocumentDetail = ({
 	}, [markdownSourceKey]);
 
 	useEffect(() => {
-		if (document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS || activeSnapshot) {
+		if (
+			document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS ||
+			activeSnapshot
+		) {
 			return;
 		}
 		loadedMarkdownSourceKeyRef.current = undefined;
@@ -274,11 +279,7 @@ const WebsiteDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div
-			className={cn(
-				'relative flex w-full flex-col gap-4',
-				className,
-			)}>
+		<div className={cn('h-full w-full relative', className)}>
 			{websiteSnapshots.length > 0 && (
 				<div className='mx-auto mb-4 w-full max-w-[880px]'>
 					<div className='flex flex-col gap-3 rounded-[24px] border border-border/60 bg-background/50 p-4 sm:flex-row sm:items-center sm:justify-between'>
@@ -288,7 +289,8 @@ const WebsiteDocumentDetail = ({
 								<span>Website snapshots</span>
 							</p>
 							<p className='text-xs text-muted-foreground'>
-								{websiteSnapshots.length} snapshots for this URL. Switch to review the site as it looked at that time.
+								{websiteSnapshots.length} snapshots for this URL. Switch to
+								review the site as it looked at that time.
 							</p>
 						</div>
 						<Select
@@ -391,29 +393,20 @@ const WebsiteDocumentDetail = ({
 				!isError &&
 				!markdownGetError &&
 				(activeMarkdownFileName ||
-					document.convert_task?.status === DocumentMdConvertStatus.SUCCESS) && (
+					document.convert_task?.status ===
+						DocumentMdConvertStatus.SUCCESS) && (
 					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
 				)}
 			{markdown && !isError && !markdownGetError && (
 				<div className='flex min-h-0 w-full flex-1 flex-col'>
-					{activeSnapshot && (
-						<div className='mx-auto mb-4 w-full max-w-[880px]'>
-							<div className='rounded-[22px] border border-border/60 bg-background/40 px-4 py-3 text-sm text-muted-foreground'>
-								Viewing snapshot from{' '}
-								<span className='font-medium text-foreground'>
-									{buildSnapshotOptionLabel(activeSnapshot.create_time)}
-								</span>
-							</div>
-						</div>
-					)}
-					<div className='flex-1 overflow-auto relative'>
+					<>
 						<EditableMarkdownPanel
 							content={markdown}
 							ownerId={document?.creator.id}
 							onSave={handleSaveMarkdown}
 							editable={canEditMarkdown}
 							viewerFooter={
-								<div className='mt-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
+								<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 									{t('document_ai_tips')}
 								</div>
 							}
@@ -422,7 +415,7 @@ const WebsiteDocumentDetail = ({
 							ref={bottomRef}
 							className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
 						/>
-					</div>
+					</>
 				</div>
 			)}
 		</div>
