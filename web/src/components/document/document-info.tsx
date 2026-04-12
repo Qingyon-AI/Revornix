@@ -74,15 +74,23 @@ const InfoMetric = ({
 	hint?: string;
 }) => {
 	return (
-		<div className='rounded-2xl border border-border/60 bg-background/35 p-3'>
-			<div className='flex items-center text-xs text-muted-foreground'>
-				<div className='flex size-7 items-center justify-center rounded-xl bg-background/65'>
+		<div className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+			<div className='flex items-start gap-2.5'>
+				<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/55 text-muted-foreground'>
 					<Icon className='size-3.5' />
 				</div>
-				<span>{label}</span>
+				<div className='min-w-0 space-y-0.5'>
+					<p className='text-[11px] leading-5 text-muted-foreground'>{label}</p>
+					<div className='break-words text-sm font-semibold leading-5'>
+						{value}
+					</div>
+					{hint ? (
+						<p className='truncate text-[11px] leading-5 text-muted-foreground/85'>
+							{hint}
+						</p>
+					) : null}
+				</div>
 			</div>
-			<div className='break-words text-sm font-semibold'>{value}</div>
-			{hint ? <p className='text-xs text-muted-foreground'>{hint}</p> : null}
 		</div>
 	);
 };
@@ -153,7 +161,50 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	}
 
 	if (isPending) {
-		return <Skeleton className='h-[36rem] w-full rounded-[30px]' />;
+		return (
+			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
+				<div className='space-y-4'>
+					<div className='space-y-2'>
+						<Skeleton className='h-9 w-[78%] rounded-2xl' />
+						<Skeleton className='h-4 w-full rounded-full' />
+						<Skeleton className='h-4 w-[84%] rounded-full' />
+					</div>
+					<div className='flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5'>
+						<Skeleton className='size-10 rounded-full' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-4 w-28 rounded-full' />
+							<Skeleton className='h-3 w-24 rounded-full' />
+						</div>
+					</div>
+				</div>
+				<div className='flex flex-wrap gap-1.5'>
+					<Skeleton className='h-7 w-28 rounded-full' />
+					<Skeleton className='h-7 w-24 rounded-full' />
+				</div>
+				<div className='grid grid-cols-2 gap-3'>
+					{Array.from({ length: 2 }).map((_, index) => (
+						<div
+							key={index}
+							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+							<div className='flex items-start gap-2.5'>
+								<Skeleton className='size-6 shrink-0 rounded-lg' />
+								<div className='min-w-0 flex-1 space-y-1.5'>
+									<Skeleton className='h-3 w-18 rounded-full' />
+									<Skeleton className='h-4 w-24 rounded-full' />
+									<Skeleton className='h-3 w-28 rounded-full' />
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+					<Skeleton className='h-9 w-32 rounded-full' />
+					<Skeleton className='h-9 w-36 rounded-full' />
+					<Skeleton className='h-9 w-32 rounded-full' />
+				</div>
+				<Skeleton className='h-32 w-full rounded-[24px]' />
+			</div>
+		);
 	}
 
 	if (!data) return null;
@@ -416,107 +467,105 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 	return (
 		<>
-			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
-				<div className='space-y-4 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-					<div className='space-y-2'>
-						<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
-							{title}
-						</h2>
-						<p className='break-words text-sm leading-7 text-muted-foreground'>
-							{description}
-						</p>
-					</div>
-
-					{data.creator ? (
-						<Link
-							href={`/user/detail/${data.creator.id}`}
-							className='group flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors hover:bg-background/65'>
-							<Avatar className='size-10 ring-1 ring-border/60'>
-								<AvatarImage
-									src={replacePath(data.creator.avatar, data.creator.id)}
-									alt='avatar'
-									className='size-10 object-cover'
-								/>
-								<AvatarFallback className='size-10 font-semibold'>
-									{data.creator.nickname.slice(0, 1) ?? '?'}
-								</AvatarFallback>
-							</Avatar>
-							<div className='min-w-0'>
-								<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
-									{data.creator.nickname}
-								</p>
-								<p className='truncate text-xs text-muted-foreground'>
-									{t('section_updated_at')}: {lastActiveDistance}
-								</p>
-							</div>
-						</Link>
-					) : null}
-
-					<div className='flex flex-wrap gap-1.5'>
-						<MetaBadge>
-							{t('document_category')}: {categoryLabel}
-						</MetaBadge>
-						<MetaBadge>
-							{t('document_from_plat')}: {fromPlatLabel}
-						</MetaBadge>
-					</div>
+			<div className='space-y-4'>
+				<div className='space-y-2'>
+					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
+						{title}
+					</h2>
+					<p className='break-words text-sm leading-7 text-muted-foreground'>
+						{description}
+					</p>
 				</div>
 
-				{data.sections && data.sections.length > 0 ? (
-					<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-						<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
-							<BookMarked className='size-3.5' />
-							<p>{t('document_related_sections')}</p>
+				{data.creator ? (
+					<Link
+						href={`/user/detail/${data.creator.id}`}
+						className='group flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors hover:bg-background/65'>
+						<Avatar className='size-10 ring-1 ring-border/60'>
+							<AvatarImage
+								src={replacePath(data.creator.avatar, data.creator.id)}
+								alt='avatar'
+								className='size-10 object-cover'
+							/>
+							<AvatarFallback className='size-10 font-semibold'>
+								{data.creator.nickname.slice(0, 1) ?? '?'}
+							</AvatarFallback>
+						</Avatar>
+						<div className='min-w-0'>
+							<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
+								{data.creator.nickname}
+							</p>
+							<p className='truncate text-xs text-muted-foreground'>
+								{t('section_updated_at')}: {lastActiveDistance}
+							</p>
 						</div>
-						<div className='flex flex-wrap gap-2'>
-							{data.sections.map((section) => {
-								return (
-									<Link
-										key={section.id}
-										href={`/section/detail/${section.id}`}
-										className='inline-flex items-center rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background/85 hover:text-foreground'>
-										<BookMarked className='mr-1.5 size-3.5' />
-										{section.title}
-									</Link>
-								);
-							})}
-						</div>
-					</div>
+					</Link>
 				) : null}
 
-				{data.labels && data.labels.length > 0 ? (
-					<div className='flex flex-wrap gap-1.5'>
-						{data.labels.map((label) => {
-							return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
+				<div className='flex flex-wrap gap-1.5'>
+					<MetaBadge>
+						{t('document_category')}: {categoryLabel}
+					</MetaBadge>
+					<MetaBadge>
+						{t('document_from_plat')}: {fromPlatLabel}
+					</MetaBadge>
+				</div>
+			</div>
+
+			{data.sections && data.sections.length > 0 ? (
+				<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+					<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
+						<BookMarked className='size-3.5' />
+						<p>{t('document_related_sections')}</p>
+					</div>
+					<div className='flex flex-wrap gap-2'>
+						{data.sections.map((section) => {
+							return (
+								<Link
+									key={section.id}
+									href={`/section/detail/${section.id}`}
+									className='inline-flex items-center rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background/85 hover:text-foreground'>
+									<BookMarked className='mr-1.5 size-3.5' />
+									{section.title}
+								</Link>
+							);
 						})}
 					</div>
-				) : null}
-
-				<div className='grid grid-cols-2 gap-3'>
-					<InfoMetric
-						icon={CalendarClock}
-						label={t('section_updated_at')}
-						value={lastActiveDistance}
-						hint={
-							lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
-						}
-					/>
-					<InfoMetric
-						icon={CalendarDays}
-						label={t('section_info_created_at')}
-						value={createdAtText}
-						hint={createdAtHint}
-					/>
 				</div>
+			) : null}
 
-				{statusBadges.length > 0 ? (
-					<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-						{statusBadges}
-					</div>
-				) : null}
+			{data.labels && data.labels.length > 0 ? (
+				<div className='flex flex-wrap gap-1.5'>
+					{data.labels.map((label) => {
+						return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
+					})}
+				</div>
+			) : null}
 
-				{renderSummaryCard()}
+			<div className='grid grid-cols-2 gap-3'>
+				<InfoMetric
+					icon={CalendarClock}
+					label={t('section_updated_at')}
+					value={lastActiveDistance}
+					hint={
+						lastActiveDate ? formatInUserTimeZone(lastActiveDate) : undefined
+					}
+				/>
+				<InfoMetric
+					icon={CalendarDays}
+					label={t('section_info_created_at')}
+					value={createdAtText}
+					hint={createdAtHint}
+				/>
 			</div>
+
+			{statusBadges.length > 0 ? (
+				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+					{statusBadges}
+				</div>
+			) : null}
+
+			{renderSummaryCard()}
 			<ResourceConfirmDialog
 				open={isSummaryDialogOpen}
 				onOpenChange={setIsSummaryDialogOpen}

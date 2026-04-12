@@ -43,7 +43,7 @@ const FileDocumentDetail = ({
 	const contentFallbackMinHeightClassName =
 		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 	const statusContainerClassName = cn(
-		'flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
+		'mx-auto flex w-full max-w-[880px] flex-col items-center justify-center gap-2 rounded-[28px] border border-border/60 bg-background/30 px-6 py-8 text-xs text-muted-foreground',
 		contentFallbackMinHeightClassName,
 	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
@@ -237,8 +237,7 @@ const FileDocumentDetail = ({
 	return (
 		<div
 			className={cn(
-				'relative flex w-full flex-col',
-				contentFallbackMinHeightClassName,
+				'relative flex w-full flex-col gap-4',
 				className,
 			)}>
 			{((isError && error) || markdownGetError) && (
@@ -321,7 +320,7 @@ const FileDocumentDetail = ({
 				!isError &&
 				!markdownGetError &&
 				document.convert_task?.status === DocumentMdConvertStatus.SUCCESS && (
-					<Skeleton className='min-h-0 w-full flex-1' />
+					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
 				)}
 			{markdown && !isError && !markdownGetError && (
 				<div className='flex min-h-0 w-full flex-1 flex-col'>

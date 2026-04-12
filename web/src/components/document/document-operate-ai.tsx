@@ -181,44 +181,56 @@ const DocumentOperateAI = ({
 				if (artifact.kind === 'tool_result') {
 					const tool = artifact.tool;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'tool_result',
-								phaseLabelMap.tool_result,
-								{ tool },
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'tool_result',
+									phaseLabelMap.tool_result,
+									{ tool },
+								),
+							}),
+						),
 					);
 					return;
 				}
 
 				if (artifact.kind === 'document_sources') {
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							document_sources: mergeDocumentSources(
-								message.document_sources,
-								artifact.items,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								document_sources: mergeDocumentSources(
+									message.document_sources,
+									artifact.items,
+								),
+							}),
+						),
 					);
 					return;
 				}
 
 				if (artifact.kind === 'chunk_citations') {
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							chunk_citations: mergeChunkCitations(
-								message.chunk_citations,
-								artifact.items,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								chunk_citations: mergeChunkCitations(
+									message.chunk_citations,
+									artifact.items,
+								),
+							}),
+						),
 					);
 				}
 				return;
@@ -231,20 +243,24 @@ const DocumentOperateAI = ({
 						? t(payload.message as any)
 						: payload.message;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
-							ai_state: {
-								phase: 'writing',
-								label: phaseLabelMap.writing,
-							},
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'writing',
-								phaseLabelMap.writing,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
+								ai_state: {
+									phase: 'writing',
+									label: phaseLabelMap.writing,
+								},
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'writing',
+									phaseLabelMap.writing,
+								),
+							}),
+						),
 					);
 					break;
 				}
@@ -255,55 +271,67 @@ const DocumentOperateAI = ({
 						payload.references.length > 0
 					) {
 						setMessages((currentMessages) =>
-							updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-								...message,
-								role: 'assistant',
-								document_sources: mergeDocumentSources(
-									message.document_sources,
-									payload.references,
-								),
-							})),
+							updateAssistantMessage(
+								currentMessages,
+								event.chat_id,
+								(message) => ({
+									...message,
+									role: 'assistant',
+									document_sources: mergeDocumentSources(
+										message.document_sources,
+										payload.references,
+									),
+								}),
+							),
 						);
 					}
 
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'tool_result',
-								phaseLabelMap.tool_result,
-								{ tool: payload.tool },
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'tool_result',
+									phaseLabelMap.tool_result,
+									{ tool: payload.tool },
+								),
+							}),
+						),
 					);
 					break;
 				}
 
 				if (payload.kind === 'token') {
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							content: message.content + payload.content,
-							ai_state: {
-								phase: 'writing',
-								label: phaseLabelMap.writing,
-							},
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'writing',
-								phaseLabelMap.writing,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								content: message.content + payload.content,
+								ai_state: {
+									phase: 'writing',
+									label: phaseLabelMap.writing,
+								},
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'writing',
+									phaseLabelMap.writing,
+								),
+							}),
+						),
 					);
 				}
 				break;
 			}
-				case 'done': {
-					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
+			case 'done': {
+				setMessages((currentMessages) =>
+					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
 						...message,
 						role: 'assistant',
 						ai_state: {
@@ -322,17 +350,17 @@ const DocumentOperateAI = ({
 										event.payload.references,
 									)
 								: message.chunk_citations,
-						})),
-					);
-					void queryClient.invalidateQueries({
-						queryKey: ['paySystemUserInfo'],
-					});
-					void queryClient.invalidateQueries({
-						queryKey: ['paySystemUserComputeLedger'],
-					});
-					break;
-				}
-				case 'error': {
+					})),
+				);
+				void queryClient.invalidateQueries({
+					queryKey: ['paySystemUserInfo'],
+				});
+				void queryClient.invalidateQueries({
+					queryKey: ['paySystemUserComputeLedger'],
+				});
+				break;
+			}
+			case 'error': {
 				setMessages((currentMessages) =>
 					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
 						...message,
@@ -350,8 +378,8 @@ const DocumentOperateAI = ({
 						),
 					})),
 				);
-					break;
-				}
+				break;
+			}
 		}
 	};
 
@@ -487,7 +515,11 @@ const DocumentOperateAI = ({
 					disabled={disabled}
 					onClick={onTriggerClick}>
 					<Bot />
-					{iconOnly ? <span className='sr-only'>{t('document_ai_ask')}</span> : t('document_ai_ask')}
+					{iconOnly ? (
+						<span className='sr-only'>{t('document_ai_ask')}</span>
+					) : (
+						t('document_ai_ask')
+					)}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
@@ -505,7 +537,9 @@ const DocumentOperateAI = ({
 						{t('revornix_ai_access_hint')}
 					</div>
 					<div className='space-y-2'>
-						<div className='text-sm font-medium text-foreground'>{t('use_model')}</div>
+						<div className='text-sm font-medium text-foreground'>
+							{t('use_model')}
+						</div>
 						<AIModelSelect
 							value={selectedModelId}
 							onChange={setSelectedModelId}
@@ -586,8 +620,8 @@ const DocumentOperateAI = ({
 								<Button
 									type='button'
 									size='sm'
-									variant='ghost'
-									className='h-8 rounded-full px-3 text-[11px] text-muted-foreground'
+									variant='outline'
+									className='h-8 rounded-full px-3 text-[11px] shadow-none'
 									onClick={openPicker}
 									disabled={isSending || isUploadingImages}>
 									{isUploadingImages ? (
@@ -622,7 +656,8 @@ const DocumentOperateAI = ({
 									(input.trim().length === 0 && imagePaths.length === 0) ||
 									isUploadingImages ||
 									!selectedModelId ||
-									(selectedModelId === mainUserInfo?.default_revornix_model_id &&
+									(selectedModelId ===
+										mainUserInfo?.default_revornix_model_id &&
 										(revornixModel.loading || revornixModel.subscriptionLocked))
 								}>
 								<Send />

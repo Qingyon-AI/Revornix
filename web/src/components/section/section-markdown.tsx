@@ -289,7 +289,7 @@ const SectionMarkdown = ({
 			{showEmpty ? (
 				<div
 					className={cn(
-						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground',
+						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground mb-6',
 						contentFallbackMinHeightClassName,
 					)}>
 					<div className='max-w-md space-y-2'>
