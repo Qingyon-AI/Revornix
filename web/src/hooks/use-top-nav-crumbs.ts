@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 
 import { getDocumentDetail } from '@/service/document';
 import { getSectionDetail } from '@/service/section';
+import { getUserInfo } from '@/service/user';
 import {
 	buildStaticTopNavCrumbs,
 	getRouteTitleByPath,
@@ -54,6 +55,22 @@ const resolveDynamicBreadcrumbMatch = (
 			queryFn: (id) => getSectionDetail({ section_id: id }),
 			selectTitle: (data) =>
 				(data as Awaited<ReturnType<typeof getSectionDetail>> | undefined)?.title,
+		};
+	}
+
+	const userDetailMatch = pathname.match(/^\/user\/detail\/(\d+)\/?$/);
+	if (userDetailMatch) {
+		return {
+			fallbackPath: '/user/detail',
+			id: Number(userDetailMatch[1]),
+			queryKey: [
+				'top-nav-dynamic-crumb',
+				'user',
+				Number(userDetailMatch[1]),
+			],
+			queryFn: (id) => getUserInfo({ user_id: id }),
+			selectTitle: (data) =>
+				(data as Awaited<ReturnType<typeof getUserInfo>> | undefined)?.nickname,
 		};
 	}
 

@@ -732,15 +732,45 @@ const DocumentOperate = ({
 	};
 
 	const desktopActions = [
-		renderOriginAction(desktopIconButtonClassName, undefined, true),
-		renderShareAction(desktopIconButtonClassName, undefined, true),
-		renderAiAction(desktopIconButtonClassName, undefined, true),
-		renderStarAction(desktopIconButtonClassName, undefined, true),
-		renderReadAction(desktopIconButtonClassName, undefined, true),
-		renderNotesAction(desktopIconButtonClassName, undefined, true),
-		renderDeleteAction(desktopIconButtonClassName, undefined, true),
-		renderConfigurationAction(desktopIconButtonClassName, undefined, true),
-	].filter(Boolean);
+		{
+			key: 'origin',
+			node: renderOriginAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'share',
+			node: renderShareAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'ai',
+			node: renderAiAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'star',
+			node: renderStarAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'read',
+			node: renderReadAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'notes',
+			node: renderNotesAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'delete',
+			node: renderDeleteAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'configuration',
+			node: renderConfigurationAction(
+				desktopIconButtonClassName,
+				undefined,
+				true,
+			),
+		},
+	]
+		.filter((action) => Boolean(action.node))
+		.map((action) => <div key={action.key}>{action.node}</div>);
 
 	return (
 		<>

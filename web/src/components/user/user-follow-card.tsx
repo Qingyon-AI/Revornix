@@ -36,6 +36,10 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 	const queryClient = getQueryClient();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
+	const avatarSrc =
+		user.avatar && user.avatar.length > 0
+			? replacePath(user.avatar, user.id)
+			: undefined;
 
 	const cancelFollowMutation = useMutation({
 		mutationFn: () => followUser({ to_user_id: user.id, status: false }),
@@ -63,6 +67,15 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 				};
 			});
 
+			queryClient.invalidateQueries({
+				queryKey: ['getUserFollows', mainUserInfo?.id],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['getUserFans', mainUserInfo?.id],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['userInfo', user.id],
+			});
 			refreshMainUserInfo();
 			setShowCancelDialog(false);
 		},
@@ -75,13 +88,13 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 		<Card key={user.id} className='px-5 gap-2'>
 			<Link href={`/user/detail/${user.id}`}>
 				<div className='flex flex-row items-center gap-2 mb-2'>
-					<Avatar>
+					<Avatar className='size-12'>
 						<AvatarImage
-							src={replacePath(user.avatar, user.id)}
+							src={avatarSrc}
 							alt='avatar'
-							className='size-12 object-cover'
+							className='object-cover'
 						/>
-						<AvatarFallback className='size-12 font-semibold'>
+						<AvatarFallback className='font-semibold'>
 							{user.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>

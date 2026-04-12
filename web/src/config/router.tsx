@@ -190,9 +190,20 @@ const routers: RouteItem[] = [
 		unclickable: true,
 		children: [
 			{
+				title: '粉丝',
+				title_en: 'Fans',
+				path: '/fans',
+			},
+			{
+				title: '关注',
+				title_en: 'Follows',
+				path: '/follows',
+			},
+			{
 				title: '详情',
 				title_en: 'Detail',
 				path: '/detail',
+				hideInBreadcrumb: true,
 			},
 		],
 	},

@@ -265,13 +265,13 @@ const SubscribedSectionPage = () => {
 					<>
 						<SectionListTable
 							sections={sections}
+							lastRowRef={bottomRef}
 							footer={
 								isFetchingNextPage && data ? (
 									<ListLoadingIndicator />
 								) : undefined
 							}
 						/>
-						<div ref={bottomRef} className='h-px w-full' />
 					</>
 				) : null}
 				{isFetching && !data && (

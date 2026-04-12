@@ -7,18 +7,22 @@ import { useTranslations } from 'next-intl';
 
 const UserFanCard = ({ user }: { user: UserPublicInfo }) => {
 	const t = useTranslations();
+	const avatarSrc =
+		user.avatar && user.avatar.length > 0
+			? replacePath(user.avatar, user.id)
+			: undefined;
 
 	return (
 		<Card key={user.id} className='px-5 gap-2'>
 			<Link href={`/user/detail/${user.id}`}>
 				<div className='flex flex-row items-center gap-2 mb-2'>
-					<Avatar>
+					<Avatar className='size-12'>
 						<AvatarImage
-							src={replacePath(user.avatar, user.id)}
+							src={avatarSrc}
 							alt='avatar'
-							className='size-12 object-cover'
+							className='object-cover'
 						/>
-						<AvatarFallback className='size-12 font-semibold'>
+						<AvatarFallback className='font-semibold'>
 							{user.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>

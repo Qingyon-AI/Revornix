@@ -387,7 +387,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		<>
 		<div className='relative'>
 			<div className='mx-auto flex w-full max-w-[1600px] flex-col pt-0'>
-				<div ref={mainColumnRef} className='relative min-w-0'>
+				<div ref={mainColumnRef} className='relative min-w-0 px-5'>
 					<div className='hidden'>
 						<DocumentGraph
 							document_id={id}

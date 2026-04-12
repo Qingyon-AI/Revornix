@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { SectionInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
@@ -17,9 +17,11 @@ import SectionVisibilityHint from './section-visibility-hint';
 const SectionListTable = ({
 	sections,
 	footer,
+	lastRowRef,
 }: {
 	sections: SectionInfo[];
 	footer?: ReactNode;
+	lastRowRef?: Ref<HTMLTableRowElement>;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -36,9 +38,10 @@ const SectionListTable = ({
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{sections.map((section) => (
+					{sections.map((section, index) => (
 						<TableRow
 							key={section.id}
+							ref={index === sections.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/section/detail/${section.id}`)}>
 							<TableCell className='whitespace-normal'>
