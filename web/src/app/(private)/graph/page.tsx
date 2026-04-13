@@ -4,6 +4,7 @@ import EntityGraphCanvas, {
 	type GraphCanvasLink,
 	type GraphCanvasNode,
 } from '@/components/graph/entity-graph-canvas';
+import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
 	Empty,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/empty';
 import { searchGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
-import { Share2 } from 'lucide-react';
+import { AlertTriangle, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const GraphPage = () => {
@@ -53,7 +54,13 @@ const GraphPage = () => {
 					</div>
 				) : null}
 				{isError ? (
-					<div className='text-sm text-muted-foreground'>Error: {error.message}</div>
+					<GraphStatePanel
+						icon={AlertTriangle}
+						tone='warning'
+						className='h-full w-full'
+						title={t('something_wrong')}
+						description={error.message || t('request_error')}
+					/>
 				) : null}
 				{isSuccess && isFetched ? (
 					nodes.length === 0 && edges.length === 0 ? (
