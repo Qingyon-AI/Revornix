@@ -34,6 +34,10 @@ export async function generateMetadata(): Promise<Metadata> {
 			title: formatMetaTitle(siteName, description),
 			description,
 			images: [getDefaultOgImage()],
+			socialCard: {
+				eyebrow: siteName,
+				theme: 'default',
+			},
 			keywords: ['AI workspace', 'public knowledge hub'],
 		}),
 		metadataBase: getSiteUrl(),

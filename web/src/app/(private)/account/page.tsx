@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import EmailBindLocal from '@/components/user/email-bind-local';
 import AvatarUpdate from '@/components/user/avatar-update';
+import CoverUpdate from '@/components/user/cover-update';
 import NicknameUpdate from '@/components/user/nickname-update';
 import SloganUpdate from '@/components/user/slogan-update';
 import DeleteUserButton from '@/components/user/delete-user-button';
@@ -47,6 +48,18 @@ const AccountPage = async () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<AvatarUpdate />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('account_cover')}
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_cover_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<CoverUpdate />
 						</div>
 					</div>
 					<Separator />

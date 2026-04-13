@@ -44,6 +44,12 @@ export interface SectionUserPublicInfo {
      * @type {string}
      * @memberof SectionUserPublicInfo
      */
+    cover?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionUserPublicInfo
+     */
     nickname: string;
     /**
      * 
@@ -103,6 +109,7 @@ export function SectionUserPublicInfoFromJSONTyped(json: any, ignoreDiscriminato
         
         'id': json['id'],
         'avatar': json['avatar'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
@@ -125,6 +132,7 @@ export function SectionUserPublicInfoToJSONTyped(value?: SectionUserPublicInfo |
         
         'id': value['id'],
         'avatar': value['avatar'],
+        'cover': value['cover'],
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'authority': UserSectionAuthorityToJSON(value['authority']),
@@ -133,4 +141,3 @@ export function SectionUserPublicInfoToJSONTyped(value?: SectionUserPublicInfo |
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

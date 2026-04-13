@@ -84,6 +84,12 @@ export interface PrivateUserInfo {
      * @type {string}
      * @memberof PrivateUserInfo
      */
+    cover?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PrivateUserInfo
+     */
     nickname: string;
     /**
      * 
@@ -221,6 +227,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'uuid': json['uuid'],
         'role': json['role'],
         'avatar': json['avatar'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'nickname': json['nickname'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
@@ -258,6 +265,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'uuid': value['uuid'],
         'role': value['role'],
         'avatar': value['avatar'],
+        'cover': value['cover'],
         'nickname': value['nickname'],
         'fans': value['fans'],
         'follows': value['follows'],
@@ -279,4 +287,3 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
-

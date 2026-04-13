@@ -143,6 +143,7 @@ class UserInfoUpdateRequest(BaseModel):
     nickname: str | None = None
     slogan: str | None = None
     avatar: str | None = None
+    cover: str | None = None
 
 class UserLoginRequest(BaseModel):
     email: str
@@ -161,6 +162,7 @@ class PrivateUserInfo(BaseModel):
     uuid: str
     role: int
     avatar: str
+    cover: str | None = None
     nickname: str
     fans: int | None = None
     follows: int | None = None
@@ -187,6 +189,7 @@ class UserInfoRequest(BaseModel):
 class SectionUserPublicInfo(BaseModel):
     id: int
     avatar: str
+    cover: str | None = None
     nickname: str
     slogan: str | None = None
     authority: UserSectionAuthority | None = None
@@ -198,6 +201,7 @@ class UserPublicInfo(BaseModel):
     id: int
     role: int
     avatar: str
+    cover: str | None = None
     nickname: str
     slogan: str | None = None
     is_followed: bool | None = None

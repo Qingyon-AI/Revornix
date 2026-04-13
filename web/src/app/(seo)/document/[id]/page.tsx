@@ -90,6 +90,10 @@ export async function generateMetadata(props: {
 			path: `/document/${document.id}`,
 			type: 'article',
 			images: [coverSrc],
+			socialCard: {
+				eyebrow: getCategoryLabel(document.category, t),
+				theme: 'document',
+			},
 			publishedTime: toIsoDate(document.create_time),
 			modifiedTime: toIsoDate(document.update_time ?? document.create_time),
 			authors: [document.creator.nickname],
@@ -107,6 +111,10 @@ export async function generateMetadata(props: {
 				description: t('document_no_description'),
 				path: `/document/${id}`,
 				noIndex: true,
+				socialCard: {
+					eyebrow: t('seo_document_title_suffix'),
+					theme: 'document',
+				},
 				keywords: ['public document'],
 			});
 		}

@@ -21,6 +21,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import CoverUpdate from './cover-update';
 import {
 	InifiniteScrollPagnitionUserPublicInfo,
 	UserPublicInfo,
@@ -226,6 +227,10 @@ const UserContainer = ({ id }: { id: number }) => {
 		userInfo?.avatar && userInfo.avatar.length > 0
 			? replacePath(userInfo.avatar, userInfo.id)
 			: undefined;
+	const coverSrc =
+		userInfo?.cover && userInfo.cover.length > 0
+			? replacePath(userInfo.cover, userInfo.id)
+			: undefined;
 
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-6 pt-1 sm:px-5 lg:px-6'>
@@ -244,79 +249,87 @@ const UserContainer = ({ id }: { id: number }) => {
 				</>
 			) : userInfo ? (
 				<>
-					<div className='relative overflow-hidden rounded-[30px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] p-6 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.38)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.2),transparent_24%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(15,23,42,0.84))]'>
-						<div className='pointer-events-none absolute inset-0'>
-							<div className='absolute left-0 top-0 h-28 w-28 rounded-full bg-emerald-500/12 blur-3xl' />
-							<div className='absolute right-4 top-4 h-32 w-32 rounded-full bg-sky-500/12 blur-3xl' />
+					<div className='relative overflow-hidden rounded-[30px] border border-border/60 bg-background/30 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.38)]'>
+						<div className='relative h-52 w-full overflow-hidden sm:h-60'>
+							{coverSrc ? (
+								<img
+									src={coverSrc}
+									alt={`${userInfo.nickname} cover`}
+									className='h-full w-full object-cover'
+								/>
+							) : null}
+							<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_26%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.2),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.08),rgba(15,23,42,0.76))]' />
 						</div>
-						<div className='relative flex flex-col xl:flex-row xl:items-end xl:justify-between'>
-							<div className='flex min-w-0 flex-col gap-5 md:flex-row md:items-center'>
-								<Avatar
-									className='size-24 border-4 border-background/80 shadow-lg md:size-28'
-									title={userInfo.nickname || 'Unknown User'}>
-									<AvatarImage
-										className='object-cover'
-										src={avatarSrc}
-										alt='user avatar'
-									/>
-									<AvatarFallback className='text-2xl font-semibold'>
-										{userInfo.nickname?.slice(0, 1) ?? '?'}
-									</AvatarFallback>
-								</Avatar>
-								<div className='min-w-0 space-y-4'>
-									<div className='space-y-2'>
-										<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground'>
-											<Sparkles className='size-3' />
-											<span>{t('website_title')}</span>
+						<div className='relative px-6 pb-6'>
+							<div className='-mt-12 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between'>
+								<div className='flex min-w-0 flex-col gap-5 md:flex-row'>
+									<Avatar
+										className='size-22 border-4 border-background shadow-lg md:size-26'
+										title={userInfo.nickname || 'Unknown User'}>
+										<AvatarImage
+											className='object-cover'
+											src={avatarSrc}
+											alt='user avatar'
+										/>
+										<AvatarFallback className='text-2xl font-semibold'>
+											{userInfo.nickname?.slice(0, 1) ?? '?'}
+										</AvatarFallback>
+									</Avatar>
+									<div className='min-w-0 space-y-4 md:pt-14'>
+										<div className='space-y-2'>
+											<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground'>
+												<Sparkles className='size-3' />
+												<span>{t('website_title')}</span>
+											</div>
+											<div className='flex flex-wrap items-center gap-2'>
+												<h1 className='truncate text-3xl font-semibold tracking-tight'>
+													{userInfo.nickname}
+												</h1>
+												<Badge
+													className={cn(
+														'rounded-full border px-3 py-1 text-xs font-medium',
+														roleMeta.className,
+													)}>
+													{roleMeta.label}
+												</Badge>
+												<Badge
+													variant='outline'
+													className='rounded-full bg-background/75 px-3 py-1 text-xs text-muted-foreground'>
+													{relationshipLabel}
+												</Badge>
+											</div>
+											<p className='max-w-3xl text-base leading-7 text-muted-foreground'>
+												{userInfo.slogan
+													? userInfo.slogan
+													: t('user_slogan_empty')}
+											</p>
 										</div>
-										<div className='flex flex-wrap items-center gap-2'>
-											<h1 className='truncate text-3xl font-semibold tracking-tight'>
-												{userInfo.nickname}
-											</h1>
-											<Badge
-												className={cn(
-													'rounded-full border px-3 py-1 text-xs font-medium',
-													roleMeta.className,
-												)}>
-												{roleMeta.label}
-											</Badge>
-											<Badge
-												variant='outline'
-												className='rounded-full bg-background/75 px-3 py-1 text-xs text-muted-foreground'>
-												{relationshipLabel}
-											</Badge>
-										</div>
-										<p className='max-w-3xl text-base leading-7 text-muted-foreground'>
-											{userInfo.slogan
-												? userInfo.slogan
-												: t('user_slogan_empty')}
-										</p>
-									</div>
-									<div className='flex flex-wrap gap-2.5'>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-											<Users className='size-4' />
-											<span>
-												{t('user_fans')} {userInfo.fans ?? 0}
-											</span>
-										</div>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-											<UserCheck className='size-4' />
-											<span>
-												{t('user_follows')} {userInfo.follows ?? 0}
-											</span>
-										</div>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-											<BookMarked className='size-4' />
-											<span>
-												{t('user_detail_section_total')} {totalSections}
-											</span>
+										<div className='flex flex-wrap gap-2.5'>
+											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
+												<Users className='size-4' />
+												<span>
+													{t('user_fans')} {userInfo.fans ?? 0}
+												</span>
+											</div>
+											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
+												<UserCheck className='size-4' />
+												<span>
+													{t('user_follows')} {userInfo.follows ?? 0}
+												</span>
+											</div>
+											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
+												<BookMarked className='size-4' />
+												<span>
+													{t('user_detail_section_total')} {totalSections}
+												</span>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-							<div className='flex shrink-0 items-center gap-3'>
-								{!isOwnProfile ? (
-									userInfo.is_followed ? (
+								<div className='flex shrink-0 items-center gap-3'>
+									{isOwnProfile ? (
+										<CoverUpdate compact />
+									) : userInfo.is_followed ? (
 										<Button
 											disabled={mutateFollow.isPending}
 											variant='outline'
@@ -333,8 +346,8 @@ const UserContainer = ({ id }: { id: number }) => {
 											<UserPlus className='size-4' />
 											{t('user_follow')}
 										</Button>
-									)
-								) : null}
+									)}
+								</div>
 							</div>
 						</div>
 					</div>

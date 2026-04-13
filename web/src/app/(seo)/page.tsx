@@ -19,6 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
 		title: formatMetaTitle(t('seo_home_title')),
 		description: t('seo_home_description'),
 		path: '/',
+		socialCard: {
+			eyebrow: t('website_title'),
+			theme: 'community',
+		},
 		keywords: ['public knowledge hub', 'community sections', 'creator profiles'],
 	});
 }

@@ -37,6 +37,12 @@ export interface UserInfoUpdateRequest {
      * @memberof UserInfoUpdateRequest
      */
     avatar?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserInfoUpdateRequest
+     */
+    cover?: string | null;
 }
 
 /**
@@ -59,6 +65,7 @@ export function UserInfoUpdateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'nickname': json['nickname'] == null ? undefined : json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'avatar': json['avatar'] == null ? undefined : json['avatar'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
     };
 }
 
@@ -76,6 +83,6 @@ export function UserInfoUpdateRequestToJSONTyped(value?: UserInfoUpdateRequest |
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'avatar': value['avatar'],
+        'cover': value['cover'],
     };
 }
-
