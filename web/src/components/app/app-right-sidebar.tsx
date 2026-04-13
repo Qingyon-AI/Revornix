@@ -7,7 +7,7 @@ import { PanelRightIcon } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { useRightSidebar } from '@/provider/right-sidebar-provider';
+import { useOptionalRightSidebar } from '@/provider/right-sidebar-provider';
 
 import { Button } from '../ui/button';
 
@@ -19,7 +19,13 @@ export const RightSidebarTrigger = ({
 	className?: string;
 }) => {
 	const isCompactViewport = useIsMobile(1280);
-	const { hasContent, open, toggleSidebar } = useRightSidebar();
+	const rightSidebar = useOptionalRightSidebar();
+
+	if (!rightSidebar) {
+		return null;
+	}
+
+	const { hasContent, open, toggleSidebar } = rightSidebar;
 
 	if (isCompactViewport || !hasContent) {
 		return null;
@@ -40,11 +46,14 @@ export const RightSidebarTrigger = ({
 
 export const AppRightSidebar = () => {
 	const isCompactViewport = useIsMobile(1280);
-	const { content, hasContent, open } = useRightSidebar();
+	const rightSidebar = useOptionalRightSidebar();
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+	const content = rightSidebar?.content ?? null;
+	const hasContent = rightSidebar?.hasContent ?? false;
+	const open = rightSidebar?.open ?? false;
 
 	useEffect(() => {
-		if (!open || !hasContent) {
+		if (!rightSidebar || !open || !hasContent) {
 			return;
 		}
 
@@ -54,7 +63,11 @@ export const AppRightSidebar = () => {
 		}
 
 		container.scrollTop = 0;
-	}, [content, hasContent, open]);
+	}, [content, hasContent, open, rightSidebar]);
+
+	if (!rightSidebar) {
+		return null;
+	}
 
 	if (isCompactViewport || !hasContent) {
 		return null;
