@@ -32,6 +32,7 @@ const ImageNodeView = ({
 					<ImageWithFallback
 						src={resolvedSrc}
 						alt={alt}
+						preview
 						className='!my-0 block h-auto max-h-[32rem] w-full max-w-full rounded-2xl object-contain shadow-sm'
 						fallbackClassName='min-h-40 rounded-2xl border border-dashed border-border/70'
 						fallbackSvgClassName='max-w-[240px] p-5'

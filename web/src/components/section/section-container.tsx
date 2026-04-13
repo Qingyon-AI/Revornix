@@ -187,11 +187,12 @@ const SectionContainer = ({ id }: { id: number }) => {
 									<ImageWithFallback
 										src={sectionCoverSrc}
 										alt={section?.title || t('section_title_empty')}
+										preview
 										className='max-h-[300px] w-full object-cover sm:max-h-[360px]'
 										fallbackClassName='max-h-[300px] w-full sm:max-h-[360px]'
 										fallbackSvgClassName='max-w-[240px] p-6'
 									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+									<div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
 								</div>
 							</div>
 						) : null}
