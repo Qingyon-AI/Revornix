@@ -14,8 +14,8 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 import { getSectionDetail, updateSection } from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
-import { Alert, AlertDescription } from '../ui/alert';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
+import NoticeBox from '../ui/notice-box';
 import { Skeleton } from '../ui/skeleton';
 
 const SectionMarkdownSkeleton = ({ className }: { className?: string }) => {
@@ -333,11 +333,9 @@ const SectionMarkdown = ({
 				<>
 					{freshnessState.markdownStale ? (
 						<div className='mx-auto mb-4 w-full max-w-[880px]'>
-							<Alert className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
-								<AlertDescription>
-									{t('section_markdown_stale_hint')}
-								</AlertDescription>
-							</Alert>
+							<NoticeBox tone='warning'>
+								{t('section_markdown_stale_hint')}
+							</NoticeBox>
 						</div>
 					) : null}
 					<EditableMarkdownPanel

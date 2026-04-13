@@ -3,45 +3,22 @@ import {
 	SectionSeoDetailRequest,
 } from '@/generated';
 import JsonLd from '@/components/seo/json-ld';
+import {
+	SeoSectionMetaSidebar,
+	SeoSectionSidebarBridge,
+} from '@/components/seo/seo-section-meta-sidebar';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { getLocale, getTranslations } from 'next-intl/server';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import {
-	AlertCircle,
-	BookOpenText,
-	CalendarClock,
-	CalendarDays,
-	ChevronRight,
-	Expand,
-	Sparkles,
-	Users,
-	type LucideIcon,
-} from 'lucide-react';
-import SectionGraphSEO from '@/components/section/section-graph-seo';
+import { CalendarClock, Sparkles } from 'lucide-react';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
-import SectionDocumentsList from '@/components/section/section-documents-list';
 import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import Link from 'next/link';
@@ -53,13 +30,12 @@ import {
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { notFound } from 'next/navigation';
-import GraphTaskCard from '@/components/graph/graph-task-card';
-import SectionPodcastSeoCard from '@/components/section/section-podcast-seo-card';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
+	formatMetaTitle,
 	toIsoDate,
 } from '@/lib/seo-metadata';
 import { getSectionCoverSrc } from '@/lib/section-cover';
@@ -110,37 +86,6 @@ const buildSectionMetaDescription = (section: SectionInfoType) => {
 		.join(' • ');
 };
 
-const SeoMetricCard = ({
-	icon: Icon,
-	label,
-	value,
-	hint,
-}: {
-	icon: LucideIcon;
-	label: string;
-	value: string | number;
-	hint?: string;
-}) => {
-	return (
-		<div className='rounded-2xl border border-border/60 bg-background/45 px-4 py-3 shadow-sm'>
-			<div className='flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground'>
-				<div className='flex size-7 items-center justify-center rounded-xl bg-muted/70 text-foreground'>
-					<Icon className='size-3.5' />
-				</div>
-				<span>{label}</span>
-			</div>
-			<div className='mt-3 text-lg font-semibold tracking-tight sm:text-xl'>
-				{value}
-			</div>
-			{hint ? (
-				<p className='mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground'>
-					{hint}
-				</p>
-			) : null}
-		</div>
-	);
-};
-
 export async function generateMetadata(props: {
 	params: Params;
 	searchParams: SearchParams;
@@ -162,15 +107,15 @@ export async function generateMetadata(props: {
 	if (section_res) {
 		const metaDescription = buildSectionMetaDescription(section_res);
 		return buildMetadata({
-			title: section_res.title,
+			title: formatMetaTitle(section_res.title),
 			description: metaDescription,
 			path: `/section/${uuid}`,
 			type: 'article',
-			images: [
-				getSectionCoverSrc(section_res) ?? undefined,
-			],
+			images: [getSectionCoverSrc(section_res) ?? undefined],
 			publishedTime: toIsoDate(section_res.create_time),
-			modifiedTime: toIsoDate(section_res.update_time ?? section_res.create_time),
+			modifiedTime: toIsoDate(
+				section_res.update_time ?? section_res.create_time,
+			),
 			authors: section_res.creator?.nickname
 				? [section_res.creator.nickname]
 				: undefined,
@@ -244,7 +189,11 @@ const SEOSectionDetail = async (props: {
 						}),
 					),
 				])
-			: [[null, null], [null, null], [null, null]];
+			: [
+					[null, null],
+					[null, null],
+					[null, null],
+				];
 
 	const initialComments = initialCommentsRes[0] ?? undefined;
 	const initialDocuments = initialDocumentsRes[0] ?? undefined;
@@ -280,359 +229,189 @@ const SEOSectionDetail = async (props: {
 					keywords: section.labels?.map((label) => label.name),
 				}
 			: null;
-	const breadcrumbSchema = section
-		? {
-				'@context': 'https://schema.org',
-				'@type': 'BreadcrumbList',
-				itemListElement: [
-					{
-						'@type': 'ListItem',
-						position: 1,
-						name: t('seo_community_title'),
-						item: createAbsoluteUrl('/community'),
-					},
-					...(section.creator
-						? [
-								{
-									'@type': 'ListItem',
-									position: 2,
-									name: section.creator.nickname,
-									item: createAbsoluteUrl(`/user/${section.creator.id}`),
-								},
-							]
-						: []),
-					{
-						'@type': 'ListItem',
-						position: section.creator ? 3 : 2,
-						name: sectionTitle,
-						item: createAbsoluteUrl(`/section/${uuid}`),
-					},
-				],
-			}
-		: null;
 	const freshnessState = getSectionFreshnessState(section);
+	const hasRenderableGraph = Boolean(initialGraph?.nodes?.length);
 	const structuredData: Array<Record<string, unknown>> = [];
 	if (sectionSchema) {
 		structuredData.push(sectionSchema);
 	}
-	if (breadcrumbSchema) {
-		structuredData.push(breadcrumbSchema);
-	}
 	const graphCardState =
-		freshnessState.graphStale &&
-		section?.process_task?.status === SectionProcessStatus.SUCCESS
+		hasRenderableGraph && freshnessState.graphStale
 			? {
 					badge: t('section_graph_status_stale'),
 					tone: 'warning' as const,
 				}
-			: section?.process_task?.status === SectionProcessStatus.SUCCESS
-			? {
-					badge: t('document_graph_status_success'),
-					tone: 'success' as const,
-				}
-			: section?.process_task?.status === SectionProcessStatus.FAILED
+			: hasRenderableGraph ||
+				  section?.process_task?.status === SectionProcessStatus.SUCCESS
 				? {
-						badge: t('document_graph_status_failed'),
-						tone: 'danger' as const,
+						badge: t('document_graph_status_success'),
+						tone: 'success' as const,
 					}
-				: section?.process_task?.status === SectionProcessStatus.PROCESSING
+				: section?.process_task?.status === SectionProcessStatus.FAILED
 					? {
-							badge: t('document_graph_status_doing'),
-							tone: 'default' as const,
+							badge: t('document_graph_status_failed'),
+							tone: 'danger' as const,
 						}
-					: {
-							badge: t('document_graph_status_todo'),
-							tone: 'warning' as const,
-						};
-	const surfaceCardClassName =
-		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
-
-		return (
-			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
-				{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
-				<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
-				<Link href='/community' className='transition-colors hover:text-foreground'>
-					{t('seo_community_title')}
-				</Link>
-				<ChevronRight className='size-4' />
-				{section?.creator ? (
-					<>
+					: section?.process_task?.status === SectionProcessStatus.PROCESSING
+						? {
+								badge: t('document_graph_status_doing'),
+								tone: 'default' as const,
+							}
+						: {
+								badge: t('document_graph_status_todo'),
+								tone: 'warning' as const,
+							};
+	return (
+		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+			{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
+			<div className='mx-auto w-full max-w-[920px] space-y-5'>
+				<SeoSectionSidebarBridge
+					section={section!}
+					sectionTitle={sectionTitle}
+					sectionDescription={sectionDescription}
+					updatedAt={updatedAt}
+					createdAt={createdAt}
+					creatorAvatar={creatorAvatar}
+					sectionCover={sectionCover}
+					initialDocuments={initialDocuments}
+					initialGraph={initialGraph}
+					graphBadge={graphCardState.badge}
+					graphTone={graphCardState.tone}
+					graphStale={freshnessState.graphStale}
+				/>
+				<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+					{section?.creator ? (
 						<Link
 							href={`/user/${section.creator.id}`}
-							className='transition-colors hover:text-foreground'>
-							{section.creator.nickname}
+							className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-2.5 py-1.5 transition-colors hover:bg-background/70'>
+							<Avatar className='size-6'>
+								<AvatarImage
+									src={creatorAvatar}
+									alt={section.creator.nickname}
+									className='object-cover'
+								/>
+								<AvatarFallback className='text-[11px] font-semibold'>
+									{section.creator.nickname.slice(0, 1)}
+								</AvatarFallback>
+							</Avatar>
+							<span>{section.creator.nickname}</span>
 						</Link>
-						<ChevronRight className='size-4' />
-					</>
-				) : null}
-				<span className='line-clamp-1 text-foreground'>{sectionTitle}</span>
-			</div>
-			<Card className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
-				<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
-				<CardContent className='relative px-5 py-6 sm:px-7 sm:py-7'>
-					<div className='space-y-5 sm:space-y-6'>
-						{sectionCover ? (
-							<div className='relative overflow-hidden rounded-[28px] border border-border/60 bg-background/50 shadow-[0_20px_50px_-34px_rgba(15,23,42,0.7)]'>
-								<ImageWithFallback
-									src={sectionCover}
-									alt={sectionTitle}
-									preview
-									className='h-[180px] w-full object-cover object-center sm:h-[220px] xl:h-[260px]'
-									fallbackClassName='h-[180px] w-full sm:h-[220px] xl:h-[260px]'
-									fallbackSvgClassName='max-w-[220px] p-6'
-								/>
-								<div className='pointer-events-none absolute inset-0 bg-gradient-to-r from-black/28 via-black/6 to-black/22' />
-							</div>
-						) : null}
-
-						<div className='flex flex-wrap items-center gap-2'>
-							<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground'>
-								<Sparkles className='size-3.5 text-emerald-500' />
-								<span>{t('section_ai_tips')}</span>
-							</div>
-							{section?.labels?.map((label) => (
-								<Badge
-									key={label.id}
-									variant='secondary'
-									className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
-									{label.name}
-								</Badge>
-							))}
-						</div>
-
-						<div className='space-y-3'>
-							<h1 className='max-w-5xl break-words text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl lg:leading-[1.08]'>
-								{sectionTitle}
-							</h1>
-							<p className='max-w-4xl break-words text-sm leading-7 text-muted-foreground sm:text-base'>
-								{sectionDescription}
-							</p>
-							<div className='flex flex-wrap items-center gap-3'>
-								{section?.creator ? (
-									<Link
-										href={`/user/${section.creator.id}`}
-										className='inline-flex items-center gap-3 rounded-full border border-border/50 bg-background/45 px-3 py-2 transition-colors hover:bg-background/70'>
-										<Avatar className='size-8'>
-											<AvatarImage
-												src={creatorAvatar}
-												alt={section.creator.nickname}
-												className='object-cover'
-											/>
-											<AvatarFallback className='font-semibold'>
-												{section.creator.nickname.slice(0, 1)}
-											</AvatarFallback>
-										</Avatar>
-										<div className='text-left'>
-											<div className='text-xs text-muted-foreground'>
-												{t('section_creator')}
-											</div>
-											<div className='text-sm text-foreground'>
-												{section.creator.nickname}
-											</div>
-										</div>
-									</Link>
-								) : null}
-								{section?.id ? (
-									<SeoSectionSubscribeButton
-										sectionId={section.id}
-										creatorId={section.creator?.id}
-										initialIsSubscribed={section.is_subscribed}
-										className='shrink-0'
-									/>
-								) : null}
-							</div>
-						</div>
-
-						<div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-							<SeoMetricCard
-								icon={BookOpenText}
-								label={t('section_documents')}
-								value={section?.documents_count ?? 0}
-							/>
-							<SeoMetricCard
-								icon={Users}
-								label={t('section_subscribers')}
-								value={section?.subscribers_count ?? 0}
-							/>
-							<SeoMetricCard
-								icon={CalendarClock}
-								label={t('section_updated_at')}
-								value={updatedAt}
-							/>
-							<SeoMetricCard
-								icon={CalendarDays}
-								label={t('section_info_created_at')}
-								value={createdAt}
-							/>
-						</div>
+					) : null}
+					<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
+						<CalendarClock className='size-3.5' />
+						<span>{t('section_updated_at')}</span>
+						<span className='text-foreground/85'>{updatedAt}</span>
 					</div>
-				</CardContent>
-			</Card>
-
-			<div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start'>
-				<div className='min-w-0 space-y-6'>
-					<Card className={surfaceCardClassName}>
-						<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
-							<div className='max-w-none overflow-x-hidden'>
-								<TipTapMarkdownViewer
-									content={markdown ? markdown : t('section_no_md')}
-									ownerId={section?.creator?.id}
-								/>
-							</div>
-						</CardContent>
-					</Card>
-
 					{section?.id ? (
-						<Card className={surfaceCardClassName}>
-							<CardHeader className='gap-2 px-5 pt-5 pb-0 sm:px-7 sm:pt-6'>
-								<CardTitle className='text-2xl tracking-tight'>
-									{t('section_comments')}
-								</CardTitle>
-								<CardDescription className='text-sm leading-6'>
-									{t('section_comments_description')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='space-y-5 px-5 pb-6 pt-5 sm:px-7 sm:pb-7'>
-								{hasAccessToken ? (
-									<SectionCommentForm section_id={section.id} />
-								) : (
-									<div className='rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground'>
-										<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-											<span>{t('seo_section_login_to_comment')}</span>
-											<Link
-												href={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}>
-												<Button size='sm' className='rounded-2xl'>
-													{t('seo_nav_login_in')}
-												</Button>
-											</Link>
-										</div>
-									</div>
-								)}
-								<SectionCommentsList
-									section_id={section.id}
-									initialData={initialComments}
-									publicMode
-								/>
-							</CardContent>
-						</Card>
+						<SeoSectionSubscribeButton
+							sectionId={section.id}
+							creatorId={section.creator?.id}
+							initialIsSubscribed={section.is_subscribed}
+							className='shrink-0'
+						/>
 					) : null}
 				</div>
 
-				<div className='min-w-0 space-y-6 xl:sticky xl:top-24'>
-					<GraphTaskCard
-						title={t('section_graph')}
-						description={t('section_graph_description')}
-						badge={graphCardState.badge}
-						hint={
-							freshnessState.graphStale
-								? t('section_graph_stale_hint')
-								: undefined
-						}
-						tone={graphCardState.tone}
-						action={
-							<Dialog>
-								<DialogTrigger asChild>
-									<Button
-										size='icon'
-										variant='outline'
-										className='size-8 shrink-0 rounded-2xl border-border/70 bg-background/65 shadow-none hover:bg-background'>
-										<Expand className='size-4 text-muted-foreground' />
-									</Button>
-								</DialogTrigger>
-								<DialogContent className='flex h-[70vh] min-h-[420px] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:h-[min(88vh,720px)] sm:min-h-[560px] sm:max-w-[min(1200px,92vw)]'>
-									<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-										<DialogTitle>{t('section_graph')}</DialogTitle>
-										<DialogDescription>
-											{t('section_graph_description')}
-										</DialogDescription>
-										{freshnessState.graphStale ? (
-											<div className='flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm leading-6 text-amber-800 dark:text-amber-200'>
-												<AlertCircle className='mt-0.5 size-4 shrink-0' />
-												<span>{t('section_graph_stale_hint')}</span>
-											</div>
-										) : null}
-									</DialogHeader>
-									<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-										<div className='min-h-[320px] h-full overflow-hidden rounded-2xl border border-border/60 bg-background/60 sm:min-h-[420px]'>
-											{section ? (
-												<SectionGraphSEO
-													section_id={section.id}
-													showSearch
-													showStaleHint={false}
-													initialSection={section}
-													initialGraph={initialGraph}
-													publicMode
-												/>
-											) : null}
-										</div>
-									</div>
-								</DialogContent>
-							</Dialog>
-						}>
-						<div className='h-[260px] overflow-hidden rounded-[20px] border border-border/60 bg-background/40 sm:h-[320px] xl:h-[340px]'>
-							{section ? (
-								<SectionGraphSEO
-									section_id={section.id}
-									showStaleHint={false}
-									initialSection={section}
-									initialGraph={initialGraph}
-									publicMode
-								/>
-							) : null}
-						</div>
-					</GraphTaskCard>
-
-					<Card className={surfaceCardClassName}>
-						<CardHeader className='gap-2 px-4 pt-4 pb-0 sm:px-5 sm:pt-5'>
-							<CardTitle>{t('section_documents')}</CardTitle>
-							<CardDescription className='leading-6'>
-								{t('section_documents_description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className='px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4'>
-							<div className='flex flex-col gap-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-auto xl:p-1 pt-0'>
-								{section ? (
-									<SectionDocumentsList
-										section_id={section.id}
-										publicMode
-										initialData={initialDocuments}
-									/>
-								) : null}
-							</div>
-						</CardContent>
-					</Card>
-
-					<SectionPodcastSeoCard
-						status={section?.podcast_task?.status}
-						podcastFileName={section?.podcast_task?.podcast_file_name}
-						title={section?.title}
-						cover={sectionCover}
-						className={surfaceCardClassName}
-					/>
-
-					<Card className={surfaceCardClassName}>
-						<CardHeader className='gap-2 px-4 pt-4 pb-0 sm:px-5 sm:pt-5'>
-							<CardTitle>{t('seo_community_title')}</CardTitle>
-							<CardDescription className='leading-6'>
-								{t('seo_community_description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className='flex flex-col gap-3 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
-							<Link
-								href='/community'
-								className='text-sm font-medium text-foreground transition-colors hover:text-primary'>
-								{t('seo_user_back_to_community')}
-							</Link>
-							{section?.creator ? (
-								<Link
-									href={`/user/${section.creator.id}`}
-									className='text-sm font-medium text-foreground transition-colors hover:text-primary'>
-									{t('seo_document_related_creator')}
-								</Link>
-							) : null}
-						</CardContent>
-					</Card>
+				<div className='flex flex-wrap items-center gap-2'>
+					<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground'>
+						<Sparkles className='size-3.5 text-emerald-500' />
+						<span>{t('section_ai_tips')}</span>
+					</div>
+					{section?.labels?.map((label) => (
+						<Badge
+							key={label.id}
+							variant='secondary'
+							className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
+							{label.name}
+						</Badge>
+					))}
 				</div>
+
+				<div className='space-y-3'>
+					<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+						{sectionTitle}
+					</h1>
+					<p className='max-w-[820px] text-sm leading-7 text-muted-foreground sm:text-base'>
+						{sectionDescription}
+					</p>
+				</div>
+			</div>
+
+			<div className='min-w-0 space-y-6'>
+				<div className='mx-auto w-full max-w-[920px]'>
+					{sectionCover ? (
+						<ImageWithFallback
+							src={sectionCover}
+							alt={sectionTitle}
+							preview
+							className='h-[220px] w-full rounded-xl object-cover object-center sm:h-[300px]'
+							fallbackClassName='h-[220px] w-full sm:h-[300px]'
+							fallbackSvgClassName='max-w-[220px] p-6'
+						/>
+					) : null}
+				</div>
+
+				<div className='mx-auto w-full max-w-[820px] overflow-x-hidden'>
+					<TipTapMarkdownViewer
+						content={markdown ? markdown : t('section_no_md')}
+						ownerId={section?.creator?.id}
+					/>
+				</div>
+
+				<div className='mx-auto w-full max-w-[920px] xl:hidden'>
+					{section ? (
+						<SeoSectionMetaSidebar
+							section={section}
+							sectionTitle={sectionTitle}
+							sectionDescription={sectionDescription}
+							updatedAt={updatedAt}
+							createdAt={createdAt}
+							creatorAvatar={creatorAvatar}
+							sectionCover={sectionCover}
+							initialDocuments={initialDocuments}
+							initialGraph={initialGraph}
+							graphBadge={graphCardState.badge}
+							graphTone={graphCardState.tone}
+							graphStale={freshnessState.graphStale}
+						/>
+					) : null}
+				</div>
+
+				{section?.id ? (
+					<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
+						<div className='space-y-2'>
+							<h2 className='text-2xl font-semibold tracking-tight'>
+								{t('section_comments')}
+							</h2>
+							<p className='text-sm leading-6 text-muted-foreground'>
+								{t('section_comments_description')}
+							</p>
+						</div>
+
+						<div className='space-y-5'>
+							{hasAccessToken ? (
+								<SectionCommentForm section_id={section.id} />
+							) : (
+								<div className='rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground'>
+									<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+										<span>{t('seo_section_login_to_comment')}</span>
+										<Link
+											href={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}>
+											<Button size='sm' className='rounded-2xl'>
+												{t('seo_nav_login_in')}
+											</Button>
+										</Link>
+									</div>
+								</div>
+							)}
+							<SectionCommentsList
+								section_id={section.id}
+								initialData={initialComments}
+								publicMode
+							/>
+						</div>
+					</section>
+				) : null}
 			</div>
 		</div>
 	);

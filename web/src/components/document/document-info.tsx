@@ -45,10 +45,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import TaskStateCard from '../ui/task-state-card';
 import AIModelSelect from '@/components/ai/model-select';
 import { useUserContext } from '@/provider/user-provider';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
+import SidebarTaskNode from '../ui/sidebar-task-node';
 
 const MetaBadge = ({ children }: { children: ReactNode }) => {
 	return (
@@ -387,10 +387,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 	const renderSummaryCard = () => {
 		if (!data.summarize_task) {
 			return (
-				<TaskStateCard
-					variant='panel'
+				<SidebarTaskNode
 					icon={Sparkles}
-					badge={t('document_summarize_status_todo')}
+					status={t('document_summarize_status_todo')}
 					title={t('ai_summary_empty')}
 					description={t('ai_summary_empty_description')}
 					tone='warning'
@@ -401,10 +400,9 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 		if (data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO) {
 			return (
-				<TaskStateCard
-					variant='panel'
+				<SidebarTaskNode
 					icon={Sparkles}
-					badge={t('document_summarize_status_todo')}
+					status={t('document_summarize_status_todo')}
 					title={t('ai_summary_wait_to')}
 					description={t('ai_summary_wait_to_description')}
 					tone='warning'
@@ -414,24 +412,21 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 		if (data.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING) {
 			return (
-				<TaskStateCard
-					variant='panel'
+				<SidebarTaskNode
 					icon={Loader2}
-					badge={t('document_summarize_status_doing')}
+					status={t('document_summarize_status_doing')}
 					title={t('ai_summarizing')}
 					description={t('ai_summary_processing_description')}
 					tone='default'
-					spinning
 				/>
 			);
 		}
 
 		if (data.summarize_task.status === DocumentSummarizeStatus.FAILED) {
 			return (
-				<TaskStateCard
-					variant='panel'
+				<SidebarTaskNode
 					icon={Sparkles}
-					badge={t('document_summarize_status_failed')}
+					status={t('document_summarize_status_failed')}
 					title={t('ai_summary_failed')}
 					description={t('ai_summary_failed_description')}
 					tone='danger'
@@ -441,15 +436,15 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		}
 
 		return (
-			<TaskStateCard
-				variant='panel'
+			<SidebarTaskNode
 				icon={Sparkles}
-				badge={
+				status={
 					freshnessState.summaryStale
 						? t('document_status_stale')
 						: t('document_summarize_status_success')
 				}
 				title={t('ai_summary_ready')}
+				description={t('ai_summary_empty_description')}
 				tone={freshnessState.summaryStale ? 'warning' : 'success'}
 				hint={
 					freshnessState.summaryStale
@@ -457,11 +452,12 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						: undefined
 				}
 				action={summaryActionButton}
-				bodyClassName='px-3.5 pb-3.5 pt-3'>
-				<div className='rounded-[16px] border border-border/60 bg-background/45 px-3.5 py-3 text-sm leading-7 text-muted-foreground'>
-					{data.summarize_task.summary}
-				</div>
-			</TaskStateCard>
+				result={
+					<div className='border-l border-border/50 pl-4 text-sm leading-7 text-muted-foreground'>
+						{data.summarize_task.summary}
+					</div>
+				}
+			/>
 		);
 	};
 
@@ -513,7 +509,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			</div>
 
 			{data.sections && data.sections.length > 0 ? (
-				<div className='space-y-3 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+				<div className='space-y-3 border-t border-border/50 pt-5'>
 					<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
 						<BookMarked className='size-3.5' />
 						<p>{t('document_related_sections')}</p>
@@ -559,13 +555,11 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				/>
 			</div>
 
-			{statusBadges.length > 0 ? (
-				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
-					{statusBadges}
-				</div>
-			) : null}
+			{statusBadges.length > 0 ? <div className='flex flex-wrap gap-2'>{statusBadges}</div> : null}
 
-			{renderSummaryCard()}
+			<div className='space-y-4 border-t border-border/50 pt-5'>
+				{renderSummaryCard()}
+			</div>
 			<ResourceConfirmDialog
 				open={isSummaryDialogOpen}
 				onOpenChange={setIsSummaryDialogOpen}

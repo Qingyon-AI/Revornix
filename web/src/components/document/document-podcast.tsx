@@ -11,10 +11,10 @@ import { useEffect, useState } from 'react';
 import AudioStatusCard from '../ui/audio-status-card';
 import { Button } from '../ui/button';
 import { AudioLines, Loader2 } from 'lucide-react';
-import TaskStateCard from '../ui/task-state-card';
 import EngineSelect from '@/components/ai/engine-select';
 import { EngineCategory } from '@/enums/engine';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
+import SidebarTaskNode from '../ui/sidebar-task-node';
 
 const DocumentPodcast = ({
 	document_id,
@@ -95,6 +95,7 @@ const DocumentPodcast = ({
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={className}
 					hint={podcastHint}
+					variant='plain'
 				/>
 			)}
 
@@ -108,56 +109,59 @@ const DocumentPodcast = ({
 								description={t('document_podcast_wait_to_description')}
 								tone='warning'
 								className={className}
+								variant='plain'
 							/>
 						)}
-					{document?.podcast_task?.status ===
-						DocumentPodcastStatus.GENERATING && (
-							<AudioStatusCard
-								badge={t('document_podcast_status_doing')}
-								title={t('document_podcast_processing')}
-								description={t('document_podcast_processing_description')}
-								icon={Loader2}
-								tone='default'
-								actionLoading
-								className={className}
-								spinning
-							/>
-					)}
+						{document?.podcast_task?.status ===
+							DocumentPodcastStatus.GENERATING && (
+								<AudioStatusCard
+									badge={t('document_podcast_status_doing')}
+									title={t('document_podcast_processing')}
+									description={t('document_podcast_processing_description')}
+									icon={Loader2}
+									tone='default'
+									actionLoading
+									className={className}
+									spinning
+									variant='plain'
+								/>
+							)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
 						document?.podcast_task?.podcast_file_name && (
-							<TaskStateCard
+							<SidebarTaskNode
 								icon={AudioLines}
-								badge={
+								status={
 									freshnessState.podcastStale
 										? t('document_status_stale')
 										: t('document_podcast_status_success')
 								}
 								title={t('document_podcast_ready')}
+								description={t('document_podcast_placeholder_description')}
 								tone={freshnessState.podcastStale ? 'warning' : 'success'}
-								className={className}
 								hint={podcastHint}
-								action={
-									<Button
-										variant='outline'
-										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-										onClick={() => setIsGenerateDialogOpen(true)}
-										disabled={false}>
-										{t('document_podcast_regenerate')}
-									</Button>
-								}>
-								<div className='rounded-[20px] border border-border/60 bg-background/40 p-3 sm:p-4'>
-									<AudioPlayer
-										src={document?.podcast_task?.podcast_file_name}
-										cover={
+									action={
+										<Button
+											variant='outline'
+											className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+											onClick={() => setIsGenerateDialogOpen(true)}
+											disabled={false}>
+											{t('document_podcast_regenerate')}
+										</Button>
+									}
+									result={
+										<AudioPlayer
+											src={document?.podcast_task?.podcast_file_name}
+											cover={
 											document.cover ??
 											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
 										}
 										title={document.title ?? 'Unkown Title'}
 										artist={'AI Generated'}
-									/>
-								</div>
-							</TaskStateCard>
-						)}
+										/>
+									}
+									className={className}
+								/>
+							)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.FAILED && (
 						<AudioStatusCard
 							badge={t('document_podcast_status_failed')}
@@ -170,6 +174,7 @@ const DocumentPodcast = ({
 							tone='danger'
 							className={className}
 							hint={podcastHint}
+							variant='plain'
 						/>
 					)}
 				</>

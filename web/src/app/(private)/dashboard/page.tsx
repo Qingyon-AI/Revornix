@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import UnReadDocumentBox from '@/components/dashboard/unread-documents-box';
 import StarDocumentBox from '@/components/dashboard/star-document-box';
@@ -13,6 +14,12 @@ import { BookOpen, LayoutDashboard, Sparkles, Tags } from 'lucide-react';
 import RandomClassicalPoem from '@/components/dashboard/random-classical-poem';
 import CardTitleIcon from '@/components/ui/card-title-icon';
 import InitSettingDialog from '@/components/setting/init-setting-dialog';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Dashboard',
+	'Your Revornix dashboard for daily knowledge activity, summaries, and quick access.',
+);
 
 const DashboardPage = () => {
 	const t = useTranslations();

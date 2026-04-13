@@ -253,6 +253,18 @@ export const getDocumentDetail = async ({ document_id }: { document_id: number }
     })
 }
 
+export const getDocumentDetailInServer = async (
+    { document_id }: { document_id: number },
+    headers: Headers,
+): Promise<DocumentDetailResponse> => {
+    return await serverRequest(documentApi.documentDetail, {
+        data: {
+            document_id,
+        },
+        headers,
+    })
+}
+
 export const updateDocument = async (data: DocumentUpdateRequest): Promise<NormalResponse> => {
     return await request(documentApi.updateDocument, {
         data

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import AddAudio from '@/components/document/add-audio';
 import AddFile from '@/components/document/add-file';
 import AddLink from '@/components/document/add-link';
@@ -5,6 +6,12 @@ import AddQuickNote from '@/components/document/add-quick-note';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileAudio, FileText, Globe, Link2 } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Create Document',
+	'Create a new document in Revornix from notes, links, files, or audio.',
+);
 
 type SearchParams = Promise<{ [key: string]: string }>;
 

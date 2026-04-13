@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import MineDocumentContainer from '@/components/document/mine-document-container';
 import { getQueryClient } from '@/lib/get-query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'My Documents',
+	'Browse and manage your own documents in Revornix.',
+);
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

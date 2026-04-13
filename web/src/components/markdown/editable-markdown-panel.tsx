@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils';
 
 import TipTapEditor from './tiptap-editor';
 import TipTapMarkdownViewer from './tiptap-markdown-viewer';
-import { Alert, AlertDescription } from '../ui/alert';
 import { Button } from '../ui/button';
+import NoticeBox from '../ui/notice-box';
 
 type EditableMarkdownPanelProps = {
 	content: string;
@@ -149,11 +149,7 @@ const EditableMarkdownPanel = ({
 
 			{isEditing ? (
 				<div className='mx-auto w-full max-w-[880px] space-y-4'>
-					<Alert className='border-amber-500/30 bg-amber-500/8 text-amber-800 dark:text-amber-200'>
-						<AlertDescription>
-							{t('markdown_edit_stale_hint')}
-						</AlertDescription>
-					</Alert>
+					<NoticeBox tone='warning'>{t('markdown_edit_stale_hint')}</NoticeBox>
 					<div className='mb-5 overflow-hidden rounded-[28px] border border-border/60 bg-background/65 shadow-none'>
 						<TipTapEditor
 							key={editorInstanceKey}

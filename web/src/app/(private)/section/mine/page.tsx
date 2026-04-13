@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import MineSectionContainer from '@/components/section/mine-section-container';
 import { getQueryClient } from '@/lib/get-query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'My Sections',
+	'Browse and manage the sections you created in Revornix.',
+);
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

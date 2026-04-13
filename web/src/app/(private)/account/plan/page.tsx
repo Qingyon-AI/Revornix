@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import CustomPlan from '@/components/plan/custom-plan';
 import ComputeLedgerTable from '@/components/plan/compute-ledger-table';
 import ComputePackSummary from '@/components/plan/compute-pack-summary';
@@ -10,6 +11,12 @@ import { Info } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Plans and Billing',
+	'Review plans, compute usage, and billing options in Revornix.',
+);
 
 const ProPage = async () => {
 	const headersList = await headers();

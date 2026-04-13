@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { LoginForm } from '@/components/user/login-form';
 import LoginProvider from '@/provider/login-provider';
 import { getSafeRedirectPage } from '@/lib/safe-redirect';
@@ -5,6 +6,12 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import AuthShell from '@/components/user/auth-shell';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Login',
+	'Sign in to your Revornix workspace.',
+);
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

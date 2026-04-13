@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { PanelRightIcon } from 'lucide-react';
 
@@ -40,6 +41,20 @@ export const RightSidebarTrigger = ({
 export const AppRightSidebar = () => {
 	const isCompactViewport = useIsMobile(1280);
 	const { content, hasContent, open } = useRightSidebar();
+	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (!open || !hasContent) {
+			return;
+		}
+
+		const container = scrollContainerRef.current;
+		if (!container) {
+			return;
+		}
+
+		container.scrollTop = 0;
+	}, [content, hasContent, open]);
 
 	if (isCompactViewport || !hasContent) {
 		return null;
@@ -59,7 +74,7 @@ export const AppRightSidebar = () => {
 					} as CSSProperties
 				}
 			/>
-				<aside
+			<aside
 				className={cn(
 					'fixed inset-y-0 right-0 z-10 hidden w-[var(--right-sidebar-width)] shrink-0 border-l border-border transition-transform duration-200 ease-linear xl:flex',
 					open ? 'translate-x-0' : 'translate-x-[calc(100%+0.5rem)]',
@@ -70,7 +85,9 @@ export const AppRightSidebar = () => {
 					} as CSSProperties
 				}>
 				<div className='flex h-full w-full flex-col overflow-hidden text-sidebar-foreground backdrop-blur-xl'>
-					<div className='min-h-0 flex-1 overflow-y-auto'>
+					<div
+						ref={scrollContainerRef}
+						className='min-h-0 flex-1 overflow-y-auto overscroll-contain'>
 						{content}
 					</div>
 				</div>

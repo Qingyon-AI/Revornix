@@ -2,6 +2,7 @@ import userApi from '@/api/user'
 import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
+import { serverRequest } from '@/lib/request-server';
 
 export type ComputeLedgerItem = {
     id: number;
@@ -64,6 +65,16 @@ export const followUser = async (data: FollowUserRequest): Promise<NormalRespons
 export const getUserInfo = async (data: UserInfoRequest): Promise<UserPublicInfo> => {
     return await request(userApi.userInfo, {
         data
+    })
+}
+
+export const getUserInfoInServer = async (
+    data: UserInfoRequest,
+    headers: Headers,
+): Promise<UserPublicInfo> => {
+    return await serverRequest(userApi.userInfo, {
+        data,
+        headers,
     })
 }
 

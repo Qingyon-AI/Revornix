@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
+	formatMetaTitle,
 } from '@/lib/seo-metadata';
 import JsonLd from '@/components/seo/json-ld';
 import { getTranslations } from 'next-intl/server';
@@ -15,7 +16,7 @@ import { getTranslations } from 'next-intl/server';
 export async function generateMetadata(): Promise<Metadata> {
 	const t = await getTranslations();
 	return buildMetadata({
-		title: t('seo_home_title'),
+		title: formatMetaTitle(t('seo_home_title')),
 		description: t('seo_home_description'),
 		path: '/',
 		keywords: ['public knowledge hub', 'community sections', 'creator profiles'],

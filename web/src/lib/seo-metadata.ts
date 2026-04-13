@@ -59,6 +59,32 @@ export const createAbsoluteUrl = (path: string) => {
 	return new URL(normalizePath(path), getSiteUrl()).toString();
 };
 
+export const formatMetaTitle = (
+	primary: string,
+	secondary: string = DEFAULT_SITE_NAME,
+) => {
+	const normalizedPrimary = primary.replace(/\s+/g, ' ').trim();
+	const normalizedSecondary = secondary.replace(/\s+/g, ' ').trim();
+
+	if (!normalizedPrimary) {
+		return normalizedSecondary;
+	}
+
+	if (normalizedPrimary.includes('|')) {
+		return normalizedPrimary
+			.split('|')
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join(' | ');
+	}
+
+	if (!normalizedSecondary || normalizedPrimary === normalizedSecondary) {
+		return normalizedPrimary;
+	}
+
+	return `${normalizedPrimary} | ${normalizedSecondary}`;
+};
+
 export const getDefaultOgImage = () => {
 	return createAbsoluteUrl(DEFAULT_OG_IMAGE_PATH);
 };
@@ -145,13 +171,14 @@ export const buildMetadata = ({
 	siteName = DEFAULT_SITE_NAME,
 }: BuildMetadataOptions): Metadata => {
 	const normalizedDescription = toMetaDescription(description || DEFAULT_SITE_DESCRIPTION);
+	const normalizedTitle = formatMetaTitle(title, siteName);
 	const canonicalUrl = path ? createAbsoluteUrl(path) : undefined;
 	const openGraphImages = getOpenGraphImages(images);
 
 	const openGraph =
 		type === 'article'
 			? {
-					title,
+					title: normalizedTitle,
 					description: normalizedDescription,
 					siteName,
 					type: 'article' as const,
@@ -164,7 +191,7 @@ export const buildMetadata = ({
 					tags,
 				}
 			: {
-					title,
+					title: normalizedTitle,
 					description: normalizedDescription,
 					siteName,
 					type: 'website' as const,
@@ -174,7 +201,7 @@ export const buildMetadata = ({
 				};
 
 	return {
-		title,
+		title: normalizedTitle,
 		description: normalizedDescription,
 		applicationName: siteName,
 		alternates: canonicalUrl
@@ -191,7 +218,7 @@ export const buildMetadata = ({
 		openGraph,
 		twitter: {
 			card: 'summary_large_image',
-			title,
+			title: normalizedTitle,
 			description: normalizedDescription,
 			images: openGraphImages.map((image) => image.url),
 		},
@@ -201,3 +228,13 @@ export const buildMetadata = ({
 export const NO_INDEX_METADATA = {
 	robots: getRobots(true),
 } satisfies Metadata;
+
+export const buildNoIndexAppMetadata = (
+	title: string,
+	description: string,
+): Metadata =>
+	buildMetadata({
+		title: formatMetaTitle(title, DEFAULT_SITE_NAME),
+		description,
+		noIndex: true,
+	});

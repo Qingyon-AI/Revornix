@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import PassWordUpdate from '@/components/user/password-update';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,12 @@ import { headers } from 'next/headers';
 import EmailBindCloud from '@/components/user/email-bind-cloud';
 import { isEnvEnabled } from '@/lib/env';
 import { isAllowedDeployHost } from '@/lib/utils';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
+
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Account',
+	'Manage your Revornix account profile, security, bindings, and subscription details.',
+);
 
 const AccountPage = async () => {
 	const t = await getTranslations();

@@ -8,6 +8,7 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
+import NoticeBox from '../ui/notice-box';
 
 const SectionDocumentsList = ({
 	section_id,
@@ -83,11 +84,11 @@ const SectionDocumentsList = ({
 					);
 				})}
 			{isSuccess && documents && documents.length === 0 && (
-				<p className='flex-1 flex justify-center items-center text-sm text-muted-foreground'>
+				<NoticeBox>
 					{publicMode
 						? t('section_no_public_documents')
 						: t('section_no_documents')}
-				</p>
+				</NoticeBox>
 			)}
 			{isFetching && !data && (
 				<>

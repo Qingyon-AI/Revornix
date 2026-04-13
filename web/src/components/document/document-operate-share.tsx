@@ -31,6 +31,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import NoticeBox from '../ui/notice-box';
 import {
 	Command,
 	CommandEmpty,
@@ -500,9 +501,9 @@ const DocumentOperateShare = ({
 										);
 									})
 								) : (
-									<div className='rounded-[20px] border border-dashed border-border/60 bg-background/35 px-4 py-5 text-sm leading-6 text-muted-foreground'>
+									<NoticeBox>
 										{t('document_share_related_sections_empty')}
-									</div>
+									</NoticeBox>
 								)}
 							</div>
 						</div>
