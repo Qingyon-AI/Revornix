@@ -75,3 +75,7 @@ export const useRightSidebar = () => {
 
 	return context;
 };
+
+export const useOptionalRightSidebar = () => {
+	return useContext(RightSidebarContext);
+};
