@@ -4,6 +4,7 @@ import ImageUpload from '../ui/image-upload';
 import { useTranslations } from 'next-intl';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import type { SectionInfo } from '@/generated';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 const CoverUpdate = ({
 	ownerId,
@@ -39,9 +40,10 @@ const CoverUpdate = ({
 
 						{coverPreviewSrc ? (
 							<div className='overflow-hidden rounded-2xl border border-border/60 bg-background/55'>
-								<img
+								<ImageWithFallback
 									alt='cover'
 									src={coverPreviewSrc}
+									preview
 									className='aspect-[16/9] w-full object-cover'
 								/>
 							</div>

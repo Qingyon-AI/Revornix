@@ -260,7 +260,8 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									<ImageWithFallback
 										src={coverSrc}
 										alt={document.title}
-										className='h-[220px] w-full object-cover object-top sm:h-[300px]'
+										preview
+										className='h-[220px] w-full object-cover object-center sm:h-[300px]'
 										fallbackClassName='h-[220px] w-full sm:h-[300px]'
 										fallbackSvgClassName='max-w-[220px] p-6'
 									/>

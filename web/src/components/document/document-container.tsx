@@ -322,11 +322,12 @@ const DocumentContainer = ({ id }: { id: number }) => {
 								<ImageWithFallback
 									src={documentCoverSrc}
 									alt={document?.title || t('document_no_title')}
+									preview
 									className='max-h-[320px] w-full object-cover sm:max-h-[380px]'
 									fallbackClassName='max-h-[320px] w-full sm:max-h-[380px]'
 									fallbackSvgClassName='max-w-[240px] p-6'
 								/>
-								<div className='absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+								<div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
 							</div>
 						</div>
 					) : null}

@@ -61,7 +61,7 @@ const ImagePreview = ({
 					type='button'
 					aria-label={alt || 'Open image preview'}
 					className={cn(
-						'group relative block cursor-zoom-in overflow-hidden [border-radius:inherit] border-0 bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'group relative block h-full w-full cursor-zoom-in overflow-hidden [border-radius:inherit] border-0 bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						className,
 					)}
 					onKeyDown={handleKeyDown}>

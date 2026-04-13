@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { replacePath } from '@/lib/utils';
 
 import { FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import ImageWithFallback from '../ui/image-with-fallback';
 import ImageUpload from '../ui/image-upload';
 
 const DocumentCoverUpdate = ({ ownerId }: { ownerId?: number }) => {
@@ -33,9 +34,10 @@ const DocumentCoverUpdate = ({ ownerId }: { ownerId?: number }) => {
 
 						{currentCoverSrc ? (
 							<div className='overflow-hidden rounded-2xl border border-border/60 bg-background/55'>
-								<img
+								<ImageWithFallback
 									alt='cover'
 									src={currentCoverSrc}
+									preview
 									className='aspect-[16/9] w-full object-cover'
 								/>
 							</div>

@@ -376,11 +376,12 @@ const SEOSectionDetail = async (props: {
 								<ImageWithFallback
 									src={sectionCover}
 									alt={sectionTitle}
-									className='h-[180px] w-full object-cover object-top sm:h-[220px] xl:h-[260px]'
+									preview
+									className='h-[180px] w-full object-cover object-center sm:h-[220px] xl:h-[260px]'
 									fallbackClassName='h-[180px] w-full sm:h-[220px] xl:h-[260px]'
 									fallbackSvgClassName='max-w-[220px] p-6'
 								/>
-								<div className='absolute inset-0 bg-gradient-to-r from-black/28 via-black/6 to-black/22' />
+								<div className='pointer-events-none absolute inset-0 bg-gradient-to-r from-black/28 via-black/6 to-black/22' />
 							</div>
 						) : null}
 
