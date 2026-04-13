@@ -18,7 +18,7 @@ chonkie==1.6.2
 celery==5.6.3
 tiktoken==0.12.0
 apscheduler==3.11.2
-pyJWT==2.10.1
+pyJWT==2.12.1
 python-jose==3.5.0
 playwright==1.58.0
 markitdown==0.1.4
@@ -32,7 +32,7 @@ langchain==1.2.15
 langchain_openai==1.1.12
 langchain_core==1.2.26
 fastmcp==3.2.0
-lightrag-hku==1.4.9.11
+lightrag-hku==1.4.14
 google-auth==2.41.1
 tencentcloud-sdk-python==3.1.47
 sentence_transformers==5.2.0

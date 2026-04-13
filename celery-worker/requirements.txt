@@ -16,7 +16,7 @@ chonkie==1.6.2
 celery==5.6.3
 tiktoken==0.12.0
 torch==2.10.0
-pyJWT==2.10.1
+pyJWT==2.12.1
 markitdown==0.1.4
 boto3==1.42.49
 psycopg==3.3.3
@@ -26,7 +26,7 @@ ftfy==6.3.1
 shapely==2.1.2
 pyclipper==1.4.0
 omegaconf==2.3.0
-lightrag-hku==1.4.9.11
+lightrag-hku==1.4.14
 huggingface_hub==0.35.3
 tencentcloud-sdk-python==3.1.47
 sentence_transformers==5.2.0
