@@ -125,6 +125,50 @@ const getOpenGraphImages = (images?: Array<string | null | undefined>) => {
 	return resolvedImages.map((url) => ({ url }));
 };
 
+export type SocialCardTheme = 'default' | 'community' | 'document' | 'section' | 'user';
+
+type SocialCardOptions = {
+	eyebrow?: string;
+	title?: string;
+	description?: string;
+	theme?: SocialCardTheme;
+};
+
+const createSocialCardUrl = ({
+	title,
+	description,
+	eyebrow,
+	theme = 'default',
+}: Required<SocialCardOptions>) => {
+	const params = new URLSearchParams({
+		title,
+		description,
+		eyebrow,
+		theme,
+	});
+
+	return createAbsoluteUrl(`/api/og?${params.toString()}`);
+};
+
+const getSocialCardImage = (
+	title: string,
+	description: string,
+	siteName: string,
+	socialCard?: SocialCardOptions,
+) => {
+	return {
+		url: createSocialCardUrl({
+			title: socialCard?.title || title,
+			description: socialCard?.description || description,
+			eyebrow: socialCard?.eyebrow || siteName,
+			theme: socialCard?.theme || 'default',
+		}),
+		width: 1200,
+		height: 630,
+		alt: socialCard?.title || title,
+	};
+};
+
 const getRobots = (noIndex: boolean): NonNullable<Metadata['robots']> => {
 	return {
 		index: !noIndex,
@@ -153,6 +197,7 @@ type BuildMetadataOptions = {
 	authors?: string[];
 	tags?: string[];
 	siteName?: string;
+	socialCard?: SocialCardOptions;
 };
 
 export const buildMetadata = ({
@@ -169,11 +214,18 @@ export const buildMetadata = ({
 	authors,
 	tags,
 	siteName = DEFAULT_SITE_NAME,
+	socialCard,
 }: BuildMetadataOptions): Metadata => {
 	const normalizedDescription = toMetaDescription(description || DEFAULT_SITE_DESCRIPTION);
 	const normalizedTitle = formatMetaTitle(title, siteName);
 	const canonicalUrl = path ? createAbsoluteUrl(path) : undefined;
-	const openGraphImages = getOpenGraphImages(images);
+	const socialCardImage = getSocialCardImage(
+		normalizedTitle,
+		normalizedDescription,
+		siteName,
+		socialCard,
+	);
+	const openGraphImages = [socialCardImage, ...getOpenGraphImages(images)];
 
 	const openGraph =
 		type === 'article'

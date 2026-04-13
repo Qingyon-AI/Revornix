@@ -107,6 +107,13 @@ export async function generateMetadata(props: {
 					: t('seo_community_description'),
 			path: buildCommunityHref({ tab }),
 			noIndex,
+			socialCard: {
+				eyebrow:
+					tab === 'documents'
+						? t('seo_community_documents_tab')
+						: t('seo_community_sections_tab'),
+				theme: 'community',
+			},
 			keywords:
 				tab === 'documents'
 					? [keyword, 'community', 'public documents']
@@ -125,6 +132,13 @@ export async function generateMetadata(props: {
 				: t('seo_community_description'),
 		path: buildCommunityHref({ tab }),
 		noIndex,
+		socialCard: {
+			eyebrow:
+				tab === 'documents'
+					? t('seo_community_documents_tab')
+					: t('seo_community_sections_tab'),
+			theme: 'community',
+		},
 		keywords:
 			tab === 'documents'
 				? ['community', 'public documents', 'knowledge sharing']
@@ -174,7 +188,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	}
 
 	const surfaceCardClassName =
-		'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
+		'gap-0 rounded-[24px] border border-border/60 bg-background/24 py-0 shadow-none';
 	const communitySchema = {
 		'@context': 'https://schema.org',
 		'@type': 'CollectionPage',
@@ -208,8 +222,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
 			<JsonLd data={communitySchema} />
 			<Card
-				className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
-				<div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
+				className={`relative overflow-hidden rounded-[24px] ${surfaceCardClassName}`}>
 				<CardContent className='relative z-10 px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
 					<div className='flex flex-col gap-6'>
 						<div className='max-w-3xl space-y-4'>
@@ -228,15 +241,15 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 						</div>
 					</div>
 
-					<div className='mt-8 inline-flex w-fit rounded-[22px] border border-border/60 bg-muted/45 p-1.5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.32)] backdrop-blur'>
+					<div className='mt-8 inline-flex w-fit rounded-[18px] border border-border/60 bg-background/35 p-1'>
 						<Button
 							asChild
 							variant='ghost'
 							className={cn(
-								'h-11 rounded-[18px] px-4 shadow-none transition-all',
+								'h-10 rounded-[14px] px-4 shadow-none transition-all',
 								tab === 'sections'
-									? 'border border-border/70 bg-background text-foreground shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)] hover:bg-background'
-									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/70 hover:text-foreground',
+									? 'border border-border/70 bg-background text-foreground hover:bg-background'
+									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground',
 							)}>
 							<Link href={buildCommunityHref({ tab: 'sections', keyword })}>
 								<Compass className='mr-2 size-4' />
@@ -247,10 +260,10 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 							asChild
 							variant='ghost'
 							className={cn(
-								'h-11 rounded-[18px] px-4 shadow-none transition-all',
+								'h-10 rounded-[14px] px-4 shadow-none transition-all',
 								tab === 'documents'
-									? 'border border-border/70 bg-background text-foreground shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)] hover:bg-background'
-									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/70 hover:text-foreground',
+									? 'border border-border/70 bg-background text-foreground hover:bg-background'
+									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground',
 							)}>
 							<Link href={buildCommunityHref({ tab: 'documents', keyword })}>
 								<FileText className='mr-2 size-4' />
@@ -274,7 +287,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 										? t('seo_community_documents_search_placeholder')
 										: t('seo_community_search_placeholder')
 								}
-								className='h-11 rounded-2xl border-border/60 bg-background/72 pl-10'
+								className='h-11 rounded-2xl border-border/60 bg-background/45 pl-10'
 							/>
 						</div>
 						<Button type='submit' className='h-11 rounded-2xl px-5'>
@@ -383,22 +396,22 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 						<Link
 							key={document.id}
 							href={`/document/${document.id}`}
-							className='group flex h-full flex-col overflow-hidden rounded-[28px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-40px_rgba(15,23,42,0.62)]'>
-							<div className='relative h-44 w-full overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(135deg,rgba(15,23,42,0.92),rgba(71,85,105,0.78))]'>
+							className='group flex h-full flex-col overflow-hidden rounded-[24px] border border-border/60 bg-background/28 transition-colors duration-200 hover:border-border/80 hover:bg-background/40'>
+							<div className='relative h-44 w-full overflow-hidden bg-muted/30'>
 								{document.cover ? (
 									<img
 										src={document.cover}
 										alt={document.title}
-										className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105'
+										className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]'
 									/>
 								) : (
 									<div className='flex h-full w-full items-center justify-center'>
-										<div className='flex items-center justify-center rounded-[22px] border border-white/15 bg-white/10 p-4 text-white/75 backdrop-blur'>
-											<FileText size={26} />
+										<div className='flex items-center justify-center rounded-[20px] border border-border/60 bg-background/70 p-4 text-muted-foreground'>
+											<FileText size={24} />
 										</div>
 									</div>
 								)}
-								<div className='absolute inset-0 bg-gradient-to-t from-black/48 via-black/10 to-transparent' />
+								<div className='absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent' />
 							</div>
 
 							<div className='flex flex-1 flex-col gap-4 p-5'>

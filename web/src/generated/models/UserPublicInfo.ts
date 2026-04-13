@@ -42,6 +42,12 @@ export interface UserPublicInfo {
      * @type {string}
      * @memberof UserPublicInfo
      */
+    cover?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserPublicInfo
+     */
     nickname: string;
     /**
      * 
@@ -93,6 +99,7 @@ export function UserPublicInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'id': json['id'],
         'role': json['role'],
         'avatar': json['avatar'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'is_followed': json['is_followed'] == null ? undefined : json['is_followed'],
@@ -115,6 +122,7 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
         'id': value['id'],
         'role': value['role'],
         'avatar': value['avatar'],
+        'cover': value['cover'],
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'is_followed': value['is_followed'],
@@ -122,4 +130,3 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
         'follows': value['follows'],
     };
 }
-

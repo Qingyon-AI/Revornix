@@ -82,6 +82,7 @@ class User(Base):
     uuid: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     role: Mapped[int] = mapped_column(Integer, nullable=False, comment='1: root, 2: admin, 3: user')
     avatar: Mapped[str] = mapped_column(String(500), nullable=False)
+    cover: Mapped[str | None] = mapped_column(String(500), comment='The path of the cover image which you uploaded to the file system')
     nickname: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     last_login_ip: Mapped[str | None] = mapped_column(String(50))
     last_login_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -15,6 +15,7 @@ def create_base_user(
     db: Session,
     nickname: str,
     avatar: str,
+    cover: str | None = None,
     default_read_mark_reason: MarkDocumentReadReason = MarkDocumentReadReason.REQUEST_ONCE,
     default_ai_interaction_language: AIInteractionLanguage = AIInteractionLanguage.AUTO,
     role: UserRole = UserRole.USER,
@@ -25,6 +26,7 @@ def create_base_user(
         role=role,
         nickname=nickname,
         avatar=avatar,
+        cover=cover,
         default_read_mark_reason=default_read_mark_reason,
         default_ai_interaction_language=default_ai_interaction_language,
         create_time=now
@@ -740,6 +742,7 @@ def update_user_info(
     db: Session,
     user_id: int,
     avatar: str | None = None,
+    cover: str | None = None,
     nickname: str | None = None,
     slogan: str | None = None,
     age: int | None = None,
@@ -761,6 +764,8 @@ def update_user_info(
         db_user.gender = gender
     if avatar is not None:
         db_user.avatar = avatar
+    if cover is not None:
+        db_user.cover = cover
     db.flush()
     return db_user
 

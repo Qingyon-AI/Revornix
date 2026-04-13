@@ -22,23 +22,23 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 	const coverSrc = getSectionCoverSrc(section);
 
 	return (
-		<div className='group flex h-full flex-col overflow-hidden rounded-[28px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-40px_rgba(15,23,42,0.62)]'>
+		<div className='group flex h-full flex-col overflow-hidden rounded-[24px] border border-border/60 bg-background/28 transition-colors duration-200 hover:border-border/80 hover:bg-background/40'>
 			<Link href={sectionHref} className='block'>
-				<div className='relative h-44 w-full overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.14),transparent_28%),linear-gradient(135deg,rgba(70,33,42,0.82),rgba(30,41,59,0.78))]'>
+				<div className='relative h-44 w-full overflow-hidden bg-muted/30'>
 					{coverSrc ? (
 						<img
 							src={coverSrc}
 							alt={section.title}
-							className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105'
+							className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]'
 						/>
 					) : (
 						<div className='flex h-full w-full items-center justify-center'>
-							<div className='flex items-center justify-center rounded-[22px] border border-white/15 bg-white/10 p-4 text-white/75 backdrop-blur'>
-								<BookTextIcon size={26} />
+							<div className='flex items-center justify-center rounded-[20px] border border-border/60 bg-background/70 p-4 text-muted-foreground'>
+								<BookTextIcon size={24} />
 							</div>
 						</div>
 					)}
-					<div className='absolute inset-0 bg-gradient-to-t from-black/48 via-black/10 to-transparent' />
+					<div className='absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent' />
 				</div>
 			</Link>
 

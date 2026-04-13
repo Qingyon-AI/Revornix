@@ -90,6 +90,7 @@ export async function generateMetadata(props: {
 	params: Params;
 	searchParams: SearchParams;
 }): Promise<Metadata | undefined> {
+	const t = await getTranslations();
 	// read route params
 	const { uuid } = await props.params;
 
@@ -112,6 +113,10 @@ export async function generateMetadata(props: {
 			path: `/section/${uuid}`,
 			type: 'article',
 			images: [getSectionCoverSrc(section_res) ?? undefined],
+			socialCard: {
+				eyebrow: section_res.creator?.nickname || t('seo_community_title'),
+				theme: 'section',
+			},
 			publishedTime: toIsoDate(section_res.create_time),
 			modifiedTime: toIsoDate(
 				section_res.update_time ?? section_res.create_time,

@@ -44,23 +44,45 @@ from schemas.error import CustomException
 user_router = APIRouter()
 
 
-async def _batch_sign_user_avatars(
+async def _batch_sign_user_media(
     users: list[schemas.user.UserPublicInfo],
 ) -> None:
-    users_need_sign = [item for item in users if item.avatar is not None]
-    if len(users_need_sign) == 0:
+    users_need_avatar_sign = [item for item in users if item.avatar is not None]
+    users_need_cover_sign = [item for item in users if item.cover is not None]
+
+    if len(users_need_avatar_sign) > 0:
+        signed_avatar_urls = await asyncio.gather(
+            *[
+                get_remote_file_signed_url(
+                    user_id=item.id,
+                    file_name=item.avatar,
+                )
+                for item in users_need_avatar_sign
+            ]
+        )
+        for item, signed_avatar_url in zip(users_need_avatar_sign, signed_avatar_urls, strict=False):
+            item.avatar = signed_avatar_url
+
+    if len(users_need_cover_sign) == 0:
         return
-    signed_avatar_urls = await asyncio.gather(
+
+    signed_cover_urls = await asyncio.gather(
         *[
             get_remote_file_signed_url(
                 user_id=item.id,
-                file_name=item.avatar,
+                file_name=item.cover,
             )
-            for item in users_need_sign
+            for item in users_need_cover_sign
         ]
     )
-    for item, signed_avatar_url in zip(users_need_sign, signed_avatar_urls, strict=False):
-        item.avatar = signed_avatar_url
+    for item, signed_cover_url in zip(users_need_cover_sign, signed_cover_urls, strict=False):
+        item.cover = signed_cover_url
+
+
+async def _batch_sign_user_avatars(
+    users: list[schemas.user.UserPublicInfo],
+) -> None:
+    await _batch_sign_user_media(users)
 
 @user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
 async def search_user(
@@ -149,7 +171,7 @@ async def search_user(
         if db_user.id in followed_user_ids:
             user_item.is_followed = True
         users.append(user_item)
-    await _batch_sign_user_avatars(users=users)
+    await _batch_sign_user_media(users=users)
 
     has_more = db_next_user is not None
     next_start = db_next_user.id if db_next_user is not None else None
@@ -267,7 +289,7 @@ async def search_user_fans(
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
-    await _batch_sign_user_avatars(users=elements)
+    await _batch_sign_user_media(users=elements)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=elements,
@@ -318,7 +340,7 @@ async def search_user_follows(
         element.fans = fans_by_user_id.get(item.id, 0)
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
-    await _batch_sign_user_avatars(users=elements)
+    await _batch_sign_user_media(users=elements)
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,
         elements=elements,
@@ -401,6 +423,11 @@ async def user_info(
         res.avatar = await get_remote_file_signed_url(
             user_id=res.id,
             file_name=res.avatar,
+        )
+    if res.cover is not None:
+        res.cover = await get_remote_file_signed_url(
+            user_id=res.id,
+            file_name=res.cover,
         )
     res.fans = fans
     res.follows = follows
@@ -653,7 +680,8 @@ def update_my_info(
         user_id=user.id,
         nickname=user_info_update_request.nickname,
         slogan=user_info_update_request.slogan,
-        avatar=user_info_update_request.avatar
+        avatar=user_info_update_request.avatar,
+        cover=user_info_update_request.cover,
     )
     db.commit()
     return schemas.common.SuccessResponse(message="The information of the user is updated successfully.")
@@ -691,6 +719,11 @@ async def my_info(
         res.avatar = await get_remote_file_signed_url(
             user_id=user.id,
             file_name=res.avatar
+        )
+    if res.cover is not None:
+        res.cover = await get_remote_file_signed_url(
+            user_id=user.id,
+            file_name=res.cover
         )
 
     email_user = crud.user.get_email_user_by_user_id(
