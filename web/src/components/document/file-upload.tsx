@@ -129,12 +129,14 @@ const FileUpload = ({
 		<div
 			onClick={handleOnUploadFile}
 			className={cn(
-				'relative p-5 rounded-xl border border-input flex justify-center items-center flex-col text-xs gap-2 text-muted-foreground cursor-pointer hover:bg-muted',
+				'relative flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/25 px-5 py-8 text-center text-sm text-muted-foreground transition hover:border-foreground/20 hover:bg-muted/45',
 				className,
 			)}>
 			{uploadingStatus && (
 				<>
-					<div>{file?.name || fileName}</div>
+					<div className='max-w-full truncate text-sm font-medium text-foreground'>
+						{file?.name || fileName}
+					</div>
 					{uploadingStatus === 'done' && (
 						<Button
 							type='button'
@@ -153,9 +155,13 @@ const FileUpload = ({
 
 			{!uploadingStatus && (
 				<>
-					<FileIcon />
+					<div className='flex size-12 items-center justify-center rounded-full bg-background shadow-sm'>
+						<FileIcon className='size-5' />
+					</div>
 					<div className='flex flex-col items-center gap-1.5 text-center'>
-						<span>{t('document_create_file_upload')}</span>
+						<span className='font-medium text-foreground'>
+							{t('document_create_file_upload')}
+						</span>
 						{maxSizeBytes && (
 							<span className='inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground shadow-sm'>
 								<Info className='size-3' />

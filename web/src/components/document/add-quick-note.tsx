@@ -337,19 +337,19 @@ const AddQuickNote = () => {
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex h-full w-full min-h-0 flex-col overflow-hidden'>
+					className='flex w-full flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
 					<FormField
 						control={form.control}
 						name='content'
 						render={({ field }) => {
 							return (
-								<FormItem className='flex h-full min-h-0 flex-1 flex-col'>
+								<FormItem className='flex min-h-[360px] flex-col lg:h-full lg:min-h-0 lg:flex-1'>
 									<TipTapEditor
 										key={editorInstanceKey}
 										value={field.value}
 										onChange={field.onChange}
 										placeholder={t('document_create_note_placeholded')}
-										className='h-full min-h-[320px] flex-1'
+										className='h-full min-h-[360px] flex-1 bg-muted/20 lg:min-h-[320px]'
 										enableImageUpload
 										enableDrawing
 										ownerId={mainUserInfo?.id}
@@ -359,7 +359,7 @@ const AddQuickNote = () => {
 							);
 						}}
 					/>
-					<div className='shrink-0 pt-4 backdrop-blur'>
+					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
 						<DocumentCreateAdvancedSection>
 							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
 								<FormField
@@ -367,7 +367,7 @@ const AddQuickNote = () => {
 									control={form.control}
 									render={({ field }) => {
 										return (
-											<FormItem className='rounded-lg border border-input p-3'>
+											<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
 												<div className='flex flex-row gap-1 items-center'>
 													<FormLabel className='flex flex-row gap-1 items-center'>
 														{t('document_create_ai_summary')}
@@ -403,7 +403,7 @@ const AddQuickNote = () => {
 									control={form.control}
 									render={({ field }) => {
 										return (
-											<FormItem className='rounded-lg border border-input p-3'>
+											<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
 												<div className='flex flex-row gap-1 items-center'>
 													<FormLabel className='flex flex-row gap-1 items-center'>
 														{t('document_create_auto_podcast')}
@@ -480,7 +480,7 @@ const AddQuickNote = () => {
 									control={form.control}
 									render={({ field }) => {
 										return (
-											<FormItem className='w-full shrink-0 rounded-md border border-input p-3 xl:w-auto xl:min-w-[220px]'>
+											<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[220px]'>
 												<div className='flex flex-row items-center'>
 													<FormLabel htmlFor='auto_tag'>
 														{t('document_create_auto_tag')}

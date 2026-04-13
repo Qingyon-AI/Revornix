@@ -260,8 +260,8 @@ const AddAudio = () => {
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex h-full min-h-0 flex-col overflow-hidden'>
-					<div className='flex w-full min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pr-1'>
+					className='flex flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
+					<div className='flex w-full flex-col gap-4 overflow-visible lg:min-h-0 lg:min-w-0 lg:flex-1 lg:gap-5 lg:overflow-y-auto lg:pr-1'>
 						{!fileParseEngine.configured && (
 							<Alert>
 								<AlertCircleIcon />
@@ -299,9 +299,9 @@ const AddAudio = () => {
 								</AlertDescription>
 							</Alert>
 						)}
-						<Field className='min-h-0 flex-1'>
+						<Field className='min-h-[360px] lg:min-h-0 lg:flex-1'>
 							<AudioRecord
-								className='h-full min-h-[320px]'
+								className='h-full min-h-[360px] lg:min-h-[320px]'
 								maxDurationMs={AUDIO_DOCUMENT_MAX_DURATION_MS}
 								onRecordReady={(result: AudioRecordResult) => {
 									if (lastUploadedRef.current?.sourceUrl !== result.url) {
@@ -318,14 +318,14 @@ const AddAudio = () => {
 							/>
 						</Field>
 					</div>
-					<div className='sticky bottom-0 z-10 shrink-0 pt-4 backdrop-blur'>
+					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:sticky lg:bottom-0 lg:z-10 lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
 						<DocumentCreateAdvancedSection>
 							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
 								<FormField
 									name='auto_summary'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input p-3'>
+										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
 											<div className='flex flex-row gap-1 items-center'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
 													{t('document_create_ai_summary')}
@@ -357,7 +357,7 @@ const AddAudio = () => {
 									name='auto_transcribe'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input p-3'>
+										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
 											<div className='flex flex-row gap-1 items-center'>
 												<FormLabel className='flex flex-row gap-1 items-center'>
 													{t('document_create_auto_transcribe')}
@@ -427,7 +427,7 @@ const AddAudio = () => {
 									name='auto_tag'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='w-full shrink-0 rounded-md border border-input p-3 xl:w-auto xl:min-w-[240px]'>
+										<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[240px]'>
 											<div className='flex flex-row items-center'>
 												<FormLabel htmlFor='auto_tag'>
 													{t('document_create_auto_tag')}
