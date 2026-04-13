@@ -33,7 +33,11 @@ import {
 	Sparkles,
 	Users,
 } from 'lucide-react';
-import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
+import {
+	buildMetadata,
+	createAbsoluteUrl,
+	formatMetaTitle,
+} from '@/lib/seo-metadata';
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -121,7 +125,7 @@ export async function generateMetadata(props: {
 		const metaDescription = buildUserMetaDescription(user);
 
 		return buildMetadata({
-			title: `${user.nickname} | ${t('seo_user_title_suffix')}`,
+			title: formatMetaTitle(user.nickname, t('seo_user_title_suffix')),
 			description: metaDescription,
 			path: `/user/${user.id}`,
 			noIndex,
@@ -131,7 +135,7 @@ export async function generateMetadata(props: {
 	} catch (error) {
 		if (isSeoNotFoundError(error)) {
 			return buildMetadata({
-				title: t('seo_user_title_suffix'),
+				title: formatMetaTitle(t('seo_user_title_suffix')),
 				description: t('user_detail_public_profile_description'),
 				path: `/user/${id}`,
 				noIndex: true,

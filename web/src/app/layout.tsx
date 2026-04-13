@@ -17,6 +17,7 @@ import NextTopLoader from 'nextjs-toploader';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
+	formatMetaTitle,
 	getDefaultOgImage,
 	getSiteOrigin,
 	getSiteUrl,
@@ -30,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 	return {
 		...buildMetadata({
-			title: siteName,
+			title: formatMetaTitle(siteName, description),
 			description,
 			images: [getDefaultOgImage()],
 			keywords: ['AI workspace', 'public knowledge hub'],

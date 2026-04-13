@@ -5,6 +5,7 @@ import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
 import { request } from '@/lib/request';
 import { publicRequest } from '@/lib/request-public';
+import { serverRequest } from '@/lib/request-server';
 
 export type RetrySectionDocumentRequest = {
     section_id: number
@@ -148,6 +149,16 @@ export const deleteSection = async (data: SectionDeleteRequest): Promise<NormalR
 export const getSectionDetail = async (data: SectionDetailRequest): Promise<SectionDetailWithPpt> => {
     return await request(sectionApi.getSectionDetail, {
         data
+    })
+}
+
+export const getSectionDetailInServer = async (
+    data: SectionDetailRequest,
+    headers: Headers,
+): Promise<SectionDetailWithPpt> => {
+    return await serverRequest(sectionApi.getSectionDetail, {
+        data,
+        headers,
     })
 }
 

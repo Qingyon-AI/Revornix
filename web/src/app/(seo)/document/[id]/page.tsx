@@ -1,42 +1,27 @@
-import AudioPlayer from '@/components/ui/audio-player';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import JsonLd from '@/components/seo/json-ld';
+import {
+	SeoDocumentMetaSidebar,
+	SeoDocumentSidebarBridge,
+} from '@/components/seo/seo-document-meta-sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import {
 	fetchPublicDocumentDetail,
 	fetchRemoteTextContent,
-	formatSeoDate,
-	getPublicSectionHref,
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { replacePath } from '@/lib/utils';
+import { CalendarClock } from 'lucide-react';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
-	ArrowRight,
-	BookText,
-	CalendarClock,
-	CalendarDays,
-	FileDown,
-	Globe2,
-	Headphones,
-	Users,
-} from 'lucide-react';
-import {
 	buildMetadata,
 	createAbsoluteUrl,
+	formatMetaTitle,
 	getSiteOrigin,
 	toIsoDate,
 } from '@/lib/seo-metadata';
@@ -97,7 +82,10 @@ export async function generateMetadata(props: {
 				: undefined;
 
 		return buildMetadata({
-			title: `${document.title || t('document_no_title')} | ${t('seo_document_title_suffix')}`,
+			title: formatMetaTitle(
+				document.title || t('document_no_title'),
+				t('seo_document_title_suffix'),
+			),
 			description: document.description || t('document_no_description'),
 			path: `/document/${document.id}`,
 			type: 'article',
@@ -115,7 +103,7 @@ export async function generateMetadata(props: {
 	} catch (error) {
 		if (isSeoNotFoundError(error)) {
 			return buildMetadata({
-				title: t('seo_document_title_suffix'),
+				title: formatMetaTitle(t('seo_document_title_suffix')),
 				description: t('document_no_description'),
 				path: `/document/${id}`,
 				noIndex: true,
@@ -181,214 +169,99 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			keywords: document.labels?.map((label) => label.name),
 		};
 
-		const surfaceCardClassName =
-			'gap-0 rounded-[26px] border border-border/60 bg-card/88 py-0 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur';
-
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
 				<JsonLd data={documentSchema} />
-				<Card
-					className={`relative overflow-hidden rounded-[26px] ${surfaceCardClassName}`}>
-					<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.12),transparent_22%)]' />
-					<CardContent className='px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
-						<div className='space-y-5'>
-							<div className='flex flex-wrap items-center gap-2'>
-								<Badge
-									variant='secondary'
-									className='rounded-full bg-background/70 px-3 py-1 text-xs'>
-									{categoryLabel}
-								</Badge>
-							</div>
-
-							<div className='space-y-3'>
-								<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
-									{document.title || t('document_no_title')}
-								</h1>
-								<p className='max-w-4xl text-sm leading-7 text-muted-foreground sm:text-base'>
-									{document.description || t('document_no_description')}
-								</p>
-							</div>
-
-							<div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground'>
-								<div className='inline-flex items-center gap-2'>
-									<CalendarClock className='size-4' />
-									<span>{t('seo_document_updated_at')}</span>
-									<span className='text-foreground/85'>
-										{formatSeoDate(document.update_time, locale)}
-									</span>
-								</div>
-								<div className='inline-flex items-center gap-2'>
-									<CalendarDays className='size-4' />
-									<span>{t('seo_document_created_at')}</span>
-									<span className='text-foreground/85'>
-										{formatSeoDate(document.create_time, locale)}
-									</span>
-								</div>
-							</div>
-
-							<Link
-								href={`/user/${document.creator.id}`}
-								className='inline-flex items-center gap-3 rounded-full border border-border/50 bg-background/45 px-3 py-2 transition-colors hover:bg-background/70'>
-								<Avatar className='size-8'>
-									<AvatarImage
-										src={creatorAvatar}
-										alt={document.creator.nickname}
-										className='object-cover'
-									/>
-									<AvatarFallback className='font-semibold'>
-										{document.creator.nickname.slice(0, 1)}
-									</AvatarFallback>
-								</Avatar>
-								<div className='text-left'>
-									<div className='text-xs text-muted-foreground'>
-										{t('seo_document_creator')}
-									</div>
-									<div className='text-sm text-foreground'>
-										{document.creator.nickname}
-									</div>
-								</div>
-							</Link>
+				<SeoDocumentSidebarBridge
+					document={document}
+					categoryLabel={categoryLabel}
+					locale={locale}
+					creatorAvatar={creatorAvatar}
+					coverSrc={coverSrc}
+					primaryAudioSrc={primaryAudioSrc}
+					publicSections={publicSections}
+				/>
+				<div className='mx-auto w-full max-w-[920px] space-y-5'>
+					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+						<Link
+							href={`/user/${document.creator.id}`}
+							className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-2.5 py-1.5 transition-colors hover:bg-background/70'>
+							<Avatar className='size-6'>
+								<AvatarImage
+									src={creatorAvatar}
+									alt={document.creator.nickname}
+									className='object-cover'
+								/>
+								<AvatarFallback className='text-[11px] font-semibold'>
+									{document.creator.nickname.slice(0, 1)}
+								</AvatarFallback>
+							</Avatar>
+							<span>{document.creator.nickname}</span>
+						</Link>
+						<Badge
+							variant='outline'
+							className='rounded-full px-3 py-1.5 text-xs font-normal text-muted-foreground'>
+							{categoryLabel}
+						</Badge>
+						<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
+							<CalendarClock className='size-3.5' />
+							<span>{t('seo_document_updated_at')}</span>
+							<span className='text-foreground/85'>
+								{new Intl.DateTimeFormat(locale, {
+									dateStyle: 'medium',
+								}).format(
+									new Date(document.update_time ?? document.create_time),
+								)}
+							</span>
 						</div>
-					</CardContent>
-				</Card>
-
-				<div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start'>
-					<div className='space-y-6'>
-						{coverSrc ? (
-							<Card className='overflow-hidden rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)] py-0'>
-								<CardContent className='p-0'>
-									<ImageWithFallback
-										src={coverSrc}
-										alt={document.title}
-										preview
-										className='h-[220px] w-full object-cover object-center sm:h-[300px]'
-										fallbackClassName='h-[220px] w-full sm:h-[300px]'
-										fallbackSvgClassName='max-w-[220px] p-6'
-									/>
-								</CardContent>
-							</Card>
-						) : null}
-
-						<Card className='rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)]'>
-							<CardContent>
-								<div className='max-w-none overflow-x-hidden'>
-									<TipTapMarkdownViewer
-										content={
-											markdown || document.description || t('document_no_md')
-										}
-										ownerId={document.creator.id}
-									/>
-									<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
-										{t('document_ai_tips')}
-									</div>
-								</div>
-							</CardContent>
-						</Card>
 					</div>
 
-					<div className='space-y-5 xl:sticky xl:top-24'>
-						<Card className='rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)]'>
-							<CardHeader className='gap-2 px-5 pb-0'>
-								<CardTitle>{t('seo_document_source')}</CardTitle>
-								<CardDescription className='leading-6'>
-									{document.from_plat}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='flex flex-col gap-5'>
-								{document.website_info?.url ? (
-									<Link href={document.website_info.url} target='_blank'>
-										<Button className='w-full rounded-2xl'>
-											<Globe2 />
-											{t('seo_document_open_source')}
-										</Button>
-									</Link>
-								) : null}
-								{document.file_info?.file_name ? (
-									<Link href={document.file_info.file_name} target='_blank'>
-										<Button variant='outline' className='w-full rounded-2xl'>
-											<FileDown />
-											{t('seo_document_download_file')}
-										</Button>
-									</Link>
-								) : null}
-								{primaryAudioSrc ? (
-									<div className='rounded-[24px] border border-border/60 bg-background/55 p-4'>
-										<div className='mb-3 flex items-center gap-2 text-sm font-medium'>
-											<Headphones className='size-4' />
-											<span>{t('seo_document_audio')}</span>
-										</div>
-										<AudioPlayer
-											src={primaryAudioSrc}
-											title={document.title}
-											artist={document.creator.nickname}
-											cover={coverSrc ?? undefined}
-											variant='compact'
-										/>
-									</div>
-								) : null}
-								{!document.website_info?.url &&
-								!document.file_info?.file_name &&
-								!primaryAudioSrc ? (
-									<div className='rounded-[24px] border border-border/60 bg-background/55 p-4 text-sm leading-7 text-muted-foreground'>
-										{document.category === DocumentCategory.QUICK_NOTE
-											? t('seo_document_source_quick_note')
-											: t('seo_document_source_default')}
-									</div>
-								) : null}
-							</CardContent>
-						</Card>
+					<div className='space-y-3'>
+						<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+							{document.title || t('document_no_title')}
+						</h1>
+						<p className='max-w-[820px] text-sm leading-7 text-muted-foreground sm:text-base'>
+							{document.description || t('document_no_description')}
+						</p>
+					</div>
+				</div>
 
-						<Card className='rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.55)]'>
-							<CardHeader className='gap-2 px-5 pb-0'>
-								<CardTitle>{t('seo_document_related_sections')}</CardTitle>
-								<CardDescription className='leading-6'>
-									{t('seo_document_related_sections_description')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='space-y-3 px-5'>
-								{publicSections.length > 0 ? (
-									publicSections.map((section) => (
-										<Link
-											key={`${section.id}-${section.publish_uuid ?? 'private'}`}
-											href={getPublicSectionHref(section)}
-											className='flex items-center justify-between rounded-[22px] border border-border/60 bg-background/55 px-4 py-3 transition-colors hover:bg-background/90'>
-											<div className='min-w-0'>
-												<div className='line-clamp-1 font-medium'>
-													{section.title}
-												</div>
-												<div className='line-clamp-2 text-sm text-muted-foreground'>
-													{section.description ||
-														t('section_description_empty')}
-												</div>
-											</div>
-											<ArrowRight className='ml-3 size-4 shrink-0 text-muted-foreground' />
-										</Link>
-									))
-								) : (
-									<div className='rounded-[24px] border border-border/60 bg-background/55 p-4 text-sm leading-7 text-muted-foreground'>
-										{t('seo_document_related_sections_empty')}
-									</div>
-								)}
-							</CardContent>
-						</Card>
+				<div className='mx-auto w-full max-w-[920px] space-y-6'>
+					<div className='space-y-6'>
+						{coverSrc ? (
+							<ImageWithFallback
+								src={coverSrc}
+								alt={document.title}
+								preview
+								className='h-[220px] w-full object-cover object-center sm:h-[300px] rounded-xl'
+								fallbackClassName='h-[220px] w-full sm:h-[300px]'
+								fallbackSvgClassName='max-w-[220px] p-6'
+							/>
+						) : null}
 
-						<div className='flex flex-col gap-5'>
-							<Link href={`/user/${document.creator.id}`}>
-								<Button
-									variant='outline'
-									className='rounded-2xl w-full flex flex-row justify-between items-center'>
-									{t('seo_document_related_creator')}
-									<Users />
-								</Button>
-							</Link>
-							<Link href='/community'>
-								<Button
-									variant='outline'
-									className='rounded-2xl w-full flex flex-row justify-between items-center'>
-									{t('seo_document_back_to_community')}
-									<BookText />
-								</Button>
-							</Link>
+						<div className='mx-auto w-full max-w-[820px] overflow-x-hidden'>
+							<TipTapMarkdownViewer
+								content={
+									markdown || document.description || t('document_no_md')
+								}
+								ownerId={document.creator.id}
+							/>
+							<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
+								{t('document_ai_tips')}
+							</div>
+						</div>
+
+						<div className='xl:hidden'>
+							<SeoDocumentMetaSidebar
+								document={document}
+								categoryLabel={categoryLabel}
+								locale={locale}
+								creatorAvatar={creatorAvatar}
+								coverSrc={coverSrc}
+								primaryAudioSrc={primaryAudioSrc}
+								publicSections={publicSections}
+								className='space-y-5'
+							/>
 						</div>
 					</div>
 				</div>

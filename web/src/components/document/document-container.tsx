@@ -16,7 +16,7 @@ import {
 	DocumentInfo as DocumentListItem,
 	InifiniteScrollPagnitionDocumentInfo,
 } from '@/generated';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
@@ -100,8 +100,6 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	);
 	const [isGraphGenerateDialogOpen, setIsGraphGenerateDialogOpen] = useState(false);
 	const [hasRenderableGraph, setHasRenderableGraph] = useState(false);
-	const surfaceCardClassName =
-		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur shadow-none';
 	const userUnreadDocumentQueryKey = [
 		'searchUserUnreadDocument',
 		mainUserInfo?.id,
@@ -260,8 +258,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		}
 	};
 
-	useEffect(() => {
-		setContent(
+	const sidebarContent = useMemo(
+		() => (
 			<DocumentDetailSidebar
 				id={id}
 				isPending={isPending && !isError}
@@ -274,24 +272,28 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				graphGenerating={mutateGenerateDocumentGraph.isPending}
 				documentCategory={document?.category}
 				graphStatus={document?.graph_task?.status}
-				surfaceCardClassName={surfaceCardClassName}
 				onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
-			/>,
-		);
-	}, [
-		document,
-		freshnessState.graphStale,
-		graphActionLabel,
-		graphCardState.badge,
-		graphCardState.tone,
-		hasRenderableGraph,
-		id,
-		isError,
-		isPending,
-		mutateGenerateDocumentGraph.isPending,
-		setContent,
-		surfaceCardClassName,
-	]);
+			/>
+		),
+		[
+			document?.category,
+			document?.graph_task?.status,
+			document?.id,
+			freshnessState.graphStale,
+			graphActionLabel,
+			graphCardState.badge,
+			graphCardState.tone,
+			hasRenderableGraph,
+			id,
+			isError,
+			isPending,
+			mutateGenerateDocumentGraph.isPending,
+		],
+	);
+
+	useEffect(() => {
+		setContent(sidebarContent);
+	}, [setContent, sidebarContent]);
 
 	useEffect(() => {
 		return () => {

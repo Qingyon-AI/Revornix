@@ -27,9 +27,9 @@ import { useUserContext } from '@/provider/user-provider';
 import { cn, replacePath } from '@/lib/utils';
 import { getSectionDetail } from '@/service/section';
 
-import { Alert, AlertDescription } from '../ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
+import NoticeBox from '../ui/notice-box';
 import { Skeleton } from '../ui/skeleton';
 
 const InfoBadge = ({ children }: { children: ReactNode }) => {
@@ -267,13 +267,19 @@ const SectionInfo = ({ id }: { id: number }) => {
 			</div>
 
 			{section.is_day_section ? (
-				<Alert className='border-emerald-500/30 bg-emerald-500/8 text-emerald-800 dark:text-emerald-200'>
-					<AlertTriangle className='size-4 text-current' />
-					<AlertDescription>
-						<span className='font-medium'>{t('section_day_notice_title')}</span>{' '}
-						{t('section_day_notice_description')}
-					</AlertDescription>
-				</Alert>
+				<NoticeBox tone='success' className='flex items-start gap-3 px-5 py-4'>
+					<div className='flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-current'>
+						<AlertTriangle className='size-4' />
+					</div>
+					<div className='min-w-0'>
+						<p className='text-sm font-semibold leading-6'>
+							{t('section_day_notice_title')}
+						</p>
+						<p className='text-sm leading-7 opacity-90'>
+							{t('section_day_notice_description')}
+						</p>
+					</div>
+				</NoticeBox>
 			) : null}
 
 			{creatorId !== undefined ? (

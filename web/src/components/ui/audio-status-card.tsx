@@ -5,7 +5,8 @@ import type { ReactNode } from 'react';
 import { AudioLines, Loader2, type LucideIcon } from 'lucide-react';
 
 import { Button } from './button';
-import TaskStateCard, { type TaskStateTone } from './task-state-card';
+import SidebarTaskNode from './sidebar-task-node';
+import type { TaskStateTone } from './task-state-card';
 
 const AudioStatusCard = ({
 	badge,
@@ -20,6 +21,7 @@ const AudioStatusCard = ({
 	hint,
 	className,
 	spinning = false,
+	variant: _variant = 'card',
 }: {
 	badge: string;
 	title: string;
@@ -33,17 +35,18 @@ const AudioStatusCard = ({
 	hint?: ReactNode;
 	className?: string;
 	spinning?: boolean;
+	variant?: 'card' | 'panel' | 'plain';
 }) => {
 	return (
-		<TaskStateCard
+		<SidebarTaskNode
 			icon={Icon}
-			badge={badge}
+			status={badge}
 			title={title}
 			description={description}
 			tone={tone}
 			hint={hint}
 			className={className}
-			spinning={spinning}
+			iconClassName={spinning ? 'animate-spin' : undefined}
 			action={
 				actionLabel && onAction ? (
 					<Button

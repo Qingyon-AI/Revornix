@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useInterval } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -12,6 +12,7 @@ import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRightSidebar } from '@/provider/right-sidebar-provider';
+import { searchSectionGraph } from '@/service/graph';
 import { getSectionDetail } from '@/service/section';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import ImageWithFallback from '../ui/image-with-fallback';
@@ -79,27 +80,30 @@ const SectionContainer = ({ id }: { id: number }) => {
 	const { setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
 
-	const surfaceCardClassName =
-		'rounded-[30px] border border-border/60 bg-card/85 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.55)] backdrop-blur shadow-none';
-
 	const { data: section, isPending } = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
 		},
 	});
+	const { data: graphData } = useQuery({
+		queryKey: ['searchSectionGraphBadge', id],
+		queryFn: () => searchSectionGraph({ section_id: id }),
+		enabled: Boolean(section?.id),
+	});
 	const sectionCoverSrc = getSectionCoverSrc(section);
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
+	const hasRenderableGraph = Boolean(graphData?.nodes?.length);
 	const graphCardState =
-		freshnessState.graphStale &&
-		section?.process_task?.status === SectionProcessStatus.SUCCESS
+		hasRenderableGraph && freshnessState.graphStale
 			? {
 					badge: t('section_graph_status_stale'),
 					tone: 'warning' as const,
 				}
-			: section?.process_task?.status === SectionProcessStatus.SUCCESS
+			: hasRenderableGraph ||
+				  section?.process_task?.status === SectionProcessStatus.SUCCESS
 				? {
 						badge: t('document_graph_status_success'),
 						tone: 'success' as const,
@@ -146,8 +150,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 		section?.process_task?.status,
 	]);
 
-	useEffect(() => {
-		setContent(
+	const sidebarContent = useMemo(
+		() => (
 			<SectionDetailSidebar
 				id={id}
 				isPending={isPending}
@@ -155,19 +159,22 @@ const SectionContainer = ({ id }: { id: number }) => {
 				graphBadge={graphCardState.badge}
 				graphTone={graphCardState.tone}
 				graphStale={freshnessState.graphStale}
-				surfaceCardClassName={surfaceCardClassName}
-			/>,
-		);
-	}, [
-		freshnessState.graphStale,
-		graphCardState.badge,
-		graphCardState.tone,
-		id,
-		isPending,
-		section,
-		setContent,
-		surfaceCardClassName,
-	]);
+			/>
+		),
+		[
+			freshnessState.graphStale,
+			graphCardState.badge,
+			graphCardState.tone,
+			hasRenderableGraph,
+			id,
+			isPending,
+			section?.id,
+		],
+	);
+
+	useEffect(() => {
+		setContent(sidebarContent);
+	}, [setContent, sidebarContent]);
 
 	useEffect(() => {
 		return () => {
