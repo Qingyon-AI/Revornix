@@ -27,7 +27,7 @@ const DocumentCreateAdvancedSection = ({
 					type='button'
 					className='flex w-full items-center gap-3 py-1 text-sm text-muted-foreground transition hover:text-foreground'>
 					<div className='h-px flex-1 bg-border/70' />
-					<span className='shrink-0'>
+					<span className='shrink-0 font-medium'>
 						{open ? t('document_create_less_config') : t('document_create_more_config')}
 					</span>
 					<ChevronDown

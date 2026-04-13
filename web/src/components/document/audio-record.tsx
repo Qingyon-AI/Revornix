@@ -587,7 +587,7 @@ const AudioRecord = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-col gap-4 rounded-xl border border-input bg-background p-4 h-full',
+				'flex h-full flex-col gap-4 rounded-xl border border-border/60 bg-muted/20 p-4 sm:p-5',
 				className,
 			)}>
 			<div className='flex items-center justify-between'>
@@ -606,7 +606,7 @@ const AudioRecord = ({
 					</span>
 				</div>
 			</div>
-			<div className='flex items-start gap-2 rounded-xl border border-border/60 bg-muted/35 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+			<div className='flex items-start gap-2 rounded-2xl border border-border/60 bg-background/80 px-3 py-2.5 text-xs leading-5 text-muted-foreground'>
 				<Info className='mt-0.5 size-3.5 shrink-0' />
 				<span>
 					{t('document_audio_record_limit_hint', {
@@ -614,7 +614,7 @@ const AudioRecord = ({
 					})}
 				</span>
 			</div>
-			<div className='relative h-40 w-full overflow-hidden rounded-xl border border-emerald-500/15 bg-transparent dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
+			<div className='relative h-40 w-full overflow-hidden rounded-[20px] border border-emerald-500/15 bg-background/90 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
 				<div className='pointer-events-none absolute inset-0 hidden dark:block'>
 					<div className='absolute left-6 top-6 h-16 w-16 rounded-full bg-emerald-400/10 blur-2xl animate-pulse' />
 					<div className='absolute right-8 bottom-8 h-20 w-20 rounded-full bg-sky-400/10 blur-3xl animate-pulse [animation-delay:-1.2s]' />
@@ -652,9 +652,10 @@ const AudioRecord = ({
 					/>
 				</div>
 			)}
-			<div className='flex items-center gap-2'>
+			<div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
 				<Button
 					type='button'
+					className='w-full sm:w-auto'
 					disabled={hasReachedDurationLimit && recordingState !== 'recording'}
 					onClick={
 						recordingState === 'recording'
@@ -673,6 +674,7 @@ const AudioRecord = ({
 				<Button
 					type='button'
 					variant='secondary'
+					className='w-full sm:w-auto'
 					onClick={handleDelete}
 					disabled={!canDelete}>
 					<Trash2 className='h-4 w-4' />
