@@ -317,11 +317,16 @@ const ModelProviderUpdate = ({
 											control={form.control}
 											render={({ field }) => {
 												return (
-													<FormItem className='rounded-lg border border-input p-3'>
-														<div className='flex flex-row gap-1 items-center'>
-															<FormLabel className='flex flex-row gap-1 items-center'>
-																{t('setting_model_provider_is_public')}
-															</FormLabel>
+													<FormItem className='rounded-xl border border-input/70 bg-background/60 p-4'>
+														<div className='flex flex-row items-center justify-between gap-3'>
+															<div className='space-y-1'>
+																<FormLabel className='flex flex-row gap-1 items-center text-sm font-medium'>
+																	{t('setting_model_provider_is_public')}
+																</FormLabel>
+																<FormDescription className='text-xs leading-5 text-muted-foreground'>
+																	{t('setting_model_provider_is_public_tips')}
+																</FormDescription>
+															</div>
 															<Switch
 																checked={field.value}
 																onCheckedChange={(e) => {
@@ -330,9 +335,6 @@ const ModelProviderUpdate = ({
 																disabled={!authorized}
 															/>
 														</div>
-														<FormDescription>
-															{t('setting_model_provider_is_public_tips')}
-														</FormDescription>
 													</FormItem>
 												);
 											}}

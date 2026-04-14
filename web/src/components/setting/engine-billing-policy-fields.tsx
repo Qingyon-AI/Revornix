@@ -35,7 +35,7 @@ const EngineBillingPolicyFields = ({
 	);
 
 	return (
-		<div className='space-y-3 rounded-xl border border-input/70 bg-background/60 p-4'>
+		<div className='rounded-xl border border-input/70 bg-background/60 p-4'>
 			<FormField
 				name='is_official_hosted'
 				control={form.control}
@@ -60,7 +60,7 @@ const EngineBillingPolicyFields = ({
 				)}
 			/>
 			{isOfficialHosted && (
-				<div className='space-y-3'>
+				<div className='mt-4 space-y-4 border-t border-input/70 pt-4'>
 					<FormField
 						name='billing_mode'
 						control={form.control}
@@ -98,6 +98,7 @@ const EngineBillingPolicyFields = ({
 							</div>
 						)}
 					/>
+					<div className='border-t border-input/70' />
 					<FormField
 						name='billing_unit_price'
 						control={form.control}
@@ -130,6 +131,7 @@ const EngineBillingPolicyFields = ({
 							</div>
 						)}
 					/>
+					<div className='border-t border-input/70' />
 					<FormField
 						name='compute_point_multiplier'
 						control={form.control}
@@ -158,6 +160,7 @@ const EngineBillingPolicyFields = ({
 							</div>
 						)}
 					/>
+					<div className='border-t border-input/70' />
 					<div className='flex flex-row justify-between gap-3 rounded-lg border border-dashed border-input/70 bg-muted/40 p-3 items-start'>
 						<div className='space-y-1'>
 							<div className='text-sm font-medium'>

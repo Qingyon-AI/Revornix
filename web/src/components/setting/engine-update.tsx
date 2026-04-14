@@ -55,6 +55,7 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import EngineBillingPolicyFields from './engine-billing-policy-fields';
+import EngineConfigFields from './engine-config-fields';
 
 const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	const t = useTranslations();
@@ -375,124 +376,109 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 							{authorized && (
 								<>
 									{engine_info.engine_provided.demo_config && (
-										<>
-											<FormField
-												name='config_json'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<div className='grid grid-cols-12 gap-2'>
-																<FormLabel className='col-span-3'>
-																	{t(
-																		'setting_engine_page_engine_form_config_json',
-																	)}
-																</FormLabel>
-																<div className='col-span-9'>
-																	<Textarea
-																		disabled={!authorized}
-																		placeholder={t(
-																			'setting_engine_page_engine_form_config_json_placeholder',
-																		)}
-																		className='font-mono break-all'
-																		{...field}
-																		value={field.value ?? ''}
-																	/>
-																</div>
-															</div>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<div className='grid grid-cols-12 gap-2'>
-												<FormLabel className='col-span-3'>
-													{t('setting_engine_page_mine_engine_config_demo')}
-												</FormLabel>
-												<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-													{engine_info.engine_provided.demo_config}
-												</div>
-											</div>
-										</>
+										<FormField
+											name='config_json'
+											control={form.control}
+											render={({ field }) => {
+												return (
+													<FormItem>
+														<EngineConfigFields
+															disabled={!authorized}
+															engineName={engine_info.engine_provided.name}
+															demoConfig={engine_info.engine_provided.demo_config}
+															value={field.value ?? ''}
+															onChange={(nextValue) => {
+																field.onChange(nextValue);
+															}}
+														/>
+														<FormMessage />
+													</FormItem>
+												);
+											}}
+										/>
 									)}
 									<FormField
 										name='is_public'
 										control={form.control}
 										render={({ field }) => {
 											return (
-												<FormItem className='rounded-lg border border-input p-3'>
-													<div className='flex flex-row gap-1 items-center'>
-														<FormLabel className='flex flex-row gap-1 items-center'>
-															{t('setting_model_provider_is_public')}
-														</FormLabel>
-														<Switch
-															disabled={!authorized}
-															checked={field.value}
-															onCheckedChange={(e) => {
-																field.onChange(e);
-															}}
-														/>
-													</div>
-													<FormDescription>
-														{t(
-															'setting_engine_page_mine_engine_is_public_tips',
-														)}
-													</FormDescription>
-													{isPublic && (
-														<div className='flex flex-row justify-between gap-3 rounded-xl border border-input/70 bg-background/60 p-3'>
+												<FormItem className='rounded-xl border border-input/70 bg-background/60 p-4'>
+													<div className='space-y-4'>
+														<div className='flex flex-row items-center justify-between gap-3'>
 															<div className='space-y-1'>
-																<div className='text-sm font-medium'>
-																	{t('setting_required_plan_level_label')}
-																</div>
-																<p className='text-xs text-muted-foreground'>
-																	{t('setting_required_plan_level_tips')}
-																</p>
+																<FormLabel className='flex flex-row gap-1 items-center text-sm font-medium'>
+																	{t('setting_model_provider_is_public')}
+																</FormLabel>
+																<FormDescription className='text-xs leading-5 text-muted-foreground'>
+																	{t(
+																		'setting_engine_page_mine_engine_is_public_tips',
+																	)}
+																</FormDescription>
 															</div>
-															<Select
-																key={`${engineId}-${String(
-																	form.watch('required_plan_level') ??
-																		AccessPlanLevel.FREE,
-																)}`}
+															<Switch
 																disabled={!authorized}
-																onValueChange={(value) =>
-																	form.setValue(
-																		'required_plan_level',
-																		Number(value),
-																		{
-																			shouldDirty: true,
-																			shouldValidate: true,
-																		},
-																	)
-																}
-																value={String(
-																	form.watch('required_plan_level') ??
-																		AccessPlanLevel.FREE,
-																)}>
-																<SelectTrigger className='w-fit'>
-																	<SelectValue
-																		placeholder={t(
-																			'setting_required_plan_level_placeholder',
-																		)}
-																	/>
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectGroup>
-																		{[
-																			AccessPlanLevel.FREE,
-																			AccessPlanLevel.PRO,
-																			AccessPlanLevel.MAX,
-																		].map((level) => (
-																			<SelectItem
-																				key={level}
-																				value={String(level)}>
-																				{t(getPlanLevelTranslationKey(level))}
-																			</SelectItem>
-																		))}
-																	</SelectGroup>
-																</SelectContent>
-															</Select>
+																checked={field.value}
+																onCheckedChange={(e) => {
+																	field.onChange(e);
+																}}
+															/>
 														</div>
-													)}
+														{isPublic && (
+															<div className='flex flex-row items-center justify-between gap-3 border-t border-input/70 pt-4'>
+																<div className='space-y-1'>
+																	<div className='text-sm font-medium'>
+																		{t('setting_required_plan_level_label')}
+																	</div>
+																	<p className='text-xs leading-5 text-muted-foreground'>
+																		{t('setting_required_plan_level_tips')}
+																	</p>
+																</div>
+																<Select
+																	key={`${engineId}-${String(
+																		form.watch('required_plan_level') ??
+																			AccessPlanLevel.FREE,
+																	)}`}
+																	disabled={!authorized}
+																	onValueChange={(value) =>
+																		form.setValue(
+																			'required_plan_level',
+																			Number(value),
+																			{
+																				shouldDirty: true,
+																				shouldValidate: true,
+																			},
+																		)
+																	}
+																	value={String(
+																		form.watch('required_plan_level') ??
+																			AccessPlanLevel.FREE,
+																	)}>
+																	<SelectTrigger className='w-28'>
+																		<SelectValue
+																			placeholder={t(
+																				'setting_required_plan_level_placeholder',
+																			)}
+																		/>
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectGroup>
+																			{[
+																				AccessPlanLevel.FREE,
+																				AccessPlanLevel.PRO,
+																				AccessPlanLevel.MAX,
+																			].map((level) => (
+																				<SelectItem
+																					key={level}
+																					value={String(level)}>
+																					{t(getPlanLevelTranslationKey(level))}
+																				</SelectItem>
+																			))}
+																		</SelectGroup>
+																	</SelectContent>
+																</Select>
+															</div>
+														)}
+													</div>
 												</FormItem>
 											);
 										}}

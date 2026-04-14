@@ -48,6 +48,7 @@ import { Switch } from '../ui/switch';
 import ResourceSelectEmptyState from './resource-select-empty-state';
 import { Boxes } from 'lucide-react';
 import EngineBillingPolicyFields from './engine-billing-policy-fields';
+import EngineConfigFields from './engine-config-fields';
 
 const EngineAddButton = () => {
 	const t = useTranslations();
@@ -95,6 +96,9 @@ const EngineAddButton = () => {
 				filter_category: engineCategory,
 			});
 		},
+	});
+	const selectedEngine = provideEngines?.data.find((item) => {
+		return item.id === form.watch('engine_id');
 	});
 	const mutateCreateEngine = useMutation({
 		mutationFn: createEngine,
@@ -182,6 +186,11 @@ const EngineAddButton = () => {
 								<Select
 									onValueChange={(e) => {
 										setEngineCategory(Number(e));
+										form.setValue('engine_id', undefined as never);
+										form.setValue('config_json', '', {
+											shouldDirty: true,
+											shouldValidate: true,
+										});
 									}}
 									value={engineCategory.toString()}>
 									<SelectTrigger className='w-full'>
@@ -219,45 +228,51 @@ const EngineAddButton = () => {
 										</FormLabel>
 										<div className='col-span-9'>
 											<Select
-												onValueChange={(value) => field.onChange(Number(value))}
+												onValueChange={(value) => {
+													field.onChange(Number(value));
+													form.setValue('config_json', '', {
+														shouldDirty: true,
+														shouldValidate: true,
+													});
+												}}
 												value={field.value ? String(field.value) : undefined}>
-											<SelectTrigger className='w-full'>
-												<SelectValue
-													placeholder={t(
-														'setting_engine_page_engine_form_engine_id_placeholder',
-													)}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												{!isFetchingProvideEngines &&
-												!isRefetchingProvideEngines &&
-												(provideEngines?.data?.length ?? 0) === 0 ? (
-													<ResourceSelectEmptyState
-														icon={Boxes}
-														title={t('setting_default_engine_empty_title')}
-														description={t(
-															'setting_default_engine_empty_description',
+												<SelectTrigger className='w-full'>
+													<SelectValue
+														placeholder={t(
+															'setting_engine_page_engine_form_engine_id_placeholder',
 														)}
-														actionLabel={t('setting_default_engine_empty_action')}
-														href='/setting/engine'
 													/>
-												) : (
-													<SelectGroup>
-														{provideEngines?.data.map((item) => {
-															return (
-																<SelectItem
-																	key={item.id}
-																	value={String(item.id)}
-																	className='w-full'>
-																	{locale === 'zh' ? item.name_zh : item.name}
-																</SelectItem>
-															);
-														})}
-													</SelectGroup>
-												)}
-											</SelectContent>
-										</Select>
-									</div>
+												</SelectTrigger>
+												<SelectContent>
+													{!isFetchingProvideEngines &&
+													!isRefetchingProvideEngines &&
+													(provideEngines?.data?.length ?? 0) === 0 ? (
+														<ResourceSelectEmptyState
+															icon={Boxes}
+															title={t('setting_default_engine_empty_title')}
+															description={t(
+																'setting_default_engine_empty_description',
+															)}
+															actionLabel={t('setting_default_engine_empty_action')}
+															href='/setting/engine'
+														/>
+													) : (
+														<SelectGroup>
+															{provideEngines?.data.map((item) => {
+																return (
+																	<SelectItem
+																		key={item.id}
+																		value={String(item.id)}
+																		className='w-full'>
+																		{locale === 'zh' ? item.name_zh : item.name}
+																	</SelectItem>
+																);
+															})}
+														</SelectGroup>
+													)}
+												</SelectContent>
+											</Select>
+										</div>
 									</div>
 									<FormMessage />
 								</FormItem>
@@ -309,121 +324,102 @@ const EngineAddButton = () => {
 								</FormItem>
 							)}
 						/>
-						{provideEngines?.data.find((item) => {
-							return item.id === form.watch('engine_id');
-						})?.demo_config && (
-							<>
-								<FormField
-									name='config_json'
-									control={form.control}
-									render={({ field }) => {
-										return (
-											<FormItem>
-												<div className='grid grid-cols-12 gap-2'>
-													<FormLabel className='col-span-3'>
-														{t('setting_engine_page_engine_form_config_json')}
-													</FormLabel>
-													<div className='col-span-9'>
-														<Textarea
-															placeholder={t(
-																'setting_engine_page_engine_form_config_json_placeholder',
-															)}
-															className='font-mono break-all'
-															{...field}
-															value={field.value ?? ''}
-														/>
-													</div>
-												</div>
-												<FormMessage />
-											</FormItem>
-										);
-									}}
-								/>
-								<div className='grid grid-cols-12 gap-2'>
-									<FormLabel className='col-span-3'>
-										{t('setting_engine_page_mine_engine_config_demo')}
-									</FormLabel>
-									<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-										{
-											provideEngines?.data.find((item) => {
-												return item.id === form.watch('engine_id');
-											})?.demo_config
-										}
-									</div>
-								</div>
-							</>
+						{selectedEngine?.demo_config && (
+							<FormField
+								name='config_json'
+								control={form.control}
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<EngineConfigFields
+												engineName={selectedEngine.name}
+												demoConfig={selectedEngine.demo_config}
+												value={field.value ?? ''}
+												onChange={(nextValue) => {
+													field.onChange(nextValue);
+												}}
+											/>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
 						)}
 						<FormField
 							name='is_public'
 							control={form.control}
 							render={({ field }) => {
 								return (
-									<FormItem className='rounded-lg border border-input p-3'>
-										<div className='flex flex-row gap-1 items-center justify-between'>
-											<FormLabel className='flex flex-row gap-1 items-center'>
-												{t('setting_model_provider_is_public')}
-											</FormLabel>
-											<Switch
-												checked={field.value}
-												onCheckedChange={(e) => {
-													field.onChange(e);
-												}}
-											/>
-										</div>
-									<FormDescription>
-										{t('setting_engine_page_mine_engine_is_public_tips')}
-									</FormDescription>
-									{isPublic && (
-										<div className='flex flex-row justify-between gap-3 rounded-xl border border-input/70 bg-background/60 p-3'>
-											<div className='space-y-1'>
-												<div className='text-sm font-medium'>
-													{t('setting_required_plan_level_label')}
+									<FormItem className='rounded-xl border border-input/70 bg-background/60 p-4'>
+										<div className='space-y-4'>
+											<div className='flex flex-row items-center justify-between gap-3'>
+												<div className='space-y-1'>
+													<FormLabel className='flex flex-row gap-1 items-center text-sm font-medium'>
+														{t('setting_model_provider_is_public')}
+													</FormLabel>
+													<FormDescription className='text-xs leading-5 text-muted-foreground'>
+														{t('setting_engine_page_mine_engine_is_public_tips')}
+													</FormDescription>
 												</div>
-												<p className='text-xs text-muted-foreground'>
-													{t('setting_required_plan_level_tips')}
-												</p>
+												<Switch
+													checked={field.value}
+													onCheckedChange={(e) => {
+														field.onChange(e);
+													}}
+												/>
 											</div>
-											<Select
-												onValueChange={(value) =>
-													form.setValue(
-														'required_plan_level',
-														Number(value),
-														{
-															shouldDirty: true,
-															shouldValidate: true,
-														},
-													)
-												}
-												value={String(
-													form.watch('required_plan_level') ??
-														AccessPlanLevel.FREE,
-												)}>
-												<SelectTrigger className='w-fit'>
-													<SelectValue
-														placeholder={t(
-															'setting_required_plan_level_placeholder',
-														)}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{[
-															AccessPlanLevel.FREE,
-															AccessPlanLevel.PRO,
-															AccessPlanLevel.MAX,
-														].map((level) => (
-															<SelectItem
-																key={level}
-																value={String(level)}>
-																{t(getPlanLevelTranslationKey(level))}
-															</SelectItem>
-														))}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
+											{isPublic && (
+												<div className='flex flex-row items-center justify-between gap-3 border-t border-input/70 pt-4'>
+													<div className='space-y-1'>
+														<div className='text-sm font-medium'>
+															{t('setting_required_plan_level_label')}
+														</div>
+														<p className='text-xs leading-5 text-muted-foreground'>
+															{t('setting_required_plan_level_tips')}
+														</p>
+													</div>
+													<Select
+														onValueChange={(value) =>
+															form.setValue(
+																'required_plan_level',
+																Number(value),
+																{
+																	shouldDirty: true,
+																	shouldValidate: true,
+																},
+															)
+														}
+														value={String(
+															form.watch('required_plan_level') ??
+																AccessPlanLevel.FREE,
+														)}>
+														<SelectTrigger className='w-28'>
+															<SelectValue
+																placeholder={t(
+																	'setting_required_plan_level_placeholder',
+																)}
+															/>
+														</SelectTrigger>
+														<SelectContent>
+															<SelectGroup>
+																{[
+																	AccessPlanLevel.FREE,
+																	AccessPlanLevel.PRO,
+																	AccessPlanLevel.MAX,
+																].map((level) => (
+																	<SelectItem
+																		key={level}
+																		value={String(level)}>
+																		{t(getPlanLevelTranslationKey(level))}
+																	</SelectItem>
+																))}
+															</SelectGroup>
+														</SelectContent>
+													</Select>
+												</div>
+											)}
 										</div>
-									)}
-								</FormItem>
+									</FormItem>
 								);
 							}}
 						/>
