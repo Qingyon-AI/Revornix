@@ -18,7 +18,6 @@ import {
 	DialogTrigger,
 } from '../ui/dialog';
 import { Textarea } from '../ui/textarea';
-import { Separator } from '../ui/separator';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -37,7 +36,6 @@ import {
 	getUserFileSystemDetail,
 	updateFileSystem,
 } from '@/service/file-system';
-import { diffValues } from '@/lib/utils';
 import { Spinner } from '../ui/spinner';
 import {
 	Empty,
@@ -45,6 +43,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
+import FileSystemConfigFields from './file-system-config-fields';
 
 const FileSystemUpdate = ({
 	userFileSystemId,
@@ -57,6 +56,7 @@ const FileSystemUpdate = ({
 	const { mainUserInfo } = useUserContext();
 
 	const [configDialogOpen, setConfigDialogOpen] = useState(false);
+	const [configJson, setConfigJson] = useState('');
 
 	const queryClient = getQueryClient();
 
@@ -64,7 +64,6 @@ const FileSystemUpdate = ({
 		user_file_system_id: z.number(),
 		title: z.string().optional(),
 		description: z.string().optional(),
-		config_json: z.string().optional(),
 	});
 
 	const form = useForm({
@@ -73,16 +72,14 @@ const FileSystemUpdate = ({
 			user_file_system_id: userFileSystemId,
 			title: '',
 			description: '',
-			config_json: '',
 		},
 	});
 
 	const initialValuesRef = useRef<z.infer<typeof formSchema> | null>(null);
+	const initialConfigJsonRef = useRef('');
 
 	const {
 		data: provideFileSystems,
-		isFetching: isFetchingProvideFileSystems,
-		isRefetching: isRefetchingProvideFileSystems,
 	} = useQuery({
 		queryKey: ['provide-file-system'],
 		queryFn: async () => {
@@ -114,6 +111,7 @@ const FileSystemUpdate = ({
 				queryKey: ['mine-file-system'],
 			});
 			form.reset();
+			setConfigJson('');
 			setConfigDialogOpen(false);
 		},
 		onError: (error) => {
@@ -136,17 +134,21 @@ const FileSystemUpdate = ({
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!initialValuesRef.current) return;
 
-		const patch = diffValues(values, initialValuesRef.current);
+		const hasFieldChanges =
+			values.title !== initialValuesRef.current.title ||
+			values.description !== initialValuesRef.current.description;
+		const hasConfigChanges = configJson !== initialConfigJsonRef.current;
 
-		// 如果啥都没改
-		if (Object.keys(patch).length === 0) {
+		if (!hasFieldChanges && !hasConfigChanges) {
 			toast.info(t('form_no_change'));
 			return;
 		}
 
 		mutateUpdateFileSystem.mutate({
-			...values,
 			user_file_system_id: userFileSystemId,
+			title: values.title,
+			description: values.description,
+			config_json: configJson || undefined,
 		});
 	};
 
@@ -162,10 +164,11 @@ const FileSystemUpdate = ({
 			user_file_system_id: userFileSystemId,
 			title: file_system_detail.title ?? '',
 			description: file_system_detail.description ?? '',
-			config_json: file_system_detail.config_json ?? '',
 		};
 
 		form.reset(initialFormValues);
+		setConfigJson(file_system_detail.config_json ?? '');
+		initialConfigJsonRef.current = file_system_detail.config_json ?? '';
 		initialValuesRef.current = initialFormValues; // ✅ 存表单结构
 	}, [file_system_detail, userFileSystemId, configDialogOpen]);
 
@@ -198,7 +201,7 @@ const FileSystemUpdate = ({
 
 				<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
 					{!file_system_detail && isFetchingFileSystemDetail && (
-						<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+						<div className='flex min-h-[220px] items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
 							<span>{t('loading')}</span>
 							<Spinner />
 						</div>
@@ -327,48 +330,12 @@ const FileSystemUpdate = ({
 									);
 								}}
 							/>
-							{file_system_detail.demo_config && (
-								<>
-									<FormField
-										name='config_json'
-										control={form.control}
-										render={({ field }) => {
-											return (
-												<FormItem>
-													<div className='grid grid-cols-12 gap-2'>
-														<FormLabel className='col-span-3'>
-															{t(
-																'setting_file_system_page_file_system_form_config_json',
-															)}
-														</FormLabel>
-														<div className='col-span-9'>
-															<Textarea
-																placeholder={t(
-																	'setting_file_system_page_file_system_form_config_json_placeholder',
-																)}
-																className='font-mono break-all'
-																{...field}
-																value={field.value ?? ''}
-															/>
-														</div>
-													</div>
-													<FormMessage />
-												</FormItem>
-											);
-										}}
-									/>
-									<div className='grid grid-cols-12 gap-2'>
-										<FormLabel className='col-span-3'>
-											{t(
-												'setting_file_system_page_mine_file_system_config_demo',
-											)}
-										</FormLabel>
-										<div className='col-span-9 p-5 rounded bg-muted font-mono text-sm break-all'>
-											{file_system_detail.demo_config}
-										</div>
-									</div>
-								</>
-							)}
+							<FileSystemConfigFields
+								fileSystemId={file_system_detail.file_system_id}
+								demoConfig={file_system_detail.demo_config}
+								value={configJson}
+								onChange={setConfigJson}
+							/>
 							</form>
 						</Form>
 					)}
