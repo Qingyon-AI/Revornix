@@ -3,10 +3,10 @@ import {
 	SectionSeoDetailRequest,
 } from '@/generated';
 import JsonLd from '@/components/seo/json-ld';
-import {
-	SeoSectionMetaSidebar,
-	SeoSectionSidebarBridge,
-} from '@/components/seo/seo-section-meta-sidebar';
+import { SeoSectionSidebarBridge } from '@/components/seo/seo-section-meta-sidebar';
+import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
+import SectionGraphSEO from '@/components/section/section-graph-seo';
+import SectionDocumentsList from '@/components/section/section-documents-list';
 import { serverRequest } from '@/lib/request-server';
 import sectionApi from '@/api/section';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,7 @@ import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
-import { CalendarClock, Sparkles } from 'lucide-react';
+import { BookOpenText, CalendarClock, CalendarDays, Sparkles, Users } from 'lucide-react';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import { SectionProcessStatus } from '@/enums/section';
@@ -284,6 +284,176 @@ const SEOSectionDetail = async (props: {
 					graphTone={graphCardState.tone}
 					graphStale={freshnessState.graphStale}
 				/>
+				<SeoMobileSidebarMenu
+					browseLabel={t('section_mobile_menu_section_browse')}
+					menuTitle={t('section_action_menu_title')}
+					menuDescription={t('section_action_menu_description')}
+					panels={[
+						{
+							key: 'info',
+							icon: 'info',
+							title: t('section_mobile_info_title'),
+							description: t('section_mobile_info_description'),
+							content: (
+								<div className='space-y-4 p-4'>
+									{section?.creator ? (
+										<Link
+											href={`/user/${section.creator.id}`}
+											className='group flex items-center gap-3 rounded-[24px] border border-border/40 bg-background/40 px-3 py-3 transition-colors hover:bg-background/65'>
+											<Avatar className='size-10'>
+												<AvatarImage
+													src={creatorAvatar}
+													alt={section.creator.nickname}
+													className='object-cover'
+												/>
+												<AvatarFallback className='font-semibold'>
+													{section.creator.nickname.slice(0, 1)}
+												</AvatarFallback>
+											</Avatar>
+											<div className='min-w-0 flex-1'>
+												<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
+													{section.creator.nickname}
+												</p>
+												<p className='truncate text-xs text-muted-foreground'>
+													{t('section_creator')}
+												</p>
+											</div>
+										</Link>
+									) : null}
+
+									<div className='grid grid-cols-2 gap-3'>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<BookOpenText className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('section_documents')}
+													</p>
+													<div className='text-sm font-medium text-foreground'>
+														{section?.documents_count ?? 0}
+													</div>
+												</div>
+											</div>
+										</div>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<Users className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('section_subscribers')}
+													</p>
+													<div className='text-sm font-medium text-foreground'>
+														{section?.subscribers_count ?? 0}
+													</div>
+												</div>
+											</div>
+										</div>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<CalendarClock className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('section_updated_at')}
+													</p>
+													<div className='text-sm font-medium text-foreground'>
+														{updatedAt}
+													</div>
+												</div>
+											</div>
+										</div>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<CalendarDays className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('section_info_created_at')}
+													</p>
+													<div className='text-sm font-medium text-foreground'>
+														{createdAt}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{section?.labels?.length ? (
+										<div className='flex flex-wrap gap-2 rounded-[24px] bg-background/22 p-4'>
+											{section.labels.map((label) => (
+												<Badge
+													key={label.id}
+													variant='secondary'
+													className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
+													{label.name}
+												</Badge>
+											))}
+										</div>
+									) : null}
+								</div>
+							),
+						},
+						{
+							key: 'graph',
+							icon: 'graph',
+							title: t('section_graph'),
+							description: t('section_graph_description'),
+							content: (
+								<SectionGraphSEO
+									section_id={section!.id}
+									showSearch
+									showStaleHint={false}
+									initialSection={section!}
+									initialGraph={initialGraph}
+									publicMode
+								/>
+							),
+						},
+						{
+							key: 'audio',
+							icon: 'audio',
+							title: t('section_mobile_media_title'),
+							description: t('section_podcast_placeholder_description'),
+							content: (
+								<div className='space-y-4 p-4'>
+									{section?.podcast_task?.podcast_file_name ? (
+										<audio
+											controls
+											preload='metadata'
+											className='w-full'
+											src={section.podcast_task.podcast_file_name}
+										/>
+									) : (
+										<div className='rounded-[22px] border border-border/35 bg-background/30 px-4 py-4 text-sm text-muted-foreground'>
+											{t('section_podcast_placeholder_description')}
+										</div>
+									)}
+								</div>
+							),
+						},
+						{
+							key: 'documents',
+							icon: 'documents',
+							title: t('section_documents'),
+							description: t('section_documents_description'),
+							content: (
+								<div className='p-4'>
+									<SectionDocumentsList
+										section_id={section!.id}
+										publicMode
+										initialData={initialDocuments}
+									/>
+								</div>
+							),
+						},
+					]}
+				/>
 				<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
 					{section?.creator ? (
 						<Link
@@ -333,10 +503,10 @@ const SEOSectionDetail = async (props: {
 				</div>
 
 				<div className='space-y-3'>
-					<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+					<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
 						{sectionTitle}
 					</h1>
-					<p className='max-w-[820px] text-sm leading-7 text-muted-foreground sm:text-base'>
+					<p className='max-w-[820px] break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
 						{sectionDescription}
 					</p>
 				</div>
@@ -361,25 +531,6 @@ const SEOSectionDetail = async (props: {
 						content={markdown ? markdown : t('section_no_md')}
 						ownerId={section?.creator?.id}
 					/>
-				</div>
-
-				<div className='mx-auto w-full max-w-[920px] xl:hidden'>
-					{section ? (
-						<SeoSectionMetaSidebar
-							section={section}
-							sectionTitle={sectionTitle}
-							sectionDescription={sectionDescription}
-							updatedAt={updatedAt}
-							createdAt={createdAt}
-							creatorAvatar={creatorAvatar}
-							sectionCover={sectionCover}
-							initialDocuments={initialDocuments}
-							initialGraph={initialGraph}
-							graphBadge={graphCardState.badge}
-							graphTone={graphCardState.tone}
-							graphStale={freshnessState.graphStale}
-						/>
-					) : null}
 				</div>
 
 				{section?.id ? (

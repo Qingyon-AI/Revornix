@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
 import { getSiteOrigin } from '@/lib/seo-metadata';
+import { useState } from 'react';
 
 const SectionOperateShare = ({
 	section_id,
@@ -26,15 +27,22 @@ const SectionOperateShare = ({
 	onTriggerClick,
 	showPublishBadge = true,
 	iconOnly = false,
+	open,
+	onOpenChange,
 }: {
 	section_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
 	showPublishBadge?: boolean;
 	iconOnly?: boolean;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const [internalOpen, setInternalOpen] = useState(false);
+	const dialogOpen = open ?? internalOpen;
+	const setDialogOpen = onOpenChange ?? setInternalOpen;
 
 	const { data: sectionPublish } = useQuery({
 		queryKey: ['getSectionPublish', section_id],
@@ -94,7 +102,7 @@ const SectionOperateShare = ({
 
 	return (
 		<>
-			<Dialog>
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 				<DialogTrigger asChild>
 					<Button
 						title={t('section_share')}

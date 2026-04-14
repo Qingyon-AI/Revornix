@@ -1,19 +1,21 @@
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import JsonLd from '@/components/seo/json-ld';
-import {
-	SeoDocumentMetaSidebar,
-	SeoDocumentSidebarBridge,
-} from '@/components/seo/seo-document-meta-sidebar';
+import { SeoDocumentSidebarBridge } from '@/components/seo/seo-document-meta-sidebar';
+import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import NoticeBox from '@/components/ui/notice-box';
+import AudioPlayer from '@/components/ui/audio-player';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import {
 	fetchPublicDocumentDetail,
 	fetchRemoteTextContent,
+	getPublicSectionHref,
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { replacePath } from '@/lib/utils';
-import { CalendarClock } from 'lucide-react';
+import { ArrowRight, CalendarClock, FileDown, Globe2 } from 'lucide-react';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
@@ -189,6 +191,201 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					primaryAudioSrc={primaryAudioSrc}
 					publicSections={publicSections}
 				/>
+				<SeoMobileSidebarMenu
+					browseLabel={t('document_mobile_menu_section_browse')}
+					menuTitle={t('document_action_menu_title')}
+					menuDescription={t('document_action_menu_description')}
+					panels={[
+						{
+							key: 'info',
+							icon: 'info',
+							title: t('document_mobile_info_title'),
+							description: t('document_mobile_info_description'),
+							content: (
+								<div className='space-y-4 p-4'>
+									<Link
+										href={`/user/${document.creator.id}`}
+										className='group flex items-center gap-3 rounded-[24px] border border-border/40 bg-background/40 px-3 py-3 transition-colors hover:bg-background/65'>
+										<Avatar className='size-10'>
+											<AvatarImage
+												src={creatorAvatar}
+												alt={document.creator.nickname}
+												className='object-cover'
+											/>
+											<AvatarFallback className='font-semibold'>
+												{document.creator.nickname.slice(0, 1)}
+											</AvatarFallback>
+										</Avatar>
+										<div className='min-w-0 flex-1'>
+											<p className='truncate text-sm font-medium transition-colors group-hover:text-foreground'>
+												{document.creator.nickname}
+											</p>
+											<p className='truncate text-xs text-muted-foreground'>
+												{t('seo_document_creator')}
+											</p>
+										</div>
+									</Link>
+
+									<div className='flex flex-wrap gap-1.5'>
+										<Badge
+											variant='outline'
+											className='rounded-full border border-border/40 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
+											{t('document_category')}: {categoryLabel}
+										</Badge>
+										<Badge
+											variant='outline'
+											className='rounded-full border border-border/40 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
+											{t('document_from_plat')}: {document.from_plat || '-'}
+										</Badge>
+									</div>
+
+									<div className='grid grid-cols-2 gap-3'>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<CalendarClock className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('seo_document_updated_at')}
+													</p>
+													<div className='break-words text-sm font-medium text-foreground'>
+														{new Intl.DateTimeFormat(locale, {
+															dateStyle: 'medium',
+														}).format(
+															new Date(
+																document.update_time ?? document.create_time,
+															),
+														)}
+													</div>
+												</div>
+											</div>
+										</div>
+										<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+											<div className='flex items-start gap-3'>
+												<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+													<FileDown className='size-3.5' />
+												</div>
+												<div className='min-w-0 space-y-0.5'>
+													<p className='text-[11px] leading-5 text-muted-foreground'>
+														{t('document_category')}
+													</p>
+													<div className='break-words text-sm font-medium text-foreground'>
+														{categoryLabel}
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{document.labels?.length ? (
+										<div className='flex flex-wrap gap-2 rounded-[24px] bg-background/22 p-4'>
+											{document.labels.map((label) => (
+												<Badge
+													key={label.id}
+													variant='secondary'
+													className='rounded-full border border-border/35 bg-background/75 px-3 py-1 text-xs'>
+													{label.name}
+												</Badge>
+											))}
+										</div>
+									) : null}
+								</div>
+							),
+						},
+						...(primaryAudioSrc
+							? [
+									{
+										key: 'audio',
+										icon: 'audio' as const,
+										title: t('seo_document_audio'),
+										description: document.title || t('document_no_title'),
+										content: (
+											<div className='p-4'>
+												<AudioPlayer
+													src={primaryAudioSrc}
+													title={document.title}
+													artist={document.creator.nickname}
+													cover={coverSrc ?? undefined}
+													variant='compact'
+													className='rounded-[20px] border border-border/35 bg-background/20'
+												/>
+											</div>
+										),
+									},
+								]
+							: []),
+						{
+							key: 'source',
+							icon: 'source',
+							title: t('seo_document_source'),
+							description:
+								document.from_plat || t('seo_document_meta_description'),
+							content: (
+								<div className='space-y-4 p-4'>
+									{document.from_plat ? (
+										<p className='text-sm font-medium text-muted-foreground'>
+											{document.from_plat}
+										</p>
+									) : null}
+									{document.website_info?.url ? (
+										<Link href={document.website_info.url} target='_blank'>
+											<Button className='w-full rounded-full'>
+												<Globe2 />
+												{t('seo_document_open_source')}
+											</Button>
+										</Link>
+									) : null}
+									{document.file_info?.file_name ? (
+										<Link href={document.file_info.file_name} target='_blank'>
+											<Button variant='outline' className='w-full rounded-full'>
+												<FileDown />
+												{t('seo_document_download_file')}
+											</Button>
+										</Link>
+									) : null}
+									{!document.website_info?.url && !document.file_info?.file_name ? (
+										<NoticeBox>
+											{document.category === DocumentCategory.QUICK_NOTE
+												? t('seo_document_source_quick_note')
+												: t('seo_document_source_default')}
+										</NoticeBox>
+									) : null}
+								</div>
+							),
+						},
+						{
+							key: 'sections',
+							icon: 'sections',
+							title: t('seo_document_related_sections'),
+							description: t('seo_document_related_sections_description'),
+							content: (
+								<div className='space-y-3 p-4'>
+									{publicSections.length > 0 ? (
+										publicSections.map((section) => (
+											<Link
+												key={`${section.id}-${section.publish_uuid ?? 'private'}`}
+												href={getPublicSectionHref(section)}
+												className='flex items-center justify-between rounded-[22px] border border-border/35 bg-background/38 px-4 py-3 transition-colors hover:bg-background/62'>
+												<div className='min-w-0'>
+													<div className='line-clamp-1 font-medium'>
+														{section.title}
+													</div>
+													<div className='line-clamp-2 text-sm text-muted-foreground'>
+														{section.description || t('section_description_empty')}
+													</div>
+												</div>
+												<ArrowRight className='ml-3 size-4 shrink-0 text-muted-foreground' />
+											</Link>
+										))
+									) : (
+										<NoticeBox>{t('seo_document_related_sections_empty')}</NoticeBox>
+									)}
+								</div>
+							),
+						},
+					]}
+				/>
 				<div className='mx-auto w-full max-w-[920px] space-y-5'>
 					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
 						<Link
@@ -225,10 +422,10 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					</div>
 
 					<div className='space-y-3'>
-						<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+						<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
 							{document.title || t('document_no_title')}
 						</h1>
-						<p className='max-w-[820px] text-sm leading-7 text-muted-foreground sm:text-base'>
+						<p className='max-w-[820px] break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
 							{document.description || t('document_no_description')}
 						</p>
 					</div>
@@ -259,18 +456,6 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							</div>
 						</div>
 
-						<div className='xl:hidden'>
-							<SeoDocumentMetaSidebar
-								document={document}
-								categoryLabel={categoryLabel}
-								locale={locale}
-								creatorAvatar={creatorAvatar}
-								coverSrc={coverSrc}
-								primaryAudioSrc={primaryAudioSrc}
-								publicSections={publicSections}
-								className='space-y-5'
-							/>
-						</div>
 					</div>
 				</div>
 			</div>

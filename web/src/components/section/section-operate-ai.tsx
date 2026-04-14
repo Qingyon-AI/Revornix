@@ -111,6 +111,8 @@ const SectionOperateAI = ({
 	className,
 	onTriggerClick,
 	iconOnly = false,
+	open,
+	onOpenChange,
 }: {
 	section_id: number;
 	section_title?: string;
@@ -118,6 +120,8 @@ const SectionOperateAI = ({
 	className?: string;
 	onTriggerClick?: () => void;
 	iconOnly?: boolean;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -136,9 +140,12 @@ const SectionOperateAI = ({
 	const [input, setInput] = useState('');
 	const [enableMcp, setEnableMcp] = useState(false);
 	const [isSending, setIsSending] = useState(false);
+	const [internalOpen, setInternalOpen] = useState(false);
 	const [selectedModelId, setSelectedModelId] = useState<number | null>(
 		mainUserInfo?.default_revornix_model_id ?? null,
 	);
+	const sheetOpen = open ?? internalOpen;
+	const setSheetOpen = onOpenChange ?? setInternalOpen;
 
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -481,7 +488,7 @@ const SectionOperateAI = ({
 	};
 
 	return (
-		<Sheet>
+		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
 			<SheetTrigger asChild>
 				<Button
 					title={t('section_ai_ask')}
