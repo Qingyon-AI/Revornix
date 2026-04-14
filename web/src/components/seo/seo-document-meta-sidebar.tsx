@@ -51,10 +51,14 @@ const SeoSidebarSection = ({
 		<section className={cn('space-y-4', className)}>
 			{separated ? <Separator className='bg-border/50' /> : null}
 			{title ? (
-				<div className='space-y-1.5'>
-					<h3 className='text-[1.35rem] font-semibold tracking-tight'>{title}</h3>
+				<div className='min-w-0 space-y-1.5'>
+					<h3 className='break-words text-[1.35rem] font-semibold tracking-tight [overflow-wrap:anywhere]'>
+						{title}
+					</h3>
 					{description ? (
-						<p className='text-sm leading-7 text-muted-foreground'>{description}</p>
+						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere]'>
+							{description}
+						</p>
 					) : null}
 				</div>
 			) : null}
@@ -133,10 +137,10 @@ export const SeoDocumentMetaSidebar = ({
 		<div className={className ?? 'space-y-4 p-4 pb-8'}>
 			<div className='space-y-4 px-1'>
 				<div className='space-y-2'>
-					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight'>
+					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight [overflow-wrap:anywhere]'>
 						{document.title || t('document_no_title')}
 					</h2>
-					<p className='break-words text-sm leading-7 text-muted-foreground'>
+					<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere]'>
 						{document.description || t('document_no_description')}
 					</p>
 				</div>

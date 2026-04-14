@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AudioLines, GitBranch, Info, Menu } from 'lucide-react';
+import { AudioLines, Bot, GitBranch, Info, Menu, ShareIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { UserSectionRole } from '@/enums/section';
@@ -56,6 +56,8 @@ const SectionOperate = ({
 	const isCompactViewport = useIsMobile(1280);
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
+	const [showMobileAi, setShowMobileAi] = useState(false);
+	const [showMobileShare, setShowMobileShare] = useState(false);
 
 	const { data: section } = useQuery({
 		queryKey: ['getSectionDetail', id],
@@ -100,6 +102,16 @@ const SectionOperate = ({
 		window.setTimeout(() => {
 			setMobilePanel(panel);
 		}, 180);
+	};
+
+	const openMobileAiDialog = () => {
+		setShowMobileAi(true);
+		setShowMobileMenu(false);
+	};
+
+	const openMobileShareDialog = () => {
+		setShowMobileShare(true);
+		setShowMobileMenu(false);
 	};
 
 	const mobilePanelMeta =
@@ -218,7 +230,7 @@ const SectionOperate = ({
 							<span className='sr-only'>{t('section_action_menu_title')}</span>
 						</Button>
 					</DrawerTrigger>
-					<DrawerContent className='rounded-t-[32px] border-border/70 bg-background/96 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
+					<DrawerContent className='flex max-h-[86dvh] flex-col overflow-hidden rounded-t-[32px] border-border/70 bg-background/96 shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
 						<DrawerHeader className='items-start px-4 pb-3 pt-2 text-left'>
 							<DrawerTitle className='text-lg tracking-tight'>
 								{t('section_action_menu_title')}
@@ -228,81 +240,80 @@ const SectionOperate = ({
 							</DrawerDescription>
 						</DrawerHeader>
 
-						<div className='space-y-4 px-4'>
-							<div className='space-y-2 border-t border-border/60 pt-4'>
-								<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
-									{t('section_mobile_menu_section_browse')}
-								</p>
-								<div className='grid grid-cols-2 gap-2.5'>
-									{renderMobilePanelAction({
-										icon: Info,
-										label: t('section_mobile_info_title'),
-										onClick: () => openMobilePanel('info'),
-									})}
-									{renderMobilePanelAction({
-										icon: GitBranch,
-										label: t('section_graph'),
-										onClick: () => openMobilePanel('graph'),
-									})}
-									{renderMobilePanelAction({
-										icon: AudioLines,
-										label: t('section_mobile_media_title'),
-										onClick: () => openMobilePanel('media'),
-									})}
+						<div className='min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]'>
+							<div className='space-y-4'>
+								<div className='space-y-2 border-t border-border/60 pt-4'>
+									<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+										{t('section_mobile_menu_section_browse')}
+									</p>
+									<div className='grid grid-cols-2 gap-2.5'>
+										{renderMobilePanelAction({
+											icon: Info,
+											label: t('section_mobile_info_title'),
+											onClick: () => openMobilePanel('info'),
+										})}
+										{renderMobilePanelAction({
+											icon: GitBranch,
+											label: t('section_graph'),
+											onClick: () => openMobilePanel('graph'),
+										})}
+										{renderMobilePanelAction({
+											icon: AudioLines,
+											label: t('section_mobile_media_title'),
+											onClick: () => openMobilePanel('media'),
+										})}
+									</div>
 								</div>
-							</div>
 
-							<div className='space-y-2 border-t border-border/60 pt-4'>
-								<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
-									{t('section_mobile_menu_section_actions')}
-								</p>
-								<div className='grid grid-cols-2 gap-2.5'>
-									<SectionOperateComment
-										section_id={id}
-										className={mobileActionButtonClassName}
-									/>
-									<SectionOperateAI
-										section_id={id}
-										section_title={section.title}
-										disabled={
-											!section.md_file_name && section.documents_count === 0
-										}
-										className={mobileActionButtonClassName}
-									/>
-									<SectionDocument
-										section_id={id}
-										className={mobileActionButtonClassName}
-									/>
-									{ownershipResolved ? (
-										isOwner ? (
-											<>
-												<SectionOperateProcess
+								<div className='space-y-2 border-t border-border/60 pt-4'>
+									<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+										{t('section_mobile_menu_section_actions')}
+									</p>
+									<div className='grid grid-cols-2 gap-2.5'>
+										<SectionOperateComment
+											section_id={id}
+											className={mobileActionButtonClassName}
+										/>
+										{renderMobilePanelAction({
+											icon: Bot,
+											label: t('section_ai_ask'),
+											onClick: openMobileAiDialog,
+										})}
+										<SectionDocument
+											section_id={id}
+											className={mobileActionButtonClassName}
+										/>
+										{ownershipResolved ? (
+											isOwner ? (
+												<>
+													<SectionOperateProcess
+														section_id={id}
+														className={mobileActionButtonClassName}
+														onTriggerClick={closeMobileMenu}
+													/>
+													{renderMobilePanelAction({
+														icon: ShareIcon,
+														label: t('section_share'),
+														onClick: openMobileShareDialog,
+													})}
+													<SectionOperateConfiguration
+														section_id={id}
+														className={mobileActionButtonClassName}
+													/>
+													<SectionOperateDelete
+														section_id={id}
+														className={mobileActionButtonClassName}
+													/>
+												</>
+											) : (
+												<SectionOperateSubscribe
 													section_id={id}
 													className={mobileActionButtonClassName}
 													onTriggerClick={closeMobileMenu}
 												/>
-												<SectionOperateShare
-													section_id={id}
-													className={mobileActionButtonClassName}
-													showPublishBadge={false}
-												/>
-												<SectionOperateConfiguration
-													section_id={id}
-													className={mobileActionButtonClassName}
-												/>
-												<SectionOperateDelete
-													section_id={id}
-													className={mobileActionButtonClassName}
-												/>
-											</>
-										) : (
-											<SectionOperateSubscribe
-												section_id={id}
-												className={mobileActionButtonClassName}
-												onTriggerClick={closeMobileMenu}
-											/>
-										)
-									) : null}
+											)
+										) : null}
+									</div>
 								</div>
 							</div>
 						</div>
@@ -340,6 +351,23 @@ const SectionOperate = ({
 						</div>
 					</SheetContent>
 				</Sheet>
+				<SectionOperateAI
+					section_id={id}
+					section_title={section.title}
+					disabled={!section.md_file_name && section.documents_count === 0}
+					open={showMobileAi}
+					onOpenChange={setShowMobileAi}
+					className='hidden'
+					iconOnly
+				/>
+				<SectionOperateShare
+					section_id={id}
+					open={showMobileShare}
+					onOpenChange={setShowMobileShare}
+					className='hidden'
+					showPublishBadge={false}
+					iconOnly
+				/>
 			</>
 		);
 	}

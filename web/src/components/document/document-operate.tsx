@@ -792,7 +792,7 @@ const DocumentOperate = ({
 										</span>
 									</Button>
 								</DrawerTrigger>
-								<DrawerContent className='rounded-t-[32px] border-border/70 bg-background/96 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
+								<DrawerContent className='flex max-h-[86dvh] flex-col overflow-hidden rounded-t-[32px] border-border/70 bg-background/96 shadow-[0_-24px_60px_-32px_rgba(15,23,42,0.55)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/88 dark:bg-background/92'>
 									<DrawerHeader className='items-start px-4 pb-3 pt-2 text-left'>
 										<DrawerTitle className='text-lg tracking-tight'>
 											{t('document_action_menu_title')}
@@ -802,64 +802,66 @@ const DocumentOperate = ({
 										</DrawerDescription>
 									</DrawerHeader>
 
-									<div className='space-y-4 px-4'>
-										<div className='space-y-2 border-t border-border/60 pt-4'>
-											<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
-												{t('document_mobile_menu_section_browse')}
-											</p>
-											<div className='grid grid-cols-2 gap-2.5'>
-												{renderMobilePanelAction({
-													icon: Info,
-													label: t('document_mobile_info_title'),
-													onClick: () => openMobilePanel('info'),
-												})}
-												{renderMobilePanelAction({
-													icon: GitBranch,
-													label: t('document_graph'),
-													onClick: () => openMobilePanel('graph'),
-												})}
-												{renderMobilePanelAction({
-													icon: AudioLines,
-													label: t('document_mobile_media_title'),
-													onClick: () => openMobilePanel('media'),
-												})}
+									<div className='min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]'>
+										<div className='space-y-4'>
+											<div className='space-y-2 border-t border-border/60 pt-4'>
+												<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+													{t('document_mobile_menu_section_browse')}
+												</p>
+												<div className='grid grid-cols-2 gap-2.5'>
+													{renderMobilePanelAction({
+														icon: Info,
+														label: t('document_mobile_info_title'),
+														onClick: () => openMobilePanel('info'),
+													})}
+													{renderMobilePanelAction({
+														icon: GitBranch,
+														label: t('document_graph'),
+														onClick: () => openMobilePanel('graph'),
+													})}
+													{renderMobilePanelAction({
+														icon: AudioLines,
+														label: t('document_mobile_media_title'),
+														onClick: () => openMobilePanel('media'),
+													})}
+												</div>
 											</div>
-										</div>
 
-										<div className='space-y-2 border-t border-border/60 pt-4'>
-											<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
-												{t('document_mobile_menu_section_actions')}
-											</p>
-											<div className='grid grid-cols-2 gap-2.5'>
-												{renderOriginAction(
-													mobileActionButtonClassName,
-													closeMobileMenu,
-												)}
-												{renderShareAction(
-													mobileActionButtonClassName,
-													closeMobileMenu,
-												)}
-												{renderAiAction(
-													mobileActionButtonClassName,
-													closeMobileMenu,
-												)}
-												{renderStarAction(
-													mobileActionButtonClassName,
-													closeMobileMenu,
-												)}
-												{renderReadAction(
-													mobileActionButtonClassName,
-													closeMobileMenu,
-												)}
-												{renderNotesAction(
-													mobileActionButtonClassName,
-												)}
-												{renderDeleteAction(
-													mobileActionButtonClassName,
-												)}
-												{renderConfigurationAction(
-													mobileActionButtonClassName,
-												)}
+											<div className='space-y-2 border-t border-border/60 pt-4'>
+												<p className='px-1 text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase'>
+													{t('document_mobile_menu_section_actions')}
+												</p>
+												<div className='grid grid-cols-2 gap-2.5'>
+													{renderOriginAction(
+														mobileActionButtonClassName,
+														closeMobileMenu,
+													)}
+													{renderShareAction(
+														mobileActionButtonClassName,
+														closeMobileMenu,
+													)}
+													{renderAiAction(
+														mobileActionButtonClassName,
+														closeMobileMenu,
+													)}
+													{renderStarAction(
+														mobileActionButtonClassName,
+														closeMobileMenu,
+													)}
+													{renderReadAction(
+														mobileActionButtonClassName,
+														closeMobileMenu,
+													)}
+													{renderNotesAction(
+														mobileActionButtonClassName,
+													)}
+													{renderDeleteAction(
+														mobileActionButtonClassName,
+													)}
+													{renderConfigurationAction(
+														mobileActionButtonClassName,
+													)}
+												</div>
 											</div>
 										</div>
 									</div>
