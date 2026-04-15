@@ -115,21 +115,20 @@ import { Callout } from 'nextra/components';
 - `base_url`：WebSocket 接入地址，默认是官方播客 TTS 地址。
 - `generation_mode`：生成模式。当前实现主要区分 `prompt` 和 `dialogue`。
 - `speaker_info`：说话人配置，最核心的是里面的 `speakers` 数组，用来指定两位主播声音。
-- `audio_config`：音频输出配置，常见字段是 `format`、`sample_rate`、`speech_rate`。
 - `use_head_music`：是否自动加片头音乐。
 - `use_tail_music`：是否自动加片尾音乐。
 - `aigc_watermark`：是否附加 AIGC 水印标记。
 - `dialogue_model_id`：在 `dialogue` 模式下用于生成双人播客台词的模型 ID；如果不填，会回退到用户默认文档阅读模型。
 - `scene`：在 prompt 模式下给上游的场景提示，默认 `deep_research`。
-- `input_info`：补充输入控制项，最终会并入请求体。
 - `aigc_metadata`：补充 AIGC 元数据透传字段。
+
+当前前端设置页不再暴露 `audio_config`、`input_info` 和 `speaker_additions`，会直接使用后端内置默认音频参数、默认输入控制策略，并收起更偏底层的说话人附加控制；如果后续确实需要更细的音频导出、输入控制或音色附加配置，再考虑重新开放。
 
 其中更关键的字段可以这样理解：
 
 - `appid` / `access_token`：解决“能不能连上”
 - `generation_mode`：解决“生成单段 prompt 播客，还是先产出对话轮次”
 - `speaker_info`：解决“谁来播、用什么声音播”
-- `audio_config`：解决“最终音频怎么导出”
 
 ### 音频转写引擎
 

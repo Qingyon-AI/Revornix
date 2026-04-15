@@ -61,15 +61,19 @@ class VolcTTSEngine(TTSEngineBase):
     def _resolve_base_url(self, config: dict[str, Any]) -> str:
         return str(config.get("base_url") or DEFAULT_VOLC_PODCAST_BASE_URL)
 
-    def _resolve_generation_action(self, config: dict[str, Any]) -> int:
-        raw_action = config.get("action")
-        if raw_action in {0, "0", 3, "3", 4, "4"}:
-            return int(raw_action)
-
+    def _resolve_generation_mode(self, config: dict[str, Any]) -> str:
         raw_mode = str(config.get("generation_mode") or "summary").strip().lower()
-        if raw_mode in {"dialogue", "ai_dialogue", "action3"}:
+        if raw_mode in {"summary", "prompt", "dialogue"}:
+            return raw_mode
+        raise Exception(
+            "The generation_mode in Volc TTS engine config must be one of: summary, prompt, dialogue"
+        )
+
+    def _resolve_generation_action(self, config: dict[str, Any]) -> int:
+        generation_mode = self._resolve_generation_mode(config)
+        if generation_mode == "dialogue":
             return 3
-        if raw_mode in {"prompt", "topic", "web", "network", "network_summary", "action4"}:
+        if generation_mode == "prompt":
             return 4
         return 0
 
@@ -135,19 +139,12 @@ class VolcTTSEngine(TTSEngineBase):
         raw_input_info = config.get("input_info")
         if isinstance(raw_input_info, dict):
             input_info.update(
-                {
-                    key: value
-                    for key, value in raw_input_info.items()
-                    if key != "only_nlp_text" and value is not None
-                }
+                {key: value for key, value in raw_input_info.items() if value is not None}
             )
         return input_info
 
     def _resolve_speaker_additions(self, config: dict[str, Any]) -> dict[str, str]:
         raw_speaker_additions = config.get("speaker_additions")
-        raw_speaker_info = config.get("speaker_info")
-        if isinstance(raw_speaker_info, dict) and isinstance(raw_speaker_info.get("speaker_additions"), dict):
-            raw_speaker_additions = raw_speaker_info.get("speaker_additions")
 
         additions: dict[str, str] = {}
         if not isinstance(raw_speaker_additions, dict):
@@ -182,10 +179,6 @@ class VolcTTSEngine(TTSEngineBase):
             speaker_info["random_order"] = True
 
         return speaker_info
-
-    def _looks_like_url(self, text: str) -> bool:
-        candidate = text.strip().lower()
-        return candidate.startswith("http://") or candidate.startswith("https://")
 
     def _merge_extra_body(self, req_params: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
         raw_extra_body = config.get("extra_body")
@@ -260,9 +253,6 @@ class VolcTTSEngine(TTSEngineBase):
             return self._merge_extra_body(req_params, config)
 
         input_url = input_info.get("input_url")
-        if not input_url and self._looks_like_url(text):
-            input_url = text.strip()
-            input_info["input_url"] = input_url
 
         if not input_url:
             req_params["input_text"] = text
