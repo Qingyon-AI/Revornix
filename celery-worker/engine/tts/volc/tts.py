@@ -469,6 +469,7 @@ class VolcTTSEngine(TTSEngineBase):
                         resource_uuid=self.resource_uuid or self.engine_uuid,
                         usage_details=token_usage_info,
                         source="volc_tts_synthesize",
+                        strict=True,
                     )
 
                 if final_audio_url is not None:

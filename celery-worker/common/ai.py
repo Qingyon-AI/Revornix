@@ -584,6 +584,7 @@ async def generate_podcast_dialogue_turns(
                 model_id=model_id,
                 completion=completion,
                 source="generate_podcast_dialogue_turns",
+                strict=True,
             )
             raw_content = completion.choices[0].message.content
             if raw_content is None:

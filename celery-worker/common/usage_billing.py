@@ -203,6 +203,7 @@ def persist_model_usage(
     model_id: int,
     usage_details: Mapping[str, Any] | None,
     source: str,
+    strict: bool = False,
     idempotency_key: str | None = None,
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
@@ -243,6 +244,8 @@ def persist_model_usage(
         exception_logger.error(
             f"Failed to persist local model usage. user_id={user_id}, model_id={model_id}, source={source}, error={e}"
         )
+        if strict:
+            raise
         return 0
 
 
@@ -252,6 +255,7 @@ def persist_model_usage_from_snapshot(
     model_id: int,
     snapshot: Mapping[str, Any] | None,
     source: str,
+    strict: bool = False,
     idempotency_key: str | None = None,
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
@@ -262,6 +266,7 @@ def persist_model_usage_from_snapshot(
         model_id=model_id,
         usage_details=usage_details,
         source=source,
+        strict=strict,
         idempotency_key=idempotency_key,
         at=at,
         cycle_anchor_at=cycle_anchor_at,
@@ -274,6 +279,7 @@ def persist_model_usage_from_completion(
     model_id: int,
     completion: Any,
     source: str,
+    strict: bool = False,
     idempotency_key: str | None = None,
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
@@ -284,6 +290,7 @@ def persist_model_usage_from_completion(
         model_id=model_id,
         usage_details=usage_details,
         source=source,
+        strict=strict,
         idempotency_key=idempotency_key,
         at=at,
         cycle_anchor_at=cycle_anchor_at,
@@ -296,6 +303,7 @@ def persist_engine_usage(
     resource_uuid: str,
     usage_details: Mapping[str, Any] | None,
     source: str,
+    strict: bool = False,
     idempotency_key: str | None = None,
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
@@ -337,6 +345,8 @@ def persist_engine_usage(
         exception_logger.error(
             f"Failed to persist engine usage. user_id={user_id}, engine={resource_uuid}, source={source}, error={e}"
         )
+        if strict:
+            raise
         return 0
 
 
@@ -346,6 +356,7 @@ def persist_engine_usage_from_completion(
     resource_uuid: str,
     completion: Any,
     source: str,
+    strict: bool = False,
     idempotency_key: str | None = None,
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
@@ -358,6 +369,7 @@ def persist_engine_usage_from_completion(
         resource_uuid=resource_uuid,
         usage_details=usage_details,
         source=source,
+        strict=strict,
         idempotency_key=idempotency_key,
         at=at,
         cycle_anchor_at=cycle_anchor_at,
