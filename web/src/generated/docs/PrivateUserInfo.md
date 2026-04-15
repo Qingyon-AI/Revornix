@@ -10,6 +10,7 @@ Name | Type
 `uuid` | string
 `role` | number
 `avatar` | string
+`cover` | string
 `nickname` | string
 `fans` | number
 `follows` | number
@@ -41,6 +42,7 @@ const example = {
   "uuid": null,
   "role": null,
   "avatar": null,
+  "cover": null,
   "nickname": null,
   "fans": null,
   "follows": null,

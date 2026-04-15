@@ -9,6 +9,7 @@ Name | Type
 `id` | number
 `role` | number
 `avatar` | string
+`cover` | string
 `nickname` | string
 `slogan` | string
 `is_followed` | boolean
@@ -25,6 +26,7 @@ const example = {
   "id": null,
   "role": null,
   "avatar": null,
+  "cover": null,
   "nickname": null,
   "slogan": null,
   "is_followed": null,

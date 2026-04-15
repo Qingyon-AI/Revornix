@@ -25,6 +25,12 @@ export interface GenerateSectionPodcastRequest {
      * @memberof GenerateSectionPodcastRequest
      */
     section_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GenerateSectionPodcastRequest
+     */
+    engine_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function GenerateSectionPodcastRequestFromJSONTyped(json: any, ignoreDisc
     return {
         
         'section_id': json['section_id'],
+        'engine_id': json['engine_id'] == null ? undefined : json['engine_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function GenerateSectionPodcastRequestToJSONTyped(value?: GenerateSection
     return {
         
         'section_id': value['section_id'],
+        'engine_id': value['engine_id'],
     };
 }
 

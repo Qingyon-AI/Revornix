@@ -57,6 +57,18 @@ export interface SchemasSectionBaseSectionInfo {
      * @memberof SchemasSectionBaseSectionInfo
      */
     publish_uuid?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SchemasSectionBaseSectionInfo
+     */
+    is_day_section?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SchemasSectionBaseSectionInfo
+     */
+    day_section_date?: string | null;
 }
 
 
@@ -86,6 +98,8 @@ export function SchemasSectionBaseSectionInfoFromJSONTyped(json: any, ignoreDisc
         'description': json['description'],
         'authority': json['authority'] == null ? undefined : UserSectionAuthorityFromJSON(json['authority']),
         'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
+        'is_day_section': json['is_day_section'] == null ? undefined : json['is_day_section'],
+        'day_section_date': json['day_section_date'] == null ? undefined : json['day_section_date'],
     };
 }
 
@@ -105,6 +119,8 @@ export function SchemasSectionBaseSectionInfoToJSONTyped(value?: SchemasSectionB
         'description': value['description'],
         'authority': UserSectionAuthorityToJSON(value['authority']),
         'publish_uuid': value['publish_uuid'],
+        'is_day_section': value['is_day_section'],
+        'day_section_date': value['day_section_date'],
     };
 }
 

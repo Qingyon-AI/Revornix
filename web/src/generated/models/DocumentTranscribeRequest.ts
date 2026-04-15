@@ -25,6 +25,12 @@ export interface DocumentTranscribeRequest {
      * @memberof DocumentTranscribeRequest
      */
     document_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DocumentTranscribeRequest
+     */
+    engine_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function DocumentTranscribeRequestFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'document_id': json['document_id'],
+        'engine_id': json['engine_id'] == null ? undefined : json['engine_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function DocumentTranscribeRequestToJSONTyped(value?: DocumentTranscribeR
     return {
         
         'document_id': value['document_id'],
+        'engine_id': value['engine_id'],
     };
 }
 

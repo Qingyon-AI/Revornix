@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `avatar` | string
+`cover` | string
 `nickname` | string
 `slogan` | string
 `authority` | [UserSectionAuthority](UserSectionAuthority.md)
@@ -24,6 +25,7 @@ import type { SectionUserPublicInfo } from ''
 const example = {
   "id": null,
   "avatar": null,
+  "cover": null,
   "nickname": null,
   "slogan": null,
   "authority": null,

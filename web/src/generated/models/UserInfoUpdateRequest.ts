@@ -86,3 +86,4 @@ export function UserInfoUpdateRequestToJSONTyped(value?: UserInfoUpdateRequest |
         'cover': value['cover'],
     };
 }
+

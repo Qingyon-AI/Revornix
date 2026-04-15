@@ -25,6 +25,24 @@ export interface TriggerSectionProcessRequest {
      * @memberof TriggerSectionProcessRequest
      */
     section_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TriggerSectionProcessRequest
+     */
+    model_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof TriggerSectionProcessRequest
+     */
+    image_engine_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof TriggerSectionProcessRequest
+     */
+    podcast_engine_id?: number | null;
 }
 
 /**
@@ -46,6 +64,9 @@ export function TriggerSectionProcessRequestFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'section_id': json['section_id'],
+        'model_id': json['model_id'] == null ? undefined : json['model_id'],
+        'image_engine_id': json['image_engine_id'] == null ? undefined : json['image_engine_id'],
+        'podcast_engine_id': json['podcast_engine_id'] == null ? undefined : json['podcast_engine_id'],
     };
 }
 
@@ -61,6 +82,9 @@ export function TriggerSectionProcessRequestToJSONTyped(value?: TriggerSectionPr
     return {
         
         'section_id': value['section_id'],
+        'model_id': value['model_id'],
+        'image_engine_id': value['image_engine_id'],
+        'podcast_engine_id': value['podcast_engine_id'],
     };
 }
 

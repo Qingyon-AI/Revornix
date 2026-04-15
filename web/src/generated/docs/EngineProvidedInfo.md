@@ -12,7 +12,6 @@ Name | Type
 `name_zh` | string
 `description` | string
 `description_zh` | string
-`demo_config` | string
 
 ## Example
 
@@ -27,7 +26,6 @@ const example = {
   "name_zh": null,
   "description": null,
   "description_zh": null,
-  "demo_config": null,
 } satisfies EngineProvidedInfo
 
 console.log(example)

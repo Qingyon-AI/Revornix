@@ -45,6 +45,12 @@ export interface SectionAskRequest {
      * @memberof SectionAskRequest
      */
     enable_mcp?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionAskRequest
+     */
+    model_id?: number | null;
 }
 
 /**
@@ -69,6 +75,7 @@ export function SectionAskRequestFromJSONTyped(json: any, ignoreDiscriminator: b
         'section_id': json['section_id'],
         'messages': ((json['messages'] as Array<any>).map(ChatItemFromJSON)),
         'enable_mcp': json['enable_mcp'] == null ? undefined : json['enable_mcp'],
+        'model_id': json['model_id'] == null ? undefined : json['model_id'],
     };
 }
 
@@ -86,6 +93,7 @@ export function SectionAskRequestToJSONTyped(value?: SectionAskRequest | null, i
         'section_id': value['section_id'],
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
         'enable_mcp': value['enable_mcp'],
+        'model_id': value['model_id'],
     };
 }
 

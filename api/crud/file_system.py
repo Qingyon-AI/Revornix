@@ -13,7 +13,6 @@ def create_file_system(
     name_zh: str,
     description: str | None = None,
     description_zh: str | None = None,
-    demo_config: str | None = None
 ):
     now = datetime.now(timezone.utc)
     db_file_system = models.file_system.FileSystem(uuid=uuid,
@@ -21,7 +20,6 @@ def create_file_system(
                                                    name_zh=name_zh,
                                                    description=description,
                                                    description_zh=description_zh,
-                                                   demo_config=demo_config,
                                                    create_time=now)
     db.add(db_file_system)
     db.flush()

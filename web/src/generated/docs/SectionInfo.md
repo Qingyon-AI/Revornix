@@ -28,6 +28,9 @@ Name | Type
 `graph_stale` | boolean
 `process_task_trigger_type` | number
 `process_task_trigger_scheduler` | string
+`is_day_section` | boolean
+`day_section_date` | string
+`ppt_preview` | [SectionPptPreview](SectionPptPreview.md)
 
 ## Example
 
@@ -58,6 +61,9 @@ const example = {
   "graph_stale": null,
   "process_task_trigger_type": null,
   "process_task_trigger_scheduler": null,
+  "is_day_section": null,
+  "day_section_date": null,
+  "ppt_preview": null,
 } satisfies SectionInfo
 
 console.log(example)

@@ -23,8 +23,7 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             file_service_name='AWS-S3',
             file_service_name_zh='亚马逊S3',
             file_service_description="AWS S3, this amazon's paid oss service.",
-            file_service_description_zh='AWS S3，亚马逊云付费存储服务。',
-            file_service_demo_config='{"user_access_key_id":"","user_access_key_secret":"","role_arn":"","region_name":"","bucket":""}'
+            file_service_description_zh='AWS S3，亚马逊云付费存储服务。'
         )
         self.s3_client: Any | None = None
         self.sts_upload_client: Any | None = None

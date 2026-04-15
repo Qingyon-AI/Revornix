@@ -62,13 +62,6 @@ import {
     WebsiteDocumentInfoToJSON,
     WebsiteDocumentInfoToJSONTyped,
 } from './WebsiteDocumentInfo';
-import type { WebsiteDocumentSnapshotInfo } from './WebsiteDocumentSnapshotInfo';
-import {
-    WebsiteDocumentSnapshotInfoFromJSON,
-    WebsiteDocumentSnapshotInfoFromJSONTyped,
-    WebsiteDocumentSnapshotInfoToJSON,
-    WebsiteDocumentSnapshotInfoToJSONTyped,
-} from './WebsiteDocumentSnapshotInfo';
 import type { SchemasDocumentBaseSectionInfo } from './SchemasDocumentBaseSectionInfo';
 import {
     SchemasDocumentBaseSectionInfoFromJSON,
@@ -76,6 +69,13 @@ import {
     SchemasDocumentBaseSectionInfoToJSON,
     SchemasDocumentBaseSectionInfoToJSONTyped,
 } from './SchemasDocumentBaseSectionInfo';
+import type { WebsiteDocumentSnapshotInfo } from './WebsiteDocumentSnapshotInfo';
+import {
+    WebsiteDocumentSnapshotInfoFromJSON,
+    WebsiteDocumentSnapshotInfoFromJSONTyped,
+    WebsiteDocumentSnapshotInfoToJSON,
+    WebsiteDocumentSnapshotInfoToJSONTyped,
+} from './WebsiteDocumentSnapshotInfo';
 import type { DocumentPodcastTask } from './DocumentPodcastTask';
 import {
     DocumentPodcastTaskFromJSON,
@@ -216,7 +216,7 @@ export interface DocumentDetailResponse {
      */
     website_info?: WebsiteDocumentInfo | null;
     /**
-     *
+     * 
      * @type {Array<WebsiteDocumentSnapshotInfo>}
      * @memberof DocumentDetailResponse
      */
@@ -375,3 +375,4 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
+

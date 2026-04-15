@@ -11,7 +11,6 @@ class EngineBase:
         engine_category: int,
         engine_description: str | None = None,
         engine_description_zh: str | None = None,
-        engine_demo_config: str | None = None,
         engine_config: str | None = None,
     ) -> None:
         self.engine_uuid = engine_uuid
@@ -20,7 +19,6 @@ class EngineBase:
         self.engine_category = engine_category
         self.engine_description = engine_description
         self.engine_description_zh = engine_description_zh
-        self.engine_demo_config = engine_demo_config
         self.engine_config = engine_config
         self.user_id: int | None = None
         self.resource_uuid: str | None = None

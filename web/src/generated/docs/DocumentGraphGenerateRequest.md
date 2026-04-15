@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `document_id` | number
+`model_id` | number
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { DocumentGraphGenerateRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "document_id": null,
+  "model_id": null,
 } satisfies DocumentGraphGenerateRequest
 
 console.log(example)

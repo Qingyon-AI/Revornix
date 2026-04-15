@@ -8,7 +8,6 @@ class EngineInfo(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    demo_config: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -21,7 +20,6 @@ class UserEngineInfo(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    demo_config: str | None = None
     enable: bool | None = None
     config_json: str | None = None
     create_time: datetime

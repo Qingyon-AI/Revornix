@@ -11,7 +11,6 @@ Name | Type
 `category` | number
 `title` | string
 `description` | string
-`demo_config` | string
 `enable` | boolean
 `config_json` | string
 `create_time` | Date
@@ -29,7 +28,6 @@ const example = {
   "category": null,
   "title": null,
   "description": null,
-  "demo_config": null,
   "enable": null,
   "config_json": null,
   "create_time": null,
@@ -48,5 +46,4 @@ console.log(exampleParsed)
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 

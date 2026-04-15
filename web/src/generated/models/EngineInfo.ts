@@ -72,6 +72,12 @@ export interface EngineInfo {
     is_public: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof EngineInfo
+     */
+    required_plan_level?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof EngineInfo
      */
@@ -94,12 +100,6 @@ export interface EngineInfo {
      * @memberof EngineInfo
      */
     compute_point_multiplier?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof EngineInfo
-     */
-    required_plan_level?: number;
     /**
      * 
      * @type {boolean}
@@ -169,11 +169,11 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
         'billing_mode': json['billing_mode'] == null ? undefined : json['billing_mode'],
         'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
         'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
-        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'subscription_required': json['subscription_required'] == null ? undefined : json['subscription_required'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
@@ -200,11 +200,11 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'name': value['name'],
         'description': value['description'],
         'is_public': value['is_public'],
+        'required_plan_level': value['required_plan_level'],
         'is_official_hosted': value['is_official_hosted'],
         'billing_mode': value['billing_mode'],
         'billing_unit_price': value['billing_unit_price'],
         'compute_point_multiplier': value['compute_point_multiplier'],
-        'required_plan_level': value['required_plan_level'],
         'subscription_required': value['subscription_required'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
@@ -213,3 +213,4 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };
 }
+

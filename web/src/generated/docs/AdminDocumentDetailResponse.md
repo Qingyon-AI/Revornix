@@ -1,0 +1,84 @@
+
+# AdminDocumentDetailResponse
+
+
+## Properties
+
+Name | Type
+------------ | -------------
+`id` | number
+`category` | number
+`title` | string
+`from_plat` | string
+`description` | string
+`cover` | string
+`create_time` | Date
+`update_time` | Date
+`labels` | [Array&lt;DocumentLabel&gt;](DocumentLabel.md)
+`creator` | [UserPublicInfo](UserPublicInfo.md)
+`sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
+`users` | [Array&lt;UserPublicInfo&gt;](UserPublicInfo.md)
+`is_star` | boolean
+`is_read` | boolean
+`website_info` | [WebsiteDocumentInfo](WebsiteDocumentInfo.md)
+`website_snapshots` | [Array&lt;WebsiteDocumentSnapshotInfo&gt;](WebsiteDocumentSnapshotInfo.md)
+`file_info` | [FileDocumentInfo](FileDocumentInfo.md)
+`quick_note_info` | [QuickNoteDocumentInfo](QuickNoteDocumentInfo.md)
+`audio_info` | [AudioDocumentInfo](AudioDocumentInfo.md)
+`convert_task` | [DocumentConvertTask](DocumentConvertTask.md)
+`embedding_task` | [DocumentEmbeddingTask](DocumentEmbeddingTask.md)
+`graph_task` | [DocumentGraphTask](DocumentGraphTask.md)
+`podcast_task` | [DocumentPodcastTask](DocumentPodcastTask.md)
+`summarize_task` | [DocumentSummarizeTask](DocumentSummarizeTask.md)
+`transcribe_task` | [DocumentTranscribeTask](DocumentTranscribeTask.md)
+`process_task` | [DocumentProcessTask](DocumentProcessTask.md)
+
+## Example
+
+```typescript
+import type { AdminDocumentDetailResponse } from ''
+
+// TODO: Update the object below with actual values
+const example = {
+  "id": null,
+  "category": null,
+  "title": null,
+  "from_plat": null,
+  "description": null,
+  "cover": null,
+  "create_time": null,
+  "update_time": null,
+  "labels": null,
+  "creator": null,
+  "sections": null,
+  "users": null,
+  "is_star": null,
+  "is_read": null,
+  "website_info": null,
+  "website_snapshots": null,
+  "file_info": null,
+  "quick_note_info": null,
+  "audio_info": null,
+  "convert_task": null,
+  "embedding_task": null,
+  "graph_task": null,
+  "podcast_task": null,
+  "summarize_task": null,
+  "transcribe_task": null,
+  "process_task": null,
+} satisfies AdminDocumentDetailResponse
+
+console.log(example)
+
+// Convert the instance to a JSON string
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
+
+// Parse the JSON string back to an object
+const exampleParsed = JSON.parse(exampleJSON) as AdminDocumentDetailResponse
+console.log(exampleParsed)
+```
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

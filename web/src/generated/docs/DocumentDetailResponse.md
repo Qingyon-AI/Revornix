@@ -21,6 +21,7 @@ Name | Type
 `is_star` | boolean
 `is_read` | boolean
 `website_info` | [WebsiteDocumentInfo](WebsiteDocumentInfo.md)
+`website_snapshots` | [Array&lt;WebsiteDocumentSnapshotInfo&gt;](WebsiteDocumentSnapshotInfo.md)
 `file_info` | [FileDocumentInfo](FileDocumentInfo.md)
 `quick_note_info` | [QuickNoteDocumentInfo](QuickNoteDocumentInfo.md)
 `audio_info` | [AudioDocumentInfo](AudioDocumentInfo.md)
@@ -54,6 +55,7 @@ const example = {
   "is_star": null,
   "is_read": null,
   "website_info": null,
+  "website_snapshots": null,
   "file_info": null,
   "quick_note_info": null,
   "audio_info": null,

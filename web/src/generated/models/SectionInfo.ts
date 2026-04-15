@@ -34,6 +34,13 @@ import {
     SectionLabelToJSON,
     SectionLabelToJSONTyped,
 } from './SectionLabel';
+import type { SectionPptPreview } from './SectionPptPreview';
+import {
+    SectionPptPreviewFromJSON,
+    SectionPptPreviewFromJSONTyped,
+    SectionPptPreviewToJSON,
+    SectionPptPreviewToJSONTyped,
+} from './SectionPptPreview';
 import type { SectionDocumentIntegrationSummary } from './SectionDocumentIntegrationSummary';
 import {
     SectionDocumentIntegrationSummaryFromJSON,
@@ -195,17 +202,23 @@ export interface SectionInfo {
      */
     process_task_trigger_scheduler?: string | null;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof SectionInfo
      */
     is_day_section?: boolean;
     /**
-     *
+     * 
      * @type {string}
      * @memberof SectionInfo
      */
     day_section_date?: string | null;
+    /**
+     * 
+     * @type {SectionPptPreview}
+     * @memberof SectionInfo
+     */
+    ppt_preview?: SectionPptPreview | null;
 }
 
 
@@ -259,6 +272,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
         'is_day_section': json['is_day_section'] == null ? undefined : json['is_day_section'],
         'day_section_date': json['day_section_date'] == null ? undefined : json['day_section_date'],
+        'ppt_preview': json['ppt_preview'] == null ? undefined : SectionPptPreviewFromJSON(json['ppt_preview']),
     };
 }
 
@@ -297,5 +311,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
         'is_day_section': value['is_day_section'],
         'day_section_date': value['day_section_date'],
+        'ppt_preview': SectionPptPreviewToJSON(value['ppt_preview']),
     };
 }
+

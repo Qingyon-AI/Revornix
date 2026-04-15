@@ -20,6 +20,7 @@ import type {
   DaySectionRequest,
   DaySectionResponse,
   GenerateSectionPodcastRequest,
+  GenerateSectionPptRequest,
   HTTPValidationError,
   InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionDocumentInfo,
@@ -71,6 +72,8 @@ import {
     DaySectionResponseToJSON,
     GenerateSectionPodcastRequestFromJSON,
     GenerateSectionPodcastRequestToJSON,
+    GenerateSectionPptRequestFromJSON,
+    GenerateSectionPptRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionSectionCommentInfoFromJSON,
@@ -201,6 +204,12 @@ export interface DeleteSectionUserSectionUserDeletePostRequest {
 
 export interface GeneratePodcastSectionPodcastGeneratePostRequest {
     generateSectionPodcastRequest: GenerateSectionPodcastRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface GeneratePptSectionPptGeneratePostRequest {
+    generateSectionPptRequest: GenerateSectionPptRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -844,6 +853,61 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async generatePodcastSectionPodcastGeneratePost(requestParameters: GeneratePodcastSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.generatePodcastSectionPodcastGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generatePptSectionPptGeneratePost without sending the request
+     */
+    async generatePptSectionPptGeneratePostRequestOpts(requestParameters: GeneratePptSectionPptGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['generateSectionPptRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generateSectionPptRequest',
+                'Required parameter "generateSectionPptRequest" was null or undefined when calling generatePptSectionPptGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/ppt/generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GenerateSectionPptRequestToJSON(requestParameters['generateSectionPptRequest']),
+        };
+    }
+
+    /**
+     * Generate Ppt
+     */
+    async generatePptSectionPptGeneratePostRaw(requestParameters: GeneratePptSectionPptGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generatePptSectionPptGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Ppt
+     */
+    async generatePptSectionPptGeneratePost(requestParameters: GeneratePptSectionPptGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generatePptSectionPptGeneratePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

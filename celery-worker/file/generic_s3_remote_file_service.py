@@ -20,8 +20,7 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             file_service_name='Generic-S3',
             file_service_name_zh='通用S3',
             file_service_description="Generic S3 Service — this can be used as a template for any cloud storage service that supports the S3 protocol.",
-            file_service_description_zh='通用S3服务, 任意支持S3协议的云存储服务都可以使用这个作为模版。',
-            file_service_demo_config='{"user_access_key_id":"","user_access_key_secret":"","region_name":"","endpoint_url":"","bucket":""}'
+            file_service_description_zh='通用S3服务, 任意支持S3协议的云存储服务都可以使用这个作为模版。'
         )
         self.s3_client: Any | None = None
         self.bucket: str | None = None

@@ -130,3 +130,4 @@ export function UserPublicInfoToJSONTyped(value?: UserPublicInfo | null, ignoreD
         'follows': value['follows'],
     };
 }
+

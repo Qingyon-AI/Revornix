@@ -1,6 +1,6 @@
 import io
 import struct
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -449,15 +449,22 @@ async def receive_message(websocket: websockets.ClientConnection) -> Message:
 
 async def wait_for_event(
     websocket: websockets.ClientConnection,
-    msg_type: MsgType,
+    msg_type: MsgType | Iterable[MsgType] | None,
     event_type: EventType,
 ) -> Message:
     """Wait for specific event"""
+    expected_types: set[MsgType] | None = None
+    if msg_type is not None:
+        if isinstance(msg_type, MsgType):
+            expected_types = {msg_type}
+        else:
+            expected_types = set(msg_type)
+
     while True:
         msg = await receive_message(websocket)
-        if msg.type != msg_type or msg.event != event_type:
+        if (expected_types is not None and msg.type not in expected_types) or msg.event != event_type:
             raise ValueError(f"Unexpected message: {msg}")
-        if msg.type == msg_type and msg.event == event_type:
+        if (expected_types is None or msg.type in expected_types) and msg.event == event_type:
             return msg
 
 

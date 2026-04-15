@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `messages` | [Array&lt;ChatItem&gt;](ChatItem.md)
 `enable_mcp` | boolean
+`model_id` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { ChatMessages } from ''
 const example = {
   "messages": null,
   "enable_mcp": null,
+  "model_id": null,
 } satisfies ChatMessages
 
 console.log(example)

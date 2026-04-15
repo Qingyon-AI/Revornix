@@ -612,8 +612,8 @@ async function example() {
   const api = new FileSystemApi();
 
   const body = {
-    // Blob
-    file: BINARY_DATA_HERE,
+    // string
+    file: file_example,
     // string
     filePath: filePath_example,
     // string
@@ -641,7 +641,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **file** | `Blob` |  | [Defaults to `undefined`] |
+| **file** | `string` |  | [Defaults to `undefined`] |
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |

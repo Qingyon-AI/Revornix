@@ -11,6 +11,8 @@ Name | Type
 `name` | string
 `description` | string
 `required_plan_level` | number
+`is_official_hosted` | boolean
+`compute_point_multiplier` | number
 `subscription_required` | boolean
 `create_time` | Date
 `update_time` | Date
@@ -28,6 +30,8 @@ const example = {
   "name": null,
   "description": null,
   "required_plan_level": null,
+  "is_official_hosted": null,
+  "compute_point_multiplier": null,
   "subscription_required": null,
   "create_time": null,
   "update_time": null,

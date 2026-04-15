@@ -54,7 +54,6 @@ export interface UserEngineInfo {
      * @type {string}
      * @memberof UserEngineInfo
      */
-    demo_config?: string | null;
     /**
      * 
      * @type {boolean}
@@ -109,7 +108,6 @@ export function UserEngineInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'category': json['category'],
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'enable': json['enable'] == null ? undefined : json['enable'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
@@ -133,11 +131,9 @@ export function UserEngineInfoToJSONTyped(value?: UserEngineInfo | null, ignoreD
         'category': value['category'],
         'title': value['title'],
         'description': value['description'],
-        'demo_config': value['demo_config'],
         'enable': value['enable'],
         'config_json': value['config_json'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

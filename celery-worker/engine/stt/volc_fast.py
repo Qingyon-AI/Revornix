@@ -25,8 +25,7 @@ class VolcSTTFastEngine(STTEngineBase):
             ),
             engine_description_zh=(
                 "Volc 极速版STT 是字节跳动提供的语音转文字服务，可以将语音转换为文字。仅支持两小时以下的音频。"
-            ),
-            engine_demo_config='{"token": "******", "appid": "******"}',
+            )
         )
     
     def _require_engine_config(self) -> tuple[str, str]:

@@ -96,12 +96,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
             engine_name_zh="火山图像生成",
             engine_category=EngineCategory.IMAGE_GENERATE,
             engine_description="Based on Volcengine OpenAPI image generation service",
-            engine_description_zh="基于火山引擎 OpenAPI 的图像生成引擎",
-            engine_demo_config=(
-                '{"access_key_id":"","secret_access_key":"","base_url":"https://visual.volcengineapi.com",'
-                '"region":"cn-north-1","service":"cv","action":"CVProcess","version":"2022-08-31",'
-                '"req_key":"","model_version":"","size":"","use_pre_llm":true,"return_url":true}'
-            ),
+            engine_description_zh="基于火山引擎 OpenAPI 的图像生成引擎"
         )
 
     def generate_image(
@@ -130,30 +125,18 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
             "req_key": req_key,
             "prompt": prompt,
         }
-        if config.get("model_version"):
-            body["model_version"] = config["model_version"]
-        if config.get("negative_prompt"):
-            body["negative_prompt"] = config["negative_prompt"]
-        if config.get("size"):
-            body["size"] = config["size"]
+        if isinstance(config.get("use_pre_llm"), bool):
+            body["use_pre_llm"] = config["use_pre_llm"]
         if isinstance(config.get("seed"), int):
             body["seed"] = config["seed"]
         if isinstance(config.get("scale"), (int, float)):
             body["scale"] = config["scale"]
-        if isinstance(config.get("ddim_steps"), int):
-            body["ddim_steps"] = config["ddim_steps"]
         if isinstance(config.get("width"), int):
             body["width"] = config["width"]
         if isinstance(config.get("height"), int):
             body["height"] = config["height"]
-        if isinstance(config.get("use_pre_llm"), bool):
-            body["use_pre_llm"] = config["use_pre_llm"]
         if isinstance(config.get("return_url"), bool):
             body["return_url"] = config["return_url"]
-
-        raw_extra_body = config.get("extra_body")
-        if isinstance(raw_extra_body, dict):
-            body.update(raw_extra_body)
 
         body_json = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
         body_sha256 = _sha256_hex(body_json)

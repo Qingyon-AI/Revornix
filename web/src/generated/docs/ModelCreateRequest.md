@@ -10,6 +10,8 @@ Name | Type
 `description` | string
 `required_plan_level` | number
 `provider_id` | number
+`is_official_hosted` | boolean
+`compute_point_multiplier` | number
 
 ## Example
 
@@ -22,6 +24,8 @@ const example = {
   "description": null,
   "required_plan_level": null,
   "provider_id": null,
+  "is_official_hosted": null,
+  "compute_point_multiplier": null,
 } satisfies ModelCreateRequest
 
 console.log(example)

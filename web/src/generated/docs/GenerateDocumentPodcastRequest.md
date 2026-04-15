@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `document_id` | number
+`engine_id` | number
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { GenerateDocumentPodcastRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "document_id": null,
+  "engine_id": null,
 } satisfies GenerateDocumentPodcastRequest
 
 console.log(example)

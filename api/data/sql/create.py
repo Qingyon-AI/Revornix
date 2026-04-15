@@ -121,8 +121,7 @@ async def seed_database(db: Session):
                 name=fs.file_service_name,
                 name_zh=fs.file_service_name_zh,
                 description=fs.file_service_description,
-                description_zh=fs.file_service_description_zh,
-                demo_config=fs.file_service_demo_config,
+                description_zh=fs.file_service_description_zh
             )
     # 创建 Root 用户
     db_root_user = crud.user.get_root_user(db=db)
@@ -229,7 +228,6 @@ async def seed_database(db: Session):
                 name_zh=ep.engine_name_zh,
                 description=ep.engine_description,
                 description_zh=ep.engine_description_zh,
-                demo_config=ep.engine_demo_config,
             )
     
     # -------- Notification Source Provideds --------

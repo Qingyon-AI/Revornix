@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EngineBillingMode } from './EngineBillingMode';
+import {
+    EngineBillingModeFromJSON,
+    EngineBillingModeFromJSONTyped,
+    EngineBillingModeToJSON,
+    EngineBillingModeToJSONTyped,
+} from './EngineBillingMode';
+
 /**
  * 
  * @export
@@ -45,16 +53,22 @@ export interface EngineCreateRequest {
     engine_provided_id: number;
     /**
      * 
+     * @type {number}
+     * @memberof EngineCreateRequest
+     */
+    required_plan_level?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof EngineCreateRequest
      */
     is_official_hosted?: boolean;
     /**
      * 
-     * @type {number}
+     * @type {EngineBillingMode}
      * @memberof EngineCreateRequest
      */
-    billing_mode?: number;
+    billing_mode?: EngineBillingMode;
     /**
      * 
      * @type {number}
@@ -69,17 +83,13 @@ export interface EngineCreateRequest {
     compute_point_multiplier?: number;
     /**
      * 
-     * @type {number}
-     * @memberof EngineCreateRequest
-     */
-    required_plan_level?: number;
-    /**
-     * 
      * @type {string}
      * @memberof EngineCreateRequest
      */
     config_json?: string | null;
 }
+
+
 
 /**
  * Check if a given object implements the EngineCreateRequest interface.
@@ -105,11 +115,11 @@ export function EngineCreateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'is_public': json['is_public'],
         'engine_provided_id': json['engine_provided_id'],
+        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
-        'billing_mode': json['billing_mode'] == null ? undefined : json['billing_mode'],
+        'billing_mode': json['billing_mode'] == null ? undefined : EngineBillingModeFromJSON(json['billing_mode']),
         'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
         'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
-        'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
     };
 }
@@ -129,11 +139,12 @@ export function EngineCreateRequestToJSONTyped(value?: EngineCreateRequest | nul
         'description': value['description'],
         'is_public': value['is_public'],
         'engine_provided_id': value['engine_provided_id'],
+        'required_plan_level': value['required_plan_level'],
         'is_official_hosted': value['is_official_hosted'],
-        'billing_mode': value['billing_mode'],
+        'billing_mode': EngineBillingModeToJSON(value['billing_mode']),
         'billing_unit_price': value['billing_unit_price'],
         'compute_point_multiplier': value['compute_point_multiplier'],
-        'required_plan_level': value['required_plan_level'],
         'config_json': value['config_json'],
     };
 }
+

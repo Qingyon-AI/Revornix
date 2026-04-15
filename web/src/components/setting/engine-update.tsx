@@ -375,7 +375,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 
 							{authorized && (
 								<>
-									{engine_info.engine_provided.demo_config && (
+									{
 										<FormField
 											name='config_json'
 											control={form.control}
@@ -385,7 +385,6 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 														<EngineConfigFields
 															disabled={!authorized}
 															engineName={engine_info.engine_provided.name}
-															demoConfig={engine_info.engine_provided.demo_config}
 															value={field.value ?? ''}
 															onChange={(nextValue) => {
 																field.onChange(nextValue);
@@ -396,7 +395,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 												);
 											}}
 										/>
-									)}
+									}
 									<FormField
 										name='is_public'
 										control={form.control}

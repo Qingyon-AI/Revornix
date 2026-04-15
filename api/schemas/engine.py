@@ -17,7 +17,6 @@ class EngineProvidedInfo(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    demo_config: str | None = None
 
 class EngineProvidedSearchRequest(BaseModel):
     keyword: str

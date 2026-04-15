@@ -15,7 +15,6 @@ type ConfigRecord = Record<string, ConfigPrimitive | undefined>;
 
 type FileSystemConfigFieldsProps = {
 	fileSystemId?: number | null;
-	demoConfig?: string | null;
 	value?: string | null;
 	onChange: (value: string) => void;
 };
@@ -308,22 +307,17 @@ const translateOrFallback = (
 const buildFieldDefinitions = ({
 	t,
 	fileSystemId,
-	demoValues,
 	currentValues,
 }: {
 	t: ReturnType<typeof useTranslations>;
 	fileSystemId?: number | null;
-	demoValues: Record<string, unknown>;
 	currentValues: Record<string, unknown>;
 }): FieldDefinition[] => {
 	const orderedKeys = FILE_SYSTEM_FIELD_ORDERS[fileSystemId ?? -1] ?? [];
 	const keySet =
 		orderedKeys.length > 0
 			? new Set<string>(orderedKeys)
-			: new Set<string>([
-					...Object.keys(demoValues),
-					...Object.keys(currentValues),
-				]);
+			: new Set<string>(Object.keys(currentValues));
 
 	return Array.from(keySet)
 		.filter(Boolean)
@@ -338,7 +332,7 @@ const buildFieldDefinitions = ({
 			return a.localeCompare(b);
 		})
 		.map((key) => {
-			const exampleValue = currentValues[key] ?? demoValues[key];
+			const exampleValue = currentValues[key];
 			return {
 				key,
 				label:
@@ -348,13 +342,11 @@ const buildFieldDefinitions = ({
 						FIELD_LABELS[key] ?? prettifyKey(key),
 					) ?? prettifyKey(key),
 				type: inferFieldType(key, exampleValue),
-				placeholder:
-					toPlaceholder(demoValues[key]) ??
-					translateOrFallback(
-						t,
-						FIELD_PLACEHOLDER_KEYS[key],
-						FIELD_PLACEHOLDERS[key],
-					),
+				placeholder: translateOrFallback(
+					t,
+					FIELD_PLACEHOLDER_KEYS[key],
+					FIELD_PLACEHOLDERS[key],
+				),
 				description:
 					key === 'endpoint_url'
 						? t('setting_file_system_config_desc_endpoint_url')
@@ -408,22 +400,19 @@ const serializeConfigValues = (
 
 const FileSystemConfigFields = ({
 	fileSystemId,
-	demoConfig,
 	value,
 	onChange,
 }: FileSystemConfigFieldsProps) => {
 	const t = useTranslations();
-	const demoValues = useMemo(() => normalizeObject(demoConfig), [demoConfig]);
 	const currentValues = useMemo(() => normalizeObject(value), [value]);
 	const fields = useMemo(
 		() =>
 			buildFieldDefinitions({
 				t,
 				fileSystemId,
-				demoValues,
 				currentValues,
 			}),
-		[t, fileSystemId, demoValues, currentValues],
+		[t, fileSystemId, currentValues],
 	);
 	const hasInvalidConfig = Boolean(value?.trim()) && Object.keys(currentValues).length === 0;
 	const [configValues, setConfigValues] = useState<ConfigRecord>({});
@@ -437,18 +426,14 @@ const FileSystemConfigFields = ({
 				nextValues[field.key] =
 					typeof currentValue === 'boolean'
 						? currentValue
-						: typeof demoValues[field.key] === 'boolean'
-							? (demoValues[field.key] as boolean)
-							: false;
+						: false;
 				return;
 			}
 			if (field.type === 'number') {
 				nextValues[field.key] =
 					typeof currentValue === 'number'
 						? currentValue
-						: typeof demoValues[field.key] === 'number'
-							? (demoValues[field.key] as number)
-							: undefined;
+						: undefined;
 				return;
 			}
 			nextValues[field.key] =
@@ -460,7 +445,7 @@ const FileSystemConfigFields = ({
 			return currentSerialized === nextSerialized ? current : nextValues;
 		});
 		lastEmittedValueRef.current = value ?? '';
-	}, [currentValues, demoValues, fields]);
+	}, [currentValues, fields]);
 
 	const updateConfigValue = (
 		key: string,
