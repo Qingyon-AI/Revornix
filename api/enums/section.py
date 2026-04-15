@@ -22,12 +22,14 @@ class SectionPodcastStatus(IntEnum):
     GENERATING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class SectionProcessStatus(IntEnum):
     WAIT_TO = 0
     PROCESSING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class SectionProcessTriggerType(IntEnum):
     SCHEDULER = 0

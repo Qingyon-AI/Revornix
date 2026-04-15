@@ -2,7 +2,11 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail, transcribeDocument } from '@/service/document';
+import {
+	cancelDocumentTranscribe,
+	getDocumentDetail,
+	transcribeDocument,
+} from '@/service/document';
 import 'katex/dist/katex.min.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { Info, Loader2 } from 'lucide-react';
@@ -75,6 +79,7 @@ const AudioDocumentDetail = ({
 	}, [document]);
 
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
+	const [transcribeCancelling, setTranscribeCancelling] = useState(false);
 	const [markdown, setMarkdown] = useState<string>();
 	const transcribedText = document?.transcribe_task?.transcribed_text;
 
@@ -111,6 +116,22 @@ const AudioDocumentDetail = ({
 		setMarkdownRendered(true);
 	};
 
+	const handleCancelTranscribe = async () => {
+		setTranscribeCancelling(true);
+		const [, err] = await utils.to(
+			cancelDocumentTranscribe({
+				document_id: id,
+			}),
+		);
+		setTranscribeCancelling(false);
+		if (err) {
+			toast.error(err.message);
+			return;
+		}
+		toast.success(t('cancel'));
+		setDelay(1000);
+	};
+
 	useEffect(() => {
 		if (
 			!document ||
@@ -140,12 +161,12 @@ const AudioDocumentDetail = ({
 						<Button
 							variant={'link'}
 							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
+							disabled={transcribeCancelling}
 							onClick={() => {
-								setIsTranscribeDialogOpen(true);
+								void handleCancelTranscribe();
 							}}>
-							{t('retry')}
-							{markdownTransforming && (
+							{t('cancel')}
+							{transcribeCancelling && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
@@ -154,6 +175,8 @@ const AudioDocumentDetail = ({
 			{document &&
 				(document.transcribe_task?.status ===
 					DocumentTranscribeStatus.WAIT_TO ||
+					document.transcribe_task?.status ===
+						DocumentTranscribeStatus.CANCELLED ||
 					!document.transcribe_task) && (
 					<div className={statusContainerClassName}>
 						<p className='flex flex-row items-center'>

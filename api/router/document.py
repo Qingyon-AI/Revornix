@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from celery import chain, group
+from celery import group
 from fastapi import APIRouter, Depends, Header
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ import crud
 import models
 import schemas
 from common.celery.app import (
+    revoke_task,
     start_process_document,
     start_process_document_embedding,
     start_process_document_graph,
@@ -79,6 +80,65 @@ def _has_document_write_access(authority: int | None) -> bool:
         UserDocumentAuthority.FULL_ACCESS,
         UserDocumentAuthority.READ_AND_WRITE,
     ]
+
+
+def _sync_document_process_task_after_subtask_change(
+    *,
+    db: Session,
+    document_id: int,
+) -> None:
+    db_process_task = crud.task.get_document_process_task_by_document_id(
+        db=db,
+        document_id=document_id,
+    )
+    if db_process_task is None:
+        return
+
+    has_active_subtask = any(
+        task is not None and task.status in active_statuses
+        for task, active_statuses in (
+            (
+                crud.task.get_document_summarize_task_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                ),
+                [DocumentSummarizeStatus.WAIT_TO, DocumentSummarizeStatus.SUMMARIZING],
+            ),
+            (
+                crud.task.get_document_embedding_task_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                ),
+                [DocumentEmbeddingStatus.WAIT_TO, DocumentEmbeddingStatus.EMBEDDING],
+            ),
+            (
+                crud.task.get_document_graph_task_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                ),
+                [DocumentGraphStatus.WAIT_TO, DocumentGraphStatus.BUILDING],
+            ),
+            (
+                crud.task.get_document_podcast_task_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                ),
+                [DocumentPodcastStatus.WAIT_TO, DocumentPodcastStatus.GENERATING],
+            ),
+            (
+                crud.task.get_document_audio_transcribe_task_by_document_id(
+                    db=db,
+                    document_id=document_id,
+                ),
+                [DocumentAudioTranscribeStatus.WAIT_TO, DocumentAudioTranscribeStatus.TRANSCRIBING],
+            ),
+        )
+    )
+    if has_active_subtask:
+        return
+
+    db_process_task.status = DocumentProcessStatus.SUCCESS
+    db_process_task.update_time = datetime.now(timezone.utc)
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 def get_label_summary(
@@ -259,7 +319,15 @@ async def create_ai_summary(
             raise schemas.error.CustomException("Summary task is already in progress", code=409)
         db_exist_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
         db_exist_summarize_task.summary = None
+        db_exist_summarize_task.celery_task_id = None
         db_exist_summarize_task.update_time = datetime.now(timezone.utc)
+    else:
+        db_exist_summarize_task = crud.task.create_document_summarize_task(
+            db=db,
+            user_id=user.id,
+            document_id=ai_summary_request.document_id,
+            status=DocumentSummarizeStatus.WAIT_TO,
+        )
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -269,20 +337,19 @@ async def create_ai_summary(
         raise schemas.error.CustomException("Document must be processed before generating a summary", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db_process_task.update_time = datetime.now(timezone.utc)
-    db.commit()
-
-    workflow = chain(
-        start_process_document_summarize.si(
+    task_result = start_process_document_summarize.apply_async(
+        kwargs={
+            "document_id": db_document.id,
+            "user_id": user.id,
+            "model_id": selected_model_id,
+        },
+        link=update_document_process_status.si(
             document_id=db_document.id,
-            user_id=user.id,
-            model_id=selected_model_id,
+            status=DocumentProcessStatus.SUCCESS,
         ),
-        update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS
-        )
     )
-    workflow()
+    db_exist_summarize_task.celery_task_id = task_result.id
+    db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -322,6 +389,16 @@ async def create_embedding(
             raise schemas.error.CustomException("Embedding task is already queued", code=409)
         if db_embedding_task.status == DocumentEmbeddingStatus.EMBEDDING:
             raise schemas.error.CustomException("Embedding task is already in progress", code=409)
+        db_embedding_task.status = DocumentEmbeddingStatus.WAIT_TO
+        db_embedding_task.celery_task_id = None
+        db_embedding_task.update_time = now
+    else:
+        db_embedding_task = crud.task.create_document_embedding_task(
+            db=db,
+            user_id=user.id,
+            document_id=embedding_request.document_id,
+            status=DocumentEmbeddingStatus.WAIT_TO,
+        )
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -331,19 +408,18 @@ async def create_embedding(
         raise schemas.error.CustomException("Document must be processed before generating embeddings", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db_process_task.update_time = now
-    db.commit()
-
-    workflow = chain(
-        start_process_document_embedding.si(
+    task_result = start_process_document_embedding.apply_async(
+        kwargs={
+            "document_id": db_document.id,
+            "user_id": user.id,
+        },
+        link=update_document_process_status.si(
             document_id=db_document.id,
-            user_id=user.id
+            status=DocumentProcessStatus.SUCCESS,
         ),
-        update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS
-        )
     )
-    workflow()
+    db_embedding_task.celery_task_id = task_result.id
+    db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -396,6 +472,17 @@ async def transcribe_audio_document(
             raise schemas.error.CustomException("Transcription task is already queued", code=409)
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.TRANSCRIBING:
             raise schemas.error.CustomException("Transcription task is already in progress", code=409)
+        db_transcribe_task.status = DocumentAudioTranscribeStatus.WAIT_TO
+        db_transcribe_task.transcribed_text = None
+        db_transcribe_task.celery_task_id = None
+        db_transcribe_task.update_time = now
+    else:
+        db_transcribe_task = crud.task.create_document_audio_transcribe_task(
+            db=db,
+            user_id=user.id,
+            document_id=transcribe_request.document_id,
+            status=DocumentAudioTranscribeStatus.WAIT_TO,
+        )
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -405,20 +492,19 @@ async def transcribe_audio_document(
         raise schemas.error.CustomException("Document must be processed before transcription", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db_process_task.update_time = now
-    db.commit()
-
-    workflow = chain(
-        start_process_document_transcribe.si(
+    task_result = start_process_document_transcribe.apply_async(
+        kwargs={
+            "document_id": db_document.id,
+            "user_id": user.id,
+            "engine_id": selected_engine_id,
+        },
+        link=update_document_process_status.si(
             document_id=db_document.id,
-            user_id=user.id,
-            engine_id=selected_engine_id,
+            status=DocumentProcessStatus.SUCCESS,
         ),
-        update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS
-        )
     )
-    workflow()
+    db_transcribe_task.celery_task_id = task_result.id
+    db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -470,6 +556,16 @@ async def generate_graph(
             raise schemas.error.CustomException("Graph generation task is already queued", code=409)
         if db_graph_generate_task.status == DocumentGraphStatus.BUILDING:
             raise schemas.error.CustomException("Graph generation task is already in progress", code=409)
+        db_graph_generate_task.status = DocumentGraphStatus.WAIT_TO
+        db_graph_generate_task.celery_task_id = None
+        db_graph_generate_task.update_time = now
+    else:
+        db_graph_generate_task = crud.task.create_document_graph_task(
+            db=db,
+            user_id=user.id,
+            document_id=graph_generate_request.document_id,
+            status=DocumentGraphStatus.WAIT_TO,
+        )
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -479,20 +575,19 @@ async def generate_graph(
         raise schemas.error.CustomException("Document must be processed before generating a graph", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db_process_task.update_time = now
-    db.commit()
-
-    workflow = chain(
-        start_process_document_graph.si(
+    task_result = start_process_document_graph.apply_async(
+        kwargs={
+            "document_id": db_document.id,
+            "user_id": user.id,
+            "model_id": selected_model_id,
+        },
+        link=update_document_process_status.si(
             document_id=db_document.id,
-            user_id=user.id,
-            model_id=selected_model_id,
+            status=DocumentProcessStatus.SUCCESS,
         ),
-        update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS
-        )
     )
-    workflow()
+    db_graph_generate_task.celery_task_id = task_result.id
+    db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -549,7 +644,15 @@ async def generate_podcast(
             raise schemas.error.CustomException("Podcast task is already in progress", code=409)
         db_exist_podcast_task.status = DocumentPodcastStatus.WAIT_TO
         db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.celery_task_id = None
         db_exist_podcast_task.update_time = now
+    else:
+        db_exist_podcast_task = crud.task.create_document_podcast_task(
+            db=db,
+            user_id=user.id,
+            document_id=generate_podcast_request.document_id,
+            status=DocumentPodcastStatus.WAIT_TO,
+        )
 
     db_process_task = crud.task.get_document_process_task_by_document_id(
         db=db,
@@ -559,22 +662,151 @@ async def generate_podcast(
         raise schemas.error.CustomException("Document must be processed before generating a podcast", code=400)
     db_process_task.status = DocumentProcessStatus.PROCESSING
     db_process_task.update_time = now
+    task_result = start_process_document_podcast.apply_async(
+        kwargs={
+            "document_id": db_document.id,
+            "user_id": user.id,
+            "engine_id": selected_engine_id,
+        },
+        link=update_document_process_status.si(
+            document_id=db_document.id,
+            status=DocumentProcessStatus.SUCCESS,
+        ),
+    )
+    db_exist_podcast_task.celery_task_id = task_result.id
     db.commit()
 
-    workflow = chain(
-        start_process_document_podcast.si(
-            document_id=db_document.id,
-            user_id=user.id,
-            engine_id=selected_engine_id,
-        ),
-        update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS
-        )
-    )
-    workflow()
-
     return schemas.common.SuccessResponse()
+
+@document_router.post('/ai/summary/cancel', response_model=schemas.common.NormalResponse)
+def cancel_ai_summary(
+    cancel_request: schemas.document.CancelDocumentTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_document = crud.document.get_document_by_document_id(db=db, document_id=cancel_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(db=db, document_id=db_document.id, user_id=user.id)
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    cancelled_task = crud.task.cancel_document_summarize_task(db=db, document_id=cancel_request.document_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException("No active summary task to cancel", code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/embedding/cancel', response_model=schemas.common.NormalResponse)
+def cancel_embedding(
+    cancel_request: schemas.document.CancelDocumentTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_document = crud.document.get_document_by_document_id(db=db, document_id=cancel_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(db=db, document_id=db_document.id, user_id=user.id)
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    cancelled_task = crud.task.cancel_document_embedding_task(db=db, document_id=cancel_request.document_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException("No active embedding task to cancel", code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/transcribe/cancel', response_model=schemas.common.NormalResponse)
+def cancel_transcribe(
+    cancel_request: schemas.document.CancelDocumentTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_document = crud.document.get_document_by_document_id(db=db, document_id=cancel_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(db=db, document_id=db_document.id, user_id=user.id)
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    cancelled_task = crud.task.cancel_document_transcribe_task(db=db, document_id=cancel_request.document_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException("No active transcription task to cancel", code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/graph/cancel', response_model=schemas.common.NormalResponse)
+def cancel_graph(
+    cancel_request: schemas.document.CancelDocumentTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_document = crud.document.get_document_by_document_id(db=db, document_id=cancel_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(db=db, document_id=db_document.id, user_id=user.id)
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    cancelled_task = crud.task.cancel_document_graph_task(db=db, document_id=cancel_request.document_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException("No active graph task to cancel", code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/podcast/cancel', response_model=schemas.common.NormalResponse)
+def cancel_podcast(
+    cancel_request: schemas.document.CancelDocumentTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_document = crud.document.get_document_by_document_id(db=db, document_id=cancel_request.document_id)
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = _get_document_collaborator(db=db, document_id=db_document.id, user_id=user.id)
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    cancelled_task = crud.task.cancel_document_podcast_task(db=db, document_id=cancel_request.document_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException("No active podcast task to cancel", code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
+    db.commit()
+    return schemas.common.SuccessResponse()
+
 
 @document_router.post('/month/summary', response_model=schemas.document.DocumentMonthSummaryResponse)
 def get_month_summary(

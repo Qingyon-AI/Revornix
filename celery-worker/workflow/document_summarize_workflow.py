@@ -20,6 +20,7 @@ from data.common import (
 from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
@@ -40,6 +41,24 @@ SAMPLED_SUMMARY_MARKDOWN_CHAR_THRESHOLD = 400_000
 SAMPLED_SUMMARY_CHUNK_LIMIT = 18
 
 
+def _ensure_summarize_task_not_cancelled(document_id: int) -> None:
+    db = session_scope()
+    try:
+        db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if (
+            db_summarize_task is not None
+            and db_summarize_task.status == DocumentSummarizeStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Document summarize task cancelled: document_id={document_id}"
+            )
+    finally:
+        db.close()
+
+
 async def _init_summarize_task(
     state: DocumentSummarizeState
 ) -> DocumentSummarizeState:
@@ -47,6 +66,7 @@ async def _init_summarize_task(
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document summarize workflow missing document_id or user_id")
+    _ensure_summarize_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -116,6 +136,7 @@ async def _summarize_document(
     summary_mode = state.get("summary_mode")
     if document_id is None or user_id is None or model_id is None or llm_model is None:
         raise Exception("Document summarize workflow missing context")
+    _ensure_summarize_task_not_cancelled(document_id)
 
     if summary_mode is None:
         markdown_length = await get_document_markdown_length(document_id)
@@ -201,6 +222,7 @@ async def _summarize_document(
                 )
                 reduce_elapsed_ms += (time.perf_counter() - reduce_start) * 1000
                 reduce_count += 1
+                _ensure_summarize_task_not_cancelled(document_id)
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=summarize_document, "
             f"stage=summarize_chunks, chunks={chunk_count}, reduce_count={reduce_count}, "
@@ -226,6 +248,7 @@ async def _mark_summarize_success(
     description = state.get("description")
     if document_id is None:
         raise Exception("Document summarize workflow missing document_id")
+    _ensure_summarize_task_not_cancelled(document_id)
 
     with timed_stage(
         workflow_name=WORKFLOW_NAME,
@@ -253,6 +276,7 @@ async def _mark_summarize_success(
                 db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
                 if summary is not None:
                     db_summarize_task.summary = summary
+                db_summarize_task.celery_task_id = None
                 db_summarize_task.update_time = datetime.now(timezone.utc)
             if db_document is not None:
                 if title is not None:
@@ -328,6 +352,21 @@ async def run_document_summarize_workflow(
                 "model_id": model_id,
             },
         )
+    except WorkflowCancelledError:
+        db = session_scope()
+        try:
+            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_summarize_task is not None:
+                db_summarize_task.status = DocumentSummarizeStatus.CANCELLED
+                db_summarize_task.celery_task_id = None
+                db_summarize_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai summary: {e}")
         db = session_scope()
@@ -336,8 +375,12 @@ async def run_document_summarize_workflow(
                 db=db,
                 document_id=document_id
             )
-            if db_summarize_task is not None:
+            if (
+                db_summarize_task is not None
+                and db_summarize_task.status != DocumentSummarizeStatus.CANCELLED
+            ):
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
+                db_summarize_task.celery_task_id = None
                 db_summarize_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:

@@ -15,6 +15,8 @@ import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import EngineSelect from '@/components/ai/engine-select';
 import AIModelSelect from '@/components/ai/model-select';
 import {
+	cancelSectionPodcast,
+	cancelSectionPpt,
 	generateSectionPodcast,
 	generateSectionPpt,
 	getMineUserRoleAndAuthority,
@@ -120,6 +122,19 @@ const SectionMedia = ({
 		},
 	});
 
+	const mutateCancelPodcast = useMutation({
+		mutationFn: () => cancelSectionPodcast({ section_id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionDetail', section_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
+		},
+	});
+
 	const mutateGeneratePpt = useMutation({
 		mutationFn: () =>
 			generateSectionPpt({
@@ -142,6 +157,19 @@ const SectionMedia = ({
 		},
 		onError() {
 			toast.error(t('section_ppt_generate_task_submitted_failed'));
+		},
+	});
+
+	const mutateCancelPpt = useMutation({
+		mutationFn: () => cancelSectionPpt({ section_id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionDetail', section_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
 		},
 	});
 
@@ -242,7 +270,9 @@ const SectionMedia = ({
 				podcastStale={freshnessState.podcastStale}
 				cover={cover}
 				isGeneratePending={mutateGeneratePodcast.isPending}
+				isCancelPending={mutateCancelPodcast.isPending}
 				onOpenDialog={() => setIsPodcastDialogOpen(true)}
+				onCancel={() => mutateCancelPodcast.mutate()}
 			/>,
 		);
 	}
@@ -257,7 +287,9 @@ const SectionMedia = ({
 				canGeneratePpt={canGeneratePpt}
 				pptHint={pptHint}
 				pptStale={freshnessState.pptStale}
+				isCancelPending={mutateCancelPpt.isPending}
 				onOpenDialog={() => setIsPptDialogOpen(true)}
+				onCancel={() => mutateCancelPpt.mutate()}
 			/>,
 		);
 	}

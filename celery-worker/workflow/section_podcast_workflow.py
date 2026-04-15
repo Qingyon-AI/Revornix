@@ -15,6 +15,7 @@ from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_section_podcast_graph_context
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
@@ -32,6 +33,24 @@ class SectionPodcastState(TypedDict, total=False):
 WORKFLOW_NAME = "section_podcast"
 
 
+def _ensure_section_podcast_task_not_cancelled(section_id: int) -> None:
+    db = session_scope()
+    try:
+        db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+            db=db,
+            section_id=section_id,
+        )
+        if (
+            db_podcast_task is not None
+            and db_podcast_task.status == SectionPodcastStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Section podcast task cancelled: section_id={section_id}"
+            )
+    finally:
+        db.close()
+
+
 async def _init_section_podcast_task(
     state: SectionPodcastState
 ) -> SectionPodcastState:
@@ -39,6 +58,7 @@ async def _init_section_podcast_task(
     user_id = state.get("user_id")
     if section_id is None or user_id is None:
         raise Exception("Section podcast workflow missing section_id or user_id")
+    _ensure_section_podcast_task_not_cancelled(section_id)
 
     db = session_scope()
     try:
@@ -93,6 +113,7 @@ async def _generate_section_podcast(
     engine_id = state.get("engine_id")
     if section_id is None or user_id is None or engine_id is None:
         raise Exception("Section podcast workflow missing context")
+    _ensure_section_podcast_task_not_cancelled(section_id)
 
     remote_file_service = await FileSystemProxy.create(
         user_id=user_id
@@ -154,6 +175,7 @@ async def _generate_section_podcast(
     audio_bytes = await engine.synthesize(
         text=prepared_markdown_content
     )
+    _ensure_section_podcast_task_not_cancelled(section_id)
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
         f"node=generate_section_podcast, stage=synthesize_audio, "
@@ -186,6 +208,7 @@ async def _mark_section_podcast_success(
     podcast_file_name = state.get("podcast_file_name")
     if section_id is None:
         raise Exception("Section podcast workflow missing section_id")
+    _ensure_section_podcast_task_not_cancelled(section_id)
 
     db = session_scope()
     try:
@@ -196,6 +219,7 @@ async def _mark_section_podcast_success(
         if db_podcast_task is not None:
             db_podcast_task.status = SectionPodcastStatus.SUCCESS
             db_podcast_task.podcast_file_name = podcast_file_name
+            db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
@@ -257,6 +281,21 @@ async def run_section_podcast_workflow(
                 "engine_id": engine_id,
             },
         )
+    except WorkflowCancelledError:
+        db = session_scope()
+        try:
+            db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+                db=db,
+                section_id=section_id
+            )
+            if db_podcast_task is not None:
+                db_podcast_task.status = SectionPodcastStatus.CANCELLED
+                db_podcast_task.celery_task_id = None
+                db_podcast_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
         db = session_scope()
@@ -265,8 +304,12 @@ async def run_section_podcast_workflow(
                 db=db,
                 section_id=section_id
             )
-            if db_podcast_task is not None:
+            if (
+                db_podcast_task is not None
+                and db_podcast_task.status != SectionPodcastStatus.CANCELLED
+            ):
                 db_podcast_task.status = SectionPodcastStatus.FAILED
+                db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:

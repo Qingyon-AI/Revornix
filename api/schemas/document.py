@@ -110,6 +110,10 @@ class DocumentAiSummaryRequest(BaseModel):
     model_id: int | None = None
 
 
+class CancelDocumentTaskRequest(BaseModel):
+    document_id: int
+
+
 class DocumentAskRequest(BaseModel):
     document_id: int
     messages: list["ChatItem"]

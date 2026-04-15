@@ -35,6 +35,7 @@ from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
@@ -49,11 +50,30 @@ class DocumentGraphState(TypedDict, total=False):
 WORKFLOW_NAME = "document_graph_task"
 
 
+def _ensure_graph_task_not_cancelled(document_id: int) -> None:
+    db = session_scope()
+    try:
+        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if (
+            db_graph_task is not None
+            and db_graph_task.status == DocumentGraphStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Document graph task cancelled: document_id={document_id}"
+            )
+    finally:
+        db.close()
+
+
 async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document graph workflow missing document_id or user_id")
+    _ensure_graph_task_not_cancelled(document_id)
 
     model_id: int | None = state.get("model_id")
     access_token: str | None = None
@@ -153,6 +173,7 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     chunk_snapshot_path = state.get("chunk_snapshot_path")
     if llm_model is None or user_id is None or document_id is None:
         raise Exception("Knowledge graph workflow missing required context")
+    _ensure_graph_task_not_cancelled(document_id)
 
     llm_client = await get_extract_llm_client(
         user_id=user_id
@@ -219,6 +240,7 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
                 if sub_entities:
                     upsert_chunk_entity_relations(sub_entities)
                 upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+                _ensure_graph_task_not_cancelled(document_id)
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=extract_chunks, "
             f"stage=extract_and_upsert_chunks, chunks={chunk_count}, "
@@ -235,6 +257,7 @@ def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     if document_id is None:
         raise Exception("Knowledge graph workflow missing document_id")
+    _ensure_graph_task_not_cancelled(document_id)
     db = session_scope()
     try:
         db_document = crud.document.get_document_by_document_id(
@@ -293,6 +316,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     if document_id is None:
         raise Exception("Document graph workflow missing document_id")
+    _ensure_graph_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -303,6 +327,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.SUCCESS.value
+            db_graph_task.celery_task_id = None
             db_graph_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
@@ -380,6 +405,21 @@ async def run_document_graph_task_workflow(
                 "model_id": model_id,
             },
         )
+    except WorkflowCancelledError:
+        db = session_scope()
+        try:
+            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_graph_task is not None:
+                db_graph_task.status = DocumentGraphStatus.CANCELLED.value
+                db_graph_task.celery_task_id = None
+                db_graph_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
         db = session_scope()
@@ -388,8 +428,12 @@ async def run_document_graph_task_workflow(
                 db=db,
                 document_id=document_id
             )
-            if db_graph_task is not None:
+            if (
+                db_graph_task is not None
+                and db_graph_task.status != DocumentGraphStatus.CANCELLED.value
+            ):
                 db_graph_task.status = DocumentGraphStatus.FAILED.value
+                db_graph_task.celery_task_id = None
                 db_graph_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:

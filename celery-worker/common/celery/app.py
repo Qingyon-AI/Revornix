@@ -134,7 +134,7 @@ def start_process_section(
 ):
     import crud
     from data.sql.base import session_scope
-    from enums.section import SectionPodcastStatus
+    from enums.section import SectionPodcastStatus, SectionProcessStatus
     from workflow.section_process_workflow import run_section_process_workflow
 
     _run(
@@ -151,6 +151,15 @@ def start_process_section(
     if auto_podcast:
         with session_scope() as db:
             now = datetime.now(timezone.utc)
+            db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                db=db,
+                section_id=section_id,
+            )
+            if (
+                db_section_process_task is not None
+                and db_section_process_task.status == SectionProcessStatus.CANCELLED
+            ):
+                return
             db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
                 db=db,
                 section_id=section_id,

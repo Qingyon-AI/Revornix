@@ -14,6 +14,7 @@ from data.milvus.insert import upsert_milvus
 from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
@@ -31,6 +32,24 @@ WORKFLOW_NAME = "document_embedding"
 
 # 建议从 64 起步，根据吞吐/内存/接口限制调整
 EMBED_BATCH_SIZE = 64
+
+
+def _ensure_embedding_task_not_cancelled(document_id: int) -> None:
+    db = session_scope()
+    try:
+        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if (
+            db_embedding_task is not None
+            and db_embedding_task.status == DocumentEmbeddingStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Document embedding task cancelled: document_id={document_id}"
+            )
+    finally:
+        db.close()
 
 
 def _assign_chunk_embeddings(
@@ -54,6 +73,8 @@ async def _init_embedding_task(
     manage_task_status = bool(state.get("manage_task_status", True))
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing document_id or user_id")
+    if manage_task_status:
+        _ensure_embedding_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -104,6 +125,7 @@ async def _embed_document(
     chunk_snapshot_path = state.get("chunk_snapshot_path")
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing context")
+    _ensure_embedding_task_not_cancelled(document_id)
     embedding_engine = get_embedding_engine()
 
     # 批量缓存
@@ -159,6 +181,7 @@ async def _embed_document(
                     embed_chunks,
                 )
                 upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+                _ensure_embedding_task_not_cancelled(document_id)
 
                 embed_chunks.clear()
                 embed_texts.clear()
@@ -198,6 +221,7 @@ async def _mark_embedding_success(
         raise Exception("Document embedding workflow missing document_id")
     if not manage_task_status:
         return state
+    _ensure_embedding_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -208,6 +232,7 @@ async def _mark_embedding_success(
         )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            db_embedding_task.celery_task_id = None
             db_embedding_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
@@ -275,6 +300,23 @@ async def run_document_embedding_workflow(
                 "chunk_snapshot_path": chunk_snapshot_path,
             },
         )
+    except WorkflowCancelledError:
+        if not manage_task_status:
+            raise
+        db = session_scope()
+        try:
+            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_embedding_task is not None:
+                db_embedding_task.status = DocumentEmbeddingStatus.CANCELLED
+                db_embedding_task.celery_task_id = None
+                db_embedding_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
         if not manage_task_status:
@@ -285,8 +327,12 @@ async def run_document_embedding_workflow(
                 db=db,
                 document_id=document_id
             )
-            if db_embedding_task is not None:
+            if (
+                db_embedding_task is not None
+                and db_embedding_task.status != DocumentEmbeddingStatus.CANCELLED
+            ):
                 db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+                db_embedding_task.celery_task_id = None
                 db_embedding_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:

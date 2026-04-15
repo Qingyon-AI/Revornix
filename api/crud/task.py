@@ -404,6 +404,132 @@ def delete_document_convert_task_by_document_ids(
     query = query.update({models.task.DocumentConvertToMdTask.delete_at: now}, synchronize_session=False)
     db.flush()
 
+def cancel_document_summarize_task(
+    db: Session,
+    document_id: int,
+) -> models.task.DocumentSummarizeTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_document_summarize_task_by_document_id(db=db, document_id=document_id)
+    if task is None:
+        return None
+    if task.status not in (
+        DocumentSummarizeStatus.WAIT_TO,
+        DocumentSummarizeStatus.SUMMARIZING,
+    ):
+        return None
+    task.status = DocumentSummarizeStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_document_graph_task(
+    db: Session,
+    document_id: int,
+) -> models.task.DocumentGraphTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_document_graph_task_by_document_id(db=db, document_id=document_id)
+    if task is None:
+        return None
+    if task.status not in (
+        DocumentGraphStatus.WAIT_TO,
+        DocumentGraphStatus.BUILDING,
+    ):
+        return None
+    task.status = DocumentGraphStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_document_podcast_task(
+    db: Session,
+    document_id: int,
+) -> models.task.DocumentPodcastTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_document_podcast_task_by_document_id(db=db, document_id=document_id)
+    if task is None:
+        return None
+    if task.status not in (
+        DocumentPodcastStatus.WAIT_TO,
+        DocumentPodcastStatus.GENERATING,
+    ):
+        return None
+    task.status = DocumentPodcastStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_document_embedding_task(
+    db: Session,
+    document_id: int,
+) -> models.task.DocumentEmbeddingTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_document_embedding_task_by_document_id(db=db, document_id=document_id)
+    if task is None:
+        return None
+    if task.status not in (
+        DocumentEmbeddingStatus.WAIT_TO,
+        DocumentEmbeddingStatus.EMBEDDING,
+    ):
+        return None
+    task.status = DocumentEmbeddingStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_document_transcribe_task(
+    db: Session,
+    document_id: int,
+) -> models.task.DocumentAudioTranscribeTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_document_audio_transcribe_task_by_document_id(db=db, document_id=document_id)
+    if task is None:
+        return None
+    if task.status not in (
+        DocumentAudioTranscribeStatus.WAIT_TO,
+        DocumentAudioTranscribeStatus.TRANSCRIBING,
+    ):
+        return None
+    task.status = DocumentAudioTranscribeStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_section_podcast_task(
+    db: Session,
+    section_id: int,
+) -> models.task.SectionPodcastTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_section_podcast_task_by_section_id(db=db, section_id=section_id)
+    if task is None:
+        return None
+    if task.status not in (
+        SectionPodcastStatus.WAIT_TO,
+        SectionPodcastStatus.GENERATING,
+    ):
+        return None
+    task.status = SectionPodcastStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
+def cancel_section_process_task(
+    db: Session,
+    section_id: int,
+) -> models.task.SectionProcessTask | None:
+    now = datetime.now(timezone.utc)
+    task = get_section_process_task_by_section_id(db=db, section_id=section_id)
+    if task is None:
+        return None
+    if task.status not in (
+        SectionProcessStatus.WAIT_TO,
+        SectionProcessStatus.PROCESSING,
+    ):
+        return None
+    task.status = SectionProcessStatus.CANCELLED
+    task.update_time = now
+    return task
+
+
 def cancel_document_tasks_by_document_ids(
     db: Session,
     document_ids: list[int]

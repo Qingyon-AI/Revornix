@@ -27,6 +27,7 @@ from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from schemas.section import PptPlanResult, PptSlidePlan
+from workflow.cancelled import WorkflowCancelledError
 
 try:
     from pptx import Presentation
@@ -48,6 +49,22 @@ def _get_section_ppt_manifest_path(section_id: int) -> str:
 
 def _normalize_datetime(value: datetime | None = None) -> str:
     return (value or datetime.now(timezone.utc)).isoformat()
+
+
+async def _ensure_section_ppt_not_cancelled(
+    *,
+    remote_file_service: RemoteFileServiceProtocol,
+    manifest_path: str,
+    section_id: int,
+) -> None:
+    try:
+        raw_content = await remote_file_service.get_file_content_by_file_path(manifest_path)
+    except Exception:
+        return
+
+    manifest = json.loads(raw_content.decode("utf-8") if isinstance(raw_content, bytes) else raw_content)
+    if isinstance(manifest, dict) and manifest.get("status") == "cancelled":
+        raise WorkflowCancelledError(f"Section PPT task cancelled: section_id={section_id}")
 
 
 def _compact_markdown(markdown: str, max_chars: int) -> str:
@@ -347,6 +364,7 @@ async def run_section_ppt_workflow(
     remote_file_service = await FileSystemProxy.create(user_id=user_id)
     manifest_path = _get_section_ppt_manifest_path(section_id)
     now = _normalize_datetime()
+    existing_manifest: dict | None = None
 
     with session_scope() as db:
         db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
@@ -359,9 +377,24 @@ async def run_section_ppt_workflow(
         if resolved_image_engine_id is None:
             raise RuntimeError("Default image generate engine not set")
 
+    try:
+        raw_manifest = await remote_file_service.get_file_content_by_file_path(manifest_path)
+        parsed_manifest = json.loads(
+            raw_manifest.decode("utf-8") if isinstance(raw_manifest, bytes) else raw_manifest
+        )
+        if isinstance(parsed_manifest, dict):
+            existing_manifest = parsed_manifest
+    except Exception:
+        existing_manifest = None
+
     initial_manifest = {
         "version": PPT_MANIFEST_VERSION,
         "status": "processing",
+        "celery_task_id": (
+            existing_manifest.get("celery_task_id")
+            if isinstance(existing_manifest, dict)
+            else None
+        ),
         "title": None,
         "subtitle": None,
         "theme_prompt": None,
@@ -376,6 +409,11 @@ async def run_section_ppt_workflow(
         manifest_path=manifest_path,
         payload=initial_manifest,
     )
+    await _ensure_section_ppt_not_cancelled(
+        remote_file_service=remote_file_service,
+        manifest_path=manifest_path,
+        section_id=section_id,
+    )
 
     try:
         markdown = await get_markdown_content_by_section_id(
@@ -388,6 +426,11 @@ async def run_section_ppt_workflow(
             user_id=user_id,
             markdown=markdown,
             model_id=model_id,
+        )
+        await _ensure_section_ppt_not_cancelled(
+            remote_file_service=remote_file_service,
+            manifest_path=manifest_path,
+            section_id=section_id,
         )
         manifest = {
             **initial_manifest,
@@ -437,6 +480,11 @@ async def run_section_ppt_workflow(
         ]
         for result in asyncio.as_completed(tasks):
             index, slide, image_markdown = await result
+            await _ensure_section_ppt_not_cancelled(
+                remote_file_service=remote_file_service,
+                manifest_path=manifest_path,
+                section_id=section_id,
+            )
             if not image_markdown:
                 raise RuntimeError(
                     f"Slide image generation returned empty response: {slide.id}"
@@ -480,11 +528,26 @@ async def run_section_ppt_workflow(
             manifest_path=manifest_path,
             payload=manifest,
         )
+    except WorkflowCancelledError:
+        cancelled_manifest = {
+            **initial_manifest,
+            "status": "cancelled",
+            "celery_task_id": None,
+            "error_message": "Cancelled by user",
+            "update_time": _normalize_datetime(),
+        }
+        await _write_manifest(
+            remote_file_service=remote_file_service,
+            manifest_path=manifest_path,
+            payload=cancelled_manifest,
+        )
+        raise
     except Exception as e:
         exception_logger.error(f"[SectionPPT] workflow failed: section={section_id}, error={e}")
         failure_manifest = {
             **initial_manifest,
             "status": "failed",
+            "celery_task_id": None,
             "error_message": str(e),
             "update_time": _normalize_datetime(),
         }
