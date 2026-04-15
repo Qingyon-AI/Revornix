@@ -1,4 +1,5 @@
 import AudioPlayer from '../ui/audio-player';
+import { replacePath } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateDocumentPodcast, getDocumentDetail } from '@/service/document';
@@ -152,8 +153,9 @@ const DocumentPodcast = ({
 										<AudioPlayer
 											src={document?.podcast_task?.podcast_file_name}
 											cover={
-											document.cover ??
-											'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+											document.cover
+												? replacePath(document.cover, document.creator.id)
+												: undefined
 										}
 										title={document.title ?? 'Unkown Title'}
 										artist={'AI Generated'}
