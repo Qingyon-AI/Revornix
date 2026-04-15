@@ -19,7 +19,12 @@ class PptSlidePlan(BaseModel):
     id: str
     title: str
     summary: str
-    prompt: str
+    prompt: str  # image-generation prompt (mapped from image_prompt in LLM output)
+    # Enriched script fields (populated when using the new script prompt)
+    slide_type: str | None = None
+    key_points: list[str] = Field(default_factory=list)
+    speaker_notes: str | None = None
+    layout: str | None = None
 
 
 class PptPlanResult(BaseModel):

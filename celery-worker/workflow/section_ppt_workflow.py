@@ -21,7 +21,7 @@ from common.logger import exception_logger, info_logger
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_billing import persist_model_usage_from_completion
 from data.sql.base import session_scope
-from prompts.section_ppt import PPT_PLANNER_SYSTEM, build_ppt_planner_user_prompt
+from prompts.section_ppt import PPT_SCRIPT_SYSTEM, build_ppt_script_user_prompt
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -36,8 +36,8 @@ except Exception:
     Inches = None
 
 PPT_GENERATE_CONCURRENCY = 3
-PPT_PLANNER_MAX_CHARS = 18_000
-PPT_MANIFEST_VERSION = 1
+PPT_SCRIPT_MAX_CHARS = 18_000
+PPT_MANIFEST_VERSION = 2
 PPT_SLIDE_GENERATE_MAX_ATTEMPTS = 3
 PPT_SLIDE_GENERATE_RETRY_DELAY_SECONDS = 1.2
 
@@ -181,6 +181,39 @@ def _build_pptx_bytes(slide_images: list[bytes]) -> bytes | None:
     return buffer.getvalue()
 
 
+def _parse_theme_prompt(data: dict) -> str | None:
+    """Convert the new theme object or legacy theme_prompt string to a plain string."""
+    theme = data.get("theme")
+    if isinstance(theme, dict):
+        parts: list[str] = []
+        if theme.get("color_palette"):
+            parts.append(f"Colors: {theme['color_palette']}")
+        if theme.get("visual_style"):
+            parts.append(f"Style: {theme['visual_style']}")
+        return ". ".join(parts) if parts else None
+    # Fall back to legacy field
+    return data.get("theme_prompt") or None
+
+
+def _parse_slide_plan(raw: dict) -> PptSlidePlan:
+    """Map a raw slide dict (new script schema or legacy schema) to PptSlidePlan."""
+    # image_prompt is the rich prompt written by the script LLM;
+    # fall back to legacy "prompt" key if absent.
+    image_prompt = (raw.get("image_prompt") or raw.get("prompt") or "").strip()
+    # speaker_notes doubles as the human-readable summary
+    speaker_notes = raw.get("speaker_notes") or raw.get("summary") or ""
+    return PptSlidePlan(
+        id=raw.get("id", ""),
+        title=raw.get("title", ""),
+        summary=speaker_notes,
+        prompt=image_prompt,
+        slide_type=raw.get("type") or raw.get("slide_type"),
+        key_points=raw.get("key_points") or [],
+        speaker_notes=speaker_notes or None,
+        layout=raw.get("layout"),
+    )
+
+
 async def _plan_section_ppt(
     *,
     user_id: int,
@@ -195,8 +228,8 @@ async def _plan_section_ppt(
     if resolved_model_id is None:
         raise RuntimeError("Default document reader model not set")
 
-    planner_markdown = _compact_markdown(markdown, PPT_PLANNER_MAX_CHARS)
-    user_prompt = build_ppt_planner_user_prompt(markdown=planner_markdown)
+    script_markdown = _compact_markdown(markdown, PPT_SCRIPT_MAX_CHARS)
+    user_prompt = build_ppt_script_user_prompt(markdown=script_markdown)
     language_instruction = build_structured_output_language_instruction(
         _get_user_ai_interaction_language(user_id),
     )
@@ -221,7 +254,7 @@ async def _plan_section_ppt(
                 messages=[
                     {
                         "role": "system",
-                        "content": f"{PPT_PLANNER_SYSTEM}\n\n{language_instruction}",
+                        "content": f"{PPT_SCRIPT_SYSTEM}\n\n{language_instruction}",
                     },
                     {"role": "user", "content": user_prompt},
                 ],
@@ -235,22 +268,22 @@ async def _plan_section_ppt(
             )
             resp_text = completion.choices[0].message.content
             if not resp_text:
-                raise RuntimeError("PPT planner returned empty response")
+                raise RuntimeError("PPT script generation returned empty response")
             data = json.loads(resp_text)
             if not isinstance(data, dict):
-                raise RuntimeError("PPT planner response is not a JSON object")
+                raise RuntimeError("PPT script response is not a JSON object")
 
             raw_slides = data.get("slides") or []
             if not isinstance(raw_slides, list):
                 raw_slides = []
-            slides = [PptSlidePlan(**slide) for slide in raw_slides[:6]]
+            slides = [_parse_slide_plan(s) for s in raw_slides[:7]]
             if len(slides) < 4:
-                raise RuntimeError("PPT planner returned too few slides")
+                raise RuntimeError("PPT script returned too few slides")
 
             return PptPlanResult(
                 title=data.get("title"),
                 subtitle=data.get("subtitle"),
-                theme_prompt=data.get("theme_prompt"),
+                theme_prompt=_parse_theme_prompt(data),
                 slides=slides,
             )
         finally:
@@ -364,7 +397,11 @@ async def run_section_ppt_workflow(
             "slides": [
                 {
                     "id": slide.id,
+                    "type": slide.slide_type,
                     "title": slide.title,
+                    "key_points": slide.key_points,
+                    "speaker_notes": slide.speaker_notes,
+                    "layout": slide.layout,
                     "summary": slide.summary,
                     "prompt": slide.prompt,
                     "image_file_name": None,
