@@ -33,6 +33,7 @@ class AdminUserSearchRequest(BaseModel):
 class AdminUserSummary(BaseModel):
     id: int
     uuid: str
+    cover: str | None = None
     role: int
     avatar: str
     nickname: str
