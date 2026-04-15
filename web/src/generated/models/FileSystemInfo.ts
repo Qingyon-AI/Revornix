@@ -49,12 +49,6 @@ export interface FileSystemInfo {
      * @memberof FileSystemInfo
      */
     description_zh?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof FileSystemInfo
-     */
-    demo_config?: string | null;
 }
 
 /**
@@ -82,7 +76,6 @@ export function FileSystemInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
         'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
-        'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
     };
 }
 
@@ -102,7 +95,6 @@ export function FileSystemInfoToJSONTyped(value?: FileSystemInfo | null, ignoreD
         'name_zh': value['name_zh'],
         'description': value['description'],
         'description_zh': value['description_zh'],
-        'demo_config': value['demo_config'],
     };
 }
 

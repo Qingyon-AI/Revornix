@@ -306,7 +306,7 @@ const InitMineEngine = () => {
 								</FormItem>
 							)}
 						/>
-						{selectedEngine?.demo_config && (
+						{selectedEngine && (
 							<FormField
 								name='config_json'
 								control={form.control}
@@ -315,7 +315,6 @@ const InitMineEngine = () => {
 										<FormItem>
 											<EngineConfigFields
 												engineName={selectedEngine.name}
-												demoConfig={selectedEngine.demo_config}
 												value={field.value ?? ''}
 												onChange={(nextValue) => {
 													field.onChange(nextValue);

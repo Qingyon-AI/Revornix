@@ -30,13 +30,19 @@ export interface ModelCreateRequest {
      * @type {string}
      * @memberof ModelCreateRequest
      */
-    description: string | null;
+    description?: string | null;
     /**
      * 
      * @type {number}
      * @memberof ModelCreateRequest
      */
     required_plan_level?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCreateRequest
+     */
+    provider_id: number;
     /**
      * 
      * @type {boolean}
@@ -49,12 +55,6 @@ export interface ModelCreateRequest {
      * @memberof ModelCreateRequest
      */
     compute_point_multiplier?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelCreateRequest
-     */
-    provider_id: number;
 }
 
 /**
@@ -62,7 +62,6 @@ export interface ModelCreateRequest {
  */
 export function instanceOfModelCreateRequest(value: object): value is ModelCreateRequest {
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('provider_id' in value) || value['provider_id'] === undefined) return false;
     return true;
 }
@@ -78,11 +77,11 @@ export function ModelCreateRequestFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'name': json['name'],
-        'description': json['description'],
+        'description': json['description'] == null ? undefined : json['description'],
         'required_plan_level': json['required_plan_level'] == null ? undefined : json['required_plan_level'],
+        'provider_id': json['provider_id'],
         'is_official_hosted': json['is_official_hosted'] == null ? undefined : json['is_official_hosted'],
         'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
-        'provider_id': json['provider_id'],
     };
 }
 
@@ -100,8 +99,9 @@ export function ModelCreateRequestToJSONTyped(value?: ModelCreateRequest | null,
         'name': value['name'],
         'description': value['description'],
         'required_plan_level': value['required_plan_level'],
+        'provider_id': value['provider_id'],
         'is_official_hosted': value['is_official_hosted'],
         'compute_point_multiplier': value['compute_point_multiplier'],
-        'provider_id': value['provider_id'],
     };
 }
+

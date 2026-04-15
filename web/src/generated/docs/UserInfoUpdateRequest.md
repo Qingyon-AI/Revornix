@@ -9,6 +9,7 @@ Name | Type
 `nickname` | string
 `slogan` | string
 `avatar` | string
+`cover` | string
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "nickname": null,
   "slogan": null,
   "avatar": null,
+  "cover": null,
 } satisfies UserInfoUpdateRequest
 
 console.log(example)

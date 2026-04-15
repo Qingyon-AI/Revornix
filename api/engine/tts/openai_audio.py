@@ -52,8 +52,7 @@ class OpenAIAudioEngine(TTSEngineBase):
             engine_name_zh="OpenAI Audio引擎",
             engine_category=EngineCategory.TTS,
             engine_description="OpenAI Audio engine, based on openai's audio interface, convert text to audio",
-            engine_description_zh="OpenAI Audio引擎，基于openai提供的Audio接口，将文本转化为音频。",
-            engine_demo_config='{"base_url":"","api_key":"","model_name":""}'
+            engine_description_zh="OpenAI Audio引擎，基于openai提供的Audio接口，将文本转化为音频。"
         )
         
     async def synthesize(

@@ -332,7 +332,6 @@ const FileSystemUpdate = ({
 							/>
 							<FileSystemConfigFields
 								fileSystemId={file_system_detail.file_system_id}
-								demoConfig={file_system_detail.demo_config}
 								value={configJson}
 								onChange={setConfigJson}
 							/>

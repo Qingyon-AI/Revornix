@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   CreateLabelResponse,
   DocumentAiSummaryRequest,
+  DocumentAskRequest,
   DocumentCreateRequest,
   DocumentCreateResponse,
   DocumentDeleteRequest,
@@ -28,21 +29,32 @@ import type {
   DocumentMonthSummaryResponse,
   DocumentNoteCreateRequest,
   DocumentNoteDeleteRequest,
+  DocumentPublishGetRequest,
+  DocumentPublishGetResponse,
+  DocumentPublishRequest,
   DocumentTranscribeRequest,
   DocumentUpdateRequest,
+  DocumentUserAddRequest,
+  DocumentUserAuthorityResponse,
+  DocumentUserDeleteRequest,
+  DocumentUserModifyRequest,
+  DocumentUserRequest,
   GenerateDocumentPodcastRequest,
   HTTPValidationError,
+  InifiniteScrollPagnitionDocumentCollaboratorPublicInfo,
   InifiniteScrollPagnitionDocumentInfo,
   InifiniteScrollPagnitionDocumentNoteInfo,
   LabelAddRequest,
   LabelDeleteRequest,
   LabelSummaryResponse,
+  MineDocumentAuthorityRequest,
   NormalResponse,
   ReadRequest,
   SchemasDocumentLabelListResponse,
   SearchAllMyDocumentsRequest,
   SearchDocumentNoteRequest,
   SearchMyStarDocumentsRequest,
+  SearchPublicDocumentsRequest,
   SearchRecentReadRequest,
   SearchUnreadListRequest,
   StarRequest,
@@ -55,6 +67,8 @@ import {
     CreateLabelResponseToJSON,
     DocumentAiSummaryRequestFromJSON,
     DocumentAiSummaryRequestToJSON,
+    DocumentAskRequestFromJSON,
+    DocumentAskRequestToJSON,
     DocumentCreateRequestFromJSON,
     DocumentCreateRequestToJSON,
     DocumentCreateResponseFromJSON,
@@ -77,14 +91,32 @@ import {
     DocumentNoteCreateRequestToJSON,
     DocumentNoteDeleteRequestFromJSON,
     DocumentNoteDeleteRequestToJSON,
+    DocumentPublishGetRequestFromJSON,
+    DocumentPublishGetRequestToJSON,
+    DocumentPublishGetResponseFromJSON,
+    DocumentPublishGetResponseToJSON,
+    DocumentPublishRequestFromJSON,
+    DocumentPublishRequestToJSON,
     DocumentTranscribeRequestFromJSON,
     DocumentTranscribeRequestToJSON,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
+    DocumentUserAddRequestFromJSON,
+    DocumentUserAddRequestToJSON,
+    DocumentUserAuthorityResponseFromJSON,
+    DocumentUserAuthorityResponseToJSON,
+    DocumentUserDeleteRequestFromJSON,
+    DocumentUserDeleteRequestToJSON,
+    DocumentUserModifyRequestFromJSON,
+    DocumentUserModifyRequestToJSON,
+    DocumentUserRequestFromJSON,
+    DocumentUserRequestToJSON,
     GenerateDocumentPodcastRequestFromJSON,
     GenerateDocumentPodcastRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    InifiniteScrollPagnitionDocumentCollaboratorPublicInfoFromJSON,
+    InifiniteScrollPagnitionDocumentCollaboratorPublicInfoToJSON,
     InifiniteScrollPagnitionDocumentInfoFromJSON,
     InifiniteScrollPagnitionDocumentInfoToJSON,
     InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
@@ -95,6 +127,8 @@ import {
     LabelDeleteRequestToJSON,
     LabelSummaryResponseFromJSON,
     LabelSummaryResponseToJSON,
+    MineDocumentAuthorityRequestFromJSON,
+    MineDocumentAuthorityRequestToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
     ReadRequestFromJSON,
@@ -107,6 +141,8 @@ import {
     SearchDocumentNoteRequestToJSON,
     SearchMyStarDocumentsRequestFromJSON,
     SearchMyStarDocumentsRequestToJSON,
+    SearchPublicDocumentsRequestFromJSON,
+    SearchPublicDocumentsRequestToJSON,
     SearchRecentReadRequestFromJSON,
     SearchRecentReadRequestToJSON,
     SearchUnreadListRequestFromJSON,
@@ -123,6 +159,12 @@ import {
 
 export interface AddLabelDocumentLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface AskDocumentAiDocumentAskPostRequest {
+    documentAskRequest: DocumentAskRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -157,6 +199,12 @@ export interface DeleteDocumentDocumentDeletePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface DeleteDocumentUserDocumentUserDeletePostRequest {
+    documentUserDeleteRequest: DocumentUserDeleteRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface DeleteLabelDocumentLabelDeletePostRequest {
     labelDeleteRequest: LabelDeleteRequest;
     authorization?: string | null;
@@ -165,6 +213,36 @@ export interface DeleteLabelDocumentLabelDeletePostRequest {
 
 export interface DeleteNoteDocumentNoteDeletePostRequest {
     documentNoteDeleteRequest: DocumentNoteDeleteRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DocumentPublishGetRequestDocumentPublishGetPostRequest {
+    documentPublishGetRequest: DocumentPublishGetRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DocumentPublishRequestDocumentPublishPostRequest {
+    documentPublishRequest: DocumentPublishRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DocumentUserAddRequestDocumentUserAddPostRequest {
+    documentUserAddRequest: DocumentUserAddRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DocumentUserModifyRequestDocumentUserModifyPostRequest {
+    documentUserModifyRequest: DocumentUserModifyRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DocumentUserRequestDocumentUserPostRequest {
+    documentUserRequest: DocumentUserRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -188,6 +266,12 @@ export interface GetDocumentDetailDocumentDetailPostRequest {
 }
 
 export interface GetLabelSummaryDocumentLabelSummaryPostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface GetMineDocumentAuthorityDocumentMineAuthorityPostRequest {
+    mineDocumentAuthorityRequest: MineDocumentAuthorityRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -236,6 +320,10 @@ export interface SearchNoteDocumentNoteSearchPostRequest {
     searchDocumentNoteRequest: SearchDocumentNoteRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
+}
+
+export interface SearchPublicDocumentsDocumentPublicSearchPostRequest {
+    searchPublicDocumentsRequest: SearchPublicDocumentsRequest;
 }
 
 export interface SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest {
@@ -325,6 +413,65 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelDocumentLabelCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for askDocumentAiDocumentAskPost without sending the request
+     */
+    async askDocumentAiDocumentAskPostRequestOpts(requestParameters: AskDocumentAiDocumentAskPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentAskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentAskRequest',
+                'Required parameter "documentAskRequest" was null or undefined when calling askDocumentAiDocumentAskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/ask`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentAskRequestToJSON(requestParameters['documentAskRequest']),
+        };
+    }
+
+    /**
+     * Ask Document Ai
+     */
+    async askDocumentAiDocumentAskPostRaw(requestParameters: AskDocumentAiDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.askDocumentAiDocumentAskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ask Document Ai
+     */
+    async askDocumentAiDocumentAskPost(requestParameters: AskDocumentAiDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.askDocumentAiDocumentAskPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -604,6 +751,61 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for deleteDocumentUserDocumentUserDeletePost without sending the request
+     */
+    async deleteDocumentUserDocumentUserDeletePostRequestOpts(requestParameters: DeleteDocumentUserDocumentUserDeletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentUserDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentUserDeleteRequest',
+                'Required parameter "documentUserDeleteRequest" was null or undefined when calling deleteDocumentUserDocumentUserDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/user/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentUserDeleteRequestToJSON(requestParameters['documentUserDeleteRequest']),
+        };
+    }
+
+    /**
+     * Delete Document User
+     */
+    async deleteDocumentUserDocumentUserDeletePostRaw(requestParameters: DeleteDocumentUserDocumentUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteDocumentUserDocumentUserDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Document User
+     */
+    async deleteDocumentUserDocumentUserDeletePost(requestParameters: DeleteDocumentUserDocumentUserDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteDocumentUserDocumentUserDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for deleteLabelDocumentLabelDeletePost without sending the request
      */
     async deleteLabelDocumentLabelDeletePostRequestOpts(requestParameters: DeleteLabelDocumentLabelDeletePostRequest): Promise<runtime.RequestOpts> {
@@ -710,6 +912,281 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async deleteNoteDocumentNoteDeletePost(requestParameters: DeleteNoteDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteNoteDocumentNoteDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for documentPublishGetRequestDocumentPublishGetPost without sending the request
+     */
+    async documentPublishGetRequestDocumentPublishGetPostRequestOpts(requestParameters: DocumentPublishGetRequestDocumentPublishGetPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentPublishGetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentPublishGetRequest',
+                'Required parameter "documentPublishGetRequest" was null or undefined when calling documentPublishGetRequestDocumentPublishGetPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/publish/get`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentPublishGetRequestToJSON(requestParameters['documentPublishGetRequest']),
+        };
+    }
+
+    /**
+     * Document Publish Get Request
+     */
+    async documentPublishGetRequestDocumentPublishGetPostRaw(requestParameters: DocumentPublishGetRequestDocumentPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentPublishGetResponse>> {
+        const requestOptions = await this.documentPublishGetRequestDocumentPublishGetPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentPublishGetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Document Publish Get Request
+     */
+    async documentPublishGetRequestDocumentPublishGetPost(requestParameters: DocumentPublishGetRequestDocumentPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentPublishGetResponse> {
+        const response = await this.documentPublishGetRequestDocumentPublishGetPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for documentPublishRequestDocumentPublishPost without sending the request
+     */
+    async documentPublishRequestDocumentPublishPostRequestOpts(requestParameters: DocumentPublishRequestDocumentPublishPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentPublishRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentPublishRequest',
+                'Required parameter "documentPublishRequest" was null or undefined when calling documentPublishRequestDocumentPublishPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/publish`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentPublishRequestToJSON(requestParameters['documentPublishRequest']),
+        };
+    }
+
+    /**
+     * Document Publish Request
+     */
+    async documentPublishRequestDocumentPublishPostRaw(requestParameters: DocumentPublishRequestDocumentPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.documentPublishRequestDocumentPublishPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Document Publish Request
+     */
+    async documentPublishRequestDocumentPublishPost(requestParameters: DocumentPublishRequestDocumentPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.documentPublishRequestDocumentPublishPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for documentUserAddRequestDocumentUserAddPost without sending the request
+     */
+    async documentUserAddRequestDocumentUserAddPostRequestOpts(requestParameters: DocumentUserAddRequestDocumentUserAddPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentUserAddRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentUserAddRequest',
+                'Required parameter "documentUserAddRequest" was null or undefined when calling documentUserAddRequestDocumentUserAddPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/user/add`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentUserAddRequestToJSON(requestParameters['documentUserAddRequest']),
+        };
+    }
+
+    /**
+     * Document User Add Request
+     */
+    async documentUserAddRequestDocumentUserAddPostRaw(requestParameters: DocumentUserAddRequestDocumentUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.documentUserAddRequestDocumentUserAddPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Document User Add Request
+     */
+    async documentUserAddRequestDocumentUserAddPost(requestParameters: DocumentUserAddRequestDocumentUserAddPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.documentUserAddRequestDocumentUserAddPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for documentUserModifyRequestDocumentUserModifyPost without sending the request
+     */
+    async documentUserModifyRequestDocumentUserModifyPostRequestOpts(requestParameters: DocumentUserModifyRequestDocumentUserModifyPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentUserModifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentUserModifyRequest',
+                'Required parameter "documentUserModifyRequest" was null or undefined when calling documentUserModifyRequestDocumentUserModifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/user/modify`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentUserModifyRequestToJSON(requestParameters['documentUserModifyRequest']),
+        };
+    }
+
+    /**
+     * Document User Modify Request
+     */
+    async documentUserModifyRequestDocumentUserModifyPostRaw(requestParameters: DocumentUserModifyRequestDocumentUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.documentUserModifyRequestDocumentUserModifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Document User Modify Request
+     */
+    async documentUserModifyRequestDocumentUserModifyPost(requestParameters: DocumentUserModifyRequestDocumentUserModifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.documentUserModifyRequestDocumentUserModifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for documentUserRequestDocumentUserPost without sending the request
+     */
+    async documentUserRequestDocumentUserPostRequestOpts(requestParameters: DocumentUserRequestDocumentUserPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentUserRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentUserRequest',
+                'Required parameter "documentUserRequest" was null or undefined when calling documentUserRequestDocumentUserPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/user`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentUserRequestToJSON(requestParameters['documentUserRequest']),
+        };
+    }
+
+    /**
+     * Document User Request
+     */
+    async documentUserRequestDocumentUserPostRaw(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentCollaboratorPublicInfo>> {
+        const requestOptions = await this.documentUserRequestDocumentUserPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentCollaboratorPublicInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Document User Request
+     */
+    async documentUserRequestDocumentUserPost(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentCollaboratorPublicInfo> {
+        const response = await this.documentUserRequestDocumentUserPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -920,6 +1397,61 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async getLabelSummaryDocumentLabelSummaryPost(requestParameters: GetLabelSummaryDocumentLabelSummaryPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LabelSummaryResponse> {
         const response = await this.getLabelSummaryDocumentLabelSummaryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getMineDocumentAuthorityDocumentMineAuthorityPost without sending the request
+     */
+    async getMineDocumentAuthorityDocumentMineAuthorityPostRequestOpts(requestParameters: GetMineDocumentAuthorityDocumentMineAuthorityPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['mineDocumentAuthorityRequest'] == null) {
+            throw new runtime.RequiredError(
+                'mineDocumentAuthorityRequest',
+                'Required parameter "mineDocumentAuthorityRequest" was null or undefined when calling getMineDocumentAuthorityDocumentMineAuthorityPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/mine/authority`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MineDocumentAuthorityRequestToJSON(requestParameters['mineDocumentAuthorityRequest']),
+        };
+    }
+
+    /**
+     * Get Mine Document Authority
+     */
+    async getMineDocumentAuthorityDocumentMineAuthorityPostRaw(requestParameters: GetMineDocumentAuthorityDocumentMineAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentUserAuthorityResponse>> {
+        const requestOptions = await this.getMineDocumentAuthorityDocumentMineAuthorityPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentUserAuthorityResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Mine Document Authority
+     */
+    async getMineDocumentAuthorityDocumentMineAuthorityPost(requestParameters: GetMineDocumentAuthorityDocumentMineAuthorityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentUserAuthorityResponse> {
+        const response = await this.getMineDocumentAuthorityDocumentMineAuthorityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1340,6 +1872,53 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async searchNoteDocumentNoteSearchPost(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
         const response = await this.searchNoteDocumentNoteSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchPublicDocumentsDocumentPublicSearchPost without sending the request
+     */
+    async searchPublicDocumentsDocumentPublicSearchPostRequestOpts(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchPublicDocumentsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchPublicDocumentsRequest',
+                'Required parameter "searchPublicDocumentsRequest" was null or undefined when calling searchPublicDocumentsDocumentPublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/document/public/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchPublicDocumentsRequestToJSON(requestParameters['searchPublicDocumentsRequest']),
+        };
+    }
+
+    /**
+     * Search Public Documents
+     */
+    async searchPublicDocumentsDocumentPublicSearchPostRaw(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchPublicDocumentsDocumentPublicSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Public Documents
+     */
+    async searchPublicDocumentsDocumentPublicSearchPost(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.searchPublicDocumentsDocumentPublicSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

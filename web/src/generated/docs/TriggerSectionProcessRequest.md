@@ -7,6 +7,9 @@
 Name | Type
 ------------ | -------------
 `section_id` | number
+`model_id` | number
+`image_engine_id` | number
+`podcast_engine_id` | number
 
 ## Example
 
@@ -16,6 +19,9 @@ import type { TriggerSectionProcessRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "section_id": null,
+  "model_id": null,
+  "image_engine_id": null,
+  "podcast_engine_id": null,
 } satisfies TriggerSectionProcessRequest
 
 console.log(example)

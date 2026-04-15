@@ -56,7 +56,6 @@ class EngineProvided(Base):
     name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
     description_zh: Mapped[str | None] = mapped_column(String(500))
-    demo_config: Mapped[str | None] = mapped_column(String(2000))
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

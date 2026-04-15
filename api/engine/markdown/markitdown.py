@@ -24,8 +24,7 @@ class MarkitdownEngine(MarkdownEngineBase):
             engine_name_zh="Markitdown",
             engine_category=EngineCategory.Markdown,
             engine_description="Markitdown is a tool that converts file to Markdown.",
-            engine_description_zh="Markitdown 是一个将文件转换为 Markdown 的工具。",
-            engine_demo_config='{"openai_api_key": "sk-proj-******"}'
+            engine_description_zh="Markitdown 是一个将文件转换为 Markdown 的工具。"
         )
 
     async def analyse_website(

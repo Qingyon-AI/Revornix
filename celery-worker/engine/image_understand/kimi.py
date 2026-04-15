@@ -30,8 +30,7 @@ class KimiImageUnderstandEngine(ImageUnderstandEngineBase):
             engine_name_zh='Kimi 图像理解',
             engine_category=EngineCategory.IMAGE_UNDERSTAND,
             engine_description='Based on Kimi Image Understand Engine',
-            engine_description_zh='基于Kimi的图像理解引擎',
-            engine_demo_config='{"api_key": "", "base_url": "", "model_name": ""}'
+            engine_description_zh='基于Kimi的图像理解引擎'
         )
     
     def _normalize_for_markdown_description(self, text: str, max_length: int = 1000) -> str:

@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  BillingAuditResponse,
   CommunityEngineSearchRequest,
   EngineCreateRequest,
   EngineDeleteRequest,
@@ -25,12 +26,16 @@ import type {
   EngineProvidedSearchResponse,
   EngineUpdateRequest,
   HTTPValidationError,
+  ImageGenerateRequest,
+  ImageGenerateResponse,
   InifiniteScrollPagnitionEngineInfo,
   NormalResponse,
   UsableEngineSearchRequest,
   UsableEnginesResponse,
 } from '../models/index';
 import {
+    BillingAuditResponseFromJSON,
+    BillingAuditResponseToJSON,
     CommunityEngineSearchRequestFromJSON,
     CommunityEngineSearchRequestToJSON,
     EngineCreateRequestFromJSON,
@@ -51,6 +56,10 @@ import {
     EngineUpdateRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    ImageGenerateRequestFromJSON,
+    ImageGenerateRequestToJSON,
+    ImageGenerateResponseFromJSON,
+    ImageGenerateResponseToJSON,
     InifiniteScrollPagnitionEngineInfoFromJSON,
     InifiniteScrollPagnitionEngineInfoToJSON,
     NormalResponseFromJSON,
@@ -73,8 +82,19 @@ export interface DeleteEngineEngineDeletePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface GenerateImageWithDefaultEngineEngineImageGeneratePostRequest {
+    imageGenerateRequest: ImageGenerateRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface GetEngineDetailEngineDetailPostRequest {
     engineDetailRequest: EngineDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface InspectEngineBillingAuditEngineBillingAuditPostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -227,6 +247,61 @@ export class EngineApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for generateImageWithDefaultEngineEngineImageGeneratePost without sending the request
+     */
+    async generateImageWithDefaultEngineEngineImageGeneratePostRequestOpts(requestParameters: GenerateImageWithDefaultEngineEngineImageGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['imageGenerateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'imageGenerateRequest',
+                'Required parameter "imageGenerateRequest" was null or undefined when calling generateImageWithDefaultEngineEngineImageGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/engine/image-generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ImageGenerateRequestToJSON(requestParameters['imageGenerateRequest']),
+        };
+    }
+
+    /**
+     * Generate Image With Default Engine
+     */
+    async generateImageWithDefaultEngineEngineImageGeneratePostRaw(requestParameters: GenerateImageWithDefaultEngineEngineImageGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ImageGenerateResponse>> {
+        const requestOptions = await this.generateImageWithDefaultEngineEngineImageGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ImageGenerateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Image With Default Engine
+     */
+    async generateImageWithDefaultEngineEngineImageGeneratePost(requestParameters: GenerateImageWithDefaultEngineEngineImageGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ImageGenerateResponse> {
+        const response = await this.generateImageWithDefaultEngineEngineImageGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getEngineDetailEngineDetailPost without sending the request
      */
     async getEngineDetailEngineDetailPostRequestOpts(requestParameters: GetEngineDetailEngineDetailPostRequest): Promise<runtime.RequestOpts> {
@@ -278,6 +353,51 @@ export class EngineApi extends runtime.BaseAPI {
      */
     async getEngineDetailEngineDetailPost(requestParameters: GetEngineDetailEngineDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EngineDetail> {
         const response = await this.getEngineDetailEngineDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for inspectEngineBillingAuditEngineBillingAuditPost without sending the request
+     */
+    async inspectEngineBillingAuditEngineBillingAuditPostRequestOpts(requestParameters: InspectEngineBillingAuditEngineBillingAuditPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/engine/billing-audit`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Inspect Engine Billing Audit
+     */
+    async inspectEngineBillingAuditEngineBillingAuditPostRaw(requestParameters: InspectEngineBillingAuditEngineBillingAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BillingAuditResponse>> {
+        const requestOptions = await this.inspectEngineBillingAuditEngineBillingAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BillingAuditResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Inspect Engine Billing Audit
+     */
+    async inspectEngineBillingAuditEngineBillingAuditPost(requestParameters: InspectEngineBillingAuditEngineBillingAuditPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BillingAuditResponse> {
+        const response = await this.inspectEngineBillingAuditEngineBillingAuditPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

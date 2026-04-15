@@ -11,6 +11,10 @@ Name | Type
 `is_public` | boolean
 `engine_provided_id` | number
 `required_plan_level` | number
+`is_official_hosted` | boolean
+`billing_mode` | [EngineBillingMode](EngineBillingMode.md)
+`billing_unit_price` | number
+`compute_point_multiplier` | number
 `config_json` | string
 
 ## Example
@@ -25,6 +29,10 @@ const example = {
   "is_public": null,
   "engine_provided_id": null,
   "required_plan_level": null,
+  "is_official_hosted": null,
+  "billing_mode": null,
+  "billing_unit_price": null,
+  "compute_point_multiplier": null,
   "config_json": null,
 } satisfies EngineCreateRequest
 

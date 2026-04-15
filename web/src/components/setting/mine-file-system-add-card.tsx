@@ -266,7 +266,6 @@ const MineFileSystemAddCard = ({}: {}) => {
 									{selectedFileSystem ? (
 										<FileSystemConfigFields
 											fileSystemId={selectedFileSystem.id}
-											demoConfig={selectedFileSystem.demo_config}
 											value={configJson}
 											onChange={setConfigJson}
 										/>

@@ -24,14 +24,19 @@ export interface DocumentDetailRequest {
      * @type {number}
      * @memberof DocumentDetailRequest
      */
-    document_id: number;
+    document_id?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentDetailRequest
+     */
+    url?: string | null;
 }
 
 /**
  * Check if a given object implements the DocumentDetailRequest interface.
  */
 export function instanceOfDocumentDetailRequest(value: object): value is DocumentDetailRequest {
-    if (!('document_id' in value) || value['document_id'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +50,8 @@ export function DocumentDetailRequestFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'document_id': json['document_id'],
+        'document_id': json['document_id'] == null ? undefined : json['document_id'],
+        'url': json['url'] == null ? undefined : json['url'],
     };
 }
 
@@ -61,6 +67,7 @@ export function DocumentDetailRequestToJSONTyped(value?: DocumentDetailRequest |
     return {
         
         'document_id': value['document_id'],
+        'url': value['url'],
     };
 }
 

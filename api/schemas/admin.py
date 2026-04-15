@@ -10,7 +10,7 @@ from .notification import (
     NotificationTaskDetailRequest,
     UpdateNotificationTaskRequest,
 )
-from .section import SectionInfo
+from .section import SectionInfo, SectionPptPreview
 from enums.user import UserRole
 
 
@@ -260,3 +260,6 @@ class AdminAntiScrapeStatsResponse(BaseModel):
     timestamp: datetime
     summary: list[AdminAntiScrapeSummaryWindow]
     recentEvents: list[AdminAntiScrapeEvent]
+
+
+AdminSectionDetailResponse.model_rebuild()

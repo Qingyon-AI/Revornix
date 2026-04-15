@@ -6,7 +6,9 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 | [**createEngineEngineCreatePost**](EngineApi.md#createengineenginecreatepost) | **POST** /engine/create | Create Engine |
 | [**deleteEngineEngineDeletePost**](EngineApi.md#deleteengineenginedeletepost) | **POST** /engine/delete | Delete Engine |
+| [**generateImageWithDefaultEngineEngineImageGeneratePost**](EngineApi.md#generateimagewithdefaultengineengineimagegeneratepost) | **POST** /engine/image-generate | Generate Image With Default Engine |
 | [**getEngineDetailEngineDetailPost**](EngineApi.md#getenginedetailenginedetailpost) | **POST** /engine/detail | Get Engine Detail |
+| [**inspectEngineBillingAuditEngineBillingAuditPost**](EngineApi.md#inspectenginebillingauditenginebillingauditpost) | **POST** /engine/billing-audit | Inspect Engine Billing Audit |
 | [**installEngineEngineForkPost**](EngineApi.md#installengineengineforkpost) | **POST** /engine/fork | Install Engine |
 | [**provideDocumentParseEngineEngineProvidedPost**](EngineApi.md#providedocumentparseengineengineprovidedpost) | **POST** /engine/provided | Provide Document Parse Engine |
 | [**searchDocumentParseEngineEngineCommunityPost**](EngineApi.md#searchdocumentparseengineenginecommunitypost) | **POST** /engine/community | Search Document Parse Engine |
@@ -161,6 +163,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## generateImageWithDefaultEngineEngineImageGeneratePost
+
+> ImageGenerateResponse generateImageWithDefaultEngineEngineImageGeneratePost(imageGenerateRequest, authorization, xUserTimezone)
+
+Generate Image With Default Engine
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EngineApi,
+} from '';
+import type { GenerateImageWithDefaultEngineEngineImageGeneratePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new EngineApi();
+
+  const body = {
+    // ImageGenerateRequest
+    imageGenerateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GenerateImageWithDefaultEngineEngineImageGeneratePostRequest;
+
+  try {
+    const data = await api.generateImageWithDefaultEngineEngineImageGeneratePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **imageGenerateRequest** | [ImageGenerateRequest](ImageGenerateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**ImageGenerateResponse**](ImageGenerateResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getEngineDetailEngineDetailPost
 
 > EngineDetail getEngineDetailEngineDetailPost(engineDetailRequest, authorization, xUserTimezone)
@@ -221,6 +295,75 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## inspectEngineBillingAuditEngineBillingAuditPost
+
+> BillingAuditResponse inspectEngineBillingAuditEngineBillingAuditPost(authorization, xUserTimezone)
+
+Inspect Engine Billing Audit
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EngineApi,
+} from '';
+import type { InspectEngineBillingAuditEngineBillingAuditPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new EngineApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies InspectEngineBillingAuditEngineBillingAuditPostRequest;
+
+  try {
+    const data = await api.inspectEngineBillingAuditEngineBillingAuditPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**BillingAuditResponse**](BillingAuditResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 

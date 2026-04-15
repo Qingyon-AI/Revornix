@@ -18,33 +18,65 @@ import type {
   AllMySectionsResponse,
   ApiDocumentCreateRequest,
   CreateLabelResponse,
+  DaySectionRequest,
+  DaySectionResponse,
+  DocumentAiSummaryRequest,
+  DocumentAskRequest,
   DocumentCreateResponse,
   DocumentDeleteRequest,
   DocumentDetailRequest,
   DocumentDetailResponse,
+  DocumentEmbeddingRequest,
+  DocumentGraphGenerateRequest,
+  DocumentGraphRequest,
+  DocumentMarkdownConvertRequest,
+  DocumentMonthSummaryResponse,
+  DocumentNoteCreateRequest,
+  DocumentNoteDeleteRequest,
+  DocumentTranscribeRequest,
   DocumentUpdateRequest,
+  GenerateDocumentPodcastRequest,
+  GenerateSectionPodcastRequest,
+  GenerateSectionPptRequest,
+  GraphResponse,
   HTTPValidationError,
   InifiniteScrollPagnitionDocumentInfo,
+  InifiniteScrollPagnitionDocumentNoteInfo,
+  InifiniteScrollPagnitionSectionCommentInfo,
   InifiniteScrollPagnitionSectionDocumentInfo,
   InifiniteScrollPagnitionSectionInfo,
   LabelAddRequest,
   LabelDeleteRequest,
   NormalResponse,
+  RetrySectionDocumentRequest,
   SchemasDocumentLabelListResponse,
   SchemasSectionLabelListResponse,
   SearchAllMyDocumentsRequest,
+  SearchDocumentNoteRequest,
   SearchMineSectionsRequest,
+  SearchMyStarDocumentsRequest,
+  SearchPublicSectionsRequest,
+  SearchRecentReadRequest,
+  SearchSubscribedSectionRequest,
+  SearchUnreadListRequest,
+  SearchUserSectionsRequest,
+  SectionAskRequest,
+  SectionCommentCreateRequest,
+  SectionCommentDeleteRequest,
+  SectionCommentSearchRequest,
   SectionCreateRequest,
   SectionCreateResponse,
   SectionDeleteRequest,
   SectionDetailRequest,
   SectionDocumentRequest,
+  SectionGraphRequest,
   SectionInfo,
   SectionPublishGetRequest,
   SectionPublishGetResponse,
   SectionPublishRequest,
   SectionRePublishRequest,
   SectionUpdateRequest,
+  TriggerSectionProcessRequest,
   VectorSearchRequest,
   VectorSearchResponse,
 } from '../models/index';
@@ -55,6 +87,14 @@ import {
     ApiDocumentCreateRequestToJSON,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
+    DaySectionRequestFromJSON,
+    DaySectionRequestToJSON,
+    DaySectionResponseFromJSON,
+    DaySectionResponseToJSON,
+    DocumentAiSummaryRequestFromJSON,
+    DocumentAiSummaryRequestToJSON,
+    DocumentAskRequestFromJSON,
+    DocumentAskRequestToJSON,
     DocumentCreateResponseFromJSON,
     DocumentCreateResponseToJSON,
     DocumentDeleteRequestFromJSON,
@@ -63,12 +103,40 @@ import {
     DocumentDetailRequestToJSON,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
+    DocumentEmbeddingRequestFromJSON,
+    DocumentEmbeddingRequestToJSON,
+    DocumentGraphGenerateRequestFromJSON,
+    DocumentGraphGenerateRequestToJSON,
+    DocumentGraphRequestFromJSON,
+    DocumentGraphRequestToJSON,
+    DocumentMarkdownConvertRequestFromJSON,
+    DocumentMarkdownConvertRequestToJSON,
+    DocumentMonthSummaryResponseFromJSON,
+    DocumentMonthSummaryResponseToJSON,
+    DocumentNoteCreateRequestFromJSON,
+    DocumentNoteCreateRequestToJSON,
+    DocumentNoteDeleteRequestFromJSON,
+    DocumentNoteDeleteRequestToJSON,
+    DocumentTranscribeRequestFromJSON,
+    DocumentTranscribeRequestToJSON,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
+    GenerateDocumentPodcastRequestFromJSON,
+    GenerateDocumentPodcastRequestToJSON,
+    GenerateSectionPodcastRequestFromJSON,
+    GenerateSectionPodcastRequestToJSON,
+    GenerateSectionPptRequestFromJSON,
+    GenerateSectionPptRequestToJSON,
+    GraphResponseFromJSON,
+    GraphResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     InifiniteScrollPagnitionDocumentInfoFromJSON,
     InifiniteScrollPagnitionDocumentInfoToJSON,
+    InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
+    InifiniteScrollPagnitionDocumentNoteInfoToJSON,
+    InifiniteScrollPagnitionSectionCommentInfoFromJSON,
+    InifiniteScrollPagnitionSectionCommentInfoToJSON,
     InifiniteScrollPagnitionSectionDocumentInfoFromJSON,
     InifiniteScrollPagnitionSectionDocumentInfoToJSON,
     InifiniteScrollPagnitionSectionInfoFromJSON,
@@ -79,14 +147,38 @@ import {
     LabelDeleteRequestToJSON,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+    RetrySectionDocumentRequestFromJSON,
+    RetrySectionDocumentRequestToJSON,
     SchemasDocumentLabelListResponseFromJSON,
     SchemasDocumentLabelListResponseToJSON,
     SchemasSectionLabelListResponseFromJSON,
     SchemasSectionLabelListResponseToJSON,
     SearchAllMyDocumentsRequestFromJSON,
     SearchAllMyDocumentsRequestToJSON,
+    SearchDocumentNoteRequestFromJSON,
+    SearchDocumentNoteRequestToJSON,
     SearchMineSectionsRequestFromJSON,
     SearchMineSectionsRequestToJSON,
+    SearchMyStarDocumentsRequestFromJSON,
+    SearchMyStarDocumentsRequestToJSON,
+    SearchPublicSectionsRequestFromJSON,
+    SearchPublicSectionsRequestToJSON,
+    SearchRecentReadRequestFromJSON,
+    SearchRecentReadRequestToJSON,
+    SearchSubscribedSectionRequestFromJSON,
+    SearchSubscribedSectionRequestToJSON,
+    SearchUnreadListRequestFromJSON,
+    SearchUnreadListRequestToJSON,
+    SearchUserSectionsRequestFromJSON,
+    SearchUserSectionsRequestToJSON,
+    SectionAskRequestFromJSON,
+    SectionAskRequestToJSON,
+    SectionCommentCreateRequestFromJSON,
+    SectionCommentCreateRequestToJSON,
+    SectionCommentDeleteRequestFromJSON,
+    SectionCommentDeleteRequestToJSON,
+    SectionCommentSearchRequestFromJSON,
+    SectionCommentSearchRequestToJSON,
     SectionCreateRequestFromJSON,
     SectionCreateRequestToJSON,
     SectionCreateResponseFromJSON,
@@ -97,6 +189,8 @@ import {
     SectionDetailRequestToJSON,
     SectionDocumentRequestFromJSON,
     SectionDocumentRequestToJSON,
+    SectionGraphRequestFromJSON,
+    SectionGraphRequestToJSON,
     SectionInfoFromJSON,
     SectionInfoToJSON,
     SectionPublishGetRequestFromJSON,
@@ -109,6 +203,8 @@ import {
     SectionRePublishRequestToJSON,
     SectionUpdateRequestFromJSON,
     SectionUpdateRequestToJSON,
+    TriggerSectionProcessRequestFromJSON,
+    TriggerSectionProcessRequestToJSON,
     VectorSearchRequestFromJSON,
     VectorSearchRequestToJSON,
     VectorSearchResponseFromJSON,
@@ -121,14 +217,50 @@ export interface AddLabelTpSectionLabelCreatePostRequest {
     apiKey?: string | null;
 }
 
+export interface AskDocumentAiTpDocumentAskPostRequest {
+    documentAskRequest: DocumentAskRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface AskSectionAiTpSectionAskPostRequest {
+    sectionAskRequest: SectionAskRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface CreateAiSummaryTpDocumentAiSummaryPostRequest {
+    documentAiSummaryRequest: DocumentAiSummaryRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface CreateDocumentEmbeddingTpDocumentEmbeddingPostRequest {
+    documentEmbeddingRequest: DocumentEmbeddingRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface CreateDocumentLabelTpDocumentLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
 
+export interface CreateDocumentNoteTpDocumentNoteCreatePostRequest {
+    documentNoteCreateRequest: DocumentNoteCreateRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface CreateDocumentTpDocumentCreatePostRequest {
     apiDocumentCreateRequest: ApiDocumentCreateRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface CreateSectionCommentTpSectionCommentCreatePostRequest {
+    sectionCommentCreateRequest: SectionCommentCreateRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -145,8 +277,20 @@ export interface DeleteDocumentLabelTpDocumentLabelDeletePostRequest {
     apiKey?: string | null;
 }
 
+export interface DeleteDocumentNoteTpDocumentNoteDeletePostRequest {
+    documentNoteDeleteRequest: DocumentNoteDeleteRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface DeleteDocumentTpDocumentDeletePostRequest {
     documentDeleteRequest: DocumentDeleteRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface DeleteSectionCommentTpSectionCommentDeletePostRequest {
+    sectionCommentDeleteRequest: SectionCommentDeleteRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -163,6 +307,36 @@ export interface DeleteSectionTpSectionDeletePostRequest {
     apiKey?: string | null;
 }
 
+export interface DocumentGraphTpGraphDocumentPostRequest {
+    documentGraphRequest: DocumentGraphRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GenerateDocumentGraphTpDocumentGraphGeneratePostRequest {
+    documentGraphGenerateRequest: DocumentGraphGenerateRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GenerateDocumentPodcastTpDocumentPodcastGeneratePostRequest {
+    generateDocumentPodcastRequest: GenerateDocumentPodcastRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GenerateSectionPodcastTpSectionPodcastGeneratePostRequest {
+    generateSectionPodcastRequest: GenerateSectionPodcastRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GenerateSectionPptTpSectionPptGeneratePostRequest {
+    generateSectionPptRequest: GenerateSectionPptRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface GetAllMineSectionsTpSectionMineAllPostRequest {
     xUserTimezone?: string | null;
     apiKey?: string | null;
@@ -170,6 +344,17 @@ export interface GetAllMineSectionsTpSectionMineAllPostRequest {
 
 export interface GetDocumentDetailTpDocumentDetailPostRequest {
     documentDetailRequest: DocumentDetailRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GetDocumentMonthSummaryTpDocumentMonthSummaryPostRequest {
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GetSectionDateTpSectionDatePostRequest {
+    daySectionRequest: DaySectionRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -188,6 +373,12 @@ export interface GetSectionDocumentsTpSectionDocumentsPostRequest {
 
 export interface GetSectionPublishTpSectionPublishGetPostRequest {
     sectionPublishGetRequest: SectionPublishGetRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface GetSubscribedSectionsTpSectionSubscribedPostRequest {
+    searchSubscribedSectionRequest: SearchSubscribedSectionRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -214,8 +405,25 @@ export interface RepublishSectionTpSectionRepublishPostRequest {
     apiKey?: string | null;
 }
 
+export interface RetrySectionDocumentTpSectionDocumentRetryPostRequest {
+    retrySectionDocumentRequest: RetrySectionDocumentRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchDocumentNotesTpDocumentNoteSearchPostRequest {
+    searchDocumentNoteRequest: SearchDocumentNoteRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface SearchDocumentVectorTpDocumentVectorSearchPostRequest {
     vectorSearchRequest: VectorSearchRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchGraphTpGraphSearchPostRequest {
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -228,6 +436,66 @@ export interface SearchMineDocumentsTpDocumentSearchMinePostRequest {
 
 export interface SearchMineSectionsTpSectionMineSearchPostRequest {
     searchMineSectionsRequest: SearchMineSectionsRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchPublicSectionsTpSectionPublicSearchPostRequest {
+    searchPublicSectionsRequest: SearchPublicSectionsRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchRecentDocumentsTpDocumentRecentSearchPostRequest {
+    searchRecentReadRequest: SearchRecentReadRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchSectionCommentTpSectionCommentSearchPostRequest {
+    sectionCommentSearchRequest: SectionCommentSearchRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchStarDocumentsTpDocumentStarSearchPostRequest {
+    searchMyStarDocumentsRequest: SearchMyStarDocumentsRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest {
+    searchUnreadListRequest: SearchUnreadListRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SearchUserSectionsTpSectionUserSearchPostRequest {
+    searchUserSectionsRequest: SearchUserSectionsRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface SectionGraphTpGraphSectionPostRequest {
+    sectionGraphRequest: SectionGraphRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface TranscribeAudioDocumentTpDocumentTranscribePostRequest {
+    documentTranscribeRequest: DocumentTranscribeRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface TransformDocumentMarkdownTpDocumentMarkdownTransformPostRequest {
+    documentMarkdownConvertRequest: DocumentMarkdownConvertRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface TriggerSectionProcessTpSectionProcessTriggerPostRequest {
+    triggerSectionProcessRequest: TriggerSectionProcessRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -245,7 +513,7 @@ export interface UpdateSectionTpSectionUpdatePostRequest {
 }
 
 export interface UploadFileSystemTpFileUploadPostRequest {
-    file: Blob;
+    file: string;
     filePath: string;
     contentType: string;
     xUserTimezone?: string | null;
@@ -313,6 +581,234 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for askDocumentAiTpDocumentAskPost without sending the request
+     */
+    async askDocumentAiTpDocumentAskPostRequestOpts(requestParameters: AskDocumentAiTpDocumentAskPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentAskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentAskRequest',
+                'Required parameter "documentAskRequest" was null or undefined when calling askDocumentAiTpDocumentAskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/ask`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentAskRequestToJSON(requestParameters['documentAskRequest']),
+        };
+    }
+
+    /**
+     * Ask Document Ai
+     */
+    async askDocumentAiTpDocumentAskPostRaw(requestParameters: AskDocumentAiTpDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.askDocumentAiTpDocumentAskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ask Document Ai
+     */
+    async askDocumentAiTpDocumentAskPost(requestParameters: AskDocumentAiTpDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.askDocumentAiTpDocumentAskPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for askSectionAiTpSectionAskPost without sending the request
+     */
+    async askSectionAiTpSectionAskPostRequestOpts(requestParameters: AskSectionAiTpSectionAskPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionAskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionAskRequest',
+                'Required parameter "sectionAskRequest" was null or undefined when calling askSectionAiTpSectionAskPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/ask`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionAskRequestToJSON(requestParameters['sectionAskRequest']),
+        };
+    }
+
+    /**
+     * Ask Section Ai
+     */
+    async askSectionAiTpSectionAskPostRaw(requestParameters: AskSectionAiTpSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.askSectionAiTpSectionAskPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ask Section Ai
+     */
+    async askSectionAiTpSectionAskPost(requestParameters: AskSectionAiTpSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.askSectionAiTpSectionAskPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createAiSummaryTpDocumentAiSummaryPost without sending the request
+     */
+    async createAiSummaryTpDocumentAiSummaryPostRequestOpts(requestParameters: CreateAiSummaryTpDocumentAiSummaryPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentAiSummaryRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentAiSummaryRequest',
+                'Required parameter "documentAiSummaryRequest" was null or undefined when calling createAiSummaryTpDocumentAiSummaryPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/ai/summary`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentAiSummaryRequestToJSON(requestParameters['documentAiSummaryRequest']),
+        };
+    }
+
+    /**
+     * Create Ai Summary
+     */
+    async createAiSummaryTpDocumentAiSummaryPostRaw(requestParameters: CreateAiSummaryTpDocumentAiSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createAiSummaryTpDocumentAiSummaryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Ai Summary
+     */
+    async createAiSummaryTpDocumentAiSummaryPost(requestParameters: CreateAiSummaryTpDocumentAiSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createAiSummaryTpDocumentAiSummaryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createDocumentEmbeddingTpDocumentEmbeddingPost without sending the request
+     */
+    async createDocumentEmbeddingTpDocumentEmbeddingPostRequestOpts(requestParameters: CreateDocumentEmbeddingTpDocumentEmbeddingPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentEmbeddingRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentEmbeddingRequest',
+                'Required parameter "documentEmbeddingRequest" was null or undefined when calling createDocumentEmbeddingTpDocumentEmbeddingPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/embedding`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentEmbeddingRequestToJSON(requestParameters['documentEmbeddingRequest']),
+        };
+    }
+
+    /**
+     * Create Document Embedding
+     */
+    async createDocumentEmbeddingTpDocumentEmbeddingPostRaw(requestParameters: CreateDocumentEmbeddingTpDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createDocumentEmbeddingTpDocumentEmbeddingPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Document Embedding
+     */
+    async createDocumentEmbeddingTpDocumentEmbeddingPost(requestParameters: CreateDocumentEmbeddingTpDocumentEmbeddingPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createDocumentEmbeddingTpDocumentEmbeddingPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createDocumentLabelTpDocumentLabelCreatePost without sending the request
      */
     async createDocumentLabelTpDocumentLabelCreatePostRequestOpts(requestParameters: CreateDocumentLabelTpDocumentLabelCreatePostRequest): Promise<runtime.RequestOpts> {
@@ -368,6 +864,61 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for createDocumentNoteTpDocumentNoteCreatePost without sending the request
+     */
+    async createDocumentNoteTpDocumentNoteCreatePostRequestOpts(requestParameters: CreateDocumentNoteTpDocumentNoteCreatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentNoteCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentNoteCreateRequest',
+                'Required parameter "documentNoteCreateRequest" was null or undefined when calling createDocumentNoteTpDocumentNoteCreatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/note/create`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentNoteCreateRequestToJSON(requestParameters['documentNoteCreateRequest']),
+        };
+    }
+
+    /**
+     * Create Document Note
+     */
+    async createDocumentNoteTpDocumentNoteCreatePostRaw(requestParameters: CreateDocumentNoteTpDocumentNoteCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createDocumentNoteTpDocumentNoteCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Document Note
+     */
+    async createDocumentNoteTpDocumentNoteCreatePost(requestParameters: CreateDocumentNoteTpDocumentNoteCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createDocumentNoteTpDocumentNoteCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createDocumentTpDocumentCreatePost without sending the request
      */
     async createDocumentTpDocumentCreatePostRequestOpts(requestParameters: CreateDocumentTpDocumentCreatePostRequest): Promise<runtime.RequestOpts> {
@@ -419,6 +970,61 @@ export class TpApi extends runtime.BaseAPI {
      */
     async createDocumentTpDocumentCreatePost(requestParameters: CreateDocumentTpDocumentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCreateResponse> {
         const response = await this.createDocumentTpDocumentCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createSectionCommentTpSectionCommentCreatePost without sending the request
+     */
+    async createSectionCommentTpSectionCommentCreatePostRequestOpts(requestParameters: CreateSectionCommentTpSectionCommentCreatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentCreateRequest',
+                'Required parameter "sectionCommentCreateRequest" was null or undefined when calling createSectionCommentTpSectionCommentCreatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/comment/create`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentCreateRequestToJSON(requestParameters['sectionCommentCreateRequest']),
+        };
+    }
+
+    /**
+     * Create Section Comment
+     */
+    async createSectionCommentTpSectionCommentCreatePostRaw(requestParameters: CreateSectionCommentTpSectionCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createSectionCommentTpSectionCommentCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Section Comment
+     */
+    async createSectionCommentTpSectionCommentCreatePost(requestParameters: CreateSectionCommentTpSectionCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createSectionCommentTpSectionCommentCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -533,6 +1139,61 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for deleteDocumentNoteTpDocumentNoteDeletePost without sending the request
+     */
+    async deleteDocumentNoteTpDocumentNoteDeletePostRequestOpts(requestParameters: DeleteDocumentNoteTpDocumentNoteDeletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentNoteDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentNoteDeleteRequest',
+                'Required parameter "documentNoteDeleteRequest" was null or undefined when calling deleteDocumentNoteTpDocumentNoteDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/note/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentNoteDeleteRequestToJSON(requestParameters['documentNoteDeleteRequest']),
+        };
+    }
+
+    /**
+     * Delete Document Note
+     */
+    async deleteDocumentNoteTpDocumentNoteDeletePostRaw(requestParameters: DeleteDocumentNoteTpDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteDocumentNoteTpDocumentNoteDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Document Note
+     */
+    async deleteDocumentNoteTpDocumentNoteDeletePost(requestParameters: DeleteDocumentNoteTpDocumentNoteDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteDocumentNoteTpDocumentNoteDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for deleteDocumentTpDocumentDeletePost without sending the request
      */
     async deleteDocumentTpDocumentDeletePostRequestOpts(requestParameters: DeleteDocumentTpDocumentDeletePostRequest): Promise<runtime.RequestOpts> {
@@ -584,6 +1245,61 @@ export class TpApi extends runtime.BaseAPI {
      */
     async deleteDocumentTpDocumentDeletePost(requestParameters: DeleteDocumentTpDocumentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.deleteDocumentTpDocumentDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deleteSectionCommentTpSectionCommentDeletePost without sending the request
+     */
+    async deleteSectionCommentTpSectionCommentDeletePostRequestOpts(requestParameters: DeleteSectionCommentTpSectionCommentDeletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentDeleteRequest',
+                'Required parameter "sectionCommentDeleteRequest" was null or undefined when calling deleteSectionCommentTpSectionCommentDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/comment/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentDeleteRequestToJSON(requestParameters['sectionCommentDeleteRequest']),
+        };
+    }
+
+    /**
+     * Delete Section Comment
+     */
+    async deleteSectionCommentTpSectionCommentDeletePostRaw(requestParameters: DeleteSectionCommentTpSectionCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteSectionCommentTpSectionCommentDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Section Comment
+     */
+    async deleteSectionCommentTpSectionCommentDeletePost(requestParameters: DeleteSectionCommentTpSectionCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteSectionCommentTpSectionCommentDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -698,6 +1414,281 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for documentGraphTpGraphDocumentPost without sending the request
+     */
+    async documentGraphTpGraphDocumentPostRequestOpts(requestParameters: DocumentGraphTpGraphDocumentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentGraphRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentGraphRequest',
+                'Required parameter "documentGraphRequest" was null or undefined when calling documentGraphTpGraphDocumentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/graph/document`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentGraphRequestToJSON(requestParameters['documentGraphRequest']),
+        };
+    }
+
+    /**
+     * Document Graph
+     */
+    async documentGraphTpGraphDocumentPostRaw(requestParameters: DocumentGraphTpGraphDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.documentGraphTpGraphDocumentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Document Graph
+     */
+    async documentGraphTpGraphDocumentPost(requestParameters: DocumentGraphTpGraphDocumentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GraphResponse> {
+        const response = await this.documentGraphTpGraphDocumentPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateDocumentGraphTpDocumentGraphGeneratePost without sending the request
+     */
+    async generateDocumentGraphTpDocumentGraphGeneratePostRequestOpts(requestParameters: GenerateDocumentGraphTpDocumentGraphGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentGraphGenerateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentGraphGenerateRequest',
+                'Required parameter "documentGraphGenerateRequest" was null or undefined when calling generateDocumentGraphTpDocumentGraphGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/graph/generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentGraphGenerateRequestToJSON(requestParameters['documentGraphGenerateRequest']),
+        };
+    }
+
+    /**
+     * Generate Document Graph
+     */
+    async generateDocumentGraphTpDocumentGraphGeneratePostRaw(requestParameters: GenerateDocumentGraphTpDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generateDocumentGraphTpDocumentGraphGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Document Graph
+     */
+    async generateDocumentGraphTpDocumentGraphGeneratePost(requestParameters: GenerateDocumentGraphTpDocumentGraphGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generateDocumentGraphTpDocumentGraphGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateDocumentPodcastTpDocumentPodcastGeneratePost without sending the request
+     */
+    async generateDocumentPodcastTpDocumentPodcastGeneratePostRequestOpts(requestParameters: GenerateDocumentPodcastTpDocumentPodcastGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['generateDocumentPodcastRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generateDocumentPodcastRequest',
+                'Required parameter "generateDocumentPodcastRequest" was null or undefined when calling generateDocumentPodcastTpDocumentPodcastGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/podcast/generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GenerateDocumentPodcastRequestToJSON(requestParameters['generateDocumentPodcastRequest']),
+        };
+    }
+
+    /**
+     * Generate Document Podcast
+     */
+    async generateDocumentPodcastTpDocumentPodcastGeneratePostRaw(requestParameters: GenerateDocumentPodcastTpDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generateDocumentPodcastTpDocumentPodcastGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Document Podcast
+     */
+    async generateDocumentPodcastTpDocumentPodcastGeneratePost(requestParameters: GenerateDocumentPodcastTpDocumentPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generateDocumentPodcastTpDocumentPodcastGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateSectionPodcastTpSectionPodcastGeneratePost without sending the request
+     */
+    async generateSectionPodcastTpSectionPodcastGeneratePostRequestOpts(requestParameters: GenerateSectionPodcastTpSectionPodcastGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['generateSectionPodcastRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generateSectionPodcastRequest',
+                'Required parameter "generateSectionPodcastRequest" was null or undefined when calling generateSectionPodcastTpSectionPodcastGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/podcast/generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GenerateSectionPodcastRequestToJSON(requestParameters['generateSectionPodcastRequest']),
+        };
+    }
+
+    /**
+     * Generate Section Podcast
+     */
+    async generateSectionPodcastTpSectionPodcastGeneratePostRaw(requestParameters: GenerateSectionPodcastTpSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generateSectionPodcastTpSectionPodcastGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Section Podcast
+     */
+    async generateSectionPodcastTpSectionPodcastGeneratePost(requestParameters: GenerateSectionPodcastTpSectionPodcastGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generateSectionPodcastTpSectionPodcastGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateSectionPptTpSectionPptGeneratePost without sending the request
+     */
+    async generateSectionPptTpSectionPptGeneratePostRequestOpts(requestParameters: GenerateSectionPptTpSectionPptGeneratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['generateSectionPptRequest'] == null) {
+            throw new runtime.RequiredError(
+                'generateSectionPptRequest',
+                'Required parameter "generateSectionPptRequest" was null or undefined when calling generateSectionPptTpSectionPptGeneratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/ppt/generate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GenerateSectionPptRequestToJSON(requestParameters['generateSectionPptRequest']),
+        };
+    }
+
+    /**
+     * Generate Section Ppt
+     */
+    async generateSectionPptTpSectionPptGeneratePostRaw(requestParameters: GenerateSectionPptTpSectionPptGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.generateSectionPptTpSectionPptGeneratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Generate Section Ppt
+     */
+    async generateSectionPptTpSectionPptGeneratePost(requestParameters: GenerateSectionPptTpSectionPptGeneratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.generateSectionPptTpSectionPptGeneratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getAllMineSectionsTpSectionMineAllPost without sending the request
      */
     async getAllMineSectionsTpSectionMineAllPostRequestOpts(requestParameters: GetAllMineSectionsTpSectionMineAllPostRequest): Promise<runtime.RequestOpts> {
@@ -794,6 +1785,106 @@ export class TpApi extends runtime.BaseAPI {
      */
     async getDocumentDetailTpDocumentDetailPost(requestParameters: GetDocumentDetailTpDocumentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentDetailResponse> {
         const response = await this.getDocumentDetailTpDocumentDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getDocumentMonthSummaryTpDocumentMonthSummaryPost without sending the request
+     */
+    async getDocumentMonthSummaryTpDocumentMonthSummaryPostRequestOpts(requestParameters: GetDocumentMonthSummaryTpDocumentMonthSummaryPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/month/summary`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Get Document Month Summary
+     */
+    async getDocumentMonthSummaryTpDocumentMonthSummaryPostRaw(requestParameters: GetDocumentMonthSummaryTpDocumentMonthSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentMonthSummaryResponse>> {
+        const requestOptions = await this.getDocumentMonthSummaryTpDocumentMonthSummaryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentMonthSummaryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Document Month Summary
+     */
+    async getDocumentMonthSummaryTpDocumentMonthSummaryPost(requestParameters: GetDocumentMonthSummaryTpDocumentMonthSummaryPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentMonthSummaryResponse> {
+        const response = await this.getDocumentMonthSummaryTpDocumentMonthSummaryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getSectionDateTpSectionDatePost without sending the request
+     */
+    async getSectionDateTpSectionDatePostRequestOpts(requestParameters: GetSectionDateTpSectionDatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['daySectionRequest'] == null) {
+            throw new runtime.RequiredError(
+                'daySectionRequest',
+                'Required parameter "daySectionRequest" was null or undefined when calling getSectionDateTpSectionDatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/date`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DaySectionRequestToJSON(requestParameters['daySectionRequest']),
+        };
+    }
+
+    /**
+     * Get Section Date
+     */
+    async getSectionDateTpSectionDatePostRaw(requestParameters: GetSectionDateTpSectionDatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DaySectionResponse>> {
+        const requestOptions = await this.getSectionDateTpSectionDatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DaySectionResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Section Date
+     */
+    async getSectionDateTpSectionDatePost(requestParameters: GetSectionDateTpSectionDatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DaySectionResponse> {
+        const response = await this.getSectionDateTpSectionDatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -959,6 +2050,61 @@ export class TpApi extends runtime.BaseAPI {
      */
     async getSectionPublishTpSectionPublishGetPost(requestParameters: GetSectionPublishTpSectionPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionPublishGetResponse> {
         const response = await this.getSectionPublishTpSectionPublishGetPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getSubscribedSectionsTpSectionSubscribedPost without sending the request
+     */
+    async getSubscribedSectionsTpSectionSubscribedPostRequestOpts(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchSubscribedSectionRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchSubscribedSectionRequest',
+                'Required parameter "searchSubscribedSectionRequest" was null or undefined when calling getSubscribedSectionsTpSectionSubscribedPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/subscribed`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSubscribedSectionRequestToJSON(requestParameters['searchSubscribedSectionRequest']),
+        };
+    }
+
+    /**
+     * Get Subscribed Sections
+     */
+    async getSubscribedSectionsTpSectionSubscribedPostRaw(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.getSubscribedSectionsTpSectionSubscribedPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Subscribed Sections
+     */
+    async getSubscribedSectionsTpSectionSubscribedPost(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+        const response = await this.getSubscribedSectionsTpSectionSubscribedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1163,6 +2309,116 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for retrySectionDocumentTpSectionDocumentRetryPost without sending the request
+     */
+    async retrySectionDocumentTpSectionDocumentRetryPostRequestOpts(requestParameters: RetrySectionDocumentTpSectionDocumentRetryPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['retrySectionDocumentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'retrySectionDocumentRequest',
+                'Required parameter "retrySectionDocumentRequest" was null or undefined when calling retrySectionDocumentTpSectionDocumentRetryPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/document/retry`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RetrySectionDocumentRequestToJSON(requestParameters['retrySectionDocumentRequest']),
+        };
+    }
+
+    /**
+     * Retry Section Document
+     */
+    async retrySectionDocumentTpSectionDocumentRetryPostRaw(requestParameters: RetrySectionDocumentTpSectionDocumentRetryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.retrySectionDocumentTpSectionDocumentRetryPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Retry Section Document
+     */
+    async retrySectionDocumentTpSectionDocumentRetryPost(requestParameters: RetrySectionDocumentTpSectionDocumentRetryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.retrySectionDocumentTpSectionDocumentRetryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchDocumentNotesTpDocumentNoteSearchPost without sending the request
+     */
+    async searchDocumentNotesTpDocumentNoteSearchPostRequestOpts(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchDocumentNoteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchDocumentNoteRequest',
+                'Required parameter "searchDocumentNoteRequest" was null or undefined when calling searchDocumentNotesTpDocumentNoteSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/note/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchDocumentNoteRequestToJSON(requestParameters['searchDocumentNoteRequest']),
+        };
+    }
+
+    /**
+     * Search Document Notes
+     */
+    async searchDocumentNotesTpDocumentNoteSearchPostRaw(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+        const requestOptions = await this.searchDocumentNotesTpDocumentNoteSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Document Notes
+     */
+    async searchDocumentNotesTpDocumentNoteSearchPost(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
+        const response = await this.searchDocumentNotesTpDocumentNoteSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for searchDocumentVectorTpDocumentVectorSearchPost without sending the request
      */
     async searchDocumentVectorTpDocumentVectorSearchPostRequestOpts(requestParameters: SearchDocumentVectorTpDocumentVectorSearchPostRequest): Promise<runtime.RequestOpts> {
@@ -1214,6 +2470,51 @@ export class TpApi extends runtime.BaseAPI {
      */
     async searchDocumentVectorTpDocumentVectorSearchPost(requestParameters: SearchDocumentVectorTpDocumentVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VectorSearchResponse> {
         const response = await this.searchDocumentVectorTpDocumentVectorSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchGraphTpGraphSearchPost without sending the request
+     */
+    async searchGraphTpGraphSearchPostRequestOpts(requestParameters: SearchGraphTpGraphSearchPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/graph/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Search Graph
+     */
+    async searchGraphTpGraphSearchPostRaw(requestParameters: SearchGraphTpGraphSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.searchGraphTpGraphSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Graph
+     */
+    async searchGraphTpGraphSearchPost(requestParameters: SearchGraphTpGraphSearchPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GraphResponse> {
+        const response = await this.searchGraphTpGraphSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1324,6 +2625,556 @@ export class TpApi extends runtime.BaseAPI {
      */
     async searchMineSectionsTpSectionMineSearchPost(requestParameters: SearchMineSectionsTpSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
         const response = await this.searchMineSectionsTpSectionMineSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchPublicSectionsTpSectionPublicSearchPost without sending the request
+     */
+    async searchPublicSectionsTpSectionPublicSearchPostRequestOpts(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchPublicSectionsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchPublicSectionsRequest',
+                'Required parameter "searchPublicSectionsRequest" was null or undefined when calling searchPublicSectionsTpSectionPublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/public/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchPublicSectionsRequestToJSON(requestParameters['searchPublicSectionsRequest']),
+        };
+    }
+
+    /**
+     * Search Public Sections
+     */
+    async searchPublicSectionsTpSectionPublicSearchPostRaw(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.searchPublicSectionsTpSectionPublicSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Public Sections
+     */
+    async searchPublicSectionsTpSectionPublicSearchPost(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+        const response = await this.searchPublicSectionsTpSectionPublicSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchRecentDocumentsTpDocumentRecentSearchPost without sending the request
+     */
+    async searchRecentDocumentsTpDocumentRecentSearchPostRequestOpts(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchRecentReadRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchRecentReadRequest',
+                'Required parameter "searchRecentReadRequest" was null or undefined when calling searchRecentDocumentsTpDocumentRecentSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/recent/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchRecentReadRequestToJSON(requestParameters['searchRecentReadRequest']),
+        };
+    }
+
+    /**
+     * Search Recent Documents
+     */
+    async searchRecentDocumentsTpDocumentRecentSearchPostRaw(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchRecentDocumentsTpDocumentRecentSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Recent Documents
+     */
+    async searchRecentDocumentsTpDocumentRecentSearchPost(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.searchRecentDocumentsTpDocumentRecentSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchSectionCommentTpSectionCommentSearchPost without sending the request
+     */
+    async searchSectionCommentTpSectionCommentSearchPostRequestOpts(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentSearchRequest',
+                'Required parameter "sectionCommentSearchRequest" was null or undefined when calling searchSectionCommentTpSectionCommentSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/comment/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentSearchRequestToJSON(requestParameters['sectionCommentSearchRequest']),
+        };
+    }
+
+    /**
+     * Search Section Comment
+     */
+    async searchSectionCommentTpSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
+        const requestOptions = await this.searchSectionCommentTpSectionCommentSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Section Comment
+     */
+    async searchSectionCommentTpSectionCommentSearchPost(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionCommentInfo> {
+        const response = await this.searchSectionCommentTpSectionCommentSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchStarDocumentsTpDocumentStarSearchPost without sending the request
+     */
+    async searchStarDocumentsTpDocumentStarSearchPostRequestOpts(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchMyStarDocumentsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchMyStarDocumentsRequest',
+                'Required parameter "searchMyStarDocumentsRequest" was null or undefined when calling searchStarDocumentsTpDocumentStarSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/star/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchMyStarDocumentsRequestToJSON(requestParameters['searchMyStarDocumentsRequest']),
+        };
+    }
+
+    /**
+     * Search Star Documents
+     */
+    async searchStarDocumentsTpDocumentStarSearchPostRaw(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchStarDocumentsTpDocumentStarSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Star Documents
+     */
+    async searchStarDocumentsTpDocumentStarSearchPost(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.searchStarDocumentsTpDocumentStarSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchUnreadDocumentsTpDocumentUnreadSearchPost without sending the request
+     */
+    async searchUnreadDocumentsTpDocumentUnreadSearchPostRequestOpts(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchUnreadListRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchUnreadListRequest',
+                'Required parameter "searchUnreadListRequest" was null or undefined when calling searchUnreadDocumentsTpDocumentUnreadSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/unread/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchUnreadListRequestToJSON(requestParameters['searchUnreadListRequest']),
+        };
+    }
+
+    /**
+     * Search Unread Documents
+     */
+    async searchUnreadDocumentsTpDocumentUnreadSearchPostRaw(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+        const requestOptions = await this.searchUnreadDocumentsTpDocumentUnreadSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Unread Documents
+     */
+    async searchUnreadDocumentsTpDocumentUnreadSearchPost(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+        const response = await this.searchUnreadDocumentsTpDocumentUnreadSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchUserSectionsTpSectionUserSearchPost without sending the request
+     */
+    async searchUserSectionsTpSectionUserSearchPostRequestOpts(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchUserSectionsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchUserSectionsRequest',
+                'Required parameter "searchUserSectionsRequest" was null or undefined when calling searchUserSectionsTpSectionUserSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/user/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchUserSectionsRequestToJSON(requestParameters['searchUserSectionsRequest']),
+        };
+    }
+
+    /**
+     * Search User Sections
+     */
+    async searchUserSectionsTpSectionUserSearchPostRaw(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+        const requestOptions = await this.searchUserSectionsTpSectionUserSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search User Sections
+     */
+    async searchUserSectionsTpSectionUserSearchPost(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+        const response = await this.searchUserSectionsTpSectionUserSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for sectionGraphTpGraphSectionPost without sending the request
+     */
+    async sectionGraphTpGraphSectionPostRequestOpts(requestParameters: SectionGraphTpGraphSectionPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionGraphRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionGraphRequest',
+                'Required parameter "sectionGraphRequest" was null or undefined when calling sectionGraphTpGraphSectionPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/graph/section`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionGraphRequestToJSON(requestParameters['sectionGraphRequest']),
+        };
+    }
+
+    /**
+     * Section Graph
+     */
+    async sectionGraphTpGraphSectionPostRaw(requestParameters: SectionGraphTpGraphSectionPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GraphResponse>> {
+        const requestOptions = await this.sectionGraphTpGraphSectionPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GraphResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Section Graph
+     */
+    async sectionGraphTpGraphSectionPost(requestParameters: SectionGraphTpGraphSectionPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GraphResponse> {
+        const response = await this.sectionGraphTpGraphSectionPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for transcribeAudioDocumentTpDocumentTranscribePost without sending the request
+     */
+    async transcribeAudioDocumentTpDocumentTranscribePostRequestOpts(requestParameters: TranscribeAudioDocumentTpDocumentTranscribePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentTranscribeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentTranscribeRequest',
+                'Required parameter "documentTranscribeRequest" was null or undefined when calling transcribeAudioDocumentTpDocumentTranscribePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/transcribe`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentTranscribeRequestToJSON(requestParameters['documentTranscribeRequest']),
+        };
+    }
+
+    /**
+     * Transcribe Audio Document
+     */
+    async transcribeAudioDocumentTpDocumentTranscribePostRaw(requestParameters: TranscribeAudioDocumentTpDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.transcribeAudioDocumentTpDocumentTranscribePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Transcribe Audio Document
+     */
+    async transcribeAudioDocumentTpDocumentTranscribePost(requestParameters: TranscribeAudioDocumentTpDocumentTranscribePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.transcribeAudioDocumentTpDocumentTranscribePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for transformDocumentMarkdownTpDocumentMarkdownTransformPost without sending the request
+     */
+    async transformDocumentMarkdownTpDocumentMarkdownTransformPostRequestOpts(requestParameters: TransformDocumentMarkdownTpDocumentMarkdownTransformPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentMarkdownConvertRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentMarkdownConvertRequest',
+                'Required parameter "documentMarkdownConvertRequest" was null or undefined when calling transformDocumentMarkdownTpDocumentMarkdownTransformPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/markdown/transform`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentMarkdownConvertRequestToJSON(requestParameters['documentMarkdownConvertRequest']),
+        };
+    }
+
+    /**
+     * Transform Document Markdown
+     */
+    async transformDocumentMarkdownTpDocumentMarkdownTransformPostRaw(requestParameters: TransformDocumentMarkdownTpDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.transformDocumentMarkdownTpDocumentMarkdownTransformPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Transform Document Markdown
+     */
+    async transformDocumentMarkdownTpDocumentMarkdownTransformPost(requestParameters: TransformDocumentMarkdownTpDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.transformDocumentMarkdownTpDocumentMarkdownTransformPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for triggerSectionProcessTpSectionProcessTriggerPost without sending the request
+     */
+    async triggerSectionProcessTpSectionProcessTriggerPostRequestOpts(requestParameters: TriggerSectionProcessTpSectionProcessTriggerPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['triggerSectionProcessRequest'] == null) {
+            throw new runtime.RequiredError(
+                'triggerSectionProcessRequest',
+                'Required parameter "triggerSectionProcessRequest" was null or undefined when calling triggerSectionProcessTpSectionProcessTriggerPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/section/process/trigger`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TriggerSectionProcessRequestToJSON(requestParameters['triggerSectionProcessRequest']),
+        };
+    }
+
+    /**
+     * Trigger Section Process
+     */
+    async triggerSectionProcessTpSectionProcessTriggerPostRaw(requestParameters: TriggerSectionProcessTpSectionProcessTriggerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.triggerSectionProcessTpSectionProcessTriggerPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Trigger Section Process
+     */
+    async triggerSectionProcessTpSectionProcessTriggerPost(requestParameters: TriggerSectionProcessTpSectionProcessTriggerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.triggerSectionProcessTpSectionProcessTriggerPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1482,8 +3333,6 @@ export class TpApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
-        // use FormData to transmit files using content-type "multipart/form-data"
-        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {

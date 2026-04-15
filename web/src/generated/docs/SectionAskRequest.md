@@ -9,6 +9,7 @@ Name | Type
 `section_id` | number
 `messages` | [Array&lt;ChatItem&gt;](ChatItem.md)
 `enable_mcp` | boolean
+`model_id` | number
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "section_id": null,
   "messages": null,
   "enable_mcp": null,
+  "model_id": null,
 } satisfies SectionAskRequest
 
 console.log(example)

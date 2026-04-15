@@ -48,12 +48,6 @@ export interface UserFileSystemDetail {
      * @type {string}
      * @memberof UserFileSystemDetail
      */
-    demo_config?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFileSystemDetail
-     */
     config_json?: string | null;
     /**
      * 
@@ -95,7 +89,6 @@ export function UserFileSystemDetailFromJSONTyped(json: any, ignoreDiscriminator
         'file_system_id': json['file_system_id'],
         'title': json['title'],
         'description': json['description'] == null ? undefined : json['description'],
-        'demo_config': json['demo_config'] == null ? undefined : json['demo_config'],
         'config_json': json['config_json'] == null ? undefined : json['config_json'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
@@ -117,7 +110,6 @@ export function UserFileSystemDetailToJSONTyped(value?: UserFileSystemDetail | n
         'file_system_id': value['file_system_id'],
         'title': value['title'],
         'description': value['description'],
-        'demo_config': value['demo_config'],
         'config_json': value['config_json'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),

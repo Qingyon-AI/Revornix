@@ -25,6 +25,12 @@ export interface GenerateDocumentPodcastRequest {
      * @memberof GenerateDocumentPodcastRequest
      */
     document_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GenerateDocumentPodcastRequest
+     */
+    engine_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function GenerateDocumentPodcastRequestFromJSONTyped(json: any, ignoreDis
     return {
         
         'document_id': json['document_id'],
+        'engine_id': json['engine_id'] == null ? undefined : json['engine_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function GenerateDocumentPodcastRequestToJSONTyped(value?: GenerateDocume
     return {
         
         'document_id': value['document_id'],
+        'engine_id': value['engine_id'],
     };
 }
 

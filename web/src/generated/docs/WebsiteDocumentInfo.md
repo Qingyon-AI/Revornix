@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `url` | string
+`latest_snapshot_time` | Date
+`snapshot_count` | number
 
 ## Example
 
@@ -16,6 +18,8 @@ import type { WebsiteDocumentInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "url": null,
+  "latest_snapshot_time": null,
+  "snapshot_count": null,
 } satisfies WebsiteDocumentInfo
 
 console.log(example)

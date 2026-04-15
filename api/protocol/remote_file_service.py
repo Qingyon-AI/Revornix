@@ -11,7 +11,6 @@ class RemoteFileServiceProtocol():
         file_service_name_zh: str, 
         file_service_description: str | None = None, 
         file_service_description_zh: str | None = None, 
-        file_service_demo_config: str | None = None,
         file_service_config: str | None = None,
         user_id: int | None = None
     ):
@@ -20,7 +19,6 @@ class RemoteFileServiceProtocol():
         self.file_service_name_zh = file_service_name_zh
         self.file_service_description = file_service_description
         self.file_service_description_zh = file_service_description_zh
-        self.file_service_demo_config = file_service_demo_config
         self.file_service_config = file_service_config
         self.user_id = user_id
         

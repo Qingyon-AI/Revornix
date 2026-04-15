@@ -1,0 +1,62 @@
+
+# AdminUpdateNotificationTaskRequest
+
+
+## Properties
+
+Name | Type
+------------ | -------------
+`notification_task_id` | number
+`title` | string
+`content_type` | number
+`enable` | boolean
+`notification_template_id` | number
+`trigger_type` | number
+`trigger_scheduler_cron` | string
+`trigger_event_id` | number
+`notification_title` | string
+`notification_content` | string
+`notification_link` | string
+`notification_cover` | string
+`notification_source_id` | number
+`notification_target_id` | number
+`user_id` | number
+
+## Example
+
+```typescript
+import type { AdminUpdateNotificationTaskRequest } from ''
+
+// TODO: Update the object below with actual values
+const example = {
+  "notification_task_id": null,
+  "title": null,
+  "content_type": null,
+  "enable": null,
+  "notification_template_id": null,
+  "trigger_type": null,
+  "trigger_scheduler_cron": null,
+  "trigger_event_id": null,
+  "notification_title": null,
+  "notification_content": null,
+  "notification_link": null,
+  "notification_cover": null,
+  "notification_source_id": null,
+  "notification_target_id": null,
+  "user_id": null,
+} satisfies AdminUpdateNotificationTaskRequest
+
+console.log(example)
+
+// Convert the instance to a JSON string
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
+
+// Parse the JSON string back to an object
+const exampleParsed = JSON.parse(exampleJSON) as AdminUpdateNotificationTaskRequest
+console.log(exampleParsed)
+```
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

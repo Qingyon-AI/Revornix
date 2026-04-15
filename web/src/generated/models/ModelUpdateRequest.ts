@@ -103,3 +103,4 @@ export function ModelUpdateRequestToJSONTyped(value?: ModelUpdateRequest | null,
         'compute_point_multiplier': value['compute_point_multiplier'],
     };
 }
+

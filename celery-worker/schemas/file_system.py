@@ -38,7 +38,6 @@ class FileSystemInfo(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
-    demo_config: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -50,7 +49,6 @@ class UserFileSystemInfo(BaseModel):
     file_system_id: int
     title: str
     description: str | None = None
-    demo_config: str | None = None
     create_time: datetime
     update_time: datetime | None
 
@@ -64,7 +62,6 @@ class UserFileSystemDetail(BaseModel):
     file_system_id: int
     title: str
     description: str | None = None
-    demo_config: str | None = None
     config_json: str | None = None
     create_time: datetime
     update_time: datetime | None

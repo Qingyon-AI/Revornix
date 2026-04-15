@@ -148,7 +148,6 @@ def get_user_file_system_info(
         file_system_id=db_user_file_system.file_system_id,
         title=db_user_file_system.title,
         description=db_user_file_system.description,
-        demo_config=db_file_system.demo_config,
         create_time=db_user_file_system.create_time,
         update_time=db_user_file_system.update_time
     )
@@ -181,7 +180,6 @@ def search_mine_file_system(
             description=db_user_file_system.description,
             create_time=db_user_file_system.create_time,
             update_time=db_user_file_system.update_time,
-            demo_config=db_file_system.demo_config
         )
         res.append(item)
     return schemas.file_system.MineFileSystemSearchResponse(data=res)

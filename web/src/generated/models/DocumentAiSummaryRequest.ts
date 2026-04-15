@@ -25,6 +25,12 @@ export interface DocumentAiSummaryRequest {
      * @memberof DocumentAiSummaryRequest
      */
     document_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DocumentAiSummaryRequest
+     */
+    model_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function DocumentAiSummaryRequestFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'document_id': json['document_id'],
+        'model_id': json['model_id'] == null ? undefined : json['model_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function DocumentAiSummaryRequestToJSONTyped(value?: DocumentAiSummaryReq
     return {
         
         'document_id': value['document_id'],
+        'model_id': value['model_id'],
     };
 }
 

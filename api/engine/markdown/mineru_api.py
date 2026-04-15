@@ -58,8 +58,7 @@ class MineruApiEngine(MarkdownEngineBase):
             ),
             engine_description_zh=(
                 "MinerU API 是 MinerU官方提供的AI驱动的文件解析器，可以将网页、PDF、图片等文件解析为 Markdown 格式并且较好地保留原来的排版。"
-            ),
-            engine_demo_config='{"token": "******", "uid": "******"}',
+            )
         )
 
     def _require_engine_config(self) -> tuple[str, str]:

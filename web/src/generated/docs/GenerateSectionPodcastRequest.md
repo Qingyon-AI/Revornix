@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `section_id` | number
+`engine_id` | number
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { GenerateSectionPodcastRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "section_id": null,
+  "engine_id": null,
 } satisfies GenerateSectionPodcastRequest
 
 console.log(example)

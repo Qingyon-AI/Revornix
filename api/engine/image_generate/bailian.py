@@ -43,11 +43,6 @@ class BailianImageGenerateEngine(ImageGenerateEngineBase):
             engine_category=EngineCategory.IMAGE_GENERATE,
             engine_description="Based on Alibaba Cloud Bailian Qwen-Image generation API",
             engine_description_zh="基于阿里云百炼 Qwen-Image 接口的图像生成引擎",
-            engine_demo_config=(
-                '{"api_key":"","base_url":"https://dashscope.aliyuncs.com",'
-                '"model_name":"qwen-image-2.0","size":"2048*2048",'
-                '"negative_prompt":"","prompt_extend":true,"watermark":false}'
-            ),
         )
 
     def generate_image(

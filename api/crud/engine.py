@@ -21,7 +21,6 @@ def create_engine_provided(
     name_zh: str,
     description: str | None = None,
     description_zh: str | None = None,
-    demo_config: str | None = None
 ):
     now = datetime.now(timezone.utc)
     db_engine_provided = models.engine.EngineProvided(
@@ -31,7 +30,6 @@ def create_engine_provided(
         name_zh=name_zh,
         description=description,
         description_zh=description_zh,
-        demo_config=demo_config,
         create_time=now
     )
     db.add(db_engine_provided)

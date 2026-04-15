@@ -25,6 +25,12 @@ export interface DocumentGraphGenerateRequest {
      * @memberof DocumentGraphGenerateRequest
      */
     document_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DocumentGraphGenerateRequest
+     */
+    model_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function DocumentGraphGenerateRequestFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'document_id': json['document_id'],
+        'model_id': json['model_id'] == null ? undefined : json['model_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function DocumentGraphGenerateRequestToJSONTyped(value?: DocumentGraphGen
     return {
         
         'document_id': value['document_id'],
+        'model_id': value['model_id'],
     };
 }
 

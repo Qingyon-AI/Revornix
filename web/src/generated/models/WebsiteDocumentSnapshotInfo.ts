@@ -12,56 +12,60 @@
  * Do not edit the class manually.
  */
 
+import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface WebsiteDocumentSnapshotInfo
  */
 export interface WebsiteDocumentSnapshotInfo {
     /**
-     *
+     * 
      * @type {number}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     id: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     url: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     title?: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     description?: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     cover?: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     md_file_name?: string | null;
     /**
-     *
+     * 
      * @type {Date}
      * @memberof WebsiteDocumentSnapshotInfo
      */
     create_time: Date;
 }
 
+/**
+ * Check if a given object implements the WebsiteDocumentSnapshotInfo interface.
+ */
 export function instanceOfWebsiteDocumentSnapshotInfo(value: object): value is WebsiteDocumentSnapshotInfo {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('url' in value) || value['url'] === undefined) return false;
@@ -78,6 +82,7 @@ export function WebsiteDocumentSnapshotInfoFromJSONTyped(json: any, ignoreDiscri
         return json;
     }
     return {
+        
         'id': json['id'],
         'url': json['url'],
         'title': json['title'] == null ? undefined : json['title'],
@@ -98,6 +103,7 @@ export function WebsiteDocumentSnapshotInfoToJSONTyped(value?: WebsiteDocumentSn
     }
 
     return {
+        
         'id': value['id'],
         'url': value['url'],
         'title': value['title'],
@@ -107,3 +113,4 @@ export function WebsiteDocumentSnapshotInfoToJSONTyped(value?: WebsiteDocumentSn
         'create_time': value['create_time'].toISOString(),
     };
 }
+

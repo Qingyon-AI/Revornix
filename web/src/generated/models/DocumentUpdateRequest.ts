@@ -111,3 +111,4 @@ export function DocumentUpdateRequestToJSONTyped(value?: DocumentUpdateRequest |
         'content': value['content'],
     };
 }
+

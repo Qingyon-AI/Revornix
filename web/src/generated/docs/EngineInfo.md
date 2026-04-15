@@ -13,6 +13,10 @@ Name | Type
 `description` | string
 `is_public` | boolean
 `required_plan_level` | number
+`is_official_hosted` | boolean
+`billing_mode` | number
+`billing_unit_price` | number
+`compute_point_multiplier` | number
 `subscription_required` | boolean
 `create_time` | Date
 `update_time` | Date
@@ -34,6 +38,10 @@ const example = {
   "description": null,
   "is_public": null,
   "required_plan_level": null,
+  "is_official_hosted": null,
+  "billing_mode": null,
+  "billing_unit_price": null,
+  "compute_point_multiplier": null,
   "subscription_required": null,
   "create_time": null,
   "update_time": null,

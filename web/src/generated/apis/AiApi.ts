@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  BillingAuditResponse,
   ChatMessages,
   DeleteModelProviderRequest,
   DeleteModelRequest,
@@ -37,6 +38,8 @@ import type {
   NormalResponse,
 } from '../models/index';
 import {
+    BillingAuditResponseFromJSON,
+    BillingAuditResponseToJSON,
     ChatMessagesFromJSON,
     ChatMessagesToJSON,
     DeleteModelProviderRequestFromJSON,
@@ -123,6 +126,11 @@ export interface GetAiModelAiModelDetailPostRequest {
 
 export interface GetAiModelProviderAiModelProviderDetailPostRequest {
     modelProviderRequest: ModelProviderRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface InspectModelBillingAuditAiModelBillingAuditPostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -599,6 +607,51 @@ export class AiApi extends runtime.BaseAPI {
      */
     async getAiModelProviderAiModelProviderDetailPost(requestParameters: GetAiModelProviderAiModelProviderDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelProviderDetail> {
         const response = await this.getAiModelProviderAiModelProviderDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for inspectModelBillingAuditAiModelBillingAuditPost without sending the request
+     */
+    async inspectModelBillingAuditAiModelBillingAuditPostRequestOpts(requestParameters: InspectModelBillingAuditAiModelBillingAuditPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/ai/model/billing-audit`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Inspect Model Billing Audit
+     */
+    async inspectModelBillingAuditAiModelBillingAuditPostRaw(requestParameters: InspectModelBillingAuditAiModelBillingAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BillingAuditResponse>> {
+        const requestOptions = await this.inspectModelBillingAuditAiModelBillingAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BillingAuditResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Inspect Model Billing Audit
+     */
+    async inspectModelBillingAuditAiModelBillingAuditPost(requestParameters: InspectModelBillingAuditAiModelBillingAuditPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BillingAuditResponse> {
+        const response = await this.inspectModelBillingAuditAiModelBillingAuditPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

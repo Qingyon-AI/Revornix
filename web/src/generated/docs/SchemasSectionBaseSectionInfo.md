@@ -11,6 +11,8 @@ Name | Type
 `description` | string
 `authority` | [UserSectionAuthority](UserSectionAuthority.md)
 `publish_uuid` | string
+`is_day_section` | boolean
+`day_section_date` | string
 
 ## Example
 
@@ -24,6 +26,8 @@ const example = {
   "description": null,
   "authority": null,
   "publish_uuid": null,
+  "is_day_section": null,
+  "day_section_date": null,
 } satisfies SchemasSectionBaseSectionInfo
 
 console.log(example)

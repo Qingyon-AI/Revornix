@@ -11,8 +11,7 @@ class JinaEngine(MarkdownEngineBase):
             engine_name='Jina',
             engine_name_zh='Jina',
             engine_description='Jina is an AI-powered web scraping engine that can help you quickly find the information you want.',
-            engine_description_zh='Jina 是一个的 AI 驱动的网页抓取引擎，它可以帮助你快速地找到你想要的信息。',
-            engine_demo_config='{"api_key": "jina_******"}'
+            engine_description_zh='Jina 是一个的 AI 驱动的网页抓取引擎，它可以帮助你快速地找到你想要的信息。'
         )
 
     async def analyse_website(

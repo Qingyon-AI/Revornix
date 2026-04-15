@@ -7,7 +7,6 @@ class EngineProtocol(Protocol):
     engine_category: int
     engine_description: str | None
     engine_description_zh: str | None
-    engine_demo_config: str | None
     engine_config: str | None
     user_id: int | None
 

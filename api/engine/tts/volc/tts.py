@@ -1,19 +1,31 @@
-import uuid
-import time
 import json
-import websockets
+import time
+import uuid
+from typing import Any
+
 import httpx
+import websockets
 import crud
-from enums.engine_enums import EngineProvided, EngineCategory
-from pydantic import AnyUrl
-from engine.tts.volc.protocol import start_connection, wait_for_event, start_session, MsgType, EventType, finish_connection, finish_session, receive_message
-from common.langfuse import langfuse
 from langfuse import propagate_attributes
+from pydantic import AnyUrl
+
+from base_implement.tts_engine_base import TTSEngineBase
 from common.ai import generate_podcast_dialogue_turns
+from common.langfuse import langfuse
 from common.logger import exception_logger, info_logger
 from common.usage_billing import persist_engine_usage
-from base_implement.tts_engine_base import TTSEngineBase
 from data.sql.base import session_scope
+from engine.tts.volc.protocol import (
+    EventType,
+    MsgType,
+    finish_connection,
+    finish_session,
+    receive_message,
+    start_connection,
+    start_session,
+    wait_for_event,
+)
+from enums.engine_enums import EngineCategory, EngineProvided
 
 
 DEFAULT_VOLC_PODCAST_BASE_URL = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts"
@@ -26,11 +38,16 @@ DEFAULT_VOLC_AUDIO_CONFIG = {
     "sample_rate": 24000,
     "speech_rate": 0,
 }
+DEFAULT_VOLC_WAIT_EVENT_TYPES = {
+    MsgType.FullServerResponse,
+    MsgType.AudioOnlyServer,
+}
+DEFAULT_MAX_RETRIES = 3
+
 
 class VolcTTSEngine(TTSEngineBase):
-    """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014
-    """
-    
+    """此引擎使用的是字节跳动的播客TTS引擎，具体文档参照https://www.volcengine.com/docs/6561/1668014"""
+
     def __init__(self):
         super().__init__(
             engine_uuid=EngineProvided.Volc_TTS.meta.uuid,
@@ -39,37 +56,24 @@ class VolcTTSEngine(TTSEngineBase):
             engine_category=EngineCategory.TTS,
             engine_description="DouBao Podcast TTS, based on ByteDance's DouBao large model podcast generation engine.",
             engine_description_zh="豆包播客，基于字节跳动的豆包大模型的播客生成引擎。",
-            engine_demo_config=json.dumps(
-                {
-                    "appid": "",
-                    "access_token": "",
-                    "base_url": DEFAULT_VOLC_PODCAST_BASE_URL,
-                    "generation_mode": "prompt",
-                    "speaker_info": {
-                        "speakers": DEFAULT_VOLC_PODCAST_SPEAKERS,
-                    },
-                    "audio_config": DEFAULT_VOLC_AUDIO_CONFIG,
-                    "use_head_music": True,
-                    "use_tail_music": False,
-                    "aigc_watermark": False,
-                },
-                ensure_ascii=False,
-            )
         )
 
-    def _resolve_base_url(self, config: dict) -> str:
+    def _resolve_base_url(self, config: dict[str, Any]) -> str:
         return str(config.get("base_url") or DEFAULT_VOLC_PODCAST_BASE_URL)
 
-    def _resolve_generation_mode(self, config: dict) -> str:
+    def _resolve_generation_action(self, config: dict[str, Any]) -> int:
         raw_action = config.get("action")
-        if raw_action in {3, "3"}:
-            return "dialogue"
-        raw_mode = str(config.get("generation_mode") or "prompt").strip().lower()
-        if raw_mode in {"dialogue", "ai_dialogue", "action3"}:
-            return "dialogue"
-        return "prompt"
+        if raw_action in {0, "0", 3, "3", 4, "4"}:
+            return int(raw_action)
 
-    def _resolve_audio_config(self, config: dict) -> dict:
+        raw_mode = str(config.get("generation_mode") or "summary").strip().lower()
+        if raw_mode in {"dialogue", "ai_dialogue", "action3"}:
+            return 3
+        if raw_mode in {"prompt", "topic", "web", "network", "network_summary", "action4"}:
+            return 4
+        return 0
+
+    def _resolve_audio_config(self, config: dict[str, Any]) -> dict[str, Any]:
         audio_config = dict(DEFAULT_VOLC_AUDIO_CONFIG)
         raw_audio_config = config.get("audio_config")
         if isinstance(raw_audio_config, dict):
@@ -79,7 +83,7 @@ class VolcTTSEngine(TTSEngineBase):
                     audio_config[key] = value
         return audio_config
 
-    def _resolve_speakers(self, config: dict) -> list[str]:
+    def _resolve_speakers(self, config: dict[str, Any]) -> list[str]:
         raw_speaker_info = config.get("speaker_info")
         if isinstance(raw_speaker_info, dict):
             raw_speakers = raw_speaker_info.get("speakers")
@@ -93,7 +97,7 @@ class VolcTTSEngine(TTSEngineBase):
                     return speakers
         return list(DEFAULT_VOLC_PODCAST_SPEAKERS)
 
-    def _resolve_dialogue_model_id(self, config: dict) -> int:
+    def _resolve_dialogue_model_id(self, config: dict[str, Any]) -> int:
         raw_dialogue_model_id = config.get("dialogue_model_id")
         if raw_dialogue_model_id not in (None, ""):
             try:
@@ -117,10 +121,88 @@ class VolcTTSEngine(TTSEngineBase):
         finally:
             db.close()
 
+    def _resolve_max_retries(self, config: dict[str, Any]) -> int:
+        raw_max_retries = config.get("max_retries")
+        if raw_max_retries in (None, ""):
+            return DEFAULT_MAX_RETRIES
+        try:
+            return max(1, int(raw_max_retries))
+        except (TypeError, ValueError) as e:
+            raise Exception("The max_retries in Volc TTS engine config is invalid") from e
+
+    def _resolve_input_info(self, config: dict[str, Any]) -> dict[str, Any]:
+        input_info: dict[str, Any] = {"return_audio_url": True}
+        raw_input_info = config.get("input_info")
+        if isinstance(raw_input_info, dict):
+            input_info.update(
+                {
+                    key: value
+                    for key, value in raw_input_info.items()
+                    if key != "only_nlp_text" and value is not None
+                }
+            )
+        return input_info
+
+    def _resolve_speaker_additions(self, config: dict[str, Any]) -> dict[str, str]:
+        raw_speaker_additions = config.get("speaker_additions")
+        raw_speaker_info = config.get("speaker_info")
+        if isinstance(raw_speaker_info, dict) and isinstance(raw_speaker_info.get("speaker_additions"), dict):
+            raw_speaker_additions = raw_speaker_info.get("speaker_additions")
+
+        additions: dict[str, str] = {}
+        if not isinstance(raw_speaker_additions, dict):
+            return additions
+
+        for speaker_id, value in raw_speaker_additions.items():
+            normalized_speaker_id = str(speaker_id).strip()
+            if not normalized_speaker_id or value in (None, ""):
+                continue
+            if isinstance(value, str):
+                additions[normalized_speaker_id] = value
+            else:
+                additions[normalized_speaker_id] = json.dumps(value, ensure_ascii=False)
+        return additions
+
+    def _resolve_speaker_info(self, config: dict[str, Any], *, for_dialogue: bool) -> dict[str, Any]:
+        raw_speaker_info = config.get("speaker_info")
+        speaker_info: dict[str, Any] = {}
+        if isinstance(raw_speaker_info, dict):
+            if raw_speaker_info.get("random_order") is not None:
+                speaker_info["random_order"] = bool(raw_speaker_info.get("random_order"))
+
+        speaker_info["speakers"] = self._resolve_speakers(config)
+
+        speaker_additions = self._resolve_speaker_additions(config)
+        if speaker_additions:
+            speaker_info["speaker_additions"] = speaker_additions
+
+        if for_dialogue:
+            speaker_info["random_order"] = False
+        elif "random_order" not in speaker_info:
+            speaker_info["random_order"] = True
+
+        return speaker_info
+
+    def _looks_like_url(self, text: str) -> bool:
+        candidate = text.strip().lower()
+        return candidate.startswith("http://") or candidate.startswith("https://")
+
+    def _merge_extra_body(self, req_params: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
+        raw_extra_body = config.get("extra_body")
+        if not isinstance(raw_extra_body, dict):
+            return req_params
+
+        for key, value in raw_extra_body.items():
+            if isinstance(value, dict) and isinstance(req_params.get(key), dict):
+                req_params[key].update(value)
+            else:
+                req_params[key] = value
+        return req_params
+
     async def _build_action3_dialogue_turns(
         self,
         *,
-        config: dict,
+        config: dict[str, Any],
         text: str,
     ) -> list[dict[str, str]]:
         if self.user_id is None:
@@ -141,221 +223,253 @@ class VolcTTSEngine(TTSEngineBase):
     def _build_request_payload(
         self,
         *,
-        config: dict,
+        config: dict[str, Any],
         text: str,
-    ) -> dict:
-        generation_mode = self._resolve_generation_mode(config)
+    ) -> dict[str, Any]:
+        action = self._resolve_generation_action(config)
         audio_config = self._resolve_audio_config(config)
-        use_head_music = bool(config.get("use_head_music", True))
-        use_tail_music = bool(config.get("use_tail_music", False))
-        aigc_watermark = bool(config.get("aigc_watermark", False))
-        speaker_info = {
-            "speakers": self._resolve_speakers(config),
-        }
+        input_info = self._resolve_input_info(config)
 
-        req_params: dict = {
+        req_params: dict[str, Any] = {
             "input_id": str(time.time()),
-            "use_head_music": use_head_music,
-            "use_tail_music": use_tail_music,
-            "aigc_watermark": aigc_watermark,
+            "action": action,
+            "use_head_music": bool(config.get("use_head_music", True)),
+            "use_tail_music": bool(config.get("use_tail_music", False)),
+            "aigc_watermark": bool(config.get("aigc_watermark", False)),
             "audio_config": audio_config,
-            "input_info": {
-                "return_audio_url": True,
-            },
         }
-
-        raw_input_info = config.get("input_info")
-        if isinstance(raw_input_info, dict):
-            req_params["input_info"].update(
-                {
-                    key: value
-                    for key, value in raw_input_info.items()
-                    if key != "only_nlp_text"
-                }
-            )
-            req_params["input_info"]["return_audio_url"] = True
 
         raw_aigc_metadata = config.get("aigc_metadata")
         if isinstance(raw_aigc_metadata, dict):
             req_params["aigc_metadata"] = raw_aigc_metadata
 
-        if generation_mode == "dialogue":
-            req_params["action"] = 3
-            req_params["speaker_info"] = {
-                "random_order": False,
-                "speakers": speaker_info["speakers"],
-            }
-            return req_params
+        raw_scene = config.get("scene")
+        if raw_scene not in (None, ""):
+            req_params["scene"] = str(raw_scene)
 
-        req_params["action"] = 4
-        req_params["prompt_text"] = f"Create a podcast about: {text}"
-        req_params["scene"] = str(config.get("scene") or "deep_research")
+        if action == 3:
+            req_params["speaker_info"] = self._resolve_speaker_info(config, for_dialogue=True)
+            return self._merge_extra_body(req_params, config)
 
-        raw_speaker_info = config.get("speaker_info")
-        if isinstance(raw_speaker_info, dict) and raw_speaker_info.get("speakers"):
-            req_params["speaker_info"] = {
-                "random_order": bool(raw_speaker_info.get("random_order", True)),
-                "speakers": speaker_info["speakers"],
-            }
-        return req_params
-        
-    async def synthesize(
-        self, 
-        text: str
-    ) -> bytes:
+        if action == 4:
+            req_params["prompt_text"] = text.strip()
+            speaker_info = self._resolve_speaker_info(config, for_dialogue=False)
+            if speaker_info.get("speakers"):
+                req_params["speaker_info"] = speaker_info
+            req_params["input_info"] = input_info
+            return self._merge_extra_body(req_params, config)
+
+        input_url = input_info.get("input_url")
+        if not input_url and self._looks_like_url(text):
+            input_url = text.strip()
+            input_info["input_url"] = input_url
+
+        if not input_url:
+            req_params["input_text"] = text
+        req_params["input_info"] = input_info
+
+        speaker_info = self._resolve_speaker_info(config, for_dialogue=False)
+        if speaker_info.get("speakers"):
+            req_params["speaker_info"] = speaker_info
+
+        return self._merge_extra_body(req_params, config)
+
+    def _build_retry_payload(
+        self,
+        *,
+        req_params: dict[str, Any],
+        task_id: str,
+        last_finished_round_id: int,
+    ) -> dict[str, Any]:
+        retry_payload = dict(req_params)
+        retry_payload["retry_info"] = {
+            "retry_task_id": task_id,
+            "last_finished_round_id": last_finished_round_id,
+        }
+        return retry_payload
+
+    def _accumulate_usage(
+        self,
+        *,
+        token_usage_info: dict[str, int],
+        payload: bytes,
+        gen: Any,
+    ) -> None:
+        data = json.loads(payload.decode("utf-8"))
+        usage = data.get("usage") or {}
+        input_text_tokens = int(usage.get("input_text_tokens") or 0)
+        output_audio_tokens = int(usage.get("output_audio_tokens") or 0)
+        token_usage_info["input_text_tokens"] += input_text_tokens
+        token_usage_info["output_audio_tokens"] += output_audio_tokens
+        gen.update(
+            output="",
+            usage_details={
+                "input_text_tokens": token_usage_info["input_text_tokens"],
+                "output_audio_tokens": token_usage_info["output_audio_tokens"],
+            },
+        )
+
+    async def synthesize(self, text: str) -> bytes:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
-        if not config.get('appid') or not config.get('access_token'):
+        if not config.get("appid") or not config.get("access_token"):
             raise Exception("The user's configuration of this engine is not complete.")
-        
         if self.user_id is None:
             raise Exception("The user_id is not set.")
 
-        final_audio_url: AnyUrl | None = None
-        last_error: Exception | None = None
-        
-        websocket = None
-        
         headers = {
-            "X-Api-App-Id": config.get('appid'),
+            "X-Api-App-Id": config.get("appid"),
             "X-Api-App-Key": "aGjiRDfUWi",
-            "X-Api-Access-Key": config.get('access_token'),
-            "X-Api-Resource-Id": 'volc.service_type.10050',
+            "X-Api-Access-Key": config.get("access_token"),
+            "X-Api-Resource-Id": "volc.service_type.10050",
             "X-Api-Request-Id": str(uuid.uuid4()),
         }
-        
-        is_podcast_round_end = False  # 标志当前轮是否结束
-        last_round_id = -1  # 上一轮的轮次ID
-        task_id = ""  # 任务ID
-        retry_num = 3  # 重试次数
-        current_round = 0  # 当前轮次ID
-        token_usage_info: dict[str, int] = {
-            "input_text_tokens": 0,
-            "output_audio_tokens": 0
-        }  # Token消耗使用信息
+
+        req_params = self._build_request_payload(config=config, text=text)
+        if req_params.get("action") == 3:
+            req_params["nlp_texts"] = await self._build_action3_dialogue_turns(
+                config=config,
+                text=text,
+            )
+            info_logger.info(
+                f"event=volc_podcast_dialogue_generated user_id={self.user_id} "
+                f"turns={len(req_params['nlp_texts'])} generation_mode=dialogue"
+            )
+
+        final_audio_url: AnyUrl | None = None
+        last_error: Exception | None = None
+        token_usage_info = {"input_text_tokens": 0, "output_audio_tokens": 0}
+        completed_audio_chunks: list[bytes] = []
+        current_round_audio_chunks: list[bytes] = []
+        task_id = ""
+        current_round = -1
+        last_finished_round_id = -1
+        max_retries = self._resolve_max_retries(config)
 
         with langfuse.start_as_current_observation(as_type="generation", name="tts-call", model="volc-podcast") as gen:
-            with propagate_attributes(
-                user_id=str(self.user_id),
-                tags=['model:volc-podcast']
-            ):
-                try:
-                    gen.update(
-                        input=text
-                    )
-                    req_params = self._build_request_payload(
-                        config=config,
-                        text=text,
-                    )
-                    if req_params.get("action") == 3:
-                        req_params["nlp_texts"] = await self._build_action3_dialogue_turns(
-                            config=config,
-                            text=text,
+            with propagate_attributes(user_id=str(self.user_id), tags=["model:volc-podcast"]):
+                gen.update(input=text)
+                for attempt in range(1, max_retries + 1):
+                    websocket = None
+                    round_completed = True
+                    session_finished = False
+                    current_round_audio_chunks = []
+                    try:
+                        attempt_payload = dict(req_params)
+                        if task_id and last_finished_round_id >= 0:
+                            attempt_payload = self._build_retry_payload(
+                                req_params=req_params,
+                                task_id=task_id,
+                                last_finished_round_id=last_finished_round_id,
+                            )
+
+                        websocket = await websockets.connect(
+                            self._resolve_base_url(config),
+                            additional_headers=headers,
                         )
-                        info_logger.info(
-                            f"event=volc_podcast_dialogue_generated user_id={self.user_id} "
-                            f"turns={len(req_params['nlp_texts'])} "
-                            f"generation_mode=dialogue"
-                        )
-                    # 建立WebSocket连接	client<----------->server
-                    websocket = await websockets.connect(
-                        self._resolve_base_url(config),
-                        additional_headers=headers
-                    )
-                    while retry_num > 0:
-                        if task_id and not is_podcast_round_end:
-                            req_params["retry_info"] = {
-                                "retry_task_id": task_id,
-                                "last_finished_round_id": last_round_id
-                            }
-                        # Start connection [event=1] -----------> server
                         await start_connection(websocket)
-                        # Connection started [event=50] <---------- server
                         await wait_for_event(
                             websocket,
-                            MsgType.FullServerResponse,
-                            EventType.ConnectionStarted
+                            DEFAULT_VOLC_WAIT_EVENT_TYPES,
+                            EventType.ConnectionStarted,
                         )
+
                         session_id = str(uuid.uuid4())
                         if not task_id:
                             task_id = session_id
-                        # Start session [event=100] -----------> server
+
                         await start_session(
                             websocket,
-                            json.dumps(req_params).encode(),
-                            session_id
+                            json.dumps(attempt_payload, ensure_ascii=False).encode("utf-8"),
+                            session_id,
                         )
-                        # Session started [event=150] <---------- server
                         await wait_for_event(
                             websocket,
-                            MsgType.FullServerResponse,
-                            EventType.SessionStarted
+                            DEFAULT_VOLC_WAIT_EVENT_TYPES,
+                            EventType.SessionStarted,
                         )
-                        # Finish session [event=102] -----------> server
                         await finish_session(websocket, session_id)
+
                         while True:
-                            # 接收响应内容
                             msg = await receive_message(websocket)
                             if msg.type == MsgType.Error:
-                                # 错误信息
-                                raise RuntimeError(f"Server error: {msg.payload.decode()}")
-                            elif msg.type == MsgType.FullServerResponse:
-                                # 播客开始
-                                if msg.event == EventType.PodcastRoundStart:
-                                    data = json.loads(msg.payload.decode().encode("utf-8"))
-                                    current_round = data.get("round_id")
-                                    is_podcast_round_end = False
-                                    # info_logger.info(f"Podcast round end, round_id: {current_round}, message: {data}")
-                                # 播客结束
-                                if msg.event == EventType.PodcastRoundEnd:
-                                    is_podcast_round_end = True
-                                    last_round_id = current_round
-                                    continue
+                                error_message = msg.payload.decode("utf-8", "ignore")
+                                raise RuntimeError(f"Server error [{msg.error_code}]: {error_message}")
+
+                            if msg.event == EventType.PodcastRoundStart:
+                                round_meta = json.loads(msg.payload.decode("utf-8")) if msg.payload else {}
+                                current_round = int(round_meta.get("round_id", -1))
+                                current_round_audio_chunks = []
+                                round_completed = False
+                                continue
+
+                            if msg.event == EventType.PodcastRoundResponse:
+                                if msg.payload:
+                                    current_round_audio_chunks.append(msg.payload)
+                                continue
+
+                            if msg.event == EventType.PodcastRoundEnd:
+                                round_meta = json.loads(msg.payload.decode("utf-8")) if msg.payload else {}
+                                if round_meta.get("is_error"):
+                                    raise RuntimeError(
+                                        f"Podcast round {current_round} failed: {round_meta.get('error_msg') or 'unknown error'}"
+                                    )
+                                completed_audio_chunks.extend(current_round_audio_chunks)
+                                current_round_audio_chunks = []
+                                last_finished_round_id = current_round
+                                round_completed = True
+                                continue
+
                             if msg.event == EventType.PodcastEnd:
-                                # 播客总结性的信息，表示播客结束（注意如果你开启了音频链接返回，那么这段数据中是包含音频下载链接的）
-                                data = json.loads(msg.payload.decode().encode("utf-8"))
-                                audio_url: str = data.get('meta_info').get("audio_url")
-                                final_audio_url = AnyUrl(audio_url)
+                                data = json.loads(msg.payload.decode("utf-8")) if msg.payload else {}
+                                meta_info = data.get("meta_info") or {}
+                                audio_url = meta_info.get("audio_url")
+                                if audio_url:
+                                    final_audio_url = AnyUrl(audio_url)
+                                continue
+
                             if msg.event == EventType.UsageResponse:
-                                # 示例:{"usage":{"input_text_tokens":980,"output_audio_tokens":0}} 其中input_text_tokens表示"API调用token-输入-文本", output_audio_tokens表示"API调用token-输出-音频" 。
-                                data = json.loads(msg.payload.decode().encode("utf-8"))
-                                # 累计计算
-                                token_usage_info = {
-                                    "input_text_tokens": token_usage_info.get("input_text_tokens") + data.get("usage").get("input_text_tokens") if (token_usage_info and token_usage_info.get("input_text_tokens")) else data.get("usage").get("input_text_tokens"),
-                                    "output_audio_tokens": token_usage_info.get("output_audio_tokens") + data.get("usage").get("output_audio_tokens") if (token_usage_info and token_usage_info.get("output_audio_tokens")) else data.get("usage").get("output_audio_tokens")
-                                }
-                                input_text_tokens = token_usage_info.get("input_text_tokens")
-                                assert input_text_tokens is not None
-                                output_audio_tokens = token_usage_info.get("output_audio_tokens")
-                                assert output_audio_tokens is not None
-                                gen.update(
-                                    output='',
-                                    usage_details={
-                                        "input_text_tokens": input_text_tokens,
-                                        "output_audio_tokens": output_audio_tokens,
-                                    },
+                                self._accumulate_usage(
+                                    token_usage_info=token_usage_info,
+                                    payload=msg.payload,
+                                    gen=gen,
                                 )
-                            # 会话结束
+                                continue
+
                             if msg.event == EventType.SessionFinished:
+                                session_finished = True
                                 break
-                        # 保持连接，方便下次请求
+
                         await finish_connection(websocket)
                         await wait_for_event(
                             websocket,
-                            MsgType.FullServerResponse,
-                            EventType.ConnectionFinished
+                            DEFAULT_VOLC_WAIT_EVENT_TYPES,
+                            EventType.ConnectionFinished,
                         )
+
+                        if final_audio_url is not None or completed_audio_chunks:
+                            break
+                        if not session_finished:
+                            raise RuntimeError("Volc podcast session did not finish cleanly")
+                    except Exception as e:
+                        last_error = e
+                        gen.update(status_message=str(e))
+                        exception_logger.error(f"Synthesize error (attempt {attempt}/{max_retries}): {e}")
+                        if attempt < max_retries:
+                            info_logger.warning(
+                                f"event=volc_podcast_retry user_id={self.user_id} "
+                                f"attempt={attempt + 1}/{max_retries} task_id={task_id or 'pending'} "
+                                f"last_finished_round_id={last_finished_round_id}"
+                            )
+                            continue
+                    finally:
+                        if websocket is not None:
+                            await websocket.close()
+
+                    if round_completed and (final_audio_url is not None or completed_audio_chunks):
                         break
-                except Exception as e:
-                    last_error = e
-                    exception_logger.error(f"Synthesize error: {e}")
-                    gen.update(
-                        status_message=str(e)
-                    )
-                finally:
-                    if websocket:
-                        await websocket.close()
+
                 if (
                     token_usage_info.get("input_text_tokens", 0) > 0
                     or token_usage_info.get("output_audio_tokens", 0) > 0
@@ -366,11 +480,17 @@ class VolcTTSEngine(TTSEngineBase):
                         usage_details=token_usage_info,
                         source="volc_tts_synthesize",
                     )
+
                 if final_audio_url is not None:
                     async with httpx.AsyncClient() as client:
                         response = await client.get(str(final_audio_url))
                         response.raise_for_status()
                         return response.content
+
+                if completed_audio_chunks:
+                    return b"".join(completed_audio_chunks)
+
                 if last_error is not None:
                     raise last_error
-                raise Exception("Volc TTS did not return a final audio url")
+
+                raise Exception("Volc TTS did not return audio data")
