@@ -23,7 +23,9 @@ type SectionMediaPodcastTaskProps = {
 	podcastStale: boolean;
 	cover: string;
 	isGeneratePending: boolean;
+	isCancelPending: boolean;
 	onOpenDialog: () => void;
+	onCancel: () => void;
 };
 
 const SectionMediaPodcastTask = ({
@@ -36,7 +38,9 @@ const SectionMediaPodcastTask = ({
 	podcastStale,
 	cover,
 	isGeneratePending,
+	isCancelPending,
 	onOpenDialog,
+	onCancel,
 }: SectionMediaPodcastTaskProps) => {
 	const t = useTranslations();
 
@@ -89,7 +93,10 @@ const SectionMediaPodcastTask = ({
 				description={t('section_podcast_processing_description')}
 				icon={Loader2}
 				tone='default'
-				actionLoading
+				actionLabel={t('cancel')}
+				onAction={onCancel}
+				actionDisabled={false}
+				actionLoading={isCancelPending}
 				variant='plain'
 				spinning
 			/>
@@ -102,8 +109,29 @@ const SectionMediaPodcastTask = ({
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
+				actionLabel={t('cancel')}
+				onAction={onCancel}
+				actionDisabled={false}
+				actionLoading={isCancelPending}
 				tone='warning'
 				variant='plain'
+			/>
+		);
+	}
+
+	if (section.podcast_task?.status === SectionPodcastStatus.CANCELLED) {
+		return (
+			<AudioStatusCard
+				badge={t('cancel')}
+				title={t('section_podcast_unset')}
+				description={t('section_podcast_placeholder_description')}
+				actionLabel={isOwner ? t('section_podcast_generate') : undefined}
+				onAction={isOwner ? onOpenDialog : undefined}
+				actionDisabled={false}
+				actionLoading={isGeneratePending}
+				tone='warning'
+				variant='plain'
+				hint={podcastHint}
 			/>
 		);
 	}

@@ -10,7 +10,11 @@ import { SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
-import { getSectionDetail, triggerSectionProcess } from '@/service/section';
+import {
+	cancelSectionProcess,
+	getSectionDetail,
+	triggerSectionProcess,
+} from '@/service/section';
 
 import { Button } from '../ui/button';
 import {
@@ -96,6 +100,22 @@ const SectionOperateProcess = ({
 		},
 	});
 
+	const cancelMutation = useMutation({
+		mutationFn: () => cancelSectionProcess({ section_id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionDetail', section_id],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['searchSectionDocument', section_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
+		},
+	});
+
 	const isQueued =
 		section?.process_task?.status === SectionProcessStatus.WAIT_TO;
 	const isProcessing =
@@ -116,21 +136,38 @@ const SectionOperateProcess = ({
 			: isProcessing
 				? t('section_process_status_doing')
 				: t('section_process_manual_trigger');
+	const isStopping = cancelMutation.isPending;
 
 	return (
 		<>
 			<Button
-				title={t('section_process_manual_trigger')}
+				title={isRunning ? t('cancel') : t('section_process_manual_trigger')}
 				variant='ghost'
 				className={cn('w-full flex-1 text-xs', className)}
-				disabled={!canTrigger || mutation.isPending}
-				onClick={() => setConfirmOpen(true)}>
-				{mutation.isPending || isProcessing ? (
+				disabled={
+					isRunning
+						? isStopping
+						: !canTrigger || mutation.isPending
+				}
+				onClick={() => {
+					if (isRunning) {
+						cancelMutation.mutate();
+						return;
+					}
+					setConfirmOpen(true);
+				}}>
+				{mutation.isPending || isProcessing || isStopping ? (
 					<Loader2 className='animate-spin' />
 				) : (
 					<RefreshCcw />
 				)}
-				{iconOnly ? <span className='sr-only'>{buttonLabel}</span> : buttonLabel}
+				{iconOnly ? (
+					<span className='sr-only'>{isRunning ? t('cancel') : buttonLabel}</span>
+				) : isRunning ? (
+					t('cancel')
+				) : (
+					buttonLabel
+				)}
 			</Button>
 
 			<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>

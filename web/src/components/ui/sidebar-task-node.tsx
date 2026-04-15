@@ -107,7 +107,7 @@ const SidebarTaskNode = ({
 			</div>
 			{result ? <div>{result}</div> : null}
 			{action ? (
-				<div className='shrink-0 flex justify-end'>{action}</div>
+				<div className='shrink-0 flex justify-end gap-2'>{action}</div>
 			) : null}
 		</div>
 	);

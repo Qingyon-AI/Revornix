@@ -24,6 +24,7 @@ export enum DocumentEmbeddingStatus {
     Embedding = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum DocumentTranscribeStatus {
@@ -31,6 +32,7 @@ export enum DocumentTranscribeStatus {
     TRANSCRIBING = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum DocumentPodcastStatus {
@@ -38,6 +40,7 @@ export enum DocumentPodcastStatus {
     GENERATING = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum DocumentProcessStatus {
@@ -45,20 +48,23 @@ export enum DocumentProcessStatus {
     PROCESSING = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum DocumentGraphStatus {
     WAIT_TO = 0,
     BUILDING = 1,
     SUCCESS = 2,
-    FAILED = 3
+    FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum DocumentSummarizeStatus {
     WAIT_TO = 0,
     SUMMARIZING = 1,
     SUCCESS = 2,
-    FAILED = 3
+    FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum SectionDocumentIntegration {

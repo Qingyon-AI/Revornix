@@ -9,6 +9,7 @@ from common.document_guard import ensure_document_active
 from data.sql.base import session_scope
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
@@ -22,6 +23,24 @@ class DocumentTranscribeState(TypedDict, total=False):
 WORKFLOW_NAME = "document_transcribe"
 
 
+def _ensure_transcribe_task_not_cancelled(document_id: int) -> None:
+    db = session_scope()
+    try:
+        db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if (
+            db_transcribe_task is not None
+            and db_transcribe_task.status == DocumentAudioTranscribeStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Document transcribe task cancelled: document_id={document_id}"
+            )
+    finally:
+        db.close()
+
+
 async def _init_transcribe_task(
     state: DocumentTranscribeState
 ) -> DocumentTranscribeState:
@@ -29,6 +48,7 @@ async def _init_transcribe_task(
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document transcribe workflow missing document_id or user_id")
+    _ensure_transcribe_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -85,10 +105,12 @@ async def _transcribe_document_audio(
     engine_id = state.get("engine_id")
     if document_id is None or user_id is None or engine_id is None:
         raise Exception("Document transcribe workflow missing context")
+    _ensure_transcribe_task_not_cancelled(document_id)
 
     audio_file_name = None
     db = session_scope()
     try:
+        _ensure_transcribe_task_not_cancelled(document_id)
         ensure_document_active(db=db, document_id=document_id)
         db_audio_document = crud.document.get_audio_document_by_document_id(
             db=db,
@@ -122,6 +144,7 @@ async def _transcribe_document_audio(
             raise Exception("The transcribe task of the document is not found")
         db_transcribe_task.transcribed_text = text
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
+        db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = datetime.now(timezone.utc)
         db.commit()
     finally:
@@ -176,6 +199,21 @@ async def run_document_transcribe_workflow(
                 "engine_id": engine_id,
             },
         )
+    except WorkflowCancelledError:
+        db = session_scope()
+        try:
+            db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_transcribe_task is not None:
+                db_transcribe_task.status = DocumentAudioTranscribeStatus.CANCELLED
+                db_transcribe_task.celery_task_id = None
+                db_transcribe_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while transcribing document audio: {e}")
         db = session_scope()
@@ -184,8 +222,12 @@ async def run_document_transcribe_workflow(
                 db=db,
                 document_id=document_id
             )
-            if db_transcribe_task is not None:
+            if (
+                db_transcribe_task is not None
+                and db_transcribe_task.status != DocumentAudioTranscribeStatus.CANCELLED
+            ):
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.FAILED
+                db_transcribe_task.celery_task_id = None
                 db_transcribe_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:

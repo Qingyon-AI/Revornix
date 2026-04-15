@@ -26,6 +26,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { cn, replacePath } from '@/lib/utils';
 import {
+	cancelDocumentEmbedding,
+	cancelDocumentSummary,
 	embeddingDocument,
 	getDocumentDetail,
 	summaryDocumentContentByAi,
@@ -152,6 +154,32 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		},
 	});
 
+	const mutateCancelEmbedding = useMutation({
+		mutationFn: () => cancelDocumentEmbedding({ document_id: id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
+		},
+	});
+
+	const mutateCancelSummary = useMutation({
+		mutationFn: () => cancelDocumentSummary({ document_id: id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
+		},
+	});
+
 	if (isError && error) {
 		return (
 			<div className='flex h-full min-h-[24rem] items-center justify-center px-6 text-center text-sm text-muted-foreground'>
@@ -270,7 +298,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									? t('document_embedding_status_success')
 									: t('document_embedding_status_failed'),
 					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ||
-						freshnessState.embeddingStale ? (
+					freshnessState.embeddingStale ? (
 						<Button
 							variant='link'
 							size='sm'
@@ -281,6 +309,21 @@ const DocumentInfo = ({ id }: { id: number }) => {
 							}}>
 							{t('ai_reembedding')}
 							{mutateEmbeddingDocument.isPending ? (
+								<Loader2 className='size-3.5 animate-spin' />
+							) : null}
+						</Button>
+					) : data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO ||
+					  data.embedding_task.status === DocumentEmbeddingStatus.Embedding ? (
+						<Button
+							variant='link'
+							size='sm'
+							className={statusActionClassName}
+							disabled={mutateCancelEmbedding.isPending}
+							onClick={() => {
+								mutateCancelEmbedding.mutate();
+							}}>
+							{t('cancel')}
+							{mutateCancelEmbedding.isPending ? (
 								<Loader2 className='size-3.5 animate-spin' />
 							) : null}
 						</Button>
@@ -384,6 +427,21 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		</Button>
 	);
 
+	const summaryCancelButton = (
+		<Button
+			variant='outline'
+			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+			disabled={mutateCancelSummary.isPending}
+			onClick={() => {
+				mutateCancelSummary.mutate();
+			}}>
+			{mutateCancelSummary.isPending ? (
+				<Loader2 className='size-4 animate-spin' />
+			) : null}
+			{t('cancel')}
+		</Button>
+	);
+
 	const renderSummaryCard = () => {
 		if (!data.summarize_task) {
 			return (
@@ -406,6 +464,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					title={t('ai_summary_wait_to')}
 					description={t('ai_summary_wait_to_description')}
 					tone='warning'
+					action={summaryCancelButton}
 				/>
 			);
 		}
@@ -418,6 +477,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					title={t('ai_summarizing')}
 					description={t('ai_summary_processing_description')}
 					tone='default'
+					action={summaryCancelButton}
 				/>
 			);
 		}
@@ -430,6 +490,19 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					title={t('ai_summary_failed')}
 					description={t('ai_summary_failed_description')}
 					tone='danger'
+					action={summaryActionButton}
+				/>
+			);
+		}
+
+		if (data.summarize_task.status === DocumentSummarizeStatus.CANCELLED) {
+			return (
+				<SidebarTaskNode
+					icon={Sparkles}
+					status={t('cancel')}
+					title={t('ai_summary_empty')}
+					description={t('ai_summary_empty_description')}
+					tone='warning'
 					action={summaryActionButton}
 				/>
 			);

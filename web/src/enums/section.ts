@@ -15,6 +15,7 @@ export enum SectionPodcastStatus {
     GENERATING = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum SectionProcessStatus {
@@ -22,6 +23,7 @@ export enum SectionProcessStatus {
     PROCESSING = 1,
     SUCCESS = 2,
     FAILED = 3,
+    CANCELLED = 4,
 }
 
 export enum SectionProcessTriggerType {

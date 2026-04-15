@@ -39,6 +39,9 @@ class SectionUserRoleAndAuthorityResponse(BaseModel):
     role: UserSectionRole
     authority: UserSectionAuthority
 
+class CancelSectionTaskRequest(BaseModel):
+    section_id: int
+
 class GenerateSectionPodcastRequest(BaseModel):
     section_id: int
     engine_id: int | None = None

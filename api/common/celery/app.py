@@ -50,6 +50,21 @@ finalize_section_images = _task("common.celery.app.finalize_section_images")
 start_trigger_user_notification_event = _task("common.celery.app.start_trigger_user_notification_event")
 
 
+def revoke_task(
+    task_id: str | None,
+    *,
+    terminate: bool = True,
+    signal: str = "SIGTERM",
+) -> None:
+    if not task_id:
+        return
+    celery_app.control.revoke(
+        task_id,
+        terminate=terminate,
+        signal=signal,
+    )
+
+
 __all__ = [
     "celery_app",
     "start_process_document",
@@ -63,6 +78,7 @@ __all__ = [
     "start_process_section_ppt",
     "start_trigger_user_notification_event",
     "finalize_section_images",
+    "revoke_task",
     "update_document_process_status",
     "update_section_process_status",
 ]

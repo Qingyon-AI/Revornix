@@ -2,7 +2,11 @@ import AudioPlayer from '../ui/audio-player';
 import { replacePath } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { generateDocumentPodcast, getDocumentDetail } from '@/service/document';
+import {
+	cancelDocumentPodcast,
+	generateDocumentPodcast,
+	getDocumentDetail,
+} from '@/service/document';
 import { useTranslations } from 'next-intl';
 import { getQueryClient } from '@/lib/get-query-client';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
@@ -67,6 +71,19 @@ const DocumentPodcast = ({
 		},
 	});
 
+	const mutateCancelPodcast = useMutation({
+		mutationFn: () => cancelDocumentPodcast({ document_id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', document_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message || t('something_wrong'));
+		},
+	});
+
 	const canGeneratePodcast = Boolean(selectedEngineId);
 	const freshnessState = getDocumentFreshnessState(document);
 	const podcastHintMessages = [
@@ -108,6 +125,10 @@ const DocumentPodcast = ({
 								badge={t('document_podcast_status_todo')}
 								title={t('document_podcast_wait_to')}
 								description={t('document_podcast_wait_to_description')}
+								actionLabel={t('cancel')}
+								onAction={() => mutateCancelPodcast.mutate()}
+								actionDisabled={false}
+								actionLoading={mutateCancelPodcast.isPending}
 								tone='warning'
 								className={className}
 								variant='plain'
@@ -118,13 +139,16 @@ const DocumentPodcast = ({
 								<AudioStatusCard
 									badge={t('document_podcast_status_doing')}
 									title={t('document_podcast_processing')}
-									description={t('document_podcast_processing_description')}
-									icon={Loader2}
-									tone='default'
-									actionLoading
-									className={className}
-									spinning
-									variant='plain'
+								description={t('document_podcast_processing_description')}
+								icon={Loader2}
+								tone='default'
+								actionLabel={t('cancel')}
+								onAction={() => mutateCancelPodcast.mutate()}
+								actionDisabled={false}
+								actionLoading={mutateCancelPodcast.isPending}
+								className={className}
+								spinning
+								variant='plain'
 								/>
 							)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
@@ -174,6 +198,21 @@ const DocumentPodcast = ({
 							actionDisabled={false}
 							actionLoading={mutateGeneratePodcast.isPending}
 							tone='danger'
+							className={className}
+							hint={podcastHint}
+							variant='plain'
+						/>
+					)}
+					{document?.podcast_task?.status === DocumentPodcastStatus.CANCELLED && (
+						<AudioStatusCard
+							badge={t('cancel')}
+							title={t('document_podcast_unset')}
+							description={t('document_podcast_placeholder_description')}
+							actionLabel={t('document_podcast_generate')}
+							onAction={() => setIsGenerateDialogOpen(true)}
+							actionDisabled={false}
+							actionLoading={mutateGeneratePodcast.isPending}
+							tone='warning'
 							className={className}
 							hint={podcastHint}
 							variant='plain'

@@ -94,14 +94,30 @@ export type DocumentTranscribeRequest = {
     engine_id?: number
 }
 
+export type CancelDocumentTaskRequest = {
+    document_id: number
+}
+
 export const transcribeDocument = async (data: DocumentTranscribeRequest): Promise<NormalResponse> => {
     return await request(documentApi.transcribeDocument, {
         data
     })
 }
 
+export const cancelDocumentTranscribe = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
+    return await request(documentApi.cancelDocumentTranscribe, {
+        data
+    })
+}
+
 export const embeddingDocument = async (data: DocumentEmbeddingRequest): Promise<NormalResponse> => {
     return await request(documentApi.embeddingDocument, {
+        data
+    })
+}
+
+export const cancelDocumentEmbedding = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
+    return await request(documentApi.cancelDocumentEmbedding, {
         data
     })
 }
@@ -118,8 +134,20 @@ export const generateDocumentPodcast = async (data: GenerateDocumentPodcastReque
     })
 }
 
+export const cancelDocumentPodcast = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
+    return await request(documentApi.cancelDocumentPodcast, {
+        data
+    })
+}
+
 export const generateDocumentGraph = async (data: DocumentGraphGenerateRequest): Promise<NormalResponse> => {
     return await request(documentApi.generateDocumentGraph, {
+        data
+    })
+}
+
+export const cancelDocumentGraph = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
+    return await request(documentApi.cancelDocumentGraph, {
         data
     })
 }
@@ -168,6 +196,12 @@ export const deleteDocumentUser = async (data: DocumentUserDeleteRequest): Promi
 
 export const summaryDocumentContentByAi = async (data: DocumentAiSummaryRequest): Promise<NormalResponse> => {
     return await request(documentApi.summaryContent, {
+        data
+    })
+}
+
+export const cancelDocumentSummary = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
+    return await request(documentApi.cancelDocumentSummary, {
         data
     })
 }

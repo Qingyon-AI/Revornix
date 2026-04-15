@@ -19,7 +19,9 @@ type SectionMediaPptTaskProps = {
 	canGeneratePpt: boolean;
 	pptHint?: ReactNode;
 	pptStale: boolean;
+	isCancelPending: boolean;
 	onOpenDialog: () => void;
+	onCancel: () => void;
 };
 
 const SectionMediaPptTask = ({
@@ -29,7 +31,9 @@ const SectionMediaPptTask = ({
 	canGeneratePpt,
 	pptHint,
 	pptStale,
+	isCancelPending,
 	onOpenDialog,
+	onCancel,
 }: SectionMediaPptTaskProps) => {
 	const t = useTranslations();
 	const [pptSlideIndex, setPptSlideIndex] = useState(0);
@@ -110,6 +114,16 @@ const SectionMediaPptTask = ({
 				}
 				tone='default'
 				hint={pptHint}
+				action={
+					<Button
+						variant='outline'
+						className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+						onClick={onCancel}
+						disabled={isCancelPending}>
+						{isCancelPending ? <Loader2 className='size-4 animate-spin' /> : null}
+						{t('cancel')}
+					</Button>
+				}
 				result={
 					currentPptSlide ? (
 						<div className='space-y-3'>
@@ -276,6 +290,30 @@ const SectionMediaPptTask = ({
 							onClick={onOpenDialog}
 							disabled={false}>
 							{t('section_ppt_regenerate')}
+						</Button>
+					) : undefined
+				}
+			/>
+		);
+	}
+
+	if (pptPreview?.status === 'cancelled') {
+		return (
+			<SidebarTaskNode
+				icon={Presentation}
+				status={t('cancel')}
+				title={t('section_ppt_ready_to_generate')}
+				description={t('section_ppt_placeholder_description')}
+				tone='warning'
+				hint={pptHint}
+				action={
+					isOwner ? (
+						<Button
+							variant='outline'
+							className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+							onClick={onOpenDialog}
+							disabled={false}>
+							{t('section_ppt_generate')}
 						</Button>
 					) : undefined
 				}

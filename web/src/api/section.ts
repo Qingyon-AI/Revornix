@@ -28,9 +28,12 @@ export default {
     searchSectionDocuments: API_PREFIX + "/section/documents",
     retrySectionDocumentIntegration: API_PREFIX + "/section/document/retry",
     triggerSectionProcess: API_PREFIX + "/section/process/trigger",
+    cancelSectionProcess: API_PREFIX + "/section/process/cancel",
     askSectionAi: API_PREFIX + "/section/ask",
     generateSectionPodcast: API_PREFIX + '/section/podcast/generate',
+    cancelSectionPodcast: API_PREFIX + '/section/podcast/cancel',
     generateSectionPpt: API_PREFIX + '/section/ppt/generate',
+    cancelSectionPpt: API_PREFIX + '/section/ppt/cancel',
     getSectionUserRoleAndAuthority: API_PREFIX + '/section/user/role-and-authority',
     getMineSectionRoleAndAuthority: API_PREFIX + '/section/mine/role-and-authority'
 }

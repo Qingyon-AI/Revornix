@@ -96,9 +96,11 @@ type DocumentDetailSidebarProps = {
 	graphStale: boolean;
 	graphActionLabel: string;
 	graphGenerating: boolean;
+	graphCancelling: boolean;
 	documentCategory?: DocumentCategory;
 	graphStatus?: DocumentGraphStatus;
 	onGraphGenerate: () => void;
+	onGraphCancel: () => void;
 };
 
 const DocumentDetailSidebar = ({
@@ -111,9 +113,11 @@ const DocumentDetailSidebar = ({
 	graphStale,
 	graphActionLabel,
 	graphGenerating,
+	graphCancelling,
 	documentCategory,
 	graphStatus,
 	onGraphGenerate,
+	onGraphCancel,
 }: DocumentDetailSidebarProps) => {
 	const t = useTranslations();
 
@@ -149,16 +153,27 @@ const DocumentDetailSidebar = ({
 										<Button
 											variant='outline'
 											className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-											onClick={onGraphGenerate}
+											onClick={
+												graphStatus === DocumentGraphStatus.BUILDING ||
+												graphStatus === DocumentGraphStatus.WAIT_TO
+													? onGraphCancel
+													: onGraphGenerate
+											}
 											disabled={
 												graphStatus === DocumentGraphStatus.BUILDING ||
-												graphGenerating
+												graphStatus === DocumentGraphStatus.WAIT_TO
+													? graphCancelling
+													: graphGenerating
 											}>
 											{graphStatus === DocumentGraphStatus.BUILDING ||
-											graphGenerating ? (
+											graphGenerating ||
+											graphCancelling ? (
 												<Loader2 className='size-4 animate-spin' />
 											) : null}
-											{graphActionLabel}
+											{graphStatus === DocumentGraphStatus.BUILDING ||
+											graphStatus === DocumentGraphStatus.WAIT_TO
+												? t('cancel')
+												: graphActionLabel}
 										</Button>
 									</div>
 								}

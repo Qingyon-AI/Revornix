@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from apscheduler.triggers.cron import CronTrigger
@@ -11,6 +12,7 @@ import models
 import schemas
 from common.apscheduler.app import scheduler
 from common.celery.app import (
+    revoke_task,
     start_process_section,
     start_process_section_podcast,
     start_process_section_ppt,
@@ -64,6 +66,22 @@ async def _get_section_ppt_manifest_status(
     user_id: int,
     section_id: int,
 ) -> str | None:
+    manifest = await _get_section_ppt_manifest(
+        user_id=user_id,
+        section_id=section_id,
+    )
+    if isinstance(manifest, dict):
+        status = manifest.get("status")
+        if isinstance(status, str):
+            return status
+    return None
+
+
+async def _get_section_ppt_manifest(
+    *,
+    user_id: int,
+    section_id: int,
+) -> dict | None:
     try:
         from proxy.file_system_proxy import FileSystemProxy
 
@@ -76,9 +94,7 @@ async def _get_section_ppt_manifest_status(
         else:
             manifest = json.loads(raw_content)
         if isinstance(manifest, dict):
-            status = manifest.get("status")
-            if isinstance(status, str):
-                return status
+            return manifest
     except Exception:
         return None
     return None
@@ -211,14 +227,15 @@ async def generate_podcast(
     else:
         db_exist_podcast_task.status = SectionPodcastStatus.WAIT_TO
         db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.celery_task_id = None
         db_exist_podcast_task.update_time = now
+    task_result = start_process_section_podcast.apply_async(kwargs={
+        "section_id": db_section.id,
+        "user_id": user.id,
+        "engine_id": selected_engine_id,
+    })
+    db_exist_podcast_task.celery_task_id = task_result.id
     db.commit()
-
-    start_process_section_podcast.delay(
-        db_section.id,
-        user.id,
-        engine_id=selected_engine_id,
-    )
     return schemas.common.SuccessResponse()
 
 
@@ -267,6 +284,7 @@ async def generate_ppt(
     if existing_status in {"wait_to", "processing"}:
         raise schemas.error.CustomException('PPT task is already queued', code=409)
 
+    task_id = uuid4().hex
     now = datetime.now(timezone.utc).isoformat()
     await _write_section_ppt_manifest(
         user_id=user.id,
@@ -274,6 +292,7 @@ async def generate_ppt(
         payload={
             "version": 1,
             "status": "wait_to",
+            "celery_task_id": task_id,
             "title": None,
             "subtitle": None,
             "theme_prompt": None,
@@ -284,13 +303,99 @@ async def generate_ppt(
             "slides": [],
         },
     )
-
-    start_process_section_ppt.delay(
-        db_section.id,
-        user.id,
-        model_id=selected_model_id,
-        image_engine_id=selected_image_engine_id,
+    start_process_section_ppt.apply_async(
+        kwargs={
+            "section_id": db_section.id,
+            "user_id": user.id,
+            "model_id": selected_model_id,
+            "image_engine_id": selected_image_engine_id,
+        },
+        task_id=task_id,
     )
+    return schemas.common.SuccessResponse()
+
+
+@section_router.post('/podcast/cancel', response_model=schemas.common.NormalResponse)
+def cancel_podcast(
+    cancel_request: schemas.section.CancelSectionTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+    if db_section.creator_id != user.id:
+        raise schemas.error.CustomException('Only the section creator can cancel a podcast task', code=403)
+    cancelled_task = crud.task.cancel_section_podcast_task(db=db, section_id=cancel_request.section_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException('No active podcast task to cancel', code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    db.commit()
+    return schemas.common.SuccessResponse()
+
+
+@section_router.post('/ppt/cancel', response_model=schemas.common.NormalResponse)
+async def cancel_ppt(
+    cancel_request: schemas.section.CancelSectionTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+    if db_section.creator_id != user.id:
+        raise schemas.error.CustomException('Only the section creator can cancel a PPT task', code=403)
+
+    manifest = await _get_section_ppt_manifest(
+        user_id=user.id,
+        section_id=db_section.id,
+    )
+    existing_status = manifest.get("status") if isinstance(manifest, dict) else None
+    if existing_status not in {'wait_to', 'processing'}:
+        raise schemas.error.CustomException('No active PPT task to cancel', code=409)
+    celery_task_id = manifest.get("celery_task_id") if isinstance(manifest, dict) else None
+
+    now = datetime.now(timezone.utc).isoformat()
+    manifest_payload = {
+        "version": 1,
+        "status": "cancelled",
+        "celery_task_id": None,
+        "title": None,
+        "subtitle": None,
+        "theme_prompt": None,
+        "pptx_file_name": None,
+        "error_message": "Cancelled by user",
+        "create_time": now,
+        "update_time": now,
+        "slides": [],
+    }
+    await _write_section_ppt_manifest(
+        user_id=user.id,
+        section_id=db_section.id,
+        payload=manifest_payload,
+    )
+    revoke_task(celery_task_id if isinstance(celery_task_id, str) else None)
+    return schemas.common.SuccessResponse()
+
+
+@section_router.post('/process/cancel', response_model=schemas.common.NormalResponse)
+def cancel_process(
+    cancel_request: schemas.section.CancelSectionTaskRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    if db_section is None:
+        raise schemas.error.CustomException('Section not found', code=404)
+    if db_section.creator_id != user.id:
+        raise schemas.error.CustomException('Only the section creator can cancel a process task', code=403)
+    cancelled_task = crud.task.cancel_section_process_task(db=db, section_id=cancel_request.section_id)
+    if cancelled_task is None:
+        raise schemas.error.CustomException('No active process task to cancel', code=409)
+    revoke_task(cancelled_task.celery_task_id)
+    cancelled_task.celery_task_id = None
+    db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -362,10 +467,9 @@ async def trigger_section_process(
         )
     else:
         db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.celery_task_id = None
         db_section_process_task.update_time = now
-    db.commit()
-
-    start_process_section.apply_async(kwargs={
+    task_result = start_process_section.apply_async(kwargs={
         'section_id': db_section.id,
         'user_id': user.id,
         'auto_podcast': db_section.auto_podcast,
@@ -374,6 +478,8 @@ async def trigger_section_process(
         'image_engine_id': selected_image_engine_id,
         'podcast_engine_id': selected_podcast_engine_id,
     })
+    db_section_process_task.celery_task_id = task_result.id
+    db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -439,14 +545,15 @@ def retry_section_document_integration(
         )
     else:
         db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.celery_task_id = None
         db_section_process_task.update_time = now
-    db.commit()
-
-    start_process_section.apply_async(kwargs={
+    task_result = start_process_section.apply_async(kwargs={
         'section_id': retry_request.section_id,
         'user_id': user.id,
         'auto_podcast': db_section.auto_podcast,
     })
+    db_section_process_task.celery_task_id = task_result.id
+    db.commit()
     return schemas.common.SuccessResponse()
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)

@@ -30,6 +30,10 @@ export type GenerateSectionPodcastRequest = {
     engine_id?: number
 }
 
+export type CancelSectionTaskRequest = {
+    section_id: number
+}
+
 export type SectionPptSlide = {
     id: string
     title: string
@@ -72,14 +76,32 @@ export const generateSectionPodcast = async (data: GenerateSectionPodcastRequest
     })
 }
 
+export const cancelSectionPodcast = async (data: CancelSectionTaskRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.cancelSectionPodcast, {
+        data
+    })
+}
+
 export const generateSectionPpt = async (data: GenerateSectionPptRequest): Promise<NormalResponse> => {
     return await request(sectionApi.generateSectionPpt, {
         data
     })
 }
 
+export const cancelSectionPpt = async (data: CancelSectionTaskRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.cancelSectionPpt, {
+        data
+    })
+}
+
 export const triggerSectionProcess = async (data: TriggerSectionProcessRequest): Promise<NormalResponse> => {
     return await request(sectionApi.triggerSectionProcess, {
+        data
+    })
+}
+
+export const cancelSectionProcess = async (data: CancelSectionTaskRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.cancelSectionProcess, {
         data
     })
 }

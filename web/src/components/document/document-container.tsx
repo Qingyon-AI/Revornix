@@ -3,6 +3,7 @@
 import WebsiteDocumentDetail from '@/components/document/website-document-detail';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
+	cancelDocumentGraph,
 	generateDocumentGraph,
 	getDocumentDetail,
 	readDocument,
@@ -199,6 +200,19 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		},
 	});
 
+	const mutateCancelDocumentGraph = useMutation({
+		mutationFn: () => cancelDocumentGraph({ document_id: id }),
+		onSuccess() {
+			toast.success(t('cancel'));
+			queryClient.invalidateQueries({
+				queryKey: ['getDocumentDetail', id],
+			});
+		},
+		onError(mutationError) {
+			toast.error(mutationError.message || t('something_wrong'));
+		},
+	});
+
 	const mutateRead = useMutation({
 		mutationFn: () =>
 			readDocument({
@@ -270,9 +284,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				graphStale={freshnessState.graphStale}
 				graphActionLabel={graphActionLabel}
 				graphGenerating={mutateGenerateDocumentGraph.isPending}
+				graphCancelling={mutateCancelDocumentGraph.isPending}
 				documentCategory={document?.category}
 				graphStatus={document?.graph_task?.status}
 				onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
+				onGraphCancel={() => mutateCancelDocumentGraph.mutate()}
 			/>
 		),
 		[
@@ -288,6 +304,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			isError,
 			isPending,
 			mutateGenerateDocumentGraph.isPending,
+			mutateCancelDocumentGraph.isPending,
 		],
 	);
 

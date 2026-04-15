@@ -32,6 +32,7 @@ from common.markdown_helpers import (
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
 
 
@@ -50,6 +51,21 @@ class SectionProcessState(TypedDict, total=False):
 
 
 WORKFLOW_NAME = "section_process"
+
+
+def _ensure_section_process_task_not_cancelled(section_id: int) -> None:
+    with session_scope() as db:
+        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+            db=db,
+            section_id=section_id,
+        )
+        if (
+            db_section_process_task is not None
+            and db_section_process_task.status == SectionProcessStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Section process task cancelled: section_id={section_id}"
+            )
 
 
 ENTITY_QUERY = """
@@ -1176,6 +1192,7 @@ async def _build_section_content(
     target_document_ids = state.get("target_document_ids", [])
     if user_id is None or section_id is None or model_id is None:
         raise Exception("Section workflow missing user_id, section_id or model_id")
+    _ensure_section_process_task_not_cancelled(section_id)
 
     markdown_contents: list[str] = []
     ok_document_ids: list[int] = []
@@ -1485,6 +1502,7 @@ async def _build_section_content(
                         db_section_document.status = SectionDocumentIntegration.SUCCESS
 
             db.commit()
+    _ensure_section_process_task_not_cancelled(section_id)
 
     if (
         state.get("auto_illustration")
@@ -1530,6 +1548,7 @@ async def _mark_section_process_success(
     section_id = state.get("section_id")
     if section_id is None:
         raise Exception("Section workflow missing section_id")
+    _ensure_section_process_task_not_cancelled(section_id)
 
     with session_scope() as db:
         db_section_process_task = crud.task.get_section_process_task_by_section_id(
@@ -1538,6 +1557,7 @@ async def _mark_section_process_success(
         )
         if db_section_process_task is not None:
             db_section_process_task.status = SectionProcessStatus.SUCCESS
+            db_section_process_task.celery_task_id = None
             db_section_process_task.update_time = datetime.now(timezone.utc)
             db.commit()
     return state
@@ -1605,6 +1625,22 @@ async def run_section_process_workflow(
                 "default_podcast_user_engine_id": podcast_engine_id,
             },
         )
+    except WorkflowCancelledError:
+        try:
+            with session_scope() as db:
+                now = datetime.now(timezone.utc)
+                db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                    db=db,
+                    section_id=section_id
+                )
+                if db_section_process_task is not None:
+                    db_section_process_task.status = SectionProcessStatus.CANCELLED
+                    db_section_process_task.celery_task_id = None
+                    db_section_process_task.update_time = now
+                    db.commit()
+        except Exception as inner_exception:
+            exception_logger.error(f"Failed to update section cancel status: {inner_exception}")
+        raise
     except Exception as e:
         exception_logger.error(f"Error processing section {section_id}: {e}")
         try:
@@ -1614,8 +1650,12 @@ async def run_section_process_workflow(
                     db=db,
                     section_id=section_id
                 )
-                if db_section_process_task is not None:
+                if (
+                    db_section_process_task is not None
+                    and db_section_process_task.status != SectionProcessStatus.CANCELLED
+                ):
                     db_section_process_task.status = SectionProcessStatus.FAILED
+                    db_section_process_task.celery_task_id = None
                     db_section_process_task.update_time = now
                 db_section_documents = crud.section.get_section_documents_by_section_id(
                     db=db,

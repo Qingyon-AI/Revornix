@@ -22,6 +22,7 @@ from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
 
@@ -44,6 +45,24 @@ SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD = 180_000
 SAMPLED_PODCAST_CHUNK_LIMIT = 10
 SAMPLED_PODCAST_MAX_TEXT_LENGTH = 12_000
 SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_200
+
+
+def _ensure_podcast_task_not_cancelled(document_id: int) -> None:
+    db = session_scope()
+    try:
+        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+            db=db,
+            document_id=document_id,
+        )
+        if (
+            db_podcast_task is not None
+            and db_podcast_task.status == DocumentPodcastStatus.CANCELLED
+        ):
+            raise WorkflowCancelledError(
+                f"Document podcast task cancelled: document_id={document_id}"
+            )
+    finally:
+        db.close()
 
 
 def _normalize_podcast_chunk_text(text: str) -> str:
@@ -98,6 +117,7 @@ async def _init_podcast_task(
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document podcast workflow missing document_id or user_id")
+    _ensure_podcast_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -158,6 +178,7 @@ async def _generate_document_podcast(
     engine_id = state.get("engine_id")
     if document_id is None or user_id is None or engine_id is None:
         raise Exception("Document podcast workflow missing context")
+    _ensure_podcast_task_not_cancelled(document_id)
 
     remote_file_service = await FileSystemProxy.create(
         user_id=user_id
@@ -250,6 +271,7 @@ async def _generate_document_podcast(
     audio_bytes = await engine.synthesize(
         text=prepared_markdown_content
     )
+    _ensure_podcast_task_not_cancelled(document_id)
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
         f"node=generate_document_podcast, stage=synthesize_audio, "
@@ -292,6 +314,7 @@ async def _mark_podcast_success(
     podcast_file_name = state.get("podcast_file_name")
     if document_id is None:
         raise Exception("Document podcast workflow missing document_id")
+    _ensure_podcast_task_not_cancelled(document_id)
 
     db = session_scope()
     try:
@@ -303,6 +326,7 @@ async def _mark_podcast_success(
         if db_podcast_task is not None:
             db_podcast_task.status = DocumentPodcastStatus.SUCCESS
             db_podcast_task.podcast_file_name = podcast_file_name
+            db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
             db.commit()
     finally:
@@ -364,6 +388,21 @@ async def run_document_podcast_workflow(
                 "engine_id": engine_id,
             },
         )
+    except WorkflowCancelledError:
+        db = session_scope()
+        try:
+            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+                db=db,
+                document_id=document_id
+            )
+            if db_podcast_task is not None:
+                db_podcast_task.status = DocumentPodcastStatus.CANCELLED
+                db_podcast_task.celery_task_id = None
+                db_podcast_task.update_time = datetime.now(timezone.utc)
+                db.commit()
+        finally:
+            db.close()
+        raise
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
         db = session_scope()
@@ -372,8 +411,12 @@ async def run_document_podcast_workflow(
                 db=db,
                 document_id=document_id
             )
-            if db_podcast_task is not None:
+            if (
+                db_podcast_task is not None
+                and db_podcast_task.status != DocumentPodcastStatus.CANCELLED
+            ):
                 db_podcast_task.status = DocumentPodcastStatus.FAILED
+                db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 db.commit()
         finally:
