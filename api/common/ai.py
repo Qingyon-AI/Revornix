@@ -465,7 +465,9 @@ async def generate_podcast_dialogue_turns(
                     {
                         "role": "system",
                         "content": (
-                            "You are an expert in writing podcast dialogue scripts.\n\n"
+                            "You are an expert podcast producer and dialogue writer. "
+                            "Your job is to create sharp, high-retention, two-host podcast scripts "
+                            "that are natural to speak aloud, structurally coherent, and faithful to the source.\n\n"
                             f"{language_instruction}"
                         ),
                     },

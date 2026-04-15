@@ -23,6 +23,7 @@ interface Element {
 
 interface MultipleSelectorProps {
 	placeholder: string;
+	maxSelected?: number;
 
 	// selection
 	value: string[];
@@ -48,6 +49,7 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 
 	const {
 		placeholder,
+		maxSelected,
 		value,
 		onChange,
 		options,
@@ -215,6 +217,10 @@ const MultipleSelector = (props: MultipleSelectorProps) => {
 									className='flex justify-between'
 									onSelect={(val) => {
 										if (value.includes(val)) {
+											setOpen(false);
+											return;
+										}
+										if (maxSelected !== undefined && value.length >= maxSelected) {
 											setOpen(false);
 											return;
 										}

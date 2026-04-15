@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import AIModelSelect from '@/components/ai/model-select';
 import { FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import MultipleSelector from '@/components/ui/multiple-selector';
 import {
 	Select,
 	SelectContent,
@@ -40,7 +41,8 @@ type FieldType =
 	| 'boolean'
 	| 'json'
 	| 'select'
-	| 'model';
+	| 'model'
+	| 'speakers';
 
 type FieldOption = {
 	value: string;
@@ -359,7 +361,7 @@ const FIELD_CATALOG: Record<string, FieldCatalogEntry> = {
 		fallbackPlaceholder: '{"speakers":["BV001_streaming","BV002_streaming"]}',
 		fallbackTooltip:
 			'Advanced speaker configuration in JSON. The most important part is the `speakers` array used to select voices.',
-		type: 'json',
+		type: 'speakers',
 	},
 	speaker_additions: {
 		labelKey: 'setting_engine_field_speaker_additions_label',
@@ -463,14 +465,11 @@ const ENGINE_SCHEMAS: Record<string, FieldSpec[]> = {
 		},
 		{ key: 'dialogue_model_id' },
 		{ key: 'scene' },
-		{ key: 'audio_config', descriptionKey: 'setting_engine_config_desc_json' },
-		{ key: 'input_info', descriptionKey: 'setting_engine_config_desc_json' },
 		{ key: 'use_head_music' },
 		{ key: 'use_tail_music' },
 		{ key: 'aigc_watermark' },
 		{ key: 'aigc_metadata', descriptionKey: 'setting_engine_config_desc_json' },
-		{ key: 'speaker_info', descriptionKey: 'setting_engine_config_desc_json' },
-		{ key: 'speaker_additions', descriptionKey: 'setting_engine_config_desc_json' },
+		{ key: 'speaker_info' },
 	],
 	volc_stt_standard: [{ key: 'token' }, { key: 'appid' }],
 	volc_stt_fast: [{ key: 'token' }, { key: 'appid' }],
@@ -530,6 +529,25 @@ const normalizeObject = (value?: string | null): Record<string, unknown> => {
 
 	return {};
 };
+
+const VOLC_PODCAST_SPEAKER_OPTIONS = [
+	{
+		value: 'zh_male_dayixiansheng_v2_saturn_bigtts',
+		label: '黑猫侦探社大义',
+	},
+	{
+		value: 'zh_female_mizaitongxue_v2_saturn_bigtts',
+		label: '黑猫侦探社咪仔',
+	},
+	{
+		value: 'zh_male_liufei_v2_saturn_bigtts',
+		label: '刘飞',
+	},
+	{
+		value: 'zh_male_xiaolei_v2_saturn_bigtts',
+		label: '潇磊',
+	},
+];
 
 const normalizeEngineName = (value?: string | null) => {
 	if (!value) {
@@ -697,6 +715,18 @@ const toInitialFieldValue = (
 		}
 		return undefined;
 	}
+	if (field.type === 'speakers') {
+		if (currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
+			const speakers = (currentValue as Record<string, unknown>).speakers;
+			if (Array.isArray(speakers)) {
+				return speakers
+					.map((speaker) => String(speaker).trim())
+					.filter(Boolean)
+					.slice(0, 2);
+			}
+		}
+		return [];
+	}
 	if (field.type === 'json') {
 		if (currentValue && typeof currentValue === 'object') {
 			return JSON.stringify(currentValue, null, 2);
@@ -781,6 +811,18 @@ const sanitizeConfigValues = (
 		if (field.type === 'model') {
 			if (typeof value === 'number' && !Number.isNaN(value)) {
 				result[field.key] = value;
+			}
+			return;
+		}
+		if (field.type === 'speakers') {
+			if (Array.isArray(value)) {
+				const speakers = value
+					.map((speaker) => String(speaker).trim())
+					.filter(Boolean)
+					.slice(0, 2);
+				if (speakers.length > 0) {
+					result[field.key] = { speakers };
+				}
 			}
 			return;
 		}
@@ -993,6 +1035,26 @@ const EngineConfigFields = ({
 								className='border-input h-9 w-full rounded-md bg-transparent px-3 py-1 shadow-xs hover:bg-transparent'
 								placeholder={field.placeholder}
 								size='default'
+							/>
+						) : field.type === 'speakers' ? (
+							<MultipleSelector
+								placeholder={field.placeholder ?? field.label}
+								maxSelected={2}
+								value={
+									Array.isArray(configValues[field.key])
+										? ((configValues[field.key] as unknown[]).map((item) =>
+												String(item),
+											) as string[])
+										: []
+								}
+								onChange={(nextValue) => {
+									updateConfigValue(
+										field.key,
+										nextValue.map((item) => item.value),
+									);
+								}}
+								options={VOLC_PODCAST_SPEAKER_OPTIONS}
+								hasMore={false}
 							/>
 						) : (
 							<Input
