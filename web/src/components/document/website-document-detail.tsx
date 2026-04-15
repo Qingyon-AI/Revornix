@@ -52,11 +52,8 @@ const WebsiteDocumentDetail = ({
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
-	const contentFallbackMinHeightClassName =
-		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 	const statusContainerClassName = cn(
-		'mx-auto flex w-full max-w-[880px] flex-col items-center justify-center gap-2 rounded-[28px] border border-border/60 bg-background/30 px-6 py-8 text-xs text-muted-foreground',
-		contentFallbackMinHeightClassName,
+		'mx-auto flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
 	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
