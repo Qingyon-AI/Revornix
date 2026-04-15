@@ -141,7 +141,7 @@ const EngineAddButton = () => {
 				? values.required_plan_level
 				: AccessPlanLevel.FREE,
 			is_official_hosted: values.is_official_hosted,
-			billing_mode: values.billing_mode,
+			billing_mode: values.billing_mode as EngineBillingMode,
 			billing_unit_price: values.billing_unit_price,
 			compute_point_multiplier: values.compute_point_multiplier,
 			config_json: values.config_json,
@@ -332,7 +332,9 @@ const EngineAddButton = () => {
 									return (
 										<FormItem>
 											<EngineConfigFields
+												engineUuid={selectedEngine.uuid}
 												engineName={selectedEngine.name}
+												engineNameZh={selectedEngine.name_zh}
 												value={field.value ?? ''}
 												onChange={(nextValue) => {
 													field.onChange(nextValue);

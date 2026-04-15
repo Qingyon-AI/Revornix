@@ -167,7 +167,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 				? values.required_plan_level
 				: AccessPlanLevel.FREE,
 			is_official_hosted: values.is_official_hosted,
-			billing_mode: values.billing_mode,
+			billing_mode: values.billing_mode as EngineBillingMode | undefined,
 			billing_unit_price: values.billing_unit_price,
 			compute_point_multiplier: values.compute_point_multiplier,
 		});
@@ -384,7 +384,9 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 													<FormItem>
 														<EngineConfigFields
 															disabled={!authorized}
+															engineUuid={engine_info.engine_provided.uuid}
 															engineName={engine_info.engine_provided.name}
+															engineNameZh={engine_info.engine_provided.name_zh}
 															value={field.value ?? ''}
 															onChange={(nextValue) => {
 																field.onChange(nextValue);

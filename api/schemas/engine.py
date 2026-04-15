@@ -12,6 +12,7 @@ PUBLIC_PAGINATION_LIMIT = 20
 
 class EngineProvidedInfo(BaseModel):
     id: int
+    uuid: str
     category: int
     name: str
     name_zh: str

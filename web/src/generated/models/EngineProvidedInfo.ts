@@ -21,6 +21,12 @@ import { mapValues } from '../runtime';
 export interface EngineProvidedInfo {
     /**
      * 
+     * @type {string}
+     * @memberof EngineProvidedInfo
+     */
+    uuid: string;
+    /**
+     * 
      * @type {number}
      * @memberof EngineProvidedInfo
      */
@@ -61,6 +67,7 @@ export interface EngineProvidedInfo {
  * Check if a given object implements the EngineProvidedInfo interface.
  */
 export function instanceOfEngineProvidedInfo(value: object): value is EngineProvidedInfo {
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
@@ -78,6 +85,7 @@ export function EngineProvidedInfoFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'uuid': json['uuid'],
         'id': json['id'],
         'category': json['category'],
         'name': json['name'],
@@ -98,6 +106,7 @@ export function EngineProvidedInfoToJSONTyped(value?: EngineProvidedInfo | null,
 
     return {
         
+        'uuid': value['uuid'],
         'id': value['id'],
         'category': value['category'],
         'name': value['name'],
@@ -106,4 +115,3 @@ export function EngineProvidedInfoToJSONTyped(value?: EngineProvidedInfo | null,
         'description_zh': value['description_zh'],
     };
 }
-

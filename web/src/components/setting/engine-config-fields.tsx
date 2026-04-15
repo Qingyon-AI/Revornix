@@ -27,7 +27,9 @@ type JsonLike = string | number | boolean | Record<string, unknown> | unknown[];
 type ConfigRecord = Record<string, JsonLike | undefined>;
 
 type EngineConfigFieldsProps = {
+	engineUuid?: string | null;
 	engineName?: string | null;
+	engineNameZh?: string | null;
 	value?: string | null;
 	disabled?: boolean;
 	onChange: (value: string) => void;
@@ -433,21 +435,18 @@ const FIELD_CATALOG: Record<string, FieldCatalogEntry> = {
 	},
 };
 
-const ENGINE_NAME_ALIASES: Record<string, string> = {
-	openai_audio_engine: 'openai_tts',
-	volc_podcast_engine: 'volc_tts',
-	doubao_podcast_engine: 'volc_tts',
-	volc_stt_fast: 'volc_stt_fast',
-	volc_fast_stt: 'volc_stt_fast',
-	volc_stt_standard: 'volc_stt_standard',
-	volc_standard_stt: 'volc_stt_standard',
-	mineru_api_engine: 'mineru_api',
-	jina_engine: 'jina',
-	markitdown_engine: 'markitdown',
-	banana_image_engine: 'banana_image',
-	bailian_image_engine: 'bailian_image',
-	volc_image_engine: 'volc_image',
-	kimi_image_understand_engine: 'kimi_image_understand',
+const ENGINE_UUID_SCHEMAS: Record<string, string> = {
+	'e31849ffa7f84a2cb4e2fa2ea00f25d2': 'jina',
+	'9188ddca93ff4c2bb97fa252723c6c13': 'markitdown',
+	'd90eabd6ce9e42da98ba6168cb189b70': 'mineru_api',
+	'142d5cc7db8c42d0bc1ad1f24d4b6cd4': 'openai_tts',
+	'f2286c251b0b4650b60b6b9b48ea3cce': 'volc_tts',
+	'9d6cc831e9924d4995d6f490b47a59f3': 'volc_stt_standard',
+	'86a7083d4e994b86819a960bd51e9a1c': 'volc_stt_fast',
+	'7f09db37f3f04b23832a518f5f25fa9b': 'volc_image',
+	'9f1fb0005a99483da191a38af6dc7a23': 'banana_image',
+	'd5daed7e73144af3b2ad7410976f9424': 'bailian_image',
+	'c5f2670915994b1f80bc9cf2517343a4': 'kimi_image_understand',
 };
 
 const ENGINE_SCHEMAS: Record<string, FieldSpec[]> = {
@@ -549,17 +548,18 @@ const VOLC_PODCAST_SPEAKER_OPTIONS = [
 	},
 ];
 
-const normalizeEngineName = (value?: string | null) => {
-	if (!value) {
-		return '';
+const resolveEngineSchemaKey = ({
+	engineUuid,
+}: {
+	engineUuid?: string | null;
+}) => {
+	if (engineUuid) {
+		const byUuid = ENGINE_UUID_SCHEMAS[engineUuid];
+		if (byUuid) {
+			return byUuid;
+		}
 	}
-
-	const normalized = value
-		.trim()
-		.toLowerCase()
-		.replace(/[\s-]+/g, '_');
-
-	return ENGINE_NAME_ALIASES[normalized] ?? normalized;
+	return '';
 };
 
 const translateOrFallback = (
@@ -664,15 +664,17 @@ const createFieldDefinition = ({
 
 const buildFieldDefinitions = ({
 	t,
-	engineName,
+	engineUuid,
 	currentValues,
 }: {
 	t: ReturnType<typeof useTranslations>;
-	engineName?: string | null;
+	engineUuid?: string | null;
 	currentValues: Record<string, unknown>;
 }): FieldDefinition[] => {
-	const normalizedEngineName = normalizeEngineName(engineName);
-	const schema = ENGINE_SCHEMAS[normalizedEngineName];
+	const schemaKey = resolveEngineSchemaKey({
+		engineUuid,
+	});
+	const schema = ENGINE_SCHEMAS[schemaKey];
 
 	if (schema) {
 		return schema.map((spec) =>
@@ -859,7 +861,9 @@ const serializeConfigValues = (
 };
 
 const EngineConfigFields = ({
+	engineUuid,
 	engineName,
+	engineNameZh,
 	value,
 	disabled = false,
 	onChange,
@@ -870,10 +874,10 @@ const EngineConfigFields = ({
 		() =>
 			buildFieldDefinitions({
 				t,
-				engineName,
+				engineUuid,
 				currentValues,
 			}),
-		[t, engineName, currentValues],
+		[t, engineUuid, currentValues],
 	);
 	const hasInvalidConfig =
 		Boolean(value?.trim()) && Object.keys(currentValues).length === 0;
