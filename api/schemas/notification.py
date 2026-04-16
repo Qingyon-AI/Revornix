@@ -88,6 +88,7 @@ class NotificationSourceProvided(BaseModel):
     uuid: str
     name: str
     name_zh: str
+    category: str | None
     description: str | None
     description_zh: str | None
     create_time: datetime
@@ -98,6 +99,7 @@ class NotificationTargetProvided(BaseModel):
     uuid: str
     name: str
     name_zh: str
+    category: str | None
     description: str | None
     description_zh: str | None
     create_time: datetime

@@ -138,6 +138,7 @@ def create_notification_source_provided(
     uuid: str,
     name: str,
     name_zh: str,
+    category: str | None = None,
     description: str | None = None,
     description_zh: str | None = None
 ):
@@ -146,6 +147,7 @@ def create_notification_source_provided(
         uuid=uuid,
         name=name,
         name_zh=name_zh,
+        category=category,
         description=description,
         description_zh=description_zh,
         create_time=now
@@ -203,6 +205,7 @@ def create_notification_target_provided(
     uuid: str,
     name: str,
     name_zh: str,
+    category: str | None = None,
     description: str | None = None,
     description_zh: str | None = None
 ):
@@ -211,6 +214,7 @@ def create_notification_target_provided(
         uuid=uuid,
         name=name,
         name_zh=name_zh,
+        category=category,
         description=description,
         description_zh=description_zh,
         create_time=now

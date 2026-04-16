@@ -1,17 +1,15 @@
-import json
-
 from protocol.notification_target import NotificationTargetProvidedProtocol
+from enums.notification import NotificationCategory
 
 
 class EmailNotificationTargetProvided(NotificationTargetProvidedProtocol):
 
-    def __init__(
-        self
-    ):
+    def __init__(self):
         super().__init__(
             uuid='341ff369ce32418abb8b4f12ac607059',
             name='Email Target',
             name_zh='邮件目标',
+            category=NotificationCategory.EMAIL.value,
             description='The notification target which can be sent email',
             description_zh='可以被邮件服务器发送邮件的消息目标'
         )

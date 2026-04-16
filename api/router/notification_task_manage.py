@@ -159,6 +159,33 @@ def add_notification_task(
     db: Session = Depends(get_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    db_notification_source = crud.notification.get_notification_source_by_id(
+        db=db,
+        notification_source_id=add_notification_task_request.notification_source_id,
+    )
+    if db_notification_source is None:
+        raise schemas.error.CustomException(message="Notification source not found", code=404)
+    db_notification_target = crud.notification.get_notification_target_by_id(
+        db=db,
+        notification_target_id=add_notification_task_request.notification_target_id,
+    )
+    if db_notification_target is None:
+        raise schemas.error.CustomException(message="Notification target not found", code=404)
+    db_source_provided = crud.notification.get_notification_source_provided_by_id(
+        db=db,
+        id=db_notification_source.notification_source_provided_id,
+    )
+    db_target_provided = crud.notification.get_notification_target_provided_by_id(
+        db=db,
+        id=db_notification_target.notification_target_provided_id,
+    )
+    if db_source_provided is None or db_target_provided is None:
+        raise schemas.error.CustomException(message="Notification source or target type not found", code=404)
+    if db_source_provided.category != db_target_provided.category:
+        raise schemas.error.CustomException(
+            message=f"Source category '{db_source_provided.category}' does not match target category '{db_target_provided.category}'",
+            code=400
+        )
     db_notification_task = crud.notification.create_notification_task(
         db=db,
         creator_id=user.id,
@@ -328,6 +355,20 @@ def update_notification_task(
         else:
             db_notification_task_content_template.notification_template_id = update_notification_task_request.notification_template_id
 
+    if update_notification_task_request.notification_source_id is not None or update_notification_task_request.notification_target_id is not None:
+        final_source_id = update_notification_task_request.notification_source_id or db_notification_task.notification_source_id
+        final_target_id = update_notification_task_request.notification_target_id or db_notification_task.notification_target_id
+        db_final_source = crud.notification.get_notification_source_by_id(db=db, notification_source_id=final_source_id)
+        db_final_target = crud.notification.get_notification_target_by_id(db=db, notification_target_id=final_target_id)
+        if db_final_source is not None and db_final_target is not None:
+            db_source_provided = crud.notification.get_notification_source_provided_by_id(db=db, id=db_final_source.notification_source_provided_id)
+            db_target_provided = crud.notification.get_notification_target_provided_by_id(db=db, id=db_final_target.notification_target_provided_id)
+            if db_source_provided is not None and db_target_provided is not None:
+                if db_source_provided.category != db_target_provided.category:
+                    raise schemas.error.CustomException(
+                        message=f"Source category '{db_source_provided.category}' does not match target category '{db_target_provided.category}'",
+                        code=400
+                    )
     if update_notification_task_request.notification_source_id is not None:
         db_notification_task.notification_source_id = update_notification_task_request.notification_source_id
     if update_notification_task_request.notification_target_id is not None:

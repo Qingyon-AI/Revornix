@@ -1,17 +1,15 @@
-import json
-
 from protocol.notification_target import NotificationTargetProvidedProtocol
+from enums.notification import NotificationCategory
 
 
 class AppleNotificationTargetProvided(NotificationTargetProvidedProtocol):
 
-    def __init__(
-        self
-    ):
+    def __init__(self):
         super().__init__(
             uuid='66c8d221b2004fcbb18c8bc56bec6349',
             name='Apple APNS Target',
             name_zh='Apple APNS目标',
+            category=NotificationCategory.APPLE.value,
             description='The notification target which can be sent by Apple APNS',
             description_zh='Apple APNS可推送的目标'
         )
