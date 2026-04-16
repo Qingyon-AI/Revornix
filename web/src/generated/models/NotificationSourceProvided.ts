@@ -38,13 +38,19 @@ export interface NotificationSourceProvided {
      */
     name: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof NotificationSourceProvided
      */
     name_zh: string;
     /**
-     * 
+     *
+     * @type {string}
+     * @memberof NotificationSourceProvided
+     */
+    category: string | null;
+    /**
+     *
      * @type {string}
      * @memberof NotificationSourceProvided
      */
@@ -98,6 +104,7 @@ export function NotificationSourceProvidedFromJSONTyped(json: any, ignoreDiscrim
         'uuid': json['uuid'],
         'name': json['name'],
         'name_zh': json['name_zh'],
+        'category': json['category'] ?? null,
         'description': json['description'],
         'description_zh': json['description_zh'],
         'create_time': (new Date(json['create_time'])),
@@ -120,6 +127,7 @@ export function NotificationSourceProvidedToJSONTyped(value?: NotificationSource
         'uuid': value['uuid'],
         'name': value['name'],
         'name_zh': value['name_zh'],
+        'category': value['category'],
         'description': value['description'],
         'description_zh': value['description_zh'],
         'create_time': value['create_time'].toISOString(),

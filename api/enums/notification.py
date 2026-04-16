@@ -1,6 +1,14 @@
 from enum import Enum, IntEnum
 from typing import NamedTuple
 
+class NotificationCategory(str, Enum):
+    EMAIL = 'email'
+    APPLE = 'apple'
+    APPLE_SANDBOX = 'apple_sandbox'
+    FEISHU = 'feishu'
+    DINGTALK = 'dingtalk'
+    TELEGRAM = 'telegram'
+
 class UserNotificationSourceRole(IntEnum):
     CREATOR = 0
     FORKER = 1

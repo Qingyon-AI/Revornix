@@ -491,6 +491,7 @@
     "setting_notification_target_manage_alert_detail": "This page shows both your own targets and public targets from the community. You can use public targets via Fork, or publish your own for others. For security, others can use your public target but cannot view its configuration.",
     "setting_notification_target_manage_search": "Search Notification Targets",
     "setting_notification_target_manage_empty": "No notification targets available",
+    "setting_notification_target_manage_empty_with_link": "No matching notification targets, go to add",
     "setting_notification_target_manage_add_form_label": "Add Notification Target",
     "setting_notification_target_manage_update_form_label": "Edit Notification Target",
     "setting_notification_target_manage_form_desc": "After adding a target, you can receive notifications through multiple channels.",

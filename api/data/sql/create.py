@@ -240,18 +240,22 @@ async def seed_database(db: Session):
         TelegramNotificationSourceProvided(),
     ]
     for notification_source_provided in notification_source_provideds:
-        if crud.notification.get_notification_source_provided_by_uuid(
-            db=db, 
+        db_nsp = crud.notification.get_notification_source_provided_by_uuid(
+            db=db,
             uuid=notification_source_provided.uuid
-        ) is None:
+        )
+        if db_nsp is None:
             crud.notification.create_notification_source_provided(
                 db=db,
                 uuid=notification_source_provided.uuid,
                 name=notification_source_provided.name,
                 name_zh=notification_source_provided.name_zh,
+                category=notification_source_provided.category,
                 description=notification_source_provided.description,
                 description_zh=notification_source_provided.description_zh
             )
+        elif db_nsp.category is None:
+            db_nsp.category = notification_source_provided.category
 
     # -------- Notification Target Provideds --------
     notification_target_provideds: list[NotificationTargetProvidedProtocol] = [
@@ -263,18 +267,22 @@ async def seed_database(db: Session):
         TelegramNotificationTargetProvided(),
     ]
     for notification_target_provided in notification_target_provideds:
-        if crud.notification.get_notification_target_provided_by_uuid(
-            db=db, 
+        db_ntp = crud.notification.get_notification_target_provided_by_uuid(
+            db=db,
             uuid=notification_target_provided.uuid
-        ) is None:
+        )
+        if db_ntp is None:
             crud.notification.create_notification_target_provided(
                 db=db,
                 uuid=notification_target_provided.uuid,
                 name=notification_target_provided.name,
                 name_zh=notification_target_provided.name_zh,
+                category=notification_target_provided.category,
                 description=notification_target_provided.description,
                 description_zh=notification_target_provided.description_zh
             )
+        elif db_ntp.category is None:
+            db_ntp.category = notification_target_provided.category
 
 
     if deployed_by_official:

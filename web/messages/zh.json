@@ -491,6 +491,7 @@
     "setting_notification_target_manage_alert_detail": "这里不仅显示你创建的通知目标，也会展示社区公开的通知目标。你可以通过“复刻”直接使用它们，也可以创建公开目标供他人使用。出于安全考虑，公开后他人只能使用，无法查看你的配置。",
     "setting_notification_target_manage_search": "搜索通知目标",
     "setting_notification_target_manage_empty": "暂无相关通知目标",
+    "setting_notification_target_manage_empty_with_link": "暂无匹配的通知目标，前往添加",
     "setting_notification_target_manage_add_form_label": "增加通知目标",
     "setting_notification_target_manage_form_desc": "添加通知目标后，可通过多种渠道接收通知。",
     "setting_notification_target_is_public": "是否公开",
