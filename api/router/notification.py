@@ -10,7 +10,7 @@ from common.dependencies import decode_jwt_token, get_current_user, get_db
 from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
 from common.logger import exception_logger, format_log_message, info_logger
 from common.websocket import notificationManager
-from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole
+from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole, UserNotificationTemplateRole
 from router.notification_record_manage import notification_record_manage_router
 from router.notification_source_manage import notification_source_manage_router
 from router.notification_target_manage import notification_target_manage_router
@@ -21,6 +21,29 @@ notification_router.include_router(notification_source_manage_router)
 notification_router.include_router(notification_target_manage_router)
 notification_router.include_router(notification_task_manage_router)
 notification_router.include_router(notification_record_manage_router)
+
+
+def _build_notification_template_response(
+    *,
+    db: Session,
+    user_id: int,
+    db_notification_template: models.notification.NotificationTemplate,
+) -> schemas.notification.NotificationTemplate:
+    res = schemas.notification.NotificationTemplate.model_validate(db_notification_template)
+    res.is_forked = crud.notification.get_user_notification_template_by_user_id_and_notification_template_id(
+        db=db,
+        user_id=user_id,
+        notification_template_id=db_notification_template.id,
+        filter_role=UserNotificationTemplateRole.FORKER,
+    ) is not None
+    res.parameters = [
+        schemas.notification.NotificationTemplateParameter.model_validate(item)
+        for item in crud.notification.get_notification_template_parameters_by_template_id(
+            db=db,
+            notification_template_id=db_notification_template.id,
+        )
+    ]
+    return res
 
 
 # 仅仅是前端用来接收消息的
@@ -121,6 +144,53 @@ def fork_notification_target(
 
     return schemas.common.SuccessResponse()
 
+@notification_router.post("/template/fork", response_model=schemas.common.NormalResponse)
+def fork_notification_template(
+    notification_template_fork_request: schemas.notification.NotificationTemplateForkRequest,
+    db: Session = Depends(get_db),
+    current_user: models.user.User = Depends(get_current_user)
+):
+    now = datetime.now(tz=timezone.utc)
+
+    db_notification_template = crud.notification.get_notification_template_by_id(
+        db=db,
+        notification_template_id=notification_template_fork_request.notification_template_id
+    )
+    if db_notification_template is None:
+        raise schemas.error.CustomException(code=404, message="Notification template not found")
+    if (
+        db_notification_template.creator_id != current_user.id
+        and not db_notification_template.is_public
+    ):
+        raise schemas.error.CustomException(code=403, message="You don't have permission to access this notification template")
+
+    db_user_notification_template = crud.notification.get_user_notification_template_by_user_id_and_notification_template_id(
+        db=db,
+        user_id=current_user.id,
+        notification_template_id=notification_template_fork_request.notification_template_id,
+        filter_role=UserNotificationTemplateRole.FORKER
+    )
+
+    if db_user_notification_template is not None:
+        if notification_template_fork_request.status:
+            raise schemas.error.CustomException(code=403, message="Notification template is already forked")
+        db_user_notification_template.delete_at = now
+        db.commit()
+        return schemas.common.SuccessResponse()
+
+    if notification_template_fork_request.status:
+        crud.notification.create_user_notification_template(
+            db=db,
+            user_id=current_user.id,
+            notification_template_id=notification_template_fork_request.notification_template_id,
+            role=UserNotificationTemplateRole.FORKER,
+        )
+    else:
+        raise schemas.error.CustomException(code=403, message="Notification template is not forked")
+
+    db.commit()
+    return schemas.common.SuccessResponse()
+
 @notification_router.post('/target/usable', response_model=schemas.notification.NotificationTargetsUsableResponse)
 async def get_usable_notification_target(
     db: Session = Depends(get_db),
@@ -198,6 +268,57 @@ def get_notification_sources(
         elements=data,
         start=notification_source_search_request.start,
         limit=notification_source_search_request.limit,
+        has_more=has_more,
+        next_start=next_start
+    )
+
+@notification_router.post('/template/community', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationTemplate])
+def get_notification_templates_community(
+    notification_template_search_request: schemas.notification.SearchNotificationTemplateRequest,
+    db: Session = Depends(get_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    has_more = False
+    next_start = None
+    next_notification_template = None
+    db_notification_templates = crud.notification.search_notification_templates_for_user(
+        db=db,
+        user_id=user.id,
+        keyword=notification_template_search_request.keyword,
+        start=notification_template_search_request.start,
+        limit=notification_template_search_request.limit,
+    )
+    if (
+        notification_template_search_request.limit > 0
+        and len(db_notification_templates) == notification_template_search_request.limit
+    ):
+        next_notification_template = crud.notification.search_next_notification_template_for_user(
+            db=db,
+            user_id=user.id,
+            notification_template=db_notification_templates[-1][0],
+            keyword=notification_template_search_request.keyword
+        )
+        has_more = next_notification_template is not None
+        next_start = next_notification_template[0].id if next_notification_template is not None else None
+    total = crud.notification.count_all_notification_templates_for_user(
+        db=db,
+        user_id=user.id,
+        keyword=notification_template_search_request.keyword
+    )
+
+    data = [
+        _build_notification_template_response(
+            db=db,
+            user_id=user.id,
+            db_notification_template=item[0],
+        )
+        for item in db_notification_templates
+    ]
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        elements=data,
+        start=notification_template_search_request.start,
+        limit=notification_template_search_request.limit,
         has_more=has_more,
         next_start=next_start
     )

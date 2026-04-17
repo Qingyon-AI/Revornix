@@ -24,12 +24,21 @@ class NotificationTargetForkRequest(BaseModel):
     notification_target_id: int
     status: bool
 
+class NotificationTemplateForkRequest(BaseModel):
+    notification_template_id: int
+    status: bool
+
 class SearchNotificationTargetRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
 
 class SearchNotificationSourceRequest(BaseModel):
+    keyword: str | None = None
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+
+class SearchNotificationTemplateRequest(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
@@ -61,6 +70,17 @@ class TriggerEvent(BaseModel):
     description_zh: str | None
     create_time: datetime
     update_time: datetime | None
+    attributes: list['TriggerEventAttribute'] = []
+
+class TriggerEventAttribute(BaseModel):
+    id: int
+    key: str
+    label: str
+    label_zh: str | None = None
+    description: str | None = None
+    description_zh: str | None = None
+    value_type: str
+    required: bool
 
 class TriggerEventsResponse(BaseModel):
     data: list[TriggerEvent]
@@ -298,6 +318,7 @@ class NotificationTask(BaseModel):
     notification_link: str | None = None
     notification_cover: str | None = None
     notification_template_id: int | None = None
+    notification_template_bindings: dict[str, 'NotificationTemplateBinding'] | None = None
     notification_source: NotificationSource | None = None
     notification_target: NotificationTarget | None = None
     create_time: datetime
@@ -312,6 +333,7 @@ class UpdateNotificationTaskRequest(BaseModel):
     content_type: int | None = None
     enable: bool | None = None
     notification_template_id: int | None = None
+    notification_template_bindings: dict[str, 'NotificationTemplateBinding'] | None = None
     trigger_type: int | None = None
     trigger_scheduler_cron: str | None = None
     trigger_event_id: int | None = None
@@ -329,6 +351,7 @@ class AddNotificationTaskRequest(BaseModel):
     title: str
     content_type: int
     notification_template_id: int | None = None
+    notification_template_bindings: dict[str, 'NotificationTemplateBinding'] | None = None
     notification_title: str | None = None
     notification_content: str | None = None
     notification_cover: str | None = None
@@ -340,10 +363,55 @@ class AddNotificationTaskRequest(BaseModel):
 class NotificationTemplate(BaseModel):
     id: int
     uuid: str
+    creator_id: int
+    is_public: bool = False
     name: str
-    name_zh: str
     description: str | None = None
-    description_zh: str | None = None
+    title_template: str | None = None
+    content_template: str | None = None
+    link_template: str | None = None
+    cover_template: str | None = None
+    create_time: datetime
+    update_time: datetime | None = None
+    creator: UserPublicInfo
+    is_forked: bool | None = None
+    parameters: list['NotificationTemplateParameter'] = []
+
+class NotificationTemplateParameter(BaseModel):
+    id: int
+    key: str
+    label: str
+    description: str | None = None
+    value_type: str
+    required: bool
+    default_value: str | None = None
+
+class NotificationTemplateBinding(BaseModel):
+    source_type: Literal['event', 'static']
+    attribute_key: str | None = None
+    static_value: str | None = None
+
+class NotificationTemplateUpsertRequest(BaseModel):
+    notification_template_id: int | None = None
+    name: str
+    is_public: bool = False
+    description: str | None = None
+    title_template: str
+    content_template: str | None = None
+    link_template: str | None = None
+    cover_template: str | None = None
+    parameters: list['NotificationTemplateParameterUpsertRequest'] = []
+
+class NotificationTemplateParameterUpsertRequest(BaseModel):
+    key: str
+    label: str
+    description: str | None = None
+    value_type: str = 'string'
+    required: bool = False
+    default_value: str | None = None
+
+class DeleteNotificationTemplateRequest(BaseModel):
+    notification_template_id: int
 
 class NotificationTemplatesResponse(BaseModel):
     data: list[NotificationTemplate]

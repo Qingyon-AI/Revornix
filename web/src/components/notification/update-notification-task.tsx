@@ -53,6 +53,8 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { NotificationTriggerType } from '@/enums/notification';
 import FileUpload from '../document/file-upload';
+import TemplateBindingEditor from './template-binding-editor';
+import type { NotificationTemplateParameterBinding } from '@/service/notification';
 
 const UpdateNotificationTask = ({
 	notification_task_id,
@@ -136,6 +138,9 @@ const UpdateNotificationTask = ({
 	});
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+	const [templateBindings, setTemplateBindings] = useState<
+		Record<string, NotificationTemplateParameterBinding>
+	>({});
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -150,6 +155,9 @@ const UpdateNotificationTask = ({
 
 	const selectedSourceId = form.watch('notification_source_id');
 	const selectedTargetId = form.watch('notification_target_id');
+	const selectedTemplateId = form.watch('notification_template_id');
+	const selectedTriggerType = form.watch('trigger_type');
+	const selectedTriggerEventId = form.watch('trigger_event_id');
 
 	const selectedSourceCategory = useMemo(() => {
 		if (!selectedSourceId || !mineNotificationSources?.data) return undefined;
@@ -167,7 +175,8 @@ const UpdateNotificationTask = ({
 		if (!mineNotificationSources?.data) return [];
 		if (!selectedTargetCategory) return mineNotificationSources.data;
 		return mineNotificationSources.data.filter(
-			(s) => s.notification_source_provided?.category === selectedTargetCategory,
+			(s) =>
+				s.notification_source_provided?.category === selectedTargetCategory,
 		);
 	}, [mineNotificationSources?.data, selectedTargetCategory]);
 
@@ -175,9 +184,25 @@ const UpdateNotificationTask = ({
 		if (!mineNotificationTargets?.data) return [];
 		if (!selectedSourceCategory) return mineNotificationTargets.data;
 		return mineNotificationTargets.data.filter(
-			(t) => t.notification_target_provided?.category === selectedSourceCategory,
+			(t) =>
+				t.notification_target_provided?.category === selectedSourceCategory,
 		);
 	}, [mineNotificationTargets?.data, selectedSourceCategory]);
+
+	const selectedTemplate = useMemo(() => {
+		return notificationTemplates?.data.find(
+			(item) => item.id === selectedTemplateId,
+		);
+	}, [notificationTemplates?.data, selectedTemplateId]);
+
+	const selectedTriggerEvent = useMemo(() => {
+		if (selectedTriggerType !== NotificationTriggerType.EVENT) {
+			return undefined;
+		}
+		return triggerEvents?.data.find(
+			(item) => item.id === selectedTriggerEventId,
+		);
+	}, [selectedTriggerEventId, selectedTriggerType, triggerEvents?.data]);
 
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
@@ -203,6 +228,7 @@ const UpdateNotificationTask = ({
 				queryKey: ['notification-task-detail', notification_task_id],
 			});
 			form.reset();
+			setTemplateBindings({});
 			setShowUpdateDialog(false);
 		},
 		onError(error, variables, context) {
@@ -212,7 +238,10 @@ const UpdateNotificationTask = ({
 	});
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		mutateUpdateNotificationTask.mutate(values);
+		mutateUpdateNotificationTask.mutate({
+			...values,
+			notification_template_bindings: templateBindings,
+		});
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -239,6 +268,7 @@ const UpdateNotificationTask = ({
 				notification_link: data.notification_link ?? undefined,
 			};
 			form.reset(defaultValues, {});
+			setTemplateBindings(data.notification_template_bindings ?? {});
 		}
 	}, [data, notification_task_id]);
 
@@ -250,6 +280,7 @@ const UpdateNotificationTask = ({
 				onOpenChange={(e) => {
 					if (!e) {
 						form.reset();
+						setTemplateBindings({});
 					}
 					setShowUpdateDialog(e);
 				}}>
@@ -407,11 +438,15 @@ const UpdateNotificationTask = ({
 																</SelectGroup>
 															) : (
 																<div className='px-3 py-2 text-sm text-muted-foreground'>
-																	{t('setting_notification_target_manage_empty_with_link')}
+																	{t(
+																		'setting_notification_target_manage_empty_with_link',
+																	)}
 																	<Link
 																		href='/setting/notification/target-manage'
 																		className='ml-1 text-primary underline underline-offset-2'>
-																		{t('setting_notification_target_manage_add_form_label')}
+																		{t(
+																			'setting_notification_target_manage_add_form_label',
+																		)}
 																	</Link>
 																</div>
 															)}
@@ -434,9 +469,25 @@ const UpdateNotificationTask = ({
 														)}
 													</FormLabel>
 													<Select
-														onValueChange={(value) =>
-															field.onChange(Number(value))
-														}
+														onValueChange={(value) => {
+															const nextTriggerType = Number(value);
+															field.onChange(nextTriggerType);
+															if (
+																nextTriggerType ===
+																NotificationTriggerType.SCHEDULER
+															) {
+																form.setValue(
+																	'trigger_event_id',
+																	undefined as never,
+																);
+															}
+															if (
+																nextTriggerType ===
+																NotificationTriggerType.EVENT
+															) {
+																form.setValue('trigger_scheduler_cron', '');
+															}
+														}}
 														defaultValue={
 															field.value || field.value === 0
 																? field.value.toString()
@@ -470,8 +521,7 @@ const UpdateNotificationTask = ({
 										}}
 									/>
 
-									{form.watch('trigger_type') ===
-										NotificationTriggerType.EVENT && (
+									{selectedTriggerType === NotificationTriggerType.EVENT && (
 										<FormField
 											name='trigger_event_id'
 											control={form.control}
@@ -545,7 +595,7 @@ const UpdateNotificationTask = ({
 										/>
 									)}
 
-									{form.watch('trigger_type') ===
+									{selectedTriggerType ===
 										NotificationTriggerType.SCHEDULER && (
 										<FormField
 											name='trigger_scheduler_cron'
@@ -632,11 +682,7 @@ const UpdateNotificationTask = ({
 																				notificationTemplates?.data.find(
 																					(item) => item.id === field.value,
 																				);
-																			return sel
-																				? locale === 'zh'
-																					? sel.name_zh
-																					: sel.name
-																				: null;
+																			return sel ? sel.name : null;
 																		})()}
 																	</SelectValue>
 																</SelectTrigger>
@@ -651,14 +697,10 @@ const UpdateNotificationTask = ({
 																							value={item.id.toString()}>
 																							<div className='flex flex-col w-fit'>
 																								<div className='font-bold text-xs w-fit'>
-																									{locale === 'zh'
-																										? item.name_zh
-																										: item.name}
+																									{item.name}
 																								</div>
 																								<div className='font-bold text-xs text-muted-foreground w-fit'>
-																									{locale === 'zh'
-																										? item.description_zh
-																										: item.description}
+																									{item.description}
 																								</div>
 																							</div>
 																						</SelectItem>
@@ -676,6 +718,39 @@ const UpdateNotificationTask = ({
 													);
 												}}
 											/>
+											<div className='pt-4'>
+												<FormItem className='flex flex-col gap-3'>
+													<FormLabel>
+														{t('notification_template_bindings_title')}
+													</FormLabel>
+													<TemplateBindingEditor
+														locale={locale}
+														template={selectedTemplate}
+														triggerEvent={selectedTriggerEvent}
+														bindings={templateBindings}
+														onChange={setTemplateBindings}
+														title={t('notification_template_bindings_title')}
+														emptyText={t(
+															'notification_template_bindings_empty',
+														)}
+														sourceLabel={t(
+															'notification_template_bindings_source',
+														)}
+														eventOptionLabel={t(
+															'notification_template_bindings_source_event',
+														)}
+														staticOptionLabel={t(
+															'notification_template_bindings_source_static',
+														)}
+														attributeLabel={t(
+															'notification_template_bindings_attribute',
+														)}
+														staticValueLabel={t(
+															'notification_template_bindings_static_value',
+														)}
+													/>
+												</FormItem>
+											</div>
 										</TabsContent>
 										<TabsContent value='0' className='space-y-3'>
 											<FormField
@@ -760,7 +835,6 @@ const UpdateNotificationTask = ({
 															</FormLabel>
 															<FileUpload
 																accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
-																className='h-20'
 																defaultFileName={field.value || ''}
 																onSuccess={(file_name) => {
 																	field.onChange(file_name);

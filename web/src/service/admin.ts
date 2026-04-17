@@ -17,6 +17,7 @@ import type {
 } from '@/generated';
 import type { PaginationData } from '@/schemas/pagination';
 import { request } from '@/lib/request';
+import type { NotificationTaskDetailData, NotificationTemplateParameterBinding } from '@/service/notification';
 
 export type AdminUserSummary = {
 	id: number;
@@ -264,7 +265,7 @@ export const getAdminUserNotificationTasks = async (data: {
 export const getAdminUserNotificationTaskDetail = async (data: {
 	user_id: number;
 	notification_task_id: number;
-}): Promise<NotificationTask> => {
+}): Promise<NotificationTaskDetailData> => {
 	return await request(adminApi.getUserNotificationTaskDetail, { data });
 };
 
@@ -276,6 +277,7 @@ export const addAdminUserNotificationTask = async (data: {
 	title: string;
 	content_type: number;
 	notification_template_id?: number;
+	notification_template_bindings?: Record<string, NotificationTemplateParameterBinding>;
 	notification_title?: string;
 	notification_content?: string;
 	notification_cover?: string;
@@ -294,6 +296,7 @@ export const updateAdminUserNotificationTask = async (data: {
 	content_type?: number;
 	enable?: boolean;
 	notification_template_id?: number;
+	notification_template_bindings?: Record<string, NotificationTemplateParameterBinding>;
 	trigger_type?: number;
 	trigger_scheduler_cron?: string;
 	trigger_event_id?: number;

@@ -1,10 +1,10 @@
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BellRing, Loader2, Plus, Trash2, Upload } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
 	addAdminUserNotificationTask,
@@ -17,6 +17,11 @@ import {
 	updateAdminUserNotificationTask,
 } from '@/service/admin';
 import { getNotificationTemplate, getTriggerEvents } from '@/service/notification';
+import type {
+	NotificationTemplateItem,
+	NotificationTemplateParameterBinding,
+	TriggerEventItem,
+} from '@/service/notification';
 import { NotificationContentType, NotificationTriggerType } from '@/enums/notification';
 import { cn, replacePath } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +79,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import TemplateBindingEditor from '@/components/notification/template-binding-editor';
 
 type TaskFormState = {
 	title: string;
@@ -113,6 +119,7 @@ const AdminUserNotificationsPage = ({
 	userId: number;
 }) => {
 	const t = useTranslations();
+	const locale = useLocale();
 	const queryClient = useQueryClient();
 	const [pageNum, setPageNum] = useState(1);
 	const [pageSize] = useState(10);
@@ -126,6 +133,12 @@ const AdminUserNotificationsPage = ({
 	} | null>(null);
 	const [createForm, setCreateForm] = useState<TaskFormState>(DEFAULT_TASK_FORM);
 	const [editForm, setEditForm] = useState<TaskFormState>(DEFAULT_TASK_FORM);
+	const [createBindings, setCreateBindings] = useState<
+		Record<string, NotificationTemplateParameterBinding>
+	>({});
+	const [editBindings, setEditBindings] = useState<
+		Record<string, NotificationTemplateParameterBinding>
+	>({});
 
 	const usableSourcesQuery = useQuery({
 		queryKey: ['admin-user-usable-notification-sources', userId],
@@ -173,6 +186,7 @@ const AdminUserNotificationsPage = ({
 			toast.success(t('admin_notifications_task_create_success'));
 			setCreateOpen(false);
 			setCreateForm(DEFAULT_TASK_FORM);
+			setCreateBindings({});
 			queryClient.invalidateQueries({ queryKey: ['admin-user-notification-tasks', userId] });
 		},
 		onError(error: Error) {
@@ -186,6 +200,7 @@ const AdminUserNotificationsPage = ({
 			toast.success(t('admin_notifications_task_update_success'));
 			setEditTaskId(null);
 			setEditForm(DEFAULT_TASK_FORM);
+			setEditBindings({});
 			setPendingEnableTask(null);
 			queryClient.invalidateQueries({ queryKey: ['admin-user-notification-tasks', userId] });
 			queryClient.invalidateQueries({ queryKey: ['admin-user-notification-task-detail', userId] });
@@ -233,6 +248,7 @@ const AdminUserNotificationsPage = ({
 			notification_cover: taskDetailQuery.data.notification_cover || '',
 			enable: taskDetailQuery.data.enable,
 		});
+		setEditBindings(taskDetailQuery.data.notification_template_bindings ?? {});
 	}, [taskDetailQuery.data]);
 
 	const tasks = tasksQuery.data?.elements ?? [];
@@ -262,7 +278,10 @@ const AdminUserNotificationsPage = ({
 		return true;
 	};
 
-	const buildTaskPayload = (form: TaskFormState) => ({
+	const buildTaskPayload = (
+		form: TaskFormState,
+		bindings: Record<string, NotificationTemplateParameterBinding>,
+	) => ({
 		user_id: userId,
 		title: form.title.trim(),
 		notification_source_id: Number(form.notification_source_id),
@@ -281,6 +300,8 @@ const AdminUserNotificationsPage = ({
 			form.content_type === String(NotificationContentType.TEMPLATE) && form.notification_template_id
 				? Number(form.notification_template_id)
 				: undefined,
+		notification_template_bindings:
+			form.content_type === String(NotificationContentType.TEMPLATE) ? bindings : undefined,
 		notification_title:
 			form.content_type === String(NotificationContentType.CUSTOM)
 				? form.notification_title.trim()
@@ -296,7 +317,7 @@ const AdminUserNotificationsPage = ({
 
 	const submitCreate = async () => {
 		if (!validateTaskForm(createForm)) return;
-		await createMutation.mutateAsync(buildTaskPayload(createForm));
+		await createMutation.mutateAsync(buildTaskPayload(createForm, createBindings));
 	};
 
 	const submitUpdate = async () => {
@@ -304,7 +325,7 @@ const AdminUserNotificationsPage = ({
 		if (!validateTaskForm(editForm)) return;
 		await updateMutation.mutateAsync({
 			notification_task_id: editTaskId,
-			...buildTaskPayload(editForm),
+			...buildTaskPayload(editForm, editBindings),
 		});
 	};
 
@@ -456,7 +477,15 @@ const AdminUserNotificationsPage = ({
 				</CardContent>
 			</Card>
 
-			<Dialog open={createOpen} onOpenChange={setCreateOpen}>
+			<Dialog
+				open={createOpen}
+				onOpenChange={(open) => {
+					if (!open) {
+						setCreateForm(DEFAULT_TASK_FORM);
+						setCreateBindings({});
+					}
+					setCreateOpen(open);
+				}}>
 				<DialogContent className='flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-[28px] p-0'>
 					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('admin_notifications_task_add')}</DialogTitle>
@@ -471,6 +500,9 @@ const AdminUserNotificationsPage = ({
 							usableTargets={usableTargetsQuery.data?.data ?? []}
 							triggerEvents={triggerEventsQuery.data?.data ?? []}
 							templates={templatesQuery.data?.data ?? []}
+							locale={locale}
+							templateBindings={createBindings}
+							onTemplateBindingsChange={setCreateBindings}
 							onUploadCover={handleCreateCoverUpload}
 							coverUploading={uploadCoverMutation.isPending}
 						/>
@@ -487,7 +519,14 @@ const AdminUserNotificationsPage = ({
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={editTaskId != null} onOpenChange={(open) => !open && setEditTaskId(null)}>
+			<Dialog
+				open={editTaskId != null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setEditTaskId(null);
+						setEditBindings({});
+					}
+				}}>
 				<DialogContent className='flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-[28px] p-0'>
 					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>{t('admin_notifications_task_edit')}</DialogTitle>
@@ -507,6 +546,9 @@ const AdminUserNotificationsPage = ({
 								usableTargets={usableTargetsQuery.data?.data ?? []}
 								triggerEvents={triggerEventsQuery.data?.data ?? []}
 								templates={templatesQuery.data?.data ?? []}
+								locale={locale}
+								templateBindings={editBindings}
+								onTemplateBindingsChange={setEditBindings}
 								onUploadCover={handleEditCoverUpload}
 								coverUploading={uploadCoverMutation.isPending}
 							/>
@@ -596,6 +638,9 @@ const TaskForm = ({
 	usableTargets,
 	triggerEvents,
 	templates,
+	locale,
+	templateBindings,
+	onTemplateBindingsChange,
 	onUploadCover,
 	coverUploading,
 }: {
@@ -604,8 +649,11 @@ const TaskForm = ({
 	userId: number;
 	usableSources: Array<{ id: number; title: string }>;
 	usableTargets: Array<{ id: number; title: string }>;
-	triggerEvents: Array<{ id: number; name: string; name_zh: string }>;
-	templates: Array<{ id: number; name: string; name_zh: string }>;
+	triggerEvents: TriggerEventItem[];
+	templates: NotificationTemplateItem[];
+	locale: string;
+	templateBindings: Record<string, NotificationTemplateParameterBinding>;
+	onTemplateBindingsChange: (bindings: Record<string, NotificationTemplateParameterBinding>) => void;
 	onUploadCover: (file: File) => Promise<void>;
 	coverUploading: boolean;
 }) => {
@@ -617,6 +665,16 @@ const TaskForm = ({
 			[key]: value,
 		});
 	};
+
+	const selectedTemplate = useMemo(
+		() => templates.find((item) => String(item.id) === form.notification_template_id),
+		[form.notification_template_id, templates],
+	);
+
+	const selectedTriggerEvent = useMemo(
+		() => triggerEvents.find((item) => String(item.id) === form.trigger_event_id),
+		[form.trigger_event_id, triggerEvents],
+	);
 
 	return (
 		<div className='space-y-6'>
@@ -736,24 +794,40 @@ const TaskForm = ({
 					</div>
 				</div>
 			{form.content_type === String(NotificationContentType.TEMPLATE) ? (
-				<div className='grid gap-2 lg:max-w-md'>
-					<Label>{t('setting_notification_task_manage_form_template')}</Label>
-					<Select
-						value={form.notification_template_id}
-						onValueChange={(value) => setField('notification_template_id', value)}>
-						<SelectTrigger className='h-11 w-full rounded-xl'>
-							<SelectValue placeholder={t('setting_notification_task_manage_form_template_placeholder')} />
-						</SelectTrigger>
-						<SelectContent>
-							{templates.length > 0 ? (
-								templates.map((item) => (
-									<SelectItem key={item.id} value={String(item.id)}>{item.name_zh || item.name}</SelectItem>
-								))
-							) : (
-								<SelectEmpty message={t('select_empty')} />
-							)}
-						</SelectContent>
-					</Select>
+				<div className='space-y-4'>
+					<div className='grid gap-2 lg:max-w-md'>
+						<Label>{t('setting_notification_task_manage_form_template')}</Label>
+						<Select
+							value={form.notification_template_id}
+							onValueChange={(value) => setField('notification_template_id', value)}>
+							<SelectTrigger className='h-11 w-full rounded-xl'>
+								<SelectValue placeholder={t('setting_notification_task_manage_form_template_placeholder')} />
+							</SelectTrigger>
+							<SelectContent>
+								{templates.length > 0 ? (
+									templates.map((item) => (
+										<SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>
+									))
+								) : (
+									<SelectEmpty message={t('select_empty')} />
+								)}
+							</SelectContent>
+						</Select>
+					</div>
+					<TemplateBindingEditor
+						locale={locale}
+						template={selectedTemplate}
+						triggerEvent={selectedTriggerEvent}
+						bindings={templateBindings}
+						onChange={onTemplateBindingsChange}
+						title={t('notification_template_bindings_title')}
+						emptyText={t('notification_template_bindings_empty')}
+						sourceLabel={t('notification_template_bindings_source')}
+						eventOptionLabel={t('notification_template_bindings_source_event')}
+						staticOptionLabel={t('notification_template_bindings_source_static')}
+						attributeLabel={t('notification_template_bindings_attribute')}
+						staticValueLabel={t('notification_template_bindings_static_value')}
+					/>
 				</div>
 			) : (
 				<div className='grid gap-5 lg:grid-cols-2'>

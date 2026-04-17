@@ -20,6 +20,10 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
             description="This is a section updated template",
             description_zh="这是一个专栏更新通知模板"
         )
+        self.parameters = [
+            {"key": "receiver_id", "label": "Receiver ID", "label_zh": "接收者 ID", "value_type": "number", "required": True},
+            {"key": "section_id", "label": "Section ID", "label_zh": "专栏 ID", "value_type": "number", "required": True},
+        ]
 
     async def generate(
         self,

@@ -13,3 +13,7 @@ class SectionSubscribedNotificationTriggerEvent(NotificationTriggerEventProtocol
             description = "When the section which you participate has been subscribed",
             description_zh = "当你参与的专栏被订阅的时候"
         )
+        self.attributes = [
+            {"key": "section_id", "label": "Section ID", "label_zh": "专栏 ID", "value_type": "number", "required": True},
+            {"key": "user_id", "label": "Receiver ID", "label_zh": "接收者 ID", "value_type": "number", "required": True},
+        ]

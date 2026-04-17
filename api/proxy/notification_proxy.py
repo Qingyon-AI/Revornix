@@ -1,21 +1,18 @@
 import crud
 import json
+import models
 import schemas
 from common.logger import exception_logger
 from data.sql.base import session_scope
-from enums.notification import NotificationSourceProvided, NotificationTemplate
+from enums.notification import NotificationSourceProvided
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
 from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
-from notification.template.daily_summary import DailySummaryNotificationTemplate
-from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
-from notification.template.section_commented import SectionCommentedNotificationTemplate
-from notification.template.section_updated import SectionUpdatedNotificationTemplate
-from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
+from notification.template.platform_message_builder import build_multi_platform_message
 
 class NotificationProxy:
     
@@ -123,7 +120,6 @@ class NotificationProxy:
         template_id: int,
         params: dict | None = None
     ):
-        template_uuid: str | None = None
         with session_scope() as db:
             db_notification_template = crud.notification.get_notification_template_by_id(
                 db=db,
@@ -131,25 +127,28 @@ class NotificationProxy:
             )
             if db_notification_template is None:
                 raise Exception("Notification template not found")
-            template_uuid = db_notification_template.uuid
 
-        if template_uuid == NotificationTemplate.DAILY_SUMMARY.meta.uuid:
-            notification_template = DailySummaryNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_COMMENTED.meta.uuid:
-            notification_template = SectionCommentedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_UPDATED.meta.uuid:
-            notification_template = SectionUpdatedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid:
-            notification_template = SectionSubscribedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.REMOVED_FROM_SECTION.meta.uuid:
-            notification_template = RemovedFromSectionNotificationTemplate()
-        else:
+        if db_notification_template.title_template is None:
             raise Exception('Unsupported notification template')
 
-        message = await notification_template.generate(
-            params=params
+        template_params = params or {}
+        title = db_notification_template.title_template
+        content = db_notification_template.content_template
+        link = db_notification_template.link_template
+        cover = db_notification_template.cover_template
+        for key, value in template_params.items():
+            placeholder = f"{{{{{key}}}}}"
+            value_str = "" if value is None else str(value)
+            title = title.replace(placeholder, value_str)
+            if content is not None:
+                content = content.replace(placeholder, value_str)
+            if link is not None:
+                link = link.replace(placeholder, value_str)
+            if cover is not None:
+                cover = cover.replace(placeholder, value_str)
+        return build_multi_platform_message(
+            title=title,
+            plain_content=content or "",
+            link=link,
+            cover=cover,
         )
-        if message is None:
-            raise Exception(f'Failed to generate the message using template {template_id}')
-
-        return message

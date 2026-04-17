@@ -10,6 +10,7 @@ class NotificationTemplate(Protocol):
     name_zh: str
     description: str | None
     description_zh: str | None
+    parameters: list[dict]
 
     def __init__(
         self,
@@ -24,6 +25,7 @@ class NotificationTemplate(Protocol):
         self.description = description
         self.name_zh = name_zh
         self.description_zh = description_zh
+        self.parameters = []
 
     async def generate(
         self,

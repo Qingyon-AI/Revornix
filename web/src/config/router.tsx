@@ -75,6 +75,11 @@ const routers: RouteItem[] = [
 						title_en: 'Task Manage',
 						path: '/task-manage',
 					},
+					{
+						title: '通知模版管理',
+						title_en: 'Template Manage',
+						path: '/template-manage',
+					},
 				],
 			},
 			{

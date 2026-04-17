@@ -4,6 +4,7 @@ import { ModeToggle } from '@/components/app/mode-toggle';
 import NotificationTaskManage from '@/components/notification/notification-task-manage';
 import NotificationSourceManage from '@/components/notification/notification-source-manage';
 import NotificationTargetManage from '@/components/notification/notification-target-manage';
+import NotificationTemplateManage from '@/components/notification/notification-template-manage';
 import DocumentSummaryModel from '@/components/setting/document-summary-model';
 import EngineManager from '@/components/setting/engine-manager';
 import LanguageChange from '@/components/setting/language-change';
@@ -106,6 +107,15 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<NotificationTaskManage />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_notification_template_manage')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<NotificationTemplateManage />
 						</div>
 					</div>
 					<Separator />

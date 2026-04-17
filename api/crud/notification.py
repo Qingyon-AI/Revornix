@@ -4,30 +4,88 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
 
 import models
-from enums.notification import NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole
+from enums.notification import NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole, UserNotificationTemplateRole
 from uuid import uuid4
 
 
 def create_notification_template(
     db: Session,
     uuid: str,
+    creator_id: int,
     name: str,
     name_zh: str,
     description: str | None = None,
     description_zh: str | None = None,
+    title_template: str | None = None,
+    content_template: str | None = None,
+    link_template: str | None = None,
+    cover_template: str | None = None,
+    is_public: bool = False,
 ):
     now = datetime.now(timezone.utc)
     db_notification_template = models.notification.NotificationTemplate(
         uuid=uuid,
+        creator_id=creator_id,
         name=name,
         name_zh=name_zh,
         description=description,
         description_zh=description_zh,
+        title_template=title_template,
+        content_template=content_template,
+        link_template=link_template,
+        cover_template=cover_template,
+        is_public=is_public,
         create_time=now
     )
     db.add(db_notification_template)
     db.flush()
     return db_notification_template
+
+def create_user_notification_template(
+    db: Session,
+    notification_template_id: int,
+    user_id: int,
+    role: UserNotificationTemplateRole = UserNotificationTemplateRole.FORKER
+):
+    now = datetime.now(timezone.utc)
+    user_notification_template = models.notification.UserNotificationTemplate(
+        notification_template_id=notification_template_id,
+        user_id=user_id,
+        role=role,
+        create_time=now
+    )
+    db.add(user_notification_template)
+    db.flush()
+    return user_notification_template
+
+def create_notification_template_parameter(
+    db: Session,
+    notification_template_id: int,
+    key: str,
+    label: str,
+    value_type: str,
+    required: bool = False,
+    label_zh: str | None = None,
+    description: str | None = None,
+    description_zh: str | None = None,
+    default_value: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_notification_template_parameter = models.notification.NotificationTemplateParameter(
+        notification_template_id=notification_template_id,
+        key=key,
+        label=label,
+        label_zh=label_zh,
+        description=description,
+        description_zh=description_zh,
+        value_type=value_type,
+        required=required,
+        default_value=default_value,
+        create_time=now,
+    )
+    db.add(db_notification_template_parameter)
+    db.flush()
+    return db_notification_template_parameter
 
 def create_notification_trigger_event(
     db: Session,
@@ -49,6 +107,33 @@ def create_notification_trigger_event(
     db.add(db_notification_trigger_event)
     db.flush()
     return db_notification_trigger_event
+
+def create_trigger_event_attribute(
+    db: Session,
+    trigger_event_id: int,
+    key: str,
+    label: str,
+    value_type: str,
+    required: bool = False,
+    label_zh: str | None = None,
+    description: str | None = None,
+    description_zh: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_trigger_event_attribute = models.notification.TriggerEventAttribute(
+        trigger_event_id=trigger_event_id,
+        key=key,
+        label=label,
+        label_zh=label_zh,
+        description=description,
+        description_zh=description_zh,
+        value_type=value_type,
+        required=required,
+        create_time=now,
+    )
+    db.add(db_trigger_event_attribute)
+    db.flush()
+    return db_trigger_event_attribute
 
 def create_notification_task_content_custom(
     db: Session,
@@ -72,11 +157,13 @@ def create_notification_task_content_custom(
 def create_notification_task_content_template(
     db: Session,
     notification_task_id: int,
-    notification_template_id: int
+    notification_template_id: int,
+    parameter_bindings_json: str | None = None,
 ):
     db_notification_task_content_tmeplate = models.notification.NotificationTaskContentTemplate(
         notification_task_id=notification_task_id,
-        notification_template_id=notification_template_id
+        notification_template_id=notification_template_id,
+        parameter_bindings_json=parameter_bindings_json,
     )
     db.add(db_notification_task_content_tmeplate)
     db.flush()
@@ -459,11 +546,36 @@ def get_notification_template_by_id(
     notification_template_id: int
 ):
     query = db.query(models.notification.NotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
     query = query.filter(
         models.notification.NotificationTemplate.id == notification_template_id,
         models.notification.NotificationTemplate.delete_at.is_(None)
     )
     return query.one_or_none()
+
+def get_notification_templates_for_user(
+    db: Session,
+    user_id: int
+):
+    query = db.query(models.notification.NotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
+    query = query.join(
+        models.notification.UserNotificationTemplate,
+        models.notification.UserNotificationTemplate.notification_template_id == models.notification.NotificationTemplate.id,
+    )
+    query = query.filter(
+        models.notification.NotificationTemplate.delete_at.is_(None),
+        models.notification.UserNotificationTemplate.user_id == user_id,
+        models.notification.UserNotificationTemplate.delete_at.is_(None),
+    )
+    query = query.order_by(
+        models.notification.NotificationTemplate.id.desc(),
+    )
+    return query.all()
 
 def get_all_notification_templates(
     db: Session
@@ -474,16 +586,144 @@ def get_all_notification_templates(
     )
     return query.all()
 
+def get_notification_template_parameters_by_template_id(
+    db: Session,
+    notification_template_id: int,
+):
+    query = db.query(models.notification.NotificationTemplateParameter)
+    query = query.filter(
+        models.notification.NotificationTemplateParameter.notification_template_id == notification_template_id,
+        models.notification.NotificationTemplateParameter.delete_at.is_(None),
+    )
+    query = query.order_by(models.notification.NotificationTemplateParameter.id.asc())
+    return query.all()
+
 def get_notification_template_by_uuid(
     db: Session,
     uuid: str
 ):
     query = db.query(models.notification.NotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
     query = query.filter(
         models.notification.NotificationTemplate.uuid == uuid,
         models.notification.NotificationTemplate.delete_at.is_(None)
     )
     return query.one_or_none()
+
+def get_user_notification_template_by_user_id_and_notification_template_id(
+    db: Session,
+    user_id: int,
+    notification_template_id: int,
+    filter_role: UserNotificationTemplateRole | None = None
+):
+    query = db.query(models.notification.UserNotificationTemplate)
+    query = query.filter(
+        models.notification.UserNotificationTemplate.user_id == user_id,
+        models.notification.UserNotificationTemplate.notification_template_id == notification_template_id,
+        models.notification.UserNotificationTemplate.delete_at.is_(None)
+    )
+    if filter_role is not None:
+        query = query.filter(
+            models.notification.UserNotificationTemplate.role == filter_role
+        )
+    return query.one_or_none()
+
+def search_notification_templates_for_user(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None,
+    start: int | None = None,
+    limit: int | None = None,
+):
+    query = db.query(models.notification.NotificationTemplate, models.notification.UserNotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
+    query = query.outerjoin(
+        models.notification.UserNotificationTemplate,
+        and_(
+            models.notification.UserNotificationTemplate.notification_template_id == models.notification.NotificationTemplate.id,
+            models.notification.UserNotificationTemplate.user_id == user_id,
+            models.notification.UserNotificationTemplate.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.notification.NotificationTemplate.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.notification.NotificationTemplate.creator_id == user_id,
+            models.notification.NotificationTemplate.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.notification.NotificationTemplate.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.notification.NotificationTemplate.id.desc())
+    if start is not None:
+        query = query.filter(models.notification.NotificationTemplate.id <= start)
+    if limit is not None:
+        query = query.limit(limit)
+    return query.all()
+
+def search_next_notification_template_for_user(
+    db: Session,
+    user_id: int,
+    notification_template: models.notification.NotificationTemplate,
+    keyword: str | None = None
+):
+    query = db.query(models.notification.NotificationTemplate, models.notification.UserNotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
+    query = query.outerjoin(
+        models.notification.UserNotificationTemplate,
+        and_(
+            models.notification.UserNotificationTemplate.notification_template_id == models.notification.NotificationTemplate.id,
+            models.notification.UserNotificationTemplate.user_id == user_id,
+            models.notification.UserNotificationTemplate.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.notification.NotificationTemplate.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.notification.NotificationTemplate.creator_id == user_id,
+            models.notification.NotificationTemplate.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.notification.NotificationTemplate.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.notification.NotificationTemplate.id.desc())
+    query = query.filter(models.notification.NotificationTemplate.id < notification_template.id)
+    return query.first()
+
+def count_all_notification_templates_for_user(
+    db: Session,
+    user_id: int,
+    keyword: str | None = None
+):
+    query = db.query(models.notification.NotificationTemplate, models.notification.UserNotificationTemplate)
+    query = query.options(
+        joinedload(models.notification.NotificationTemplate.creator)
+    )
+    query = query.outerjoin(
+        models.notification.UserNotificationTemplate,
+        and_(
+            models.notification.UserNotificationTemplate.notification_template_id == models.notification.NotificationTemplate.id,
+            models.notification.UserNotificationTemplate.user_id == user_id,
+            models.notification.UserNotificationTemplate.delete_at.is_(None),
+        ),
+    )
+    query = query.filter(models.notification.NotificationTemplate.delete_at.is_(None))
+    query = query.filter(
+        or_(
+            models.notification.NotificationTemplate.creator_id == user_id,
+            models.notification.NotificationTemplate.is_public.is_(True),
+        )
+    )
+    if keyword:
+        query = query.filter(models.notification.NotificationTemplate.name.ilike(f"%{keyword}%"))
+    query = query.order_by(models.notification.NotificationTemplate.id.desc())
+    return query.count()
 
 def get_all_provided_notification_sources(
     db: Session
@@ -533,6 +773,18 @@ def get_all_trigger_events(
     )
     return query.all()
 
+def get_trigger_event_attributes_by_trigger_event_id(
+    db: Session,
+    trigger_event_id: int,
+):
+    query = db.query(models.notification.TriggerEventAttribute)
+    query = query.filter(
+        models.notification.TriggerEventAttribute.trigger_event_id == trigger_event_id,
+        models.notification.TriggerEventAttribute.delete_at.is_(None),
+    )
+    query = query.order_by(models.notification.TriggerEventAttribute.id.asc())
+    return query.all()
+
 def get_all_notification_target_provideds(
     db: Session
 ):
@@ -574,6 +826,17 @@ def get_notification_task_content_template_by_notification_task_id(
         models.notification.NotificationTaskContentTemplate.delete_at.is_(None)
     )
     return query.one_or_none()
+
+def count_notification_task_contents_by_template_id(
+    db: Session,
+    notification_template_id: int,
+):
+    query = db.query(models.notification.NotificationTaskContentTemplate)
+    query = query.filter(
+        models.notification.NotificationTaskContentTemplate.notification_template_id == notification_template_id,
+        models.notification.NotificationTaskContentTemplate.delete_at.is_(None),
+    )
+    return query.count()
 
 def get_notification_task_content_custom_by_notification_task_id(
     db: Session,

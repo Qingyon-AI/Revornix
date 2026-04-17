@@ -19,6 +19,10 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             description="This is a daily summary template",
             description_zh="这是一个每日总结模板"
         )
+        self.parameters = [
+            {"key": "receiver_id", "label": "Receiver ID", "label_zh": "接收者 ID", "value_type": "number", "required": True},
+            {"key": "date", "label": "Date", "label_zh": "日期", "value_type": "date", "required": True},
+        ]
 
     async def generate(
         self,

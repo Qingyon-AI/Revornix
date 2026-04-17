@@ -41,13 +41,13 @@ import {
 import SelectEmpty from '../ui/select-empty';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2, PlusCircleIcon } from 'lucide-react';
-import { Switch } from '../ui/switch';
 import { NotificationTargetProvidedUUID } from '@/enums/notification';
 import EmailNotificationTarget from './email-notification-target';
 import IOSNotificationTarget from './ios-notification-target';
 import FeishuNotificationTarget from './feishu-notification-target';
 import DingTalkNotificationTarget from './dingtalk-notification-target';
 import TelegramNotificationTarget from './telegram-notification-target';
+import PublicVisibilityField from './public-visibility-field';
 
 const AddNotificationTarget = () => {
 	const locale = useLocale();
@@ -332,24 +332,14 @@ const AddNotificationTarget = () => {
 								control={form.control}
 								render={({ field }) => {
 									return (
-										<FormItem className='rounded-lg border border-input p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('setting_notification_target_is_public')}
-												</FormLabel>
-												<Switch
-													checked={field.value}
-													onCheckedChange={(e) => {
-														field.onChange(e);
-													}}
-												/>
-											</div>
-											<FormDescription>
-												{t(
-													'setting_notification_target_manage_form_is_public_tips',
-												)}
-											</FormDescription>
-										</FormItem>
+										<PublicVisibilityField
+											label={t('setting_notification_target_is_public')}
+											description={t(
+												'setting_notification_target_manage_form_is_public_tips',
+											)}
+											checked={field.value}
+											onCheckedChange={field.onChange}
+										/>
 									);
 								}}
 							/>

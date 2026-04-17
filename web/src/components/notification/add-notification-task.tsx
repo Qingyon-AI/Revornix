@@ -52,6 +52,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
 import { NotificationTriggerType } from '@/enums/notification';
 import FileUpload from '../document/file-upload';
+import TemplateBindingEditor from './template-binding-editor';
+import type { NotificationTemplateParameterBinding } from '@/service/notification';
 
 const AddNotificationTask = () => {
 	const locale = useLocale();
@@ -122,6 +124,9 @@ const AddNotificationTask = () => {
 	});
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
+	const [templateBindings, setTemplateBindings] = useState<
+		Record<string, NotificationTemplateParameterBinding>
+	>({});
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -137,6 +142,9 @@ const AddNotificationTask = () => {
 
 	const selectedSourceId = form.watch('notification_source_id');
 	const selectedTargetId = form.watch('notification_target_id');
+	const selectedTemplateId = form.watch('notification_template_id');
+	const selectedTriggerType = form.watch('trigger_type');
+	const selectedTriggerEventId = form.watch('trigger_event_id');
 
 	const selectedSourceCategory = useMemo(() => {
 		if (!selectedSourceId || !mineNotificationSources?.data) return undefined;
@@ -171,6 +179,17 @@ const AddNotificationTask = () => {
 		queryFn: getTriggerEvents,
 	});
 
+	const selectedTemplate = useMemo(() => {
+		return notificationTemplates?.data.find((item) => item.id === selectedTemplateId);
+	}, [notificationTemplates?.data, selectedTemplateId]);
+
+	const selectedTriggerEvent = useMemo(() => {
+		if (selectedTriggerType !== NotificationTriggerType.EVENT) {
+			return undefined;
+		}
+		return triggerEvents?.data.find((item) => item.id === selectedTriggerEventId);
+	}, [selectedTriggerEventId, selectedTriggerType, triggerEvents?.data]);
+
 	const onSubmitForm = async (event: React.FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -192,6 +211,7 @@ const AddNotificationTask = () => {
 				},
 			});
 			form.reset();
+			setTemplateBindings({});
 			setShowAddDialog(false);
 		},
 		onError(error, variables, context) {
@@ -201,7 +221,10 @@ const AddNotificationTask = () => {
 	});
 
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
-		mutateAddNotificationTask.mutate(values);
+		mutateAddNotificationTask.mutate({
+			...values,
+			notification_template_bindings: templateBindings,
+		});
 	};
 
 	const onFormValidateError = (error: any) => {
@@ -215,7 +238,15 @@ const AddNotificationTask = () => {
 				{t('setting_notification_task_manage_add_label')}
 				<PlusCircleIcon />
 			</Button>
-			<Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+			<Dialog
+				open={showAddDialog}
+				onOpenChange={(open) => {
+					if (!open) {
+						form.reset();
+						setTemplateBindings({});
+					}
+					setShowAddDialog(open);
+				}}>
 				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-4xl'>
 					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
 						<DialogTitle>
@@ -423,9 +454,28 @@ const AddNotificationTask = () => {
 														)}
 													</FormLabel>
 													<Select
-														onValueChange={(value) =>
-															field.onChange(Number(value))
-														}
+														onValueChange={(value) => {
+															const nextTriggerType = Number(value);
+															field.onChange(nextTriggerType);
+															if (
+																nextTriggerType ===
+																NotificationTriggerType.SCHEDULER
+															) {
+																form.setValue(
+																	'trigger_event_id',
+																	undefined as never,
+																);
+															}
+															if (
+																nextTriggerType ===
+																NotificationTriggerType.EVENT
+															) {
+																form.setValue(
+																	'trigger_scheduler_cron',
+																	'',
+																);
+															}
+														}}
 														defaultValue={
 															field.value || field.value === 0
 																? String(field.value)
@@ -459,7 +509,7 @@ const AddNotificationTask = () => {
 										}}
 									/>
 
-									{form.watch('trigger_type') ===
+									{selectedTriggerType ===
 										NotificationTriggerType.EVENT && (
 										<FormField
 											name='trigger_event_id'
@@ -532,7 +582,7 @@ const AddNotificationTask = () => {
 										/>
 									)}
 
-									{form.watch('trigger_type') ===
+									{selectedTriggerType ===
 										NotificationTriggerType.SCHEDULER && (
 										<FormField
 											name='trigger_scheduler_cron'
@@ -619,11 +669,7 @@ const AddNotificationTask = () => {
 																				notificationTemplates?.data.find(
 																					(item) => item.id === field.value,
 																				);
-																			return sel
-																				? locale === 'zh'
-																					? sel.name_zh
-																					: sel.name
-																				: null;
+																			return sel ? sel.name : null;
 																		})()}
 																	</SelectValue>
 																</SelectTrigger>
@@ -638,14 +684,10 @@ const AddNotificationTask = () => {
 																							value={item.id.toString()}>
 																							<div className='flex flex-col w-fit'>
 																								<div className='font-bold text-xs w-fit'>
-																									{locale === 'zh'
-																										? item.name_zh
-																										: item.name}
+																									{item.name}
 																								</div>
 																								<div className='font-bold text-xs text-muted-foreground w-fit'>
-																									{locale === 'zh'
-																										? item.description_zh
-																										: item.description}
+																									{item.description}
 																								</div>
 																							</div>
 																						</SelectItem>
@@ -662,7 +704,28 @@ const AddNotificationTask = () => {
 														</FormItem>
 													);
 												}}
-											/>
+										/>
+										<div className="pt-4">
+											<FormItem className="flex flex-col gap-3">
+												<FormLabel>
+													{t('notification_template_bindings_title')}
+												</FormLabel>
+												<TemplateBindingEditor
+													locale={locale}
+													template={selectedTemplate}
+													triggerEvent={selectedTriggerEvent}
+													bindings={templateBindings}
+													onChange={setTemplateBindings}
+													title={t('notification_template_bindings_title')}
+													emptyText={t('notification_template_bindings_empty')}
+													sourceLabel={t('notification_template_bindings_source')}
+													eventOptionLabel={t('notification_template_bindings_source_event')}
+													staticOptionLabel={t('notification_template_bindings_source_static')}
+													attributeLabel={t('notification_template_bindings_attribute')}
+													staticValueLabel={t('notification_template_bindings_static_value')}
+												/>
+											</FormItem>
+										</div>
 										</TabsContent>
 										<TabsContent value='0' className='space-y-3'>
 											<FormField

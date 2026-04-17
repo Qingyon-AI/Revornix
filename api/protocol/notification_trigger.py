@@ -8,6 +8,7 @@ class NotificationTriggerEventProtocol(Protocol):
     name_zh: str
     description: str | None
     description_zh: str | None
+    attributes: list[dict]
 
     def __init__(
         self,
@@ -22,3 +23,4 @@ class NotificationTriggerEventProtocol(Protocol):
         self.name_zh = name_zh
         self.description = description
         self.description_zh = description_zh
+        self.attributes = []

@@ -71,7 +71,7 @@ from enums.engine_enums import Engine, UserEngineRole
 from enums.product import PlanAccessLevel
 from enums.user import UserRole
 from enums.file import RemoteFileService
-from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole, NotificationSource
+from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole, UserNotificationTemplateRole, NotificationSource
 
 from schemas.error import CustomException
 
@@ -176,15 +176,63 @@ async def seed_database(db: Session):
         RemovedFromSectionNotificationTemplate(),
     ]
     for tpl in templates:
-        if crud.notification.get_notification_template_by_uuid(db, tpl.uuid) is None:
-            crud.notification.create_notification_template(
+        db_tpl = crud.notification.get_notification_template_by_uuid(db, tpl.uuid)
+        if db_tpl is None:
+            db_tpl = crud.notification.create_notification_template(
                 db=db,
                 uuid=tpl.uuid,
+                creator_id=db_root_user.id,
                 name=tpl.name,
                 name_zh=tpl.name_zh,
                 description=tpl.description,
                 description_zh=tpl.description_zh,
+                is_public=True,
             )
+        else:
+            db_tpl.creator_id = db_root_user.id
+            db_tpl.name = tpl.name
+            db_tpl.name_zh = tpl.name_zh
+            db_tpl.description = tpl.description
+            db_tpl.description_zh = tpl.description_zh
+            db_tpl.is_public = True
+        db_user_tpl = crud.notification.get_user_notification_template_by_user_id_and_notification_template_id(
+            db=db,
+            user_id=db_root_user.id,
+            notification_template_id=db_tpl.id,
+            filter_role=UserNotificationTemplateRole.CREATOR,
+        )
+        if db_user_tpl is None:
+            crud.notification.create_user_notification_template(
+                db=db,
+                notification_template_id=db_tpl.id,
+                user_id=db_root_user.id,
+                role=UserNotificationTemplateRole.CREATOR,
+            )
+        for param in getattr(tpl, "parameters", []):
+            exists = next(
+                (
+                    item
+                    for item in crud.notification.get_notification_template_parameters_by_template_id(
+                        db=db,
+                        notification_template_id=db_tpl.id,
+                    )
+                    if item.key == param["key"]
+                ),
+                None,
+            )
+            if exists is None:
+                crud.notification.create_notification_template_parameter(
+                    db=db,
+                    notification_template_id=db_tpl.id,
+                    key=param["key"],
+                    label=param["label"],
+                    label_zh=param.get("label_zh"),
+                    value_type=param["value_type"],
+                    required=param.get("required", False),
+                    description=param.get("description"),
+                    description_zh=param.get("description_zh"),
+                    default_value=param.get("default_value"),
+                )
 
     # -------- Trigger Events --------
     triggers: list[NotificationTriggerEventProtocol] = [
@@ -194,8 +242,9 @@ async def seed_database(db: Session):
         SectionSubscribedNotificationTriggerEvent(),
     ]
     for trigger in triggers:
-        if crud.notification.get_trigger_event_by_uuid(db, trigger.uuid) is None:
-            crud.notification.create_notification_trigger_event(
+        db_trigger = crud.notification.get_trigger_event_by_uuid(db, trigger.uuid)
+        if db_trigger is None:
+            db_trigger = crud.notification.create_notification_trigger_event(
                 db=db,
                 uuid=trigger.uuid,
                 name=trigger.name,
@@ -203,6 +252,35 @@ async def seed_database(db: Session):
                 description=trigger.description,
                 description_zh=trigger.description_zh,
             )
+        else:
+            db_trigger.name = trigger.name
+            db_trigger.name_zh = trigger.name_zh
+            db_trigger.description = trigger.description
+            db_trigger.description_zh = trigger.description_zh
+        for attr in getattr(trigger, "attributes", []):
+            exists = next(
+                (
+                    item
+                    for item in crud.notification.get_trigger_event_attributes_by_trigger_event_id(
+                        db=db,
+                        trigger_event_id=db_trigger.id,
+                    )
+                    if item.key == attr["key"]
+                ),
+                None,
+            )
+            if exists is None:
+                crud.notification.create_trigger_event_attribute(
+                    db=db,
+                    trigger_event_id=db_trigger.id,
+                    key=attr["key"],
+                    label=attr["label"],
+                    label_zh=attr.get("label_zh"),
+                    value_type=attr["value_type"],
+                    required=attr.get("required", False),
+                    description=attr.get("description"),
+                    description_zh=attr.get("description_zh"),
+                )
 
     # -------- EngineProvideds --------
     engine_provideds: list[EngineProtocol] = [

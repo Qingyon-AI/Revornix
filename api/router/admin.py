@@ -30,6 +30,7 @@ from router.notification_task_manage import (
     _get_scheduler_cron_expr,
     _remove_task_schedule,
     _schedule_task,
+    _serialize_notification_template_binding_map,
 )
 from router.document_query import get_document_infos
 from router.logic_helpers import group_document_ids_by_category
@@ -1011,6 +1012,9 @@ def add_admin_user_notification_task(
             db=db,
             notification_task_id=db_notification_task.id,
             notification_template_id=request.notification_template_id,
+            parameter_bindings_json=_serialize_notification_template_binding_map(
+                request.notification_template_bindings
+            ),
         )
 
     if request.trigger_type == NotificationTriggerType.SCHEDULER and request.trigger_scheduler_cron:
@@ -1066,10 +1070,13 @@ def update_admin_user_notification_task(
     if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
         _remove_task_schedule(db_notification_task.id)
 
-    if request.content_type is not None:
-        db_notification_task.content_type = request.content_type
+    effective_content_type = request.content_type
+    if effective_content_type is None:
+        effective_content_type = NotificationContentType(db_notification_task.content_type)
+    else:
+        db_notification_task.content_type = effective_content_type
 
-    if request.content_type == NotificationContentType.CUSTOM:
+    if effective_content_type == NotificationContentType.CUSTOM:
         db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
             db=db,
             notification_task_id=request.notification_task_id,
@@ -1090,7 +1097,7 @@ def update_admin_user_notification_task(
             db_notification_task_content_custom.content = request.notification_content
             db_notification_task_content_custom.cover = request.notification_cover
             db_notification_task_content_custom.link = request.notification_link
-    elif request.content_type == NotificationContentType.TEMPLATE:
+    elif effective_content_type == NotificationContentType.TEMPLATE:
         if request.notification_template_id is None:
             raise schemas.error.CustomException("Notification template ID is required for template notifications", code=400)
         db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
@@ -1102,9 +1109,15 @@ def update_admin_user_notification_task(
                 db=db,
                 notification_task_id=request.notification_task_id,
                 notification_template_id=request.notification_template_id,
+                parameter_bindings_json=_serialize_notification_template_binding_map(
+                    request.notification_template_bindings
+                ),
             )
         else:
             db_notification_task_content_template.notification_template_id = request.notification_template_id
+            db_notification_task_content_template.parameter_bindings_json = _serialize_notification_template_binding_map(
+                request.notification_template_bindings
+            )
 
     if request.notification_source_id is not None:
         db_notification_task.notification_source_id = request.notification_source_id

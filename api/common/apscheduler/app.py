@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 from zoneinfo import ZoneInfo
 
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
@@ -25,6 +26,36 @@ from notification.template.platform_message_builder import build_multi_platform_
 from proxy.notification_proxy import NotificationProxy
 
 scheduler = AsyncIOScheduler()
+
+
+def _resolve_scheduler_template_params(
+    *,
+    receiver_id: int,
+    base_params: dict[str, object],
+    bindings_json: str | None,
+) -> dict[str, object]:
+    resolved_params: dict[str, object] = {
+        "receiver_id": receiver_id,
+        **base_params,
+    }
+    if not bindings_json:
+        return resolved_params
+    try:
+        bindings = json.loads(bindings_json)
+    except json.JSONDecodeError:
+        return resolved_params
+    if not isinstance(bindings, dict):
+        return resolved_params
+    for key, binding in bindings.items():
+        if not isinstance(binding, dict):
+            continue
+        if binding.get("source_type") == "static":
+            resolved_params[key] = binding.get("static_value")
+        elif binding.get("source_type") == "event":
+            attribute_key = binding.get("attribute_key")
+            if isinstance(attribute_key, str) and attribute_key:
+                resolved_params[key] = resolved_params.get(attribute_key)
+    return resolved_params
 
 def job_listener(event):
     if event.exception:
@@ -77,10 +108,13 @@ async def send_notification_scheduler(
             receiver_timezone = await get_cached_user_timezone(receiver_id)
             message = await NotificationProxy.create_message_using_template(
                 template_id=db_notification_content_template.notification_template_id,
-                params={
-                    "receiver_id": receiver_id,
-                    "date": today_in_timezone(receiver_timezone),
-                }
+                params=_resolve_scheduler_template_params(
+                    receiver_id=receiver_id,
+                    base_params={
+                        "date": today_in_timezone(receiver_timezone),
+                    },
+                    bindings_json=db_notification_content_template.parameter_bindings_json,
+                ),
             )
         else:
             raise schemas.error.CustomException(message="Unsupported notification content type", code=500)

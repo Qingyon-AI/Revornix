@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
@@ -25,6 +26,7 @@ class NotificationDispatchPayload(TypedDict, total=False):
     notification_source_id: int
     notification_target_id: int
     template_id: int | None
+    template_bindings_json: str | None
     title: str | None
     content: str | None
     cover: str | None
@@ -32,6 +34,34 @@ class NotificationDispatchPayload(TypedDict, total=False):
 
 
 NOTIFICATION_DISPATCH_CONCURRENCY = 5
+
+
+def _resolve_template_params(
+    *,
+    params: dict | None,
+    bindings_json: str | None,
+) -> dict | None:
+    resolved_params = dict(params or {})
+    if "receiver_id" not in resolved_params and resolved_params.get("user_id") is not None:
+        resolved_params["receiver_id"] = resolved_params["user_id"]
+    if not bindings_json:
+        return resolved_params
+    try:
+        bindings = json.loads(bindings_json)
+    except json.JSONDecodeError:
+        return resolved_params
+    if not isinstance(bindings, dict):
+        return resolved_params
+    for key, binding in bindings.items():
+        if not isinstance(binding, dict):
+            continue
+        if binding.get("source_type") == "event":
+            attribute_key = binding.get("attribute_key")
+            if isinstance(attribute_key, str) and attribute_key:
+                resolved_params[key] = resolved_params.get(attribute_key)
+        elif binding.get("source_type") == "static":
+            resolved_params[key] = binding.get("static_value")
+    return resolved_params
 
 
 async def _dispatch_notification(
@@ -65,7 +95,10 @@ async def _dispatch_notification(
             if template_id is not None:
                 message = await NotificationProxy.create_message_using_template(
                     template_id=template_id,
-                    params=params,
+                    params=_resolve_template_params(
+                        params=params,
+                        bindings_json=payload.get("template_bindings_json"),
+                    ),
                 )
             else:
                 if title is None:
@@ -156,6 +189,7 @@ async def _trigger_notification_event(
                 if db_template_notification_content is None:
                     continue
                 payload["template_id"] = db_template_notification_content.notification_template_id
+                payload["template_bindings_json"] = db_template_notification_content.parameter_bindings_json
             else:
                 continue
             payloads.append(payload)

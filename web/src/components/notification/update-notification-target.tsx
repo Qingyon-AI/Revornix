@@ -52,7 +52,6 @@ import {
 import { Spinner } from '../ui/spinner';
 import { Separator } from '../ui/separator';
 import { Alert, AlertTitle } from '../ui/alert';
-import { Switch } from '../ui/switch';
 import {
 	InifiniteScrollPagnitionNotificationTarget,
 	NotificationTarget,
@@ -63,6 +62,7 @@ import EmailNotificationTarget from './email-notification-target';
 import IOSNotificationTarget from './ios-notification-target';
 import FeishuNotificationTarget from './feishu-notification-target';
 import DingTalkNotificationTarget from './dingtalk-notification-target';
+import PublicVisibilityField from './public-visibility-field';
 
 const UpdateNotificationTarget = ({
 	notification_target_id,
@@ -535,25 +535,15 @@ const UpdateNotificationTarget = ({
 											control={form.control}
 											render={({ field }) => {
 												return (
-													<FormItem className='rounded-lg border border-input p-3'>
-														<div className='flex flex-row gap-1 items-center'>
-															<FormLabel className='flex flex-row gap-1 items-center'>
-																{t('setting_model_provider_is_public')}
-															</FormLabel>
-															<Switch
-																disabled={!authorized}
-																checked={field.value}
-																onCheckedChange={(e) => {
-																	field.onChange(e);
-																}}
-															/>
-														</div>
-														<FormDescription>
-															{t(
-																'setting_notification_source_manage_form_is_public_tips',
-															)}
-														</FormDescription>
-													</FormItem>
+													<PublicVisibilityField
+														label={t('setting_model_provider_is_public')}
+														description={t(
+															'setting_notification_target_manage_form_is_public_tips',
+														)}
+														checked={field.value ?? false}
+														onCheckedChange={field.onChange}
+														disabled={!authorized}
+													/>
 												);
 											}}
 										/>

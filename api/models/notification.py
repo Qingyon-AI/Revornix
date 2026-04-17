@@ -106,13 +106,53 @@ class NotificationTemplate(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     uuid: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     name_zh: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(String(500))
     description_zh: Mapped[str | None] = mapped_column(String(500))
+    title_template: Mapped[str | None] = mapped_column(String(500))
+    content_template: Mapped[str | None] = mapped_column(Text())
+    link_template: Mapped[str | None] = mapped_column(String(2000))
+    cover_template: Mapped[str | None] = mapped_column(String(2000))
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    creator: Mapped[User] = relationship("User", backref="notification_templates")
+
+
+class UserNotificationTemplate(Base):
+    __tablename__ = "user_notification_template"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    notification_template_id: Mapped[int] = mapped_column(ForeignKey("notification_template.id"), nullable=False)
+    role: Mapped[int] = mapped_column(Integer, comment='0: owner, 1: forker')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class NotificationTemplateParameter(Base):
+    __tablename__ = "notification_template_parameter"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    notification_template_id: Mapped[int] = mapped_column(ForeignKey("notification_template.id"), index=True, nullable=False)
+    key: Mapped[str] = mapped_column(String(100), nullable=False)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    label_zh: Mapped[str | None] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(String(500))
+    description_zh: Mapped[str | None] = mapped_column(String(500))
+    value_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    default_value: Mapped[str | None] = mapped_column(Text())
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    notification_template: Mapped[NotificationTemplate] = relationship("NotificationTemplate", backref="parameters")
 
 
 class NotificationTask(Base):
@@ -165,12 +205,32 @@ class TriggerEvent(Base):
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
+class TriggerEventAttribute(Base):
+    __tablename__ = "trigger_event_attribute"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    trigger_event_id: Mapped[int] = mapped_column(ForeignKey("trigger_event.id"), index=True, nullable=False)
+    key: Mapped[str] = mapped_column(String(100), nullable=False)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    label_zh: Mapped[str | None] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(String(500))
+    description_zh: Mapped[str | None] = mapped_column(String(500))
+    value_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    trigger_event: Mapped[TriggerEvent] = relationship("TriggerEvent", backref="attributes")
+
+
 class NotificationTaskContentTemplate(Base):
     __tablename__ = "notification_task_content_template"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     notification_task_id: Mapped[int] = mapped_column(ForeignKey("notification_task.id"), index=True, nullable=False)
     notification_template_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    parameter_bindings_json: Mapped[str | None] = mapped_column(Text())
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
