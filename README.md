@@ -66,15 +66,17 @@ Revornix/
 
 ## Some UI
 
-![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260312200944018.png)
+![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
 
-![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193157115.png)
+![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
 
-![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318190625846.png)
+![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
 
 ![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
 
-![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192242314.png)
+![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
+
+![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 
 Note: The trending headlines feature is based on [DailyHotApi](https://github.com/imsyy/DailyHotApi).
 

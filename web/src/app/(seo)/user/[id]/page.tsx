@@ -14,7 +14,7 @@ import { cn, replacePath } from '@/lib/utils';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { BookMarked, Shield, Users } from 'lucide-react';
+import { BookMarked, Users } from 'lucide-react';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
@@ -125,7 +125,10 @@ export async function generateMetadata(props: {
 					: t('seo_user_title_suffix'),
 			),
 			description: metaDescription,
-			path: tab === 'documents' ? `/user/${user.id}?tab=documents` : `/user/${user.id}`,
+			path:
+				tab === 'documents'
+					? `/user/${user.id}?tab=documents`
+					: `/user/${user.id}`,
 			noIndex,
 			images: [coverSrc ?? avatarSrc],
 			socialCard: {
@@ -276,18 +279,16 @@ const SeoUserDetailPage = async (props: {
 								</Avatar>
 								<div className='min-w-0 space-y-3 pt-16 lg:pt-20'>
 									<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
-										<Badge
-											variant='outline'
-											className={cn(
-												'rounded-full px-3 py-1 text-xs font-medium',
-												roleMeta.className,
-											)}>
-											{roleMeta.label}
-										</Badge>
 										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
 											<Users className='size-3.5' />
 											<span>
 												{t('user_fans')} {user.fans ?? 0}
+											</span>
+										</div>
+										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
+											<Users className='size-3.5' />
+											<span>
+												{t('user_follows')} {user.follows ?? 0}
 											</span>
 										</div>
 										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
@@ -304,6 +305,14 @@ const SeoUserDetailPage = async (props: {
 										<p className='max-w-[760px] text-sm leading-7 text-muted-foreground sm:text-base'>
 											{user.slogan ? user.slogan : t('user_slogan_empty')}
 										</p>
+										<Badge
+											variant='outline'
+											className={cn(
+												'rounded-full px-3 py-1 text-xs font-medium',
+												roleMeta.className,
+											)}>
+											{roleMeta.label}
+										</Badge>
 									</div>
 								</div>
 							</div>
@@ -313,36 +322,6 @@ const SeoUserDetailPage = async (props: {
 									initialIsFollowed={user.is_followed}
 									className='shrink-0'
 								/>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div className='mx-auto w-full max-w-[1160px] space-y-5'>
-					<div className='grid gap-3 sm:grid-cols-3'>
-						<div className='rounded-[24px] border border-border/60 bg-background/35 px-4 py-4'>
-							<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-								{t('user_detail_role')}
-							</div>
-							<div className='mt-3 flex items-center gap-2 text-base font-semibold'>
-								<Shield className='size-4 text-muted-foreground' />
-								<span>{roleMeta.label}</span>
-							</div>
-						</div>
-						<div className='rounded-[24px] border border-border/60 bg-background/35 px-4 py-4'>
-							<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-								{t('user_fans')}
-							</div>
-							<div className='mt-3 text-2xl font-semibold'>
-								{user.fans ?? 0}
-							</div>
-						</div>
-						<div className='rounded-[24px] border border-border/60 bg-background/35 px-4 py-4'>
-							<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-								{t('user_follows')}
-							</div>
-							<div className='mt-3 text-2xl font-semibold'>
-								{user.follows ?? 0}
 							</div>
 						</div>
 					</div>
