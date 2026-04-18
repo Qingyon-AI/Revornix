@@ -23,7 +23,10 @@ const CreateSessionButton = ({
 	return (
 		<Button
 			onClick={handleCreateNewSession}
-			className={cn('rounded-2xl px-4', className)}>
+			className={cn(
+				'h-10 gap-2.5 rounded-2xl px-5 [&_svg]:size-4',
+				className,
+			)}>
 			{label ?? t('revornix_ai_add_session')}
 			<PlusIcon />
 		</Button>

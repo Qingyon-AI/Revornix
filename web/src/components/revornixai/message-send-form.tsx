@@ -578,9 +578,9 @@ const MessageSendForm = () => {
 							control={form.control}
 							name='message'
 							render={({ field }) => (
-								<FormItem className='flex-1'>
+								<FormItem className='flex-1 gap-0'>
 									{attachments.length > 0 && mainUserInfo?.id ? (
-										<div className='flex flex-wrap gap-2 px-2 pb-2 pt-1'>
+										<div className='flex flex-wrap gap-2 p-2'>
 											{attachments.map((attachment) => (
 												<div
 													key={attachment.path}

@@ -146,7 +146,7 @@ const ChatHistory = ({
 	) : (
 		<Button
 			variant='outline'
-			className='rounded-2xl border-border/60 bg-card shadow-none'>
+			className='h-10 gap-2.5 rounded-2xl border-border/60 bg-card px-5 shadow-none [&_svg]:size-4'>
 			{t('revornix_ai_history_sessions')}
 			<History />
 		</Button>

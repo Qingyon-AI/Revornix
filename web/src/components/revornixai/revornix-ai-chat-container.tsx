@@ -87,10 +87,7 @@ const RevornixAI = () => {
 							<ChatHistory compactTrigger showCreateAction />
 						) : (
 							<>
-								<CreateSessionButton
-									label={t('revornix_ai_new_session')}
-									className='min-w-[9.5rem]'
-								/>
+								<CreateSessionButton label={t('revornix_ai_new_session')} />
 								<ChatHistory />
 							</>
 						)}
@@ -118,7 +115,7 @@ const RevornixAI = () => {
 				) : (
 					<div className='flex h-full min-h-full items-center justify-center'>
 						<div className='w-full max-w-lg'>
-							<div className='max-w-lg rounded-[28px] border border-dashed border-border/70 bg-background px-8 py-10 text-center shadow-sm'>
+							<div className='max-w-lg px-8 py-10 text-center'>
 								<div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground'>
 									<BotIcon className='size-6' />
 								</div>
