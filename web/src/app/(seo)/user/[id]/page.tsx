@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { UserRole } from '@/enums/user';
 import {
+	fetchPublicDocuments,
 	fetchPublicUserDetail,
 	fetchPublicUserSections,
 	isSeoNotFoundError,
@@ -22,6 +23,7 @@ import {
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+type UserSeoTab = 'sections' | 'documents';
 
 const getSingleValue = (value: string | string[] | undefined) => {
 	if (Array.isArray(value)) {
@@ -38,6 +40,10 @@ const getStartValue = (value: string | string[] | undefined) => {
 
 	const parsedValue = Number(rawValue);
 	return Number.isNaN(parsedValue) ? undefined : parsedValue;
+};
+
+const getTabValue = (value: string | string[] | undefined): UserSeoTab => {
+	return getSingleValue(value) === 'documents' ? 'documents' : 'sections';
 };
 
 const getRoleMeta = (
@@ -96,6 +102,7 @@ export async function generateMetadata(props: {
 	]);
 	const keyword = getSingleValue(searchParams.q)?.trim();
 	const start = getStartValue(searchParams.start);
+	const tab = getTabValue(searchParams.tab);
 	const noIndex = Boolean(keyword) || start !== undefined;
 
 	try {
@@ -111,9 +118,14 @@ export async function generateMetadata(props: {
 		const metaDescription = buildUserMetaDescription(user);
 
 		return buildMetadata({
-			title: formatMetaTitle(user.nickname, t('seo_user_title_suffix')),
+			title: formatMetaTitle(
+				user.nickname,
+				tab === 'documents'
+					? t('user_detail_documents_title')
+					: t('seo_user_title_suffix'),
+			),
 			description: metaDescription,
-			path: `/user/${user.id}`,
+			path: tab === 'documents' ? `/user/${user.id}?tab=documents` : `/user/${user.id}`,
 			noIndex,
 			images: [coverSrc ?? avatarSrc],
 			socialCard: {
@@ -158,20 +170,34 @@ const SeoUserDetailPage = async (props: {
 
 	const keyword = getSingleValue(searchParams.q)?.trim() || '';
 	const start = getStartValue(searchParams.start);
+	const tab = getTabValue(searchParams.tab);
 
 	try {
-		const [user, sectionsResponse] = await Promise.all([
+		const [user, sectionsResponse, documentsResponse] = await Promise.all([
 			fetchPublicUserDetail({ user_id: userId }),
-			fetchPublicUserSections({
-				user_id: userId,
-				keyword: keyword || undefined,
-				start,
-				limit: 10,
-				desc: true,
-			}),
+			tab === 'sections'
+				? fetchPublicUserSections({
+						user_id: userId,
+						keyword: keyword || undefined,
+						start,
+						limit: 10,
+						desc: true,
+					})
+				: null,
+			tab === 'documents'
+				? fetchPublicDocuments({
+						creator_id: userId,
+						keyword: keyword || undefined,
+						start,
+						limit: 12,
+						desc: true,
+					})
+				: null,
 		]);
-		const sections = sectionsResponse.elements ?? [];
-		const totalSections = sectionsResponse.total ?? 0;
+		const sections = sectionsResponse?.elements ?? [];
+		const documents = documentsResponse?.elements ?? [];
+		const totalSections = sectionsResponse?.total ?? 0;
+		const totalDocuments = documentsResponse?.total ?? 0;
 		const roleMeta = getRoleMeta(user.role, t);
 		const avatarSrc =
 			user.avatar && user.avatar.length > 0
@@ -341,6 +367,7 @@ const SeoUserDetailPage = async (props: {
 								</h3>
 								<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
 									<li>{t('seo_user_explore_sections')}</li>
+									<li>{t('seo_user_explore_documents')}</li>
 									<li>{t('seo_user_explore_community')}</li>
 								</ul>
 							</div>
@@ -350,10 +377,21 @@ const SeoUserDetailPage = async (props: {
 
 				<SeoUserSectionsBrowser
 					userId={user.id}
+					tab={tab}
 					sections={sections}
+					documents={documents}
 					keyword={keyword}
-					hasMore={sectionsResponse.has_more}
-					nextStart={sectionsResponse.next_start}
+					total={tab === 'documents' ? totalDocuments : totalSections}
+					hasMore={
+						tab === 'documents'
+							? documentsResponse?.has_more
+							: sectionsResponse?.has_more
+					}
+					nextStart={
+						tab === 'documents'
+							? documentsResponse?.next_start
+							: sectionsResponse?.next_start
+					}
 				/>
 			</div>
 		);

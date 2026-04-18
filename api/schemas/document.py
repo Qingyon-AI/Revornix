@@ -241,6 +241,7 @@ class SearchMyStarDocumentsRequest(BaseModel):
 
 class SearchPublicDocumentsRequest(BaseModel):
     keyword: str | None = None
+    creator_id: int | None = None
     start: int | None = None
     limit: int = 10
     label_ids: list[int] | None = None

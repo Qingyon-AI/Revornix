@@ -30,6 +30,12 @@ export interface SearchPublicDocumentsRequest {
      * @type {number}
      * @memberof SearchPublicDocumentsRequest
      */
+    creator_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchPublicDocumentsRequest
+     */
     start?: number | null;
     /**
      * 
@@ -69,6 +75,7 @@ export function SearchPublicDocumentsRequestFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
+        'creator_id': json['creator_id'] == null ? undefined : json['creator_id'],
         'start': json['start'] == null ? undefined : json['start'],
         'limit': json['limit'] == null ? undefined : json['limit'],
         'label_ids': json['label_ids'] == null ? undefined : json['label_ids'],
@@ -88,10 +95,10 @@ export function SearchPublicDocumentsRequestToJSONTyped(value?: SearchPublicDocu
     return {
         
         'keyword': value['keyword'],
+        'creator_id': value['creator_id'],
         'start': value['start'],
         'limit': value['limit'],
         'label_ids': value['label_ids'],
         'desc': value['desc'],
     };
 }
-

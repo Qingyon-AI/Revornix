@@ -628,6 +628,7 @@ async def search_public_documents(
         start=search_public_documents_request.start,
         limit=search_public_documents_request.limit,
         keyword=search_public_documents_request.keyword,
+        creator_id=search_public_documents_request.creator_id,
         label_ids=search_public_documents_request.label_ids,
         desc=search_public_documents_request.desc,
     )
@@ -642,6 +643,7 @@ async def search_public_documents(
             db=db,
             document=db_documents[-1],
             keyword=search_public_documents_request.keyword,
+            creator_id=search_public_documents_request.creator_id,
             label_ids=search_public_documents_request.label_ids,
             desc=search_public_documents_request.desc,
         )
@@ -653,6 +655,7 @@ async def search_public_documents(
     total = crud.document.count_published_documents(
         db=db,
         keyword=search_public_documents_request.keyword,
+        creator_id=search_public_documents_request.creator_id,
         label_ids=search_public_documents_request.label_ids,
     )
     return schemas.pagination.InifiniteScrollPagnition(
