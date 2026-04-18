@@ -12,7 +12,7 @@ export const SITEMAP_REVALIDATE_SECONDS = 3600;
 export const SITEMAP_URLS_PER_FILE = 50000;
 export const SITEMAP_CONTENT_TYPE = 'application/xml; charset=utf-8';
 
-const SECTION_PAGE_SIZE = 50;
+const SECTION_PAGE_SIZE = 20;
 const DOCUMENTS_PER_SECTION = 20;
 const SECTION_DOCUMENT_CONCURRENCY = 5;
 
@@ -199,7 +199,6 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 			'[SEO] Failed to fetch public sections for sitemap:',
 			error,
 		);
-		return Array.from(entries.values());
 	}
 
 	const creatorLatestUpdate = new Map<number, Date>();
