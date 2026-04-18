@@ -23,6 +23,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { UserRole } from '@/enums/user';
 import { cn, replacePath } from '@/lib/utils';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import { useUserContext } from '@/provider/user-provider';
 import {
 	type AdminUserCreateRequest,
@@ -175,6 +176,15 @@ const AvatarField = ({
 	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
+		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+				}),
+			);
+			event.target.value = '';
+			return;
+		}
 		onSelectFile(file);
 		event.target.value = '';
 	};
@@ -198,6 +208,11 @@ const AvatarField = ({
 				<div className='min-w-0 flex-1 space-y-2'>
 					<div className='text-sm text-muted-foreground'>
 						{t('admin_users_avatar_hint')}
+					</div>
+					<div className='text-[11px] text-muted-foreground'>
+						{t('upload_limit_hint', {
+							size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+						})}
 					</div>
 					<div className='flex flex-wrap gap-2'>
 						<Button

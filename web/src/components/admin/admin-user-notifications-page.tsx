@@ -19,6 +19,7 @@ import {
 import { getNotificationTemplate, getTriggerEvents } from '@/service/notification';
 import { NotificationContentType, NotificationTriggerType } from '@/enums/notification';
 import { cn, replacePath } from '@/lib/utils';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -825,6 +826,15 @@ const NotificationCoverField = ({
 	const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
+		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+				}),
+			);
+			event.target.value = '';
+			return;
+		}
 		try {
 			await onUpload(file);
 		} finally {
@@ -856,6 +866,11 @@ const NotificationCoverField = ({
 				<div className='min-w-0 flex-1 space-y-2'>
 					<div className='line-clamp-1 text-sm text-muted-foreground'>
 						{value || t('admin_notification_cover_hint')}
+					</div>
+					<div className='text-[11px] text-muted-foreground'>
+						{t('upload_limit_hint', {
+							size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+						})}
 					</div>
 					<div className='flex flex-wrap gap-2'>
 						<Button

@@ -53,6 +53,7 @@
     "error_audio_result_not_found": "未找到可上传的音频",
     "upload_failed": "上传失败，请稍后再试",
     "file_upload_size_exceeded": "文件大小不能超过 {size}",
+    "upload_limit_hint": "单个文件最大 {size}",
     "form_validate_failed": "表单校验失败",
     "form_no_change": "表单未做任何修改",
     "upload_image": "上传图片",

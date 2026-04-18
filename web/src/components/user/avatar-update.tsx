@@ -13,6 +13,7 @@ import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { replacePath } from '@/lib/utils';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -53,6 +54,15 @@ const AvatarUpdate = () => {
 	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+				}),
+			);
+			e.target.value = '';
+			return;
+		}
 		if (!mainUserInfo?.default_user_file_system) {
 			toast.error(t('error_default_file_system_not_found'));
 			return;
@@ -62,7 +72,7 @@ const AvatarUpdate = () => {
 		const name = crypto.randomUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
-		const [res, err] = await utils.to(fileService.uploadFile(fileName, file));
+		const [, err] = await utils.to(fileService.uploadFile(fileName, file));
 		if (err) {
 			toast.error(t('error_upload_image_failed'));
 			setUploadingStatus(false);
@@ -88,36 +98,52 @@ const AvatarUpdate = () => {
 					</Button>
 					<input
 						type='file'
+						accept='image/*'
 						className='hidden'
 						ref={fileInput}
 						onChange={onUpload}
 					/>
+					<p className='text-[11px] text-muted-foreground'>
+						{t('upload_limit_hint', {
+							size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+						})}
+					</p>
 				</>
 			)}
 			{mainUserInfo && mainUserInfo.avatar && (
-				<>
-					<div className='flex flex-row'>
-						<Avatar className='size-8' title={mainUserInfo.nickname ?? ''}>
-							<AvatarImage
-								src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
-								alt='avatar'
-								className='size-8 mr-2 object-cover'
-							/>
-							<AvatarFallback className='size-8 font-semibold'>
-								{mainUserInfo.nickname.slice(0, 1) ?? '?'}
-							</AvatarFallback>
-						</Avatar>
-						<Button
-							className='text-xs'
-							variant={'link'}
-							onClick={onChooseFile}
-							disabled={uploadingStatus}>
-							{t('account_avatar_update')}
-							{uploadingStatus && <Loader2 className='size-4 animate-spin' />}
-						</Button>
+					<>
+						<div className='flex flex-col gap-1'>
+							<div className='flex flex-row'>
+								<Avatar className='size-8' title={mainUserInfo.nickname ?? ''}>
+									<AvatarImage
+										src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+										alt='avatar'
+										className='size-8 mr-2 object-cover'
+									/>
+									<AvatarFallback className='size-8 font-semibold'>
+										{mainUserInfo.nickname.slice(0, 1) ?? '?'}
+									</AvatarFallback>
+								</Avatar>
+								<Button
+									className='text-xs'
+									variant={'link'}
+									onClick={onChooseFile}
+									disabled={uploadingStatus}>
+									{t('account_avatar_update')}
+									{uploadingStatus && (
+										<Loader2 className='size-4 animate-spin' />
+									)}
+								</Button>
+							</div>
+						<p className='text-[11px] text-muted-foreground'>
+							{t('upload_limit_hint', {
+								size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+							})}
+						</p>
 					</div>
 					<input
 						type='file'
+						accept='image/*'
 						className='hidden'
 						ref={fileInput}
 						onChange={onUpload}
