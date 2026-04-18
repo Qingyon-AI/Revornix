@@ -88,6 +88,7 @@ export const fetchPublicDocuments = async (data: {
 	start?: number;
 	limit: number;
 	keyword?: string;
+	creator_id?: number;
 	label_ids?: number[];
 	desc?: boolean;
 }): Promise<PublicDocumentPagination> => {

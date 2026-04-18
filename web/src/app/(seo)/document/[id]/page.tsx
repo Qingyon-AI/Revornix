@@ -390,8 +390,8 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
 						<Link
 							href={`/user/${document.creator.id}`}
-							className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-2.5 py-1.5 transition-colors hover:bg-background/70'>
-							<Avatar className='size-6'>
+							className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
+							<Avatar className='size-7'>
 								<AvatarImage
 									src={creatorAvatar}
 									alt={document.creator.nickname}
@@ -405,10 +405,10 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						</Link>
 						<Badge
 							variant='outline'
-							className='rounded-full px-3 py-1.5 text-xs font-normal text-muted-foreground'>
+							className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
 							{categoryLabel}
 						</Badge>
-						<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
+						<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
 							<CalendarClock className='size-3.5' />
 							<span>{t('seo_document_updated_at')}</span>
 							<span className='text-foreground/85'>

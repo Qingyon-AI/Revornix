@@ -256,6 +256,7 @@ def search_published_documents(
     limit: int = 10,
     label_ids: list[int] | None = None,
     keyword: str | None = None,
+    creator_id: int | None = None,
     desc: bool = True,
 ):
     query = db.query(models.document.Document)
@@ -267,6 +268,8 @@ def search_published_documents(
         models.document.Document.delete_at.is_(None),
         models.document.PublishDocument.delete_at.is_(None),
     )
+    if creator_id is not None:
+        query = query.filter(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -297,6 +300,7 @@ def count_published_documents(
     db: Session,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
+    creator_id: int | None = None,
 ):
     query = db.query(models.document.Document)
     query = query.join(
@@ -307,6 +311,8 @@ def count_published_documents(
         models.document.Document.delete_at.is_(None),
         models.document.PublishDocument.delete_at.is_(None),
     )
+    if creator_id is not None:
+        query = query.filter(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -328,6 +334,7 @@ def search_next_published_document(
     document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
+    creator_id: int | None = None,
     desc: bool = True,
 ):
     query = db.query(models.document.Document)
@@ -339,6 +346,8 @@ def search_next_published_document(
         models.document.Document.delete_at.is_(None),
         models.document.PublishDocument.delete_at.is_(None),
     )
+    if creator_id is not None:
+        query = query.filter(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
