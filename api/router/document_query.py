@@ -58,6 +58,7 @@ async def get_document_infos(
     if not documents:
         return []
     document_ids = [document.id for document in documents]
+    creator_ids = list({document.creator_id for document in documents})
 
     convert_tasks = crud.task.get_document_convert_tasks_by_document_ids(db=db, document_ids=document_ids)
     embedding_tasks = crud.task.get_document_embedding_tasks_by_document_ids(db=db, document_ids=document_ids)
@@ -67,6 +68,16 @@ async def get_document_infos(
     transcribe_tasks = crud.task.get_document_transcribe_tasks_by_document_ids(db=db, document_ids=document_ids)
     process_tasks = crud.task.get_document_process_tasks_by_document_ids(db=db, document_ids=document_ids)
     labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
+    db_users = []
+    if creator_ids:
+        db_users = (
+            db.query(models.user.User)
+            .filter(
+                models.user.User.id.in_(creator_ids),
+                models.user.User.delete_at.is_(None),
+            )
+            .all()
+        )
 
     convert_task_by_document_id = {task.document_id: task for task in convert_tasks}
     embedding_task_by_document_id = {task.document_id: task for task in embedding_tasks}
@@ -75,10 +86,14 @@ async def get_document_infos(
     summarize_task_by_document_id = {task.document_id: task for task in summarize_tasks}
     transcribe_task_by_document_id = {task.document_id: task for task in transcribe_tasks}
     process_task_by_document_id = {task.document_id: task for task in process_tasks}
+    user_by_id = {user.id: user for user in db_users}
 
     res = []
     for document in documents:
         info = schemas.document.DocumentInfo.model_validate(document)
+        db_user = user_by_id.get(document.creator_id)
+        if db_user is not None:
+            info.creator = schemas.user.UserPublicInfo.model_validate(db_user)
         info.labels = [
             schemas.document.DocumentLabel(id=label.id, name=label.name)
             for label in labels_by_document_id.get(document.id, [])

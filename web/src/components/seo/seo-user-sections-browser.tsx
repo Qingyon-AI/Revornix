@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
+import { useEffect, useState } from 'react';
 import { formatDistance } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import { zhCN } from 'date-fns/locale/zh-CN';
+import { useInView } from 'react-intersection-observer';
 import {
 	BookMarked,
 	BookTextIcon,
@@ -24,6 +26,9 @@ import { Input } from '@/components/ui/input';
 import { DocumentCategory } from '@/enums/document';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
 import { getSectionCoverSrc } from '@/lib/section-cover';
+import documentApi from '@/api/document';
+import sectionApi from '@/api/section';
+import { publicRequest } from '@/lib/request-public';
 import {
 	getPublicSectionHref,
 	type PublicDocumentPagination,
@@ -188,9 +193,18 @@ const SeoUserSectionsBrowser = ({
 	nextStart?: number | null;
 }) => {
 	const t = useTranslations();
+	const { ref: bottomRef, inView } = useInView({
+		rootMargin: '320px 0px',
+	});
 	const { viewMode, setViewMode } = useCardViewMode(
 		`seo-user-${tab}-view-mode`,
 	);
+	const [sectionItems, setSectionItems] = useState(sections);
+	const [documentItems, setDocumentItems] = useState(documents);
+	const [totalCount, setTotalCount] = useState(total);
+	const [hasMoreState, setHasMoreState] = useState(hasMore ?? false);
+	const [nextStartState, setNextStartState] = useState(nextStart ?? null);
+	const [isLoadingMore, setIsLoadingMore] = useState(false);
 
 	const nextHref = new URLSearchParams();
 	if (tab !== 'sections') {
@@ -199,9 +213,86 @@ const SeoUserSectionsBrowser = ({
 	if (keyword) {
 		nextHref.set('q', keyword);
 	}
-	if (hasMore && nextStart !== undefined && nextStart !== null) {
-		nextHref.set('start', String(nextStart));
+	if (hasMoreState && nextStartState !== undefined && nextStartState !== null) {
+		nextHref.set('start', String(nextStartState));
 	}
+
+	useEffect(() => {
+		setSectionItems(sections);
+		setDocumentItems(documents);
+		setTotalCount(total);
+		setHasMoreState(hasMore ?? false);
+		setNextStartState(nextStart ?? null);
+		setIsLoadingMore(false);
+	}, [sections, documents, total, hasMore, nextStart, tab, keyword, userId]);
+
+	useEffect(() => {
+		const loadMore = async () => {
+			if (!inView || isLoadingMore || !hasMoreState || nextStartState == null) {
+				return;
+			}
+
+			setIsLoadingMore(true);
+			try {
+				if (tab === 'sections') {
+					const response = await publicRequest<{
+						total: number;
+						has_more: boolean;
+						next_start?: number | null;
+						elements: PublicSectionInfo[];
+					}>(sectionApi.searchUserSection, {
+						data: {
+							user_id: userId,
+							keyword: keyword || undefined,
+							start: nextStartState,
+							limit: 10,
+							desc: true,
+						},
+					});
+
+					setSectionItems((current) => {
+						const merged = new Map(current.map((item) => [item.id, item]));
+						response.elements.forEach((item) => {
+							merged.set(item.id, item);
+						});
+						return Array.from(merged.values());
+					});
+					setTotalCount(response.total ?? 0);
+					setHasMoreState(response.has_more);
+					setNextStartState(response.next_start ?? null);
+					return;
+				}
+
+				const response = await publicRequest<PublicDocumentPagination>(
+					documentApi.searchPublicDocument,
+					{
+						data: {
+							creator_id: userId,
+							keyword: keyword || undefined,
+							start: nextStartState,
+							limit: 12,
+							desc: true,
+						},
+					},
+				);
+
+				setDocumentItems((current) => {
+					const merged = new Map(current.map((item) => [item.id, item]));
+					response.elements.forEach((item) => {
+						merged.set(item.id, item);
+					});
+					return Array.from(merged.values());
+				});
+				setTotalCount(response.total ?? 0);
+				setHasMoreState(response.has_more);
+				setNextStartState(response.next_start ?? null);
+			} finally {
+				setIsLoadingMore(false);
+			}
+		};
+
+		void loadMore();
+	}, [inView, isLoadingMore, hasMoreState, nextStartState, tab, userId, keyword]);
 
 	return (
 		<div className='mx-auto w-full max-w-[1160px] rounded-[28px] border border-border/60 bg-background/24'>
@@ -288,12 +379,12 @@ const SeoUserSectionsBrowser = ({
 					)}
 					<span>
 						{tab === 'documents'
-							? t('user_detail_documents_result', { count: total })
-							: t('user_detail_sections_result', { count: total })}
+							? t('user_detail_documents_result', { count: totalCount })
+							: t('user_detail_sections_result', { count: totalCount })}
 					</span>
 					{keyword ? <span>“{keyword}”</span> : null}
 				</div>
-				{tab === 'sections' && sections.length === 0 ? (
+				{tab === 'sections' && sectionItems.length === 0 ? (
 					<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 						<div className='max-w-md'>
 							<h3 className='text-lg font-semibold tracking-tight'>
@@ -307,7 +398,7 @@ const SeoUserSectionsBrowser = ({
 						</div>
 					</div>
 				) : null}
-				{tab === 'documents' && documents.length === 0 ? (
+				{tab === 'documents' && documentItems.length === 0 ? (
 					<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 						<div className='max-w-md'>
 							<h3 className='text-lg font-semibold tracking-tight'>
@@ -321,98 +412,110 @@ const SeoUserSectionsBrowser = ({
 						</div>
 					</div>
 				) : null}
-				{tab === 'sections' && sections.length > 0 && viewMode === 'grid' ? (
+				{tab === 'sections' && sectionItems.length > 0 && viewMode === 'grid' ? (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
-						{sections.map((section) => (
+						{sectionItems.map((section) => (
 							<div className='h-full' key={section.id}>
 								<PublicSectionCard section={section} />
 							</div>
 						))}
 					</div>
 				) : null}
-				{tab === 'sections' && sections.length > 0 && viewMode !== 'grid' ? (
+				{tab === 'sections' && sectionItems.length > 0 && viewMode !== 'grid' ? (
 					<div className='space-y-4'>
-						{sections.map((section) => (
-							<SeoUserSectionListRow key={section.id} section={section} />
+						{sectionItems.map((section, index) => (
+							<div
+								key={section.id}
+								ref={index === sectionItems.length - 1 ? bottomRef : undefined}>
+								<SeoUserSectionListRow section={section} />
+							</div>
 						))}
 					</div>
 				) : null}
-				{tab === 'documents' && documents.length > 0 ? (
+				{tab === 'documents' && documentItems.length > 0 ? (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
-						{documents.map((document) => (
-							<Link
+						{documentItems.map((document, index) => (
+							<div
 								key={document.id}
-								href={`/document/${document.id}`}
-								className='group flex h-full flex-col overflow-hidden rounded-[24px] border border-border/60 bg-background/28 transition-colors duration-200 hover:border-border/80 hover:bg-background/40'>
-								<div className='relative h-44 w-full overflow-hidden bg-muted/30'>
-									{document.cover ? (
-										<img
-											src={document.cover}
-											alt={document.title}
-											className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]'
-										/>
-									) : (
-										<div className='flex h-full w-full items-center justify-center'>
-											<div className='flex items-center justify-center rounded-[20px] border border-border/60 bg-background/70 p-4 text-muted-foreground'>
-												<FileText size={24} />
-											</div>
-										</div>
-									)}
-									<div className='absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent' />
-								</div>
-
-								<div className='flex flex-1 flex-col gap-4 p-5'>
-									<div className='space-y-3'>
-										<div className='flex flex-wrap gap-2'>
-											<div className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-												{getDocumentCategoryLabel(document.category, t)}
-											</div>
-											<div className='rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-700 dark:text-emerald-300'>
-												{t('section_publish_status_on')}
-											</div>
-										</div>
-										<h3 className='line-clamp-2 text-lg font-semibold leading-7'>
-											{document.title}
-										</h3>
-										<p className='line-clamp-4 text-sm leading-6 text-muted-foreground'>
-											{document.description ||
-												t('seo_community_documents_empty_description')}
-										</p>
-									</div>
-
-									{document.labels && document.labels.length > 0 ? (
-										<div className='flex flex-wrap gap-2'>
-											{document.labels.slice(0, 4).map((label) => (
-												<div
-													key={label.id}
-													className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-													{label.name}
+								ref={index === documentItems.length - 1 ? bottomRef : undefined}>
+								<Link
+									href={`/document/${document.id}`}
+									className='group flex h-full flex-col overflow-hidden rounded-[24px] border border-border/60 bg-background/28 transition-colors duration-200 hover:border-border/80 hover:bg-background/40'>
+									<div className='relative h-44 w-full overflow-hidden bg-muted/30'>
+										{document.cover ? (
+											<img
+												src={document.cover}
+												alt={document.title}
+												className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]'
+											/>
+										) : (
+											<div className='flex h-full w-full items-center justify-center'>
+												<div className='flex items-center justify-center rounded-[20px] border border-border/60 bg-background/70 p-4 text-muted-foreground'>
+													<FileText size={24} />
 												</div>
-											))}
-										</div>
-									) : null}
-
-									<div className='mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground'>
-										<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-											ID #{document.id}
-										</div>
-										{document.convert_task?.md_file_name ? (
-											<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-												Markdown
 											</div>
-										) : null}
-										{document.transcribe_task?.transcribed_text ? (
-											<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-												Transcript
-											</div>
-										) : null}
+										)}
+										<div className='absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent' />
 									</div>
-								</div>
-							</Link>
+
+									<div className='flex flex-1 flex-col gap-4 p-5'>
+										<div className='space-y-3'>
+											<div className='flex flex-wrap gap-2'>
+												<div className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
+													{getDocumentCategoryLabel(document.category, t)}
+												</div>
+												<div className='rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-700 dark:text-emerald-300'>
+													{t('section_publish_status_on')}
+												</div>
+											</div>
+											<h3 className='line-clamp-2 text-lg font-semibold leading-7'>
+												{document.title}
+											</h3>
+											<p className='line-clamp-4 text-sm leading-6 text-muted-foreground'>
+												{document.description ||
+													t('seo_community_documents_empty_description')}
+											</p>
+										</div>
+
+										{document.labels && document.labels.length > 0 ? (
+											<div className='flex flex-wrap gap-2'>
+												{document.labels.slice(0, 4).map((label) => (
+													<div
+														key={label.id}
+														className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
+														{label.name}
+													</div>
+												))}
+											</div>
+										) : null}
+
+										<div className='mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground'>
+											<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
+												ID #{document.id}
+											</div>
+											{document.convert_task?.md_file_name ? (
+												<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
+													Markdown
+												</div>
+											) : null}
+											{document.transcribe_task?.transcribed_text ? (
+												<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
+													Transcript
+												</div>
+											) : null}
+										</div>
+									</div>
+								</Link>
+							</div>
 						))}
 					</div>
 				) : null}
-				{hasMore && nextStart !== undefined && nextStart !== null ? (
+				{isLoadingMore ? (
+					<div className='mt-5 flex justify-center text-sm text-muted-foreground'>
+						Loading...
+					</div>
+				) : null}
+				{hasMoreState && nextStartState !== undefined && nextStartState !== null ? (
 					<div className='mt-5 flex justify-end'>
 						<Link href={`/user/${userId}?${nextHref.toString()}`}>
 							<Button variant='outline' className='rounded-2xl'>
