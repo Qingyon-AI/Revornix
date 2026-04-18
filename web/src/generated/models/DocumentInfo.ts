@@ -103,6 +103,12 @@ export interface DocumentInfo {
      */
     creator_id: number;
     /**
+     *
+     * @type {UserPublicInfo}
+     * @memberof DocumentInfo
+     */
+    creator?: UserPublicInfo | null;
+    /**
      * 
      * @type {number}
      * @memberof DocumentInfo
@@ -232,6 +238,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'id': json['id'],
         'creator_id': json['creator_id'],
+        'creator': json['creator'] == null ? undefined : UserPublicInfoFromJSON(json['creator']),
         'category': json['category'],
         'title': json['title'],
         'from_plat': json['from_plat'],
@@ -265,6 +272,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         
         'id': value['id'],
         'creator_id': value['creator_id'],
+        'creator': UserPublicInfoToJSON(value['creator']),
         'category': value['category'],
         'title': value['title'],
         'from_plat': value['from_plat'],
@@ -284,4 +292,3 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
-

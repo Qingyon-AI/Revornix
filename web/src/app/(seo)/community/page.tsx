@@ -1,13 +1,12 @@
-import PublicSectionCard from '@/components/seo/public-section-card';
+import SeoCommunityBrowser from '@/components/seo/seo-community-browser';
 import JsonLd from '@/components/seo/json-ld';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { DocumentCategory } from '@/enums/document';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { ArrowRight, Compass, FileText, Search } from 'lucide-react';
+import { Compass, FileText, Search } from 'lucide-react';
 import {
 	fetchPublicDocuments,
 	fetchPublicSections,
@@ -61,25 +60,6 @@ const buildCommunityHref = ({
 	}
 	const query = params.toString();
 	return query ? `/community?${query}` : '/community';
-};
-
-const getDocumentCategoryLabel = (
-	category: number,
-	t: Awaited<ReturnType<typeof getTranslations>>,
-) => {
-	if (category === DocumentCategory.WEBSITE) {
-		return t('document_category_link');
-	}
-	if (category === DocumentCategory.FILE) {
-		return t('document_category_file');
-	}
-	if (category === DocumentCategory.QUICK_NOTE) {
-		return t('document_category_quick_note');
-	}
-	if (category === DocumentCategory.AUDIO) {
-		return t('document_category_audio');
-	}
-	return t('document_category_others');
 };
 
 export async function generateMetadata(props: {
@@ -173,19 +153,6 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				})
 			: null,
 	]);
-
-	const nextHref = new URLSearchParams();
-	if (tab !== 'sections') {
-		nextHref.set('tab', tab);
-	}
-	if (keyword) {
-		nextHref.set('q', keyword);
-	}
-	const nextStart =
-		tab === 'documents' ? documents?.next_start : sections?.next_start;
-	if (nextStart !== undefined && nextStart !== null) {
-		nextHref.set('start', String(nextStart));
-	}
 
 	const surfaceCardClassName =
 		'gap-0 rounded-[24px] border border-border/60 bg-background/24 py-0 shadow-none';
@@ -307,28 +274,6 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				</CardContent>
 			</Card>
 
-			<div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-				<div className='flex items-center gap-2 text-sm text-muted-foreground'>
-					{tab === 'documents' ? (
-						<FileText className='size-4' />
-					) : (
-						<Compass className='size-4' />
-					)}
-					<span>
-						{tab === 'documents'
-							? t('seo_community_documents_result', {
-									count: documents?.total ?? 0,
-								})
-							: t('seo_community_result', {
-									count: sections?.total ?? 0,
-								})}
-					</span>
-				</div>
-				{keyword ? (
-					<div className='text-sm text-muted-foreground'>“{keyword}”</div>
-				) : null}
-			</div>
-
 			<Card className={surfaceCardClassName}>
 				<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
 					<div className='space-y-5'>
@@ -379,133 +324,12 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				</CardContent>
 			</Card>
 
-			{tab === 'sections' && sections?.elements && sections.elements.length > 0 ? (
-				<div className='grid gap-5 md:grid-cols-2 xl:grid-cols-3'>
-					{sections.elements.map((section) => (
-						<PublicSectionCard
-							key={`${section.id}-${section.publish_uuid ?? 'private'}`}
-							section={section}
-						/>
-					))}
-				</div>
-			) : null}
-
-			{tab === 'documents' && documents?.elements && documents.elements.length > 0 ? (
-				<div className='grid gap-5 md:grid-cols-2 xl:grid-cols-3'>
-					{documents.elements.map((document) => (
-						<Link
-							key={document.id}
-							href={`/document/${document.id}`}
-							className='group flex h-full flex-col overflow-hidden rounded-[24px] border border-border/60 bg-background/28 transition-colors duration-200 hover:border-border/80 hover:bg-background/40'>
-							<div className='relative h-44 w-full overflow-hidden bg-muted/30'>
-								{document.cover ? (
-									<img
-										src={document.cover}
-										alt={document.title}
-										className='h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]'
-									/>
-								) : (
-									<div className='flex h-full w-full items-center justify-center'>
-										<div className='flex items-center justify-center rounded-[20px] border border-border/60 bg-background/70 p-4 text-muted-foreground'>
-											<FileText size={24} />
-										</div>
-									</div>
-								)}
-								<div className='absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent' />
-							</div>
-
-							<div className='flex flex-1 flex-col gap-4 p-5'>
-								<div className='space-y-3'>
-									<div className='flex flex-wrap gap-2'>
-										<div className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-											{getDocumentCategoryLabel(document.category, t)}
-										</div>
-										<div className='rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-700 dark:text-emerald-300'>
-											{t('section_publish_status_on')}
-										</div>
-									</div>
-									<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
-										{document.title}
-									</h2>
-									<p className='line-clamp-4 text-sm leading-6 text-muted-foreground'>
-										{document.description ||
-											t('seo_community_documents_empty_description')}
-									</p>
-								</div>
-
-								{document.labels && document.labels.length > 0 ? (
-									<div className='flex flex-wrap gap-2'>
-										{document.labels.slice(0, 4).map((label) => (
-											<div
-												key={label.id}
-												className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-												{label.name}
-											</div>
-										))}
-									</div>
-								) : null}
-
-								<div className='mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground'>
-									<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-										ID #{document.id}
-									</div>
-									{document.convert_task?.md_file_name ? (
-										<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-											Markdown
-										</div>
-									) : null}
-									{document.transcribe_task?.transcribed_text ? (
-										<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-											Transcript
-										</div>
-									) : null}
-								</div>
-							</div>
-						</Link>
-					))}
-				</div>
-			) : null}
-
-			{((tab === 'sections' && (!sections?.elements || sections.elements.length === 0)) ||
-				(tab === 'documents' &&
-					(!documents?.elements || documents.elements.length === 0))) && (
-				<Card className='rounded-[30px] border border-dashed border-border/70 bg-muted/20 shadow-none'>
-					<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
-						<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
-							{tab === 'documents' ? (
-								<FileText className='size-6 text-muted-foreground' />
-							) : (
-								<Compass className='size-6 text-muted-foreground' />
-							)}
-						</div>
-						<div className='space-y-2'>
-							<h2 className='text-xl font-semibold'>
-								{tab === 'documents'
-									? t('seo_community_documents_empty')
-									: t('seo_community_empty')}
-							</h2>
-							<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
-								{tab === 'documents'
-									? t('seo_community_documents_empty_description')
-									: t('seo_community_empty_description')}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-			)}
-
-			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-				{((tab === 'sections' && sections?.has_more) ||
-					(tab === 'documents' && documents?.has_more)) &&
-				nextStart ? (
-					<Link href={`/community?${nextHref.toString()}`}>
-						<Button className='rounded-2xl'>
-							{t('seo_community_next')}
-							<ArrowRight />
-						</Button>
-					</Link>
-				) : null}
-			</div>
+			<SeoCommunityBrowser
+				tab={tab}
+				keyword={keyword}
+				initialSections={sections}
+				initialDocuments={documents}
+			/>
 		</div>
 	);
 };

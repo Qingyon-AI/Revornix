@@ -250,6 +250,7 @@ class SearchPublicDocumentsRequest(BaseModel):
 class DocumentInfo(BaseModel):
     id: int
     creator_id: int
+    creator: UserPublicInfo | None = None
     category: int
     title: str
     from_plat: str
