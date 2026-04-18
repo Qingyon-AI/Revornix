@@ -15,6 +15,7 @@ import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import { useUserContext } from '@/provider/user-provider';
 import type { AIEvent, AIPhase, AIWorkflow, Message } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
@@ -634,20 +635,27 @@ const DocumentOperateAI = ({
 					/>
 					<div className='flex items-center justify-between gap-4 p-2'>
 						<div className='flex min-w-0 items-center gap-3 text-xs text-muted-foreground'>
-							<Button
-								type='button'
-								size='sm'
-								variant='outline'
-								className='h-8 rounded-full px-3 text-[11px] shadow-none'
-								onClick={openPicker}
-								disabled={isSending || isUploadingImages}>
-								{isUploadingImages ? (
-									<Loader2 className='size-3.5 animate-spin' />
-								) : (
-									<ImagePlus className='size-3.5' />
-								)}
-								<span>{t('upload_image')}</span>
-							</Button>
+							<div className='flex min-w-0 flex-col gap-1'>
+								<Button
+									type='button'
+									size='sm'
+									variant='outline'
+									className='h-8 rounded-full px-3 text-[11px] shadow-none'
+									onClick={openPicker}
+									disabled={isSending || isUploadingImages}>
+									{isUploadingImages ? (
+										<Loader2 className='size-3.5 animate-spin' />
+									) : (
+										<ImagePlus className='size-3.5' />
+									)}
+									<span>{t('upload_image')}</span>
+								</Button>
+								<span className='pl-1 text-[11px] text-muted-foreground'>
+									{t('upload_limit_hint', {
+										size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+									})}
+								</span>
+							</div>
 						</div>
 						<Button
 							type='button'

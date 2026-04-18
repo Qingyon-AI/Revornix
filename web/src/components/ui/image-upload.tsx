@@ -1,5 +1,5 @@
 import { utils } from '@kinda/utils';
-import { FileIcon, Loader2, Trash2 } from 'lucide-react';
+import { FileIcon, Info, Loader2, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
@@ -9,15 +9,21 @@ import { FileService } from '@/lib/file';
 import { toast } from 'sonner';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { useQuery } from '@tanstack/react-query';
+import {
+	formatUploadSize,
+	IMAGE_MAX_UPLOAD_BYTES,
+} from '@/lib/upload';
 
 const ImageUpload = ({
 	onSuccess,
 	onDelete,
 	className,
+	maxSizeBytes = IMAGE_MAX_UPLOAD_BYTES,
 }: {
 	onSuccess?: (fileName: string) => void;
 	onDelete?: () => void;
 	className?: string;
+	maxSizeBytes?: number;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -44,15 +50,24 @@ const ImageUpload = ({
 		upload.current?.click();
 	};
 
-		const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0];
-			if (!file) {
-				return;
-			}
-			if (!mainUserInfo?.default_user_file_system) {
-				toast.error(t('error_default_file_system_not_found'));
-				return;
-			}
+	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) {
+			return;
+		}
+		if (file.size > maxSizeBytes) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(maxSizeBytes),
+				}),
+			);
+			e.target.value = '';
+			return;
+		}
+		if (!mainUserInfo?.default_user_file_system) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploadingStatus('uploading');
 		setFile(file);
@@ -104,7 +119,17 @@ const ImageUpload = ({
 			{!uploadingStatus && (
 				<>
 					<FileIcon />
-					{t('upload_image')}
+					<div className='flex flex-col items-center gap-1 text-center'>
+						<span className='font-medium text-foreground'>
+							{t('upload_image')}
+						</span>
+						<span className='inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground shadow-sm'>
+							<Info className='size-3' />
+							{t('upload_limit_hint', {
+								size: formatUploadSize(maxSizeBytes),
+							})}
+						</span>
+					</div>
 				</>
 			)}
 			<input

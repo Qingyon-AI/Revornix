@@ -44,6 +44,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { settingAnchorHrefs } from '@/lib/setting-navigation';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import AIModelSelect from '@/components/ai/model-select';
 import { useEffect, useState } from 'react';
 
@@ -637,6 +638,11 @@ const MessageSendForm = () => {
 											)}
 											<span>{t('upload_image')}</span>
 										</Button>
+										<span className='text-[11px] text-muted-foreground'>
+											{t('upload_limit_hint', {
+												size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+											})}
+										</span>
 										<div className='flex flex-row items-center gap-2'>
 											{!isMobile ? (
 												<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>

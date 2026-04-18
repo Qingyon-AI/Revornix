@@ -7,6 +7,10 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { FileService } from '@/lib/file';
+import {
+	formatUploadSize,
+	IMAGE_MAX_UPLOAD_BYTES,
+} from '@/lib/upload';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 
@@ -83,6 +87,14 @@ export const useAIImageAttachments = () => {
 
 		for (const file of fileList) {
 			if (!file.type.startsWith('image/')) {
+				continue;
+			}
+			if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+				toast.error(
+					t('file_upload_size_exceeded', {
+						size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+					}),
+				);
 				continue;
 			}
 

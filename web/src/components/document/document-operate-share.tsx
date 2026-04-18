@@ -313,7 +313,7 @@ const DocumentOperateShare = ({
 							</div>
 
 							<div className='mt-4 flex flex-col gap-3'>
-								<div className='flex flex-col gap-2 rounded-[20px] border border-border/60 bg-background/55 p-3 lg:flex-row lg:items-center'>
+								<div className='flex flex-col gap-2 lg:flex-row lg:items-center'>
 									<Popover
 										open={userSelectOpen}
 										onOpenChange={setUserSelectOpen}

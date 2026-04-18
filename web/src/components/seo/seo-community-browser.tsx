@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -20,29 +19,6 @@ import {
 import { publicRequest } from '@/lib/request-public';
 
 type CommunityTab = 'sections' | 'documents';
-
-const buildCommunityHref = ({
-	tab,
-	keyword,
-	start,
-}: {
-	tab: CommunityTab;
-	keyword?: string;
-	start?: number;
-}) => {
-	const params = new URLSearchParams();
-	if (tab !== 'sections') {
-		params.set('tab', tab);
-	}
-	if (keyword) {
-		params.set('q', keyword);
-	}
-	if (start !== undefined) {
-		params.set('start', String(start));
-	}
-	const query = params.toString();
-	return query ? `/community?${query}` : '/community';
-};
 
 const SeoCommunityBrowser = ({
 	tab,
@@ -75,54 +51,68 @@ const SeoCommunityBrowser = ({
 	const nextStart =
 		tab === 'documents' ? documents?.next_start : sections?.next_start;
 
-	useEffect(() => {
-		const loadMore = async () => {
-			if (!inView || isLoadingMore || !hasMore || nextStart == null) {
-				return;
-			}
+	const loadMore = async (source: 'observer' | 'button') => {
+		console.log('[SEO community] loadMore check', {
+			source,
+			tab,
+			inView,
+			isLoadingMore,
+			hasMore,
+			nextStart,
+		});
 
-			setIsLoadingMore(true);
-			try {
-				if (tab === 'sections') {
-					const response = await publicRequest<PublicSectionPagination>(
-						sectionApi.searchPublicSection,
-						{
-							data: {
-								keyword,
-								start: nextStart,
-								limit: sections?.limit ?? 12,
-								desc: true,
-							},
-						},
-					);
+		if (!inView && source === 'observer') {
+			console.log('[SEO community] loadMore skipped', {
+				reason: {
+					notInView: true,
+					alreadyLoading: isLoadingMore,
+					noMore: !hasMore,
+					missingNextStart: nextStart == null,
+				},
+			});
+			return;
+		}
 
-					setSections((current) => {
-						const currentElements = current?.elements ?? [];
-						const merged = new Map(currentElements.map((item) => [item.id, item]));
-						response.elements.forEach((item) => {
-							merged.set(item.id, item);
-						});
-						return {
-							...response,
-							elements: Array.from(merged.values()),
-						};
-					});
-					return;
-				}
+		if (isLoadingMore || !hasMore || nextStart == null) {
+			console.log('[SEO community] loadMore skipped', {
+				reason: {
+					notInView: false,
+					alreadyLoading: isLoadingMore,
+					noMore: !hasMore,
+					missingNextStart: nextStart == null,
+				},
+			});
+			return;
+		}
 
-				const response = await publicRequest<PublicDocumentPagination>(
-					documentApi.searchPublicDocument,
+		setIsLoadingMore(true);
+		try {
+			if (tab === 'sections') {
+				console.log('[SEO community] loading next sections page', {
+					source,
+					keyword,
+					start: nextStart,
+					limit: sections?.limit ?? 12,
+				});
+				const response = await publicRequest<PublicSectionPagination>(
+					sectionApi.searchPublicSection,
 					{
 						data: {
 							keyword,
 							start: nextStart,
-							limit: documents?.limit ?? 12,
+							limit: sections?.limit ?? 12,
 							desc: true,
 						},
 					},
 				);
+				console.log('[SEO community] sections page loaded', {
+					returned: response.elements.length,
+					hasMore: response.has_more,
+					nextStart: response.next_start,
+					total: response.total,
+				});
 
-				setDocuments((current) => {
+				setSections((current) => {
 					const currentElements = current?.elements ?? [];
 					const merged = new Map(currentElements.map((item) => [item.id, item]));
 					response.elements.forEach((item) => {
@@ -133,12 +123,74 @@ const SeoCommunityBrowser = ({
 						elements: Array.from(merged.values()),
 					};
 				});
-			} finally {
-				setIsLoadingMore(false);
+				return;
 			}
-		};
 
-		void loadMore();
+			console.log('[SEO community] loading next documents page', {
+				source,
+				keyword,
+				start: nextStart,
+				limit: documents?.limit ?? 12,
+			});
+			const response = await publicRequest<PublicDocumentPagination>(
+				documentApi.searchPublicDocument,
+				{
+					data: {
+						keyword,
+						start: nextStart,
+						limit: documents?.limit ?? 12,
+						desc: true,
+					},
+				},
+			);
+			console.log('[SEO community] documents page loaded', {
+				returned: response.elements.length,
+				hasMore: response.has_more,
+				nextStart: response.next_start,
+				total: response.total,
+			});
+
+			setDocuments((current) => {
+				const currentElements = current?.elements ?? [];
+				const merged = new Map(currentElements.map((item) => [item.id, item]));
+				response.elements.forEach((item) => {
+					merged.set(item.id, item);
+				});
+				return {
+					...response,
+					elements: Array.from(merged.values()),
+				};
+			});
+		} catch (error) {
+			console.error('[SEO community] loadMore failed', error);
+		} finally {
+			console.log('[SEO community] loadMore finished');
+			setIsLoadingMore(false);
+		}
+	};
+
+	useEffect(() => {
+		console.log('[SEO community] observer state', {
+			tab,
+			inView,
+			hasMore,
+			nextStart,
+			isLoadingMore,
+			sectionCount: sections?.elements?.length ?? 0,
+			documentCount: documents?.elements?.length ?? 0,
+		});
+	}, [
+		documents?.elements?.length,
+		hasMore,
+		inView,
+		isLoadingMore,
+		nextStart,
+		sections?.elements?.length,
+		tab,
+	]);
+
+	useEffect(() => {
+		void loadMore('observer');
 	}, [documents?.limit, hasMore, inView, isLoadingMore, keyword, nextStart, sections?.limit, tab]);
 
 	return (
@@ -221,12 +273,16 @@ const SeoCommunityBrowser = ({
 
 			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
 				{hasMore && nextStart ? (
-					<Link href={buildCommunityHref({ tab, keyword, start: nextStart })}>
-						<Button className='rounded-2xl'>
-							{t('seo_community_next')}
-							<ArrowRight />
-						</Button>
-					</Link>
+					<Button
+						type='button'
+						className='rounded-2xl'
+						onClick={() => {
+							void loadMore('button');
+						}}
+						disabled={isLoadingMore}>
+						{t('seo_community_next')}
+						<ArrowRight />
+					</Button>
 				) : null}
 			</div>
 		</>

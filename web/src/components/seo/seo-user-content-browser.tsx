@@ -38,11 +38,7 @@ import { cn, replacePath } from '@/lib/utils';
 
 type SeoUserBrowserTab = 'sections' | 'documents';
 
-const SeoUserSectionListRow = ({
-	section,
-}: {
-	section: PublicSectionInfo;
-}) => {
+const SeoUserSectionListRow = ({ section }: { section: PublicSectionInfo }) => {
 	const t = useTranslations();
 	const locale = useLocale();
 	const router = useRouter();
@@ -131,8 +127,7 @@ const SeoUserSectionListRow = ({
 									<Users className='size-3.5' />
 									<span>
 										{t('section_card_subscribers_count', {
-											section_subscribers_count:
-												section.subscribers_count ?? 0,
+											section_subscribers_count: section.subscribers_count ?? 0,
 										})}
 									</span>
 								</div>
@@ -154,7 +149,7 @@ const SeoUserSectionListRow = ({
 	);
 };
 
-const SeoUserSectionsBrowser = ({
+const SeoUserContentBrowser = ({
 	userId,
 	tab,
 	sections,
@@ -187,16 +182,153 @@ const SeoUserSectionsBrowser = ({
 	const [nextStartState, setNextStartState] = useState(nextStart ?? null);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-	const nextHref = new URLSearchParams();
-	if (tab !== 'sections') {
-		nextHref.set('tab', tab);
-	}
-	if (keyword) {
-		nextHref.set('q', keyword);
-	}
-	if (hasMoreState && nextStartState !== undefined && nextStartState !== null) {
-		nextHref.set('start', String(nextStartState));
-	}
+	const loadMore = async (source: 'observer' | 'button') => {
+		console.log('[SEO user] loadMore check', {
+			source,
+			userId,
+			tab,
+			viewMode,
+			inView,
+			isLoadingMore,
+			hasMoreState,
+			nextStartState,
+		});
+
+		if (!inView && source === 'observer') {
+			console.log('[SEO user] loadMore skipped', {
+				reason: {
+					notInView: true,
+					alreadyLoading: isLoadingMore,
+					noMore: !hasMoreState,
+					missingNextStart: nextStartState == null,
+				},
+			});
+			return;
+		}
+
+		if (isLoadingMore || !hasMoreState || nextStartState == null) {
+			console.log('[SEO user] loadMore skipped', {
+				reason: {
+					notInView: false,
+					alreadyLoading: isLoadingMore,
+					noMore: !hasMoreState,
+					missingNextStart: nextStartState == null,
+				},
+			});
+			return;
+		}
+
+		setIsLoadingMore(true);
+		try {
+			if (tab === 'sections') {
+				console.log('[SEO user] loading next sections page', {
+					source,
+					userId,
+					keyword: keyword || undefined,
+					start: nextStartState,
+					limit: 12,
+				});
+				const response = await publicRequest<{
+					total: number;
+					has_more: boolean;
+					next_start?: number | null;
+					elements: PublicSectionInfo[];
+				}>(sectionApi.searchUserSection, {
+					data: {
+						user_id: userId,
+						keyword: keyword || undefined,
+						start: nextStartState,
+						limit: 12,
+						desc: true,
+					},
+				});
+				console.log('[SEO user] sections page loaded', {
+					returned: response.elements.length,
+					hasMore: response.has_more,
+					nextStart: response.next_start,
+					total: response.total,
+				});
+
+				setSectionItems((current) => {
+					const merged = new Map(current.map((item) => [item.id, item]));
+					response.elements.forEach((item) => {
+						merged.set(item.id, item);
+					});
+					return Array.from(merged.values());
+				});
+				setTotalCount(response.total ?? 0);
+				setHasMoreState(response.has_more);
+				setNextStartState(response.next_start ?? null);
+				return;
+			}
+
+			console.log('[SEO user] loading next documents page', {
+				source,
+				userId,
+				keyword: keyword || undefined,
+				start: nextStartState,
+				limit: 12,
+			});
+			const response = await publicRequest<PublicDocumentPagination>(
+				documentApi.searchPublicDocument,
+				{
+					data: {
+						creator_id: userId,
+						keyword: keyword || undefined,
+						start: nextStartState,
+						limit: 12,
+						desc: true,
+					},
+				},
+			);
+			console.log('[SEO user] documents page loaded', {
+				returned: response.elements.length,
+				hasMore: response.has_more,
+				nextStart: response.next_start,
+				total: response.total,
+			});
+
+			setDocumentItems((current) => {
+				const merged = new Map(current.map((item) => [item.id, item]));
+				response.elements.forEach((item) => {
+					merged.set(item.id, item);
+				});
+				return Array.from(merged.values());
+			});
+			setTotalCount(response.total ?? 0);
+			setHasMoreState(response.has_more);
+			setNextStartState(response.next_start ?? null);
+		} catch (error) {
+			console.error('[SEO user] loadMore failed', error);
+		} finally {
+			console.log('[SEO user] loadMore finished');
+			setIsLoadingMore(false);
+		}
+	};
+
+	useEffect(() => {
+		console.log('[SEO user] observer state', {
+			userId,
+			tab,
+			viewMode,
+			inView,
+			hasMoreState,
+			nextStartState,
+			isLoadingMore,
+			sectionCount: sectionItems.length,
+			documentCount: documentItems.length,
+		});
+	}, [
+		documentItems.length,
+		hasMoreState,
+		inView,
+		isLoadingMore,
+		nextStartState,
+		sectionItems.length,
+		tab,
+		userId,
+		viewMode,
+	]);
 
 	useEffect(() => {
 		setSectionItems(sections);
@@ -208,72 +340,16 @@ const SeoUserSectionsBrowser = ({
 	}, [sections, documents, total, hasMore, nextStart, tab, keyword, userId]);
 
 	useEffect(() => {
-		const loadMore = async () => {
-			if (!inView || isLoadingMore || !hasMoreState || nextStartState == null) {
-				return;
-			}
-
-			setIsLoadingMore(true);
-			try {
-				if (tab === 'sections') {
-					const response = await publicRequest<{
-						total: number;
-						has_more: boolean;
-						next_start?: number | null;
-						elements: PublicSectionInfo[];
-					}>(sectionApi.searchUserSection, {
-						data: {
-							user_id: userId,
-							keyword: keyword || undefined,
-							start: nextStartState,
-							limit: 10,
-							desc: true,
-						},
-					});
-
-					setSectionItems((current) => {
-						const merged = new Map(current.map((item) => [item.id, item]));
-						response.elements.forEach((item) => {
-							merged.set(item.id, item);
-						});
-						return Array.from(merged.values());
-					});
-					setTotalCount(response.total ?? 0);
-					setHasMoreState(response.has_more);
-					setNextStartState(response.next_start ?? null);
-					return;
-				}
-
-				const response = await publicRequest<PublicDocumentPagination>(
-					documentApi.searchPublicDocument,
-					{
-						data: {
-							creator_id: userId,
-							keyword: keyword || undefined,
-							start: nextStartState,
-							limit: 12,
-							desc: true,
-						},
-					},
-				);
-
-				setDocumentItems((current) => {
-					const merged = new Map(current.map((item) => [item.id, item]));
-					response.elements.forEach((item) => {
-						merged.set(item.id, item);
-					});
-					return Array.from(merged.values());
-				});
-				setTotalCount(response.total ?? 0);
-				setHasMoreState(response.has_more);
-				setNextStartState(response.next_start ?? null);
-			} finally {
-				setIsLoadingMore(false);
-			}
-		};
-
-		void loadMore();
-	}, [inView, isLoadingMore, hasMoreState, nextStartState, tab, userId, keyword]);
+		void loadMore('observer');
+	}, [
+		inView,
+		isLoadingMore,
+		hasMoreState,
+		nextStartState,
+		tab,
+		userId,
+		keyword,
+	]);
 
 	return (
 		<div className='mx-auto w-full max-w-[1160px] rounded-[28px] border border-border/60 bg-background/24'>
@@ -303,7 +379,8 @@ const SeoUserSectionsBrowser = ({
 											? 'border border-border/70 bg-background text-foreground hover:bg-background'
 											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
 									)}>
-									<Link href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
+									<Link
+										href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
 										<Compass className='mr-2 size-4' />
 										{t('seo_community_sections_tab')}
 									</Link>
@@ -332,7 +409,9 @@ const SeoUserSectionsBrowser = ({
 								className='ml-auto h-11 shrink-0 rounded-2xl border-border/60 bg-background/45 sm:ml-0 [&_button]:h-full [&_button]:w-11'
 							/>
 						</div>
-						<form action={`/user/${userId}`} className='w-full min-w-0 xl:max-w-[520px]'>
+						<form
+							action={`/user/${userId}`}
+							className='w-full min-w-0 xl:max-w-[520px]'>
 							<input type='hidden' name='tab' value={tab} />
 							<div className='relative'>
 								<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
@@ -374,7 +453,9 @@ const SeoUserSectionsBrowser = ({
 									: t('user_sections_empty')}
 							</h3>
 							<p className='mt-2 text-sm leading-7 text-muted-foreground'>
-								{keyword ? `"${keyword}"` : t('user_detail_sections_description')}
+								{keyword
+									? `"${keyword}"`
+									: t('user_detail_sections_description')}
 							</p>
 						</div>
 					</div>
@@ -388,21 +469,30 @@ const SeoUserSectionsBrowser = ({
 									: t('user_documents_empty')}
 							</h3>
 							<p className='mt-2 text-sm leading-7 text-muted-foreground'>
-								{keyword ? `"${keyword}"` : t('user_detail_documents_description')}
+								{keyword
+									? `"${keyword}"`
+									: t('user_detail_documents_description')}
 							</p>
 						</div>
 					</div>
 				) : null}
-				{tab === 'sections' && sectionItems.length > 0 && viewMode === 'grid' ? (
+				{tab === 'sections' &&
+				sectionItems.length > 0 &&
+				viewMode === 'grid' ? (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
-						{sectionItems.map((section) => (
-							<div className='h-full' key={section.id}>
+						{sectionItems.map((section, index) => (
+							<div
+								className='h-full'
+								key={section.id}
+								ref={index === sectionItems.length - 1 ? bottomRef : undefined}>
 								<PublicSectionCard section={section} />
 							</div>
 						))}
 					</div>
 				) : null}
-				{tab === 'sections' && sectionItems.length > 0 && viewMode !== 'grid' ? (
+				{tab === 'sections' &&
+				sectionItems.length > 0 &&
+				viewMode !== 'grid' ? (
 					<div className='space-y-4'>
 						{sectionItems.map((section, index) => (
 							<div
@@ -418,7 +508,9 @@ const SeoUserSectionsBrowser = ({
 						{documentItems.map((document, index) => (
 							<div
 								key={document.id}
-								ref={index === documentItems.length - 1 ? bottomRef : undefined}>
+								ref={
+									index === documentItems.length - 1 ? bottomRef : undefined
+								}>
 								<PublicDocumentCard document={document} />
 							</div>
 						))}
@@ -429,13 +521,20 @@ const SeoUserSectionsBrowser = ({
 						Loading...
 					</div>
 				) : null}
-				{hasMoreState && nextStartState !== undefined && nextStartState !== null ? (
+				{hasMoreState &&
+				nextStartState !== undefined &&
+				nextStartState !== null ? (
 					<div className='mt-5 flex justify-end'>
-						<Link href={`/user/${userId}?${nextHref.toString()}`}>
-							<Button variant='outline' className='rounded-2xl'>
-								{t('seo_community_next')}
-							</Button>
-						</Link>
+						<Button
+							type='button'
+							variant='outline'
+							className='rounded-2xl'
+							onClick={() => {
+								void loadMore('button');
+							}}
+							disabled={isLoadingMore}>
+							{t('seo_community_next')}
+						</Button>
 					</div>
 				) : null}
 			</div>
@@ -443,4 +542,4 @@ const SeoUserSectionsBrowser = ({
 	);
 };
 
-export default SeoUserSectionsBrowser;
+export default SeoUserContentBrowser;

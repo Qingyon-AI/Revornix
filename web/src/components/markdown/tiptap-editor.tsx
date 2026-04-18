@@ -74,6 +74,7 @@ import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 
 type TipTapEditorProps = {
 	value?: string;
@@ -896,6 +897,15 @@ const TipTapEditor = ({
 			event.target.value = '';
 			return;
 		}
+		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+				}),
+			);
+			event.target.value = '';
+			return;
+		}
 
 		if (
 			!mainUserInfo?.default_user_file_system ||
@@ -1192,21 +1202,30 @@ const TipTapEditor = ({
 					<Code2 className='size-4' />
 				</Button>
 				{enableImageUpload && (
-					<Button
-						type='button'
-						variant='ghost'
-						size='icon'
-						className={getToolbarButtonClassName()}
-						title='上传图片'
-						onMouseDown={preserveEditorSelection}
-						onClick={openImagePicker}
-						disabled={isUploadingImage}>
-						{isUploadingImage ? (
-							<Loader2 className='size-4 animate-spin' />
-						) : (
-							<ImagePlus className='size-4' />
-						)}
-					</Button>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type='button'
+								variant='ghost'
+								size='icon'
+								className={getToolbarButtonClassName()}
+								title='上传图片'
+								onMouseDown={preserveEditorSelection}
+								onClick={openImagePicker}
+								disabled={isUploadingImage}>
+								{isUploadingImage ? (
+									<Loader2 className='size-4 animate-spin' />
+								) : (
+									<ImagePlus className='size-4' />
+								)}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{t('upload_limit_hint', {
+								size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+							})}
+						</TooltipContent>
+					</Tooltip>
 				)}
 				{enableDrawing && (
 					<Button

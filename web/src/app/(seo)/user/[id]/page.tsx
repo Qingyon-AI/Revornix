@@ -1,6 +1,6 @@
 import JsonLd from '@/components/seo/json-ld';
 import SeoUserFollowButton from '@/components/seo/seo-user-follow-button';
-import SeoUserSectionsBrowser from '@/components/seo/seo-user-sections-browser';
+import SeoUserContentBrowser from '@/components/seo/seo-user-content-browser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { UserRole } from '@/enums/user';
@@ -348,7 +348,7 @@ const SeoUserDetailPage = async (props: {
 					</div>
 				</div>
 
-				<SeoUserSectionsBrowser
+				<SeoUserContentBrowser
 					userId={user.id}
 					tab={tab}
 					sections={sections}

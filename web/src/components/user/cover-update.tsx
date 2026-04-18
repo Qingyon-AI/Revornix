@@ -14,6 +14,7 @@ import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { updateUserInfo } from '@/service/user';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 
 const CoverUpdate = ({
 	compact = false,
@@ -60,6 +61,15 @@ const CoverUpdate = ({
 	const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
+		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+				}),
+			);
+			e.target.value = '';
+			return;
+		}
 		if (!mainUserInfo?.default_user_file_system) {
 			toast.error(t('error_default_file_system_not_found'));
 			return;
@@ -128,9 +138,21 @@ const CoverUpdate = ({
 								<Loader2 className='size-4 animate-spin' />
 							) : null}
 						</Button>
+						<p className='text-[11px] text-muted-foreground'>
+							{t('upload_limit_hint', {
+								size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+							})}
+						</p>
 					</div>
 				)}
 			</div>
+			{compact ? (
+				<p className='mt-2 text-[11px] text-muted-foreground'>
+					{t('upload_limit_hint', {
+						size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+					})}
+				</p>
+			) : null}
 			<input
 				type='file'
 				accept='image/*'
