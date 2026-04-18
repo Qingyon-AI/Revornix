@@ -14,6 +14,7 @@ import {
 } from '@/lib/seo';
 import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 type CommunityTab = 'sections' | 'documents';
@@ -171,158 +172,160 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 		inLanguage: locale,
 		mainEntity:
 			tab === 'documents'
-				? documents?.elements?.slice(0, 8).map((document) => ({
+				? (documents?.elements?.slice(0, 8).map((document) => ({
 						'@type': 'Article',
 						name: document.title,
 						description: document.description,
 						url: createAbsoluteUrl(`/document/${document.id}`),
-					})) ?? []
-				: sections?.elements?.slice(0, 8).map((section) => ({
+					})) ?? [])
+				: (sections?.elements?.slice(0, 8).map((section) => ({
 						'@type': 'CollectionPage',
 						name: section.title,
 						description: section.description,
 						url: createAbsoluteUrl(getPublicSectionHref(section)),
-					})) ?? [],
+					})) ?? []),
 	};
 
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
 			<JsonLd data={communitySchema} />
-			<Card
-				className={`relative overflow-hidden rounded-[24px] ${surfaceCardClassName}`}>
-				<CardContent className='relative z-10 px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
-					<div className='flex flex-col gap-6'>
-						<div className='max-w-3xl space-y-4'>
-							<div className='space-y-3'>
-								<h1 className='text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
-									{tab === 'documents'
-										? t('seo_community_documents_title')
-										: t('seo_community_title')}
-								</h1>
-								<p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>
-									{tab === 'documents'
-										? t('seo_community_documents_description')
-										: t('seo_community_description')}
-								</p>
+
+			<div className='space-y-5'>
+				<div className='space-y-3'>
+					<h2 className='text-2xl font-semibold tracking-tight'>
+						{t('seo_community_intro_title')}
+					</h2>
+					<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+						{tab === 'documents'
+							? t('seo_community_documents_intro_paragraph_1')
+							: t('seo_community_intro_paragraph_1')}
+					</p>
+					<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+						{tab === 'documents'
+							? t('seo_community_documents_intro_paragraph_2')
+							: t('seo_community_intro_paragraph_2')}
+					</p>
+					<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
+						{tab === 'documents'
+							? t('seo_community_documents_intro_paragraph_3')
+							: t('seo_community_intro_paragraph_3')}
+					</p>
+				</div>
+
+				<div className='space-y-3'>
+					<h3 className='text-lg font-semibold tracking-tight'>
+						{t('seo_community_explore_title')}
+					</h3>
+					<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
+						<li>
+							{tab === 'documents'
+								? t('seo_community_documents_explore_documents')
+								: t('seo_community_explore_sections')}
+						</li>
+						<li>
+							{tab === 'documents'
+								? t('seo_community_documents_explore_sources')
+								: t('seo_community_explore_creators')}
+						</li>
+						<li>
+							{tab === 'documents'
+								? t('seo_community_documents_explore_sections')
+								: t('seo_community_explore_documents')}
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<Separator />
+
+			<div className='md:sticky top-14 z-10 bg-background/92 backdrop-blur-xl py-5'>
+				<div className='flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'>
+					<div className='min-w-0 space-y-2'>
+						<h2 className='text-xl font-semibold tracking-tight sm:text-2xl'>
+							{tab === 'documents'
+								? t('seo_community_documents_title')
+								: t('seo_community_title')}
+						</h2>
+						<p className='max-w-[40rem] text-sm leading-6 text-muted-foreground'>
+							{tab === 'documents'
+								? t('seo_community_documents_description')
+								: t('seo_community_description')}
+						</p>
+					</div>
+					<div className='flex w-full min-w-0 flex-col gap-3 xl:max-w-[720px] xl:items-end'>
+						<div className='flex w-full min-w-0 flex-wrap items-center gap-3 xl:justify-end'>
+							<div className='inline-flex max-w-full rounded-2xl border border-border/60 bg-background/45 p-1'>
+								<Button
+									asChild
+									variant='ghost'
+									className={cn(
+										'h-9 rounded-xl px-3 shadow-none',
+										tab === 'sections'
+											? 'border border-border/70 bg-background text-foreground hover:bg-background'
+											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+									)}>
+									<Link href={buildCommunityHref({ tab: 'sections', keyword })}>
+										<Compass className='mr-2 size-4' />
+										{t('seo_community_sections_tab')}
+									</Link>
+								</Button>
+								<Button
+									asChild
+									variant='ghost'
+									className={cn(
+										'h-9 rounded-xl px-3 shadow-none',
+										tab === 'documents'
+											? 'border border-border/70 bg-background text-foreground hover:bg-background'
+											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+									)}>
+									<Link
+										href={buildCommunityHref({ tab: 'documents', keyword })}>
+										<FileText className='mr-2 size-4' />
+										{t('seo_community_documents_tab')}
+									</Link>
+								</Button>
 							</div>
 						</div>
+
+						<form
+							action='/community'
+							className='flex w-full min-w-0 flex-col gap-3'>
+							<input type='hidden' name='tab' value={tab} />
+							<div className='flex w-full min-w-0 flex-col gap-3 sm:flex-row'>
+								<div className='relative flex-1'>
+									<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+									<Input
+										type='search'
+										name='q'
+										defaultValue={keyword}
+										placeholder={
+											tab === 'documents'
+												? t('seo_community_documents_search_placeholder')
+												: t('seo_community_search_placeholder')
+										}
+										className='h-11 rounded-2xl border-border/60 bg-background/45 pl-10'
+									/>
+								</div>
+								<div className='flex gap-3'>
+									<Button type='submit' className='h-11 rounded-2xl px-5'>
+										{t('seo_community_search_action')}
+									</Button>
+									{keyword ? (
+										<Link href={buildCommunityHref({ tab })}>
+											<Button
+												type='button'
+												variant='outline'
+												className='h-11 rounded-2xl px-5'>
+												{t('seo_community_reset')}
+											</Button>
+										</Link>
+									) : null}
+								</div>
+							</div>
+						</form>
 					</div>
-
-					<div className='mt-8 inline-flex w-fit rounded-[18px] border border-border/60 bg-background/35 p-1'>
-						<Button
-							asChild
-							variant='ghost'
-							className={cn(
-								'h-10 rounded-[14px] px-4 shadow-none transition-all',
-								tab === 'sections'
-									? 'border border-border/70 bg-background text-foreground hover:bg-background'
-									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground',
-							)}>
-							<Link href={buildCommunityHref({ tab: 'sections', keyword })}>
-								<Compass className='mr-2 size-4' />
-								{t('seo_community_sections_tab')}
-							</Link>
-						</Button>
-						<Button
-							asChild
-							variant='ghost'
-							className={cn(
-								'h-10 rounded-[14px] px-4 shadow-none transition-all',
-								tab === 'documents'
-									? 'border border-border/70 bg-background text-foreground hover:bg-background'
-									: 'border border-transparent bg-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground',
-							)}>
-							<Link href={buildCommunityHref({ tab: 'documents', keyword })}>
-								<FileText className='mr-2 size-4' />
-								{t('seo_community_documents_tab')}
-							</Link>
-						</Button>
-					</div>
-
-					<form
-						action='/community'
-						className='mt-8 flex flex-col gap-3 sm:flex-row'>
-						<input type='hidden' name='tab' value={tab} />
-						<div className='relative flex-1'>
-							<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
-							<Input
-								type='search'
-								name='q'
-								defaultValue={keyword}
-								placeholder={
-									tab === 'documents'
-										? t('seo_community_documents_search_placeholder')
-										: t('seo_community_search_placeholder')
-								}
-								className='h-11 rounded-2xl border-border/60 bg-background/45 pl-10'
-							/>
-						</div>
-						<Button type='submit' className='h-11 rounded-2xl px-5'>
-							{t('seo_community_search_action')}
-						</Button>
-						{keyword ? (
-							<Link href={buildCommunityHref({ tab })}>
-								<Button
-									type='button'
-									variant='outline'
-									className='h-11 rounded-2xl px-5'>
-									{t('seo_community_reset')}
-								</Button>
-							</Link>
-						) : null}
-					</form>
-				</CardContent>
-			</Card>
-
-			<Card className={surfaceCardClassName}>
-				<CardContent className='px-5 py-6 sm:px-7 sm:py-7'>
-					<div className='space-y-5'>
-						<div className='space-y-3'>
-							<h2 className='text-2xl font-semibold tracking-tight'>
-								{t('seo_community_intro_title')}
-							</h2>
-							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
-								{tab === 'documents'
-									? t('seo_community_documents_intro_paragraph_1')
-									: t('seo_community_intro_paragraph_1')}
-							</p>
-							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
-								{tab === 'documents'
-									? t('seo_community_documents_intro_paragraph_2')
-									: t('seo_community_intro_paragraph_2')}
-							</p>
-							<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
-								{tab === 'documents'
-									? t('seo_community_documents_intro_paragraph_3')
-									: t('seo_community_intro_paragraph_3')}
-							</p>
-						</div>
-
-						<div className='space-y-3'>
-							<h3 className='text-lg font-semibold tracking-tight'>
-								{t('seo_community_explore_title')}
-							</h3>
-							<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
-								<li>
-									{tab === 'documents'
-										? t('seo_community_documents_explore_documents')
-										: t('seo_community_explore_sections')}
-								</li>
-								<li>
-									{tab === 'documents'
-										? t('seo_community_documents_explore_sources')
-										: t('seo_community_explore_creators')}
-								</li>
-								<li>
-									{tab === 'documents'
-										? t('seo_community_documents_explore_sections')
-										: t('seo_community_explore_documents')}
-								</li>
-							</ul>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 
 			<SeoCommunityBrowser
 				tab={tab}

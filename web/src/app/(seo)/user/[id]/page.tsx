@@ -346,33 +346,6 @@ const SeoUserDetailPage = async (props: {
 							</div>
 						</div>
 					</div>
-
-					<div className='rounded-[24px] border border-border/60 bg-background/30 px-5 py-5'>
-						<div className='max-w-4xl space-y-4'>
-							<div className='space-y-2'>
-								<h2 className='text-xl font-semibold tracking-tight'>
-									{t('seo_user_intro_title')}
-								</h2>
-								<p className='text-sm leading-7 text-muted-foreground sm:text-base'>
-									{user.slogan
-										? t('seo_user_intro_with_slogan', { name: user.nickname })
-										: t('seo_user_intro_without_slogan', {
-												name: user.nickname,
-											})}
-								</p>
-							</div>
-							<div className='space-y-3'>
-								<h3 className='text-base font-semibold tracking-tight'>
-									{t('seo_user_explore_title')}
-								</h3>
-								<ul className='list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-base'>
-									<li>{t('seo_user_explore_sections')}</li>
-									<li>{t('seo_user_explore_documents')}</li>
-									<li>{t('seo_user_explore_community')}</li>
-								</ul>
-							</div>
-						</div>
-					</div>
 				</div>
 
 				<SeoUserSectionsBrowser

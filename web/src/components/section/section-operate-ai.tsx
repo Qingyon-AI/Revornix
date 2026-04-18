@@ -15,12 +15,7 @@ import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
 import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
 import { useUserContext } from '@/provider/user-provider';
-import type {
-	AIEvent,
-	AIPhase,
-	AIWorkflow,
-	Message,
-} from '@/types/ai';
+import type { AIEvent, AIPhase, AIWorkflow, Message } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import MessageCard from '../revornixai/message-card';
 import { Button } from '../ui/button';
@@ -191,18 +186,22 @@ const SectionOperateAI = ({
 				if (artifact.kind === 'tool_result') {
 					const tool = artifact.tool;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'tool_result',
-								phaseLabelMap.tool_result,
-								{
-									tool,
-								},
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'tool_result',
+									phaseLabelMap.tool_result,
+									{
+										tool,
+									},
+								),
+							}),
+						),
 					);
 					return;
 				}
@@ -210,14 +209,18 @@ const SectionOperateAI = ({
 				if (artifact.kind === 'document_sources') {
 					const documentSources = artifact.items;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							document_sources: mergeDocumentSources(
-								message.document_sources,
-								documentSources,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								document_sources: mergeDocumentSources(
+									message.document_sources,
+									documentSources,
+								),
+							}),
+						),
 					);
 					return;
 				}
@@ -225,14 +228,18 @@ const SectionOperateAI = ({
 				if (artifact.kind === 'chunk_citations') {
 					const chunkCitations = artifact.items;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							chunk_citations: mergeChunkCitations(
-								message.chunk_citations,
-								chunkCitations,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								chunk_citations: mergeChunkCitations(
+									message.chunk_citations,
+									chunkCitations,
+								),
+							}),
+						),
 					);
 				}
 				return;
@@ -245,20 +252,24 @@ const SectionOperateAI = ({
 						? t(payload.message as any)
 						: payload.message;
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
-							ai_state: {
-								phase: 'writing',
-								label: phaseLabelMap.writing,
-							},
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'writing',
-								phaseLabelMap.writing,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
+								ai_state: {
+									phase: 'writing',
+									label: phaseLabelMap.writing,
+								},
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'writing',
+									phaseLabelMap.writing,
+								),
+							}),
+						),
 					);
 					break;
 				}
@@ -269,50 +280,62 @@ const SectionOperateAI = ({
 						payload.references.length > 0
 					) {
 						setMessages((currentMessages) =>
-							updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-								...message,
-								role: 'assistant',
-								document_sources: mergeDocumentSources(
-									message.document_sources,
-									payload.references,
-								),
-							})),
+							updateAssistantMessage(
+								currentMessages,
+								event.chat_id,
+								(message) => ({
+									...message,
+									role: 'assistant',
+									document_sources: mergeDocumentSources(
+										message.document_sources,
+										payload.references,
+									),
+								}),
+							),
 						);
 					}
 
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'tool_result',
-								phaseLabelMap.tool_result,
-								{
-									tool: payload.tool,
-								},
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'tool_result',
+									phaseLabelMap.tool_result,
+									{
+										tool: payload.tool,
+									},
+								),
+							}),
+						),
 					);
 					break;
 				}
 
 				if (payload.kind === 'token') {
 					setMessages((currentMessages) =>
-						updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-							...message,
-							role: 'assistant',
-							content: message.content + payload.content,
-							ai_state: {
-								phase: 'writing',
-								label: phaseLabelMap.writing,
-							},
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'writing',
-								phaseLabelMap.writing,
-							),
-						})),
+						updateAssistantMessage(
+							currentMessages,
+							event.chat_id,
+							(message) => ({
+								...message,
+								role: 'assistant',
+								content: message.content + payload.content,
+								ai_state: {
+									phase: 'writing',
+									label: phaseLabelMap.writing,
+								},
+								ai_workflow: pushWorkflowStep(
+									message.ai_workflow,
+									'writing',
+									phaseLabelMap.writing,
+								),
+							}),
+						),
 					);
 				}
 				break;
@@ -326,20 +349,20 @@ const SectionOperateAI = ({
 							phase: 'done',
 							label: phaseLabelMap.done,
 						},
-							ai_workflow: pushWorkflowStep(
-								message.ai_workflow,
-								'done',
-								phaseLabelMap.done,
-							),
-							chunk_citations:
-								event.payload?.references && event.payload.references.length > 0
-									? mergeChunkCitations(
-											message.chunk_citations,
-											event.payload.references,
-										)
-									: message.chunk_citations,
-						})),
-					);
+						ai_workflow: pushWorkflowStep(
+							message.ai_workflow,
+							'done',
+							phaseLabelMap.done,
+						),
+						chunk_citations:
+							event.payload?.references && event.payload.references.length > 0
+								? mergeChunkCitations(
+										message.chunk_citations,
+										event.payload.references,
+									)
+								: message.chunk_citations,
+					})),
+				);
 				break;
 			}
 			case 'error': {
@@ -497,7 +520,11 @@ const SectionOperateAI = ({
 					disabled={disabled}
 					onClick={onTriggerClick}>
 					<Bot />
-					{iconOnly ? <span className='sr-only'>{t('section_ai_ask')}</span> : t('section_ai_ask')}
+					{iconOnly ? (
+						<span className='sr-only'>{t('section_ai_ask')}</span>
+					) : (
+						t('section_ai_ask')
+					)}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-2xl'>
@@ -510,16 +537,6 @@ const SectionOperateAI = ({
 					</SheetDescription>
 					<div className='rounded-lg border border-border/60 bg-card/65 px-3 py-2 text-xs leading-5 text-muted-foreground'>
 						{t('section_ai_session_notice')}
-					</div>
-					<div className='space-y-2'>
-						<div className='text-sm font-medium text-foreground'>{t('use_model')}</div>
-						<AIModelSelect
-							value={selectedModelId}
-							onChange={setSelectedModelId}
-							disabled={isSending}
-							className='w-full'
-							placeholder={t('choose_conversation_model')}
-						/>
 					</div>
 				</SheetHeader>
 
@@ -535,7 +552,7 @@ const SectionOperateAI = ({
 						</div>
 					)}
 
-							{messages.length > 0 && (
+					{messages.length > 0 && (
 						<div className='flex flex-col gap-4'>
 							{messages.map((message) => (
 								<div
@@ -551,101 +568,117 @@ const SectionOperateAI = ({
 					)}
 				</div>
 
-				<div className='border-t border-border/60 px-5 py-4'>
-					<div className='rounded-xl border border-border/70 bg-card/85 px-4 py-3'>
-						{attachments.length > 0 && mainUserInfo?.id ? (
-							<div className='mb-3 flex flex-wrap gap-2'>
-								{attachments.map((attachment) => (
-									<div
-										key={attachment.path}
-										className='relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
-										<img
-											src={replacePath(attachment.path, mainUserInfo.id)}
-											alt={attachment.name}
-											className='h-full w-full object-cover'
-										/>
-										<button
-											type='button'
-											className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
-											onClick={() => removeAttachment(attachment.path)}
-											aria-label={t('delete')}>
-											<X className='size-3' />
-										</button>
-									</div>
-								))}
-							</div>
-						) : null}
-						<Textarea
-							value={input}
-							onChange={(event) => setInput(event.target.value)}
-							placeholder={t('section_ai_placeholder')}
-							className='min-h-18 border-none bg-transparent p-0 shadow-none focus-visible:ring-0 resize-none dark:bg-transparent'
-							disabled={isSending}
-							onKeyDown={(event) => {
-								if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-									event.preventDefault();
-									void onSubmit();
-								}
-							}}
-						/>
-						<div className='flex items-center justify-between gap-4'>
-							<div className='flex min-w-0 items-center gap-3 text-xs text-muted-foreground'>
-								<Button
-									type='button'
-									size='sm'
-									variant='ghost'
-									className='h-8 rounded-full px-3 text-[11px] text-muted-foreground'
-									onClick={openPicker}
-									disabled={isSending || isUploadingImages}>
-									{isUploadingImages ? (
-										<Loader2 className='size-3.5 animate-spin' />
-									) : (
-										<ImagePlus className='size-3.5' />
-									)}
-									<span>{t('upload_image')}</span>
-								</Button>
+				<div>
+					<div className='flex flex-wrap items-center gap-1.5 border-y border-border/60 p-2'>
+						<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 text-xs'>
+							<span className='shrink-0 text-muted-foreground'>
+								{t('use_model')}
+							</span>
+							<AIModelSelect
+								value={selectedModelId}
+								onChange={setSelectedModelId}
+								disabled={isSending}
+								variant='inline'
+								size='sm'
+								placeholder={t('choose_conversation_model')}
+							/>
+						</div>
+						<div
+							className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5'
+							title={t('revornix_ai_mcp_description')}>
+							<span className='text-xs font-medium text-foreground'>
+								{t('revornix_ai_mcp_status')}
+							</span>
+							<Switch
+								checked={enableMcp}
+								onCheckedChange={setEnableMcp}
+								disabled={isSending}
+							/>
+							<span className='h-3.5 w-px shrink-0 bg-border' />
+							<Link
+								href={settingAnchorHrefs.mcpServerManage}
+								className='text-xs text-muted-foreground transition-colors hover:text-foreground'>
+								{t('revornix_ai_go_to_configure_mcp')}
+							</Link>
+						</div>
+					</div>
+					{attachments.length > 0 && mainUserInfo?.id ? (
+						<div className='flex flex-wrap gap-2 p-2'>
+							{attachments.map((attachment) => (
 								<div
-									className='flex items-center gap-2'
-									title={t('revornix_ai_mcp_description')}>
-									<span>{t('revornix_ai_mcp_status')}</span>
-									<Switch
-										checked={enableMcp}
-										onCheckedChange={setEnableMcp}
-										disabled={isSending}
+									key={attachment.path}
+									className='relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
+									<img
+										src={replacePath(attachment.path, mainUserInfo.id)}
+										alt={attachment.name}
+										className='h-full w-full object-cover'
 									/>
+									<button
+										type='button'
+										className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
+										onClick={() => removeAttachment(attachment.path)}
+										aria-label={t('delete')}>
+										<X className='size-3' />
+									</button>
 								</div>
-								<Link
-									href={settingAnchorHrefs.mcpServerManage}
-									className='shrink-0 underline underline-offset-4'>
-									{t('revornix_ai_go_to_configure_mcp')}
-								</Link>
-							</div>
+							))}
+						</div>
+					) : null}
+					<Textarea
+						value={input}
+						onChange={(event) => setInput(event.target.value)}
+						placeholder={t('section_ai_placeholder')}
+						className='min-h-[112px] max-h-[240px] border-none bg-transparent shadow-none focus-visible:ring-0 resize-none dark:bg-transparent'
+						disabled={isSending}
+						onKeyDown={(event) => {
+							if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+								event.preventDefault();
+								void onSubmit();
+							}
+						}}
+					/>
+					<div className='flex items-center justify-between gap-4 p-2'>
+						<div className='flex min-w-0 items-center gap-3 text-xs text-muted-foreground'>
 							<Button
 								type='button'
-								size={'icon'}
-								onClick={() => void onSubmit()}
-								disabled={
-									isSending ||
-									(input.trim().length === 0 && imagePaths.length === 0) ||
-									isUploadingImages ||
-									!selectedModelId ||
-									(selectedModelId === mainUserInfo?.default_revornix_model_id &&
-										(revornixModel.loading || revornixModel.subscriptionLocked))
-								}>
-								<Send />
+								size='sm'
+								variant='outline'
+								className='h-8 rounded-full px-3 text-[11px] text-muted-foreground'
+								onClick={openPicker}
+								disabled={isSending || isUploadingImages}>
+								{isUploadingImages ? (
+									<Loader2 className='size-3.5 animate-spin' />
+								) : (
+									<ImagePlus className='size-3.5' />
+								)}
+								<span>{t('upload_image')}</span>
 							</Button>
 						</div>
-						<input
-							ref={imageInputRef}
-							type='file'
-							accept='image/*'
-							multiple
-							className='hidden'
-							onChange={(event) => {
-								void handleFileChange(event);
-							}}
-						/>
+						<Button
+							type='button'
+							size={'icon'}
+							onClick={() => void onSubmit()}
+							disabled={
+								isSending ||
+								(input.trim().length === 0 && imagePaths.length === 0) ||
+								isUploadingImages ||
+								!selectedModelId ||
+								(selectedModelId === mainUserInfo?.default_revornix_model_id &&
+									(revornixModel.loading || revornixModel.subscriptionLocked))
+							}>
+							<Send />
+						</Button>
 					</div>
+					<input
+						ref={imageInputRef}
+						type='file'
+						accept='image/*'
+						multiple
+						className='hidden'
+						onChange={(event) => {
+							void handleFileChange(event);
+						}}
+					/>
 				</div>
 			</SheetContent>
 		</Sheet>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import NoticeBox from '@/components/ui/notice-box';
 import AudioPlayer from '@/components/ui/audio-player';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
+import { getDocumentCoverSrc } from '@/lib/document-cover';
 import {
 	fetchPublicDocumentDetail,
 	fetchRemoteTextContent,
@@ -28,6 +29,7 @@ import {
 	toIsoDate,
 } from '@/lib/seo-metadata';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
+import { Separator } from '@/components/ui/separator';
 
 type Params = Promise<{ id: string }>;
 
@@ -78,10 +80,7 @@ export async function generateMetadata(props: {
 		const document = await fetchPublicDocumentDetail({
 			document_id: Number(id),
 		});
-		const coverSrc =
-			document.cover && document.creator
-				? replacePath(document.cover, document.creator.id)
-				: undefined;
+		const coverSrc = getDocumentCoverSrc(document) ?? undefined;
 
 		return buildMetadata({
 			title: formatMetaTitle(
@@ -142,10 +141,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		});
 		const markdown = await getDocumentMarkdown(document);
 		const categoryLabel = getCategoryLabel(document.category, t);
-		const coverSrc =
-			document.cover && document.creator
-				? replacePath(document.cover, document.creator.id)
-				: null;
+		const coverSrc = getDocumentCoverSrc(document);
 		const creatorAvatar = replacePath(
 			document.creator.avatar,
 			document.creator.id,
@@ -344,7 +340,8 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 											</Button>
 										</Link>
 									) : null}
-									{!document.website_info?.url && !document.file_info?.file_name ? (
+									{!document.website_info?.url &&
+									!document.file_info?.file_name ? (
 										<NoticeBox>
 											{document.category === DocumentCategory.QUICK_NOTE
 												? t('seo_document_source_quick_note')
@@ -372,14 +369,17 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 														{section.title}
 													</div>
 													<div className='line-clamp-2 text-sm text-muted-foreground'>
-														{section.description || t('section_description_empty')}
+														{section.description ||
+															t('section_description_empty')}
 													</div>
 												</div>
 												<ArrowRight className='ml-3 size-4 shrink-0 text-muted-foreground' />
 											</Link>
 										))
 									) : (
-										<NoticeBox>{t('seo_document_related_sections_empty')}</NoticeBox>
+										<NoticeBox>
+											{t('seo_document_related_sections_empty')}
+										</NoticeBox>
 									)}
 								</div>
 							),
@@ -425,7 +425,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
 							{document.title || t('document_no_title')}
 						</h1>
-						<p className='max-w-[820px] break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
+						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
 							{document.description || t('document_no_description')}
 						</p>
 					</div>
@@ -444,6 +444,8 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							/>
 						) : null}
 
+						<Separator />
+
 						<div className='mx-auto w-full max-w-[820px] overflow-x-hidden'>
 							<TipTapMarkdownViewer
 								content={
@@ -451,11 +453,14 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 								}
 								ownerId={document.creator.id}
 							/>
-							<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
-								{t('document_ai_tips')}
-							</div>
+							{document.category === DocumentCategory.FILE ||
+								document.category === DocumentCategory.AUDIO ||
+								(document.category === DocumentCategory.WEBSITE && (
+									<div className='mt-6 rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-sm text-muted-foreground'>
+										{t('document_ai_tips')}
+									</div>
+								))}
 						</div>
-
 					</div>
 				</div>
 			</div>

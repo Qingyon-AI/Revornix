@@ -18,7 +18,7 @@ const StackedDocuments = ({ documents }: { documents: DocumentInfo[] }) => {
 								router.push(`/document/detail/${document.id}`);
 							}}
 							className={`
-							bg-primary-foreground absolute inset-0 flex transform items-center justify-center rounded-xl p-4 shadow-sm ring-1 ring-inset ring-black/10 transition-all duration-300 ease-in-out dark:ring-white/10
+							bg-primary-foreground absolute inset-0 flex transform items-center justify-center rounded-xl p-4 ring-1 ring-inset ring-black/10 transition-all duration-300 ease-in-out dark:ring-white/10
 						`}
 							style={{
 								zIndex: 10 - index,
