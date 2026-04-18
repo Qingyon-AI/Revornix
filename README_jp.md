@@ -76,6 +76,8 @@ Revornix/
 
 ![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 
+![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
+
 注: トレンドヘッドライン機能は [DailyHotApi](https://github.com/imsyy/DailyHotApi) をベースにしています。
 
 ![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)

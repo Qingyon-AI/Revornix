@@ -78,6 +78,8 @@ Revornix/
 
 ![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 
+![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
+
 Note: The trending headlines feature is based on [DailyHotApi](https://github.com/imsyy/DailyHotApi).
 
 ![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
