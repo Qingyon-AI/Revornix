@@ -183,7 +183,8 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		};
 		const freshnessState = getDocumentFreshnessState(document);
 		const hasRenderableGraph =
-			getRenderableGraphData(initialGraph).hasRenderableGraph;
+			getRenderableGraphData(initialGraph).hasRenderableGraph ||
+			document.graph_task?.status === DocumentGraphStatus.SUCCESS;
 		const graphCardState =
 			hasRenderableGraph && freshnessState.graphStale
 				? {
