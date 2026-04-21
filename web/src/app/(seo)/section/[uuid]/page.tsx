@@ -48,6 +48,7 @@ import {
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import { replacePath } from '@/lib/utils';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
+import MobileAutoAudioTrack from '@/components/ui/mobile-auto-audio-track';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -220,6 +221,7 @@ const SEOSectionDetail = async (props: {
 	);
 	const createdAt = formatSectionDate(section?.create_time, locale);
 	const sectionCover = getSectionCoverSrc(section);
+	const sectionPodcastSrc = section?.podcast_task?.podcast_file_name ?? null;
 	const creatorAvatar =
 		section?.creator?.avatar && section?.creator?.id
 			? replacePath(section.creator.avatar, section.creator.id)
@@ -279,6 +281,14 @@ const SEOSectionDetail = async (props: {
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
 			{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
+			{section && sectionPodcastSrc ? (
+				<MobileAutoAudioTrack
+					src={sectionPodcastSrc}
+					title={sectionTitle}
+					artist={section.creator?.nickname || 'AI Generated'}
+					cover={sectionCover ?? undefined}
+				/>
+			) : null}
 			<div className='mx-auto w-full max-w-[920px] space-y-5'>
 				<SeoSectionSidebarBridge
 					section={section!}

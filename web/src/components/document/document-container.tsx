@@ -37,6 +37,7 @@ import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import ImageWithFallback from '../ui/image-with-fallback';
 import { useRightSidebar } from '@/provider/right-sidebar-provider';
 import DocumentDetailSidebar from './document-detail-sidebar';
+import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 
 const DocumentDetailSkeleton = () => {
 	return (
@@ -123,6 +124,10 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.cover && document.creator
 			? replacePath(document.cover, document.creator.id)
 			: null;
+	const primaryAudioSrc =
+		document?.audio_info?.audio_file_name ||
+		document?.podcast_task?.podcast_file_name ||
+		null;
 	const freshnessState = getDocumentFreshnessState(document);
 	const graphCardState =
 		freshnessState.graphStale &&
@@ -320,6 +325,14 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	return (
 		<>
+			{document && primaryAudioSrc ? (
+				<MobileAutoAudioTrack
+					src={primaryAudioSrc}
+					title={document.title || t('document_no_title')}
+					artist={document.creator?.nickname || 'AI Generated'}
+					cover={documentCoverSrc ?? undefined}
+				/>
+			) : null}
 			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
 				<div className='min-h-0 flex-1 overflow-hidden'>
 					<div className='hidden'>

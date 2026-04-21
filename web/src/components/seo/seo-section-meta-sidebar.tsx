@@ -218,9 +218,11 @@ const PodcastPanel = ({
 								variant='outline'
 								size='icon'
 								className='size-10 shrink-0 rounded-full'
-								onClick={() => {
+								onClick={(event) => {
+									event.stopPropagation();
 									void togglePlayback();
-								}}>
+								}}
+								onPointerDown={(event) => event.stopPropagation()}>
 								{isPlaying ? (
 									<Pause className='size-4' />
 								) : (
@@ -235,13 +237,17 @@ const PodcastPanel = ({
 									<span>{formatAudioTime(currentTime)}</span>
 									<span>{formatAudioTime(duration)}</span>
 								</div>
-								<Slider
-									value={[currentTime]}
-									max={duration > 0 ? duration : 1}
-									step={0.1}
-									className='w-full'
-									onValueChange={handleSeek}
-								/>
+								<div
+									onClick={(event) => event.stopPropagation()}
+									onPointerDown={(event) => event.stopPropagation()}>
+									<Slider
+										value={[currentTime]}
+										max={duration > 0 ? duration : 1}
+										step={0.1}
+										className='w-full'
+										onValueChange={handleSeek}
+									/>
+								</div>
 							</div>
 						</div>
 					</div>

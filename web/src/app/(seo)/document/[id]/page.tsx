@@ -34,6 +34,7 @@ import ImageWithFallback from '@/components/ui/image-with-fallback';
 import { Separator } from '@/components/ui/separator';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentGraphStatus } from '@/enums/document';
+import MobileAutoAudioTrack from '@/components/ui/mobile-auto-audio-track';
 
 type Params = Promise<{ id: string }>;
 
@@ -215,6 +216,14 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
 				<JsonLd data={documentSchema} />
+				{primaryAudioSrc ? (
+					<MobileAutoAudioTrack
+						src={primaryAudioSrc}
+						title={document.title || t('document_no_title')}
+						artist={document.creator.nickname || 'AI Generated'}
+						cover={coverSrc ?? undefined}
+					/>
+				) : null}
 				<SeoDocumentSidebarBridge
 					document={document}
 					categoryLabel={categoryLabel}
