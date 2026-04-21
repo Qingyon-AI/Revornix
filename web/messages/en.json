@@ -1212,7 +1212,7 @@
     "section_mobile_info_description": "View the current section cover, summary, labels, and core metadata.",
     "section_mobile_media_title": "Audio",
     "section_mobile_media_description": "Check podcast generation status, playback entry, and related hints for this section.",
-    "section_updated_at": "Updated on",
+    "section_updated_at": "Last updated",
     "section_info_created_at": "Created on",
     "section_ai_tips": "This article was identified by AI. Please verify the information accordingly.",
     "section_ai_ask": "Ask AI",

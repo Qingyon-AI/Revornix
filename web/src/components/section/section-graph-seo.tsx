@@ -10,6 +10,7 @@ import EntityGraphCanvas, {
 import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionProcessStatus } from '@/enums/section';
+import { getRenderableGraphData } from '@/lib/graph-render';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { searchPublicSectionGraph, searchSectionGraph } from '@/service/graph';
 import { getPublicSectionDetail, getSectionDetail } from '@/service/section';
@@ -80,9 +81,13 @@ const SectionGraphSEO = ({
 		staleTime: publicMode && initialGraph ? Infinity : undefined,
 	});
 
+	const renderableGraph = useMemo(() => getRenderableGraphData(data), [data]);
+	const hasIncompleteGraphPayload =
+		Boolean(data?.nodes?.length || data?.edges?.length) &&
+		!renderableGraph.hasRenderableGraph;
 	const nodes: GraphCanvasNode[] = useMemo(
 		() =>
-			data?.nodes.map((node) => ({
+			renderableGraph.nodes.map((node) => ({
 				id: node.id,
 				label: node.text,
 				group: 'entity',
@@ -93,17 +98,17 @@ const SectionGraphSEO = ({
 						doc_title: source.doc_title ?? undefined,
 						chunk_id: source.chunk_id ?? undefined,
 					})) ?? [],
-			})) ?? [],
-		[data?.nodes]
+			})),
+		[renderableGraph.nodes]
 	);
 
 	const edges: GraphCanvasLink[] = useMemo(
 		() =>
-			data?.edges.map((edge) => ({
+			renderableGraph.edges.map((edge) => ({
 				source: edge.src_node,
 				target: edge.tgt_node,
-			})) ?? [],
-		[data?.edges]
+			})),
+		[renderableGraph.edges]
 	);
 	const graphErrorMessage = isSectionDetailError
 		? sectionDetailError.message
@@ -134,7 +139,7 @@ const SectionGraphSEO = ({
 					/>
 				</>
 			) : null}
-			{!nodes.length && hasGraphError ? (
+			{!nodes.length && !hasIncompleteGraphPayload && hasGraphError ? (
 				<GraphStatePanel
 					icon={AlertCircle}
 					badge={t('document_graph_status_failed')}
@@ -144,7 +149,7 @@ const SectionGraphSEO = ({
 					tone='danger'
 				/>
 			) : null}
-			{!nodes.length && isSectionProcessing ? (
+			{!nodes.length && !hasIncompleteGraphPayload && isSectionProcessing ? (
 				<GraphStatePanel
 					icon={processStatus === SectionProcessStatus.WAIT_TO ? Sparkles : Loader2}
 					badge={
@@ -164,7 +169,7 @@ const SectionGraphSEO = ({
 					}
 				/>
 			) : null}
-			{!nodes.length && !hasGraphError && isSectionFailed ? (
+			{!nodes.length && !hasIncompleteGraphPayload && !hasGraphError && isSectionFailed ? (
 				<GraphStatePanel
 					icon={AlertCircle}
 					badge={t('document_graph_status_failed')}
@@ -176,6 +181,7 @@ const SectionGraphSEO = ({
 			) : null}
 			{isFetched &&
 			!nodes.length &&
+			!hasIncompleteGraphPayload &&
 			!hasGraphError &&
 			!isSectionProcessing &&
 			!isSectionFailed ? (

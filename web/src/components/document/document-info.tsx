@@ -16,6 +16,7 @@ import {
 	Layers3,
 	Loader2,
 	Sparkles,
+	Tag,
 	type LucideIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -298,7 +299,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 									? t('document_embedding_status_success')
 									: t('document_embedding_status_failed'),
 					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ||
-					freshnessState.embeddingStale ? (
+						freshnessState.embeddingStale ? (
 						<Button
 							variant='link'
 							size='sm'
@@ -570,15 +571,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 					</Link>
 				) : null}
-
-				<div className='flex flex-wrap gap-1.5'>
-					<MetaBadge>
-						{t('document_category')}: {categoryLabel}
-					</MetaBadge>
-					<MetaBadge>
-						{t('document_from_plat')}: {fromPlatLabel}
-					</MetaBadge>
-				</div>
 			</div>
 
 			{data.sections && data.sections.length > 0 ? (
@@ -603,14 +595,6 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				</div>
 			) : null}
 
-			{data.labels && data.labels.length > 0 ? (
-				<div className='flex flex-wrap gap-1.5'>
-					{data.labels.map((label) => {
-						return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
-					})}
-				</div>
-			) : null}
-
 			<div className='grid grid-cols-2 gap-3'>
 				<InfoMetric
 					icon={CalendarClock}
@@ -626,9 +610,29 @@ const DocumentInfo = ({ id }: { id: number }) => {
 					value={createdAtText}
 					hint={createdAtHint}
 				/>
+				<InfoMetric
+					icon={Tag}
+					label={t('document_category')}
+					value={categoryLabel}
+				/>
+				<InfoMetric
+					icon={Globe2}
+					label={t('document_from_plat')}
+					value={data.from_plat || '-'}
+				/>
 			</div>
 
-			{statusBadges.length > 0 ? <div className='flex flex-wrap gap-2'>{statusBadges}</div> : null}
+			{data.labels && data.labels.length > 0 ? (
+				<div className='flex flex-wrap gap-1.5'>
+					{data.labels.map((label) => {
+						return <MetaBadge key={label.id}># {label.name}</MetaBadge>;
+					})}
+				</div>
+			) : null}
+
+			{statusBadges.length > 0 ? (
+				<div className='flex flex-wrap gap-2'>{statusBadges}</div>
+			) : null}
 
 			<div className='space-y-4 border-t border-border/50 pt-5'>
 				{renderSummaryCard()}

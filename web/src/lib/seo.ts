@@ -3,6 +3,7 @@ import graphApi from '@/api/graph';
 import sectionApi from '@/api/section';
 import userApi from '@/api/user';
 import {
+	DocumentGraphRequest,
 	DocumentDetailRequest,
 	DocumentDetailResponse,
 	GraphResponse,
@@ -117,6 +118,14 @@ export const fetchPublicSectionGraph = async (
 	data: SectionGraphRequest,
 ): Promise<GraphResponse> => {
 	return await serverRequest(graphApi.searchSectionGraph, {
+		data,
+	});
+};
+
+export const fetchPublicDocumentGraph = async (
+	data: DocumentGraphRequest,
+): Promise<GraphResponse> => {
+	return await serverRequest(graphApi.searchDocumentGraph, {
 		data,
 	});
 };

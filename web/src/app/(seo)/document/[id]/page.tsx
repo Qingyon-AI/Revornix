@@ -9,7 +9,9 @@ import NoticeBox from '@/components/ui/notice-box';
 import AudioPlayer from '@/components/ui/audio-player';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import { getDocumentCoverSrc } from '@/lib/document-cover';
+import { getRenderableGraphData } from '@/lib/graph-render';
 import {
+	fetchPublicDocumentGraph,
 	fetchPublicDocumentDetail,
 	fetchRemoteTextContent,
 	getPublicSectionHref,
@@ -30,6 +32,8 @@ import {
 } from '@/lib/seo-metadata';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
 import { Separator } from '@/components/ui/separator';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
+import { DocumentGraphStatus } from '@/enums/document';
 
 type Params = Promise<{ id: string }>;
 
@@ -139,6 +143,9 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		const document = await fetchPublicDocumentDetail({
 			document_id: documentId,
 		});
+		const initialGraph = await fetchPublicDocumentGraph({
+			document_id: documentId,
+		}).catch(() => null);
 		const markdown = await getDocumentMarkdown(document);
 		const categoryLabel = getCategoryLabel(document.category, t);
 		const coverSrc = getDocumentCoverSrc(document);
@@ -174,6 +181,35 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			},
 			keywords: document.labels?.map((label) => label.name),
 		};
+		const freshnessState = getDocumentFreshnessState(document);
+		const hasRenderableGraph =
+			getRenderableGraphData(initialGraph).hasRenderableGraph;
+		const graphCardState =
+			hasRenderableGraph && freshnessState.graphStale
+				? {
+						badge: t('document_status_stale'),
+						tone: 'warning' as const,
+					}
+				: hasRenderableGraph ||
+					  document.graph_task?.status === DocumentGraphStatus.SUCCESS
+					? {
+							badge: t('document_graph_status_success'),
+							tone: 'success' as const,
+						}
+					: document.graph_task?.status === DocumentGraphStatus.FAILED
+						? {
+								badge: t('document_graph_status_failed'),
+								tone: 'danger' as const,
+							}
+						: document.graph_task?.status === DocumentGraphStatus.BUILDING
+							? {
+									badge: t('document_graph_status_doing'),
+									tone: 'default' as const,
+								}
+							: {
+									badge: t('document_graph_status_todo'),
+									tone: 'warning' as const,
+								};
 
 		return (
 			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
@@ -186,6 +222,11 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					coverSrc={coverSrc}
 					primaryAudioSrc={primaryAudioSrc}
 					publicSections={publicSections}
+					initialGraph={initialGraph ?? undefined}
+					hasRenderableGraph={hasRenderableGraph}
+					graphBadge={graphCardState.badge}
+					graphTone={graphCardState.tone}
+					graphStale={freshnessState.graphStale}
 				/>
 				<SeoMobileSidebarMenu
 					browseLabel={t('document_mobile_menu_section_browse')}
@@ -275,12 +316,12 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									</div>
 
 									{document.labels?.length ? (
-										<div className='flex flex-wrap gap-2 rounded-[24px] bg-background/22 p-4'>
+										<div className='flex flex-wrap gap-2'>
 											{document.labels.map((label) => (
 												<Badge
 													key={label.id}
 													variant='secondary'
-													className='rounded-full border border-border/35 bg-background/75 px-3 py-1 text-xs'>
+													className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
 													{label.name}
 												</Badge>
 											))}

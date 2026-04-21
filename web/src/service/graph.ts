@@ -24,3 +24,9 @@ export const searchPublicSectionGraph = async (data: SectionGraphRequest): Promi
         data
     })
 }
+
+export const searchPublicDocumentGraph = async (data: DocumentGraphRequest): Promise<GraphResponse> => {
+    return await publicRequest(graphApi.searchDocumentGraph, {
+        data
+    })
+}

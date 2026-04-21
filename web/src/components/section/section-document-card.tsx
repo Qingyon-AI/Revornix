@@ -27,7 +27,7 @@ const SectionDocumentCard = ({
 	return (
 		<div
 			onClick={() => router.push(detailHref)}
-			className='group relative space-y-3 overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md'>
+			className='group relative space-y-3 overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4  transition-shadow'>
 			<div className='flex min-w-0 flex-row gap-3'>
 				<div className='min-w-0 flex-1'>
 					<div className='line-clamp-2 break-words text-sm font-semibold leading-6'>
@@ -77,7 +77,7 @@ const SectionDocumentCard = ({
 									? t('document_category_quick_note')
 									: document.category === DocumentCategory.AUDIO
 										? t('document_category_audio')
-									: t('document_category_others')}
+										: t('document_category_others')}
 					</div>
 					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.status === SectionDocumentIntegration.WAIT_TO
@@ -88,7 +88,7 @@ const SectionDocumentCard = ({
 									? t('section_document_card_section_supplement_done')
 									: document.status === SectionDocumentIntegration.FAILED
 										? t('section_document_card_section_supplement_failed')
-							: t('section_document_card_section_supplement_unknown')}
+										: t('section_document_card_section_supplement_unknown')}
 					</div>
 					{action}
 				</div>

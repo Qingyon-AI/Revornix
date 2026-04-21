@@ -66,6 +66,7 @@ type SectionDetailSidebarProps = {
 	id: number;
 	isPending: boolean;
 	hasSection: boolean;
+	hasRenderableGraph: boolean;
 	graphBadge: string;
 	graphTone: 'default' | 'success' | 'warning' | 'danger';
 	graphStale: boolean;
@@ -75,6 +76,7 @@ const SectionDetailSidebar = ({
 	id,
 	isPending,
 	hasSection,
+	hasRenderableGraph,
 	graphBadge,
 	graphTone,
 	graphStale,
@@ -102,6 +104,7 @@ const SectionDetailSidebar = ({
 							tone={graphTone}
 							hint={graphStale ? t('section_graph_stale_hint') : undefined}
 							result={
+								hasRenderableGraph ? (
 								<div className='relative aspect-square overflow-hidden rounded-[20px] border border-border/35 bg-background/20'>
 									<SectionGraph section_id={id} showStaleHint={false} />
 									<Dialog>
@@ -138,6 +141,7 @@ const SectionDetailSidebar = ({
 										</DialogContent>
 									</Dialog>
 								</div>
+								) : null
 							}
 						/>
 				</SidebarSection>

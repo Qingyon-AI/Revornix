@@ -16,7 +16,13 @@ import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
-import { BookOpenText, CalendarClock, CalendarDays, Sparkles, Users } from 'lucide-react';
+import {
+	BookOpenText,
+	CalendarClock,
+	CalendarDays,
+	Sparkles,
+	Users,
+} from 'lucide-react';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import SectionCommentForm from '@/components/section/section-comment-form';
 import { SectionProcessStatus } from '@/enums/section';
@@ -32,6 +38,7 @@ import {
 import { notFound } from 'next/navigation';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
+import { getRenderableGraphData } from '@/lib/graph-render';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
@@ -235,7 +242,7 @@ const SEOSectionDetail = async (props: {
 				}
 			: null;
 	const freshnessState = getSectionFreshnessState(section);
-	const hasRenderableGraph = Boolean(initialGraph?.nodes?.length);
+	const hasRenderableGraph = getRenderableGraphData(initialGraph).hasRenderableGraph;
 	const structuredData: Array<Record<string, unknown>> = [];
 	if (sectionSchema) {
 		structuredData.push(sectionSchema);
@@ -280,6 +287,7 @@ const SEOSectionDetail = async (props: {
 					sectionCover={sectionCover}
 					initialDocuments={initialDocuments}
 					initialGraph={initialGraph}
+					hasRenderableGraph={hasRenderableGraph}
 					graphBadge={graphCardState.badge}
 					graphTone={graphCardState.tone}
 					graphStale={freshnessState.graphStale}
@@ -385,7 +393,7 @@ const SEOSectionDetail = async (props: {
 									</div>
 
 									{section?.labels?.length ? (
-										<div className='flex flex-wrap gap-2 rounded-[24px] bg-background/22 p-4'>
+										<div className='flex flex-wrap gap-2'>
 											{section.labels.map((label) => (
 												<Badge
 													key={label.id}
@@ -492,14 +500,6 @@ const SEOSectionDetail = async (props: {
 						<Sparkles className='size-3.5 text-emerald-500' />
 						<span>{t('section_ai_tips')}</span>
 					</div>
-					{section?.labels?.map((label) => (
-						<Badge
-							key={label.id}
-							variant='secondary'
-							className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
-							{label.name}
-						</Badge>
-					))}
 				</div>
 
 				<div className='space-y-3'>
