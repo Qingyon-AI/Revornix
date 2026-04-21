@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +23,6 @@ import {
 	Users,
 } from 'lucide-react';
 import SectionCommentsList from '@/components/section/section-comments-list';
-import SectionCommentForm from '@/components/section/section-comment-form';
 import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import Link from 'next/link';
@@ -36,6 +34,7 @@ import {
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { notFound } from 'next/navigation';
+import SeoSectionCommentGate from '@/components/seo/seo-section-comment-gate';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getRenderableGraphData } from '@/lib/graph-render';
@@ -148,10 +147,8 @@ const SEOSectionDetail = async (props: {
 }) => {
 	const t = await getTranslations();
 	const locale = await getLocale();
-	const cookieStore = await cookies();
 	const params = await props.params;
 	const uuid = params.uuid;
-	const hasAccessToken = !!cookieStore.get('access_token');
 
 	let markdown: string | null = null;
 	let section: SectionInfoType | null = null;
@@ -559,21 +556,10 @@ const SEOSectionDetail = async (props: {
 						</div>
 
 						<div className='space-y-5'>
-							{hasAccessToken ? (
-								<SectionCommentForm section_id={section.id} />
-							) : (
-								<div className='rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground'>
-									<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-										<span>{t('seo_section_login_to_comment')}</span>
-										<Link
-											href={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}>
-											<Button size='sm' className='rounded-2xl'>
-												{t('seo_nav_login_in')}
-											</Button>
-										</Link>
-									</div>
-								</div>
-							)}
+							<SeoSectionCommentGate
+								sectionId={section.id}
+								loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
+							/>
 							<SectionCommentsList
 								section_id={section.id}
 								initialData={initialComments}

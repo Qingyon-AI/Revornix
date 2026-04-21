@@ -67,7 +67,9 @@ const SectionDocumentCard = ({
 
 			<div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
 				<div className='flex min-w-0 flex-wrap items-center gap-2'>
-					<DocumentVisibilityHint documentId={document.id} />
+					{!publicMode ? (
+						<DocumentVisibilityHint documentId={document.id} />
+					) : null}
 					<div className='w-fit rounded-lg border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
 						{document.category === DocumentCategory.WEBSITE
 							? t('document_category_link')
