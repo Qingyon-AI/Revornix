@@ -3,9 +3,11 @@
 import { ChevronDown, Minimize2, Pause, Play, Volume2, X } from 'lucide-react';
 import {
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 	type PointerEvent as ReactPointerEvent,
+	type UIEvent as ReactUIEvent,
 } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -44,6 +46,9 @@ const FloatingAudioPlayer = () => {
 		null,
 	);
 	const [isDragging, setIsDragging] = useState(false);
+	const [mobilePanel, setMobilePanel] = useState<'player' | 'transcript'>(
+		'player',
+	);
 	const [transcript, setTranscript] = useState<AudioTranscriptPayload | null>(null);
 	const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
 	const [transcriptError, setTranscriptError] = useState<string | null>(null);
@@ -249,14 +254,12 @@ const FloatingAudioPlayer = () => {
 		}
 	};
 
-	if (!track) {
-		return null;
-	}
-
 	const transcriptSegments = (transcript?.segments ?? []).filter(
 		(segment) => Boolean(segment?.text?.trim()),
 	);
 	const transcriptText = transcript?.plain_text?.trim() ?? '';
+	const mobilePanelsRef = useRef<HTMLDivElement>(null);
+	const mobilePanelTargetRef = useRef<'player' | 'transcript' | null>(null);
 	const activeTranscriptSegmentIndex = transcriptSegments.findIndex(
 		(segment, index) => {
 			if (typeof segment.start !== 'number') {
@@ -276,6 +279,77 @@ const FloatingAudioPlayer = () => {
 			return currentTime >= segment.start && currentTime < resolvedEnd;
 		},
 	);
+	const hasTimedTranscript = useMemo(
+		() =>
+			transcriptSegments.some(
+				(segment) =>
+					typeof segment.start === 'number' ||
+					typeof segment.end === 'number' ||
+					typeof segment.audioDuration === 'number',
+			),
+		[transcriptSegments],
+	);
+
+	useEffect(() => {
+		if (!isExpanded || !isMobile) {
+			return;
+		}
+		setMobilePanel('player');
+		const viewport = mobilePanelsRef.current;
+		if (!viewport) {
+			return;
+		}
+		mobilePanelTargetRef.current = 'player';
+		viewport.scrollTo({
+			left: 0,
+			behavior: 'auto',
+		});
+	}, [isExpanded, isMobile]);
+
+	useEffect(() => {
+		if (!isExpanded) {
+			setMobilePanel('player');
+		}
+	}, [isExpanded]);
+
+	const goToMobilePanel = (panel: 'player' | 'transcript') => {
+		setMobilePanel(panel);
+		const viewport = mobilePanelsRef.current;
+		if (!viewport) {
+			return;
+		}
+		const nextIndex = panel === 'player' ? 0 : 1;
+		mobilePanelTargetRef.current = panel;
+		viewport.scrollTo({
+			left: viewport.clientWidth * nextIndex,
+			behavior: 'smooth',
+		});
+	};
+
+	const handleMobilePanelsScroll = (event: ReactUIEvent<HTMLDivElement>) => {
+		const viewportWidth = event.currentTarget.clientWidth;
+		if (!viewportWidth) {
+			return;
+		}
+		const nextPanel =
+			event.currentTarget.scrollLeft >= viewportWidth / 2
+				? 'transcript'
+				: 'player';
+		const panelTarget = mobilePanelTargetRef.current;
+
+		if (panelTarget) {
+			if (nextPanel === panelTarget) {
+				mobilePanelTargetRef.current = null;
+			}
+			return;
+		}
+
+		setMobilePanel(nextPanel);
+	};
+
+	if (!track) {
+		return null;
+	}
 
 	return (
 		<>
@@ -402,6 +476,215 @@ const FloatingAudioPlayer = () => {
 						</div>
 					</div>
 
+					{isMobile ? (
+						<div className='relative flex min-h-0 flex-1 flex-col overflow-hidden'>
+							<div className='flex items-center justify-center gap-2 border-b border-border/40 px-5 py-3'>
+								<button
+									type='button'
+									className={cn(
+										'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+										mobilePanel === 'player'
+											? 'bg-foreground text-background'
+											: 'text-muted-foreground',
+									)}
+									onClick={() => goToMobilePanel('player')}>
+									Player
+								</button>
+								<button
+									type='button'
+									className={cn(
+										'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+										mobilePanel === 'transcript'
+											? 'bg-foreground text-background'
+											: 'text-muted-foreground',
+									)}
+									onClick={() => goToMobilePanel('transcript')}>
+									Transcript
+								</button>
+							</div>
+
+							<div
+								ref={mobilePanelsRef}
+								className='flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+								onScroll={handleMobilePanelsScroll}>
+								<section className='flex min-h-0 w-full shrink-0 snap-center flex-col overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6'>
+									<div className='mx-auto w-full max-w-sm space-y-8'>
+										<div className='overflow-hidden rounded-[2rem] bg-background/55 shadow-[0_28px_80px_-42px_rgba(15,23,42,0.55)] ring-1 ring-border/50'>
+											<img
+												src={track.cover}
+												alt={track.title}
+												className='aspect-square w-full object-cover'
+											/>
+										</div>
+
+										<div className='space-y-2 text-center'>
+											<h2 className='text-3xl font-semibold tracking-tight'>
+												{track.title}
+											</h2>
+											<p className='text-base text-muted-foreground'>
+												{track.artist}
+											</p>
+										</div>
+
+										<div className='space-y-3'>
+											{duration > 0 ? (
+												<Slider
+													value={[currentTime]}
+													max={duration}
+													step={0.1}
+													className='cursor-pointer'
+													onValueChange={(value) => seek(value[0])}
+												/>
+											) : (
+												<div className='h-2 rounded-full bg-muted/80' />
+											)}
+											<div className='flex items-center justify-between text-sm text-muted-foreground tabular-nums'>
+												<span>{formatAudioTime(currentTime)}</span>
+												<span>{formatAudioTime(duration)}</span>
+											</div>
+										</div>
+
+										<div className='flex items-center justify-center pb-1'>
+											<Button
+												type='button'
+												size='icon'
+												variant='outline'
+												className='size-16 rounded-full border-border/70 bg-background/80 shadow-none'
+												onClick={togglePlayback}>
+												{isPlaying ? (
+													<Pause className='size-7' />
+												) : (
+													<Play className='size-7 fill-current' />
+												)}
+												<span className='sr-only'>
+													{isPlaying
+														? t('audio_player_pause')
+														: t('audio_player_play')}
+												</span>
+											</Button>
+										</div>
+
+										<div className='space-y-4'>
+											<div className='flex items-center gap-3 rounded-full border border-border/55 bg-background/45 px-4 py-3'>
+												<Volume2 className='size-4 shrink-0 text-muted-foreground' />
+												<Slider
+													value={[volume]}
+													max={1}
+													step={0.01}
+													className='cursor-pointer'
+													onValueChange={(value) => setVolume(value[0])}
+												/>
+											</div>
+
+											<div className='flex justify-center'>
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															type='button'
+															variant='outline'
+															size='sm'
+															className='h-11 min-w-[5rem] rounded-full border-border/70 bg-background/80 px-4 text-sm shadow-none'>
+															{playbackRate}x
+															<ChevronDown className='size-3.5 opacity-70' />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent
+														align='center'
+														className='min-w-[8rem] rounded-2xl'>
+														<DropdownMenuRadioGroup
+															value={String(playbackRate)}
+															onValueChange={(value) =>
+																setPlaybackRate(Number(value))
+															}>
+															{PLAYBACK_RATE_OPTIONS.map((rate) => (
+																<DropdownMenuRadioItem
+																	key={rate}
+																	value={String(rate)}
+																	className='rounded-xl'>
+																	{rate}x
+																</DropdownMenuRadioItem>
+															))}
+														</DropdownMenuRadioGroup>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</div>
+										</div>
+									</div>
+								</section>
+
+								<section className='flex min-h-0 w-full shrink-0 snap-center flex-col overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6'>
+									<div className='mx-auto w-full max-w-2xl space-y-4 text-sm leading-7 text-muted-foreground'>
+										{isTranscriptLoading ? (
+											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
+												Loading transcript...
+											</div>
+										) : transcriptError ? (
+											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
+												{transcriptError}
+											</div>
+										) : transcriptSegments.length > 0 ? (
+											<div className='space-y-4'>
+												{transcriptSegments.map((segment, index) => (
+													<div
+														key={`${segment.speaker ?? 'speaker'}-${index}`}
+														role={
+															typeof segment.start === 'number'
+																? 'button'
+																: undefined
+														}
+														tabIndex={
+															typeof segment.start === 'number' ? 0 : undefined
+														}
+														className={cn(
+															'rounded-[1.75rem] border px-5 py-4 transition-colors',
+															index === activeTranscriptSegmentIndex
+																? 'border-foreground/20 bg-foreground/[0.06] text-foreground'
+																: 'border-border/40 bg-background/50',
+															typeof segment.start === 'number'
+																? 'cursor-pointer hover:border-foreground/20 hover:bg-foreground/[0.04]'
+																: '',
+														)}
+														onClick={() => {
+															if (typeof segment.start === 'number') {
+																seek(segment.start);
+															}
+														}}>
+														<div className='mb-2 flex flex-wrap items-center gap-2'>
+															{resolveTranscriptSpeakerLabel(segment.speaker) ? (
+																<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80'>
+																	{resolveTranscriptSpeakerLabel(segment.speaker)}
+																</div>
+															) : null}
+															{typeof segment.start === 'number' ? (
+																<div className='rounded-full border border-border/50 bg-background/50 px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground'>
+																	{formatAudioTime(segment.start)}
+																</div>
+															) : null}
+															{hasTimedTranscript &&
+															typeof segment.end === 'number' ? (
+																<div className='rounded-full border border-border/50 bg-background/50 px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground'>
+																	{formatAudioTime(segment.end)}
+																</div>
+															) : null}
+														</div>
+														<div>{segment.text}</div>
+													</div>
+												))}
+											</div>
+										) : transcriptText ? (
+											<div className='whitespace-pre-wrap rounded-[1.75rem] border border-border/40 bg-background/50 px-5 py-4'>
+												{transcriptText}
+											</div>
+										) : (
+											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
+												No transcript available.
+											</div>
+										)}
+									</div>
+								</section>
+							</div>
+						</div>
+					) : (
 					<div className='relative flex min-h-0 flex-1 overflow-hidden'>
 						<div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(132,204,22,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_65%)] dark:bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.04),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(34,197,94,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_65%)]' />
 						<div className='grid w-full min-h-0 gap-0 lg:grid-cols-[minmax(22rem,1.05fr)_minmax(24rem,0.95fr)]'>
@@ -613,6 +896,7 @@ const FloatingAudioPlayer = () => {
 							</div>
 						</div>
 					</div>
+					)}
 				</DialogContent>
 			</Dialog>
 		</>

@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useAudioPlayer } from '@/provider/audio-player-provider';
 
 type SeoMobileSidebarMenuProps = {
 	browseLabel: string;
@@ -74,21 +75,32 @@ const SeoMobileSidebarMenu = ({
 	className,
 }: SeoMobileSidebarMenuProps) => {
 	const isCompactViewport = useIsMobile(1280);
+	const { track } = useAudioPlayer();
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [activePanelKey, setActivePanelKey] = useState<string | null>(null);
+	const visiblePanels = useMemo(
+		() => panels.filter((panel) => panel.icon !== 'audio'),
+		[panels],
+	);
 	const activePanel = useMemo(
-		() => panels.find((panel) => panel.key === activePanelKey) ?? null,
-		[activePanelKey, panels],
+		() => visiblePanels.find((panel) => panel.key === activePanelKey) ?? null,
+		[activePanelKey, visiblePanels],
 	);
 
-	if (!isCompactViewport || panels.length === 0) {
+	if (!isCompactViewport || visiblePanels.length === 0) {
 		return null;
 	}
 
 	return (
 		<>
 			<Drawer open={showMobileMenu} onOpenChange={setShowMobileMenu}>
-				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
+				<div
+					className={cn(
+						'fixed right-4 z-50 transition-[bottom] duration-200',
+						track
+							? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5.5rem+env(safe-area-inset-bottom))]'
+							: 'bottom-[calc(1rem+env(safe-area-inset-bottom))]',
+					)}>
 					<DrawerTrigger asChild>
 						<Button
 							size='icon'
@@ -118,7 +130,7 @@ const SeoMobileSidebarMenu = ({
 									{browseLabel}
 								</p>
 								<div className='grid grid-cols-2 gap-2.5'>
-									{panels.map((panel) => {
+									{visiblePanels.map((panel) => {
 										const Icon = iconMap[panel.icon];
 										return (
 											<Button

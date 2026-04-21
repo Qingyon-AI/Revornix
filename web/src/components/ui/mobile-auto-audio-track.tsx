@@ -11,6 +11,7 @@ const MobileAutoAudioTrack = ({
 	title,
 	artist,
 	cover,
+	scriptUrl,
 }: AudioTrackInfo) => {
 	const isMobile = useIsMobile();
 	const { registerTrack } = useAudioPlayer();
@@ -25,8 +26,9 @@ const MobileAutoAudioTrack = ({
 			title,
 			artist,
 			cover,
+			scriptUrl,
 		});
-	}, [artist, cover, isMobile, registerTrack, src, title]);
+	}, [artist, cover, isMobile, registerTrack, scriptUrl, src, title]);
 
 	return null;
 };
