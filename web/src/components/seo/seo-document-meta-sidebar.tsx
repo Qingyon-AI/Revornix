@@ -16,6 +16,8 @@ import {
 	FileDown,
 	Globe2,
 	GitBranch,
+	Loader2,
+	Sparkles,
 	Tag,
 	Users,
 } from 'lucide-react';
@@ -28,7 +30,7 @@ import NoticeBox from '@/components/ui/notice-box';
 import { Separator } from '@/components/ui/separator';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
 import DocumentGraphSEO from '@/components/document/document-graph-seo';
-import { DocumentCategory } from '@/enums/document';
+import { DocumentCategory, DocumentSummarizeStatus } from '@/enums/document';
 import type { GraphResponse } from '@/generated';
 import {
 	formatSeoDate,
@@ -36,6 +38,7 @@ import {
 	type PublicDocumentDetail,
 	type PublicDocumentSectionInfo,
 } from '@/lib/seo';
+import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { cn } from '@/lib/utils';
 import { useRightSidebar } from '@/provider/right-sidebar-provider';
 import {
@@ -155,6 +158,97 @@ export const SeoDocumentMetaSidebar = ({
 	className,
 }: SeoDocumentMetaSidebarProps) => {
 	const t = useTranslations();
+	const freshnessState = getDocumentFreshnessState(document);
+
+	const renderSummaryCard = () => {
+		if (!document.summarize_task) {
+			return (
+				<SidebarTaskNode
+					icon={Sparkles}
+					status={t('document_summarize_status_todo')}
+					title={t('ai_summary_empty')}
+					description={t('ai_summary_empty_description')}
+					tone='warning'
+				/>
+			);
+		}
+
+		if (document.summarize_task.status === DocumentSummarizeStatus.WAIT_TO) {
+			return (
+				<SidebarTaskNode
+					icon={Sparkles}
+					status={t('document_summarize_status_todo')}
+					title={t('ai_summary_wait_to')}
+					description={t('ai_summary_wait_to_description')}
+					tone='warning'
+				/>
+			);
+		}
+
+		if (
+			document.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING
+		) {
+			return (
+				<SidebarTaskNode
+					icon={Loader2}
+					status={t('document_summarize_status_doing')}
+					title={t('ai_summarizing')}
+					description={t('ai_summary_processing_description')}
+					tone='default'
+				/>
+			);
+		}
+
+		if (document.summarize_task.status === DocumentSummarizeStatus.FAILED) {
+			return (
+				<SidebarTaskNode
+					icon={Sparkles}
+					status={t('document_summarize_status_failed')}
+					title={t('ai_summary_failed')}
+					description={t('ai_summary_failed_description')}
+					tone='danger'
+				/>
+			);
+		}
+
+		if (
+			document.summarize_task.status === DocumentSummarizeStatus.CANCELLED
+		) {
+			return (
+				<SidebarTaskNode
+					icon={Sparkles}
+					status={t('cancel')}
+					title={t('ai_summary_empty')}
+					description={t('ai_summary_empty_description')}
+					tone='warning'
+				/>
+			);
+		}
+
+		return (
+			<SidebarTaskNode
+				icon={Sparkles}
+				status={
+					freshnessState.summaryStale
+						? t('document_status_stale')
+						: t('document_summarize_status_success')
+				}
+				title={t('ai_summary_ready')}
+				description={t('ai_summary_empty_description')}
+				tone={freshnessState.summaryStale ? 'warning' : 'success'}
+				hint={
+					freshnessState.summaryStale
+						? t('document_summary_stale_hint')
+						: undefined
+				}
+				result={
+					<div className='border-l border-border/50 pl-4 text-sm leading-7 text-muted-foreground'>
+						{document.summarize_task.summary}
+					</div>
+				}
+			/>
+		);
+	};
 
 	return (
 		<div className={className ?? 'space-y-4 p-4 pb-8'}>
@@ -252,6 +346,8 @@ export const SeoDocumentMetaSidebar = ({
 					/>
 				</SeoSidebarSection>
 			) : null}
+
+			<SeoSidebarSection>{renderSummaryCard()}</SeoSidebarSection>
 
 			<SeoSidebarSection>
 				<SidebarTaskNode
