@@ -195,7 +195,10 @@ export const SeoDocumentMetaSidebar = ({
 					<SeoMetaItem
 						icon={CalendarClock}
 						label={t('seo_document_updated_at')}
-						value={formatSeoDate(document.update_time, locale)}
+						value={formatSeoDate(
+							document.update_time ?? document.create_time,
+							locale,
+						)}
 					/>
 					<SeoMetaItem
 						icon={CalendarDays}

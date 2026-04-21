@@ -214,7 +214,10 @@ const SEOSectionDetail = async (props: {
 	const sectionTitle = section?.title || t('section_title_empty');
 	const sectionDescription =
 		section?.description || t('section_description_empty');
-	const updatedAt = formatSectionDate(section?.update_time, locale);
+	const updatedAt = formatSectionDate(
+		section?.update_time ?? section?.create_time,
+		locale,
+	);
 	const createdAt = formatSectionDate(section?.create_time, locale);
 	const sectionCover = getSectionCoverSrc(section);
 	const creatorAvatar =
