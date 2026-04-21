@@ -147,11 +147,41 @@ def section_graph(
 @graph_router.post('/document', response_model=schemas.graph.GraphResponse)
 def document_graph(
     document_graph_request: schemas.graph.DocumentGraphRequest,
-    user: models.user.User = Depends(get_current_user)
+    user: models.user.User | None = Depends(get_current_user_without_throw),
+    db: Session = Depends(get_db),
 ):
     doc_id = document_graph_request.document_id
     nodes = []
     edges = []
+
+    document = crud.document.get_document_by_document_id(
+        db=db,
+        document_id=doc_id,
+    )
+    if document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+
+    db_published_document = crud.document.get_publish_document_by_document_id(
+        db=db,
+        document_id=doc_id,
+    )
+    has_public_document = db_published_document is not None
+    is_creator = user is not None and document.creator_id == user.id
+    has_document_collaborator = False
+
+    if user is not None and not is_creator and not has_public_document:
+        db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
+            db=db,
+            user_id=user.id,
+            document_id=doc_id,
+        )
+        has_document_collaborator = db_user_document is not None
+
+    if not is_creator and not has_public_document and not has_document_collaborator:
+        raise schemas.error.CustomException(
+            "You don't have permission to view this document",
+            code=403,
+        )
 
     with neo4j_driver.session() as session:
         entity_query = """

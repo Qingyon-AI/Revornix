@@ -19,6 +19,27 @@ import { Separator } from '@/components/ui/separator';
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 type CommunityTab = 'sections' | 'documents';
 
+const toLoggableError = (reason: unknown) => {
+	if (!reason || typeof reason !== 'object') {
+		return {
+			message: String(reason ?? 'Unknown error'),
+			code: undefined,
+		};
+	}
+
+	const error = reason as {
+		message?: string;
+		code?: number;
+		success?: boolean;
+	};
+
+	return {
+		message: error.message ?? 'Unknown error',
+		code: error.code,
+		success: error.success,
+	};
+};
+
 const getSingleValue = (value: string | string[] | undefined) => {
 	if (Array.isArray(value)) {
 		return value[0];
@@ -136,7 +157,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	const keyword = getSingleValue(searchParams.q)?.trim() || undefined;
 	const start = getStartValue(searchParams.start);
 	const tab = getTabValue(searchParams.tab);
-	const [sections, documents] = await Promise.all([
+	const [sectionsResult, documentsResult] = await Promise.allSettled([
 		tab === 'sections'
 			? fetchPublicSections({
 					keyword,
@@ -144,7 +165,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 					limit: 12,
 					desc: true,
 				})
-			: null,
+			: Promise.resolve(null),
 		tab === 'documents'
 			? fetchPublicDocuments({
 					keyword,
@@ -152,8 +173,30 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 					limit: 12,
 					desc: true,
 				})
-			: null,
+			: Promise.resolve(null),
 	]);
+
+	if (sectionsResult.status === 'rejected') {
+		console.error('[SEO community] failed to fetch public sections', {
+			tab,
+			keyword,
+			start,
+			...toLoggableError(sectionsResult.reason),
+		});
+	}
+
+	if (documentsResult.status === 'rejected') {
+		console.error('[SEO community] failed to fetch public documents', {
+			tab,
+			keyword,
+			start,
+			...toLoggableError(documentsResult.reason),
+		});
+	}
+
+	const sections = sectionsResult.status === 'fulfilled' ? sectionsResult.value : null;
+	const documents =
+		documentsResult.status === 'fulfilled' ? documentsResult.value : null;
 
 	const surfaceCardClassName =
 		'gap-0 rounded-[24px] border border-border/60 bg-background/24 py-0 shadow-none';
