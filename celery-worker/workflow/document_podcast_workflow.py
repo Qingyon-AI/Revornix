@@ -24,7 +24,7 @@ from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields
 
 
 class DocumentPodcastState(TypedDict, total=False):
@@ -262,7 +262,7 @@ async def _generate_document_podcast(
         f"graph_relations={graph_counts['relations']}, "
         f"graph_excerpts={graph_counts['excerpts']}, "
         f"prepared_chars={len(prepared_markdown_content)}, "
-        f"elapsed_ms={(time.perf_counter() - prepare_started_at) * 1000:.2f}"
+        f"{format_elapsed_fields((time.perf_counter() - prepare_started_at) * 1000)}"
     )
     engine = await EngineProxy.create_tts_engine(
         user_id=user_id,
@@ -281,7 +281,7 @@ async def _generate_document_podcast(
         f"podcast_mode={state.get('podcast_mode')}, "
         f"input_chars={len(prepared_markdown_content)}, "
         f"audio_bytes={len(synthesis_result.audio_bytes)}, "
-        f"elapsed_ms={(time.perf_counter() - synthesize_started_at) * 1000:.2f}"
+        f"{format_elapsed_fields((time.perf_counter() - synthesize_started_at) * 1000)}"
     )
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
     podcast_script_file_name = f"files/{uuid.uuid4().hex}.json"
@@ -315,7 +315,7 @@ async def _generate_document_podcast(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
         f"node=generate_document_podcast, stage=upload_podcast_audio, "
         f"document_id={document_id}, audio_bytes={len(synthesis_result.audio_bytes)}, "
-        f"elapsed_ms={(time.perf_counter() - upload_started_at) * 1000:.2f}"
+        f"{format_elapsed_fields((time.perf_counter() - upload_started_at) * 1000)}"
     )
     state["podcast_file_name"] = podcast_file_name
     state["podcast_script_file_name"] = podcast_script_file_name

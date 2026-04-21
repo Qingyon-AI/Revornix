@@ -15,7 +15,7 @@ from data.sql.base import session_scope
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
+from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
 
 
 class DocumentEmbeddingState(TypedDict, total=False):
@@ -207,7 +207,8 @@ async def _embed_document(
     info_logger.info(
         f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=embed_document, "
         f"stage=embed_and_upsert_batches, chunks={chunk_count}, batches={batch_count}, "
-        f"embed_elapsed_ms={embed_elapsed_ms:.2f}, upsert_elapsed_ms={upsert_elapsed_ms:.2f}"
+        f"{format_elapsed_fields(embed_elapsed_ms, field_prefix='embed_elapsed')}, "
+        f"{format_elapsed_fields(upsert_elapsed_ms, field_prefix='upsert_elapsed')}"
     )
     return state
 

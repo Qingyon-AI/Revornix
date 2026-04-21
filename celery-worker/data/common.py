@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
+from workflow.timing import format_elapsed_fields
 
 
 def _clear_torch_cache() -> None:
@@ -442,8 +443,9 @@ async def ensure_document_chunk_snapshot(
     info_logger.info(
         f"[WorkflowTiming] chunk_snapshot_built document_id={doc_id}, "
         f"chunk_path={chunk_path}, markdown_length={metadata.markdown_length}, "
-        f"chunk_count={metadata.chunk_count}, markdown_load_elapsed_ms={markdown_load_elapsed_ms:.2f}, "
-        f"chunk_build_elapsed_ms={chunk_build_elapsed_ms:.2f}"
+        f"chunk_count={metadata.chunk_count}, "
+        f"{format_elapsed_fields(markdown_load_elapsed_ms, field_prefix='markdown_load_elapsed')}, "
+        f"{format_elapsed_fields(chunk_build_elapsed_ms, field_prefix='chunk_build_elapsed')}"
     )
     return metadata
 
@@ -624,8 +626,10 @@ async def stream_chunk_document(
             f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
             f"stage=stream_chunk_document, document_id={doc_id}, "
             f"chars={len(markdown_content)}, segments={len(segments)}, "
-            f"chunks={generated_chunks}, load_elapsed_ms={load_elapsed_ms:.2f}, "
-            f"chunking_elapsed_ms={chunking_elapsed_ms:.2f}, segment_size={segment_size}, "
+            f"chunks={generated_chunks}, "
+            f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}, "
+            f"{format_elapsed_fields(chunking_elapsed_ms, field_prefix='chunking_elapsed')}, "
+            f"segment_size={segment_size}, "
             f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
         )
     except Exception as e:
@@ -724,7 +728,8 @@ async def get_document_markdown_length(
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
             f"stage=get_document_markdown_length, document_id={doc_id}, "
-            f"chars={markdown_length}, load_elapsed_ms={load_elapsed_ms:.2f}"
+            f"chars={markdown_length}, "
+            f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}"
         )
         return markdown_length
     finally:

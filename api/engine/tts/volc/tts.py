@@ -335,6 +335,32 @@ class VolcTTSEngine(TTSEngineBase):
         if round_meta.get("audio_duration") not in (None, ""):
             target_segment["audioDuration"] = float(round_meta["audio_duration"])
 
+    def _merge_round_content_into_segments(
+        self,
+        *,
+        script_segments: list[dict[str, Any]],
+        round_meta: dict[str, Any],
+    ) -> None:
+        raw_round_id = round_meta.get("round_id")
+        try:
+            round_id = int(raw_round_id)
+        except (TypeError, ValueError):
+            return
+
+        if round_id < 0:
+            return
+
+        while len(script_segments) <= round_id:
+            script_segments.append({})
+
+        target_segment = script_segments[round_id]
+        if round_meta.get("speaker") not in (None, ""):
+            target_segment["speaker"] = str(round_meta["speaker"]).strip()
+        if round_meta.get("text") not in (None, ""):
+            target_segment["text"] = str(round_meta["text"]).strip()
+        if round_meta.get("text_type") not in (None, ""):
+            target_segment["textType"] = str(round_meta["text_type"]).strip()
+
     async def synthesize(self, text: str) -> TTSSynthesisResult:
         config = self.get_engine_config()
         if config is None:
@@ -434,6 +460,10 @@ class VolcTTSEngine(TTSEngineBase):
                             if msg.event == EventType.PodcastRoundStart:
                                 round_meta = json.loads(msg.payload.decode("utf-8")) if msg.payload else {}
                                 current_round = int(round_meta.get("round_id", -1))
+                                self._merge_round_content_into_segments(
+                                    script_segments=script_segments,
+                                    round_meta=round_meta,
+                                )
                                 current_round_audio_chunks = []
                                 round_completed = False
                                 continue
@@ -520,6 +550,22 @@ class VolcTTSEngine(TTSEngineBase):
                         source="volc_tts_synthesize",
                         strict=True,
                     )
+
+                script_segments = [
+                    segment
+                    for segment in script_segments
+                    if isinstance(segment, dict) and str(segment.get("text") or "").strip()
+                ]
+                if script_segments:
+                    script_text = "\n\n".join(
+                        (
+                            f"{segment.get('speaker')}: {segment.get('text')}"
+                            if segment.get("speaker")
+                            else str(segment.get("text") or "").strip()
+                        )
+                        for segment in script_segments
+                        if str(segment.get("text") or "").strip()
+                    ).strip() or script_text
 
                 if final_audio_url is not None:
                     async with httpx.AsyncClient() as client:

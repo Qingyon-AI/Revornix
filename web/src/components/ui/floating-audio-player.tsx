@@ -310,7 +310,7 @@ const FloatingAudioPlayer = () => {
 					role='button'
 					tabIndex={0}
 					className={cn(
-						'flex h-9 w-[min(10rem,calc(100vw-1rem))] items-center gap-2 rounded-l-full border border-r-0 border-border/60 bg-card/96 px-1.5 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.38)] backdrop-blur-xl transition-all hover:bg-card',
+						'flex h-9 w-[min(10rem,calc(100vw-1rem))] items-center gap-2 rounded-l-full border border-r-0 border-border/60 bg-card/96 px-1.5 shadow-xs backdrop-blur-xl transition-all hover:bg-card',
 						'sm:h-11 sm:w-[18.5rem] sm:gap-2.5 sm:px-2',
 						position?.x === 0
 							? 'rounded-l-none rounded-r-[1.35rem] border-l-0 border-r'
