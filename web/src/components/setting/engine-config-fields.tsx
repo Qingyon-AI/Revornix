@@ -512,21 +512,104 @@ const ENGINE_SCHEMAS: Record<string, FieldSpec[]> = {
 	],
 };
 
+const parseRecordLike = (value: unknown): Record<string, unknown> | undefined => {
+	if (value && typeof value === 'object' && !Array.isArray(value)) {
+		return value as Record<string, unknown>;
+	}
+
+	if (typeof value === 'string' && value.trim() !== '') {
+		try {
+			const parsed = JSON.parse(value);
+			if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+				return parsed as Record<string, unknown>;
+			}
+		} catch {
+			return undefined;
+		}
+	}
+
+	return undefined;
+};
+
+const normalizeGenerationMode = (value: unknown): string | undefined => {
+	if (typeof value === 'string') {
+		const normalized = value.trim().toLowerCase();
+		if (normalized === 'summary' || normalized === 'prompt' || normalized === 'dialogue') {
+			return normalized;
+		}
+	}
+
+	if (typeof value === 'number') {
+		if (value === 3) return 'dialogue';
+		if (value === 4) return 'prompt';
+		if (value === 0) return 'summary';
+	}
+
+	if (typeof value === 'string' && value.trim() !== '') {
+		const numericValue = Number(value.trim());
+		if (!Number.isNaN(numericValue)) {
+			return normalizeGenerationMode(numericValue);
+		}
+	}
+
+	return undefined;
+};
+
+const normalizeVolcTtsConfig = (value: Record<string, unknown>) => {
+	const normalized = { ...value };
+
+	const generationMode =
+		normalizeGenerationMode(normalized.generation_mode) ??
+		normalizeGenerationMode(normalized.action);
+	if (generationMode) {
+		normalized.generation_mode = generationMode;
+	}
+
+	if (
+		normalized.dialogue_model_id == null &&
+		normalized.script_model_id != null
+	) {
+		normalized.dialogue_model_id = normalized.script_model_id;
+	}
+
+	const speakerInfo = parseRecordLike(normalized.speaker_info);
+	if (speakerInfo) {
+		normalized.speaker_info = speakerInfo;
+		if (
+			normalized.speaker_additions == null &&
+			speakerInfo.speaker_additions != null
+		) {
+			normalized.speaker_additions = speakerInfo.speaker_additions;
+		}
+	}
+
+	for (const key of [
+		'audio_config',
+		'input_info',
+		'aigc_metadata',
+		'speaker_additions',
+		'extra_body',
+	] as const) {
+		const parsed = parseRecordLike(normalized[key]);
+		if (parsed) {
+			normalized[key] = parsed;
+		}
+	}
+
+	return normalized;
+};
+
 const normalizeObject = (value?: string | null): Record<string, unknown> => {
 	if (!value?.trim()) {
 		return {};
 	}
 
-	try {
-		const parsed = JSON.parse(value);
-		if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-			return parsed as Record<string, unknown>;
-		}
-	} catch {
+	const parsed = parseRecordLike(value);
+	if (!parsed) {
 		return {};
 	}
 
-	return {};
+	return normalizeVolcTtsConfig(parsed);
 };
 
 const VOLC_PODCAST_SPEAKER_OPTIONS = [
@@ -571,6 +654,10 @@ const translateOrFallback = (
 		return fallback;
 	}
 	try {
+		const raw = t.raw(key as never);
+		if (typeof raw === 'string') {
+			return raw === key ? fallback : raw;
+		}
 		const translated = t(key as never);
 		return translated === key ? fallback : translated;
 	} catch {
@@ -860,6 +947,17 @@ const serializeConfigValues = (
 	return Object.keys(next).length > 0 ? JSON.stringify(next) : '';
 };
 
+const buildInitialConfigValues = (
+	fields: FieldDefinition[],
+	currentValues: Record<string, unknown>,
+): ConfigRecord => {
+	const nextValues: ConfigRecord = {};
+	fields.forEach((field) => {
+		nextValues[field.key] = toInitialFieldValue(field, currentValues[field.key]);
+	});
+	return nextValues;
+};
+
 const EngineConfigFields = ({
 	engineUuid,
 	engineName,
@@ -881,41 +979,48 @@ const EngineConfigFields = ({
 	);
 	const hasInvalidConfig =
 		Boolean(value?.trim()) && Object.keys(currentValues).length === 0;
-	const [configValues, setConfigValues] = useState<ConfigRecord>({});
+	const initialConfigValues = useMemo(
+		() => buildInitialConfigValues(fields, currentValues),
+		[fields, currentValues],
+	);
+	const [configValues, setConfigValues] = useState<ConfigRecord>(
+		initialConfigValues,
+	);
 	const lastEmittedValueRef = useRef<string>(value ?? '');
+	const isHydratingFromValueRef = useRef(false);
 	const visibleFields = useMemo(
 		() => fields.filter((field) => isFieldVisible(field, configValues)),
 		[fields, configValues],
 	);
 
 	useEffect(() => {
-		const nextValues: ConfigRecord = {};
-		fields.forEach((field) => {
-			nextValues[field.key] = toInitialFieldValue(
-				field,
-				currentValues[field.key],
-			);
-		});
 		setConfigValues((current) => {
 			const currentSerialized = JSON.stringify(current);
-			const nextSerialized = JSON.stringify(nextValues);
-			return currentSerialized === nextSerialized ? current : nextValues;
+			const nextSerialized = JSON.stringify(initialConfigValues);
+			return currentSerialized === nextSerialized ? current : initialConfigValues;
 		});
+		isHydratingFromValueRef.current = true;
 		lastEmittedValueRef.current = value ?? '';
-	}, [currentValues, fields, value]);
+	}, [initialConfigValues, value]);
+
+	useEffect(() => {
+		if (isHydratingFromValueRef.current) {
+			isHydratingFromValueRef.current = false;
+			return;
+		}
+		const serialized = serializeConfigValues(configValues, fields);
+		if (serialized !== lastEmittedValueRef.current) {
+			lastEmittedValueRef.current = serialized;
+			onChange(serialized);
+		}
+	}, [configValues, fields, onChange]);
 
 	const updateConfigValue = (key: string, nextValue: JsonLike | undefined) => {
 		setConfigValues((current) => {
-			const nextValues = {
+			return {
 				...current,
 				[key]: nextValue,
 			};
-			const serialized = serializeConfigValues(nextValues, fields);
-			if (serialized !== lastEmittedValueRef.current) {
-				lastEmittedValueRef.current = serialized;
-				onChange(serialized);
-			}
-			return nextValues;
 		});
 	};
 

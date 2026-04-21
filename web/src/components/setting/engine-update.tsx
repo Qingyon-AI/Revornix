@@ -66,6 +66,8 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	const [engineCategory, setEngineCategory] = useState(EngineCategory.Markdown);
 
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+	const [isFormHydrated, setIsFormHydrated] = useState(false);
+	const [configJsonDraft, setConfigJsonDraft] = useState('');
 
 	const queryClient = getQueryClient();
 
@@ -127,6 +129,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			});
 			toast.success(t('setting_engine_page_mine_engine_update_success'));
 			setShowUpdateDialog(false);
+			setConfigJsonDraft('');
 			form.reset();
 		},
 		onError: (error) => {
@@ -149,7 +152,12 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	const onFormValidateSuccess = async (values: z.infer<typeof formSchema>) => {
 		if (!initialValuesRef.current) return;
 
-		const patch = diffValues(values, initialValuesRef.current);
+		const valuesWithConfig = {
+			...values,
+			config_json: configJsonDraft,
+		};
+
+		const patch = diffValues(valuesWithConfig, initialValuesRef.current);
 
 		// 如果啥都没改
 		if (Object.keys(patch).length === 0) {
@@ -161,7 +169,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			engine_id: engineId,
 			name: values.name,
 			description: values.description,
-			config_json: values.config_json,
+			config_json: configJsonDraft,
 			is_public: values.is_public,
 			required_plan_level: values.is_public
 				? values.required_plan_level
@@ -179,7 +187,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 	};
 
 	useEffect(() => {
-		if (!engine_info) return;
+		if (!showUpdateDialog || !engine_info) return;
 
 		const initialFormValues: z.infer<typeof formSchema> = {
 			engine_id: engineId,
@@ -196,10 +204,12 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 		};
 
 		setEngineCategory(engine_info.category);
+		setConfigJsonDraft(engine_info.config_json ?? '');
 
 		form.reset(initialFormValues);
 		initialValuesRef.current = initialFormValues; // ✅ 存表单结构
-	}, [engine_info, engineId, showUpdateDialog]);
+		setIsFormHydrated(true);
+	}, [engine_info, engineId, form, showUpdateDialog]);
 
 	const authorized = useMemo(() => {
 		return mainUserInfo && mainUserInfo.id === engine_info?.creator.id;
@@ -209,6 +219,11 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 		<Dialog
 			open={showUpdateDialog}
 			onOpenChange={(open) => {
+				if (open) {
+					setIsFormHydrated(false);
+				} else {
+					setConfigJsonDraft('');
+				}
 				setShowUpdateDialog(open);
 				if (open) {
 					refetchEngineInfo(); // ✅ 每次打开都拉最新
@@ -248,7 +263,16 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 						</Empty>
 					)}
 
-					{isSuccessEngineInfo && engine_info && (
+					{showUpdateDialog &&
+						engine_info &&
+						(isFetchingEngineInfo || !isFormHydrated) && (
+							<div className='flex items-center justify-center gap-2 rounded bg-muted p-5 text-xs text-muted-foreground'>
+								<span>{t('loading')}</span>
+								<Spinner />
+							</div>
+						)}
+
+					{isSuccessEngineInfo && engine_info && isFormHydrated && (
 						<Form {...form}>
 							<form
 								onSubmit={handleSubmit}
@@ -373,31 +397,21 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 								}}
 							/>
 
-							{authorized && (
-								<>
-									{
-										<FormField
-											name='config_json'
-											control={form.control}
-											render={({ field }) => {
-												return (
-													<FormItem>
-														<EngineConfigFields
-															disabled={!authorized}
-															engineUuid={engine_info.engine_provided.uuid}
-															engineName={engine_info.engine_provided.name}
-															engineNameZh={engine_info.engine_provided.name_zh}
-															value={field.value ?? ''}
-															onChange={(nextValue) => {
-																field.onChange(nextValue);
-															}}
-														/>
-														<FormMessage />
-													</FormItem>
-												);
-											}}
-										/>
-									}
+								{authorized && (
+									<>
+										<FormItem>
+											<EngineConfigFields
+												disabled={!authorized}
+												engineUuid={engine_info.engine_provided.uuid}
+												engineName={engine_info.engine_provided.name}
+												engineNameZh={engine_info.engine_provided.name_zh}
+												value={configJsonDraft}
+												onChange={(nextValue) => {
+													setConfigJsonDraft(nextValue);
+												}}
+											/>
+											<FormMessage />
+									</FormItem>
 									<FormField
 										name='is_public'
 										control={form.control}

@@ -1,9 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Pause, Play, Volume2 } from 'lucide-react';
+import { ChevronDown, Pause, Play, Volume2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Slider } from '@/components/ui/slider';
 import {
 	DEFAULT_AUDIO_COVER,
@@ -22,23 +29,37 @@ interface AudioPlayerProps extends AudioTrackInfo {
 	className?: string;
 }
 
+const PLAYBACK_RATE_OPTIONS = [0.8, 1, 1.25, 1.5, 2];
+
 export default function AudioPlayer({
 	src,
 	title = 'Unknown Title',
 	artist = 'Unknown Artist',
 	cover = DEFAULT_AUDIO_COVER,
+	scriptUrl,
 	variant = 'default',
 	className,
 }: AudioPlayerProps) {
 	const t = useTranslations();
-	const { track, isPlaying, currentTime, duration, volume, toggleTrack, seek, setVolume } =
-		useAudioPlayer();
+	const {
+		track,
+		isPlaying,
+		currentTime,
+		duration,
+		volume,
+		playbackRate,
+		toggleTrack,
+		seek,
+		setVolume,
+		setPlaybackRate,
+	} = useAudioPlayer();
 
 	const normalizedTrack = normalizeAudioTrack({
 		src,
 		title,
 		artist,
 		cover,
+		scriptUrl,
 	});
 	const [cachedDuration, setCachedDuration] = useState(
 		getCachedAudioDuration(normalizedTrack.key)
@@ -117,40 +138,47 @@ export default function AudioPlayer({
 	}
 
 	return (
-		<div className={cn('flex items-center gap-4', className)}>
-			<img
-				src={normalizedTrack.cover}
-				alt={normalizedTrack.title}
-				className='size-20 flex-shrink-0 rounded-md object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10 p-2'
-			/>
-
-			<div className='flex min-w-0 flex-1 flex-col'>
-				<div className='mb-2 flex flex-col'>
-					<h3 className='truncate text-sm font-medium'>{normalizedTrack.title}</h3>
-					<p className='truncate text-xs text-muted-foreground'>
+		<div
+			className={cn(
+				'flex min-w-0 flex-col gap-4',
+				className,
+			)}>
+			<div className='flex items-center gap-3'>
+				<img
+					src={normalizedTrack.cover}
+					alt={normalizedTrack.title}
+					className='size-16 flex-shrink-0 rounded-2xl object-cover'
+				/>
+				<div className='min-w-0 flex-1'>
+					<h3 className='truncate text-lg font-semibold leading-tight'>
+						{normalizedTrack.title}
+					</h3>
+					<p className='truncate text-sm text-muted-foreground'>
 						{normalizedTrack.artist}
 					</p>
 				</div>
+			</div>
 
-				<div className='flex items-center'>
+			<div className='flex min-w-0 flex-1 flex-col gap-4'>
+				<div className='flex items-center gap-3'>
 					<Button
 						type='button'
 						variant='outline'
 						size='icon'
 						onClick={() => void toggleTrack(normalizedTrack)}
-						className='h-9 w-9 rounded-full'>
+						className='h-10 w-10 rounded-full'>
 						{playing ? (
 							<Pause className='h-4 w-4' />
 						) : (
-							<Play className='h-4 w-4' />
+							<Play className='h-4 w-4 fill-current' />
 						)}
 						<span className='sr-only'>
 							{playing ? t('audio_player_pause') : t('audio_player_play')}
 						</span>
 					</Button>
 
-					<div className='flex w-full items-center gap-2'>
-						<span className='w-10 text-right text-xs text-muted-foreground'>
+					<div className='flex min-w-0 flex-1 items-center gap-2'>
+						<span className='w-10 text-right text-xs text-muted-foreground tabular-nums'>
 							{formatAudioTime(progress)}
 						</span>
 						{durationValue > 0 ? (
@@ -172,13 +200,15 @@ export default function AudioPlayer({
 						) : (
 							<div className='h-2 flex-1 animate-pulse rounded-md bg-muted opacity-50' />
 						)}
-						<span className='w-10 text-xs text-muted-foreground'>
+						<span className='w-10 text-xs text-muted-foreground tabular-nums'>
 							{formatAudioTime(durationValue)}
 						</span>
 					</div>
+				</div>
 
-					<div className='hidden w-28 items-center gap-2 md:flex'>
-						<Volume2 className='h-4 w-4 text-muted-foreground' />
+				<div className='flex flex-wrap items-center gap-4'>
+					<div className='flex min-w-0 flex-1 items-center gap-2'>
+						<Volume2 className='h-4 w-4 shrink-0 text-muted-foreground' />
 						<div
 							className='flex-1'
 							onClick={(event) => event.stopPropagation()}
@@ -190,6 +220,35 @@ export default function AudioPlayer({
 								onValueChange={(value) => setVolume(value[0])}
 							/>
 						</div>
+					</div>
+
+					<div className='ml-auto flex items-center gap-2'>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									type='button'
+									variant='outline'
+									size='sm'
+									className='h-8 min-w-[4rem] rounded-full border-border/70 px-3 text-xs shadow-none'>
+									{playbackRate}x
+									<ChevronDown className='size-3.5 opacity-70' />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end' className='min-w-[8rem] rounded-2xl'>
+								<DropdownMenuRadioGroup
+									value={String(playbackRate)}
+									onValueChange={(value) => setPlaybackRate(Number(value))}>
+									{PLAYBACK_RATE_OPTIONS.map((rate) => (
+										<DropdownMenuRadioItem
+											key={rate}
+											value={String(rate)}
+											className='rounded-xl'>
+											{rate}x
+										</DropdownMenuRadioItem>
+									))}
+								</DropdownMenuRadioGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
 			</div>

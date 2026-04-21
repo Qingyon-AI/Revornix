@@ -1,3 +1,4 @@
+import json
 import uuid
 import time
 from datetime import datetime, timezone
@@ -37,6 +38,7 @@ class DocumentPodcastState(TypedDict, total=False):
     document_title: str
     document_description: str
     graph_context_used: bool
+    podcast_script_file_name: str
 
 
 WORKFLOW_NAME = "document_podcast"
@@ -268,7 +270,7 @@ async def _generate_document_podcast(
     )
 
     synthesize_started_at = time.perf_counter()
-    audio_bytes = await engine.synthesize(
+    synthesis_result = await engine.synthesize(
         text=prepared_markdown_content
     )
     _ensure_podcast_task_not_cancelled(document_id)
@@ -278,10 +280,11 @@ async def _generate_document_podcast(
         f"document_id={document_id}, podcast_tier={podcast_tier}, "
         f"podcast_mode={state.get('podcast_mode')}, "
         f"input_chars={len(prepared_markdown_content)}, "
-        f"audio_bytes={len(audio_bytes)}, "
+        f"audio_bytes={len(synthesis_result.audio_bytes)}, "
         f"elapsed_ms={(time.perf_counter() - synthesize_started_at) * 1000:.2f}"
     )
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
+    podcast_script_file_name = f"files/{uuid.uuid4().hex}.json"
 
     db = session_scope()
     try:
@@ -292,16 +295,30 @@ async def _generate_document_podcast(
     upload_started_at = time.perf_counter()
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_file_name,
-        content=audio_bytes,
+        content=synthesis_result.audio_bytes,
         content_type="audio/mpeg"
+    )
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=podcast_script_file_name,
+        content=json.dumps(
+            {
+                "version": 1,
+                "title": state.get("document_title"),
+                "plain_text": synthesis_result.script_text or prepared_markdown_content,
+                "segments": synthesis_result.script_segments or [],
+            },
+            ensure_ascii=False,
+        ).encode("utf-8"),
+        content_type="application/json",
     )
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
         f"node=generate_document_podcast, stage=upload_podcast_audio, "
-        f"document_id={document_id}, audio_bytes={len(audio_bytes)}, "
+        f"document_id={document_id}, audio_bytes={len(synthesis_result.audio_bytes)}, "
         f"elapsed_ms={(time.perf_counter() - upload_started_at) * 1000:.2f}"
     )
     state["podcast_file_name"] = podcast_file_name
+    state["podcast_script_file_name"] = podcast_script_file_name
     return state
 
 
@@ -312,6 +329,7 @@ async def _mark_podcast_success(
         return state
     document_id = state.get("document_id")
     podcast_file_name = state.get("podcast_file_name")
+    podcast_script_file_name = state.get("podcast_script_file_name")
     if document_id is None:
         raise Exception("Document podcast workflow missing document_id")
     _ensure_podcast_task_not_cancelled(document_id)
@@ -326,6 +344,7 @@ async def _mark_podcast_success(
         if db_podcast_task is not None:
             db_podcast_task.status = DocumentPodcastStatus.SUCCESS
             db_podcast_task.podcast_file_name = podcast_file_name
+            db_podcast_task.podcast_script_file_name = podcast_script_file_name
             db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
             db.commit()

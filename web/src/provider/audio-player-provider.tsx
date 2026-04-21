@@ -22,6 +22,7 @@ interface AudioPlayerContextValue {
 	currentTime: number;
 	duration: number;
 	volume: number;
+	playbackRate: number;
 	toggleTrack: (track: AudioTrackInfo) => Promise<void>;
 	registerTrack: (
 		track: AudioTrackInfo,
@@ -31,6 +32,7 @@ interface AudioPlayerContextValue {
 	resume: () => Promise<void>;
 	seek: (time: number) => void;
 	setVolume: (volume: number) => void;
+	setPlaybackRate: (rate: number) => void;
 	clearTrack: () => void;
 }
 
@@ -46,6 +48,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [volume, setVolumeState] = useState(0.8);
+	const [playbackRate, setPlaybackRateState] = useState(1);
 
 	useEffect(() => {
 		trackRef.current = track;
@@ -60,6 +63,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		if (!audio) return;
 
 		audio.volume = 0.8;
+		audio.playbackRate = 1;
 
 		const syncProgress = () => {
 			setCurrentTime(audio.currentTime || 0);
@@ -69,6 +73,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		const handlePlay = () => setIsPlaying(true);
 		const handlePause = () => setIsPlaying(false);
 		const handleVolumeChange = () => setVolumeState(audio.volume);
+		const handleRateChange = () => setPlaybackRateState(audio.playbackRate || 1);
 		const handleEmptied = () => {
 			setCurrentTime(0);
 			setDuration(0);
@@ -82,6 +87,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		audio.addEventListener('pause', handlePause);
 		audio.addEventListener('ended', handlePause);
 		audio.addEventListener('volumechange', handleVolumeChange);
+		audio.addEventListener('ratechange', handleRateChange);
 		audio.addEventListener('emptied', handleEmptied);
 
 		return () => {
@@ -92,6 +98,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			audio.removeEventListener('pause', handlePause);
 			audio.removeEventListener('ended', handlePause);
 			audio.removeEventListener('volumechange', handleVolumeChange);
+			audio.removeEventListener('ratechange', handleRateChange);
 			audio.removeEventListener('emptied', handleEmptied);
 		};
 	}, []);
@@ -200,6 +207,14 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		setVolumeState(normalizedVolume);
 	}, []);
 
+	const setPlaybackRate = useCallback((nextRate: number) => {
+		const audio = audioRef.current;
+		if (!audio) return;
+		const normalizedRate = Math.min(2, Math.max(0.5, nextRate));
+		audio.playbackRate = normalizedRate;
+		setPlaybackRateState(normalizedRate);
+	}, []);
+
 	const clearTrack = useCallback(() => {
 		const audio = audioRef.current;
 		if (!audio) return;
@@ -220,12 +235,14 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			currentTime,
 			duration,
 			volume,
+			playbackRate,
 			toggleTrack,
 			registerTrack,
 			pause,
 			resume,
 			seek,
 			setVolume,
+			setPlaybackRate,
 			clearTrack,
 		}),
 		[
@@ -234,10 +251,12 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			duration,
 			isPlaying,
 			pause,
+			playbackRate,
 			registerTrack,
 			resume,
 			seek,
 			setVolume,
+			setPlaybackRate,
 			toggleTrack,
 			track,
 			volume,

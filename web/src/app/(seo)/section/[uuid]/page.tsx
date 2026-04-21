@@ -284,6 +284,7 @@ const SEOSectionDetail = async (props: {
 			{section && sectionPodcastSrc ? (
 				<MobileAutoAudioTrack
 					src={sectionPodcastSrc}
+					scriptUrl={section.podcast_task?.podcast_script_file_name ?? undefined}
 					title={sectionTitle}
 					artist={section.creator?.nickname || 'AI Generated'}
 					cover={sectionCover ?? undefined}

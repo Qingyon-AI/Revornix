@@ -18,6 +18,7 @@ class DocumentMdConvertStatus(IntEnum):
     CONVERTING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class DocumentEmbeddingStatus(IntEnum):
     WAIT_TO = 0

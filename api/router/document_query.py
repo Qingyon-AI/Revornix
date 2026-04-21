@@ -134,6 +134,7 @@ async def get_document_infos(
             info.podcast_task = schemas.task.DocumentPodcastTask(
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
+                podcast_script_file_name=podcast_task.podcast_script_file_name,
                 create_time=podcast_task.create_time,
                 update_time=podcast_task.update_time,
             )
@@ -141,6 +142,11 @@ async def get_document_infos(
                 info.podcast_task.podcast_file_name = await get_remote_file_signed_url(
                     user_id=document.creator_id,
                     file_name=podcast_task.podcast_file_name
+                )
+            if podcast_task.podcast_script_file_name is not None:
+                info.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
+                    user_id=document.creator_id,
+                    file_name=podcast_task.podcast_script_file_name
                 )
 
         summarize_task = summarize_task_by_document_id.get(document.id)
@@ -399,6 +405,7 @@ async def get_document_detail(
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
             podcast_file_name=podcast_task.podcast_file_name,
+            podcast_script_file_name=podcast_task.podcast_script_file_name,
             create_time=podcast_task.create_time,
             update_time=podcast_task.update_time,
         )
@@ -406,6 +413,11 @@ async def get_document_detail(
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
                 user_id=document.creator_id,
                 file_name=podcast_task.podcast_file_name
+            )
+        if podcast_task.podcast_script_file_name is not None:
+            res.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
+                user_id=document.creator_id,
+                file_name=podcast_task.podcast_script_file_name
             )
     summarize_task = crud.task.get_document_summarize_task_by_document_id(
         db=db,

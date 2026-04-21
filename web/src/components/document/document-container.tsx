@@ -128,6 +128,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.audio_info?.audio_file_name ||
 		document?.podcast_task?.podcast_file_name ||
 		null;
+	const mobileOperateOffsetClassName = primaryAudioSrc
+		? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))]'
+		: 'bottom-[calc(1rem+env(safe-area-inset-bottom))]';
 	const freshnessState = getDocumentFreshnessState(document);
 	const graphCardState =
 		freshnessState.graphStale &&
@@ -328,6 +331,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			{document && primaryAudioSrc ? (
 				<MobileAutoAudioTrack
 					src={primaryAudioSrc}
+					scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
 					title={document.title || t('document_no_title')}
 					artist={document.creator?.nickname || 'AI Generated'}
 					cover={documentCoverSrc ?? undefined}
@@ -387,7 +391,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			</div>
 
 			{document && isCompactViewport ? (
-				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
+				<div
+					className={`fixed right-4 z-50 ${mobileOperateOffsetClassName}`}>
 					<div className='pointer-events-auto'>
 						<DocumentOperate id={id} />
 					</div>

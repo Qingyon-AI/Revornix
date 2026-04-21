@@ -237,6 +237,7 @@ async def _build_admin_document_detail(
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
             podcast_file_name=podcast_task.podcast_file_name,
+            podcast_script_file_name=podcast_task.podcast_script_file_name,
             create_time=podcast_task.create_time,
             update_time=podcast_task.update_time,
         )

@@ -169,7 +169,7 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 				<form
 					onSubmit={onSubmitForm}
 					id='add-form'
-					className='flex w-full flex-col gap-2 rounded-[20px] border border-border/60 bg-background/55 p-3 lg:flex-row lg:items-center'>
+					className='flex w-full flex-col gap-2 lg:flex-row lg:items-center'>
 					<FormField
 						name='user_id'
 						control={form.control}

@@ -333,6 +333,7 @@ const TodaySummary = () => {
 						section.podcast_task.podcast_file_name ? (
 							<AudioPlayer
 								src={section.podcast_task.podcast_file_name}
+								scriptUrl={section.podcast_task.podcast_script_file_name ?? undefined}
 								title={section.title || t('dashboard_today_summary')}
 								artist='AI Generated'
 								variant='compact'

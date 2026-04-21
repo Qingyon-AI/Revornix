@@ -166,6 +166,7 @@ const SectionMediaPodcastTask = ({
 				result={
 					<AudioPlayer
 						src={section.podcast_task.podcast_file_name}
+						scriptUrl={section.podcast_task.podcast_script_file_name ?? undefined}
 						cover={cover}
 						title={section.title ?? 'Unkown Title'}
 						artist={'AI Generated'}

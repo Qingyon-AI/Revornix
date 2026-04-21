@@ -32,6 +32,7 @@ const SectionCardPodcast = ({ section }: { section: SectionInfo }) => {
 		src: section.podcast_task.podcast_file_name,
 		title: section.title,
 		artist: section.creator.nickname || 'AI Generated',
+		scriptUrl: section.podcast_task.podcast_script_file_name ?? undefined,
 	});
 	const [cachedDuration, setCachedDuration] = useState(
 		getCachedAudioDuration(normalizedTrack.key),

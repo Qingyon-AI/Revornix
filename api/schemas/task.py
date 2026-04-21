@@ -39,6 +39,7 @@ class DocumentProcessTask(BaseModel):
 class DocumentPodcastTask(BaseModel):
     status: int
     podcast_file_name: str | None
+    podcast_script_file_name: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
 
@@ -50,6 +51,7 @@ class DocumentOverrideProperty(BaseModel):
 class SectionPodcastTask(BaseModel):
     status: int
     podcast_file_name: str | None
+    podcast_script_file_name: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
 

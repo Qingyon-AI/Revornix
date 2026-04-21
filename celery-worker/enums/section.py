@@ -1,10 +1,11 @@
 from enum import IntEnum
 
+
 class UserSectionAuthority(IntEnum):
     FULL_ACCESS = 0
     READ_AND_WRITE = 1
     READ_ONLY = 2
-    
+
 class UserSectionRole(IntEnum):
     CREATOR = 0
     MEMBER = 1
@@ -21,13 +22,15 @@ class SectionPodcastStatus(IntEnum):
     GENERATING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class SectionProcessStatus(IntEnum):
     WAIT_TO = 0
     PROCESSING = 1
     SUCCESS = 2
     FAILED = 3
-    
+    CANCELLED = 4
+
 class SectionProcessTriggerType(IntEnum):
     SCHEDULER = 0
     UPDATED = 1

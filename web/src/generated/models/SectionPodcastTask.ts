@@ -32,6 +32,12 @@ export interface SectionPodcastTask {
      */
     podcast_file_name: string | null;
     /**
+     *
+     * @type {string}
+     * @memberof SectionPodcastTask
+     */
+    podcast_script_file_name?: string | null;
+    /**
      * 
      * @type {Date}
      * @memberof SectionPodcastTask
@@ -66,6 +72,7 @@ export function SectionPodcastTaskFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'status': json['status'],
         'podcast_file_name': json['podcast_file_name'],
+        'podcast_script_file_name': json['podcast_script_file_name'] == null ? undefined : json['podcast_script_file_name'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
     };
@@ -84,8 +91,8 @@ export function SectionPodcastTaskToJSONTyped(value?: SectionPodcastTask | null,
         
         'status': value['status'],
         'podcast_file_name': value['podcast_file_name'],
+        'podcast_script_file_name': value['podcast_script_file_name'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

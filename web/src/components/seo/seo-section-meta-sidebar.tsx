@@ -37,6 +37,7 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
+import AudioPlayer from '@/components/ui/audio-player';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
@@ -128,65 +129,17 @@ const SidebarSection = ({
 const PodcastPanel = ({
 	status,
 	podcastFileName,
+	podcastScriptFileName,
 	title,
 	cover,
 }: {
 	status?: SectionPodcastStatus | number | null;
 	podcastFileName?: string | null;
+	podcastScriptFileName?: string | null;
 	title?: string | null;
 	cover?: string | null;
 }) => {
 	const t = useTranslations();
-	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [currentTime, setCurrentTime] = useState(0);
-	const [duration, setDuration] = useState(0);
-
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
-
-		const sync = () => {
-			setCurrentTime(audio.currentTime || 0);
-			setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-		};
-		const handlePlay = () => setIsPlaying(true);
-		const handlePause = () => setIsPlaying(false);
-
-		audio.addEventListener('timeupdate', sync);
-		audio.addEventListener('loadedmetadata', sync);
-		audio.addEventListener('durationchange', sync);
-		audio.addEventListener('play', handlePlay);
-		audio.addEventListener('pause', handlePause);
-		audio.addEventListener('ended', handlePause);
-
-		return () => {
-			audio.removeEventListener('timeupdate', sync);
-			audio.removeEventListener('loadedmetadata', sync);
-			audio.removeEventListener('durationchange', sync);
-			audio.removeEventListener('play', handlePlay);
-			audio.removeEventListener('pause', handlePause);
-			audio.removeEventListener('ended', handlePause);
-		};
-	}, [podcastFileName]);
-
-	const togglePlayback = async () => {
-		const audio = audioRef.current;
-		if (!audio) return;
-		if (audio.paused) {
-			await audio.play().catch(() => undefined);
-			return;
-		}
-		audio.pause();
-	};
-
-	const handleSeek = (value: number[]) => {
-		const audio = audioRef.current;
-		const nextTime = value[0];
-		if (!audio || !Number.isFinite(nextTime)) return;
-		audio.currentTime = nextTime;
-		setCurrentTime(nextTime);
-	};
 
 	if (status === SectionPodcastStatus.SUCCESS && podcastFileName) {
 		return (
@@ -197,62 +150,18 @@ const PodcastPanel = ({
 				description={t('section_podcast_placeholder_description')}
 				tone='success'
 				result={
-					<div className='overflow-hidden rounded-[24px] border border-border/35 bg-background/22'>
-					<div className='flex items-center gap-3 px-4 py-4'>
-						<img
-							src={cover ?? 'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'}
-							alt={title ?? 'Podcast cover'}
-							className='size-16 shrink-0 rounded-2xl object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10'
+					<div className='overflow-hidden rounded-[24px] border border-border/35 bg-background/22 p-4'>
+						<AudioPlayer
+							src={podcastFileName}
+							scriptUrl={podcastScriptFileName ?? undefined}
+							cover={
+								cover ??
+								'https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251101140344640.png'
+							}
+							title={title ?? 'Unknown Title'}
+							artist='AI Generated'
 						/>
-						<div className='min-w-0'>
-							<div className='line-clamp-2 text-sm font-medium text-foreground'>
-								{title ?? 'Unknown Title'}
-							</div>
-							<div className='text-xs text-muted-foreground'>AI Generated</div>
-						</div>
 					</div>
-					<div className='border-t border-border/40 px-4 py-4'>
-						<div className='flex items-center gap-3'>
-							<Button
-								type='button'
-								variant='outline'
-								size='icon'
-								className='size-10 shrink-0 rounded-full'
-								onClick={(event) => {
-									event.stopPropagation();
-									void togglePlayback();
-								}}
-								onPointerDown={(event) => event.stopPropagation()}>
-								{isPlaying ? (
-									<Pause className='size-4' />
-								) : (
-									<Play className='size-4' />
-								)}
-								<span className='sr-only'>
-									{isPlaying ? t('audio_player_pause') : t('audio_player_play')}
-								</span>
-							</Button>
-							<div className='min-w-0 flex-1'>
-								<div className='mb-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground'>
-									<span>{formatAudioTime(currentTime)}</span>
-									<span>{formatAudioTime(duration)}</span>
-								</div>
-								<div
-									onClick={(event) => event.stopPropagation()}
-									onPointerDown={(event) => event.stopPropagation()}>
-									<Slider
-										value={[currentTime]}
-										max={duration > 0 ? duration : 1}
-										step={0.1}
-										className='w-full'
-										onValueChange={handleSeek}
-									/>
-								</div>
-							</div>
-						</div>
-					</div>
-					<audio ref={audioRef} preload='metadata' src={podcastFileName} />
-				</div>
 				}
 			/>
 		);
@@ -429,6 +338,9 @@ export const SeoSectionMetaSidebar = ({
 				<PodcastPanel
 					status={section.podcast_task?.status}
 					podcastFileName={section.podcast_task?.podcast_file_name}
+					podcastScriptFileName={
+						section.podcast_task?.podcast_script_file_name
+					}
 					title={section.title}
 					cover={sectionCover}
 				/>
