@@ -1,9 +1,11 @@
 'use client';
 
 import {
+	useCallback,
 	createContext,
 	useContext,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 	type ReactNode,
@@ -21,6 +23,10 @@ interface AudioPlayerContextValue {
 	duration: number;
 	volume: number;
 	toggleTrack: (track: AudioTrackInfo) => Promise<void>;
+	registerTrack: (
+		track: AudioTrackInfo,
+		options?: { force?: boolean },
+	) => void;
 	pause: () => void;
 	resume: () => Promise<void>;
 	seek: (time: number) => void;
@@ -32,11 +38,22 @@ const AudioPlayerContext = createContext<AudioPlayerContextValue | null>(null);
 
 export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 	const audioRef = useRef<HTMLAudioElement>(null);
+	const trackRef = useRef<AudioTrack | null>(null);
+	const isPlayingRef = useRef(false);
+	const dismissedTrackKeyRef = useRef<string | null>(null);
 	const [track, setTrack] = useState<AudioTrack | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [volume, setVolumeState] = useState(0.8);
+
+	useEffect(() => {
+		trackRef.current = track;
+	}, [track]);
+
+	useEffect(() => {
+		isPlayingRef.current = isPlaying;
+	}, [isPlaying]);
 
 	useEffect(() => {
 		const audio = audioRef.current;
@@ -79,26 +96,28 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		};
 	}, []);
 
-	const pause = () => {
+	const pause = useCallback(() => {
 		audioRef.current?.pause();
-	};
+	}, []);
 
-	const resume = async () => {
+	const resume = useCallback(async () => {
 		const audio = audioRef.current;
-		if (!audio || !track) return;
+		if (!audio || !trackRef.current) return;
 		try {
 			await audio.play();
-		} catch (error) {
-			console.error('Failed to resume audio playback.', error);
+		} catch {
+			// Ignore playback failures to avoid surfacing noisy dev overlays for
+			// transient browser/media policy issues.
 		}
-	};
+	}, []);
 
-	const toggleTrack = async (trackInfo: AudioTrackInfo) => {
+	const toggleTrack = useCallback(async (trackInfo: AudioTrackInfo) => {
 		const audio = audioRef.current;
 		if (!audio || !trackInfo.src) return;
 
 		const nextTrack = normalizeAudioTrack(trackInfo);
-		const isCurrentTrack = track?.key === nextTrack.key;
+		const isCurrentTrack = trackRef.current?.key === nextTrack.key;
+		dismissedTrackKeyRef.current = null;
 
 		setTrack(nextTrack);
 
@@ -106,8 +125,8 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			if (audio.paused) {
 				try {
 					await audio.play();
-				} catch (error) {
-					console.error('Failed to play audio.', error);
+				} catch {
+					// Ignore playback failures to keep the UI stable.
 				}
 				return;
 			}
@@ -122,29 +141,69 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
 		try {
 			await audio.play();
-		} catch (error) {
-			console.error('Failed to start audio playback.', error);
+		} catch {
+			// Ignore playback failures to keep the UI stable.
 		}
-	};
+	}, []);
 
-	const seek = (time: number) => {
+	const registerTrack = useCallback((
+		trackInfo: AudioTrackInfo,
+		options?: { force?: boolean },
+	) => {
+		const audio = audioRef.current;
+		if (!audio || !trackInfo.src) return;
+
+		const nextTrack = normalizeAudioTrack(trackInfo);
+		const isCurrentTrack = trackRef.current?.key === nextTrack.key;
+
+		if (
+			!options?.force &&
+			dismissedTrackKeyRef.current === nextTrack.key
+		) {
+			return;
+		}
+
+		if (isPlayingRef.current && !options?.force && !isCurrentTrack) {
+			return;
+		}
+
+		setTrack(nextTrack);
+
+		if (isCurrentTrack) {
+			if (!audio.getAttribute('src')) {
+				audio.src = nextTrack.src;
+				audio.load();
+			}
+			return;
+		}
+
+		audio.pause();
+		audio.src = nextTrack.src;
+		audio.load();
+		setCurrentTime(0);
+		setDuration(0);
+		setIsPlaying(false);
+	}, []);
+
+	const seek = useCallback((time: number) => {
 		const audio = audioRef.current;
 		if (!audio || !Number.isFinite(time)) return;
 		audio.currentTime = time;
 		setCurrentTime(time);
-	};
+	}, []);
 
-	const setVolume = (nextVolume: number) => {
+	const setVolume = useCallback((nextVolume: number) => {
 		const audio = audioRef.current;
 		if (!audio) return;
 		const normalizedVolume = Math.min(1, Math.max(0, nextVolume));
 		audio.volume = normalizedVolume;
 		setVolumeState(normalizedVolume);
-	};
+	}, []);
 
-	const clearTrack = () => {
+	const clearTrack = useCallback(() => {
 		const audio = audioRef.current;
 		if (!audio) return;
+		dismissedTrackKeyRef.current = trackRef.current?.key ?? null;
 		audio.pause();
 		audio.removeAttribute('src');
 		audio.load();
@@ -152,23 +211,41 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		setCurrentTime(0);
 		setDuration(0);
 		setIsPlaying(false);
-	};
+	}, []);
+
+	const value = useMemo(
+		() => ({
+			track,
+			isPlaying,
+			currentTime,
+			duration,
+			volume,
+			toggleTrack,
+			registerTrack,
+			pause,
+			resume,
+			seek,
+			setVolume,
+			clearTrack,
+		}),
+		[
+			clearTrack,
+			currentTime,
+			duration,
+			isPlaying,
+			pause,
+			registerTrack,
+			resume,
+			seek,
+			setVolume,
+			toggleTrack,
+			track,
+			volume,
+		],
+	);
 
 	return (
-		<AudioPlayerContext.Provider
-			value={{
-				track,
-				isPlaying,
-				currentTime,
-				duration,
-				volume,
-				toggleTrack,
-				pause,
-				resume,
-				seek,
-				setVolume,
-				clearTrack,
-			}}>
+		<AudioPlayerContext.Provider value={value}>
 			{children}
 			<audio ref={audioRef} preload='metadata' className='hidden' />
 		</AudioPlayerContext.Provider>

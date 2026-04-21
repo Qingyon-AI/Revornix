@@ -9,7 +9,7 @@ import { BellOffIcon, BellPlusIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/provider/user-provider';
-import { getSectionDetail, subscribeSection } from '@/service/section';
+import { getPublicSectionDetail, subscribeSection } from '@/service/section';
 import { cn } from '@/lib/utils';
 import type { SectionInfo } from '@/generated';
 
@@ -38,7 +38,7 @@ const SeoSectionSubscribeButton = ({
 	const relationQuery = useQuery({
 		queryKey,
 		queryFn: async () => {
-			return getSectionDetail({ section_id: sectionId });
+			return getPublicSectionDetail({ section_id: sectionId });
 		},
 		enabled: !!mainUserInfo,
 		refetchOnWindowFocus: false,

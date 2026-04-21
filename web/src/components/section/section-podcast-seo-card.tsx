@@ -70,8 +70,8 @@ const SectionPodcastSeoCard = ({
 		if (audio.paused) {
 			try {
 				await audio.play();
-			} catch (error) {
-				console.error('Failed to play section podcast.', error);
+			} catch {
+				// Ignore playback failures to avoid noisy dev overlays.
 			}
 			return;
 		}
@@ -158,9 +158,11 @@ const SectionPodcastSeoCard = ({
 							variant='outline'
 							size='icon'
 							className='size-10 shrink-0 rounded-full'
-							onClick={() => {
+							onClick={(event) => {
+								event.stopPropagation();
 								void togglePlayback();
-							}}>
+							}}
+							onPointerDown={(event) => event.stopPropagation()}>
 							{isPlaying ? (
 								<Pause className='size-4' />
 							) : (
@@ -175,13 +177,17 @@ const SectionPodcastSeoCard = ({
 								<span>{formatAudioTime(currentTime)}</span>
 								<span>{formatAudioTime(duration)}</span>
 							</div>
-							<Slider
-								value={[currentTime]}
-								max={duration > 0 ? duration : 1}
-								step={0.1}
-								className='w-full'
-								onValueChange={handleSeek}
-							/>
+							<div
+								onClick={(event) => event.stopPropagation()}
+								onPointerDown={(event) => event.stopPropagation()}>
+								<Slider
+									value={[currentTime]}
+									max={duration > 0 ? duration : 1}
+									step={0.1}
+									className='w-full'
+									onValueChange={handleSeek}
+								/>
+							</div>
 						</div>
 					</div>
 					<audio ref={audioRef} preload='metadata' src={podcastFileName} />

@@ -90,7 +90,11 @@ export default function AudioPlayer({
 					variant='outline'
 					size='icon-sm'
 					className='rounded-full'
-					onClick={() => void toggleTrack(normalizedTrack)}>
+					onClick={(event) => {
+						event.stopPropagation();
+						void toggleTrack(normalizedTrack);
+					}}
+					onPointerDown={(event) => event.stopPropagation()}>
 					{playing ? (
 						<Pause className='size-4' />
 					) : (
@@ -150,16 +154,21 @@ export default function AudioPlayer({
 							{formatAudioTime(progress)}
 						</span>
 						{durationValue > 0 ? (
-							<Slider
-								value={[progress]}
-								max={durationValue}
-								step={0.1}
+							<div
 								className='flex-1'
-								onValueChange={(value) => {
-									if (!isActive) return;
-									seek(value[0]);
-								}}
-							/>
+								onClick={(event) => event.stopPropagation()}
+								onPointerDown={(event) => event.stopPropagation()}>
+								<Slider
+									value={[progress]}
+									max={durationValue}
+									step={0.1}
+									className='flex-1'
+									onValueChange={(value) => {
+										if (!isActive) return;
+										seek(value[0]);
+									}}
+								/>
+							</div>
 						) : (
 							<div className='h-2 flex-1 animate-pulse rounded-md bg-muted opacity-50' />
 						)}
@@ -170,12 +179,17 @@ export default function AudioPlayer({
 
 					<div className='hidden w-28 items-center gap-2 md:flex'>
 						<Volume2 className='h-4 w-4 text-muted-foreground' />
-						<Slider
-							value={[volume]}
-							max={1}
-							step={0.01}
-							onValueChange={(value) => setVolume(value[0])}
-						/>
+						<div
+							className='flex-1'
+							onClick={(event) => event.stopPropagation()}
+							onPointerDown={(event) => event.stopPropagation()}>
+							<Slider
+								value={[volume]}
+								max={1}
+								step={0.01}
+								onValueChange={(value) => setVolume(value[0])}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

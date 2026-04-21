@@ -17,6 +17,7 @@ import { searchSectionGraph } from '@/service/graph';
 import { getSectionDetail } from '@/service/section';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import ImageWithFallback from '../ui/image-with-fallback';
+import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 
 import SectionMarkdown from './section-markdown';
 import SectionOperate from './section-operate';
@@ -93,6 +94,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 		enabled: Boolean(section?.id),
 	});
 	const sectionCoverSrc = getSectionCoverSrc(section);
+	const sectionPodcastSrc = section?.podcast_task?.podcast_file_name ?? null;
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
@@ -186,6 +188,14 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	return (
 		<>
+			{section && sectionPodcastSrc ? (
+				<MobileAutoAudioTrack
+					src={sectionPodcastSrc}
+					title={section.title || t('section_title_empty')}
+					artist={section.creator?.nickname || 'AI Generated'}
+					cover={sectionCoverSrc ?? undefined}
+				/>
+			) : null}
 			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
 				<div className='min-h-0 flex-1 overflow-hidden'>
 					<>
