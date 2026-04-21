@@ -6,6 +6,22 @@ export interface AudioTrackInfo {
 	title?: string;
 	artist?: string;
 	cover?: string;
+	scriptUrl?: string;
+}
+
+export interface AudioTranscriptSegment {
+	speaker?: string | null;
+	text: string;
+	start?: number | null;
+	end?: number | null;
+	audioDuration?: number | null;
+}
+
+export interface AudioTranscriptPayload {
+	version?: number;
+	title?: string | null;
+	plain_text?: string | null;
+	segments?: AudioTranscriptSegment[];
 }
 
 export interface AudioTrack {
@@ -14,7 +30,15 @@ export interface AudioTrack {
 	title: string;
 	artist: string;
 	cover: string;
+	scriptUrl?: string;
 }
+
+const AUDIO_TRANSCRIPT_SPEAKER_LABELS: Record<string, string> = {
+	zh_male_dayixiansheng_v2_saturn_bigtts: '黑猫侦探社大义',
+	zh_female_mizaitongxue_v2_saturn_bigtts: '黑猫侦探社咪仔',
+	zh_male_liufei_v2_saturn_bigtts: '刘飞',
+	zh_male_xiaolei_v2_saturn_bigtts: '潇磊',
+};
 
 const audioDurationCache = new Map<string, number>();
 const audioDurationRequestCache = new Map<string, Promise<number>>();
@@ -46,6 +70,7 @@ export const normalizeAudioTrack = (track: AudioTrackInfo): AudioTrack => ({
 	title: track.title?.trim() || 'Unknown Title',
 	artist: track.artist?.trim() || 'Unknown Artist',
 	cover: track.cover || DEFAULT_AUDIO_COVER,
+	scriptUrl: track.scriptUrl,
 });
 
 export const getCachedAudioDuration = (key: string) => {
@@ -122,4 +147,24 @@ export const formatAudioTime = (time: number) => {
 	const minutes = Math.floor(time / 60);
 	const seconds = Math.floor(time % 60);
 	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+export const resolveTranscriptSpeakerLabel = (speaker?: string | null) => {
+	if (!speaker?.trim()) {
+		return '';
+	}
+
+	const normalizedSpeaker = speaker.trim();
+	const mappedSpeaker = AUDIO_TRANSCRIPT_SPEAKER_LABELS[normalizedSpeaker];
+	if (mappedSpeaker) {
+		return mappedSpeaker;
+	}
+
+	return normalizedSpeaker
+		.replace(/^zh_/i, '')
+		.replace(/_v\d+.*$/i, '')
+		.split('_')
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(' ');
 };

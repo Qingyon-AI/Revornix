@@ -12,8 +12,6 @@
 [English](./README.md) | [中文文档](./README_zh.md) | [日本語ドキュメント](./README_jp.md)
 
 > Reject FOMO! When facing the information stream, be lazy, leave the rest to AI!
-> 
-> 拒绝 FOMO！面对信息流，做个懒人，剩下的，交给 AI！
 
 Revornix is an open-source, local-first AI information workspace. It helps you collect fragmented inputs, turn them into structured knowledge, generate reports with images and podcast audio, and deliver the output through automated notifications.
 
@@ -75,6 +73,8 @@ Revornix/
 ![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
 
 ![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
+
+![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
 
 ![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 

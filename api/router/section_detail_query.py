@@ -247,6 +247,7 @@ async def _build_section_info_response(
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
+            podcast_script_file_name=db_section_podcast_task.podcast_script_file_name,
             create_time=db_section_podcast_task.create_time,
             update_time=db_section_podcast_task.update_time,
         )
@@ -254,6 +255,11 @@ async def _build_section_info_response(
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
                 user_id=db_section_podcast_task.user_id,
                 file_name=db_section_podcast_task.podcast_file_name,
+            )
+        if db_section_podcast_task.podcast_script_file_name is not None:
+            res.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
+                user_id=db_section_podcast_task.user_id,
+                file_name=db_section_podcast_task.podcast_script_file_name,
             )
 
     db_section_process_task = crud.task.get_section_process_task_by_section_id(
@@ -553,6 +559,7 @@ async def get_date_section_info(
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
+            podcast_script_file_name=db_section_podcast_task.podcast_script_file_name,
             create_time=db_section_podcast_task.create_time,
             update_time=db_section_podcast_task.update_time,
         )
@@ -560,6 +567,11 @@ async def get_date_section_info(
             res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
                 user_id=db_section_podcast_task.user_id,
                 file_name=db_section_podcast_task.podcast_file_name,
+            )
+        if db_section_podcast_task.podcast_script_file_name is not None:
+            res.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
+                user_id=db_section_podcast_task.user_id,
+                file_name=db_section_podcast_task.podcast_script_file_name,
             )
 
     db_section_process_task = crud.task.get_section_process_task_by_section_id(

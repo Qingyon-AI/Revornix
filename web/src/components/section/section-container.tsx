@@ -95,6 +95,9 @@ const SectionContainer = ({ id }: { id: number }) => {
 	});
 	const sectionCoverSrc = getSectionCoverSrc(section);
 	const sectionPodcastSrc = section?.podcast_task?.podcast_file_name ?? null;
+	const mobileOperateOffsetClassName = sectionPodcastSrc
+		? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))]'
+		: 'bottom-[calc(1rem+env(safe-area-inset-bottom))]';
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
@@ -191,6 +194,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 			{section && sectionPodcastSrc ? (
 				<MobileAutoAudioTrack
 					src={sectionPodcastSrc}
+					scriptUrl={section.podcast_task?.podcast_script_file_name ?? undefined}
 					title={section.title || t('section_title_empty')}
 					artist={section.creator?.nickname || 'AI Generated'}
 					cover={sectionCoverSrc ?? undefined}
@@ -229,7 +233,8 @@ const SectionContainer = ({ id }: { id: number }) => {
 			</div>
 
 			{section && isCompactViewport ? (
-				<div className='fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50'>
+				<div
+					className={`fixed right-4 z-50 ${mobileOperateOffsetClassName}`}>
 					<SectionOperate id={id} />
 				</div>
 			) : null}

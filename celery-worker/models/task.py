@@ -83,6 +83,7 @@ class DocumentPodcastTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
     podcast_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
+    podcast_script_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast script file which you uploaded to the file system')
     celery_task_id: Mapped[str | None] = mapped_column(String(255), comment='The celery task id for this podcast task')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -113,7 +114,7 @@ class SectionProcessTask(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    trigger_type: Mapped[int | None] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
+    trigger_type: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: scheduler, 1: updated')
 
 
 class SectionTriggerScheduler(Base):
@@ -133,6 +134,7 @@ class SectionPodcastTask(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to generate podcast, 1: generating podcast, 2: podcast generated successfully, 3: podcast generation failed')
     podcast_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast file which you uploaded to the file system')
+    podcast_script_file_name: Mapped[str | None] = mapped_column(String(500), comment='The path of the podcast script file which you uploaded to the file system')
     celery_task_id: Mapped[str | None] = mapped_column(String(255), comment='The celery task id for this section podcast task')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -227,6 +227,7 @@ async def generate_podcast(
     else:
         db_exist_podcast_task.status = SectionPodcastStatus.WAIT_TO
         db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.podcast_script_file_name = None
         db_exist_podcast_task.celery_task_id = None
         db_exist_podcast_task.update_time = now
     task_result = start_process_section_podcast.apply_async(kwargs={

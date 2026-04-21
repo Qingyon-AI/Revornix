@@ -176,6 +176,9 @@ const DocumentPodcast = ({
 									result={
 										<AudioPlayer
 											src={document?.podcast_task?.podcast_file_name}
+											scriptUrl={
+												document?.podcast_task?.podcast_script_file_name ?? undefined
+											}
 											cover={
 											document.cover
 												? replacePath(document.cover, document.creator.id)

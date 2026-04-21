@@ -1,14 +1,18 @@
 from enum import IntEnum
 
+
 class UserDocumentAuthority(IntEnum):
+    FULL_ACCESS = 0
     OWNER = 0
+    READ_AND_WRITE = 1
+    READ_ONLY = 2
 
 class DocumentCategory(IntEnum):
     FILE = 0
     WEBSITE = 1
     QUICK_NOTE = 2
     AUDIO = 3
-    
+
 class DocumentMdConvertStatus(IntEnum):
     WAIT_TO = 0
     CONVERTING = 1
@@ -16,20 +20,13 @@ class DocumentMdConvertStatus(IntEnum):
     FAILED = 3
     CANCELLED = 4
 
-class DocumentAudioTranscribeStatus(IntEnum):
-    WAIT_TO = 0
-    TRANSCRIBING = 1
-    SUCCESS = 2
-    FAILED = 3
-    CANCELLED = 4
-    
 class DocumentEmbeddingStatus(IntEnum):
     WAIT_TO = 0
     EMBEDDING = 1
     SUCCESS = 2
     FAILED = 3
     CANCELLED = 4
-    
+
 class DocumentGraphStatus(IntEnum):
     WAIT_TO = 0
     BUILDING = 1
@@ -40,6 +37,13 @@ class DocumentGraphStatus(IntEnum):
 class DocumentPodcastStatus(IntEnum):
     WAIT_TO = 0
     GENERATING = 1
+    SUCCESS = 2
+    FAILED = 3
+    CANCELLED = 4
+
+class DocumentAudioTranscribeStatus(IntEnum):
+    WAIT_TO = 0
+    TRANSCRIBING = 1
     SUCCESS = 2
     FAILED = 3
     CANCELLED = 4

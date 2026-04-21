@@ -644,6 +644,7 @@ async def generate_podcast(
             raise schemas.error.CustomException("Podcast task is already in progress", code=409)
         db_exist_podcast_task.status = DocumentPodcastStatus.WAIT_TO
         db_exist_podcast_task.podcast_file_name = None
+        db_exist_podcast_task.podcast_script_file_name = None
         db_exist_podcast_task.celery_task_id = None
         db_exist_podcast_task.update_time = now
     else:

@@ -1,15 +1,15 @@
 import inspect
 
-from base_implement.tts_engine_base import TTSEngineBase
+from base_implement.tts_engine_base import TTSEngineBase, TTSSynthesisResult
 from langfuse import propagate_attributes
 
 from langfuse.openai import AsyncOpenAI
 
+from common.logger import exception_logger
 from common.ai import (
     _get_user_ai_interaction_language,
     build_text_output_language_instruction,
 )
-from common.logger import exception_logger
 from enums.engine_enums import EngineCategory, EngineProvided
 from prompts.podcast_generation import podcast_generation_prompt
 
@@ -58,7 +58,7 @@ class OpenAIAudioEngine(TTSEngineBase):
     async def synthesize(
         self, 
         text: str
-    ) -> bytes:
+    ) -> TTSSynthesisResult:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
@@ -102,7 +102,11 @@ class OpenAIAudioEngine(TTSEngineBase):
                 audio = completion.choices[0].message.audio
                 if audio is None:
                     raise Exception("The audio is None.")
+                script_text = completion.choices[0].message.content or text
                 # Langfuse会将audio.data包装成LangfuseMedia，从中获取音频bytes需要通过_content_bytes
-                return audio.data._content_bytes
+                return TTSSynthesisResult(
+                    audio_bytes=audio.data._content_bytes,
+                    script_text=script_text,
+                )
             finally:
                 await _safe_close_async_client(llm_client)

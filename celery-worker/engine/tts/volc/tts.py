@@ -9,7 +9,7 @@ import crud
 from langfuse import propagate_attributes
 from pydantic import AnyUrl
 
-from base_implement.tts_engine_base import TTSEngineBase
+from base_implement.tts_engine_base import TTSEngineBase, TTSSynthesisResult
 from common.ai import generate_podcast_dialogue_turns
 from common.langfuse import langfuse
 from common.logger import exception_logger, info_logger
@@ -299,7 +299,43 @@ class VolcTTSEngine(TTSEngineBase):
             },
         )
 
-    async def synthesize(self, text: str) -> bytes:
+    def _merge_round_timing_into_segments(
+        self,
+        *,
+        script_segments: list[dict[str, Any]],
+        round_meta: dict[str, Any],
+        round_id: int,
+    ) -> None:
+        if not script_segments:
+            return
+
+        candidate_indexes: list[int] = []
+        if 0 <= round_id < len(script_segments):
+            candidate_indexes.append(round_id)
+        if 0 <= round_id - 1 < len(script_segments):
+            candidate_indexes.append(round_id - 1)
+
+        target_index = next(
+            (
+                index
+                for index in candidate_indexes
+                if script_segments[index].get("start") in (None, "")
+                and script_segments[index].get("end") in (None, "")
+            ),
+            candidate_indexes[0] if candidate_indexes else None,
+        )
+        if target_index is None:
+            return
+
+        target_segment = script_segments[target_index]
+        if round_meta.get("start_time") not in (None, ""):
+            target_segment["start"] = float(round_meta["start_time"])
+        if round_meta.get("end_time") not in (None, ""):
+            target_segment["end"] = float(round_meta["end_time"])
+        if round_meta.get("audio_duration") not in (None, ""):
+            target_segment["audioDuration"] = float(round_meta["audio_duration"])
+
+    async def synthesize(self, text: str) -> TTSSynthesisResult:
         config = self.get_engine_config()
         if config is None:
             raise Exception("The engine havn't been initialized yet.")
@@ -317,11 +353,19 @@ class VolcTTSEngine(TTSEngineBase):
         }
 
         req_params = self._build_request_payload(config=config, text=text)
+        script_segments: list[dict[str, Any]] = []
+        script_text = text
         if req_params.get("action") == 3:
             req_params["nlp_texts"] = await self._build_action3_dialogue_turns(
                 config=config,
                 text=text,
             )
+            script_segments = list(req_params["nlp_texts"])
+            script_text = "\n\n".join(
+                f"{turn.get('speaker')}: {turn.get('text')}"
+                for turn in script_segments
+                if turn.get("text")
+            ).strip() or text
             info_logger.info(
                 f"event=volc_podcast_dialogue_generated user_id={self.user_id} "
                 f"turns={len(req_params['nlp_texts'])} generation_mode=dialogue"
@@ -405,6 +449,11 @@ class VolcTTSEngine(TTSEngineBase):
                                     raise RuntimeError(
                                         f"Podcast round {current_round} failed: {round_meta.get('error_msg') or 'unknown error'}"
                                     )
+                                self._merge_round_timing_into_segments(
+                                    script_segments=script_segments,
+                                    round_meta=round_meta,
+                                    round_id=current_round,
+                                )
                                 completed_audio_chunks.extend(current_round_audio_chunks)
                                 current_round_audio_chunks = []
                                 last_finished_round_id = current_round
@@ -476,10 +525,18 @@ class VolcTTSEngine(TTSEngineBase):
                     async with httpx.AsyncClient() as client:
                         response = await client.get(str(final_audio_url))
                         response.raise_for_status()
-                        return response.content
+                        return TTSSynthesisResult(
+                            audio_bytes=response.content,
+                            script_text=script_text,
+                            script_segments=script_segments,
+                        )
 
                 if completed_audio_chunks:
-                    return b"".join(completed_audio_chunks)
+                    return TTSSynthesisResult(
+                        audio_bytes=b"".join(completed_audio_chunks),
+                        script_text=script_text,
+                        script_segments=script_segments,
+                    )
 
                 if last_error is not None:
                     raise last_error

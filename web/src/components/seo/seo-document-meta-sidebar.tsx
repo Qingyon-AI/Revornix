@@ -336,6 +336,7 @@ export const SeoDocumentMetaSidebar = ({
 						result={
 							<AudioPlayer
 								src={primaryAudioSrc}
+								scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
 								title={document.title}
 								artist={document.creator.nickname}
 								cover={coverSrc ?? undefined}

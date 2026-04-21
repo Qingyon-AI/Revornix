@@ -219,6 +219,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 				{primaryAudioSrc ? (
 					<MobileAutoAudioTrack
 						src={primaryAudioSrc}
+						scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
 						title={document.title || t('document_no_title')}
 						artist={document.creator.nickname || 'AI Generated'}
 						cover={coverSrc ?? undefined}
@@ -351,6 +352,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 											<div className='p-4'>
 												<AudioPlayer
 													src={primaryAudioSrc}
+													scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
 													title={document.title}
 													artist={document.creator.nickname}
 													cover={coverSrc ?? undefined}

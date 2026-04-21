@@ -88,6 +88,7 @@ async def _build_section_infos(
             res.podcast_task = schemas.task.SectionPodcastTask(
                 status=podcast_task.status,
                 podcast_file_name=podcast_task.podcast_file_name,
+                podcast_script_file_name=podcast_task.podcast_script_file_name,
                 create_time=podcast_task.create_time,
                 update_time=podcast_task.update_time,
             )
@@ -95,6 +96,11 @@ async def _build_section_infos(
                 res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
                     user_id=podcast_task.user_id,
                     file_name=podcast_task.podcast_file_name,
+                )
+            if podcast_task.podcast_script_file_name is not None:
+                res.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
+                    user_id=podcast_task.user_id,
+                    file_name=podcast_task.podcast_script_file_name,
                 )
 
         authority = authority_by_section_id.get(section.id)
