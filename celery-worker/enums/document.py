@@ -14,39 +14,46 @@ class DocumentMdConvertStatus(IntEnum):
     CONVERTING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class DocumentAudioTranscribeStatus(IntEnum):
     WAIT_TO = 0
     TRANSCRIBING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
     
 class DocumentEmbeddingStatus(IntEnum):
     WAIT_TO = 0
     EMBEDDING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
     
 class DocumentGraphStatus(IntEnum):
     WAIT_TO = 0
     BUILDING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class DocumentPodcastStatus(IntEnum):
     WAIT_TO = 0
     GENERATING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class DocumentSummarizeStatus(IntEnum):
     WAIT_TO = 0
     SUMMARIZING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
 
 class DocumentProcessStatus(IntEnum):
     WAIT_TO = 0
     PROCESSING = 1
     SUCCESS = 2
     FAILED = 3
+    CANCELLED = 4
