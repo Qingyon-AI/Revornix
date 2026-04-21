@@ -3,9 +3,20 @@ import logging
 import os
 import re
 import traceback
+from datetime import datetime
 from logging import handlers
 from typing import Any
 from config.base import BASE_DIR
+
+
+class _TimezoneAwareFormatter(logging.Formatter):
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        dt = datetime.fromtimestamp(record.created).astimezone()
+        if datefmt:
+            return dt.strftime(datefmt)
+        return dt.isoformat(timespec='milliseconds')
+
 
 class BaseLogger(object):
 
@@ -20,7 +31,7 @@ class BaseLogger(object):
     def __init__(self, filename: str, level: str = 'info', when: str = 'D', backCount: int = 3,
                  fmt: str = '%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s') -> None:
         self.logger = logging.getLogger(filename)
-        format_str = logging.Formatter(fmt)  # 设置日志格式
+        format_str = _TimezoneAwareFormatter(fmt)  # 设置日志格式
         level_value = self.level_relations.get(level, logging.INFO)
         self.logger.setLevel(level_value)  # 设置日志级别
         self.logger.propagate = False

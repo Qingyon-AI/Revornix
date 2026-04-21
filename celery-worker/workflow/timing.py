@@ -31,6 +31,14 @@ def _log_timing_info(message: str, *, verbose_only: bool = False) -> None:
     info_logger.info(message)
 
 
+def format_elapsed_fields(elapsed_ms: float, *, field_prefix: str = "elapsed") -> str:
+    elapsed_seconds = elapsed_ms / 1000
+    return (
+        f"{field_prefix}_ms={elapsed_ms:.2f}, "
+        f"{field_prefix}_seconds={elapsed_seconds:.3f}"
+    )
+
+
 def _stringify_value(value: Any) -> str:
     text = str(value)
     if len(text) <= 64:
@@ -127,7 +135,7 @@ def wrap_workflow_node(
                 elapsed_ms = (time.perf_counter() - start) * 1000
                 exception_logger.error(
                     f"[WorkflowTiming] node_error workflow={workflow_name}, node={node_name}, "
-                    f"elapsed_ms={elapsed_ms:.2f}, {context}, error={e}"
+                    f"{format_elapsed_fields(elapsed_ms)}, {context}, error={e}"
                 )
                 raise
             elapsed_ms = (time.perf_counter() - start) * 1000
@@ -136,7 +144,7 @@ def wrap_workflow_node(
                 state_delta = _format_state_delta(before_state, result)
                 _log_timing_info(
                     f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-                    f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}",
+                    f"{format_elapsed_fields(elapsed_ms)}, input={context}, output={result_context}, {state_delta}",
                     verbose_only=True,
                 )
             return result
@@ -159,7 +167,7 @@ def wrap_workflow_node(
             elapsed_ms = (time.perf_counter() - start) * 1000
             exception_logger.error(
                 f"[WorkflowTiming] node_error workflow={workflow_name}, node={node_name}, "
-                f"elapsed_ms={elapsed_ms:.2f}, {context}, error={e}"
+                f"{format_elapsed_fields(elapsed_ms)}, {context}, error={e}"
             )
             raise
         elapsed_ms = (time.perf_counter() - start) * 1000
@@ -168,7 +176,7 @@ def wrap_workflow_node(
             state_delta = _format_state_delta(before_state, result)
             _log_timing_info(
                 f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-                f"elapsed_ms={elapsed_ms:.2f}, input={context}, output={result_context}, {state_delta}",
+                f"{format_elapsed_fields(elapsed_ms)}, input={context}, output={result_context}, {state_delta}",
                 verbose_only=True,
             )
         return result
@@ -214,13 +222,13 @@ def timed_stage(
         elapsed_ms = (time.perf_counter() - start) * 1000
         exception_logger.error(
             f"[WorkflowTiming] stage_error workflow={workflow_name}, node={node_name}, "
-            f"stage={stage_name}, elapsed_ms={elapsed_ms:.2f}, {context_text}, error={e}"
+            f"stage={stage_name}, {format_elapsed_fields(elapsed_ms)}, {context_text}, error={e}"
         )
         raise
     elapsed_ms = (time.perf_counter() - start) * 1000
     _log_timing_info(
         f"[WorkflowTiming] stage_end workflow={workflow_name}, node={node_name}, "
-        f"stage={stage_name}, elapsed_ms={elapsed_ms:.2f}, {context_text}"
+        f"stage={stage_name}, {format_elapsed_fields(elapsed_ms)}, {context_text}"
     )
 
 
@@ -241,12 +249,12 @@ async def ainvoke_with_timing(
     except Exception as e:
         elapsed_ms = (time.perf_counter() - start) * 1000
         exception_logger.error(
-            f"[WorkflowTiming] workflow_error workflow={workflow_name}, elapsed_ms={elapsed_ms:.2f}, "
+            f"[WorkflowTiming] workflow_error workflow={workflow_name}, {format_elapsed_fields(elapsed_ms)}, "
             f"{context}, error={e}"
         )
         raise
     elapsed_ms = (time.perf_counter() - start) * 1000
     _log_timing_info(
-        f"[WorkflowTiming] workflow_end workflow={workflow_name}, elapsed_ms={elapsed_ms:.2f}, {context}"
+        f"[WorkflowTiming] workflow_end workflow={workflow_name}, {format_elapsed_fields(elapsed_ms)}, {context}"
     )
     return result

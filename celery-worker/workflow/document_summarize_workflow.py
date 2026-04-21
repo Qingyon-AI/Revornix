@@ -21,7 +21,7 @@ from data.sql.base import session_scope
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
+from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
 
 
 class DocumentSummarizeState(TypedDict, total=False):
@@ -227,8 +227,9 @@ async def _summarize_document(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=summarize_document, "
             f"stage=summarize_chunks, chunks={chunk_count}, reduce_count={reduce_count}, "
             f"summary_mode={summary_mode}, "
-            f"extract_elapsed_ms={extract_elapsed_ms:.2f}, "
-            f"summary_elapsed_ms={summary_elapsed_ms:.2f}, reduce_elapsed_ms={reduce_elapsed_ms:.2f}"
+            f"{format_elapsed_fields(extract_elapsed_ms, field_prefix='extract_elapsed')}, "
+            f"{format_elapsed_fields(summary_elapsed_ms, field_prefix='summary_elapsed')}, "
+            f"{format_elapsed_fields(reduce_elapsed_ms, field_prefix='reduce_elapsed')}"
         )
     finally:
         await close_extract_llm_client(llm_client)

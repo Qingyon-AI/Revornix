@@ -49,7 +49,7 @@ from enums.document import (
 )
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
+from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
 
 
 class DocumentChunkProcessState(TypedDict, total=False):
@@ -114,9 +114,9 @@ def _flush_chunk_upserts(
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, node=process_document_chunks, "
         f"stage=flush_chunk_upserts, batch_size={len(chunks_info)}, "
-        f"milvus_elapsed_ms={milvus_elapsed_ms:.2f}, "
-        f"neo4j_elapsed_ms={neo4j_elapsed_ms:.2f}, "
-        f"elapsed_ms={milvus_elapsed_ms + neo4j_elapsed_ms:.2f}"
+        f"{format_elapsed_fields(milvus_elapsed_ms, field_prefix='milvus_elapsed')}, "
+        f"{format_elapsed_fields(neo4j_elapsed_ms, field_prefix='neo4j_elapsed')}, "
+        f"{format_elapsed_fields(milvus_elapsed_ms + neo4j_elapsed_ms)}"
     )
     return ChunkUpsertMetrics(
         batch_size=len(chunks_info),
@@ -646,16 +646,16 @@ async def _process_document_chunks(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=process_document_chunks, "
             f"stage=chunk_preprocess_pipeline, chunks={processed_chunks}, "
             f"entities={extracted_entities_total}, relations={extracted_relations_total}, "
-            f"embedding_elapsed_ms={preprocess_embedding_elapsed_ms:.2f}, "
-            f"extract_elapsed_ms={preprocess_extract_elapsed_ms:.2f}, "
-            f"chunk_summary_elapsed_ms={preprocess_summary_elapsed_ms:.2f}, "
+            f"{format_elapsed_fields(preprocess_embedding_elapsed_ms, field_prefix='embedding_elapsed')}, "
+            f"{format_elapsed_fields(preprocess_extract_elapsed_ms, field_prefix='extract_elapsed')}, "
+            f"{format_elapsed_fields(preprocess_summary_elapsed_ms, field_prefix='chunk_summary_elapsed')}, "
             f"summary_reduce_batches={summary_reduce_batches}, "
-            f"summary_reduce_elapsed_ms={summary_reduce_elapsed_ms:.2f}, "
-            f"dedupe_elapsed_ms={dedupe_elapsed_ms:.2f}, "
+            f"{format_elapsed_fields(summary_reduce_elapsed_ms, field_prefix='summary_reduce_elapsed')}, "
+            f"{format_elapsed_fields(dedupe_elapsed_ms, field_prefix='dedupe_elapsed')}, "
             f"upsert_batches={upsert_batches}, "
-            f"upsert_milvus_elapsed_ms={upsert_milvus_elapsed_ms:.2f}, "
-            f"upsert_neo4j_elapsed_ms={upsert_neo4j_elapsed_ms:.2f}, "
-            f"pipeline_elapsed_ms={pipeline_elapsed_ms:.2f}, "
+            f"{format_elapsed_fields(upsert_milvus_elapsed_ms, field_prefix='upsert_milvus_elapsed')}, "
+            f"{format_elapsed_fields(upsert_neo4j_elapsed_ms, field_prefix='upsert_neo4j_elapsed')}, "
+            f"{format_elapsed_fields(pipeline_elapsed_ms, field_prefix='pipeline_elapsed')}, "
             f"throughput_chunks_per_sec={throughput:.2f}"
         )
     except Exception as e:
