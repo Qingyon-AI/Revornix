@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import EntityGraphCanvas, {
 	type GraphCanvasLink,
@@ -9,24 +9,30 @@ import EntityGraphCanvas, {
 import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentGraphStatus } from '@/enums/document';
+import type { GraphResponse } from '@/generated';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
-import { getDocumentDetail } from '@/service/document';
-import { searchDocumentGraph } from '@/service/graph';
+import type { PublicDocumentDetail } from '@/lib/seo';
+import { searchDocumentGraph, searchPublicDocumentGraph } from '@/service/graph';
+import { getDocumentDetail, getPublicDocumentDetail } from '@/service/document';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const DocumentGraph = ({
+const DocumentGraphSEO = ({
 	document_id,
 	showSearch = false,
 	hideStatePanels = false,
-	onHasRenderableGraphChange,
+	initialDocument,
+	initialGraph,
+	publicMode = false,
 }: {
 	document_id: number;
 	showSearch?: boolean;
 	hideStatePanels?: boolean;
-	onHasRenderableGraphChange?: (hasRenderableGraph: boolean) => void;
+	initialDocument?: PublicDocumentDetail | null;
+	initialGraph?: GraphResponse | null;
+	publicMode?: boolean;
 }) => {
 	const t = useTranslations();
 
@@ -35,20 +41,36 @@ const DocumentGraph = ({
 		isError: isDocumentDetailError,
 		error: documentDetailError,
 	} = useQuery({
-		queryKey: ['getDocumentDetail', document_id],
-		queryFn: () => getDocumentDetail({ document_id }),
+		queryKey: publicMode
+			? ['getPublicDocumentDetail', document_id]
+			: ['getDocumentDetail', document_id],
+		queryFn: () =>
+			publicMode
+				? getPublicDocumentDetail({ document_id })
+				: getDocumentDetail({ document_id }),
+		initialData: initialDocument ?? undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
+		enabled: !(publicMode && Boolean(initialDocument)),
+		staleTime: publicMode && initialDocument ? Infinity : undefined,
 	});
 	const graphStatus = document?.graph_task?.status;
 	const isGraphReady = graphStatus === DocumentGraphStatus.SUCCESS;
 	const freshnessState = getDocumentFreshnessState(document);
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchDocumentGraphData', document_id, graphStatus],
+		queryKey: publicMode
+			? ['searchPublicDocumentGraphData', document_id, graphStatus]
+			: ['searchDocumentGraphData', document_id, graphStatus],
 		queryFn: async () =>
-			searchDocumentGraph({
-				document_id,
-			}),
-		enabled: isGraphReady,
+			publicMode
+				? searchPublicDocumentGraph({ document_id })
+				: searchDocumentGraph({ document_id }),
+		initialData: initialGraph ?? undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
+		enabled: isGraphReady && !(publicMode && Boolean(initialGraph)),
+		staleTime: publicMode && initialGraph ? Infinity : undefined,
 	});
 
 	const renderableGraph = useMemo(() => getRenderableGraphData(data), [data]);
@@ -80,12 +102,6 @@ const DocumentGraph = ({
 			})),
 		[renderableGraph.edges],
 	);
-
-	const hasRenderableGraph = isGraphReady && nodes.length > 0;
-
-	useEffect(() => {
-		onHasRenderableGraphChange?.(hasRenderableGraph);
-	}, [hasRenderableGraph, onHasRenderableGraphChange]);
 
 	return (
 		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
@@ -168,7 +184,7 @@ const DocumentGraph = ({
 							tone={freshnessState.graphStale ? 'warning' : 'success'}
 						/>
 					) : null}
-					{hasRenderableGraph ? (
+					{nodes.length > 0 ? (
 						<EntityGraphCanvas
 							nodes={nodes}
 							edges={edges}
@@ -182,6 +198,6 @@ const DocumentGraph = ({
 	);
 };
 
-DocumentGraph.displayName = 'DocumentGraph';
+DocumentGraphSEO.displayName = 'DocumentGraphSEO';
 
-export default memo(DocumentGraph);
+export default memo(DocumentGraphSEO);

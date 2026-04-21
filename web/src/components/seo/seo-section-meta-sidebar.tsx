@@ -308,6 +308,7 @@ type SeoSectionMetaSidebarProps = {
 	sectionCover?: string | null;
 	initialDocuments?: InifiniteScrollPagnitionSectionDocumentInfo;
 	initialGraph?: GraphResponse;
+	hasRenderableGraph: boolean;
 	graphBadge: string;
 	graphTone: 'default' | 'success' | 'warning' | 'danger';
 	graphStale: boolean;
@@ -323,6 +324,7 @@ export const SeoSectionMetaSidebar = ({
 	sectionCover,
 	initialDocuments,
 	initialGraph,
+	hasRenderableGraph,
 	graphBadge,
 	graphTone,
 	graphStale,
@@ -366,15 +368,6 @@ export const SeoSectionMetaSidebar = ({
 						<ChevronRight className='size-4 text-muted-foreground' />
 					</Link>
 				) : null}
-
-				<div className='flex flex-wrap gap-1.5'>
-					<MetaBadge>
-						{t('section_documents')}: {section.documents_count ?? 0}
-					</MetaBadge>
-					<MetaBadge>
-						{t('section_subscribers')}: {section.subscribers_count ?? 0}
-					</MetaBadge>
-				</div>
 
 				<div className='grid grid-cols-2 gap-3'>
 					<MetaItem
@@ -444,6 +437,7 @@ export const SeoSectionMetaSidebar = ({
 					tone={graphTone}
 					hint={graphStale ? t('section_graph_stale_hint') : undefined}
 					result={
+						hasRenderableGraph ? (
 						<div className='relative aspect-square overflow-hidden rounded-[22px] border border-border/35 bg-background/22'>
 							<SectionGraphSEO
 								section_id={section.id}
@@ -489,6 +483,7 @@ export const SeoSectionMetaSidebar = ({
 								</DialogContent>
 							</Dialog>
 						</div>
+						) : null
 					}
 				/>
 			</SidebarSection>
@@ -496,7 +491,7 @@ export const SeoSectionMetaSidebar = ({
 			<SidebarSection
 				title={t('section_documents')}
 				description={t('section_documents_description')}>
-				<div className='flex flex-col gap-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-auto'>
+				<div className='flex flex-col gap-3 xl:max-h-[300] xl:overflow-auto'>
 					<SectionDocumentsList
 						section_id={section.id}
 						publicMode
@@ -543,6 +538,7 @@ export const SeoSectionSidebarBridge = (props: SeoSectionMetaSidebarProps) => {
 		clearContent,
 		props.createdAt,
 		props.creatorAvatar,
+		props.hasRenderableGraph,
 		props.graphBadge,
 		props.graphStale,
 		props.graphTone,

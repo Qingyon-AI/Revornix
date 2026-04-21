@@ -6,13 +6,16 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+	AlertCircle,
 	ArrowRight,
 	AudioLines,
 	BookText,
 	CalendarClock,
 	CalendarDays,
+	Expand,
 	FileDown,
 	Globe2,
+	GitBranch,
 	Tag,
 	Users,
 } from 'lucide-react';
@@ -24,7 +27,9 @@ import { Button } from '@/components/ui/button';
 import NoticeBox from '@/components/ui/notice-box';
 import { Separator } from '@/components/ui/separator';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
+import DocumentGraphSEO from '@/components/document/document-graph-seo';
 import { DocumentCategory } from '@/enums/document';
+import type { GraphResponse } from '@/generated';
 import {
 	formatSeoDate,
 	getPublicSectionHref,
@@ -33,6 +38,14 @@ import {
 } from '@/lib/seo';
 import { cn } from '@/lib/utils';
 import { useRightSidebar } from '@/provider/right-sidebar-provider';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog';
 
 const SeoSidebarSection = ({
 	title,
@@ -118,6 +131,11 @@ type SeoDocumentMetaSidebarProps = {
 	coverSrc: string | null;
 	primaryAudioSrc: string | null;
 	publicSections: PublicDocumentSectionInfo[];
+	initialGraph?: GraphResponse;
+	hasRenderableGraph: boolean;
+	graphBadge: string;
+	graphTone: 'default' | 'success' | 'warning' | 'danger';
+	graphStale: boolean;
 	className?: string;
 };
 
@@ -129,6 +147,11 @@ export const SeoDocumentMetaSidebar = ({
 	coverSrc,
 	primaryAudioSrc,
 	publicSections,
+	initialGraph,
+	hasRenderableGraph,
+	graphBadge,
+	graphTone,
+	graphStale,
 	className,
 }: SeoDocumentMetaSidebarProps) => {
 	const t = useTranslations();
@@ -168,15 +191,6 @@ export const SeoDocumentMetaSidebar = ({
 					</div>
 				</Link>
 
-				<div className='flex flex-wrap gap-1.5'>
-					<MetaBadge>
-						{t('document_category')}: {categoryLabel}
-					</MetaBadge>
-					<MetaBadge>
-						{t('document_from_plat')}: {document.from_plat || '-'}
-					</MetaBadge>
-				</div>
-
 				<div className='grid grid-cols-2 gap-3'>
 					<SeoMetaItem
 						icon={CalendarClock}
@@ -201,12 +215,12 @@ export const SeoDocumentMetaSidebar = ({
 				</div>
 
 				{document.labels && document.labels.length > 0 ? (
-					<div className='flex flex-wrap gap-2 rounded-[24px] bg-background/22 p-4'>
+					<div className='flex flex-wrap gap-2'>
 						{document.labels.map((label) => (
 							<Badge
 								key={label.id}
 								variant='secondary'
-								className='rounded-full border border-border/35 bg-background/75 px-3 py-1 text-xs'>
+								className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
 								{label.name}
 							</Badge>
 						))}
@@ -235,6 +249,65 @@ export const SeoDocumentMetaSidebar = ({
 					/>
 				</SeoSidebarSection>
 			) : null}
+
+			<SeoSidebarSection>
+				<SidebarTaskNode
+					icon={GitBranch}
+					status={graphBadge}
+					title={t('document_graph')}
+					description={t('document_graph_description')}
+					tone={graphTone}
+					hint={graphStale ? t('document_graph_stale_hint') : undefined}
+					result={
+						hasRenderableGraph ? (
+							<div className='relative aspect-square overflow-hidden rounded-[22px] border border-border/35 bg-background/22'>
+								<DocumentGraphSEO
+									document_id={document.id}
+									hideStatePanels
+									initialDocument={document}
+									initialGraph={initialGraph}
+									publicMode
+								/>
+								<Dialog>
+									<DialogTrigger asChild>
+										<Button
+											size='icon'
+											variant='outline'
+											className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-2xl border-border/50 bg-background/80 shadow-none hover:bg-background'>
+											<Expand className='size-4 text-muted-foreground' />
+										</Button>
+									</DialogTrigger>
+									<DialogContent className='flex h-[70vh] min-h-[420px] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:h-[min(88vh,720px)] sm:min-h-[560px] sm:max-w-[min(1200px,92vw)]'>
+										<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
+											<DialogTitle>{t('document_graph')}</DialogTitle>
+											<DialogDescription>
+												{t('document_graph_description')}
+											</DialogDescription>
+											{graphStale ? (
+												<div className='flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm leading-6 text-amber-800 dark:text-amber-200'>
+													<AlertCircle className='mt-0.5 size-4 shrink-0' />
+													<span>{t('document_graph_stale_hint')}</span>
+												</div>
+											) : null}
+										</DialogHeader>
+										<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+											<div className='h-full min-h-[320px] overflow-hidden rounded-2xl border border-border/40 bg-background/45 sm:min-h-[420px]'>
+												<DocumentGraphSEO
+													document_id={document.id}
+													showSearch
+													initialDocument={document}
+													initialGraph={initialGraph}
+													publicMode
+												/>
+											</div>
+										</div>
+									</DialogContent>
+								</Dialog>
+							</div>
+						) : null
+					}
+				/>
+			</SeoSidebarSection>
 
 			<SeoSidebarSection title={t('seo_document_source')}>
 				<div className='flex flex-col gap-4'>
@@ -339,6 +412,11 @@ export const SeoDocumentSidebarBridge = (
 		props.coverSrc,
 		props.creatorAvatar,
 		props.document,
+		props.graphBadge,
+		props.graphStale,
+		props.graphTone,
+		props.hasRenderableGraph,
+		props.initialGraph,
 		props.locale,
 		props.primaryAudioSrc,
 		props.publicSections,

@@ -3,6 +3,7 @@ import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalRes
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
+import { publicRequest } from '@/lib/request-public'
 import { serverRequest } from '@/lib/request-server'
 
 export type DocumentAiSummaryRequest = {
@@ -281,6 +282,14 @@ export const searchUserStarDocument = async (data: SearchMyStarDocumentsRequest)
 
 export const getDocumentDetail = async ({ document_id }: { document_id: number }): Promise<DocumentDetailResponse> => {
     return await request(documentApi.documentDetail, {
+        data: {
+            document_id
+        }
+    })
+}
+
+export const getPublicDocumentDetail = async ({ document_id }: { document_id: number }): Promise<DocumentDetailResponse> => {
+    return await publicRequest(documentApi.documentDetail, {
         data: {
             document_id
         }

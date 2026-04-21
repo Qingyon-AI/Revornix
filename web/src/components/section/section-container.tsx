@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
 import { getQueryClient } from '@/lib/get-query-client';
+import { getRenderableGraphData } from '@/lib/graph-render';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn } from '@/lib/utils';
@@ -95,7 +96,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
-	const hasRenderableGraph = Boolean(graphData?.nodes?.length);
+	const hasRenderableGraph = getRenderableGraphData(graphData).hasRenderableGraph;
 	const graphCardState =
 		hasRenderableGraph && freshnessState.graphStale
 			? {
@@ -156,6 +157,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 				id={id}
 				isPending={isPending}
 				hasSection={Boolean(section)}
+				hasRenderableGraph={hasRenderableGraph}
 				graphBadge={graphCardState.badge}
 				graphTone={graphCardState.tone}
 				graphStale={freshnessState.graphStale}
