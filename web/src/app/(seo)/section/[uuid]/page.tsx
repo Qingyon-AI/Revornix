@@ -36,6 +36,7 @@ import {
 import { notFound } from 'next/navigation';
 import SeoSectionCommentGate from '@/components/seo/seo-section-comment-gate';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import AudioPlayer from '@/components/ui/audio-player';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import {
@@ -440,13 +441,19 @@ const SEOSectionDetail = async (props: {
 							title: t('section_mobile_media_title'),
 							description: t('section_podcast_placeholder_description'),
 							content: (
-								<div className='space-y-4 p-4'>
+								<div className='p-4'>
 									{section?.podcast_task?.podcast_file_name ? (
-										<audio
-											controls
-											preload='metadata'
-											className='w-full'
+										<AudioPlayer
 											src={section.podcast_task.podcast_file_name}
+											scriptUrl={
+												section.podcast_task?.podcast_script_file_name ??
+												undefined
+											}
+											title={section.title}
+											artist={section.creator?.nickname}
+											cover={sectionCover ?? undefined}
+											variant='compact'
+											className='rounded-[20px] border border-border/35 bg-background/20'
 										/>
 									) : (
 										<div className='rounded-[22px] border border-border/35 bg-background/30 px-4 py-4 text-sm text-muted-foreground'>

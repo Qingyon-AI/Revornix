@@ -78,16 +78,12 @@ const SeoMobileSidebarMenu = ({
 	const { track } = useAudioPlayer();
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [activePanelKey, setActivePanelKey] = useState<string | null>(null);
-	const visiblePanels = useMemo(
-		() => panels.filter((panel) => panel.icon !== 'audio'),
-		[panels],
-	);
 	const activePanel = useMemo(
-		() => visiblePanels.find((panel) => panel.key === activePanelKey) ?? null,
-		[activePanelKey, visiblePanels],
+		() => panels.find((panel) => panel.key === activePanelKey) ?? null,
+		[activePanelKey, panels],
 	);
 
-	if (!isCompactViewport || visiblePanels.length === 0) {
+	if (!isCompactViewport || panels.length === 0) {
 		return null;
 	}
 
@@ -130,7 +126,7 @@ const SeoMobileSidebarMenu = ({
 									{browseLabel}
 								</p>
 								<div className='grid grid-cols-2 gap-2.5'>
-									{visiblePanels.map((panel) => {
+									{panels.map((panel) => {
 										const Icon = iconMap[panel.icon];
 										return (
 											<Button
@@ -171,8 +167,17 @@ const SeoMobileSidebarMenu = ({
 							{activePanel?.description}
 						</SheetDescription>
 					</SheetHeader>
-					<div className='min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] px-4 py-4 sm:px-5 sm:py-5'>
-						<div className='rounded-[28px] border border-border/60 bg-background/70 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
+					<div
+						className={cn(
+							'min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] sm:px-5 sm:py-5',
+							activePanel?.icon === 'audio' ? 'px-0 py-0' : 'px-4 py-4',
+						)}>
+						<div
+							className={cn(
+								activePanel?.icon === 'audio'
+									? ''
+									: 'rounded-[28px] border border-border/60 bg-background/70 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]',
+							)}>
 							{activePanel?.content ?? null}
 						</div>
 					</div>
