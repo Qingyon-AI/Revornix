@@ -5,6 +5,7 @@ import {
 	SeoDocumentSidebarBridge,
 } from '@/components/seo/seo-document-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
+import DocumentGraphSEO from '@/components/document/document-graph-seo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -367,6 +368,21 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									},
 								]
 							: []),
+						{
+							key: 'graph',
+							icon: 'graph',
+							title: t('document_graph'),
+							description: t('document_graph_description'),
+							content: (
+								<DocumentGraphSEO
+									document_id={document.id}
+									showSearch
+									initialDocument={document}
+									initialGraph={initialGraph}
+									publicMode
+								/>
+							),
+						},
 						{
 							key: 'source',
 							icon: 'source',
