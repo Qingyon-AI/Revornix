@@ -527,7 +527,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 				}
 				action={summaryActionButton}
 				result={
-					<div className='border-l border-border/50 pl-4 text-sm leading-7 text-muted-foreground'>
+					<div className='text-sm leading-7 text-muted-foreground'>
 						{data.summarize_task.summary}
 					</div>
 				}

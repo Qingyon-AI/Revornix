@@ -16,7 +16,6 @@ import {
 	FileDown,
 	Globe2,
 	GitBranch,
-	Loader2,
 	Sparkles,
 	Tag,
 	Users,
@@ -30,7 +29,7 @@ import NoticeBox from '@/components/ui/notice-box';
 import { Separator } from '@/components/ui/separator';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
 import DocumentGraphSEO from '@/components/document/document-graph-seo';
-import { DocumentCategory, DocumentSummarizeStatus } from '@/enums/document';
+import { DocumentCategory } from '@/enums/document';
 import type { GraphResponse } from '@/generated';
 import {
 	formatSeoDate,
@@ -142,6 +141,75 @@ type SeoDocumentMetaSidebarProps = {
 	className?: string;
 };
 
+export const SeoDocumentAiSummaryPanel = ({
+	document,
+	className,
+}: {
+	document: PublicDocumentDetail;
+	className?: string;
+}) => {
+	const t = useTranslations();
+	const freshnessState = getDocumentFreshnessState(document);
+	const summary = document.summarize_task?.summary?.trim();
+
+	if (!summary) {
+		return null;
+	}
+
+	const toneClassName = freshnessState.summaryStale
+		? 'border-amber-500/25 bg-amber-500/10'
+		: 'border-emerald-500/20 bg-emerald-500/8';
+
+	const badgeClassName = freshnessState.summaryStale
+		? 'border-amber-500/15 bg-amber-500/6 text-amber-700/80 dark:text-amber-300/85'
+		: 'border-emerald-500/15 bg-emerald-500/6 text-emerald-700/80 dark:text-emerald-300/85';
+
+	const badgeText = freshnessState.summaryStale
+		? t('document_status_stale')
+		: t('document_summarize_status_success');
+
+	return (
+		<section
+			className={cn(
+				'overflow-hidden rounded-[28px] border p-3 sm:p-5',
+				toneClassName,
+				className,
+			)}>
+			<div className='space-y-3'>
+				<div className='flex items-center gap-3'>
+					<div className='inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border/30 bg-background/50 text-muted-foreground/75 shadow-sm'>
+						<Sparkles className='size-4' />
+					</div>
+
+					<div className='min-w-0 flex-1 space-y-1'>
+						<div className='flex flex-wrap items-center gap-1.5'>
+							<h3 className='text-[14px] font-semibold tracking-tight sm:text-base'>
+								{t('ai_summary_ready')}
+							</h3>
+						</div>
+						<p className='max-w-3xl text-[11px] leading-4 text-muted-foreground/55'>
+							{freshnessState.summaryStale
+								? t('document_summary_stale_hint')
+								: t('ai_summary_empty_description')}
+						</p>
+					</div>
+				</div>
+
+				<div className='rounded-[22px] border border-border/30 bg-background/80 px-4 py-3.5 sm:px-5 sm:py-4'>
+					<div className='space-y-3'>
+						<p className='text-sm leading-7 text-foreground/88'>{summary}</p>
+						{freshnessState.summaryStale ? (
+							<NoticeBox tone='warning' className='break-words'>
+								{t('document_summary_stale_hint')}
+							</NoticeBox>
+						) : null}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+};
+
 export const SeoDocumentMetaSidebar = ({
 	document,
 	categoryLabel,
@@ -158,97 +226,6 @@ export const SeoDocumentMetaSidebar = ({
 	className,
 }: SeoDocumentMetaSidebarProps) => {
 	const t = useTranslations();
-	const freshnessState = getDocumentFreshnessState(document);
-
-	const renderSummaryCard = () => {
-		if (!document.summarize_task) {
-			return (
-				<SidebarTaskNode
-					icon={Sparkles}
-					status={t('document_summarize_status_todo')}
-					title={t('ai_summary_empty')}
-					description={t('ai_summary_empty_description')}
-					tone='warning'
-				/>
-			);
-		}
-
-		if (document.summarize_task.status === DocumentSummarizeStatus.WAIT_TO) {
-			return (
-				<SidebarTaskNode
-					icon={Sparkles}
-					status={t('document_summarize_status_todo')}
-					title={t('ai_summary_wait_to')}
-					description={t('ai_summary_wait_to_description')}
-					tone='warning'
-				/>
-			);
-		}
-
-		if (
-			document.summarize_task.status === DocumentSummarizeStatus.SUMMARIZING
-		) {
-			return (
-				<SidebarTaskNode
-					icon={Loader2}
-					status={t('document_summarize_status_doing')}
-					title={t('ai_summarizing')}
-					description={t('ai_summary_processing_description')}
-					tone='default'
-				/>
-			);
-		}
-
-		if (document.summarize_task.status === DocumentSummarizeStatus.FAILED) {
-			return (
-				<SidebarTaskNode
-					icon={Sparkles}
-					status={t('document_summarize_status_failed')}
-					title={t('ai_summary_failed')}
-					description={t('ai_summary_failed_description')}
-					tone='danger'
-				/>
-			);
-		}
-
-		if (
-			document.summarize_task.status === DocumentSummarizeStatus.CANCELLED
-		) {
-			return (
-				<SidebarTaskNode
-					icon={Sparkles}
-					status={t('cancel')}
-					title={t('ai_summary_empty')}
-					description={t('ai_summary_empty_description')}
-					tone='warning'
-				/>
-			);
-		}
-
-		return (
-			<SidebarTaskNode
-				icon={Sparkles}
-				status={
-					freshnessState.summaryStale
-						? t('document_status_stale')
-						: t('document_summarize_status_success')
-				}
-				title={t('ai_summary_ready')}
-				description={t('ai_summary_empty_description')}
-				tone={freshnessState.summaryStale ? 'warning' : 'success'}
-				hint={
-					freshnessState.summaryStale
-						? t('document_summary_stale_hint')
-						: undefined
-				}
-				result={
-					<div className='border-l border-border/50 pl-4 text-sm leading-7 text-muted-foreground'>
-						{document.summarize_task.summary}
-					</div>
-				}
-			/>
-		);
-	};
 
 	return (
 		<div className={className ?? 'space-y-4 p-4 pb-8'}>
@@ -336,7 +313,9 @@ export const SeoDocumentMetaSidebar = ({
 						result={
 							<AudioPlayer
 								src={primaryAudioSrc}
-								scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
+								scriptUrl={
+									document.podcast_task?.podcast_script_file_name ?? undefined
+								}
 								title={document.title}
 								artist={document.creator.nickname}
 								cover={coverSrc ?? undefined}
@@ -347,8 +326,6 @@ export const SeoDocumentMetaSidebar = ({
 					/>
 				</SeoSidebarSection>
 			) : null}
-
-			<SeoSidebarSection>{renderSummaryCard()}</SeoSidebarSection>
 
 			<SeoSidebarSection>
 				<SidebarTaskNode
@@ -473,22 +450,22 @@ export const SeoDocumentMetaSidebar = ({
 			<div className='space-y-4'>
 				<Separator className='bg-border/50' />
 				<div className='flex flex-col gap-3'>
-				<Link href={`/user/${document.creator.id}`}>
-					<Button
-						variant='outline'
-						className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
-						{t('seo_document_related_creator')}
-						<Users />
-					</Button>
-				</Link>
-				<Link href='/community'>
-					<Button
-						variant='outline'
-						className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
-						{t('seo_document_back_to_community')}
-						<BookText />
-					</Button>
-				</Link>
+					<Link href={`/user/${document.creator.id}`}>
+						<Button
+							variant='outline'
+							className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+							{t('seo_document_related_creator')}
+							<Users />
+						</Button>
+					</Link>
+					<Link href='/community'>
+						<Button
+							variant='outline'
+							className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+							{t('seo_document_back_to_community')}
+							<BookText />
+						</Button>
+					</Link>
 				</div>
 			</div>
 		</div>
