@@ -469,7 +469,7 @@ const SEOSectionDetail = async (props: {
 							title: t('section_documents'),
 							description: t('section_documents_description'),
 							content: (
-								<div className='p-4'>
+								<div className='p-4 space-y-3'>
 									<SectionDocumentsList
 										section_id={section!.id}
 										publicMode
