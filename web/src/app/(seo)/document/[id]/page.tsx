@@ -1,6 +1,9 @@
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import JsonLd from '@/components/seo/json-ld';
-import { SeoDocumentSidebarBridge } from '@/components/seo/seo-document-meta-sidebar';
+import {
+	SeoDocumentAiSummaryPanel,
+	SeoDocumentSidebarBridge,
+} from '@/components/seo/seo-document-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -481,6 +484,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
 							{document.description || t('document_no_description')}
 						</p>
+						<SeoDocumentAiSummaryPanel document={document} />
 					</div>
 				</div>
 
