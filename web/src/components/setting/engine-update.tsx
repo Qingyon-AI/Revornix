@@ -71,18 +71,41 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 
 	const queryClient = getQueryClient();
 
-	const formSchema = z.object({
-		engine_id: z.number(),
-		name: z.string().optional(),
-		description: z.string().optional(),
-		required_plan_level: z.number().int().optional(),
-		is_official_hosted: z.boolean().optional(),
-		billing_mode: z.number().int().optional(),
-		billing_unit_price: z.number().positive().optional(),
-		compute_point_multiplier: z.number().positive().optional(),
-		config_json: z.string().optional(),
-		is_public: z.boolean().optional(),
-	});
+	const formSchema = z
+		.object({
+			engine_id: z.number(),
+			name: z.string().optional(),
+			description: z.string().optional(),
+			required_plan_level: z.number().int().optional(),
+			is_official_hosted: z.boolean().optional(),
+			billing_mode: z.number().int().optional(),
+			billing_unit_price: z.string().optional(),
+			compute_point_multiplier: z.string().optional(),
+			config_json: z.string().optional(),
+			is_public: z.boolean().optional(),
+		})
+		.superRefine((values, ctx) => {
+			if (!values.is_official_hosted) return;
+			const billingUnitPrice = Number(values.billing_unit_price);
+			const computePointMultiplier = Number(values.compute_point_multiplier);
+			if (!Number.isFinite(billingUnitPrice) || billingUnitPrice < 1) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['billing_unit_price'],
+					message: 'Billing unit price must be at least 1',
+				});
+			}
+			if (
+				!Number.isFinite(computePointMultiplier) ||
+				computePointMultiplier <= 0
+			) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['compute_point_multiplier'],
+					message: 'Compute point multiplier must be greater than 0',
+				});
+			}
+		});
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -93,8 +116,8 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			required_plan_level: AccessPlanLevel.FREE,
 			is_official_hosted: false,
 			billing_mode: EngineBillingMode.TOKEN,
-			billing_unit_price: 1,
-			compute_point_multiplier: 1,
+			billing_unit_price: '1',
+			compute_point_multiplier: '1',
 			config_json: '',
 		},
 	});
@@ -176,8 +199,12 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 				: AccessPlanLevel.FREE,
 			is_official_hosted: values.is_official_hosted,
 			billing_mode: values.billing_mode as EngineBillingMode | undefined,
-			billing_unit_price: values.billing_unit_price,
-			compute_point_multiplier: values.compute_point_multiplier,
+			billing_unit_price: values.is_official_hosted
+				? Number(values.billing_unit_price)
+				: 1,
+			compute_point_multiplier: values.is_official_hosted
+				? Number(values.compute_point_multiplier)
+				: 1,
 		});
 	};
 
@@ -199,8 +226,10 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			is_public: engine_info.is_public ?? false,
 			is_official_hosted: engine_info.is_official_hosted ?? false,
 			billing_mode: engine_info.billing_mode ?? EngineBillingMode.TOKEN,
-			billing_unit_price: engine_info.billing_unit_price ?? 1,
-			compute_point_multiplier: engine_info.compute_point_multiplier ?? 1,
+			billing_unit_price: String(engine_info.billing_unit_price ?? 1),
+			compute_point_multiplier: String(
+				engine_info.compute_point_multiplier ?? 1,
+			),
 		};
 
 		setEngineCategory(engine_info.category);

@@ -39,7 +39,7 @@ class EngineCreateRequest(BaseModel):
     required_plan_level: int = 0
     is_official_hosted: bool = False
     billing_mode: EngineBillingMode = EngineBillingMode.TOKEN
-    billing_unit_price: float = Field(default=1.0, gt=0)
+    billing_unit_price: float = Field(default=1.0, ge=1)
     compute_point_multiplier: float = Field(default=1.0, gt=0)
     config_json: str | None = None
 
@@ -54,6 +54,9 @@ class EngineCreateRequest(BaseModel):
             self.config_json = config_json or None
         if not self.is_public:
             self.required_plan_level = 0
+        if not self.is_official_hosted:
+            self.billing_unit_price = 1.0
+            self.compute_point_multiplier = 1.0
         return self
 
 class EngineDetailRequest(BaseModel):
@@ -161,7 +164,7 @@ class EngineUpdateRequest(BaseModel):
     required_plan_level: int | None = None
     is_official_hosted: bool | None = None
     billing_mode: EngineBillingMode | None = None
-    billing_unit_price: float | None = Field(default=None, gt=0)
+    billing_unit_price: float | None = Field(default=None, ge=1)
     compute_point_multiplier: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
@@ -176,6 +179,9 @@ class EngineUpdateRequest(BaseModel):
             self.config_json = config_json or None
         if self.is_public is False:
             self.required_plan_level = 0
+        if self.is_official_hosted is False:
+            self.billing_unit_price = 1.0
+            self.compute_point_multiplier = 1.0
         return self
 
 
