@@ -56,18 +56,41 @@ const EngineAddButton = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const [engineCategory, setEngineCategory] = useState(EngineCategory.Markdown);
 	const [showMineEngineAddDialog, setShowMineEngineAddDialog] = useState(false);
-	const formSchema = z.object({
-		engine_id: z.number().int(),
-		name: z.string(),
-		description: z.string().optional().nullable(),
-		required_plan_level: z.number().int(),
-		is_official_hosted: z.boolean(),
-		billing_mode: z.number().int(),
-		billing_unit_price: z.number().positive(),
-		compute_point_multiplier: z.number().positive(),
-		config_json: z.string().optional().nullable(),
-		is_public: z.boolean(),
-	});
+	const formSchema = z
+		.object({
+			engine_id: z.number().int(),
+			name: z.string(),
+			description: z.string().optional().nullable(),
+			required_plan_level: z.number().int(),
+			is_official_hosted: z.boolean(),
+			billing_mode: z.number().int(),
+			billing_unit_price: z.string(),
+			compute_point_multiplier: z.string(),
+			config_json: z.string().optional().nullable(),
+			is_public: z.boolean(),
+		})
+		.superRefine((values, ctx) => {
+			if (!values.is_official_hosted) return;
+			const billingUnitPrice = Number(values.billing_unit_price);
+			const computePointMultiplier = Number(values.compute_point_multiplier);
+			if (!Number.isFinite(billingUnitPrice) || billingUnitPrice < 1) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['billing_unit_price'],
+					message: 'Billing unit price must be at least 1',
+				});
+			}
+			if (
+				!Number.isFinite(computePointMultiplier) ||
+				computePointMultiplier <= 0
+			) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['compute_point_multiplier'],
+					message: 'Compute point multiplier must be greater than 0',
+				});
+			}
+		});
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -76,8 +99,8 @@ const EngineAddButton = () => {
 			required_plan_level: AccessPlanLevel.FREE,
 			is_official_hosted: false,
 			billing_mode: EngineBillingMode.TOKEN,
-			billing_unit_price: 1,
-			compute_point_multiplier: 1,
+			billing_unit_price: '1',
+			compute_point_multiplier: '1',
 			config_json: '',
 			is_public: false,
 		},
@@ -142,8 +165,12 @@ const EngineAddButton = () => {
 				: AccessPlanLevel.FREE,
 			is_official_hosted: values.is_official_hosted,
 			billing_mode: values.billing_mode as EngineBillingMode,
-			billing_unit_price: values.billing_unit_price,
-			compute_point_multiplier: values.compute_point_multiplier,
+			billing_unit_price: values.is_official_hosted
+				? Number(values.billing_unit_price)
+				: 1,
+			compute_point_multiplier: values.is_official_hosted
+				? Number(values.compute_point_multiplier)
+				: 1,
 			config_json: values.config_json,
 			is_public: values.is_public,
 		});

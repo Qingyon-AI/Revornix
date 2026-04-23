@@ -13,7 +13,7 @@ import {
 	SelectValue,
 } from '../ui/select';
 import { Switch } from '../ui/switch';
-import { FormField } from '../ui/form';
+import { FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { useTranslations } from 'next-intl';
 
@@ -29,9 +29,9 @@ const EngineBillingPolicyFields = ({
 	const billingMode = Number(
 		form.watch('billing_mode') ?? EngineBillingMode.TOKEN,
 	) as EngineBillingMode;
-	const billingUnitPrice = Number(form.watch('billing_unit_price') ?? 1);
+	const billingUnitPrice = Number(form.watch('billing_unit_price') || 1);
 	const computePointMultiplier = Number(
-		form.watch('compute_point_multiplier') ?? 1,
+		form.watch('compute_point_multiplier') || 1,
 	);
 
 	return (
@@ -103,32 +103,35 @@ const EngineBillingPolicyFields = ({
 						name='billing_unit_price'
 						control={form.control}
 						render={({ field }) => (
-							<div className='flex flex-row justify-between gap-3 items-center'>
-								<div className='space-y-1'>
-									<div className='text-sm font-medium'>
-										{t('setting_engine_billing_unit_price_label')}
+							<FormItem>
+								<div className='flex flex-row justify-between gap-3 items-center'>
+									<div className='space-y-1'>
+										<div className='text-sm font-medium'>
+											{t('setting_engine_billing_unit_price_label')}
+										</div>
+										<p className='text-xs text-muted-foreground'>
+											{t('setting_engine_billing_unit_price_hint', {
+												unit: t(
+													`setting_engine_billing_mode_${billingMode}_unit`,
+												),
+											})}
+										</p>
 									</div>
-									<p className='text-xs text-muted-foreground'>
-										{t('setting_engine_billing_unit_price_hint', {
-											unit: t(
-												`setting_engine_billing_mode_${billingMode}_unit`,
-											),
-										})}
-									</p>
+									<Input
+										className='w-fit'
+										disabled={disabled}
+										type='text'
+										inputMode='decimal'
+										value={field.value ?? ''}
+										onChange={field.onChange}
+										onBlur={field.onBlur}
+										placeholder={t(
+											'setting_engine_billing_unit_price_placeholder',
+										)}
+									/>
 								</div>
-								<Input
-									className='w-fit'
-									disabled={disabled}
-									type='number'
-									min='0.1'
-									step='0.1'
-									value={field.value ?? 1}
-									onChange={(e) => field.onChange(Number(e.target.value || 1))}
-									placeholder={t(
-										'setting_engine_billing_unit_price_placeholder',
-									)}
-								/>
-							</div>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
 					<div className='border-t border-input/70' />
@@ -136,28 +139,31 @@ const EngineBillingPolicyFields = ({
 						name='compute_point_multiplier'
 						control={form.control}
 						render={({ field }) => (
-							<div className='flex flex-row justify-between gap-3 items-center'>
-								<div className='space-y-1'>
-									<div className='text-sm font-medium'>
-										{t('setting_compute_point_multiplier_label')}
+							<FormItem>
+								<div className='flex flex-row justify-between gap-3 items-center'>
+									<div className='space-y-1'>
+										<div className='text-sm font-medium'>
+											{t('setting_compute_point_multiplier_label')}
+										</div>
+										<p className='text-xs text-muted-foreground'>
+											{t('setting_compute_point_multiplier_tips')}
+										</p>
 									</div>
-									<p className='text-xs text-muted-foreground'>
-										{t('setting_compute_point_multiplier_tips')}
-									</p>
+									<Input
+										className='w-fit'
+										disabled={disabled}
+										type='text'
+										inputMode='decimal'
+										value={field.value ?? ''}
+										onChange={field.onChange}
+										onBlur={field.onBlur}
+										placeholder={t(
+											'setting_compute_point_multiplier_placeholder',
+										)}
+									/>
 								</div>
-								<Input
-									className='w-fit'
-									disabled={disabled}
-									type='number'
-									min='0.1'
-									step='0.1'
-									value={field.value ?? 1}
-									onChange={(e) => field.onChange(Number(e.target.value || 1))}
-									placeholder={t(
-										'setting_compute_point_multiplier_placeholder',
-									)}
-								/>
-							</div>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
 					<div className='border-t border-input/70' />
