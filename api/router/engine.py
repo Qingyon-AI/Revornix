@@ -405,7 +405,7 @@ async def generate_image_with_default_engine(
         user_id=user.id,
         engine_id=selected_engine_id,
     )
-    image_markdown = engine.generate_image(image_generate_request.prompt)
+    image_markdown = await engine.generate_image(image_generate_request.prompt)
     if image_markdown is None:
         raise schemas.error.CustomException(
             code=502,

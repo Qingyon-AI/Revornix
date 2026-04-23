@@ -197,7 +197,7 @@ const PhoneLoginForm = () => {
 											className='h-11 rounded-xl'
 											disabled={sendingCode || !!countdown}>
 											{sendingCode && (
-												<Loader2 className='mr-1 size-4 animate-spin' />
+												<Loader2 className='size-4 animate-spin' />
 											)}
 											{!sendingCode &&
 												!countdown &&
@@ -216,7 +216,7 @@ const PhoneLoginForm = () => {
 						disabled={submitLoading}
 						type='submit'
 						className='h-11 w-full rounded-xl'>
-						{submitLoading && <Loader2 className='mr-1 size-4 animate-spin' />}
+						{submitLoading && <Loader2 className='size-4 animate-spin' />}
 						{t('seo_login_submit')}
 					</Button>
 					{isEnvEnabled(process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH) && (

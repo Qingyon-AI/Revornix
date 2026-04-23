@@ -1,7 +1,7 @@
 import re
 
 from langfuse import propagate_attributes
-from langfuse.openai import OpenAI
+from langfuse.openai import AsyncOpenAI
 
 from common.logger import exception_logger
 from common.usage_billing import persist_engine_usage_from_completion
@@ -77,7 +77,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
             engine_description_zh='基于Google Gemini的图像生成引擎'
         )
 
-    def generate_image(
+    async def generate_image(
         self,
         prompt: str
     ) -> str | None:
@@ -98,37 +98,40 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
             user_id=str(self.user_id),
             tags=[f'model:{model_name}']
         ):
-            llm_client = OpenAI(
+            llm_client = AsyncOpenAI(
                 base_url=base_url,
                 api_key=api_key
             )
-            response = llm_client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": SYSTEM_PROMPT
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    },
-                ]
-            )
-            persist_engine_usage_from_completion(
-                user_id=self.user_id,
-                resource_uuid=self.resource_uuid or self.engine_uuid,
-                completion=response,
-                source="banana_image_generate",
-            )
-            if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
-                normalized = _normalize_image_markdown_output(
-                    response.choices[0].message.content
+            try:
+                response = await llm_client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": SYSTEM_PROMPT
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        },
+                    ]
                 )
-                if normalized is None:
-                    exception_logger.warning(
-                        "[SectionImage] invalid image generate response: "
-                        f"user_id={self.user_id}, raw_response={response.choices[0].message.content}"
+                persist_engine_usage_from_completion(
+                    user_id=self.user_id,
+                    resource_uuid=self.resource_uuid or self.engine_uuid,
+                    completion=response,
+                    source="banana_image_generate",
+                )
+                if len(response.choices) > 0 and response.choices[0].message is not None and response.choices[0].message.content is not None:
+                    normalized = _normalize_image_markdown_output(
+                        response.choices[0].message.content
                     )
-                return normalized
-            return None
+                    if normalized is None:
+                        exception_logger.warning(
+                            "[SectionImage] invalid image generate response: "
+                            f"user_id={self.user_id}, raw_response={response.choices[0].message.content}"
+                        )
+                    return normalized
+                return None
+            finally:
+                await self._safe_close_async_client(llm_client)
