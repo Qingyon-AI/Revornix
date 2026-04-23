@@ -319,7 +319,7 @@ async def _generate_slide_image(
         for attempt in range(1, PPT_SLIDE_GENERATE_MAX_ATTEMPTS + 1):
             started_at = time.perf_counter()
             try:
-                image = await asyncio.to_thread(engine.generate_image, slide.prompt)
+                image = await engine.generate_image(slide.prompt)
             except Exception as e:
                 last_error = e
                 elapsed_ms = (time.perf_counter() - started_at) * 1000

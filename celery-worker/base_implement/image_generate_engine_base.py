@@ -166,7 +166,7 @@ def _prepare_image_planner_inputs(
 
 class ImageGenerateEngineBase(EngineBase):
 
-    def generate_image(
+    async def generate_image(
         self,
         prompt: str
     ) -> str | None:

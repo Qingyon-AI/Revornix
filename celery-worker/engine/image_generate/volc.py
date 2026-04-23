@@ -99,7 +99,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
             engine_description_zh="基于火山引擎 OpenAPI 的图像生成引擎"
         )
 
-    def generate_image(
+    async def generate_image(
         self,
         prompt: str,
     ) -> str | None:
@@ -189,8 +189,8 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
             user_id=str(self.user_id),
             tags=[f"volc_action:{action}", f"volc_req_key:{req_key}"],
         ):
-            with httpx.Client(timeout=180.0) as client:
-                response = client.post(
+            async with httpx.AsyncClient(timeout=180.0) as client:
+                response = await client.post(
                     request_url,
                     headers={
                         "Content-Type": "application/json",
@@ -223,7 +223,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
                 if image_payload.startswith("data:image/"):
                     return f"![image]({image_payload})"
 
-                image_response = client.get(image_payload)
+                image_response = await client.get(image_payload)
                 image_response.raise_for_status()
 
         persist_engine_usage(

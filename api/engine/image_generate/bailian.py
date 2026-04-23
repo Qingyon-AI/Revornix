@@ -45,7 +45,7 @@ class BailianImageGenerateEngine(ImageGenerateEngineBase):
             engine_description_zh="基于阿里云百炼 Qwen-Image 接口的图像生成引擎",
         )
 
-    def generate_image(
+    async def generate_image(
         self,
         prompt: str,
     ) -> str | None:
@@ -95,8 +95,8 @@ class BailianImageGenerateEngine(ImageGenerateEngineBase):
             user_id=str(self.user_id),
             tags=[f"model:{model_name}"],
         ):
-            with httpx.Client(timeout=180.0) as client:
-                response = client.post(
+            async with httpx.AsyncClient(timeout=180.0) as client:
+                response = await client.post(
                     _build_generate_url(base_url),
                     headers={
                         "Authorization": f"Bearer {api_key}",
@@ -123,7 +123,7 @@ class BailianImageGenerateEngine(ImageGenerateEngineBase):
                 if not image_url:
                     return None
 
-                image_response = client.get(image_url)
+                image_response = await client.get(image_url)
                 image_response.raise_for_status()
 
         image_count = response_data.get("usage", {}).get("image_count")

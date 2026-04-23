@@ -1026,10 +1026,7 @@ async def _generate_section_image(
                 f"prompt_chars={len(image_plan.prompt)}"
             )
             try:
-                generated_image = await asyncio.to_thread(
-                    engine.generate_image,
-                    image_plan.prompt,
-                )
+                generated_image = await engine.generate_image(image_plan.prompt)
             except Exception as image_error:
                 elapsed_ms = (time.perf_counter() - started_at) * 1000
                 exception_logger.error(

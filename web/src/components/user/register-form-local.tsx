@@ -166,7 +166,7 @@ export function RegisterFormLocal() {
 						type='submit'
 						disabled={submitting}>
 						{t('seo_register_submit')}
-						{submitting && <Loader2 className='mr-1 size-4 animate-spin' />}
+						{submitting && <Loader2 className='size-4 animate-spin' />}
 					</Button>
 					<div className='mt-4 text-center text-sm'>
 						<span className='mr-2'>
