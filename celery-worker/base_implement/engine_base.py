@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+from common.engine_concurrency import acquire_engine_slot
+
 class EngineBase:
 
     def __init__(
@@ -22,6 +24,8 @@ class EngineBase:
         self.engine_config = engine_config
         self.user_id: int | None = None
         self.resource_uuid: str | None = None
+        self.concurrency_queue_key: str | None = None
+        self.max_concurrency: int = 3
 
     def get_engine_config(self) -> dict[str, Any] | None:
         if self.engine_config is None:
@@ -36,3 +40,19 @@ class EngineBase:
 
     def set_resource_uuid(self, resource_uuid: str) -> None:
         self.resource_uuid = resource_uuid
+
+    def set_concurrency_control(self, *, queue_key: str, max_concurrency: int) -> None:
+        self.concurrency_queue_key = queue_key
+        self.max_concurrency = max(1, int(max_concurrency))
+
+    async def run_with_concurrency_limit(
+        self,
+        operation: Any,
+    ) -> Any:
+        if not self.concurrency_queue_key:
+            return await operation()
+        async with acquire_engine_slot(
+            queue_key=self.concurrency_queue_key,
+            limit=self.max_concurrency,
+        ):
+            return await operation()

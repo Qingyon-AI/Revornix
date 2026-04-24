@@ -29,9 +29,36 @@ from enums.product import PlanAccessLevel
 from enums.user import UserRole
 
 T_Engine = TypeVar("T_Engine", bound=EngineBase)
+ENGINE_LIMITED_METHODS = (
+    "analyse_website",
+    "analyse_file",
+    "synthesize",
+    "transcribe_audio",
+    "generate_image",
+    "understand_image",
+)
 
 
 class EngineProxy:
+    @staticmethod
+    def _wrap_with_concurrency_limit(
+        *,
+        engine: EngineBase,
+        method_name: str,
+    ) -> None:
+        method = getattr(engine, method_name, None)
+        if method is None or not callable(method):
+            return
+        if getattr(method, "_revornix_concurrency_wrapped", False):
+            return
+
+        async def limited_method(*args, __method=method, **kwargs):
+            return await engine.run_with_concurrency_limit(
+                lambda: __method(*args, **kwargs)
+            )
+
+        setattr(limited_method, "_revornix_concurrency_wrapped", True)
+        setattr(engine, method_name, limited_method)
 
     # =========================
     # Factory（唯一推荐入口）
@@ -60,6 +87,7 @@ class EngineProxy:
         user_plan_level = PlanAccessLevel.FREE
         available_compute_points = 0
         minimum_required_points = 1
+        max_concurrency = 3
 
         async with async_session_context() as db:
             db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
@@ -97,6 +125,7 @@ class EngineProxy:
             engine_provided_uuid = db_engine.engine_provided.uuid
             engine_uuid = db_engine.uuid
             engine_config_json = db_engine.config_json
+            max_concurrency = db_engine.max_concurrency
 
         deployed_by_official = check_deployed_by_official_in_fuc()
         if deployed_by_official and is_subscription_required_level(required_plan_level):
@@ -184,6 +213,12 @@ class EngineProxy:
             engine.set_engine_config(config_json)
         engine.set_user_id(user_id=user_id)
         engine.set_resource_uuid(resource_uuid=engine_uuid)
+        engine.set_concurrency_control(
+            queue_key=f"engine:{engine_id}",
+            max_concurrency=max_concurrency,
+        )
+        for method_name in ENGINE_LIMITED_METHODS:
+            cls._wrap_with_concurrency_limit(engine=engine, method_name=method_name)
 
         return engine
 

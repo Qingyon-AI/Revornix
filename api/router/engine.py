@@ -247,6 +247,7 @@ async def create_engine(
         billing_mode=int(engine_create_request.billing_mode),
         billing_unit_price=engine_create_request.billing_unit_price,
         compute_point_multiplier=engine_create_request.compute_point_multiplier,
+        max_concurrency=engine_create_request.max_concurrency,
         config_json=engine_create_request.config_json,
         creator_id=user.id,
         engine_provided_id=engine_create_request.engine_provided_id
@@ -583,6 +584,8 @@ async def update_engine(
         db_engine.billing_unit_price = engine_update_request.billing_unit_price
     if engine_update_request.compute_point_multiplier is not None:
         db_engine.compute_point_multiplier = engine_update_request.compute_point_multiplier
+    if engine_update_request.max_concurrency is not None:
+        db_engine.max_concurrency = engine_update_request.max_concurrency
 
     db_engine.update_time = now
 

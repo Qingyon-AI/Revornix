@@ -39,6 +39,7 @@ class Engine(Base):
     billing_mode: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     billing_unit_price: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
     compute_point_multiplier: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
+    max_concurrency: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

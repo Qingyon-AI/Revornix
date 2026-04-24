@@ -71,6 +71,7 @@ def create_engine(
     billing_mode: int = 0,
     billing_unit_price: float = 1.0,
     compute_point_multiplier: float = 1.0,
+    max_concurrency: int = 3,
     uuid: str | None = None,
     description: str | None = None,
     config_json: str | None = None,
@@ -91,6 +92,7 @@ def create_engine(
         billing_mode=billing_mode,
         billing_unit_price=billing_unit_price,
         compute_point_multiplier=compute_point_multiplier,
+        max_concurrency=max_concurrency,
         description=description,
         config_json=config_json,
         create_time=now
@@ -110,6 +112,7 @@ async def create_engine_async(
     billing_mode: int = 0,
     billing_unit_price: float = 1.0,
     compute_point_multiplier: float = 1.0,
+    max_concurrency: int = 3,
     uuid: str | None = None,
     description: str | None = None,
     config_json: str | None = None,
@@ -130,6 +133,7 @@ async def create_engine_async(
         billing_mode=billing_mode,
         billing_unit_price=billing_unit_price,
         compute_point_multiplier=compute_point_multiplier,
+        max_concurrency=max_concurrency,
         description=description,
         config_json=config_json,
         create_time=now

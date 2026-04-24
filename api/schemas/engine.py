@@ -41,6 +41,7 @@ class EngineCreateRequest(BaseModel):
     billing_mode: EngineBillingMode = EngineBillingMode.TOKEN
     billing_unit_price: float = Field(default=1.0, ge=1)
     compute_point_multiplier: float = Field(default=1.0, gt=0)
+    max_concurrency: int = Field(default=3, ge=1, le=100)
     config_json: str | None = None
 
     @model_validator(mode="after")
@@ -91,6 +92,7 @@ class EngineDetail(BaseModel):
     billing_mode: int = int(EngineBillingMode.TOKEN)
     billing_unit_price: float = 1.0
     compute_point_multiplier: float = 1.0
+    max_concurrency: int = 3
     subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
@@ -109,6 +111,7 @@ class EngineBaseInfo(BaseModel):
     billing_mode: int = int(EngineBillingMode.TOKEN)
     billing_unit_price: float = 1.0
     compute_point_multiplier: float = 1.0
+    max_concurrency: int = 3
     create_time: datetime
     update_time: datetime | None = None
     is_forked: bool | None = None
@@ -128,6 +131,7 @@ class EngineInfo(BaseModel):
     billing_mode: int = int(EngineBillingMode.TOKEN)
     billing_unit_price: float = 1.0
     compute_point_multiplier: float = 1.0
+    max_concurrency: int = 3
     subscription_required: bool = False
     create_time: datetime
     update_time: datetime | None = None
@@ -166,6 +170,7 @@ class EngineUpdateRequest(BaseModel):
     billing_mode: EngineBillingMode | None = None
     billing_unit_price: float | None = Field(default=None, ge=1)
     compute_point_multiplier: float | None = Field(default=None, gt=0)
+    max_concurrency: int | None = Field(default=None, ge=1, le=100)
 
     @model_validator(mode="after")
     def normalize_related_fields(self):
