@@ -43,6 +43,11 @@ export type PublicDocumentDetail = Omit<DocumentDetailResponse, 'sections'> & {
 };
 
 export type PublicDocumentPagination = InifiniteScrollPagnitionDocumentInfo;
+export type PublicDocumentMarkdownContentRequest = {
+	document_id?: number;
+	url?: string;
+	snapshot_id?: number;
+};
 
 export const getPublicSectionHref = (section: {
 	publish_uuid?: string | null;
@@ -130,32 +135,20 @@ export const fetchPublicDocumentGraph = async (
 	});
 };
 
-export const fetchRemoteTextContent = async (
-	url: string | null | undefined,
-): Promise<string | null> => {
-	if (!url) {
-		return null;
-	}
-
-	const response = await fetch(url, {
-		cache: 'no-store',
+export const fetchPublicDocumentMarkdownContent = async (
+	data: PublicDocumentMarkdownContentRequest,
+): Promise<string> => {
+	return await serverRequest(documentApi.getDocumentMarkdownContent, {
+		data,
 	});
-	if (!response.ok) {
-		throw new Error(`Request failed with status ${response.status}`);
-	}
+};
 
-	const contentType = response.headers.get('Content-Type') || '';
-	if (
-		contentType.includes('application/json') ||
-		contentType.includes('image/') ||
-		contentType.includes('audio/') ||
-		contentType.includes('video/')
-	) {
-		return null;
-	}
-
-	const text = await response.text();
-	return text.length > 0 ? text : null;
+export const fetchPublicSectionMarkdownContent = async (data: {
+	uuid: string;
+}): Promise<string> => {
+	return await serverRequest(sectionApi.getSEOSectionMarkdownContent, {
+		data,
+	});
 };
 
 export const formatSeoDate = (

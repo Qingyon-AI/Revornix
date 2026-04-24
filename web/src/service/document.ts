@@ -99,6 +99,12 @@ export type CancelDocumentTaskRequest = {
     document_id: number
 }
 
+export type DocumentMarkdownContentRequest = {
+    document_id?: number
+    url?: string
+    snapshot_id?: number
+}
+
 export const transcribeDocument = async (data: DocumentTranscribeRequest): Promise<NormalResponse> => {
     return await request(documentApi.transcribeDocument, {
         data
@@ -161,6 +167,18 @@ export const publishDocument = async (data: DocumentPublishRequest): Promise<Nor
 
 export const getDocumentPublish = async (data: DocumentPublishGetRequest): Promise<DocumentPublishGetResponse> => {
     return await request(documentApi.getDocumentPublish, {
+        data
+    })
+}
+
+export const getDocumentMarkdownContent = async (data: DocumentMarkdownContentRequest): Promise<string> => {
+    return await request(documentApi.getDocumentMarkdownContent, {
+        data
+    })
+}
+
+export const getDocumentMarkdownContentInServer = async (data: DocumentMarkdownContentRequest): Promise<string> => {
+    return await serverRequest(documentApi.getDocumentMarkdownContent, {
         data
     })
 }

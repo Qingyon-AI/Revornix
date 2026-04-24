@@ -17,7 +17,7 @@ import { getRenderableGraphData } from '@/lib/graph-render';
 import {
 	fetchPublicDocumentGraph,
 	fetchPublicDocumentDetail,
-	fetchRemoteTextContent,
+	fetchPublicDocumentMarkdownContent,
 	getPublicSectionHref,
 	isSeoNotFoundError,
 } from '@/lib/seo';
@@ -68,7 +68,12 @@ const getDocumentMarkdown = async (
 		document.category === DocumentCategory.WEBSITE ||
 		document.category === DocumentCategory.FILE
 	) {
-		return await fetchRemoteTextContent(document.convert_task?.md_file_name);
+		if (!document.convert_task?.md_file_name) {
+			return null;
+		}
+		return await fetchPublicDocumentMarkdownContent({
+			document_id: document.id,
+		});
 	}
 	if (document.category === DocumentCategory.QUICK_NOTE) {
 		return document.quick_note_info?.content ?? null;

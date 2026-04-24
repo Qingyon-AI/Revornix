@@ -11,7 +11,11 @@ import { isScheduledSectionWaitingForTrigger } from '@/lib/section-automation';
 import { cn } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
-import { getSectionDetail, updateSection } from '@/service/section';
+import {
+	getSectionDetail,
+	getSectionMarkdownContent,
+	updateSection,
+} from '@/service/section';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
@@ -107,8 +111,8 @@ const SectionMarkdown = ({
 	}>({});
 	const processStatus =
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
-	const markdownUrl = section?.md_file_name ?? undefined;
-	const markdownSourceKey = toStableMarkdownSourceKey(markdownUrl);
+	const markdownFilePath = section?.md_file_name ?? undefined;
+	const markdownSourceKey = toStableMarkdownSourceKey(markdownFilePath);
 	const isScheduledWaitingForTrigger =
 		isScheduledSectionWaitingForTrigger(section);
 	const freshnessState = getSectionFreshnessState(section);
@@ -121,18 +125,11 @@ const SectionMarkdown = ({
 	const containsImagePlaceholder = (content?: string) =>
 		Boolean(content?.includes('section-image-placeholder:'));
 
-	const buildMarkdownRequestUrl = (sourceUrl: string, forceReload: boolean) => {
-		if (!forceReload) return sourceUrl;
-		const separator = sourceUrl.includes('?') ? '&' : '?';
-		return `${sourceUrl}${separator}_ts=${Date.now()}`;
-	};
-
 	const onGetMarkdown = async (
 		sourceKey: string,
-		sourceUrl: string,
 		forceReload = false,
 	) => {
-		if (!section || !sourceUrl) return;
+		if (!section) return;
 		if (
 			!forceReload &&
 			(loadedMarkdownSourceKeyRef.current === sourceKey ||
@@ -140,21 +137,16 @@ const SectionMarkdown = ({
 		) {
 			return;
 		}
-		if (loadingMarkdownUrlRef.current === sourceUrl) {
+		if (loadingMarkdownUrlRef.current === sourceKey) {
 			return;
 		}
-		loadingMarkdownUrlRef.current = sourceUrl;
+		loadingMarkdownUrlRef.current = sourceKey;
 		setMarkdownGetError(undefined);
 		setMarkdownIsFetching(true);
 		try {
-			const requestUrl = buildMarkdownRequestUrl(sourceUrl, forceReload);
-			const response = await fetch(requestUrl, {
-				cache: forceReload ? 'no-store' : 'default',
+			const content = await getSectionMarkdownContent({
+				section_id: section.id,
 			});
-			if (!response.ok) {
-				throw new Error(`Request failed with status ${response.status}`);
-			}
-			const content = await response.text();
 			setMarkdown(content);
 			loadedMarkdownSourceKeyRef.current = sourceKey;
 			failedMarkdownSourceKeyRef.current = undefined;
@@ -164,9 +156,10 @@ const SectionMarkdown = ({
 		} catch (e: any) {
 			failedMarkdownSourceKeyRef.current = sourceKey;
 			setMarkdownGetError(e.message);
+			setPlaceholderPollingDelay(undefined);
 		} finally {
 			setMarkdownIsFetching(false);
-			if (loadingMarkdownUrlRef.current === sourceUrl) {
+			if (loadingMarkdownUrlRef.current === sourceKey) {
 				loadingMarkdownUrlRef.current = undefined;
 			}
 		}
@@ -186,12 +179,12 @@ const SectionMarkdown = ({
 	useEffect(() => {
 		latestMarkdownSourceRef.current = {
 			sourceKey: markdownSourceKey,
-			sourceUrl: markdownUrl,
+			sourceUrl: markdownFilePath,
 		};
-	}, [markdownSourceKey, markdownUrl]);
+	}, [markdownSourceKey, markdownFilePath]);
 
 	useEffect(() => {
-		if (!markdownUrl || !markdownSourceKey) {
+		if (!markdownFilePath || !markdownSourceKey) {
 			return;
 		}
 		if (
@@ -200,8 +193,8 @@ const SectionMarkdown = ({
 		) {
 			return;
 		}
-		void onGetMarkdown(markdownSourceKey, markdownUrl);
-	}, [markdownSourceKey, markdownUrl]);
+		void onGetMarkdown(markdownSourceKey);
+	}, [markdownSourceKey, markdownFilePath]);
 
 	useEffect(() => {
 		if (processStatus < SectionProcessStatus.SUCCESS) {
@@ -211,18 +204,18 @@ const SectionMarkdown = ({
 		if (
 			!shouldReloadOnSuccessRef.current ||
 			!markdownSourceKey ||
-			!markdownUrl
+			!markdownFilePath
 		) {
 			return;
 		}
 		shouldReloadOnSuccessRef.current = false;
-		void onGetMarkdown(markdownSourceKey, markdownUrl, true);
-	}, [markdownSourceKey, markdownUrl, processStatus]);
+		void onGetMarkdown(markdownSourceKey, true);
+	}, [markdownSourceKey, markdownFilePath, processStatus]);
 
 	useInterval(() => {
-		const { sourceKey, sourceUrl } = latestMarkdownSourceRef.current;
-		if (!sourceKey || !sourceUrl) return;
-		void onGetMarkdown(sourceKey, sourceUrl, true);
+		const { sourceKey } = latestMarkdownSourceRef.current;
+		if (!sourceKey) return;
+		void onGetMarkdown(sourceKey, true);
 	}, placeholderPollingDelay);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);

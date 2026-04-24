@@ -4,6 +4,7 @@ import { Skeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import {
 	getDocumentDetail,
+	getDocumentMarkdownContent,
 	transformToMarkdown,
 	updateDocument,
 } from '@/service/document';
@@ -97,22 +98,15 @@ const FileDocumentDetail = ({
 	);
 	const markdownSourceKey =
 		document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS &&
-		stableMarkdownSourceKey &&
-		userFileSystemDetail?.file_system_id
-			? `${userFileSystemDetail.file_system_id}:${stableMarkdownSourceKey}`
+		stableMarkdownSourceKey
+			? stableMarkdownSourceKey
 			: undefined;
 
 	const onGetMarkdown = async (sourceKey: string) => {
 		if (
 			!document ||
-			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS ||
-			!mainUserInfo ||
-			!userFileSystemDetail
+			document.convert_task?.status !== DocumentMdConvertStatus.SUCCESS
 		) {
-			return;
-		}
-		if (!mainUserInfo.default_user_file_system) {
-			toast.error(t('error_default_file_system_not_found'));
 			return;
 		}
 		if (
@@ -122,23 +116,14 @@ const FileDocumentDetail = ({
 			return;
 		}
 		loadingMarkdownSourceKeyRef.current = sourceKey;
-		const fileService = new FileService(userFileSystemDetail.file_system_id);
 		try {
-			if (!document.convert_task?.md_file_name) {
-				throw new Error(t('document_markdown_file_missing'));
-			}
-			let [res, err] = await utils.to(
-				fileService.getFileContent(document.convert_task?.md_file_name),
-			);
-			if (!res || err) {
-				throw new Error(err.message);
-			}
-			if (typeof res === 'string') {
-				setMarkdown(res);
-				setMarkdownGetError(undefined);
-				setMarkdownRendered(true);
-				loadedMarkdownSourceKeyRef.current = sourceKey;
-			}
+			const res = await getDocumentMarkdownContent({
+				document_id: document.id,
+			});
+			setMarkdown(res);
+			setMarkdownGetError(undefined);
+			setMarkdownRendered(true);
+			loadedMarkdownSourceKeyRef.current = sourceKey;
 		} catch (e: any) {
 			setMarkdownGetError(e.message);
 		} finally {
@@ -211,11 +196,11 @@ const FileDocumentDetail = ({
 	};
 
 	useEffect(() => {
-		if (!markdownSourceKey || !mainUserInfo?.id) {
+		if (!markdownSourceKey) {
 			return;
 		}
 		void onGetMarkdown(markdownSourceKey);
-	}, [markdownSourceKey, mainUserInfo?.id]);
+	}, [markdownSourceKey]);
 
 	useEffect(() => {
 		if (document?.convert_task?.status === DocumentMdConvertStatus.SUCCESS) {
