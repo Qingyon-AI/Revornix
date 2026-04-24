@@ -156,6 +156,29 @@ SECTION_IMAGE_PLACEHOLDER_SVG_TEMPLATE = """<svg xmlns="http://www.w3.org/2000/s
 <animate attributeName="x" values="-320;1184" dur="3.2s" repeatCount="indefinite"/>
 </rect>
 </svg>"""
+SECTION_IMAGE_FAILED_SVG_TEMPLATE = """<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#f6eee8"/>
+<stop offset="50%" stop-color="#efe2d8"/>
+<stop offset="100%" stop-color="#e8d6cb"/>
+</linearGradient>
+</defs>
+<rect width="1280" height="720" rx="32" fill="url(#bg)"/>
+<circle cx="1110" cy="118" r="160" fill="#ffffff" opacity="0.16"/>
+<circle cx="170" cy="622" r="190" fill="#c77b63" opacity="0.10"/>
+<rect x="64" y="64" width="1152" height="592" rx="34" fill="#fbf5ef" stroke="#d4b0a1" stroke-width="3"/>
+<rect x="96" y="96" width="1088" height="320" rx="28" fill="#ead7cd"/>
+<rect x="96" y="432" width="1088" height="192" rx="24" fill="#fffaf7" stroke="#ead8cf" stroke-width="2"/>
+<rect x="132" y="130" width="250" height="34" rx="17" fill="#9f4c38"/>
+<text x="257" y="153" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" fill="#fff7f2">ILLUSTRATION FAILED</text>
+<circle cx="952" cy="240" r="68" fill="#fff8f4" stroke="#cf8a72" stroke-width="4"/>
+<path d="M922 210 L982 270" stroke="#a44b38" stroke-width="10" stroke-linecap="round"/>
+<path d="M982 210 L922 270" stroke="#a44b38" stroke-width="10" stroke-linecap="round"/>
+<text x="640" y="505" text-anchor="middle" font-size="46" font-family="Arial, sans-serif" fill="#6a4339">Illustration unavailable</text>
+<text x="640" y="548" text-anchor="middle" font-size="26" font-family="Arial, sans-serif" fill="#875a50">插图生成失败，已保留该位置</text>
+<text x="640" y="590" text-anchor="middle" font-size="22" font-family="Arial, sans-serif" fill="#9b6f64">Section {section_id} · Image {image_id}</text>
+</svg>"""
 
 
 def _contains_cjk(text: str | None) -> bool:
@@ -292,6 +315,8 @@ async def _get_document_ready_state_async(
 
 
 def apply_generated_images(
+    *,
+    section_id: int,
     markdown_with_markers: str,
     images: list[GeneratedImage],
 ) -> str:
@@ -309,7 +334,14 @@ def apply_generated_images(
         image_md = image_map.get(image_id)
         if not image_md:
             exception_logger.warning(f"[SectionImage] missing image for id={image_id}")
-            return f"\n\n<!-- image missing: id={image_id} -->\n\n"
+            return (
+                "\n\n"
+                + _build_section_image_failed_markdown(
+                    section_id=section_id,
+                    image_id=image_id,
+                )
+                + "\n\n"
+            )
 
         normalized_image_md = image_md.strip()
         if normalized_image_md.startswith("data:image/"):
@@ -337,6 +369,23 @@ def _build_section_image_placeholder_markdown(
     )
 
 
+def _build_section_image_failed_markdown(
+    *,
+    section_id: int,
+    image_id: str,
+) -> str:
+    svg = SECTION_IMAGE_FAILED_SVG_TEMPLATE.format(
+        section_id=section_id,
+        image_id=image_id,
+    )
+    payload = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return (
+        f"<!-- section-image-failed: section={section_id}, image={image_id} -->\n"
+        f"![illustration failed](data:image/svg+xml;base64,{payload})\n\n"
+        "> 插图生成失败，已保留该位置。"
+    )
+
+
 def _build_placeholder_generated_images(
     *,
     section_id: int,
@@ -347,6 +396,24 @@ def _build_placeholder_generated_images(
             id=plan.id,
             prompt=plan.prompt,
             image=_build_section_image_placeholder_markdown(
+                section_id=section_id,
+                image_id=plan.id,
+            ),
+        )
+        for plan in image_plans
+    ]
+
+
+def _build_failed_generated_images(
+    *,
+    section_id: int,
+    image_plans: list[ImagePlan],
+) -> list[GeneratedImage]:
+    return [
+        GeneratedImage(
+            id=plan.id,
+            prompt=plan.prompt,
+            image=_build_section_image_failed_markdown(
                 section_id=section_id,
                 image_id=plan.id,
             ),
@@ -412,7 +479,10 @@ async def _persist_generated_images(
                 return GeneratedImage(
                     id=image.id,
                     prompt=image.prompt,
-                    image=f"<!-- image skipped: invalid payload, id={image.id} -->",
+                    image=_build_section_image_failed_markdown(
+                        section_id=section_id,
+                        image_id=image.id,
+                    ),
                 )
             return image
 
@@ -484,13 +554,18 @@ async def run_finalize_section_images(
         images=generated_images,
     )
 
-    placeholder_images = _build_placeholder_generated_images(
+    generated_image_ids = {image.id for image in generated_images}
+    failed_images = _build_failed_generated_images(
         section_id=section_id,
-        image_plans=image_plans,
+        image_plans=[
+            plan for plan in image_plans
+            if plan.id not in generated_image_ids
+        ],
     )
     final_content = apply_generated_images(
-        markdown_with_markers,
-        [*placeholder_images, *generated_images],
+        section_id=section_id,
+        markdown_with_markers=markdown_with_markers,
+        images=[*generated_images, *failed_images],
     )
     await remote_file_service.upload_raw_content_to_path(
         file_path=md_file_name,
@@ -1402,8 +1477,9 @@ async def _build_section_content(
                     image_plans=images_plan.plans,
                 )
                 content = apply_generated_images(
-                    images_plan.markdown_with_markers,
-                    placeholder_images,
+                    section_id=section_id,
+                    markdown_with_markers=images_plan.markdown_with_markers,
+                    images=placeholder_images,
                 )
                 markdown_with_markers_for_images = images_plan.markdown_with_markers
                 pending_image_plans_payload = [
