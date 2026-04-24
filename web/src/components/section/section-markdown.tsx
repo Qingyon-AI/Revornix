@@ -111,6 +111,9 @@ const SectionMarkdown = ({
 	}>({});
 	const processStatus =
 		section?.process_task?.status ?? SectionProcessStatus.SUCCESS;
+	const shouldStopPlaceholderPolling =
+		processStatus === SectionProcessStatus.FAILED ||
+		processStatus === SectionProcessStatus.CANCELLED;
 	const markdownFilePath = section?.md_file_name ?? undefined;
 	const markdownSourceKey = toStableMarkdownSourceKey(markdownFilePath);
 	const isScheduledWaitingForTrigger =
@@ -212,11 +215,21 @@ const SectionMarkdown = ({
 		void onGetMarkdown(markdownSourceKey, true);
 	}, [markdownSourceKey, markdownFilePath, processStatus]);
 
+	useEffect(() => {
+		if (!shouldStopPlaceholderPolling) {
+			return;
+		}
+		setPlaceholderPollingDelay(undefined);
+	}, [shouldStopPlaceholderPolling]);
+
 	useInterval(() => {
+		if (shouldStopPlaceholderPolling) {
+			return;
+		}
 		const { sourceKey } = latestMarkdownSourceRef.current;
 		if (!sourceKey) return;
 		void onGetMarkdown(sourceKey, true);
-	}, placeholderPollingDelay);
+	}, shouldStopPlaceholderPolling ? undefined : placeholderPollingDelay);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =

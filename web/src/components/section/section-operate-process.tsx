@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AlertCircleIcon, Loader2, RefreshCcw } from 'lucide-react';
+import {
+	AlertCircleIcon,
+	Loader2,
+	Play,
+	RefreshCcw,
+	Square,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -120,35 +126,94 @@ const SectionOperateProcess = ({
 		section?.process_task?.status === SectionProcessStatus.WAIT_TO;
 	const isProcessing =
 		section?.process_task?.status === SectionProcessStatus.PROCESSING;
+	const isSuccess =
+		section?.process_task?.status === SectionProcessStatus.SUCCESS;
+	const isFailed =
+		section?.process_task?.status === SectionProcessStatus.FAILED;
 	const isRunning = isQueued || isProcessing;
+	const hasSourceMaterial =
+		Boolean(section?.md_file_name) || (section?.documents_count ?? 0) > 0;
 	const needsImageEngine = Boolean(section?.auto_illustration);
 	const needsPodcastEngine = Boolean(section?.auto_podcast);
-	const canTrigger =
+	const canSubmitTrigger =
+		hasSourceMaterial &&
 		Boolean(mainUserInfo?.default_user_file_system) &&
 		Boolean(selectedModelId) &&
 		(!needsImageEngine || Boolean(selectedImageEngineId)) &&
 		(!needsPodcastEngine || Boolean(selectedPodcastEngineId)) &&
 		!isRunning;
-	const buttonLabel = mutation.isPending
-		? t('section_process_status_doing')
-		: isQueued
-			? t('section_process_status_todo')
-			: isProcessing
-				? t('section_process_status_doing')
-				: t('section_process_manual_trigger');
 	const isStopping = cancelMutation.isPending;
+	const canOpenConfirm =
+		hasSourceMaterial && !isRunning && !mutation.isPending && !isStopping;
+	const actionLabel = isRunning
+		? t('section_process_action_cancel')
+		: isSuccess
+			? t('section_process_action_reprocess')
+			: isFailed
+				? t('section_process_action_retry')
+				: t('section_process_action_start');
+	const dialogTitle = isSuccess
+		? t('section_process_confirm_reprocess_title')
+		: isFailed
+			? t('section_process_confirm_retry_title')
+			: t('section_process_confirm_start_title');
+	const dialogDescription = isSuccess
+		? t('section_process_confirm_reprocess_description')
+		: isFailed
+			? t('section_process_confirm_retry_description')
+			: t('section_process_confirm_start_description');
+	const requirementMessages = [
+		!hasSourceMaterial ? t('section_process_requirement_source') : null,
+		!mainUserInfo?.default_user_file_system
+			? t('section_process_requirement_file_system')
+			: null,
+		!selectedModelId ? t('section_process_requirement_model') : null,
+		needsImageEngine && !selectedImageEngineId
+			? t('section_process_requirement_image_engine')
+			: null,
+		needsPodcastEngine && !selectedPodcastEngineId
+			? t('section_process_requirement_podcast_engine')
+			: null,
+	].filter(Boolean);
+	const buttonTitle = !hasSourceMaterial
+		? t('section_process_disabled_no_source')
+		: isRunning
+			? t('section_process_action_cancel')
+			: actionLabel;
+	const statusHint = isQueued
+		? t('section_process_status_waiting_hint')
+		: isProcessing
+			? t('section_process_status_processing_hint')
+			: isSuccess
+				? t('section_process_status_success_hint')
+				: isFailed
+					? t('section_process_status_failed_hint')
+					: t('section_process_status_idle_hint');
+	const buttonIcon = mutation.isPending || isProcessing || isStopping ? (
+		<Loader2 className='animate-spin' />
+	) : isRunning ? (
+		<Square />
+	) : isSuccess || isFailed ? (
+		<RefreshCcw />
+	) : (
+		<Play />
+	);
 
 	return (
 		<>
 			<Button
-				title={isRunning ? t('cancel') : t('section_process_manual_trigger')}
+				title={buttonTitle}
 				variant='ghost'
-				className={cn('w-full flex-1 text-xs', className)}
-				disabled={
+				className={cn(
+					'w-full flex-1 text-xs',
 					isRunning
-						? isStopping
-						: !canTrigger || mutation.isPending
-				}
+						? 'text-destructive hover:text-destructive'
+						: isFailed
+							? 'text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
+							: null,
+					className,
+				)}
+				disabled={isRunning ? isStopping : !canOpenConfirm}
 				onClick={() => {
 					if (isRunning) {
 						cancelMutation.mutate();
@@ -156,17 +221,13 @@ const SectionOperateProcess = ({
 					}
 					setConfirmOpen(true);
 				}}>
-				{mutation.isPending || isProcessing || isStopping ? (
-					<Loader2 className='animate-spin' />
-				) : (
-					<RefreshCcw />
-				)}
+				{buttonIcon}
 				{iconOnly ? (
-					<span className='sr-only'>{isRunning ? t('cancel') : buttonLabel}</span>
+					<span className='sr-only'>{actionLabel}</span>
 				) : isRunning ? (
-					t('cancel')
+					actionLabel
 				) : (
-					buttonLabel
+					actionLabel
 				)}
 			</Button>
 
@@ -177,12 +238,15 @@ const SectionOperateProcess = ({
 							<div className='mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-destructive/10 sm:mx-0'>
 								<AlertCircleIcon className='size-4 text-destructive' />
 							</div>
-							{t('section_process_confirm_restart_title')}
+							{dialogTitle}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							{t('section_process_confirm_restart_description')}
+							{dialogDescription}
 						</AlertDialogDescription>
 						<div className='space-y-3 pt-2'>
+							<div className='rounded-xl border border-border/60 bg-muted/35 px-3 py-2 text-sm text-muted-foreground'>
+								{statusHint}
+							</div>
 							<div>
 								<p className='mb-1 text-sm text-muted-foreground'>{t('use_model')}</p>
 								<AIModelSelect
@@ -216,14 +280,19 @@ const SectionOperateProcess = ({
 									/>
 								</div>
 							) : null}
+							{requirementMessages.length > 0 ? (
+								<div className='rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300'>
+									{requirementMessages.join(' ')}
+								</div>
+							) : null}
 						</div>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
 						<AlertDialogAction
-							disabled={mutation.isPending || !canTrigger}
+							disabled={mutation.isPending || !canSubmitTrigger}
 							onClick={() => mutation.mutate()}>
-							{t('confirm')}
+							{actionLabel}
 							{mutation.isPending && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
