@@ -101,7 +101,13 @@ export interface EngineInfo {
      */
     compute_point_multiplier?: number;
     /**
-     * 
+     *
+     * @type {number}
+     * @memberof EngineInfo
+     */
+    max_concurrency?: number;
+    /**
+     *
      * @type {boolean}
      * @memberof EngineInfo
      */
@@ -174,6 +180,7 @@ export function EngineInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'billing_mode': json['billing_mode'] == null ? undefined : json['billing_mode'],
         'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
         'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
+        'max_concurrency': json['max_concurrency'] == null ? undefined : json['max_concurrency'],
         'subscription_required': json['subscription_required'] == null ? undefined : json['subscription_required'],
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
@@ -205,6 +212,7 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'billing_mode': value['billing_mode'],
         'billing_unit_price': value['billing_unit_price'],
         'compute_point_multiplier': value['compute_point_multiplier'],
+        'max_concurrency': value['max_concurrency'],
         'subscription_required': value['subscription_required'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
@@ -213,4 +221,3 @@ export function EngineInfoToJSONTyped(value?: EngineInfo | null, ignoreDiscrimin
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };
 }
-

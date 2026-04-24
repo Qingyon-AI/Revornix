@@ -66,6 +66,7 @@ const EngineAddButton = () => {
 			billing_mode: z.number().int(),
 			billing_unit_price: z.string(),
 			compute_point_multiplier: z.string(),
+			max_concurrency: z.string(),
 			config_json: z.string().optional().nullable(),
 			is_public: z.boolean(),
 		})
@@ -90,6 +91,18 @@ const EngineAddButton = () => {
 					message: 'Compute point multiplier must be greater than 0',
 				});
 			}
+			const maxConcurrency = Number(values.max_concurrency);
+			if (
+				!Number.isInteger(maxConcurrency) ||
+				maxConcurrency < 1 ||
+				maxConcurrency > 100
+			) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['max_concurrency'],
+					message: 'Max concurrency must be an integer between 1 and 100',
+				});
+			}
 		});
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -101,6 +114,7 @@ const EngineAddButton = () => {
 			billing_mode: EngineBillingMode.TOKEN,
 			billing_unit_price: '1',
 			compute_point_multiplier: '1',
+			max_concurrency: '3',
 			config_json: '',
 			is_public: false,
 		},
@@ -171,6 +185,7 @@ const EngineAddButton = () => {
 			compute_point_multiplier: values.is_official_hosted
 				? Number(values.compute_point_multiplier)
 				: 1,
+			max_concurrency: Number(values.max_concurrency),
 			config_json: values.config_json,
 			is_public: values.is_public,
 		});
@@ -373,6 +388,33 @@ const EngineAddButton = () => {
 								}}
 							/>
 						)}
+						<FormField
+							control={form.control}
+							name='max_concurrency'
+							render={({ field }) => (
+								<FormItem>
+									<div className='grid grid-cols-12 gap-2'>
+										<FormLabel className='col-span-3'>
+											{t('setting_engine_page_engine_form_max_concurrency')}
+										</FormLabel>
+										<div className='col-span-9'>
+											<Input
+												{...field}
+												inputMode='numeric'
+												placeholder={t(
+													'setting_engine_page_engine_form_max_concurrency_placeholder',
+												)}
+												value={field.value || ''}
+											/>
+											<FormDescription className='mt-2 text-xs leading-5 text-muted-foreground'>
+												{t('setting_engine_page_engine_form_max_concurrency_tips')}
+											</FormDescription>
+										</div>
+									</div>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 						<FormField
 							name='is_public'
 							control={form.control}

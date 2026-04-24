@@ -81,6 +81,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			billing_mode: z.number().int().optional(),
 			billing_unit_price: z.string().optional(),
 			compute_point_multiplier: z.string().optional(),
+			max_concurrency: z.string().optional(),
 			config_json: z.string().optional(),
 			is_public: z.boolean().optional(),
 		})
@@ -105,6 +106,18 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 					message: 'Compute point multiplier must be greater than 0',
 				});
 			}
+			const maxConcurrency = Number(values.max_concurrency);
+			if (
+				!Number.isInteger(maxConcurrency) ||
+				maxConcurrency < 1 ||
+				maxConcurrency > 100
+			) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['max_concurrency'],
+					message: 'Max concurrency must be an integer between 1 and 100',
+				});
+			}
 		});
 
 	const form = useForm({
@@ -118,6 +131,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			billing_mode: EngineBillingMode.TOKEN,
 			billing_unit_price: '1',
 			compute_point_multiplier: '1',
+			max_concurrency: '3',
 			config_json: '',
 		},
 	});
@@ -205,6 +219,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			compute_point_multiplier: values.is_official_hosted
 				? Number(values.compute_point_multiplier)
 				: 1,
+			max_concurrency: Number(values.max_concurrency),
 		});
 	};
 
@@ -230,6 +245,7 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 			compute_point_multiplier: String(
 				engine_info.compute_point_multiplier ?? 1,
 			),
+			max_concurrency: String(engine_info.max_concurrency ?? 3),
 		};
 
 		setEngineCategory(engine_info.category);
@@ -441,6 +457,36 @@ const EngineUpdate = ({ engineId }: { engineId: number }) => {
 											/>
 											<FormMessage />
 									</FormItem>
+									<FormField
+										control={form.control}
+										name='max_concurrency'
+										render={({ field }) => (
+											<FormItem>
+												<div className='grid grid-cols-12 gap-2'>
+													<FormLabel className='col-span-3'>
+														{t('setting_engine_page_engine_form_max_concurrency')}
+													</FormLabel>
+													<div className='col-span-9'>
+														<Input
+															disabled={!authorized}
+															{...field}
+															inputMode='numeric'
+															placeholder={t(
+																'setting_engine_page_engine_form_max_concurrency_placeholder',
+															)}
+															value={field.value ?? ''}
+														/>
+														<FormDescription className='mt-2 text-xs leading-5 text-muted-foreground'>
+															{t(
+																'setting_engine_page_engine_form_max_concurrency_tips',
+															)}
+														</FormDescription>
+													</div>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 									<FormField
 										name='is_public'
 										control={form.control}

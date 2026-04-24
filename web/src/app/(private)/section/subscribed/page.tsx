@@ -247,7 +247,11 @@ const SubscribedSectionPage = () => {
 			<div className='px-5 pb-5'>
 				{viewMode === 'grid' ? (
 					<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-						{sections &&
+						{isFetching && !data
+							? [...Array(12)].map((_, index) => (
+									<SectionCardSkeleton key={`initial-${index}`} layout={viewMode} />
+								))
+							: sections &&
 							sections.map((section, index) => {
 								return (
 									<div
@@ -260,6 +264,11 @@ const SubscribedSectionPage = () => {
 									</div>
 								);
 							})}
+						{isFetchingNextPage &&
+							data &&
+							[...Array(12)].map((_, index) => (
+								<SectionCardSkeleton key={`next-${index}`} layout={viewMode} />
+							))}
 					</div>
 				) : data ? (
 					<>
@@ -275,25 +284,12 @@ const SubscribedSectionPage = () => {
 					</>
 				) : null}
 				{isFetching && !data && (
-					viewMode === 'grid' ? (
-						<div className='grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-							{[...Array(12)].map((number, index) => {
-								return <SectionCardSkeleton key={index} layout={viewMode} />;
-							})}
-						</div>
-					) : (
+					viewMode === 'grid' ? null : (
 						<SectionListTable
 							sections={[]}
 							footer={<ListLoadingIndicator centered />}
 						/>
 					)
-				)}
-				{isFetchingNextPage && data && viewMode === 'grid' && (
-					<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-						{[...Array(12)].map((number, index) => {
-							return <SectionCardSkeleton key={index} layout={viewMode} />;
-						})}
-					</div>
 				)}
 			</div>
 		</>

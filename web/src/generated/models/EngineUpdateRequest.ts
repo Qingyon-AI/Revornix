@@ -87,6 +87,12 @@ export interface EngineUpdateRequest {
      * @memberof EngineUpdateRequest
      */
     compute_point_multiplier?: number | null;
+    /**
+     *
+     * @type {number}
+     * @memberof EngineUpdateRequest
+     */
+    max_concurrency?: number | null;
 }
 
 
@@ -119,6 +125,7 @@ export function EngineUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         'billing_mode': json['billing_mode'] == null ? undefined : EngineBillingModeFromJSON(json['billing_mode']),
         'billing_unit_price': json['billing_unit_price'] == null ? undefined : json['billing_unit_price'],
         'compute_point_multiplier': json['compute_point_multiplier'] == null ? undefined : json['compute_point_multiplier'],
+        'max_concurrency': json['max_concurrency'] == null ? undefined : json['max_concurrency'],
     };
 }
 
@@ -143,6 +150,6 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
         'billing_mode': EngineBillingModeToJSON(value['billing_mode']),
         'billing_unit_price': value['billing_unit_price'],
         'compute_point_multiplier': value['compute_point_multiplier'],
+        'max_concurrency': value['max_concurrency'],
     };
 }
-
