@@ -148,16 +148,17 @@ class AppleNotificationTool(NotificationToolProtocol):
             "apns-id": str(uuid.uuid4())
         }
 
-    def _fetch_apple_public_keys(
+    async def _fetch_apple_public_keys(
         self
     ):
         """
         从 Apple 的公开 URL 获取公钥。
         """
         try:
-            response = httpx.get(APPLE_PUBLIC_KEYS_URL, timeout=5)
-            response.raise_for_status()
-            return response.json()["keys"]
+            async with httpx.AsyncClient(timeout=5) as client:
+                response = await client.get(APPLE_PUBLIC_KEYS_URL)
+                response.raise_for_status()
+                return response.json()["keys"]
         except httpx.HTTPError as e:
             exception_logger.error(f"HTTP error occurred: {e}")
             raise Exception(f"Failed to fetch Apple public keys: {e}") from e
@@ -206,7 +207,7 @@ class AppleNotificationTool(NotificationToolProtocol):
             issuer="https://appleid.apple.com"
         )
 
-    def _decode_identity_token(
+    async def _decode_identity_token(
         self,
         identity_token: str
     ):
@@ -214,7 +215,7 @@ class AppleNotificationTool(NotificationToolProtocol):
         主逻辑：获取 Apple 公钥、解析 JWT 头部、验证 JWT。
         """
         # Step 1: 获取 Apple 公钥
-        keys = self._fetch_apple_public_keys()
+        keys = await self._fetch_apple_public_keys()
 
         # Step 2: 解码 JWT 头部以获取 kid
         try:

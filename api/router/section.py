@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import crud
@@ -18,7 +19,7 @@ from common.celery.app import (
     start_process_section_ppt,
     start_trigger_user_notification_event,
 )
-from common.dependencies import get_current_user, get_db, get_request_timezone
+from common.dependencies import get_async_db, get_current_user, get_request_timezone
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.section_schedule import build_day_section_trigger
 from common.timezone import (
@@ -164,13 +165,50 @@ def _schedule_section_process(
     )
 
 
+async def _schedule_section_process_async(
+    *,
+    db: AsyncSession,
+    db_section: models.section.Section,
+    cron_expr: str,
+    timezone_name: str,
+) -> None:
+    db_day_section = await crud.section.get_day_section_by_section_id_async(
+        db=db,
+        section_id=db_section.id,
+    )
+    if db_day_section is not None:
+        trigger = build_day_section_trigger(
+            section_date=db_day_section.date,
+            cron_expr=cron_expr,
+            timezone_name=timezone_name,
+        )
+        if trigger is None:
+            return
+    else:
+        trigger = CronTrigger.from_crontab(
+            cron_expr,
+            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+        )
+
+    scheduler.add_job(
+        func=start_process_section,
+        kwargs={
+            "section_id": db_section.id,
+            "user_id": db_section.creator_id,
+            "auto_podcast": db_section.auto_podcast
+        },
+        trigger=trigger,
+        id=_section_process_job_id(db_section.id),
+    )
+
+
 @section_router.post('/podcast/generate', response_model=schemas.common.NormalResponse)
 async def generate_podcast(
     generate_podcast_request: schemas.section.GenerateSectionPodcastRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=generate_podcast_request.section_id
     )
@@ -196,7 +234,7 @@ async def generate_podcast(
         user=user,
         engine_id=selected_engine_id,
     )
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
         db=db,
         section_id=generate_podcast_request.section_id
     )
@@ -206,7 +244,7 @@ async def generate_podcast(
     ]:
         raise schemas.error.CustomException('Section is still processing', code=409)
 
-    db_exist_podcast_task = crud.task.get_section_podcast_task_by_section_id(
+    db_exist_podcast_task = await crud.task.get_section_podcast_task_by_section_id_async(
         db=db,
         section_id=generate_podcast_request.section_id
     )
@@ -218,7 +256,7 @@ async def generate_podcast(
 
     now = datetime.now(timezone.utc)
     if db_exist_podcast_task is None:
-        db_exist_podcast_task = crud.task.create_section_podcast_task(
+        db_exist_podcast_task = await crud.task.create_section_podcast_task_async(
             db=db,
             user_id=user.id,
             section_id=generate_podcast_request.section_id,
@@ -236,7 +274,7 @@ async def generate_podcast(
         "engine_id": selected_engine_id,
     })
     db_exist_podcast_task.celery_task_id = task_result.id
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -244,9 +282,9 @@ async def generate_podcast(
 async def generate_ppt(
     generate_ppt_request: schemas.section.GenerateSectionPptRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=generate_ppt_request.section_id
     )
@@ -317,22 +355,22 @@ async def generate_ppt(
 
 
 @section_router.post('/podcast/cancel', response_model=schemas.common.NormalResponse)
-def cancel_podcast(
+async def cancel_podcast(
     cancel_request: schemas.section.CancelSectionTaskRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    db_section = await crud.section.get_section_by_section_id_async(db=db, section_id=cancel_request.section_id)
     if db_section is None:
         raise schemas.error.CustomException('Section not found', code=404)
     if db_section.creator_id != user.id:
         raise schemas.error.CustomException('Only the section creator can cancel a podcast task', code=403)
-    cancelled_task = crud.task.cancel_section_podcast_task(db=db, section_id=cancel_request.section_id)
+    cancelled_task = await crud.task.cancel_section_podcast_task_async(db=db, section_id=cancel_request.section_id)
     if cancelled_task is None:
         raise schemas.error.CustomException('No active podcast task to cancel', code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -340,9 +378,9 @@ def cancel_podcast(
 async def cancel_ppt(
     cancel_request: schemas.section.CancelSectionTaskRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    db_section = await crud.section.get_section_by_section_id_async(db=db, section_id=cancel_request.section_id)
     if db_section is None:
         raise schemas.error.CustomException('Section not found', code=404)
     if db_section.creator_id != user.id:
@@ -381,22 +419,22 @@ async def cancel_ppt(
 
 
 @section_router.post('/process/cancel', response_model=schemas.common.NormalResponse)
-def cancel_process(
+async def cancel_process(
     cancel_request: schemas.section.CancelSectionTaskRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    db_section = crud.section.get_section_by_section_id(db=db, section_id=cancel_request.section_id)
+    db_section = await crud.section.get_section_by_section_id_async(db=db, section_id=cancel_request.section_id)
     if db_section is None:
         raise schemas.error.CustomException('Section not found', code=404)
     if db_section.creator_id != user.id:
         raise schemas.error.CustomException('Only the section creator can cancel a process task', code=403)
-    cancelled_task = crud.task.cancel_section_process_task(db=db, section_id=cancel_request.section_id)
+    cancelled_task = await crud.task.cancel_section_process_task_async(db=db, section_id=cancel_request.section_id)
     if cancelled_task is None:
         raise schemas.error.CustomException('No active process task to cancel', code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -404,9 +442,9 @@ def cancel_process(
 async def trigger_section_process(
     trigger_process_request: schemas.section.TriggerSectionProcessRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=trigger_process_request.section_id
     )
@@ -448,7 +486,7 @@ async def trigger_section_process(
             engine_id=selected_podcast_engine_id,
         )
 
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
         db=db,
         section_id=trigger_process_request.section_id
     )
@@ -460,7 +498,7 @@ async def trigger_section_process(
 
     now = datetime.now(timezone.utc)
     if db_section_process_task is None:
-        crud.task.create_section_process_task(
+        db_section_process_task = await crud.task.create_section_process_task_async(
             db=db,
             user_id=user.id,
             section_id=trigger_process_request.section_id,
@@ -480,25 +518,25 @@ async def trigger_section_process(
         'podcast_engine_id': selected_podcast_engine_id,
     })
     db_section_process_task.celery_task_id = task_result.id
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @section_router.post('/document/retry', response_model=schemas.common.NormalResponse)
-def retry_section_document_integration(
+async def retry_section_document_integration(
     retry_request: schemas.section.RetrySectionDocumentRequest,
     user: models.user.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     now = datetime.now(timezone.utc)
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=retry_request.section_id
     )
     if db_section is None:
         raise schemas.error.CustomException('Section not found', code=404)
 
-    db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         section_id=retry_request.section_id,
         user_id=user.id
@@ -509,7 +547,7 @@ def retry_section_document_integration(
     ]:
         raise schemas.error.CustomException("You don't have permission to retry this section document", code=403)
 
-    db_section_document = crud.section.get_section_document_by_section_id_and_document_id(
+    db_section_document = await crud.section.get_section_document_by_section_id_and_document_id_async(
         db=db,
         section_id=retry_request.section_id,
         document_id=retry_request.document_id
@@ -521,7 +559,7 @@ def retry_section_document_integration(
     if db_section_document.status == SectionDocumentIntegration.SUPPLEMENTING:
         raise schemas.error.CustomException('Section document is already being integrated', code=409)
 
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
         db=db,
         section_id=retry_request.section_id
     )
@@ -531,14 +569,14 @@ def retry_section_document_integration(
     ]:
         raise schemas.error.CustomException('Section is already processing', code=409)
 
-    crud.section.update_section_document_by_section_id_and_document_id(
+    await crud.section.update_section_document_by_section_id_and_document_id_async(
         db=db,
         section_id=retry_request.section_id,
         document_id=retry_request.document_id,
         status=SectionDocumentIntegration.WAIT_TO
     )
     if db_section_process_task is None:
-        db_section_process_task = crud.task.create_section_process_task(
+        db_section_process_task = await crud.task.create_section_process_task_async(
             db=db,
             user_id=user.id,
             section_id=retry_request.section_id,
@@ -554,13 +592,13 @@ def retry_section_document_integration(
         'auto_podcast': db_section.auto_podcast,
     })
     db_section_process_task.celery_task_id = task_result.id
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 @section_router.post('/create', response_model=schemas.section.SectionCreateResponse)
 async def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
     request_timezone: str = Depends(get_request_timezone),
 ):
@@ -586,7 +624,7 @@ async def create_section(
             user=user,
             engine_id=user.default_image_generate_engine_id,
         )
-    db_section = crud.section.create_section(
+    db_section = await crud.section.create_section_async(
         db=db,
         creator_id=user.id,
         cover=section_create_request.cover,
@@ -596,12 +634,12 @@ async def create_section(
         auto_illustration=section_create_request.auto_illustration
     )
     if section_create_request.labels:
-        crud.section.create_section_labels(
+        await crud.section.create_section_labels_async(
             db=db,
             section_id=db_section.id,
             label_ids=section_create_request.labels
         )
-    crud.section.create_section_user(
+    await crud.section.create_section_user_async(
         db=db,
         section_id=db_section.id,
         user_id=user.id,
@@ -609,7 +647,7 @@ async def create_section(
         authority=UserSectionAuthority.FULL_ACCESS
     )
     if section_create_request.auto_publish:
-        crud.section.create_publish_section(
+        await crud.section.create_publish_section_async(
             db=db,
             section_id=db_section.id
         )
@@ -621,7 +659,7 @@ async def create_section(
 
     db_section_process_task = None
     if section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER:
-        db_section_process_task = crud.task.create_section_process_task(
+        db_section_process_task = await crud.task.create_section_process_task_async(
             db=db,
             user_id=user.id,
             section_id=db_section.id,
@@ -636,40 +674,40 @@ async def create_section(
             cron_expr=section_create_request.process_task_trigger_scheduler,
             timezone_name=request_timezone,
         )
-        crud.task.create_section_process_task_trigger_scheduler(
+        await crud.task.create_section_process_task_trigger_scheduler_async(
             db=db,
             section_process_task_id=db_section_process_task.id,
             cron_expr=stored_cron_expr
         )
-        db.commit()
+        await db.commit()
         if db_section_process_task.trigger_type == SectionProcessTriggerType.SCHEDULER:
             _remove_section_process_schedule(db_section.id)
-            _schedule_section_process(
+            await _schedule_section_process_async(
                 db=db,
                 db_section=db_section,
                 cron_expr=section_create_request.process_task_trigger_scheduler,
                 timezone_name=request_timezone,
             )
-    db.commit()
+    await db.commit()
     return schemas.section.SectionCreateResponse(id=db_section.id)
 
 @section_router.post("/update", response_model=schemas.common.NormalResponse)
 async def update_section(
     section_update_request: schemas.section.SectionUpdateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
     request_timezone: str = Depends(get_request_timezone),
 ):
     now = datetime.now(timezone.utc)
 
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=section_update_request.section_id
     )
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
 
-    section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=user.id,
         section_id=section_update_request.section_id
@@ -707,28 +745,30 @@ async def update_section(
     if section_update_request.cover is not None:
         db_section.cover = section_update_request.cover
     if section_update_request.labels is not None:
-        exist_section_labels = crud.section.get_section_labels_by_section_id(
+        exist_section_labels = await crud.section.get_section_labels_by_section_id_async(
             db=db,
             section_id=section_update_request.section_id
         )
         exist_section_label_ids = [label.id for label in exist_section_labels]
         new_section_label_ids = [label_id for label_id in section_update_request.labels if label_id not in exist_section_label_ids]
-        crud.section.create_section_labels(
-            db=db,
-            section_id=section_update_request.section_id,
-            label_ids=new_section_label_ids
-        )
+        if new_section_label_ids:
+            await crud.section.create_section_labels_async(
+                db=db,
+                section_id=section_update_request.section_id,
+                label_ids=new_section_label_ids
+            )
         labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
-        crud.section.delete_section_labels_by_label_ids(
-            db=db,
-            label_ids=labels_to_delete
-        )
+        if labels_to_delete:
+            await crud.section.delete_section_labels_by_label_ids_async(
+                db=db,
+                label_ids=labels_to_delete
+            )
     if section_update_request.auto_podcast is not None:
         db_section.auto_podcast = section_update_request.auto_podcast
     if section_update_request.auto_illustration is not None:
         db_section.auto_illustration = section_update_request.auto_illustration
 
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
         db=db,
         section_id=db_section.id
     )
@@ -741,7 +781,7 @@ async def update_section(
     )
     if next_trigger_type == SectionProcessTriggerType.SCHEDULER:
         if db_section_process_task is None:
-            db_section_process_task = crud.task.create_section_process_task(
+            db_section_process_task = await crud.task.create_section_process_task_async(
                 db=db,
                 user_id=user.id,
                 section_id=db_section.id,
@@ -755,7 +795,7 @@ async def update_section(
     ):
         db_section_process_task.trigger_type = SectionProcessTriggerType.UPDATED
 
-    db_section_process_task_trigger_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+    db_section_process_task_trigger_scheduler = await crud.task.get_section_process_trigger_scheduler_by_section_id_async(
         db=db,
         section_id=db_section.id
     )
@@ -767,7 +807,7 @@ async def update_section(
             timezone_name=request_timezone,
         )
         if db_section_process_task_trigger_scheduler is None:
-            db_section_process_task_trigger_scheduler = crud.task.create_section_process_task_trigger_scheduler(
+            db_section_process_task_trigger_scheduler = await crud.task.create_section_process_task_trigger_scheduler_async(
                 db=db,
                 section_process_task_id=db_section_process_task.id,
                 cron_expr=stored_cron_expr,
@@ -796,7 +836,7 @@ async def update_section(
             if scheduler_cron_expr is None:
                 raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
 
-            _schedule_section_process(
+            await _schedule_section_process_async(
                 db=db,
                 db_section=db_section,
                 cron_expr=scheduler_cron_expr,
@@ -804,16 +844,16 @@ async def update_section(
             )
 
     db_section.update_time = now
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
-def delete_section(
+async def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         section_id=section_delete_request.section_id,
         user_id=user.id
@@ -821,32 +861,32 @@ def delete_section(
     if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
         raise schemas.error.CustomException("You don't have permission to delete this section", code=403)
 
-    crud.section.delete_section_users_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    crud.section.delete_section_documents_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    crud.section.delete_section_labels_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    crud.section.delete_section_comments_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    crud.section.delete_section_by_section_id(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    db.commit()
-    db_users = crud.section.get_users_for_section_by_section_id(
+    db_users = await crud.section.get_users_for_section_by_section_id_async(
         db=db,
         section_id=section_delete_request.section_id,
         filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
     )
+    await crud.section.delete_section_users_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    await crud.section.delete_section_documents_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    await crud.section.delete_section_labels_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    await crud.section.delete_section_comments_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    await crud.section.delete_section_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    await db.commit()
     for db_user in db_users:
         if db_user.id != user.id:
             start_trigger_user_notification_event.delay(

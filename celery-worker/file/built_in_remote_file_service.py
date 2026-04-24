@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from common.dependencies import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
 from config.file_system import FILE_SYSTEM_PASSWORD, FILE_SYSTEM_SERVER_PUBLIC_URL, FILE_SYSTEM_USER_NAME
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.file import RemoteFileService
 from protocol.remote_file_service import RemoteFileServiceProtocol
 
@@ -43,6 +43,22 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
         self.s3_client: Any | None = None
         self.sts_upload_client: Any | None = None
         self.bucket: str | None = None
+
+    async def _ensure_bucket(self) -> str:
+        if self.bucket is not None:
+            return self.bucket
+        if self.user_id is None:
+            raise Exception("User ID is not specified for built-in file service")
+
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
+                db=db,
+                user_id=self.user_id
+            )
+            if db_user is None:
+                raise Exception("User not found")
+            self.bucket = db_user.uuid
+        return self.bucket
 
     def empty_bucket(self):
         """清空指定桶中的所有文件
@@ -149,21 +165,6 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                 max_pool_connections=FILE_SYSTEM_HTTP_MAX_POOL_CONNECTIONS,
             )
 
-        def _ensure_bucket():
-            if self.bucket is not None:
-                return self.bucket
-            if self.user_id is None:
-                raise Exception("User ID is not specified for built-in file service")
-            with session_scope() as db:
-                db_user = crud.user.get_user_by_id(
-                    db=db,
-                    user_id=self.user_id
-                )
-                if db_user is None:
-                    raise Exception("User not found")
-                self.bucket = db_user.uuid
-            return self.bucket
-
         def _init():
             deployed_by_official = check_deployed_by_official_in_fuc()
             try:
@@ -203,12 +204,12 @@ class BuiltInRemoteFileService(RemoteFileServiceProtocol):
                     verify=deployed_by_official
                 )
                 self.s3_client = s3
-                _ensure_bucket()
                 self.ensure_bucket_exists()
             except Exception as e:
                 exception_logger.error(f"Init User File System Error: {e}")
                 raise
 
+        await self._ensure_bucket()
         await asyncio.to_thread(_init)
 
     async def get_file_content_by_file_path(

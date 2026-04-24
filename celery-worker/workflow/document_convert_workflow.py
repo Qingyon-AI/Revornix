@@ -8,8 +8,8 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
-from common.document_guard import ensure_document_active
-from data.sql.base import session_scope
+from common.document_guard import ensure_document_active_async
+from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -33,7 +33,7 @@ class DocumentConvertState(TypedDict, total=False):
 WORKFLOW_NAME = "document_convert"
 
 
-def _get_document_convert_log_context(
+async def _get_document_convert_log_context(
     *,
     document_id: int,
     user_id: int,
@@ -42,9 +42,8 @@ def _get_document_convert_log_context(
         "document_id": document_id,
         "user_id": user_id,
     }
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -53,7 +52,7 @@ def _get_document_convert_log_context(
 
         context["category"] = db_document.category
 
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id,
         )
@@ -64,14 +63,14 @@ def _get_document_convert_log_context(
                 context["engine_id"] = db_user.default_website_document_parse_user_engine_id
 
         if db_document.category == DocumentCategory.FILE:
-            db_file_document = crud.document.get_file_document_by_document_id(
+            db_file_document = await crud.document.get_file_document_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
             if db_file_document is not None:
                 context["file_name"] = db_file_document.file_name
         elif db_document.category == DocumentCategory.WEBSITE:
-            db_website_document = crud.document.get_website_document_by_document_id(
+            db_website_document = await crud.document.get_website_document_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
@@ -79,8 +78,6 @@ def _get_document_convert_log_context(
                 context["website_url"] = db_website_document.url
 
         return context
-    finally:
-        db.close()
 
 
 async def _init_convert_task(
@@ -91,10 +88,9 @@ async def _init_convert_task(
     if document_id is None or user_id is None:
         raise Exception("Document convert workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
+    async with async_session_context() as db:
         # 1) 校验 document
-        db_document = crud.document.get_document_by_document_id(
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -107,7 +103,7 @@ async def _init_convert_task(
         state["category"] = db_document.category
 
         # 2) 校验 user
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -126,12 +122,12 @@ async def _init_convert_task(
             state["engine_id"] = db_user.default_website_document_parse_user_engine_id
 
         # 3) 获取/创建任务记录，置为 进行时
-        db_convert_task = crud.task.get_document_convert_task_by_document_id(
+        db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_convert_task is None:
-            db_convert_task = crud.task.create_document_convert_task(
+            db_convert_task = await crud.task.create_document_convert_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -141,9 +137,7 @@ async def _init_convert_task(
             if db_convert_task.status != DocumentMdConvertStatus.CONVERTING:
                 db_convert_task.status = DocumentMdConvertStatus.CONVERTING
                 db_convert_task.update_time = datetime.now(timezone.utc)
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -166,11 +160,10 @@ async def _convert_document_content(
     file_name: str | None = None
     website_url: str | None = None
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
         if category == DocumentCategory.FILE:
-            db_file_document = crud.document.get_file_document_by_document_id(
+            db_file_document = await crud.document.get_file_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -178,7 +171,7 @@ async def _convert_document_content(
                 raise Exception("The document you want to process do not have a the file info")
             file_name = db_file_document.file_name
         elif category == DocumentCategory.WEBSITE:
-            db_website_document = crud.document.get_website_document_by_document_id(
+            db_website_document = await crud.document.get_website_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -187,8 +180,6 @@ async def _convert_document_content(
             website_url = db_website_document.url
         else:
             raise Exception("Document category not supported")
-    finally:
-        db.close()
 
     engine = await EngineProxy.create_markdown_engine(
         user_id=user_id,
@@ -243,10 +234,9 @@ async def _convert_document_content(
         state["website_cover"] = cover
         state["website_keywords"] = web_info.keywords
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -256,15 +246,13 @@ async def _convert_document_content(
         db_document.description = description
         db_document.cover = cover
         if category == DocumentCategory.WEBSITE:
-            db_website_document = crud.document.get_website_document_by_document_id(
+            db_website_document = await crud.document.get_website_document_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
             if db_website_document is not None:
                 db_website_document.keywords = state.get("website_keywords")
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
 
     if content is None:
         if category == DocumentCategory.FILE:
@@ -273,11 +261,8 @@ async def _convert_document_content(
 
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
     await remote_file_service.upload_raw_content_to_path(
         file_path=md_file_name,
         content=content.encode("utf-8"),
@@ -299,10 +284,9 @@ async def _mark_convert_success(
     if document_id is None:
         raise Exception("Document convert workflow missing document_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_convert_task = crud.task.get_document_convert_task_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -314,7 +298,7 @@ async def _mark_convert_success(
         if category == DocumentCategory.WEBSITE:
             website_url = state.get("website_url")
             if website_url is not None:
-                crud.document.create_website_document_snapshot(
+                await crud.document.create_website_document_snapshot_async(
                     db=db,
                     document_id=document_id,
                     url=website_url,
@@ -323,9 +307,7 @@ async def _mark_convert_success(
                     cover=state.get("website_cover"),
                     md_file_name=md_file_name,
                 )
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -383,7 +365,7 @@ async def run_document_convert_workflow(
         )
     except Exception as e:
         try:
-            log_context = _get_document_convert_log_context(
+            log_context = await _get_document_convert_log_context(
                 document_id=document_id,
                 user_id=user_id,
             )
@@ -401,16 +383,13 @@ async def run_document_convert_workflow(
             ),
             exc_info=True,
         )
-        db = session_scope()
-        try:
-            db_convert_task = crud.task.get_document_convert_task_by_document_id(
+        async with async_session_context() as db:
+            db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_convert_task is not None:
                 db_convert_task.status = DocumentMdConvertStatus.FAILED
                 db_convert_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise

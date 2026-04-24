@@ -1,6 +1,6 @@
 import re
 from langfuse import propagate_attributes
-from langfuse.openai import OpenAI
+from langfuse.openai import AsyncOpenAI
 
 from common.usage_billing import persist_engine_usage_from_completion
 from base_implement.image_understand_engine_base import ImageUnderstandEngineBase
@@ -59,7 +59,7 @@ class KimiImageUnderstandEngine(ImageUnderstandEngineBase):
 
         return text
 
-    def understand_image(
+    async def understand_image(
         self,
         image: str,
     ) -> str | None:
@@ -91,11 +91,11 @@ class KimiImageUnderstandEngine(ImageUnderstandEngineBase):
             user_id=str(self.user_id),
             tags=[f'model:{model_name}']
         ):
-            llm_client = OpenAI(
+            llm_client = AsyncOpenAI(
                 base_url=base_url,
                 api_key=api_key
             )
-            response = llm_client.chat.completions.create(
+            response = await llm_client.chat.completions.create(
                 model=model_name,
                 messages=[
                     {
@@ -119,7 +119,7 @@ class KimiImageUnderstandEngine(ImageUnderstandEngineBase):
                     },
                 ]
             )
-            persist_engine_usage_from_completion(
+            await persist_engine_usage_from_completion(
                 user_id=self.user_id,
                 resource_uuid=self.resource_uuid or self.engine_uuid,
                 completion=response,

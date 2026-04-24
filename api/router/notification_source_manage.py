@@ -2,12 +2,12 @@ import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_async_db, get_current_user
 from common.encrypt import encrypt_notification_source_config
 from enums.notification import NotificationSourceProvided, UserNotificationSourceRole
 
@@ -84,12 +84,12 @@ def _build_notification_source_config_json(
 
 
 @notification_source_manage_router.post("/source/add", response_model=schemas.common.NormalResponse)
-def add_notification_source(
+async def add_notification_source(
     add_notification_source_request: schemas.notification.AddNotificationSourceRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_source_provided = crud.notification.get_notification_source_provided_by_id(
+    db_notification_source_provided = await crud.notification.get_notification_source_provided_by_id_async(
         db=db,
         id=add_notification_source_request.notification_source_provided_id
     )
@@ -105,36 +105,33 @@ def add_notification_source(
         require_config=True,
     )
 
-    db_notification_source = crud.notification.create_notification_source(
+    db_notification_source = await crud.notification.create_notification_source_async(
         db=db,
         notification_source_provided_id=add_notification_source_request.notification_source_provided_id,
         creator_id=user.id,
         title=add_notification_source_request.title,
         description=add_notification_source_request.description,
-        is_public=add_notification_source_request.is_public
+        is_public=add_notification_source_request.is_public,
     )
-
     if config_json is not None:
         db_notification_source.config_json = encrypt_notification_source_config(config_json)
-
-    crud.notification.create_user_notification_source(
+    await crud.notification.create_user_notification_source_async(
         db=db,
         user_id=user.id,
         notification_source_id=db_notification_source.id,
-        role=UserNotificationSourceRole.CREATOR
+        role=UserNotificationSourceRole.CREATOR,
     )
-    db.commit()
-
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @notification_source_manage_router.post("/source/update", response_model=schemas.common.NormalResponse)
-def update_notification_source(
+async def update_notification_source(
     update_notification_source_request: schemas.notification.UpdateNotificationSourceRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_source = crud.notification.get_notification_source_by_id(
+    db_notification_source = await crud.notification.get_notification_source_by_id_async(
         db=db,
         notification_source_id=update_notification_source_request.notification_source_id
     )
@@ -162,18 +159,17 @@ def update_notification_source(
 
     if config_json is not None:
         db_notification_source.config_json = encrypt_notification_source_config(config_json)
-
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @notification_source_manage_router.post('/source/provided', response_model=schemas.notification.NotificationSourcesProvidedResponse)
-def get_provided_notification_source(
-    db: Session = Depends(get_db),
+async def get_provided_notification_source(
+    db: AsyncSession = Depends(get_async_db),
     _user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_sources_provided = crud.notification.get_all_provided_notification_sources(
-        db=db
+    db_notification_sources_provided = await crud.notification.get_all_provided_notification_sources_async(
+        db=db,
     )
     notification_sources_provided = [
         schemas.notification.NotificationSourceProvided.model_validate(db_notification_source) for db_notification_source in db_notification_sources_provided
@@ -182,47 +178,44 @@ def get_provided_notification_source(
 
 
 @notification_source_manage_router.post("/source/fork", response_model=schemas.common.NormalResponse)
-def fork_notification_source(
+async def fork_notification_source(
     notification_source_fork_request: schemas.notification.NotificationSourceForkRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
-
-    db_user_notification_source = crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
+    db_user_notification_source = await crud.notification.get_user_notification_source_by_user_id_and_notification_source_id_async(
         db=db,
         user_id=current_user.id,
         notification_source_id=notification_source_fork_request.notification_source_id,
-        filter_role=UserNotificationSourceRole.FORKER
+        filter_role=UserNotificationSourceRole.FORKER,
     )
-
     if db_user_notification_source is not None:
         if notification_source_fork_request.status:
             raise schemas.error.CustomException(code=403, message="Notification source is already forked")
         db_user_notification_source.delete_at = now
-        db.commit()
+        await db.commit()
         return schemas.common.SuccessResponse()
 
     if notification_source_fork_request.status:
-        crud.notification.create_user_notification_source(
+        await crud.notification.create_user_notification_source_async(
             db=db,
             user_id=current_user.id,
             notification_source_id=notification_source_fork_request.notification_source_id,
             role=UserNotificationSourceRole.FORKER,
         )
-    else:
-        raise schemas.error.CustomException(code=403, message="Notification source is not forked")
+        await db.commit()
+        return schemas.common.SuccessResponse()
 
-    db.commit()
-    return schemas.common.SuccessResponse()
+    raise schemas.error.CustomException(code=403, message="Notification source is not forked")
 
 
 @notification_source_manage_router.post('/source/usable', response_model=schemas.notification.NotificationSourcesUsableResponse)
 async def get_usable_notification_source(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_notification_sources = crud.notification.get_usable_notification_sources_for_user(
+    db_notification_sources = await crud.notification.get_usable_notification_sources_for_user_async(
         db=db,
         user_id=user.id
     )
@@ -233,32 +226,32 @@ async def get_usable_notification_source(
 
 
 @notification_source_manage_router.post("/source/delete", response_model=schemas.common.NormalResponse)
-def delete_notification_source(
+async def delete_notification_source(
     delete_notification_source_request: schemas.notification.DeleteNotificationSourceRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
     for notification_source_id in delete_notification_source_request.notification_source_ids:
-        db_notification_source = crud.notification.get_notification_source_by_id(
+        db_notification_source = await crud.notification.get_notification_source_by_id_async(
             db=db,
-            notification_source_id=notification_source_id
+            notification_source_id=notification_source_id,
         )
         if db_notification_source is None:
             raise schemas.error.CustomException(message="Notification source not found", code=404)
         if db_notification_source.creator_id != user.id:
             raise schemas.error.CustomException(message="You don't have permission to delete this notification source", code=403)
         db_notification_source.delete_at = now
-        db_user_notification_source = crud.notification.get_user_notification_source_by_user_id_and_notification_source_id(
+        db_user_notification_source = await crud.notification.get_user_notification_source_by_user_id_and_notification_source_id_async(
             db=db,
             user_id=user.id,
             notification_source_id=notification_source_id,
-            filter_role=UserNotificationSourceRole.CREATOR
+            filter_role=UserNotificationSourceRole.CREATOR,
         )
         if db_user_notification_source is None:
             raise schemas.error.CustomException(message="User notification source record not found", code=404)
         if db_user_notification_source.user_id != user.id:
             raise schemas.error.CustomException(message="You don't have permission to delete this notification source", code=403)
         db_user_notification_source.delete_at = now
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()

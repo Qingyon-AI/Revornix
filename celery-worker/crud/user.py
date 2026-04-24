@@ -1,4 +1,6 @@
 import models
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from enums.user import UserRole
 
@@ -19,6 +21,28 @@ def get_user_by_id(
     query = query.filter(models.user.User.id == user_id,
                          models.user.User.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_user_by_id_async(
+    db: AsyncSession,
+    user_id: int,
+):
+    stmt = select(models.user.User).where(
+        models.user.User.id == user_id,
+        models.user.User.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_user_by_uuid_async(
+    db: AsyncSession,
+    uuid: str,
+):
+    stmt = select(models.user.User).where(
+        models.user.User.uuid == uuid,
+        models.user.User.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 
 def get_root_user(

@@ -8,12 +8,13 @@ from uuid import uuid4
 
 import crud
 import httpx
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
 from common.jwt_utils import create_token
 from config.base import UNION_PAY_API_PREFIX
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
+from enums.billing import EngineBillingMode
 from enums.engine_enums import Engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _normalize_utc(dt: datetime) -> datetime:
@@ -146,6 +147,40 @@ def calculate_billable_points(usage_details: Mapping[str, int]) -> int:
     return max(sum(max(int(value), 0) for value in usage_details.values()), 0)
 
 
+def calculate_engine_billable_units(
+    *,
+    usage_details: Mapping[str, int],
+    billing_mode: int | EngineBillingMode | None,
+) -> int:
+    mode = EngineBillingMode(int(billing_mode or EngineBillingMode.TOKEN))
+    if mode == EngineBillingMode.TOKEN:
+        return calculate_billable_points(usage_details)
+
+    aliases: dict[EngineBillingMode, tuple[str, ...]] = {
+        EngineBillingMode.REQUEST: ("request_count", "requests", "total_requests"),
+        EngineBillingMode.FILE: ("file_count", "files", "total_files"),
+        EngineBillingMode.PAGE: ("page_count", "pages", "total_pages"),
+        EngineBillingMode.CHARACTER: (
+            "character_count",
+            "characters",
+            "input_characters",
+            "output_characters",
+        ),
+        EngineBillingMode.SECOND: (
+            "duration_seconds",
+            "audio_seconds",
+            "seconds",
+            "total_seconds",
+        ),
+        EngineBillingMode.IMAGE: ("image_count", "images", "total_images"),
+    }
+    keys = aliases.get(mode, ())
+    return max(
+        sum(max(int(usage_details.get(key, 0)), 0) for key in keys),
+        0,
+    )
+
+
 def extract_usage_details_from_completion(completion: Any) -> dict[str, int] | None:
     usage_obj: Any = None
     if isinstance(completion, Mapping):
@@ -197,7 +232,7 @@ def extract_usage_details_from_snapshot(snapshot: Mapping[str, Any] | None) -> d
     return normalized or None
 
 
-def persist_model_usage(
+async def persist_model_usage(
     *,
     user_id: int,
     model_id: int,
@@ -214,13 +249,13 @@ def persist_model_usage(
 
     key = idempotency_key or f"{source}:{uuid4().hex}"
     try:
-        with session_scope() as db:
-            charged_points = _resolve_model_charge_points(
+        async with async_session_context() as db:
+            charged_points = await _resolve_model_charge_points(
                 db=db,
                 model_id=model_id,
                 raw_points=calculate_billable_points(normalized),
             )
-            billable_points = record_model_usage(
+            billable_points = await record_model_usage(
                 db=db,
                 user_id=user_id,
                 model_id=model_id,
@@ -231,25 +266,31 @@ def persist_model_usage(
                 at=at,
                 cycle_anchor_at=cycle_anchor_at,
             )
-            _consume_charged_points(
+            await _consume_charged_points(
                 user_id=user_id,
                 charged_points=charged_points,
                 reason="Official LLM usage",
                 source="llm-usage",
                 idempotency_key=f"compute:{key}",
             )
-            db.commit()
+            await db.commit()
             return billable_points
     except Exception as e:
         exception_logger.error(
-            f"Failed to persist local model usage. user_id={user_id}, model_id={model_id}, source={source}, error={e}"
+            format_log_message(
+                "model_usage_persist_failed",
+                user_id=user_id,
+                model_id=model_id,
+                source=source,
+                error=e,
+            )
         )
         if strict:
             raise
         return 0
 
 
-def persist_model_usage_from_snapshot(
+async def persist_model_usage_from_snapshot(
     *,
     user_id: int,
     model_id: int,
@@ -261,7 +302,7 @@ def persist_model_usage_from_snapshot(
     cycle_anchor_at: datetime | None = None,
 ) -> int:
     usage_details = extract_usage_details_from_snapshot(snapshot)
-    return persist_model_usage(
+    return await persist_model_usage(
         user_id=user_id,
         model_id=model_id,
         usage_details=usage_details,
@@ -273,7 +314,7 @@ def persist_model_usage_from_snapshot(
     )
 
 
-def persist_model_usage_from_completion(
+async def persist_model_usage_from_completion(
     *,
     user_id: int,
     model_id: int,
@@ -285,7 +326,7 @@ def persist_model_usage_from_completion(
     cycle_anchor_at: datetime | None = None,
 ) -> int:
     usage_details = extract_usage_details_from_completion(completion)
-    return persist_model_usage(
+    return await persist_model_usage(
         user_id=user_id,
         model_id=model_id,
         usage_details=usage_details,
@@ -297,7 +338,7 @@ def persist_model_usage_from_completion(
     )
 
 
-def persist_engine_usage(
+async def persist_engine_usage(
     *,
     user_id: int,
     resource_uuid: str,
@@ -314,13 +355,18 @@ def persist_engine_usage(
 
     key = idempotency_key or f"{source}:{uuid4().hex}"
     try:
-        with session_scope() as db:
-            charged_points = _resolve_engine_charge_points(
+        async with async_session_context() as db:
+            billable_units = await _resolve_engine_billable_units(
                 db=db,
                 resource_uuid=resource_uuid,
-                raw_points=calculate_billable_points(normalized),
+                usage_details=normalized,
             )
-            billable_points = record_usage(
+            charged_points = await _resolve_engine_charge_points(
+                db=db,
+                resource_uuid=resource_uuid,
+                billable_units=billable_units,
+            )
+            billable_points = await record_usage(
                 db=db,
                 user_id=user_id,
                 resource_uuid=resource_uuid,
@@ -332,25 +378,31 @@ def persist_engine_usage(
                 at=at,
                 cycle_anchor_at=cycle_anchor_at,
             )
-            _consume_charged_points(
+            await _consume_charged_points(
                 user_id=user_id,
                 charged_points=charged_points,
                 reason="Official engine usage",
                 source="engine-usage",
                 idempotency_key=f"compute:{key}",
             )
-            db.commit()
+            await db.commit()
             return billable_points
     except Exception as e:
         exception_logger.error(
-            f"Failed to persist engine usage. user_id={user_id}, engine={resource_uuid}, source={source}, error={e}"
+            format_log_message(
+                "engine_usage_persist_failed",
+                user_id=user_id,
+                engine_uuid=resource_uuid,
+                source=source,
+                error=e,
+            )
         )
         if strict:
             raise
         return 0
 
 
-def persist_engine_usage_from_completion(
+async def persist_engine_usage_from_completion(
     *,
     user_id: int,
     resource_uuid: str,
@@ -364,7 +416,7 @@ def persist_engine_usage_from_completion(
     usage_details = extract_usage_details_from_completion(completion)
     if usage_details is None:
         return 0
-    return persist_engine_usage(
+    return await persist_engine_usage(
         user_id=user_id,
         resource_uuid=resource_uuid,
         usage_details=usage_details,
@@ -399,8 +451,8 @@ def _serialize_usage(usage: Mapping[str, int]) -> str:
     return json.dumps(dict(usage), ensure_ascii=False, sort_keys=True)
 
 
-def record_usage(
-    db: Session,
+async def record_usage(
+    db: AsyncSession,
     *,
     user_id: int,
     resource_uuid: str,
@@ -421,14 +473,14 @@ def record_usage(
     cycle_month = get_cycle_month(now, cycle_anchor_at=cycle_anchor_at)
 
     if idempotency_key:
-        existing = crud.usage.get_usage_ledger_by_idempotency_key(
+        existing = await crud.usage.get_usage_ledger_by_idempotency_key_async(
             db=db,
             idempotency_key=idempotency_key,
         )
         if existing is not None:
             return int(existing.billable_points)
 
-    crud.usage.create_usage_ledger(
+    await crud.usage.create_usage_ledger_async(
         db=db,
         user_id=user_id,
         resource_uuid=resource_uuid,
@@ -441,14 +493,14 @@ def record_usage(
         create_time=now,
     )
 
-    monthly = crud.usage.get_monthly_usage_summary(
+    monthly = await crud.usage.get_monthly_usage_summary_async(
         db=db,
         user_id=user_id,
         resource_uuid=resource_uuid,
         cycle_month=cycle_month,
     )
     if monthly is None:
-        crud.usage.create_monthly_usage_summary(
+        await crud.usage.create_monthly_usage_summary_async(
             db=db,
             user_id=user_id,
             resource_uuid=resource_uuid,
@@ -464,12 +516,12 @@ def record_usage(
         monthly.used_points = int(monthly.used_points) + billable_points
         monthly.update_time = now
 
-    db.flush()
+    await db.flush()
     return billable_points
 
 
-def record_model_usage(
-    db: Session,
+async def record_model_usage(
+    db: AsyncSession,
     *,
     user_id: int,
     model_id: int,
@@ -480,10 +532,10 @@ def record_model_usage(
     at: datetime | None = None,
     cycle_anchor_at: datetime | None = None,
 ) -> int:
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_model = await crud.model.get_ai_model_by_id_async(db=db, model_id=model_id)
     if db_model is None:
         return 0
-    return record_usage(
+    return await record_usage(
         db=db,
         user_id=user_id,
         resource_uuid=db_model.uuid,
@@ -538,41 +590,58 @@ def get_monthly_model_used_points(
     )
 
 
-def _resolve_model_charge_points(
+async def _resolve_model_charge_points(
     *,
-    db: Session,
+    db: AsyncSession,
     model_id: int,
     raw_points: int,
 ) -> int:
     if raw_points <= 0:
         return 0
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+    db_model = await crud.model.get_ai_model_by_id_async(db=db, model_id=model_id)
     if db_model is None or not bool(db_model.is_official_hosted):
         return 0
-    return _apply_point_multiplier(
-        raw_points=raw_points,
+    return _apply_billing_policy(
+        base_units=raw_points,
+        unit_price=1.0,
         multiplier=db_model.compute_point_multiplier,
     )
 
 
-def _resolve_engine_charge_points(
+async def _resolve_engine_billable_units(
     *,
-    db: Session,
+    db: AsyncSession,
     resource_uuid: str,
-    raw_points: int,
+    usage_details: Mapping[str, int],
 ) -> int:
-    if raw_points <= 0:
+    db_engine = await crud.engine.get_engine_by_uuid_async(db=db, engine_uuid=resource_uuid)
+    if db_engine is None:
         return 0
-    db_engine = crud.engine.get_engine_by_uuid(db=db, engine_uuid=resource_uuid)
+    return calculate_engine_billable_units(
+        usage_details=usage_details,
+        billing_mode=db_engine.billing_mode,
+    )
+
+
+async def _resolve_engine_charge_points(
+    *,
+    db: AsyncSession,
+    resource_uuid: str,
+    billable_units: int,
+) -> int:
+    if billable_units <= 0:
+        return 0
+    db_engine = await crud.engine.get_engine_by_uuid_async(db=db, engine_uuid=resource_uuid)
     if db_engine is None or not bool(db_engine.is_official_hosted):
         return 0
-    return _apply_point_multiplier(
-        raw_points=raw_points,
+    return _apply_billing_policy(
+        base_units=billable_units,
+        unit_price=db_engine.billing_unit_price,
         multiplier=db_engine.compute_point_multiplier,
     )
 
 
-def _consume_charged_points(
+async def _consume_charged_points(
     *,
     user_id: int,
     charged_points: int,
@@ -582,10 +651,10 @@ def _consume_charged_points(
 ) -> None:
     if charged_points <= 0:
         return
-    authorization = _build_authorization(user_id)
+    authorization = await _build_authorization(user_id)
     if authorization is None:
         raise RuntimeError("Failed to build authorization for compute point consumption")
-    _consume_points(
+    await _consume_points(
         authorization=authorization,
         billable_points=charged_points,
         reason=reason,
@@ -594,24 +663,35 @@ def _consume_charged_points(
     )
 
 
-def _apply_point_multiplier(*, raw_points: int, multiplier: float | None) -> int:
-    points = max(int(raw_points), 0)
+def _apply_billing_policy(
+    *,
+    base_units: int,
+    unit_price: float | None,
+    multiplier: float | None,
+) -> int:
+    points = max(int(base_units), 0)
     if points <= 0:
         return 0
+    effective_unit_price = float(unit_price or 1.0)
     effective_multiplier = float(multiplier or 1.0)
-    if effective_multiplier <= 1:
+    effective_rate = effective_unit_price * effective_multiplier
+    if effective_rate <= 1:
         return points
-    return max(int(round(points * effective_multiplier)), 1)
+    return max(int(round(points * effective_rate)), 1)
 
 
-def get_minimum_required_points(*, multiplier: float | None) -> int:
-    effective_multiplier = float(multiplier or 1.0)
-    if effective_multiplier <= 1:
+def get_minimum_required_points(
+    *,
+    multiplier: float | None,
+    unit_price: float | None = None,
+) -> int:
+    effective_rate = float(unit_price or 1.0) * float(multiplier or 1.0)
+    if effective_rate <= 1:
         return 1
-    return max(int(round(effective_multiplier)), 1)
+    return max(int(round(effective_rate)), 1)
 
 
-def _consume_points(
+async def _consume_points(
     *,
     authorization: str,
     billable_points: int,
@@ -622,8 +702,8 @@ def _consume_points(
     if billable_points <= 0:
         return
     try:
-        with httpx.Client(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-            response = client.post(
+        async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+            response = await client.post(
                 f"{UNION_PAY_API_PREFIX}/user/compute/consume",
                 headers={"Authorization": authorization},
                 json={
@@ -635,38 +715,27 @@ def _consume_points(
             )
             if not response.is_success:
                 raise RuntimeError(
-                    "Compute point consume rejected. "
-                    f"idempotency_key={idempotency_key}, "
-                    f"status_code={response.status_code}, "
-                    f"response={response.text[:500]}"
+                    format_log_message(
+                        "compute_consume_rejected",
+                        idempotency_key=idempotency_key,
+                        status_code=response.status_code,
+                        response_text=response.text[:500],
+                    )
                 )
     except Exception as e:
         raise RuntimeError(
-            f"Failed to consume compute points. idempotency_key={idempotency_key}, error={e}"
+            format_log_message(
+                "compute_consume_failed",
+                idempotency_key=idempotency_key,
+                error=e,
+            )
         ) from e
 
 
-def _build_authorization(user_id: int) -> str | None:
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+async def _build_authorization(user_id: int) -> str | None:
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
         if db_user is None:
             return None
         access_token, _ = create_token(user=db_user)
         return f"Bearer {access_token}"
-
-
-def _fetch_pay_user_info(authorization: str) -> dict[str, Any] | None:
-    try:
-        with httpx.Client(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-            response = client.post(
-                f"{UNION_PAY_API_PREFIX}/user/info",
-                headers={"Authorization": authorization},
-            )
-            if not response.is_success:
-                return None
-            payload = response.json()
-            if isinstance(payload, dict):
-                return payload
-    except Exception as e:
-        exception_logger.warning(f"Failed to fetch pay user info: {e}")
-    return None

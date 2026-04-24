@@ -3,7 +3,7 @@ from html import escape
 from typing import cast
 
 import crud
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from notification.template.platform_message_builder import build_multi_platform_message
 from protocol.notification_template import NotificationTemplate
 from proxy.file_system_proxy import FileSystemProxy
@@ -33,8 +33,8 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             raise Exception("params is not valid")
 
         section_md_file_name: str | None = None
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=receiver_id
             )
@@ -43,7 +43,7 @@ class DailySummaryNotificationTemplate(NotificationTemplate):
             if db_user.default_user_file_system is None:
                 raise Exception("The user who is about to send notification havn't set default user file system")
 
-            db_section = crud.section.get_section_by_user_and_date(
+            db_section = await crud.section.get_section_by_user_and_date_async(
                 db=db,
                 user_id=receiver_id,
                 date=date

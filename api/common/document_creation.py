@@ -2,7 +2,7 @@ from datetime import date as date_type
 from datetime import datetime, timezone
 
 from celery import chain, group
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
@@ -63,9 +63,9 @@ def _schedule_section_process_for_today_section(
     )
 
 
-def _ensure_today_section_defaults(
+async def _ensure_today_section_defaults(
     *,
-    db: Session,
+    db: AsyncSession,
     db_section: models.section.Section,
     user_id: int,
     timezone_name: str,
@@ -80,12 +80,12 @@ def _ensure_today_section_defaults(
         db_section.auto_illustration = default_auto_illustration
         changed = True
 
-    db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
         db=db,
         section_id=db_section.id,
     )
     if db_section_process_task is None:
-        db_section_process_task = crud.task.create_section_process_task(
+        db_section_process_task = await crud.task.create_section_process_task_async(
             db=db,
             user_id=user_id,
             section_id=db_section.id,
@@ -96,7 +96,7 @@ def _ensure_today_section_defaults(
         db_section_process_task.trigger_type = SectionProcessTriggerType.SCHEDULER
         changed = True
 
-    db_section_process_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
+    db_section_process_scheduler = await crud.task.get_section_process_trigger_scheduler_by_section_id_async(
         db=db,
         section_id=db_section.id,
     )
@@ -105,7 +105,7 @@ def _ensure_today_section_defaults(
         timezone_name=timezone_name,
     )
     if db_section_process_scheduler is None:
-        crud.task.create_section_process_task_trigger_scheduler(
+        await crud.task.create_section_process_task_trigger_scheduler_async(
             db=db,
             section_process_task_id=db_section_process_task.id,
             cron_expr=stored_cron_expr,
@@ -120,7 +120,7 @@ def _ensure_today_section_defaults(
 
 async def ensure_document_creation_requirements(
     *,
-    db: Session,
+    db: AsyncSession,
     user: models.user.User,
     document_create_request: schemas.document.BaseDocumentCreateRequest,
 ) -> None:
@@ -186,41 +186,41 @@ async def ensure_document_creation_requirements(
         )
 
 
-def _sync_document_labels(
+async def _sync_document_labels(
     *,
-    db: Session,
+    db: AsyncSession,
     document_id: int,
     label_ids: list[int],
 ) -> None:
     if not label_ids:
         return
-    existing_document_labels = crud.document.get_document_labels_by_document_id(
+    existing_document_labels = await crud.document.get_document_labels_by_document_id_async(
         db=db,
         document_id=document_id,
     )
     existing_label_ids = {item.label_id for item in existing_document_labels}
     new_label_ids = [label_id for label_id in label_ids if label_id not in existing_label_ids]
     if new_label_ids:
-        crud.document.create_document_labels(
+        await crud.document.create_document_labels_async(
             db=db,
             document_id=document_id,
             label_ids=new_label_ids,
         )
 
 
-def _ensure_document_process_task(
+async def _ensure_document_process_task(
     *,
-    db: Session,
+    db: AsyncSession,
     user_id: int,
     document_id: int,
 ) -> None:
     now = datetime.now(timezone.utc)
-    db_process_task = crud.task.get_document_process_task_by_document_id(
+    db_process_task = await crud.task.get_document_process_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
     if db_process_task is None:
-        crud.task.create_document_process_task(
+        await crud.task.create_document_process_task_async(
             db=db,
             user_id=user_id,
             document_id=document_id,
@@ -230,20 +230,20 @@ def _ensure_document_process_task(
     db_process_task.update_time = now
 
 
-def _queue_document_background_processing(
+async def _queue_document_background_processing(
     *,
-    db: Session,
+    db: AsyncSession,
     db_document: models.document.Document,
     user: models.user.User,
     document_create_request: schemas.document.DocumentCreateRequest,
 ) -> None:
-    db_sections = crud.section.get_sections_by_document_id(
+    db_sections = await crud.section.get_sections_by_document_id_async(
         db=db,
         document_id=db_document.id,
     )
     db_sections_to_process: list[models.section.Section] = []
     for db_section in db_sections:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
@@ -282,7 +282,7 @@ def _queue_document_background_processing(
 
 async def create_document_for_user(
     *,
-    db: Session,
+    db: AsyncSession,
     user: models.user.User,
     document_create_request: schemas.document.DocumentCreateRequest,
     summary_timezone: str | None = None,
@@ -326,7 +326,7 @@ async def create_document_for_user(
         if document_create_request.url is None:
             raise CustomException("URL is required for website documents", code=400)
         normalized_url = document_create_request.url.strip()
-        existing_website_document = crud.document.get_website_document_by_user_id_and_url(
+        existing_website_document = await crud.document.get_website_document_by_user_id_and_url_async(
             db=db,
             user_id=user.id,
             url=normalized_url,
@@ -334,7 +334,7 @@ async def create_document_for_user(
         if existing_website_document is not None:
             db_document = existing_website_document
         else:
-            db_document = crud.document.create_base_document(
+            db_document = await crud.document.create_base_document_async(
                 db=db,
                 creator_id=user.id,
                 title="Website Analysing...",
@@ -342,7 +342,7 @@ async def create_document_for_user(
                 category=document_create_request.category,
                 from_plat=document_create_request.from_plat,
             )
-            crud.document.create_website_document(
+            await crud.document.create_website_document_async(
                 db=db,
                 document_id=db_document.id,
                 url=normalized_url,
@@ -350,7 +350,7 @@ async def create_document_for_user(
     elif document_create_request.category == DocumentCategory.FILE:
         if document_create_request.file_name is None:
             raise CustomException("File name is required for file documents", code=400)
-        db_document = crud.document.create_base_document(
+        db_document = await crud.document.create_base_document_async(
             db=db,
             creator_id=user.id,
             category=document_create_request.category,
@@ -358,7 +358,7 @@ async def create_document_for_user(
             title="File document analysing...",
             description="File document analysing...",
         )
-        crud.document.create_file_document(
+        await crud.document.create_file_document_async(
             db=db,
             document_id=db_document.id,
             file_name=document_create_request.file_name,
@@ -366,7 +366,7 @@ async def create_document_for_user(
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         if document_create_request.content is None:
             raise CustomException("Content is required for quick notes", code=400)
-        db_document = crud.document.create_base_document(
+        db_document = await crud.document.create_base_document_async(
             db=db,
             creator_id=user.id,
             category=document_create_request.category,
@@ -374,7 +374,7 @@ async def create_document_for_user(
             title=f"Quick Note saved at {now}",
             description=f"Quick Note saved at {now}",
         )
-        crud.document.create_quick_note_document(
+        await crud.document.create_quick_note_document_async(
             db=db,
             document_id=db_document.id,
             content=document_create_request.content,
@@ -382,7 +382,7 @@ async def create_document_for_user(
     elif document_create_request.category == DocumentCategory.AUDIO:
         if document_create_request.file_name is None:
             raise CustomException("File name is required for audio documents", code=400)
-        db_document = crud.document.create_base_document(
+        db_document = await crud.document.create_base_document_async(
             db=db,
             creator_id=user.id,
             category=document_create_request.category,
@@ -390,7 +390,7 @@ async def create_document_for_user(
             title=f"Audio saved at {now}",
             description=f"Audio saved at {now}",
         )
-        crud.document.create_audio_document(
+        await crud.document.create_audio_document_async(
             db=db,
             document_id=db_document.id,
             audio_file_name=document_create_request.file_name,
@@ -398,36 +398,36 @@ async def create_document_for_user(
     else:
         raise CustomException("Unsupported document category", code=400)
 
-    _sync_document_labels(
+    await _sync_document_labels(
         db=db,
         document_id=db_document.id,
         label_ids=document_create_request.labels,
     )
 
-    if crud.document.get_user_document_by_user_id_and_document_id(
+    if await crud.document.get_user_document_by_user_id_and_document_id_async(
         db=db,
         user_id=user.id,
         document_id=db_document.id,
     ) is None:
-        crud.document.create_user_document(
+        await crud.document.create_user_document_async(
             db=db,
             user_id=user.id,
             document_id=db_document.id,
             authority=UserDocumentAuthority.OWNER,
         )
-    _ensure_document_process_task(
+    await _ensure_document_process_task(
         db=db,
         user_id=user.id,
         document_id=db_document.id,
     )
 
-    db_today_section = crud.section.get_section_by_user_and_date(
+    db_today_section = await crud.section.get_section_by_user_and_date_async(
         db=db,
         user_id=user.id,
         date=summary_date,
     )
     if db_today_section is None:
-        db_today_section = crud.section.create_section(
+        db_today_section = await crud.section.create_section_async(
             db=db,
             creator_id=user.id,
             title=f"{summary_date.isoformat()} Summary",
@@ -435,25 +435,25 @@ async def create_document_for_user(
             auto_podcast=today_section_auto_podcast,
             auto_illustration=today_section_auto_illustration,
         )
-        crud.section.create_section_user(
+        await crud.section.create_section_user_async(
             db=db,
             section_id=db_today_section.id,
             user_id=user.id,
             role=UserSectionRole.CREATOR,
             authority=UserSectionAuthority.FULL_ACCESS,
         )
-        crud.section.create_date_section(
+        await crud.section.create_date_section_async(
             db=db,
             section_id=db_today_section.id,
             date=summary_date,
         )
-        db_today_section_process_task = crud.task.create_section_process_task(
+        db_today_section_process_task = await crud.task.create_section_process_task_async(
             db=db,
             user_id=user.id,
             section_id=db_today_section.id,
             trigger_type=SectionProcessTriggerType.SCHEDULER,
         )
-        crud.task.create_section_process_task_trigger_scheduler(
+        await crud.task.create_section_process_task_trigger_scheduler_async(
             db=db,
             section_process_task_id=db_today_section_process_task.id,
             cron_expr=encode_cron_expr_with_timezone(
@@ -462,7 +462,7 @@ async def create_document_for_user(
             ),
         )
     else:
-        _ensure_today_section_defaults(
+        await _ensure_today_section_defaults(
             db=db,
             db_section=db_today_section,
             user_id=user.id,
@@ -473,7 +473,7 @@ async def create_document_for_user(
 
     existing_section_ids = [
         section.id
-        for section in crud.section.get_sections_by_document_id(
+        for section in await crud.section.get_sections_by_document_id_async(
             db=db,
             document_id=db_document.id,
         )
@@ -488,21 +488,21 @@ async def create_document_for_user(
         )
     )
     for section_id in section_ids:
-        crud.section.create_or_update_section_document(
+        await crud.section.create_or_update_section_document_async(
             db=db,
             document_id=db_document.id,
             section_id=section_id,
             status=SectionDocumentIntegration.WAIT_TO,
         )
 
-    db.commit()
+    await db.commit()
     _schedule_section_process_for_today_section(
         db_section=db_today_section,
         section_date=summary_date,
         timezone_name=summary_timezone,
     )
 
-    _queue_document_background_processing(
+    await _queue_document_background_processing(
         db=db,
         db_document=db_document,
         user=user,

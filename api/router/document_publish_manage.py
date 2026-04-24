@@ -1,22 +1,22 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_async_db, get_current_user
 from router.logic_helpers import resolve_publish_action
 
 document_publish_manage_router = APIRouter()
 
 
 @document_publish_manage_router.post('/publish', response_model=schemas.common.NormalResponse)
-def document_publish_request(
+async def document_publish_request(
     document_publish_request: schemas.document.DocumentPublishRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
-    db_document = crud.document.get_document_by_document_id(
+    db_document = await crud.document.get_document_by_document_id_async(
         db=db,
         document_id=document_publish_request.document_id,
     )
@@ -25,7 +25,7 @@ def document_publish_request(
     if db_document.creator_id != user.id:
         raise schemas.error.CustomException("You are forbidden to publish this document", code=403)
 
-    db_publish_document = crud.document.get_publish_document_by_document_id(
+    db_publish_document = await crud.document.get_publish_document_by_document_id_async(
         db=db,
         document_id=document_publish_request.document_id,
     )
@@ -34,27 +34,27 @@ def document_publish_request(
         already_published=db_publish_document is not None,
     )
     if action == "create":
-        crud.document.create_publish_document(
+        await crud.document.create_publish_document_async(
             db=db,
             document_id=document_publish_request.document_id,
         )
     elif action == "delete":
-        crud.document.delete_published_document_by_document_id(
+        await crud.document.delete_published_document_by_document_id_async(
             db=db,
             document_id=document_publish_request.document_id,
         )
 
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @document_publish_manage_router.post('/publish/get', response_model=schemas.document.DocumentPublishGetResponse)
-def document_publish_get_request(
+async def document_publish_get_request(
     document_publish_get_request: schemas.document.DocumentPublishGetRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
-    db_document = crud.document.get_document_by_document_id(
+    db_document = await crud.document.get_document_by_document_id_async(
         db=db,
         document_id=document_publish_get_request.document_id,
     )
@@ -63,7 +63,7 @@ def document_publish_get_request(
     if db_document.creator_id != user.id:
         raise schemas.error.CustomException("You are forbidden to get the publish info of this document", code=403)
 
-    db_publish_document = crud.document.get_publish_document_by_document_id(
+    db_publish_document = await crud.document.get_publish_document_by_document_id_async(
         db=db,
         document_id=document_publish_get_request.document_id,
     )

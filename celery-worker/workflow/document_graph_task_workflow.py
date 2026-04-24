@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph, END
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from data.common import (
     close_extract_llm_client,
     stream_chunk_document,
@@ -30,7 +30,7 @@ from data.neo4j.insert import (
 )
 from data.neo4j.search import get_entities_by_text_and_type
 from engine.embedding.factory import get_embedding_engine
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.ability import Ability
 from enums.document import DocumentGraphStatus
 from enums.user import UserRole
@@ -50,10 +50,9 @@ class DocumentGraphState(TypedDict, total=False):
 WORKFLOW_NAME = "document_graph_task"
 
 
-def _ensure_graph_task_not_cancelled(document_id: int) -> None:
-    db = session_scope()
-    try:
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+async def _ensure_graph_task_not_cancelled(document_id: int) -> None:
+    async with async_session_context() as db:
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -64,32 +63,28 @@ def _ensure_graph_task_not_cancelled(document_id: int) -> None:
             raise WorkflowCancelledError(
                 f"Document graph task cancelled: document_id={document_id}"
             )
-    finally:
-        db.close()
-
 
 async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document graph workflow missing document_id or user_id")
-    _ensure_graph_task_not_cancelled(document_id)
+    await _ensure_graph_task_not_cancelled(document_id)
 
     model_id: int | None = state.get("model_id")
     access_token: str | None = None
     deployed_by_official = check_deployed_by_official_in_fuc()
     is_admin_or_root = False
 
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_document is None:
             raise Exception("The document which you want to summarize is not found")
 
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -106,9 +101,6 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
             )
         if model_id is None:
             model_id = db_user.default_document_reader_model_id
-    finally:
-        db.close()
-
     if deployed_by_official and not is_admin_or_root:
         if access_token is None:
             raise Exception("Failed to create access token for graph permission check")
@@ -119,15 +111,14 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         if not auth_status:
             raise Exception("The user has not access to the knowledge graph ability")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_graph_task is None:
-            db_graph_task = crud.task.create_document_graph_task(
+            db_graph_task = await crud.task.create_document_graph_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -135,9 +126,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
             db_graph_task.update_time = datetime.now(timezone.utc)
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
 
     if model_id is None:
         raise Exception("The user which you want to summarize document has not set default document reader model")
@@ -173,7 +162,7 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     chunk_snapshot_path = state.get("chunk_snapshot_path")
     if llm_model is None or user_id is None or document_id is None:
         raise Exception("Knowledge graph workflow missing required context")
-    _ensure_graph_task_not_cancelled(document_id)
+    await _ensure_graph_task_not_cancelled(document_id)
 
     llm_client = await get_extract_llm_client(
         user_id=user_id
@@ -213,7 +202,7 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
                     keys = list({(e.entity_type, e.text) for e in sub_entities})
                     missing_keys = [k for k in keys if k not in existing_entities_index]
                     if missing_keys:
-                        existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+                        existing_entities_index.update(await get_entities_by_text_and_type(missing_keys))
                     dedupe_start = time.perf_counter()
                     sub_entities, sub_relations = await resolve_entities_with_semantic_dedupe(
                         entities=sub_entities,
@@ -230,17 +219,17 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
                 extracted_relations_count += len(sub_relations)
 
                 upsert_start = time.perf_counter()
-                upsert_chunks_neo4j(
+                await upsert_chunks_neo4j(
                     chunks_info=[chunk_info]
                 )
                 if sub_entities:
-                    upsert_entities_neo4j(sub_entities)
+                    await upsert_entities_neo4j(sub_entities)
                 if sub_relations:
-                    upsert_relations_neo4j(sub_relations)
+                    await upsert_relations_neo4j(sub_relations)
                 if sub_entities:
-                    upsert_chunk_entity_relations(sub_entities)
+                    await upsert_chunk_entity_relations(sub_entities)
                 upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
-                _ensure_graph_task_not_cancelled(document_id)
+                await _ensure_graph_task_not_cancelled(document_id)
         info_logger.info(
             f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=extract_chunks, "
             f"stage=extract_and_upsert_chunks, chunks={chunk_count}, "
@@ -254,14 +243,13 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
     return state
 
 
-def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
+async def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     if document_id is None:
         raise Exception("Knowledge graph workflow missing document_id")
-    _ensure_graph_task_not_cancelled(document_id)
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    await _ensure_graph_task_not_cancelled(document_id)
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -275,16 +263,13 @@ def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
             update_time=db_document.update_time,
             create_time=db_document.create_time
         )
-    finally:
-        db.close()
-
     with timed_stage(
         workflow_name=WORKFLOW_NAME,
         node_name="persist_graph",
         stage_name="upsert_doc",
         context={"document_id": document_id},
     ):
-        upsert_doc_neo4j(
+        await upsert_doc_neo4j(
             docs_info=[doc_info]
         )
     with timed_stage(
@@ -293,23 +278,23 @@ def _persist_graph(state: DocumentGraphState) -> DocumentGraphState:
         stage_name="upsert_doc_chunk_relations",
         context={"document_id": document_id},
     ):
-        upsert_doc_chunk_relations()
+        await upsert_doc_chunk_relations()
     with timed_stage(
         workflow_name=WORKFLOW_NAME,
         node_name="persist_graph",
         stage_name="upsert_chunk_entity_relations",
         context={"document_id": document_id},
     ):
-        upsert_chunk_entity_relations()
+        await upsert_chunk_entity_relations()
     with timed_stage(
         workflow_name=WORKFLOW_NAME,
         node_name="persist_graph",
         stage_name="build_communities",
         context={"document_id": document_id},
     ):
-        create_communities_from_chunks()
-        create_community_nodes_and_relationships_with_size()
-        annotate_node_degrees()
+        await create_communities_from_chunks()
+        await create_community_nodes_and_relationships_with_size()
+        await annotate_node_degrees()
     return state
 
 
@@ -317,12 +302,11 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
     document_id = state.get("document_id")
     if document_id is None:
         raise Exception("Document graph workflow missing document_id")
-    _ensure_graph_task_not_cancelled(document_id)
+    await _ensure_graph_task_not_cancelled(document_id)
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -330,9 +314,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
             db_graph_task.status = DocumentGraphStatus.SUCCESS.value
             db_graph_task.celery_task_id = None
             db_graph_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
     return state
 
 
@@ -407,9 +389,8 @@ async def run_document_graph_task_workflow(
             },
         )
     except WorkflowCancelledError:
-        db = session_scope()
-        try:
-            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+        async with async_session_context() as db:
+            db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -417,15 +398,12 @@ async def run_document_graph_task_workflow(
                 db_graph_task.status = DocumentGraphStatus.CANCELLED.value
                 db_graph_task.celery_task_id = None
                 db_graph_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
-        db = session_scope()
-        try:
-            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+        async with async_session_context() as db:
+            db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -436,7 +414,5 @@ async def run_document_graph_task_workflow(
                 db_graph_task.status = DocumentGraphStatus.FAILED.value
                 db_graph_task.celery_task_id = None
                 db_graph_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise

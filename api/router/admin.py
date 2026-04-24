@@ -5,17 +5,16 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 import httpx
-from sqlalchemy import func, or_
-from sqlalchemy.orm import Session
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_async_db, get_current_user
 from common.jwt_utils import create_token
 from common.document_chunk_snapshot import delete_document_chunk_snapshots
 from common.resource_plan_access import is_privileged_user
-from common.section_defaults import TODAY_SECTION_DEFAULT_PROCESS_CRON
 from common.upload_limits import validate_file_upload_size
 from config.base import UNION_PAY_API_PREFIX
 from data.milvus.delete import delete_documents_from_milvus
@@ -31,11 +30,13 @@ from router.notification_task_manage import (
     _remove_task_schedule,
     _schedule_task,
 )
-from router.document_query import get_document_infos
 from router.logic_helpers import group_document_ids_by_category
 from router.section_detail_query import _build_section_info_response
 from router.user import _batch_sign_user_avatars
-from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
+from router.user_shared import (
+    commit_with_bucket_cleanup_async,
+    setup_default_file_system_for_user_async,
+)
 from common.celery.app import start_trigger_user_notification_event
 from enums.notification import NotificationTriggerEventUUID
 from config.base import GATEWAY_INTERNAL_URL
@@ -122,15 +123,15 @@ async def _request_target_user_compute_payload(
 
 async def _build_admin_document_detail(
     *,
-    db: Session,
+    db: AsyncSession,
     document: models.document.Document,
 ) -> schemas.admin.AdminDocumentDetailResponse:
     document_id = document.id
-    db_sections = crud.document.get_sections_by_document_id(
+    db_sections = await crud.document.get_sections_by_document_id_async(
         db=db,
         document_id=document_id,
     )
-    publish_sections = crud.section.get_publish_sections_by_section_ids(
+    publish_sections = await crud.section.get_publish_sections_by_section_ids_async(
         db=db,
         section_ids=[section.id for section in db_sections],
     )
@@ -146,7 +147,7 @@ async def _build_admin_document_detail(
         )
         for section in db_sections
     ]
-    db_labels = crud.document.get_labels_by_document_id(
+    db_labels = await crud.document.get_labels_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -173,11 +174,11 @@ async def _build_admin_document_detail(
         is_read=False,
     )
     if document.category == DocumentCategory.WEBSITE:
-        website_document = crud.document.get_website_document_by_document_id(
+        website_document = await crud.document.get_website_document_by_document_id_async(
             db=db,
             document_id=document_id,
         )
-        website_snapshots = crud.document.get_website_document_snapshots_by_document_id(
+        website_snapshots = await crud.document.get_website_document_snapshots_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -192,7 +193,7 @@ async def _build_admin_document_detail(
             for snapshot in website_snapshots
         ]
     elif document.category == DocumentCategory.FILE:
-        file_document = crud.document.get_file_document_by_document_id(
+        file_document = await crud.document.get_file_document_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -201,7 +202,7 @@ async def _build_admin_document_detail(
                 file_name=file_document.file_name,
             )
     elif document.category == DocumentCategory.QUICK_NOTE:
-        quick_note_document = crud.document.get_quick_note_document_by_document_id(
+        quick_note_document = await crud.document.get_quick_note_document_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -210,7 +211,7 @@ async def _build_admin_document_detail(
                 content=quick_note_document.content,
             )
     elif document.category == DocumentCategory.AUDIO:
-        audio_document = crud.document.get_audio_document_by_document_id(
+        audio_document = await crud.document.get_audio_document_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -218,7 +219,7 @@ async def _build_admin_document_detail(
             res.audio_info = schemas.document.AudioDocumentInfo(
                 audio_file_name=audio_document.audio_file_name,
             )
-    convert_task = crud.task.get_document_convert_task_by_document_id(
+    convert_task = await crud.task.get_document_convert_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -229,7 +230,7 @@ async def _build_admin_document_detail(
             create_time=convert_task.create_time,
             update_time=convert_task.update_time,
         )
-    podcast_task = crud.task.get_document_podcast_task_by_document_id(
+    podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -241,7 +242,7 @@ async def _build_admin_document_detail(
             create_time=podcast_task.create_time,
             update_time=podcast_task.update_time,
         )
-    summarize_task = crud.task.get_document_summarize_task_by_document_id(
+    summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -252,19 +253,19 @@ async def _build_admin_document_detail(
             create_time=summarize_task.create_time,
             update_time=summarize_task.update_time,
         )
-    res.embedding_task = crud.task.get_document_embedding_task_by_document_id(
+    res.embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
-    res.graph_task = crud.task.get_document_graph_task_by_document_id(
+    res.graph_task = await crud.task.get_document_graph_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
-    res.transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+    res.transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
-    res.process_task = crud.task.get_document_process_task_by_document_id(
+    res.process_task = await crud.task.get_document_process_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -273,12 +274,12 @@ async def _build_admin_document_detail(
 
 async def _delete_user_with_related_resources(
     *,
-    db: Session,
+    db: AsyncSession,
     user: models.user.User,
 ) -> None:
     removed_from_section_notifications_to_send: list[tuple[int, int]] = []
 
-    db_documents = crud.document.get_documents_by_user_id(
+    db_documents = await crud.document.get_documents_by_user_id_async(
         db=db,
         user_id=user.id,
     )
@@ -289,45 +290,45 @@ async def _delete_user_with_related_resources(
         documents=db_documents,
     )
 
-    crud.user.delete_user_by_user_id(
+    await crud.user.delete_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
-    crud.user.delete_wechat_user_by_user_id(
+    await crud.user.delete_wechat_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
-    crud.user.delete_email_user_by_user_id(
+    await crud.user.delete_email_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
-    crud.user.delete_github_user_by_user_id(
+    await crud.user.delete_github_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
-    crud.user.delete_google_user_by_user_id(
+    await crud.user.delete_google_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
-    crud.user.delete_phone_user_by_user_id(
+    await crud.user.delete_phone_user_by_user_id_async(
         db=db,
         user_id=user.id,
     )
 
-    crud.task.cancel_document_tasks_by_document_ids(
+    await crud.task.cancel_document_tasks_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
-    crud.document.delete_user_documents_by_document_ids(
+    await crud.document.delete_user_documents_by_document_ids_async(
         db=db,
         document_ids=document_ids,
         user_id=user.id,
     )
-    crud.document.delete_document_labels_by_document_ids(
+    await crud.document.delete_document_labels_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
-    crud.document.delete_document_notes_by_document_ids(
+    await crud.document.delete_document_notes_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
@@ -339,22 +340,22 @@ async def _delete_user_with_related_resources(
     audio_document_ids = grouped_document_ids.get(DocumentCategory.AUDIO, [])
 
     if file_document_ids:
-        crud.document.delete_file_documents_by_document_ids(
+        await crud.document.delete_file_documents_by_document_ids_async(
             db=db,
             document_ids=file_document_ids,
         )
     if website_document_ids:
-        crud.document.delete_website_documents_by_document_ids(
+        await crud.document.delete_website_documents_by_document_ids_async(
             db=db,
             document_ids=website_document_ids,
         )
     if quick_note_document_ids:
-        crud.document.delete_quick_note_documents_by_document_ids(
+        await crud.document.delete_quick_note_documents_by_document_ids_async(
             db=db,
             document_ids=quick_note_document_ids,
         )
     if audio_document_ids:
-        crud.document.delete_audio_documents_by_document_ids(
+        await crud.document.delete_audio_documents_by_document_ids_async(
             db=db,
             document_ids=audio_document_ids,
         )
@@ -362,33 +363,33 @@ async def _delete_user_with_related_resources(
     delete_documents_and_related_from_neo4j(doc_ids=document_ids)
     delete_documents_from_milvus(doc_ids=document_ids)
 
-    db_sections = crud.section.get_sections_by_user_id(
+    db_sections = await crud.section.get_sections_by_user_id_async(
         db=db,
         user_id=user.id,
     )
     for db_section in db_sections:
-        db_users = crud.section.get_users_for_section_by_section_id(
+        db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,
             section_id=db_section.id,
             filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER],
         )
-        crud.section.delete_section_users_by_section_id(
+        await crud.section.delete_section_users_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
-        crud.section.delete_section_documents_by_section_id(
+        await crud.section.delete_section_documents_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
-        crud.section.delete_section_labels_by_section_id(
+        await crud.section.delete_section_labels_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
-        crud.section.delete_section_comments_by_section_id(
+        await crud.section.delete_section_comments_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
-        crud.section.delete_section_by_section_id(
+        await crud.section.delete_section_by_section_id_async(
             db=db,
             section_id=db_section.id,
         )
@@ -396,7 +397,7 @@ async def _delete_user_with_related_resources(
             if db_user.id != user.id:
                 removed_from_section_notifications_to_send.append((db_user.id, db_section.id))
 
-    db.commit()
+    await db.commit()
     for target_user_id, section_id in removed_from_section_notifications_to_send:
         start_trigger_user_notification_event.delay(
             user_id=target_user_id,
@@ -426,31 +427,16 @@ async def get_admin_anti_scrape_stats(
 )
 async def search_admin_users(
     search_request: schemas.admin.AdminUserSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    query = db.query(
-        models.user.User,
-        models.user.EmailUser.email,
-        models.user.PhoneUser.phone,
-    )
-    query = query.outerjoin(
-        models.user.EmailUser,
-        (models.user.EmailUser.user_id == models.user.User.id)
-        & models.user.EmailUser.delete_at.is_(None),
-    )
-    query = query.outerjoin(
-        models.user.PhoneUser,
-        (models.user.PhoneUser.user_id == models.user.User.id)
-        & models.user.PhoneUser.delete_at.is_(None),
-    )
-    query = query.filter(models.user.User.delete_at.is_(None))
+    filters = [models.user.User.delete_at.is_(None)]
 
     keyword = search_request.keyword.strip() if search_request.keyword else None
     if keyword:
-        query = query.filter(
+        filters.append(
             or_(
                 models.user.User.nickname.like(f"%{keyword}%"),
                 models.user.User.uuid.like(f"%{keyword}%"),
@@ -458,24 +444,63 @@ async def search_admin_users(
             )
         )
     if search_request.role is not None:
-        query = query.filter(models.user.User.role == search_request.role)
+        filters.append(models.user.User.role == search_request.role)
     if search_request.is_forbidden is not None:
-        query = query.filter(models.user.User.is_forbidden == search_request.is_forbidden)
+        filters.append(models.user.User.is_forbidden == search_request.is_forbidden)
 
-    total_query = query.with_entities(func.count(func.distinct(models.user.User.id)))
-    total = total_query.scalar() or 0
+    query = (
+        select(
+            models.user.User,
+            models.user.EmailUser.email,
+            models.user.PhoneUser.phone,
+        )
+        .outerjoin(
+            models.user.EmailUser,
+            (models.user.EmailUser.user_id == models.user.User.id)
+            & models.user.EmailUser.delete_at.is_(None),
+        )
+        .outerjoin(
+            models.user.PhoneUser,
+            (models.user.PhoneUser.user_id == models.user.User.id)
+            & models.user.PhoneUser.delete_at.is_(None),
+        )
+        .where(*filters)
+    )
+    total = int(
+        (
+            await db.execute(
+                select(func.count(func.distinct(models.user.User.id)))
+                .select_from(models.user.User)
+                .outerjoin(
+                    models.user.EmailUser,
+                    (models.user.EmailUser.user_id == models.user.User.id)
+                    & models.user.EmailUser.delete_at.is_(None),
+                )
+                .outerjoin(
+                    models.user.PhoneUser,
+                    (models.user.PhoneUser.user_id == models.user.User.id)
+                    & models.user.PhoneUser.delete_at.is_(None),
+                )
+                .where(*filters)
+            )
+        ).scalar()
+        or 0
+    )
 
-    rows = (
-        query.order_by(models.user.User.id.desc())
-        .offset((search_request.page_num - 1) * search_request.page_size)
-        .limit(search_request.page_size)
-        .all()
+    rows = list(
+        (
+            await db.execute(
+                query.order_by(models.user.User.id.desc())
+                .offset((search_request.page_num - 1) * search_request.page_size)
+                .limit(search_request.page_size)
+            )
+        ).all()
     )
 
     users = [row[0] for row in rows]
     user_ids = [item.id for item in users]
-    fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=user_ids)
-    follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=user_ids)
+    fans_by_user_id = await crud.user.count_user_fans_by_user_ids_async(db=db, user_ids=user_ids)
+    follows_by_user_id = await crud.user.count_user_follows_by_user_ids_async(db=db, user_ids=user_ids)
 
     items: list[schemas.admin.AdminUserSummary] = []
     for db_user, email, phone in rows:
@@ -514,26 +539,23 @@ async def search_admin_users(
 
 
 @admin_router.post("/users/detail", response_model=schemas.admin.AdminUserDetail)
-def get_admin_user_detail(
+async def get_admin_user_detail(
     detail_request: schemas.admin.AdminUserDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(
+    db_user = await crud.user.get_user_by_id_async(
         db=db,
         user_id=detail_request.user_id,
     )
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    email_user = crud.user.get_email_user_by_user_id(db=db, user_id=db_user.id)
-    phone_user = db.query(models.user.PhoneUser).filter(
-        models.user.PhoneUser.user_id == db_user.id,
-        models.user.PhoneUser.delete_at.is_(None),
-    ).one_or_none()
-    fans_by_user_id = crud.user.count_user_fans_by_user_ids(db=db, user_ids=[db_user.id])
-    follows_by_user_id = crud.user.count_user_follows_by_user_ids(db=db, user_ids=[db_user.id])
+    email_user = await crud.user.get_email_user_by_user_id_async(db=db, user_id=db_user.id)
+    phone_user = await crud.user.get_phone_user_by_user_id_async(db=db, user_id=db_user.id)
+    fans_by_user_id = await crud.user.count_user_fans_by_user_ids_async(db=db, user_ids=[db_user.id])
+    follows_by_user_id = await crud.user.count_user_follows_by_user_ids_async(db=db, user_ids=[db_user.id])
 
     return schemas.admin.AdminUserDetail(
         id=db_user.id,
@@ -565,17 +587,17 @@ def get_admin_user_detail(
 @admin_router.post("/users/create", response_model=schemas.admin.AdminUserDetail)
 async def create_admin_user(
     create_request: schemas.admin.AdminUserCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
     _ensure_manageable_user(operator=user, target_role=create_request.role)
 
-    existed_email = crud.user.get_email_user_by_email(db=db, email=create_request.email)
+    existed_email = await crud.user.get_email_user_by_email_async(db=db, email=create_request.email)
     if existed_email is not None:
         raise schemas.error.CustomException("Email already exists", code=400)
 
-    db_user = crud.user.create_base_user(
+    db_user = await crud.user.create_base_user_async(
         db=db,
         nickname=create_request.nickname.strip(),
         avatar=(create_request.avatar or "files/default_avatar.png").strip(),
@@ -583,18 +605,18 @@ async def create_admin_user(
     )
     if create_request.slogan is not None:
         db_user.slogan = create_request.slogan.strip() or None
-    crud.user.create_email_user(
+    await crud.user.create_email_user_async(
         db=db,
         user_id=db_user.id,
         email=create_request.email.strip(),
         password=create_request.password,
         nickname=create_request.nickname.strip(),
     )
-    file_service = await setup_default_file_system_for_user(
+    file_service = await setup_default_file_system_for_user_async(
         db=db,
         db_user=db_user,
     )
-    await commit_with_bucket_cleanup(db=db, file_service=file_service)
+    await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
 
     return schemas.admin.AdminUserDetail(
         id=db_user.id,
@@ -624,14 +646,14 @@ async def create_admin_user(
 
 
 @admin_router.post("/users/update", response_model=schemas.common.NormalResponse)
-def update_admin_user(
+async def update_admin_user(
     update_request: schemas.admin.AdminUserUpdateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    db_user = crud.user.get_user_by_id(db=db, user_id=update_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=update_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
@@ -647,7 +669,7 @@ def update_admin_user(
     if update_request.is_forbidden is not None:
         db_user.is_forbidden = update_request.is_forbidden
 
-    crud.user.update_user_info(
+    await crud.user.update_user_info_async(
         db=db,
         user_id=db_user.id,
         nickname=update_request.nickname.strip() if update_request.nickname is not None else None,
@@ -655,11 +677,11 @@ def update_admin_user(
         avatar=update_request.avatar.strip() if update_request.avatar is not None else None,
     )
 
-    email_user = crud.user.get_email_user_by_user_id(db=db, user_id=db_user.id)
+    email_user = await crud.user.get_email_user_by_user_id_async(db=db, user_id=db_user.id)
     if update_request.email is not None:
         if email_user is None:
             raise schemas.error.CustomException("This user has no email account to update", code=400)
-        existed_email = crud.user.get_email_user_by_email(db=db, email=update_request.email.strip())
+        existed_email = await crud.user.get_email_user_by_email_async(db=db, email=update_request.email.strip())
         if existed_email is not None and existed_email.user_id != db_user.id:
             raise schemas.error.CustomException("Email already exists", code=400)
         email_user.email = update_request.email.strip()
@@ -667,14 +689,14 @@ def update_admin_user(
     if update_request.password:
         if email_user is None:
             raise schemas.error.CustomException("This user has no email account to update", code=400)
-        crud.user.update_user_password(
+        await crud.user.update_user_password_async(
             db=db,
             user_id=db_user.id,
             password=update_request.password,
         )
 
     db_user.update_time = datetime.now(timezone.utc)
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse(message="The user is updated successfully.")
 
 
@@ -684,11 +706,11 @@ def update_admin_user(
 )
 async def get_admin_user_compute_info(
     compute_info_request: schemas.admin.AdminUserComputeInfoRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=compute_info_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=compute_info_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
@@ -708,11 +730,11 @@ async def get_admin_user_compute_info(
 )
 async def get_admin_user_compute_ledger(
     compute_ledger_request: schemas.admin.AdminUserComputeLedgerRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=compute_ledger_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=compute_ledger_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
@@ -746,24 +768,24 @@ async def get_admin_user_compute_ledger(
     "/users/notifications/sources",
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationSource],
 )
-def search_admin_user_notification_sources(
+async def search_admin_user_notification_sources(
     search_request: schemas.admin.AdminUserNotificationSourceSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=search_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=search_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    db_notification_sources = crud.notification.search_notification_sources_for_user(
+    db_notification_sources = await crud.notification.search_notification_sources_for_user_async(
         db=db,
         user_id=db_user.id,
         keyword=search_request.keyword,
         start=search_request.start,
         limit=search_request.limit,
     )
-    total = crud.notification.count_all_notification_sources_for_user(
+    total = await crud.notification.count_all_notification_sources_for_user_async(
         db=db,
         user_id=db_user.id,
         keyword=search_request.keyword,
@@ -771,7 +793,7 @@ def search_admin_user_notification_sources(
     has_more = False
     next_start = None
     if search_request.limit > 0 and len(db_notification_sources) == search_request.limit:
-        next_notification_source = crud.notification.search_next_notification_source_for_user(
+        next_notification_source = await crud.notification.search_next_notification_source_for_user_async(
             db=db,
             user_id=db_user.id,
             notification_source=db_notification_sources[-1][0],
@@ -803,24 +825,24 @@ def search_admin_user_notification_sources(
     "/users/notifications/targets",
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationTarget],
 )
-def search_admin_user_notification_targets(
+async def search_admin_user_notification_targets(
     search_request: schemas.admin.AdminUserNotificationTargetSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=search_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=search_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    db_notification_targets = crud.notification.search_notification_targets_for_user(
+    db_notification_targets = await crud.notification.search_notification_targets_for_user_async(
         db=db,
         user_id=db_user.id,
         keyword=search_request.keyword,
         start=search_request.start,
         limit=search_request.limit,
     )
-    total = crud.notification.count_all_notification_targets_for_user(
+    total = await crud.notification.count_all_notification_targets_for_user_async(
         db=db,
         user_id=db_user.id,
         keyword=search_request.keyword,
@@ -828,7 +850,7 @@ def search_admin_user_notification_targets(
     has_more = False
     next_start = None
     if search_request.limit > 0 and len(db_notification_targets) == search_request.limit:
-        next_notification_target = crud.notification.search_next_notification_target_for_user(
+        next_notification_target = await crud.notification.search_next_notification_target_for_user_async(
             db=db,
             user_id=db_user.id,
             notification_target=db_notification_targets[-1][0],
@@ -860,16 +882,16 @@ def search_admin_user_notification_targets(
     "/users/notifications/source/usable",
     response_model=schemas.notification.NotificationSourcesUsableResponse,
 )
-def get_admin_user_usable_notification_sources(
+async def get_admin_user_usable_notification_sources(
     request: schemas.admin.AdminUserComputeInfoRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
-    db_notification_sources = crud.notification.get_usable_notification_sources_for_user(
+    db_notification_sources = await crud.notification.get_usable_notification_sources_for_user_async(
         db=db,
         user_id=db_user.id,
     )
@@ -885,16 +907,16 @@ def get_admin_user_usable_notification_sources(
     "/users/notifications/target/usable",
     response_model=schemas.notification.NotificationTargetsUsableResponse,
 )
-def get_admin_user_usable_notification_targets(
+async def get_admin_user_usable_notification_targets(
     request: schemas.admin.AdminUserComputeInfoRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
-    db_notification_targets = crud.notification.get_usable_notification_targets_for_user(
+    db_notification_targets = await crud.notification.get_usable_notification_targets_for_user_async(
         db=db,
         user_id=db_user.id,
     )
@@ -910,27 +932,27 @@ def get_admin_user_usable_notification_targets(
     "/users/notifications/task/mine",
     response_model=schemas.pagination.Pagination[schemas.notification.NotificationTask],
 )
-def get_admin_user_notification_tasks(
+async def get_admin_user_notification_tasks(
     request: schemas.admin.AdminUserNotificationTaskPageRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    db_notification_tasks = crud.notification.get_notification_tasks_for_user(
+    db_notification_tasks = await crud.notification.get_notification_tasks_for_user_async(
         db=db,
         user_id=db_user.id,
         page_num=request.page_num,
         page_size=request.page_size,
     )
     elements = [
-        _build_notification_task_response(db=db, db_notification_task=item)
+        await _build_notification_task_response(db=db, db_notification_task=item)
         for item in db_notification_tasks
     ]
-    count = crud.notification.count_notification_tasks_for_user(
+    count = await crud.notification.count_notification_tasks_for_user_async(
         db=db,
         user_id=db_user.id,
     )
@@ -949,22 +971,22 @@ def get_admin_user_notification_tasks(
     "/users/notifications/task/detail",
     response_model=schemas.notification.NotificationTask,
 )
-def get_admin_user_notification_task_detail(
+async def get_admin_user_notification_task_detail(
     request: schemas.admin.AdminNotificationTaskDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
-    db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
+    db_notification_task = await crud.notification.get_notification_task_by_notification_task_id_async(
         db=db,
         notification_task_id=request.notification_task_id,
     )
     if db_notification_task is None or db_notification_task.creator_id != db_user.id:
         raise schemas.error.CustomException("Notification task not found", code=404)
-    return _build_notification_task_response(
+    return await _build_notification_task_response(
         db=db,
         db_notification_task=db_notification_task,
     )
@@ -974,17 +996,17 @@ def get_admin_user_notification_task_detail(
     "/users/notifications/task/add",
     response_model=schemas.common.NormalResponse,
 )
-def add_admin_user_notification_task(
+async def add_admin_user_notification_task(
     request: schemas.admin.AdminAddNotificationTaskRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    db_notification_task = crud.notification.create_notification_task(
+    db_notification_task = await crud.notification.create_notification_task_async(
         db=db,
         creator_id=db_user.id,
         title=request.title,
@@ -997,7 +1019,7 @@ def add_admin_user_notification_task(
     if request.content_type == NotificationContentType.CUSTOM:
         if request.notification_title is None or request.notification_content is None:
             raise schemas.error.CustomException("Notification title is required", code=400)
-        crud.notification.create_notification_task_content_custom(
+        await crud.notification.create_notification_task_content_custom_async(
             db=db,
             notification_task_id=db_notification_task.id,
             title=request.notification_title,
@@ -1008,20 +1030,20 @@ def add_admin_user_notification_task(
     elif request.content_type == NotificationContentType.TEMPLATE:
         if request.notification_template_id is None:
             raise schemas.error.CustomException("Notification template ID is required", code=400)
-        crud.notification.create_notification_task_content_template(
+        await crud.notification.create_notification_task_content_template_async(
             db=db,
             notification_task_id=db_notification_task.id,
             notification_template_id=request.notification_template_id,
         )
 
     if request.trigger_type == NotificationTriggerType.SCHEDULER and request.trigger_scheduler_cron:
-        crud.notification.create_notification_task_trigger_scheduler(
+        await crud.notification.create_notification_task_trigger_scheduler_async(
             db=db,
             notification_task_id=db_notification_task.id,
             cron_expr=request.trigger_scheduler_cron,
         )
     elif request.trigger_type == NotificationTriggerType.EVENT and request.trigger_event_id:
-        crud.notification.create_notification_task_trigger_event(
+        await crud.notification.create_notification_task_trigger_event_async(
             db=db,
             notification_task_id=db_notification_task.id,
             trigger_event_id=request.trigger_event_id,
@@ -1030,13 +1052,13 @@ def add_admin_user_notification_task(
     if request.enable and request.trigger_type == NotificationTriggerType.SCHEDULER:
         if request.trigger_scheduler_cron is None:
             raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
-        _schedule_task(
+        await _schedule_task(
             db=db,
             notification_task_id=db_notification_task.id,
             notification_target_id=db_notification_task.notification_target_id,
             cron_expr=request.trigger_scheduler_cron,
         )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -1044,17 +1066,17 @@ def add_admin_user_notification_task(
     "/users/notifications/task/update",
     response_model=schemas.common.NormalResponse,
 )
-def update_admin_user_notification_task(
+async def update_admin_user_notification_task(
     request: schemas.admin.AdminUpdateNotificationTaskRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
     now = datetime.now(tz=timezone.utc)
-    db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
+    db_notification_task = await crud.notification.get_notification_task_by_notification_task_id_async(
         db=db,
         notification_task_id=request.notification_task_id,
     )
@@ -1071,14 +1093,14 @@ def update_admin_user_notification_task(
         db_notification_task.content_type = request.content_type
 
     if request.content_type == NotificationContentType.CUSTOM:
-        db_notification_task_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
+        db_notification_task_content_custom = await crud.notification.get_notification_task_content_custom_by_notification_task_id_async(
             db=db,
             notification_task_id=request.notification_task_id,
         )
         if request.notification_title is None or request.notification_content is None:
             raise schemas.error.CustomException("Notification title is required for custom notifications", code=400)
         if db_notification_task_content_custom is None:
-            crud.notification.create_notification_task_content_custom(
+            await crud.notification.create_notification_task_content_custom_async(
                 db=db,
                 notification_task_id=request.notification_task_id,
                 title=request.notification_title,
@@ -1094,12 +1116,12 @@ def update_admin_user_notification_task(
     elif request.content_type == NotificationContentType.TEMPLATE:
         if request.notification_template_id is None:
             raise schemas.error.CustomException("Notification template ID is required for template notifications", code=400)
-        db_notification_task_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
+        db_notification_task_content_template = await crud.notification.get_notification_task_content_template_by_notification_task_id_async(
             db=db,
             notification_task_id=request.notification_task_id,
         )
         if db_notification_task_content_template is None:
-            crud.notification.create_notification_task_content_template(
+            await crud.notification.create_notification_task_content_template_async(
                 db=db,
                 notification_task_id=request.notification_task_id,
                 notification_template_id=request.notification_template_id,
@@ -1116,12 +1138,12 @@ def update_admin_user_notification_task(
         db_notification_task.trigger_type = request.trigger_type
     if request.trigger_type == NotificationTriggerType.SCHEDULER:
         if request.trigger_scheduler_cron is not None:
-            db_notification_task_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
+            db_notification_task_trigger_scheduler = await crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id_async(
                 db=db,
                 notification_task_id=request.notification_task_id,
             )
             if db_notification_task_trigger_scheduler is None:
-                crud.notification.create_notification_task_trigger_scheduler(
+                await crud.notification.create_notification_task_trigger_scheduler_async(
                     db=db,
                     notification_task_id=request.notification_task_id,
                     cron_expr=request.trigger_scheduler_cron,
@@ -1130,12 +1152,12 @@ def update_admin_user_notification_task(
                 db_notification_task_trigger_scheduler.cron_expr = request.trigger_scheduler_cron
     elif request.trigger_type == NotificationTriggerType.EVENT:
         if request.trigger_event_id is not None:
-            db_notification_task_trigger_event = crud.notification.get_notification_task_trigger_event_by_notification_task_id(
+            db_notification_task_trigger_event = await crud.notification.get_notification_task_trigger_event_by_notification_task_id_async(
                 db=db,
                 notification_task_id=request.notification_task_id,
             )
             if db_notification_task_trigger_event is None:
-                crud.notification.create_notification_task_trigger_event(
+                await crud.notification.create_notification_task_trigger_event_async(
                     db=db,
                     notification_task_id=request.notification_task_id,
                     trigger_event_id=request.trigger_event_id,
@@ -1148,12 +1170,12 @@ def update_admin_user_notification_task(
 
     _remove_task_schedule(db_notification_task.id)
     if db_notification_task.enable and db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
-        cron_expr = _get_scheduler_cron_expr(
+        cron_expr = await _get_scheduler_cron_expr(
             db=db,
             notification_task_id=db_notification_task.id,
             request_cron_expr=request.trigger_scheduler_cron,
         )
-        _schedule_task(
+        await _schedule_task(
             db=db,
             notification_task_id=db_notification_task.id,
             notification_target_id=db_notification_task.notification_target_id,
@@ -1161,7 +1183,7 @@ def update_admin_user_notification_task(
         )
 
     db_notification_task.update_time = now
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -1169,34 +1191,34 @@ def update_admin_user_notification_task(
     "/users/notifications/task/delete",
     response_model=schemas.common.NormalResponse,
 )
-def delete_admin_user_notification_task(
+async def delete_admin_user_notification_task(
     request: schemas.admin.AdminDeleteNotificationTaskRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
-    crud.notification.delete_notification_tasks(
+    await crud.notification.delete_notification_tasks_async(
         db=db,
         user_id=db_user.id,
         notification_task_ids=request.notification_task_ids,
     )
     for notification_task_id in request.notification_task_ids:
-        crud.notification.delete_notification_task_content_custom_by_notification_task_id(
+        await crud.notification.delete_notification_task_content_custom_by_notification_task_id_async(
             db=db,
             user_id=db_user.id,
             notification_task_id=notification_task_id,
         )
-        crud.notification.delete_notification_task_content_template_by_notification_task_id(
+        await crud.notification.delete_notification_task_content_template_by_notification_task_id_async(
             db=db,
             user_id=db_user.id,
             notification_task_id=notification_task_id,
         )
         _remove_task_schedule(notification_task_id)
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -1207,12 +1229,12 @@ def delete_admin_user_notification_task(
 async def upload_admin_user_avatar(
     user_id: int = Form(...),
     file: UploadFile = File(...),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
@@ -1249,12 +1271,12 @@ async def upload_admin_user_avatar(
 async def upload_admin_user_notification_cover(
     user_id: int = Form(...),
     file: UploadFile = File(...),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
 
@@ -1287,11 +1309,11 @@ async def upload_admin_user_notification_cover(
 @admin_router.post("/users/delete", response_model=schemas.common.NormalResponse)
 async def delete_admin_user(
     delete_request: schemas.admin.AdminUserDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_user = crud.user.get_user_by_id(db=db, user_id=delete_request.user_id)
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=delete_request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
     _ensure_manageable_user(operator=user, target_user=db_user)
@@ -1308,31 +1330,46 @@ async def delete_admin_user(
 )
 async def search_admin_documents(
     search_request: schemas.admin.AdminDocumentSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    query = db.query(models.document.Document).join(models.user.User, models.user.User.id == models.document.Document.creator_id)
-    query = query.filter(
+    filters = [
         models.document.Document.delete_at.is_(None),
         models.user.User.delete_at.is_(None),
-    )
+    ]
     keyword = search_request.keyword.strip() if search_request.keyword else None
     if keyword:
-        query = query.filter(
+        filters.append(
             or_(
                 models.document.Document.title.like(f"%{keyword}%"),
                 models.document.Document.description.like(f"%{keyword}%"),
             )
         )
 
-    total = query.with_entities(func.count(func.distinct(models.document.Document.id))).scalar() or 0
-    documents = (
-        query.order_by(models.document.Document.id.desc())
-        .offset((search_request.page_num - 1) * search_request.page_size)
-        .limit(search_request.page_size)
-        .all()
+    total = int(
+        (
+            await db.execute(
+                select(func.count(func.distinct(models.document.Document.id)))
+                .select_from(models.document.Document)
+                .join(models.user.User, models.user.User.id == models.document.Document.creator_id)
+                .where(*filters)
+            )
+        ).scalar()
+        or 0
+    )
+    documents = list(
+        (
+            await db.execute(
+                select(models.document.Document)
+                .join(models.user.User, models.user.User.id == models.document.Document.creator_id)
+                .where(*filters)
+                .order_by(models.document.Document.id.desc())
+                .offset((search_request.page_num - 1) * search_request.page_size)
+                .limit(search_request.page_size)
+            )
+        ).scalars().all()
     )
 
     items = [
@@ -1367,11 +1404,11 @@ async def search_admin_documents(
 @admin_router.post("/documents/detail", response_model=schemas.admin.AdminDocumentDetailResponse)
 async def get_admin_document_detail(
     detail_request: schemas.admin.AdminDocumentDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    document = crud.document.get_document_by_document_id(
+    document = await crud.document.get_document_by_document_id_async(
         db=db,
         document_id=detail_request.document_id,
     )
@@ -1383,12 +1420,12 @@ async def get_admin_document_detail(
 @admin_router.post("/documents/delete", response_model=schemas.common.NormalResponse)
 async def delete_admin_documents(
     delete_request: schemas.admin.AdminDocumentDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    documents = crud.document.get_documents_by_document_ids(
+    documents = await crud.document.get_documents_by_document_ids_async(
         db=db,
         document_ids=delete_request.document_ids,
     )
@@ -1412,51 +1449,51 @@ async def delete_admin_documents(
     document_ids = [document.id for document in documents]
     creator_ids = {document.creator_id for document in documents}
 
-    crud.task.cancel_document_tasks_by_document_ids(
+    await crud.task.cancel_document_tasks_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
     for creator_id in creator_ids:
         creator_document_ids = [document.id for document in documents if document.creator_id == creator_id]
-        crud.document.delete_user_documents_by_document_ids(
+        await crud.document.delete_user_documents_by_document_ids_async(
             db=db,
             document_ids=creator_document_ids,
             user_id=creator_id,
         )
-    crud.document.delete_document_labels_by_document_ids(
+    await crud.document.delete_document_labels_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
-    crud.document.delete_document_notes_by_document_ids(
+    await crud.document.delete_document_notes_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
 
     grouped_document_ids = group_document_ids_by_category(documents)
     if grouped_document_ids.get(DocumentCategory.FILE):
-        crud.document.delete_file_documents_by_document_ids(
+        await crud.document.delete_file_documents_by_document_ids_async(
             db=db,
             document_ids=grouped_document_ids[DocumentCategory.FILE],
         )
     if grouped_document_ids.get(DocumentCategory.WEBSITE):
-        crud.document.delete_website_documents_by_document_ids(
+        await crud.document.delete_website_documents_by_document_ids_async(
             db=db,
             document_ids=grouped_document_ids[DocumentCategory.WEBSITE],
         )
     if grouped_document_ids.get(DocumentCategory.QUICK_NOTE):
-        crud.document.delete_quick_note_documents_by_document_ids(
+        await crud.document.delete_quick_note_documents_by_document_ids_async(
             db=db,
             document_ids=grouped_document_ids[DocumentCategory.QUICK_NOTE],
         )
     if grouped_document_ids.get(DocumentCategory.AUDIO):
-        crud.document.delete_audio_documents_by_document_ids(
+        await crud.document.delete_audio_documents_by_document_ids_async(
             db=db,
             document_ids=grouped_document_ids[DocumentCategory.AUDIO],
         )
 
     delete_documents_and_related_from_neo4j(doc_ids=document_ids)
     delete_documents_from_milvus(doc_ids=document_ids)
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse(message="The documents are deleted successfully.")
 
 
@@ -1466,46 +1503,58 @@ async def delete_admin_documents(
 )
 async def search_admin_sections(
     search_request: schemas.admin.AdminSectionSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
 
-    query = db.query(models.section.Section).join(
-        models.user.User,
-        models.user.User.id == models.section.Section.creator_id,
-    )
-    query = query.filter(
+    filters = [
         models.section.Section.delete_at.is_(None),
         models.user.User.delete_at.is_(None),
-    )
+    ]
     keyword = search_request.keyword.strip() if search_request.keyword else None
     if keyword:
-        query = query.filter(
+        filters.append(
             or_(
                 models.section.Section.title.like(f"%{keyword}%"),
                 models.section.Section.description.like(f"%{keyword}%"),
             )
         )
-    total = query.with_entities(func.count(func.distinct(models.section.Section.id))).scalar() or 0
-    sections = (
-        query.order_by(models.section.Section.id.desc())
-        .offset((search_request.page_num - 1) * search_request.page_size)
-        .limit(search_request.page_size)
-        .all()
+    total = int(
+        (
+            await db.execute(
+                select(func.count(func.distinct(models.section.Section.id)))
+                .select_from(models.section.Section)
+                .join(models.user.User, models.user.User.id == models.section.Section.creator_id)
+                .where(*filters)
+            )
+        ).scalar()
+        or 0
+    )
+    sections = list(
+        (
+            await db.execute(
+                select(models.section.Section)
+                .join(models.user.User, models.user.User.id == models.section.Section.creator_id)
+                .where(*filters)
+                .order_by(models.section.Section.id.desc())
+                .offset((search_request.page_num - 1) * search_request.page_size)
+                .limit(search_request.page_size)
+            )
+        ).scalars().all()
     )
 
     section_ids = [section.id for section in sections]
-    documents_count_by_section_id = crud.section.count_documents_for_section_by_section_ids(
+    documents_count_by_section_id = await crud.section.count_documents_for_section_by_section_ids_async(
         db=db,
         section_ids=section_ids,
     )
-    subscribers_count_by_section_id = crud.section.count_users_for_section_by_section_ids(
+    subscribers_count_by_section_id = await crud.section.count_users_for_section_by_section_ids_async(
         db=db,
         section_ids=section_ids,
         filter_roles=[UserSectionRole.SUBSCRIBER],
     )
-    publish_sections = crud.section.get_publish_sections_by_section_ids(
+    publish_sections = await crud.section.get_publish_sections_by_section_ids_async(
         db=db,
         section_ids=section_ids,
     )
@@ -1546,11 +1595,11 @@ async def search_admin_sections(
 @admin_router.post("/sections/detail", response_model=schemas.admin.AdminSectionDetailResponse)
 async def get_admin_section_detail(
     detail_request: schemas.admin.AdminSectionDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=detail_request.section_id,
     )
@@ -1568,42 +1617,42 @@ async def get_admin_section_detail(
 @admin_router.post("/sections/delete", response_model=schemas.common.NormalResponse)
 async def delete_admin_sections(
     delete_request: schemas.admin.AdminSectionDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
     _ensure_privileged_user(user)
     removed_from_section_notifications_to_send: list[tuple[int, int]] = []
 
     for section_id in delete_request.section_ids:
-        db_section = crud.section.get_section_by_section_id(
+        db_section = await crud.section.get_section_by_section_id_async(
             db=db,
             section_id=section_id,
         )
         if db_section is None:
             raise schemas.error.CustomException(f"Section not found: {section_id}", code=404)
 
-        db_users = crud.section.get_users_for_section_by_section_id(
+        db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,
             section_id=section_id,
             filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER],
         )
-        crud.section.delete_section_users_by_section_id(
+        await crud.section.delete_section_users_by_section_id_async(
             db=db,
             section_id=section_id,
         )
-        crud.section.delete_section_documents_by_section_id(
+        await crud.section.delete_section_documents_by_section_id_async(
             db=db,
             section_id=section_id,
         )
-        crud.section.delete_section_labels_by_section_id(
+        await crud.section.delete_section_labels_by_section_id_async(
             db=db,
             section_id=section_id,
         )
-        crud.section.delete_section_comments_by_section_id(
+        await crud.section.delete_section_comments_by_section_id_async(
             db=db,
             section_id=section_id,
         )
-        crud.section.delete_section_by_section_id(
+        await crud.section.delete_section_by_section_id_async(
             db=db,
             section_id=section_id,
         )
@@ -1611,7 +1660,7 @@ async def delete_admin_sections(
             if db_user.id != db_section.creator_id:
                 removed_from_section_notifications_to_send.append((db_user.id, section_id))
 
-    db.commit()
+    await db.commit()
     for target_user_id, section_id in removed_from_section_notifications_to_send:
         start_trigger_user_notification_event.delay(
             user_id=target_user_id,

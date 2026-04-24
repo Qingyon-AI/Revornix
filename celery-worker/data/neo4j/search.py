@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from datetime import datetime
 from data.custom_types.all import *
-from data.neo4j.base import neo4j_driver
+from data.neo4j.base import async_neo4j_driver
 from data.milvus.search import naive_search
 
 def to_neo4j_datetime_str(
@@ -30,7 +30,7 @@ def build_time_filter(
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
 # ===================== Entity Context Hash Lookup =====================
-def get_entity_context_hashes(
+async def get_entity_context_hashes(
     entity_keys: list[tuple[str, str]]
 ) -> dict[tuple[str, str], set[str | None]]:
     if not entity_keys:
@@ -47,15 +47,15 @@ def get_entity_context_hashes(
     MATCH (e:Entity {text: r.text, entity_type: r.entity_type})
     RETURN r.text AS text, r.entity_type AS entity_type, collect(DISTINCT e.context_hash) AS hashes
     """
-    with neo4j_driver.session() as sess:
-        records = sess.run(cypher, {"rows": rows})
-        for r in records:
+    async with async_neo4j_driver.session() as sess:
+        records = await sess.run(cypher, {"rows": rows})
+        async for r in records:
             key = (r["entity_type"], r["text"])
             hashes = r["hashes"] or []
             result_map[key].update(hashes)
     return result_map
 
-def get_entities_by_text_and_type(
+async def get_entities_by_text_and_type(
     entity_keys: list[tuple[str, str]]
 ) -> dict[tuple[str, str], list[Dict[str, Any]]]:
     if not entity_keys:
@@ -78,15 +78,15 @@ def get_entities_by_text_and_type(
              context_embedding: e.context_embedding
            }) AS entities
     """
-    with neo4j_driver.session() as sess:
-        records = sess.run(cypher, {"rows": rows})
-        for r in records:
+    async with async_neo4j_driver.session() as sess:
+        records = await sess.run(cypher, {"rows": rows})
+        async for r in records:
             key = (r["entity_type"], r["text"])
             result_map[key] = r["entities"] or []
     return result_map
 
 # ===================== Local Search =====================
-def local_search_by_entity(
+async def local_search_by_entity(
     user_id: int,
     entity_name: str,
     hops: int = 1,
@@ -98,8 +98,8 @@ def local_search_by_entity(
     - 子图遍历 Entity + Chunk
     - 过滤 chunk 所属 document 是否为当前用户
     """
-    with neo4j_driver.session() as sess:
-        result = sess.run(
+    async with async_neo4j_driver.session() as sess:
+        result = await sess.run(
             """
             // 1. 匹配目标实体
             MATCH (e:Entity)
@@ -133,18 +133,22 @@ def local_search_by_entity(
             {"ename": entity_name, "hops": hops, "limit": limit, "user_id": user_id}
         )
 
-        return [
-            {
-                "chunk_id": r["id"],
-                "text": r["text"],
-                "doc_id": r["doc_id"],
-                "idx": r["idx"]
-            }
-            for r in result if r["id"] is not None
-        ]
+        output: list[Dict[str, Any]] = []
+        async for r in result:
+            if r["id"] is None:
+                continue
+            output.append(
+                {
+                    "chunk_id": r["id"],
+                    "text": r["text"],
+                    "doc_id": r["doc_id"],
+                    "idx": r["idx"],
+                }
+            )
+        return output
 
 # ===================== Global Search =====================
-def global_search(
+async def global_search(
     user_id: int,
     search_text: str,
     top_k: int = 10,
@@ -157,7 +161,7 @@ def global_search(
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
     2) 在 Neo4j 中扩展：找到与用户相关的 Entity / Chunk / Community
     """
-    seed_chunks = naive_search(
+    seed_chunks = await naive_search(
         user_id=user_id,
         search_text=search_text, 
         top_k=top_k
@@ -170,7 +174,7 @@ def global_search(
     if not chunk_ids:
         return {"seed_chunks": seed_chunks, "expanded_chunks": [], "entities": []}
 
-    with neo4j_driver.session() as sess:
+    async with async_neo4j_driver.session() as sess:
         # 构造动态 WHERE 条件（包含时间筛选）
         where_clauses = [
             "d.creator_id = $user_id"  # 用户权限控制
@@ -208,10 +212,10 @@ def global_search(
         if time_end:
             params["time_end"] = time_end
 
-        records = sess.run(cypher, params)
+        records = await sess.run(cypher, params)
 
         related_chunk_set = set()
-        for r in records:
+        async for r in records:
             if eid := r["entity_id"]:
                 entities.append({
                     "entity_id": eid,
@@ -225,7 +229,7 @@ def global_search(
 
         # 查找相关 chunk（也需校验用户权限）
         if related_chunk_set:
-            rows = sess.run(
+            rows = await sess.run(
                 """
                 UNWIND $ids AS cid
                 MATCH (c:Chunk {id: cid})<-[:HAS_CHUNK]-(d:Document)
@@ -234,7 +238,7 @@ def global_search(
                 """,
                 {"ids": list(related_chunk_set), "user_id": user_id}
             )
-            for r in rows:
+            async for r in rows:
                 expanded_chunks.append({
                     "chunk_id": r["id"],
                     "text": r["text"],

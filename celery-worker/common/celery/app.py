@@ -133,9 +133,39 @@ def start_process_section(
     podcast_engine_id: int | None = None,
 ):
     import crud
-    from data.sql.base import session_scope
+    from data.sql.base import async_session_context
     from enums.section import SectionPodcastStatus, SectionProcessStatus
     from workflow.section_process_workflow import run_section_process_workflow
+
+    async def _prepare_section_podcast_task() -> bool:
+        async with async_session_context() as db:
+            now = datetime.now(timezone.utc)
+            db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
+                db=db,
+                section_id=section_id,
+            )
+            if (
+                db_section_process_task is not None
+                and db_section_process_task.status == SectionProcessStatus.CANCELLED
+            ):
+                return False
+            db_podcast_task = await crud.task.get_section_podcast_task_by_section_id_async(
+                db=db,
+                section_id=section_id,
+            )
+            if db_podcast_task is None:
+                await crud.task.create_section_podcast_task_async(
+                    db=db,
+                    user_id=user_id,
+                    section_id=section_id,
+                    status=SectionPodcastStatus.WAIT_TO,
+                )
+            else:
+                db_podcast_task.status = SectionPodcastStatus.WAIT_TO
+                db_podcast_task.podcast_file_name = None
+                db_podcast_task.update_time = now
+            await db.commit()
+            return True
 
     _run(
         run_section_process_workflow(
@@ -148,34 +178,7 @@ def start_process_section(
             podcast_engine_id=podcast_engine_id,
         )
     )
-    if auto_podcast:
-        with session_scope() as db:
-            now = datetime.now(timezone.utc)
-            db_section_process_task = crud.task.get_section_process_task_by_section_id(
-                db=db,
-                section_id=section_id,
-            )
-            if (
-                db_section_process_task is not None
-                and db_section_process_task.status == SectionProcessStatus.CANCELLED
-            ):
-                return
-            db_podcast_task = crud.task.get_section_podcast_task_by_section_id(
-                db=db,
-                section_id=section_id,
-            )
-            if db_podcast_task is None:
-                crud.task.create_section_podcast_task(
-                    db=db,
-                    user_id=user_id,
-                    section_id=section_id,
-                    status=SectionPodcastStatus.WAIT_TO,
-                )
-            else:
-                db_podcast_task.status = SectionPodcastStatus.WAIT_TO
-                db_podcast_task.podcast_file_name = None
-                db_podcast_task.update_time = now
-            db.commit()
+    if auto_podcast and _run(_prepare_section_podcast_task()):
         start_process_section_podcast.delay(
             section_id,
             user_id,

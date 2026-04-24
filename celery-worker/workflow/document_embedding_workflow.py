@@ -11,7 +11,7 @@ from common.document_guard import ensure_document_active
 from common.embedding_utils import coerce_embedding_vectors
 from data.common import stream_chunk_document
 from data.milvus.insert import upsert_milvus
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 from workflow.cancelled import WorkflowCancelledError
@@ -34,10 +34,9 @@ WORKFLOW_NAME = "document_embedding"
 EMBED_BATCH_SIZE = 64
 
 
-def _ensure_embedding_task_not_cancelled(document_id: int) -> None:
-    db = session_scope()
-    try:
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+async def _ensure_embedding_task_not_cancelled(document_id: int) -> None:
+    async with async_session_context() as db:
+        db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -48,8 +47,6 @@ def _ensure_embedding_task_not_cancelled(document_id: int) -> None:
             raise WorkflowCancelledError(
                 f"Document embedding task cancelled: document_id={document_id}"
             )
-    finally:
-        db.close()
 
 
 def _assign_chunk_embeddings(
@@ -74,12 +71,10 @@ async def _init_embedding_task(
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing document_id or user_id")
     if manage_task_status:
-        _ensure_embedding_task_not_cancelled(document_id)
+        await _ensure_embedding_task_not_cancelled(document_id)
 
-    db = session_scope()
-    try:
-        # 1) 校验 document
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -87,7 +82,7 @@ async def _init_embedding_task(
             raise Exception("The document which you want to embedding is not found")
 
         # 2) 校验 user
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
         if db_user is None:
             raise Exception("The user which you want to summarize document is not found")
         if db_user.default_user_file_system is None:
@@ -96,7 +91,7 @@ async def _init_embedding_task(
             raise Exception("The user which you want to summarize document has not set default document reader model")
 
         if manage_task_status:
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+            db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -109,9 +104,7 @@ async def _init_embedding_task(
             if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
                 db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
                 db_embedding_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
     return state
 
 
@@ -125,7 +118,7 @@ async def _embed_document(
     chunk_snapshot_path = state.get("chunk_snapshot_path")
     if document_id is None or user_id is None:
         raise Exception("Document embedding workflow missing context")
-    _ensure_embedding_task_not_cancelled(document_id)
+    await _ensure_embedding_task_not_cancelled(document_id)
     embedding_engine = get_embedding_engine()
 
     # 批量缓存
@@ -167,7 +160,7 @@ async def _embed_document(
             if len(embed_chunks) >= EMBED_BATCH_SIZE:
                 batch_count += 1
                 embed_start = time.perf_counter()
-                vectors = await asyncio.to_thread(embedding_engine.embed, embed_texts)
+                vectors = await embedding_engine.embed(embed_texts)
                 embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
                 _assign_chunk_embeddings(
                     chunks=embed_chunks,
@@ -181,7 +174,7 @@ async def _embed_document(
                     embed_chunks,
                 )
                 upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
-                _ensure_embedding_task_not_cancelled(document_id)
+                await _ensure_embedding_task_not_cancelled(document_id)
 
                 embed_chunks.clear()
                 embed_texts.clear()
@@ -190,7 +183,7 @@ async def _embed_document(
         if embed_chunks:
             batch_count += 1
             embed_start = time.perf_counter()
-            vectors = await asyncio.to_thread(embedding_engine.embed, embed_texts)
+            vectors = await embedding_engine.embed(embed_texts)
             embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
             _assign_chunk_embeddings(
                 chunks=embed_chunks,
@@ -222,12 +215,11 @@ async def _mark_embedding_success(
         raise Exception("Document embedding workflow missing document_id")
     if not manage_task_status:
         return state
-    _ensure_embedding_task_not_cancelled(document_id)
+    await _ensure_embedding_task_not_cancelled(document_id)
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+    async with async_session_context() as db:
+        ensure_document_active(db=db.sync_session, document_id=document_id)
+        db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -235,9 +227,7 @@ async def _mark_embedding_success(
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
             db_embedding_task.celery_task_id = None
             db_embedding_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
     return state
 
 
@@ -304,9 +294,8 @@ async def run_document_embedding_workflow(
     except WorkflowCancelledError:
         if not manage_task_status:
             raise
-        db = session_scope()
-        try:
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        async with async_session_context() as db:
+            db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -314,17 +303,14 @@ async def run_document_embedding_workflow(
                 db_embedding_task.status = DocumentEmbeddingStatus.CANCELLED
                 db_embedding_task.celery_task_id = None
                 db_embedding_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise
     except Exception as e:
         exception_logger.error(f"Something is error while embedding document info: {e}", exc_info=True)
         if not manage_task_status:
             raise
-        db = session_scope()
-        try:
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        async with async_session_context() as db:
+            db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -335,7 +321,5 @@ async def run_document_embedding_workflow(
                 db_embedding_task.status = DocumentEmbeddingStatus.FAILED
                 db_embedding_task.celery_task_id = None
                 db_embedding_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise

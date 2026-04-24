@@ -1,8 +1,10 @@
+import asyncio
+
 from data.custom_types.all import ChunkInfo
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
 
 
-def upsert_milvus(
+async def upsert_milvus(
     user_id: int,
     chunks_info: list[ChunkInfo]
 ):
@@ -23,4 +25,8 @@ def upsert_milvus(
             "idx": c.idx,
         })
 
-    milvus_client.insert(collection_name=MILVUS_COLLECTION, data=rows)
+    await asyncio.to_thread(
+        milvus_client.insert,
+        collection_name=MILVUS_COLLECTION,
+        data=rows,
+    )

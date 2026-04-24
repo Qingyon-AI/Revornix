@@ -1,7 +1,7 @@
 import crud
 
 from common.logger import exception_logger
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 from proxy.file_system_proxy import FileSystemProxy
 from protocol.remote_file_service import RemoteFileServiceProtocol
@@ -45,9 +45,8 @@ async def get_markdown_content_by_section_id(
 ) -> str | None:
     section_md_file_name: str | None = None
     try:
-        db = session_scope()
-        try:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=user_id
             )
@@ -56,7 +55,7 @@ async def get_markdown_content_by_section_id(
             if db_user.default_user_file_system is None:
                 raise Exception("The user who want to get the markdown content does not have a default user file system")
 
-            db_section = crud.section.get_section_by_section_id(
+            db_section = await crud.section.get_section_by_section_id_async(
                 db=db,
                 section_id=section_id
             )
@@ -65,8 +64,6 @@ async def get_markdown_content_by_section_id(
             if db_section.md_file_name is None:
                 raise Exception("The section which you want to get the markdown content does not have a markdown file")
             section_md_file_name = db_section.md_file_name
-        finally:
-            db.close()
 
         file_service = remote_file_service
         if file_service is None:
@@ -103,9 +100,8 @@ async def get_markdown_content_by_document_id(
     markdown_content: str | None = None
     markdown_file_name: str | None = None
     try:
-        db = session_scope()
-        try:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=user_id
             )
@@ -114,14 +110,14 @@ async def get_markdown_content_by_document_id(
             if db_user.default_user_file_system is None:
                 raise Exception("The user havn't set the default file system")
 
-            db_document = crud.document.get_document_by_document_id(
+            db_document = await crud.document.get_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_document is None:
                 raise Exception("Document not found")
             if db_document.category == DocumentCategory.WEBSITE or db_document.category == DocumentCategory.FILE:
-                db_convert_task = crud.task.get_document_convert_task_by_document_id(
+                db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
                     db=db,
                     document_id=document_id
                 )
@@ -129,7 +125,7 @@ async def get_markdown_content_by_document_id(
                     raise Exception("The document convert task of the document you want to summary havn't been finished")
                 markdown_file_name = db_convert_task.md_file_name
             elif db_document.category == DocumentCategory.QUICK_NOTE:
-                quick_note_document = crud.document.get_quick_note_document_by_document_id(
+                quick_note_document = await crud.document.get_quick_note_document_by_document_id_async(
                     db=db,
                     document_id=document_id
                 )
@@ -137,7 +133,7 @@ async def get_markdown_content_by_document_id(
                     raise Exception("The quick note info of the document is not found")
                 markdown_content = quick_note_document.content
             elif db_document.category == DocumentCategory.AUDIO:
-                db_transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+                db_transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
                     db=db,
                     document_id=document_id
                 )
@@ -146,8 +142,6 @@ async def get_markdown_content_by_document_id(
                 markdown_content = db_transcribe_task.transcribed_text
             else:
                 raise Exception("Document category not supported")
-        finally:
-            db.close()
 
         if markdown_content is not None:
             return markdown_content

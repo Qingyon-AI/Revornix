@@ -5,8 +5,7 @@ load_dotenv(override=True)
 from threading import Lock
 from urllib.parse import urlparse, urlunparse
 
-from neo4j import GraphDatabase
-from neo4j.exceptions import ServiceUnavailable
+from neo4j import AsyncGraphDatabase
 
 from config.neo4j import NEO4J_PASS, NEO4J_URI, NEO4J_USER
 
@@ -26,7 +25,7 @@ def normalize_neo4j_uri(uri: str) -> str:
     return uri
 
 
-class _LazyNeo4jDriver:
+class _LazyAsyncNeo4jDriver:
     def __init__(self) -> None:
         self._driver = None
         self._lock = Lock()
@@ -37,21 +36,14 @@ class _LazyNeo4jDriver:
         with self._lock:
             if self._driver is None:
                 uri = normalize_neo4j_uri(NEO4J_URI)
-                self._driver = GraphDatabase.driver(
+                self._driver = AsyncGraphDatabase.driver(
                     uri=uri,
                     auth=(NEO4J_USER, NEO4J_PASS),
                 )
-                try:
-                    self._driver.verify_connectivity()
-                except ServiceUnavailable as exc:
-                    raise RuntimeError(
-                        "Failed to connect to Neo4j. Check NEO4J_URI/NEO4J_USER/NEO4J_PASS. "
-                        "For a local single-node Neo4j instance, use bolt://host:7687 instead of neo4j://host:7687."
-                    ) from exc
         return self._driver
 
     def __getattr__(self, item):
         return getattr(self._get_driver(), item)
 
 
-neo4j_driver = _LazyNeo4jDriver()
+async_neo4j_driver = _LazyAsyncNeo4jDriver()

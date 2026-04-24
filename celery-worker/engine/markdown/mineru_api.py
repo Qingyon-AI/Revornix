@@ -17,7 +17,7 @@ from common.common import extract_title_and_summary
 from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo, FileInfo
 from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.logger import info_logger, exception_logger, format_log_message
 from proxy.file_system_proxy import FileSystemProxy
 
@@ -163,275 +163,263 @@ class MineruApiEngine(MarkdownEngineBase):
         stage = "init"
         file_log_contexts = [_build_local_file_log_context(path) for path in file_paths]
         last_download_context: dict[str, Any] = {}
-
-        db = session_scope()
         try:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-            if not db_user:
-                raise Exception("The owner of the engine is not found.")
-            if db_user.default_user_file_system is None:
-                raise Exception("The owner of the engine has not set a default file system yet.")
+            async with async_session_context() as db:
+                db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
+                if not db_user:
+                    raise Exception("The owner of the engine is not found.")
+                if db_user.default_user_file_system is None:
+                    raise Exception("The owner of the engine has not set a default file system yet.")
 
-            # 1) Apply upload URLs (batch)
-            stage = "apply_upload_urls"
-            request_url = f"{self.MINERU_BASE}/api/v4/file-urls/batch"
-            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+                # 1) Apply upload URLs (batch)
+                stage = "apply_upload_urls"
+                request_url = f"{self.MINERU_BASE}/api/v4/file-urls/batch"
+                headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
 
-            files_payload = []
-            data_id_to_file_context: dict[str, dict[str, Any]] = {}
-            for path, file_log_context in zip(file_paths, file_log_contexts):
-                data_id = str(uuid.uuid4())
-                payload = {
-                    "name": Path(path).name,
-                    "is_ocr": True,
-                    "data_id": data_id,
-                }
-                files_payload.append(payload)
-                data_id_to_file_context[data_id] = file_log_context
-
-            batch_payload = {
-                "enable_formula": True,
-                "language": "ch",
-                "enable_table": True,
-                "files": files_payload,
-            }
-
-            async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=30) as client:
-                resp = await client.post(request_url, headers=headers, json=batch_payload)
-                # raise_for_status helps catch 4xx/5xx quickly
-                resp.raise_for_status()
-
-                result = resp.json()
-                if result.get("code") != 0:
-                    raise Exception(f"MinerU apply upload URL failed: {result.get('msg', 'Unknown error')}; resp={result}")
-
-                data = result.get("data") or {}
-                batch_id = data.get("batch_id")
-                upload_urls = data.get("file_urls")
-
-                if not batch_id or not upload_urls or len(upload_urls) != len(file_paths):
-                    raise Exception(
-                        f"MinerU upload URL response malformed: batch_id={batch_id}, "
-                        f"urls_len={0 if not upload_urls else len(upload_urls)}, files_len={len(file_paths)}; resp={result}"
-                    )
-
-            # 2) Upload files concurrently (PUT to presigned URLs)
-            stage = "upload_files"
-            async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as client:
-                async def upload_file(idx: int, file_path: str) -> None:
-                    async with aiofiles.open(file_path, "rb") as f:
-                        data = await f.read()
-                    if not data:
-                        raise Exception(f"Read empty data from file: {file_path}")
-
-                    upload_resp = await client.put(upload_urls[idx], content=data)
-                    # Some object stores return 200/201/204; accept any 2xx
-                    if upload_resp.status_code < 200 or upload_resp.status_code >= 300:
-                        raise Exception(
-                            f"File upload failed: {file_path}, status={upload_resp.status_code}, body={upload_resp.text[:500]}"
-                        )
-
-                await asyncio.gather(*(upload_file(i, p) for i, p in enumerate(file_paths)))
-
-            # 3) Poll extraction results until all terminal (done/failed)
-            stage = "poll_extract_results"
-            async def poll_result() -> list[dict[str, Any]]:
-                timeout_sec = 300  # 5 minutes
-                interval_sec = 2
-                start_time = time.monotonic()
-                last_state_snapshot: str | None = None
-
-                while True:
-                    status_res = await self._get_batch_status(batch_id)
-
-                    if status_res.get("code") != 0:
-                        # MinerU returned an application-level error
-                        raise Exception(
-                            f"MinerU batch status error: {status_res.get('msg', 'Unknown error')}; resp={status_res}"
-                        )
-
-                    extract_list = (status_res.get("data") or {}).get("extract_result") or []
-                    if not isinstance(extract_list, list):
-                        raise Exception(f"MinerU batch status malformed (extract_result not list): resp={status_res}")
-
-                    # Helpful state log (only when changes)
-                    states = [(it.get("state"), it.get("data_id") or it.get("task_id")) for it in extract_list]
-                    snapshot = str(states)
-                    if snapshot != last_state_snapshot:
-                        last_state_snapshot = snapshot
-                        info_logger.info(f"[MinerU] batch_id={batch_id} states={states}")
-
-                    # Wait until every item is terminal
-                    all_terminal = all((it.get("state") in self.TERMINAL_STATES) for it in extract_list) and len(extract_list) > 0
-                    if all_terminal:
-                        return extract_list
-
-                    # Timeout
-                    if time.monotonic() - start_time >= timeout_sec:
-                        raise Exception(
-                            f"Timeout waiting for MinerU extraction results (>{timeout_sec}s). "
-                            f"batch_id={batch_id}, states={states}"
-                        )
-
-                    await asyncio.sleep(interval_sec)
-
-            extract_result = await poll_result()
-
-            # 4) Process results
-            stage = "process_extract_results"
-            final_data: list[Tuple[str, str, str]] = []
-
-            async with httpx.AsyncClient(
-                proxy=None,
-                trust_env=False,
-                timeout=MINERU_RESULT_DOWNLOAD_TIMEOUT_SEC,
-            ) as download_client:
-                for item in extract_result:
-                    state = item.get("state")
-
-                    if state == "failed":
-                        failed_context = data_id_to_file_context.get(item.get("data_id") or "", {})
-                        exception_logger.error(
-                            format_log_message(
-                                "mineru_extract_item_failed",
-                                batch_id=batch_id,
-                                user_id=user_id,
-                                data_id=item.get("data_id"),
-                                task_id=item.get("task_id"),
-                                mineru_file_name=item.get("file_name"),
-                                state=state,
-                                err_msg=item.get("err_msg"),
-                                **failed_context,
-                            )
-                        )
-                        raise Exception(
-                            f"MinerU extraction failed: batch_id={batch_id}, data_id={item.get('data_id')}, "
-                            f"file_name={failed_context.get('source_file_name') or item.get('file_name')}, "
-                            f"err_msg={item.get('err_msg')}"
-                        )
-
-                    if state != "done":
-                        # In theory we should never reach here because poll_result waits terminal,
-                        # but keep it defensive.
-                        continue
-
-                    full_zip_url = item.get("full_zip_url")
-                    if not full_zip_url:
-                        raise Exception(f"MinerU returned done but missing full_zip_url: item={item}")
-
-                    download_context = {
-                        "batch_id": batch_id,
-                        "user_id": user_id,
-                        "data_id": item.get("data_id"),
-                        "task_id": item.get("task_id"),
-                        "mineru_file_name": item.get("file_name"),
-                        "full_zip_url_host": urlsplit(full_zip_url).netloc or None,
-                        "full_zip_url_redacted": _redact_url_for_log(full_zip_url),
-                        **data_id_to_file_context.get(item.get("data_id") or "", {}),
+                files_payload = []
+                data_id_to_file_context: dict[str, dict[str, Any]] = {}
+                for path, file_log_context in zip(file_paths, file_log_contexts):
+                    data_id = str(uuid.uuid4())
+                    payload = {
+                        "name": Path(path).name,
+                        "is_ocr": True,
+                        "data_id": data_id,
                     }
-                    last_download_context = download_context
+                    files_payload.append(payload)
+                    data_id_to_file_context[data_id] = file_log_context
 
-                    # Download zip -> extract in an isolated temporary directory.
-                    with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-result-") as temp_dir_str:
-                        temp_dir = Path(temp_dir_str)
-                        downloaded_zip_path = temp_dir / "mineru_result.zip"
-                        for attempt in range(1, MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS + 1):
-                            try:
-                                async with download_client.stream("GET", full_zip_url) as download_resp:
-                                    download_resp.raise_for_status()
-                                    with downloaded_zip_path.open("wb") as downloaded_zip_file:
-                                        async for chunk in download_resp.aiter_bytes():
-                                            if chunk:
-                                                downloaded_zip_file.write(chunk)
-                                if attempt > 1:
-                                    info_logger.info(
+                batch_payload = {
+                    "enable_formula": True,
+                    "language": "ch",
+                    "enable_table": True,
+                    "files": files_payload,
+                }
+
+                async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=30) as client:
+                    resp = await client.post(request_url, headers=headers, json=batch_payload)
+                    # raise_for_status helps catch 4xx/5xx quickly
+                    resp.raise_for_status()
+
+                    result = resp.json()
+                    if result.get("code") != 0:
+                        raise Exception(f"MinerU apply upload URL failed: {result.get('msg', 'Unknown error')}; resp={result}")
+
+                    data = result.get("data") or {}
+                    batch_id = data.get("batch_id")
+                    upload_urls = data.get("file_urls")
+
+                    if not batch_id or not upload_urls or len(upload_urls) != len(file_paths):
+                        raise Exception(
+                            f"MinerU upload URL response malformed: batch_id={batch_id}, "
+                            f"urls_len={0 if not upload_urls else len(upload_urls)}, files_len={len(file_paths)}; resp={result}"
+                        )
+
+                # 2) Upload files concurrently (PUT to presigned URLs)
+                stage = "upload_files"
+                async with httpx.AsyncClient(proxy=None, trust_env=False, timeout=60) as client:
+                    async def upload_file(idx: int, file_path: str) -> None:
+                        async with aiofiles.open(file_path, "rb") as f:
+                            data = await f.read()
+                        if not data:
+                            raise Exception(f"Read empty data from file: {file_path}")
+
+                        upload_resp = await client.put(upload_urls[idx], content=data)
+                        # Some object stores return 200/201/204; accept any 2xx
+                        if upload_resp.status_code < 200 or upload_resp.status_code >= 300:
+                            raise Exception(
+                                f"File upload failed: {file_path}, status={upload_resp.status_code}, body={upload_resp.text[:500]}"
+                            )
+
+                    await asyncio.gather(*(upload_file(i, p) for i, p in enumerate(file_paths)))
+
+                # 3) Poll extraction results until all terminal (done/failed)
+                stage = "poll_extract_results"
+                async def poll_result() -> list[dict[str, Any]]:
+                    timeout_sec = 300  # 5 minutes
+                    interval_sec = 2
+                    start_time = time.monotonic()
+                    last_state_snapshot: str | None = None
+
+                    while True:
+                        status_res = await self._get_batch_status(batch_id)
+
+                        if status_res.get("code") != 0:
+                            raise Exception(
+                                f"MinerU batch status error: {status_res.get('msg', 'Unknown error')}; resp={status_res}"
+                            )
+
+                        extract_list = (status_res.get("data") or {}).get("extract_result") or []
+                        if not isinstance(extract_list, list):
+                            raise Exception(f"MinerU batch status malformed (extract_result not list): resp={status_res}")
+
+                        states = [(it.get("state"), it.get("data_id") or it.get("task_id")) for it in extract_list]
+                        snapshot = str(states)
+                        if snapshot != last_state_snapshot:
+                            last_state_snapshot = snapshot
+                            info_logger.info(f"[MinerU] batch_id={batch_id} states={states}")
+
+                        all_terminal = all((it.get("state") in self.TERMINAL_STATES) for it in extract_list) and len(extract_list) > 0
+                        if all_terminal:
+                            return extract_list
+
+                        if time.monotonic() - start_time >= timeout_sec:
+                            raise Exception(
+                                f"Timeout waiting for MinerU extraction results (>{timeout_sec}s). "
+                                f"batch_id={batch_id}, states={states}"
+                            )
+
+                        await asyncio.sleep(interval_sec)
+
+                extract_result = await poll_result()
+
+                # 4) Process results
+                stage = "process_extract_results"
+                final_data: list[Tuple[str, str, str]] = []
+
+                async with httpx.AsyncClient(
+                    proxy=None,
+                    trust_env=False,
+                    timeout=MINERU_RESULT_DOWNLOAD_TIMEOUT_SEC,
+                ) as download_client:
+                    for item in extract_result:
+                        state = item.get("state")
+
+                        if state == "failed":
+                            failed_context = data_id_to_file_context.get(item.get("data_id") or "", {})
+                            exception_logger.error(
+                                format_log_message(
+                                    "mineru_extract_item_failed",
+                                    batch_id=batch_id,
+                                    user_id=user_id,
+                                    data_id=item.get("data_id"),
+                                    task_id=item.get("task_id"),
+                                    mineru_file_name=item.get("file_name"),
+                                    state=state,
+                                    err_msg=item.get("err_msg"),
+                                    **failed_context,
+                                )
+                            )
+                            raise Exception(
+                                f"MinerU extraction failed: batch_id={batch_id}, data_id={item.get('data_id')}, "
+                                f"file_name={failed_context.get('source_file_name') or item.get('file_name')}, "
+                                f"err_msg={item.get('err_msg')}"
+                            )
+
+                        if state != "done":
+                            continue
+
+                        full_zip_url = item.get("full_zip_url")
+                        if not full_zip_url:
+                            raise Exception(f"MinerU returned done but missing full_zip_url: item={item}")
+
+                        download_context = {
+                            "batch_id": batch_id,
+                            "user_id": user_id,
+                            "data_id": item.get("data_id"),
+                            "task_id": item.get("task_id"),
+                            "mineru_file_name": item.get("file_name"),
+                            "full_zip_url_host": urlsplit(full_zip_url).netloc or None,
+                            "full_zip_url_redacted": _redact_url_for_log(full_zip_url),
+                            **data_id_to_file_context.get(item.get("data_id") or "", {}),
+                        }
+                        last_download_context = download_context
+
+                        with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-result-") as temp_dir_str:
+                            temp_dir = Path(temp_dir_str)
+                            downloaded_zip_path = temp_dir / "mineru_result.zip"
+                            for attempt in range(1, MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS + 1):
+                                try:
+                                    async with download_client.stream("GET", full_zip_url) as download_resp:
+                                        download_resp.raise_for_status()
+                                        with downloaded_zip_path.open("wb") as downloaded_zip_file:
+                                            async for chunk in download_resp.aiter_bytes():
+                                                if chunk:
+                                                    downloaded_zip_file.write(chunk)
+                                    if attempt > 1:
+                                        info_logger.info(
+                                            format_log_message(
+                                                "mineru_result_download_recovered",
+                                                attempt=attempt,
+                                                max_attempts=MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS,
+                                                **download_context,
+                                            )
+                                        )
+                                    break
+                                except Exception as error:
+                                    retryable = _is_retryable_download_error(error)
+                                    status_code = None
+                                    if isinstance(error, httpx.HTTPStatusError):
+                                        status_code = error.response.status_code
+                                    exception_logger.warning(
                                         format_log_message(
-                                            "mineru_result_download_recovered",
+                                            "mineru_result_download_attempt_failed",
                                             attempt=attempt,
                                             max_attempts=MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS,
+                                            retryable=retryable,
+                                            status_code=status_code,
                                             **download_context,
+                                            **_build_error_log_context(error),
                                         )
                                     )
-                                break
-                            except Exception as error:
-                                retryable = _is_retryable_download_error(error)
-                                status_code = None
-                                if isinstance(error, httpx.HTTPStatusError):
-                                    status_code = error.response.status_code
-                                exception_logger.warning(
-                                    format_log_message(
-                                        "mineru_result_download_attempt_failed",
-                                        attempt=attempt,
-                                        max_attempts=MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS,
-                                        retryable=retryable,
-                                        status_code=status_code,
-                                        **download_context,
-                                        **_build_error_log_context(error),
+                                    if not retryable or attempt >= MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS:
+                                        raise
+                                    await asyncio.sleep(
+                                        MINERU_RESULT_DOWNLOAD_RETRY_BACKOFF_SEC * attempt
                                     )
+
+                            extracted_dir = temp_dir / "extracted"
+                            extracted_dir.mkdir(parents=True, exist_ok=True)
+                            _safe_extract_zip(downloaded_zip_path, extracted_dir)
+
+                            md_path = extracted_dir / "full.md"
+                            if not md_path.exists():
+                                try:
+                                    files = [str(p.relative_to(extracted_dir)) for p in extracted_dir.rglob("*")][:50]
+                                except Exception:
+                                    files = []
+                                raise Exception(f"full.md not found in extracted zip; extracted_dir={extracted_dir}, sample_files={files}")
+
+                            async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
+                                content = await f.read()
+
+                            if not content.strip():
+                                raise Exception(f"Extracted full.md is empty; extracted_dir={extracted_dir}")
+
+                            title, summary = extract_title_and_summary(content)
+
+                            images_dir = extracted_dir / "images"
+                            if images_dir.exists() and images_dir.is_dir():
+                                remote_file_service = await FileSystemProxy.create(
+                                    user_id=user_id
                                 )
-                                if not retryable or attempt >= MINERU_RESULT_DOWNLOAD_MAX_ATTEMPTS:
-                                    raise
-                                await asyncio.sleep(
-                                    MINERU_RESULT_DOWNLOAD_RETRY_BACKOFF_SEC * attempt
-                                )
-
-                        extracted_dir = temp_dir / "extracted"
-                        extracted_dir.mkdir(parents=True, exist_ok=True)
-                        _safe_extract_zip(downloaded_zip_path, extracted_dir)
-
-                        # Read full.md (validate existence)
-                        md_path = extracted_dir / "full.md"
-                        if not md_path.exists():
-                            # Sometimes folder structure differs; help diagnose by listing.
-                            try:
-                                files = [str(p.relative_to(extracted_dir)) for p in extracted_dir.rglob("*")][:50]
-                            except Exception:
-                                files = []
-                            raise Exception(f"full.md not found in extracted zip; extracted_dir={extracted_dir}, sample_files={files}")
-
-                        async with aiofiles.open(md_path, "r", encoding="utf-8") as f:
-                            content = await f.read()
-
-                        if not content.strip():
-                            raise Exception(f"Extracted full.md is empty; extracted_dir={extracted_dir}")
-
-                        title, summary = extract_title_and_summary(content)
-
-                        # Upload image assets (optional)
-                        images_dir = extracted_dir / "images"
-                        if images_dir.exists() and images_dir.is_dir():
-                            remote_file_service = await FileSystemProxy.create(
-                                user_id=user_id
-                            )
-                            image_upload_semaphore = asyncio.Semaphore(
-                                MINERU_IMAGE_UPLOAD_MAX_CONCURRENCY
-                            )
-
-                            async def upload_img(p: Path) -> None:
-                                if not p.is_file():
-                                    return
-                                async with image_upload_semaphore:
-                                    async with aiofiles.open(p, "rb") as f:
-                                        data = await f.read()
-                                if not data:
-                                    return
-                                # Ideally detect mime by extension; keep your original default.
-                                await remote_file_service.upload_file_to_path(
-                                    file_path=f"images/{p.name}",
-                                    file=io.BytesIO(data),
-                                    content_type="image/png",
+                                image_upload_semaphore = asyncio.Semaphore(
+                                    MINERU_IMAGE_UPLOAD_MAX_CONCURRENCY
                                 )
 
-                            image_paths = [img for img in images_dir.iterdir() if img.is_file()]
-                            await asyncio.gather(*(upload_img(img) for img in image_paths))
+                                async def upload_img(p: Path) -> None:
+                                    if not p.is_file():
+                                        return
+                                    async with image_upload_semaphore:
+                                        async with aiofiles.open(p, "rb") as f:
+                                            data = await f.read()
+                                    if not data:
+                                        return
+                                    await remote_file_service.upload_file_to_path(
+                                        file_path=f"images/{p.name}",
+                                        file=io.BytesIO(data),
+                                        content_type="image/png",
+                                    )
 
-                        final_data.append((title, summary, content))
+                                image_paths = [img for img in images_dir.iterdir() if img.is_file()]
+                                await asyncio.gather(*(upload_img(img) for img in image_paths))
 
-            # IMPORTANT: if all were done but we still got nothing, that's an internal inconsistency.
-            if not final_data:
-                raise Exception(f"No results produced after processing MinerU output; batch_id={batch_id}, raw={extract_result}")
+                            final_data.append((title, summary, content))
 
-            return final_data
+                # IMPORTANT: if all were done but we still got nothing, that's an internal inconsistency.
+                if not final_data:
+                    raise Exception(f"No results produced after processing MinerU output; batch_id={batch_id}, raw={extract_result}")
+
+                return final_data
 
         except Exception as e:
             extract_error_context = {
@@ -454,8 +442,6 @@ class MineruApiEngine(MarkdownEngineBase):
                 exc_info=True,
             )
             raise
-        finally:
-            db.close()
 
     async def analyse_website(self, url: str) -> WebsiteInfo:
         with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-website-") as temp_dir_str:

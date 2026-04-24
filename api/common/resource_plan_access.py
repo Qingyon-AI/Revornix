@@ -1,3 +1,4 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import crud
@@ -59,14 +60,20 @@ async def ensure_required_plan_level_access(
 
 async def ensure_model_access(
     *,
-    db: Session,
+    db: Session | AsyncSession,
     user: models.user.User,
     model_id: int,
 ):
-    db_model = crud.model.get_ai_model_by_id(
-        db=db,
-        model_id=model_id,
-    )
+    if isinstance(db, AsyncSession):
+        db_model = await crud.model.get_ai_model_by_id_async(
+            db=db,
+            model_id=model_id,
+        )
+    else:
+        db_model = crud.model.get_ai_model_by_id(
+            db=db,
+            model_id=model_id,
+        )
     if db_model is None:
         raise CustomException(message="Model not found", code=404)
 
@@ -82,14 +89,20 @@ async def ensure_model_access(
 
 async def ensure_engine_access(
     *,
-    db: Session,
+    db: Session | AsyncSession,
     user: models.user.User,
     engine_id: int,
 ):
-    db_engine = crud.engine.get_engine_by_engine_id(
-        db=db,
-        engine_id=engine_id,
-    )
+    if isinstance(db, AsyncSession):
+        db_engine = await crud.engine.get_engine_by_engine_id_async(
+            db=db,
+            engine_id=engine_id,
+        )
+    else:
+        db_engine = crud.engine.get_engine_by_engine_id(
+            db=db,
+            engine_id=engine_id,
+        )
     if db_engine is None:
         raise CustomException(message="Engine not found", code=404)
 
@@ -103,7 +116,7 @@ async def ensure_engine_access(
 async def ensure_default_resources_access(
     *,
     user: models.user.User,
-    db: Session,
+    db: Session | AsyncSession,
     model_ids: list[int | None] | None = None,
     engine_ids: list[int | None] | None = None,
 ) -> None:
@@ -112,10 +125,16 @@ async def ensure_default_resources_access(
     for model_id in model_ids or []:
         if model_id is None:
             continue
-        db_model = crud.model.get_ai_model_by_id(
-            db=db,
-            model_id=model_id,
-        )
+        if isinstance(db, AsyncSession):
+            db_model = await crud.model.get_ai_model_by_id_async(
+                db=db,
+                model_id=model_id,
+            )
+        else:
+            db_model = crud.model.get_ai_model_by_id(
+                db=db,
+                model_id=model_id,
+            )
         if db_model is None:
             raise CustomException(message="Model not found", code=404)
         if is_model_owned_by_user(user=user, db_model=db_model):
@@ -129,10 +148,16 @@ async def ensure_default_resources_access(
         for engine_id in engine_ids or []:
             if engine_id is None:
                 continue
-            db_engine = crud.engine.get_engine_by_engine_id(
-                db=db,
-                engine_id=engine_id,
-            )
+            if isinstance(db, AsyncSession):
+                db_engine = await crud.engine.get_engine_by_engine_id_async(
+                    db=db,
+                    engine_id=engine_id,
+                )
+            else:
+                db_engine = crud.engine.get_engine_by_engine_id(
+                    db=db,
+                    engine_id=engine_id,
+                )
             if db_engine is None:
                 raise CustomException(message="Engine not found", code=404)
             if db_engine.required_plan_level > required_plan_level:

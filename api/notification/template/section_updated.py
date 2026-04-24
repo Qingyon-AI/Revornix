@@ -1,7 +1,7 @@
 from typing import cast
 
 import crud
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.section import UserSectionRole
 from notification.template.platform_message_builder import build_multi_platform_message
 from protocol.notification_template import NotificationTemplate
@@ -34,17 +34,17 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
         if receiver_id is None or section_id is None:
             raise Exception(f"receiver_id or section_id is None, params: {params.items()}")
 
-        with session_scope() as db:
-            db_section = crud.section.get_section_by_section_id(
+        async with async_session_context() as db:
+            db_section = await crud.section.get_section_by_section_id_async(
                 db=db,
                 section_id=section_id
             )
             if not db_section:
                 raise Exception("section not found")
-            db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
+            db_user_section = await crud.section.get_section_user_by_section_id_and_user_id_async(
                 db=db,
+                section_id=section_id,
                 user_id=receiver_id,
-                section_id=section_id
             )
             if not db_user_section:
                 raise Exception("user not in section")

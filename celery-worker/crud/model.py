@@ -1,9 +1,10 @@
 import models
 from uuid import uuid4
 from datetime import datetime, timezone
+from sqlalchemy import and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_api_key
-from sqlalchemy import and_, or_
 from enums.model import UserModelProviderRole
 
 def create_user_ai_model_provider(
@@ -107,6 +108,22 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
     return query.one_or_none()
 
 
+async def get_user_ai_model_provider_by_user_and_model_provider_id_async(
+    db: AsyncSession,
+    user_id: int,
+    ai_model_provider_id: int,
+    filter_role: UserModelProviderRole | None = None,
+):
+    stmt = select(models.model.UserAIModelProvider).where(
+        models.model.UserAIModelProvider.user_id == user_id,
+        models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
+        models.model.UserAIModelProvider.delete_at.is_(None),
+    )
+    if filter_role is not None:
+        stmt = stmt.where(models.model.UserAIModelProvider.role == filter_role)
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
 def get_ai_model_by_uuid(
     db: Session,
     uuid: str
@@ -134,6 +151,21 @@ def get_ai_model_by_id(
                          models.model.AIModel.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_ai_model_by_id_async(
+    db: AsyncSession,
+    model_id: int,
+):
+    stmt = (
+        select(models.model.AIModel)
+        .options(joinedload(models.model.AIModel.provider))
+        .where(
+            models.model.AIModel.id == model_id,
+            models.model.AIModel.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_ai_model_provider_by_uuid(
     db: Session,
     uuid: str
@@ -160,6 +192,21 @@ def get_ai_model_provider_by_id(
     query = query.filter(models.model.AIModelProvider.id == provider_id,
                          models.model.AIModelProvider.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_ai_model_provider_by_id_async(
+    db: AsyncSession,
+    provider_id: int,
+):
+    stmt = (
+        select(models.model.AIModelProvider)
+        .options(joinedload(models.model.AIModelProvider.creator))
+        .where(
+            models.model.AIModelProvider.id == provider_id,
+            models.model.AIModelProvider.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_ai_models_for_ai_model_provider(
     db: Session,

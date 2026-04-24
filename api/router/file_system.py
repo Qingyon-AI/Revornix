@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile, Query
 from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import json
 import crud
@@ -13,7 +13,7 @@ import schemas
 from common.encrypt import decrypt_file_system_config
 from common.upload_limits import validate_file_upload_size
 from enums.file import RemoteFileService
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_async_db, get_current_user
 from proxy.file_system_proxy import FileSystemProxy
 from common.encrypt import encrypt_file_system_config, decrypt_file_system_config
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
@@ -43,7 +43,7 @@ def _normalize_presign_file_path(path: str, bucket: str | None = None) -> str:
 @file_system_router.post("/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
 async def get_presigned_url(
     presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):  
     file_service = await FileSystemProxy.create(
@@ -66,12 +66,12 @@ async def get_presigned_url(
     )
 
 @file_system_router.post('/detail', response_model=schemas.file_system.FileSystemInfo)
-def get_file_system_info(
+async def get_file_system_info(
     file_system_info_request: schemas.file_system.FileSystemInfoRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    db_file_system = crud.file_system.get_file_system_by_id(
+    db_file_system = await crud.file_system.get_file_system_by_id_async(
         db=db,
         file_system_id=file_system_info_request.file_system_id
     )
@@ -126,18 +126,18 @@ async def resolve_file(
     return RedirectResponse(url=url, status_code=307)
 
 @file_system_router.post('/user-file-system/detail', response_model=schemas.file_system.UserFileSystemDetail)
-def get_user_file_system_info(
+async def get_user_file_system_info(
     user_file_system_info_request: schemas.file_system.UserFileSystemInfoRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(
+    db_user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=user_file_system_info_request.user_file_system_id
     )
     if db_user_file_system is None:
         raise schemas.error.CustomException(code=404, message="User file system not found")
-    db_file_system = crud.file_system.get_file_system_by_id(
+    db_file_system = await crud.file_system.get_file_system_by_id_async(
         db=db,
         file_system_id=db_user_file_system.file_system_id
     )
@@ -157,13 +157,13 @@ def get_user_file_system_info(
     return res
 
 @file_system_router.post("/mine", response_model=schemas.file_system.MineFileSystemSearchResponse)
-def search_mine_file_system(
+async def search_mine_file_system(
     file_system_search_request: schemas.file_system.FileSystemSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     res = []
-    db_user_file_systems = crud.file_system.get_user_file_systems_by_user_id(
+    db_user_file_systems = await crud.file_system.get_user_file_systems_by_user_id_async(
         db=db,
         user_id=current_user.id,
         keyword=file_system_search_request.keyword
@@ -185,12 +185,12 @@ def search_mine_file_system(
     return schemas.file_system.MineFileSystemSearchResponse(data=res)
 
 @file_system_router.post("/provide", response_model=schemas.file_system.ProvideFileSystemSearchResponse)
-def provide_file_system(
+async def provide_file_system(
     file_system_search_request: schemas.file_system.FileSystemSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    db_file_systems = crud.file_system.get_all_file_systems(
+    db_file_systems = await crud.file_system.get_all_file_systems_async(
         db=db,
         keyword=file_system_search_request.keyword
     )
@@ -200,12 +200,12 @@ def provide_file_system(
     return schemas.file_system.ProvideFileSystemSearchResponse(data=file_systems)
 
 @file_system_router.post("/install", response_model=schemas.file_system.FileSystemInstallResponse)
-def install_user_file_system(
+async def install_user_file_system(
     file_system_install_request: schemas.file_system.FileSystemInstallRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
-    db_user_file_system = crud.file_system.create_user_file_system(
+    db_user_file_system = await crud.file_system.create_user_file_system_async(
         db=db,
         user_id=current_user.id,
         file_system_id=file_system_install_request.file_system_id,
@@ -213,18 +213,18 @@ def install_user_file_system(
         description=file_system_install_request.description,
         config_json=file_system_install_request.config_json
     )
-    db.commit()
+    await db.commit()
     return schemas.file_system.FileSystemInstallResponse(user_file_system_id=db_user_file_system.id)
 
 @file_system_router.post("/user-file-system/delete", response_model=schemas.common.NormalResponse)
-def delete_user_file_system(
+async def delete_user_file_system(
     user_file_system_delete_request: schemas.file_system.UserFileSystemDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
     
-    db_user_file_system = crud.file_system.get_user_file_system_by_id(
+    db_user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=user_file_system_delete_request.user_file_system_id
     )
@@ -234,17 +234,17 @@ def delete_user_file_system(
         raise schemas.error.CustomException(code=403, message="You don't have permission to manage this user file system")
     db_user_file_system.delete_at =now
     
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 @file_system_router.post("/update", response_model=schemas.common.NormalResponse)
-def update_file_system(
+async def update_file_system(
     user_file_system_update_request: schemas.file_system.UserFileSystemUpdateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     now = datetime.now(tz=timezone.utc)
-    user_file_system = crud.file_system.get_user_file_system_by_id(
+    user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=user_file_system_update_request.user_file_system_id
     )
@@ -258,7 +258,7 @@ def update_file_system(
         if user_file_system_update_request.config_json is not None:
             user_file_system.config_json = encrypt_file_system_config(user_file_system_update_request.config_json)
         user_file_system.update_time = now
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -267,7 +267,7 @@ async def upload_file_system(
     file: UploadFile = File(...),
     file_path: str = Form(...),
     content_type: str = Form(...),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: models.user.User = Depends(get_current_user)
 ):
     file_path = _normalize_and_validate_path(file_path)
@@ -277,7 +277,7 @@ async def upload_file_system(
 
     content = await file.read()
     validate_file_upload_size(file_path=file_path, size=len(content))
-    user_file_system = crud.file_system.get_user_file_system_by_id(
+    user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=default_user_file_system
     )

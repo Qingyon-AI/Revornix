@@ -114,7 +114,7 @@ class BananaImageGenerateEngine(ImageGenerateEngineBase):
                         },   
                     ]
                 )
-                persist_engine_usage_from_completion(
+                await persist_engine_usage_from_completion(
                     user_id=self.user_id,
                     resource_uuid=self.resource_uuid or self.engine_uuid,
                     completion=response,

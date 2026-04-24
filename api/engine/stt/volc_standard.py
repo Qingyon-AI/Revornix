@@ -5,7 +5,7 @@ import httpx
 from typing import Any, cast
 from common.logger import info_logger, log_exception
 from protocol.remote_file_service import RemoteFileServiceProtocol
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.stt_engine_base import STTEngineBase
 from common.file import get_remote_file_signed_url
@@ -47,12 +47,12 @@ class VolcSTTStandardEngine(STTEngineBase):
         if not user_id:
             raise Exception("Engine is not initialized. Please initialize first.")
 
-        db = session_scope()
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-        if not db_user:
-            raise Exception("The owner of the engine is not found.")
-        if db_user.default_user_file_system is None:
-            raise Exception("The owner of the engine has not set a default file system yet.")
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
+            if not db_user:
+                raise Exception("The owner of the engine is not found.")
+            if db_user.default_user_file_system is None:
+                raise Exception("The owner of the engine has not set a default file system yet.")
         
         final_audio_file_url = await get_remote_file_signed_url(
             user_id=user_id,
@@ -164,8 +164,6 @@ class VolcSTTStandardEngine(STTEngineBase):
             await asyncio.sleep(self.POLL_INTERVAL_SEC)
 
 async def main():
-    from data.sql.base import session_scope
-    db = session_scope()
     try:
         engine = VolcSTTStandardEngine()
         engine.set_engine_config({
@@ -181,9 +179,6 @@ async def main():
     except Exception as exc:
         print(exc)
         log_exception()
-        
-    finally:
-        db.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

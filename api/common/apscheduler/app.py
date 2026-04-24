@@ -16,7 +16,7 @@ from common.timezone import (
     normalize_timezone_name,
     today_in_timezone,
 )
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.notification import (
     NotificationContentType,
     NotificationTriggerType,
@@ -40,50 +40,50 @@ async def send_notification_scheduler(
     receiver_id: int,
     notification_task_id: int
 ):
-    db = session_scope()
     try:
-        db_notification_task = crud.notification.get_notification_task_by_notification_task_id(
-            db=db,
-            notification_task_id=notification_task_id
-        )
-        if db_notification_task is None:
-            raise schemas.error.CustomException(message="Notification task not found", code=500)
+        async with async_session_context() as db:
+            db_notification_task = await crud.notification.get_notification_task_by_notification_task_id_async(
+                db=db,
+                notification_task_id=notification_task_id
+            )
+            if db_notification_task is None:
+                raise schemas.error.CustomException(message="Notification task not found", code=500)
 
-        notification_tool = NotificationProxy.create_notification_tool(
-            user_id=db_notification_task.creator_id,
-            notification_source_id=db_notification_task.notification_source_id,
-            notification_target_id=db_notification_task.notification_target_id
-        )
-        if db_notification_task.content_type == NotificationContentType.CUSTOM:
-            db_notification_content_custom = crud.notification.get_notification_task_content_custom_by_notification_task_id(
-                db=db,
-                notification_task_id=notification_task_id
+            notification_tool = await NotificationProxy.create_notification_tool(
+                user_id=db_notification_task.creator_id,
+                notification_source_id=db_notification_task.notification_source_id,
+                notification_target_id=db_notification_task.notification_target_id
             )
-            if db_notification_content_custom is None:
-                raise schemas.error.CustomException(message="Custom notification content not found", code=500)
-            message = build_multi_platform_message(
-                title=db_notification_content_custom.title,
-                plain_content=db_notification_content_custom.content or "",
-                link=db_notification_content_custom.link,
-                cover=db_notification_content_custom.cover,
-            )
-        elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
-            db_notification_content_template = crud.notification.get_notification_task_content_template_by_notification_task_id(
-                db=db,
-                notification_task_id=notification_task_id
-            )
-            if db_notification_content_template is None:
-                raise schemas.error.CustomException(message="Notification content template not found", code=500)
-            receiver_timezone = await get_cached_user_timezone(receiver_id)
-            message = await NotificationProxy.create_message_using_template(
-                template_id=db_notification_content_template.notification_template_id,
-                params={
-                    "receiver_id": receiver_id,
-                    "date": today_in_timezone(receiver_timezone),
-                }
-            )
-        else:
-            raise schemas.error.CustomException(message="Unsupported notification content type", code=500)
+            if db_notification_task.content_type == NotificationContentType.CUSTOM:
+                db_notification_content_custom = await crud.notification.get_notification_task_content_custom_by_notification_task_id_async(
+                    db=db,
+                    notification_task_id=notification_task_id
+                )
+                if db_notification_content_custom is None:
+                    raise schemas.error.CustomException(message="Custom notification content not found", code=500)
+                message = build_multi_platform_message(
+                    title=db_notification_content_custom.title,
+                    plain_content=db_notification_content_custom.content or "",
+                    link=db_notification_content_custom.link,
+                    cover=db_notification_content_custom.cover,
+                )
+            elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
+                db_notification_content_template = await crud.notification.get_notification_task_content_template_by_notification_task_id_async(
+                    db=db,
+                    notification_task_id=notification_task_id
+                )
+                if db_notification_content_template is None:
+                    raise schemas.error.CustomException(message="Notification content template not found", code=500)
+                receiver_timezone = await get_cached_user_timezone(receiver_id)
+                message = await NotificationProxy.create_message_using_template(
+                    template_id=db_notification_content_template.notification_template_id,
+                    params={
+                        "receiver_id": receiver_id,
+                        "date": today_in_timezone(receiver_timezone),
+                    }
+                )
+            else:
+                raise schemas.error.CustomException(message="Unsupported notification content type", code=500)
 
         resolved_message = NotificationProxy.resolve_message_for_channel(
             message=message,
@@ -96,7 +96,7 @@ async def send_notification_scheduler(
         link = resolved_message.link
         cover = resolved_message.cover
 
-        db_notification_source = crud.notification.get_notification_source_by_id(
+        db_notification_source = await crud.notification.get_notification_source_by_id_async(
             db=db,
             notification_source_id=db_notification_task.notification_source_id
         )
@@ -111,7 +111,7 @@ async def send_notification_scheduler(
             link=link,
             cover=cover
         )
-        crud.notification.create_notification_record(
+        await crud.notification.create_notification_record_async(
             db=db,
             task_id=notification_task_id,
             title=title,
@@ -119,93 +119,85 @@ async def send_notification_scheduler(
             link=link,
             cover=cover
         )
-        db.commit()
+        await db.commit()
     except Exception:
-        db.rollback()
         raise
-    finally:
-        db.close()
 
 scheduler.add_listener(job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
-info_logger.info(format_log_message("apscheduler_restart_started"))
+async def initialize_scheduler_jobs() -> None:
+    info_logger.info(format_log_message("apscheduler_restart_started"))
 
-db = session_scope()
+    async with async_session_context() as db:
+        db_notification_tasks = await crud.notification.get_all_notification_tasks_async(db=db)
 
-db_notification_tasks = crud.notification.get_all_notification_tasks(db=db)
+        # TODO 如果用户任务多了之后 这个任务队列会非常的庞大 极其占用内存 考虑使用缓存优化
+        for db_notification_task in db_notification_tasks:
+            if not db_notification_task.enable or db_notification_task.trigger_type != NotificationTriggerType.SCHEDULER:
+                continue
+            db_notification_trigger_scheduler = await crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id_async(
+                db=db,
+                notification_task_id=db_notification_task.id
+            )
+            if db_notification_trigger_scheduler is None:
+                continue
+            db_notification_target = await crud.notification.get_notification_target_by_id_async(
+                db=db,
+                notification_target_id=db_notification_task.notification_target_id
+            )
+            if db_notification_target is None:
+                continue
+            scheduler.add_job(
+                func=send_notification_scheduler,
+                trigger=CronTrigger.from_crontab(db_notification_trigger_scheduler.cron_expr),
+                args=[
+                    db_notification_target.creator_id,
+                    db_notification_task.id
+                ],
+                id=str(db_notification_task.id),
+                next_run_time=datetime.now(timezone.utc)
+            )
 
-# TODO 如果用户任务多了之后 这个任务队列会非常的庞大 极其占用内存 考虑使用缓存优化
+        db_section_trigger_schedulers = await crud.task.get_section_process_tasks_async(db=db)
 
-for db_notification_task in db_notification_tasks:
-    if not db_notification_task.enable or db_notification_task.trigger_type != NotificationTriggerType.SCHEDULER:
-        continue
-    db_notification_trigger_scheduler = crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id(
-        db=db,
-        notification_task_id=db_notification_task.id
-    )
-    if db_notification_trigger_scheduler is None:
-        continue
-    db_notification_target = crud.notification.get_notification_target_by_id(
-        db=db,
-        notification_target_id=db_notification_task.notification_target_id
-    )
-    if db_notification_target is None:
-        continue
-    scheduler.add_job(
-        func=send_notification_scheduler,
-        trigger=CronTrigger.from_crontab(db_notification_trigger_scheduler.cron_expr),
-        args=[
-            db_notification_target.creator_id,
-            db_notification_task.id
-        ],
-        id=str(db_notification_task.id),
-        next_run_time=datetime.now(timezone.utc)
-    )
+        for db_section, _db_section_process_task in db_section_trigger_schedulers:
+            db_section_process_task_scheduler = await crud.task.get_section_process_trigger_scheduler_by_section_id_async(
+                db=db,
+                section_id=db_section.id
+            )
+            if db_section_process_task_scheduler is None:
+                continue
+            timezone_name, cron_expr = decode_cron_expr_with_timezone(
+                db_section_process_task_scheduler.cron_expr
+            )
+            if cron_expr is None:
+                continue
+            db_day_section = await crud.section.get_day_section_by_section_id_async(
+                db=db,
+                section_id=db_section.id,
+            )
+            if db_day_section is not None:
+                trigger = build_day_section_trigger(
+                    section_date=db_day_section.date,
+                    cron_expr=cron_expr,
+                    timezone_name=timezone_name,
+                )
+                if trigger is None:
+                    continue
+            else:
+                trigger = CronTrigger.from_crontab(
+                    cron_expr,
+                    timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
+                )
+            scheduler.add_job(
+                func=start_process_section,
+                kwargs={
+                    "section_id": db_section.id,
+                    "user_id": db_section.creator_id,
+                    "auto_podcast": db_section.auto_podcast
+                },
+                trigger=trigger,
+                id=f"section-process-{db_section.id!s}"
+            )
 
-db_section_trigger_schedulers = crud.task.get_section_process_tasks(
-    db=db
-)
-
-for db_section, db_section_process_task in db_section_trigger_schedulers:
-    db_section_process_task_scheduler = crud.task.get_section_process_trigger_scheduler_by_section_id(
-        db=db,
-        section_id=db_section.id
-    )
-    if db_section_process_task_scheduler is None:
-        continue
-    timezone_name, cron_expr = decode_cron_expr_with_timezone(
-        db_section_process_task_scheduler.cron_expr
-    )
-    if cron_expr is None:
-        continue
-    db_day_section = crud.section.get_day_section_by_section_id(
-        db=db,
-        section_id=db_section.id,
-    )
-    if db_day_section is not None:
-        trigger = build_day_section_trigger(
-            section_date=db_day_section.date,
-            cron_expr=cron_expr,
-            timezone_name=timezone_name,
-        )
-        if trigger is None:
-            continue
-    else:
-        trigger = CronTrigger.from_crontab(
-            cron_expr,
-            timezone=ZoneInfo(normalize_timezone_name(timezone_name)),
-        )
-    scheduler.add_job(
-        func=start_process_section,
-        kwargs={
-            "section_id": db_section.id,
-            "user_id": db_section.creator_id,
-            "auto_podcast": db_section.auto_podcast
-        },
-        trigger=trigger,
-        id=f"section-process-{db_section.id!s}"
-    )
-
-info_logger.info(format_log_message("apscheduler_restart_finished"))
-
-db.close()
+    info_logger.info(format_log_message("apscheduler_restart_finished"))

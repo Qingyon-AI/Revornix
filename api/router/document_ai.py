@@ -8,18 +8,19 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, SystemMessage
 from langfuse import propagate_attributes
 from mcp_use import MCPAgent
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user_short_lived
 from common.interpret_event import EventInterpreter
 from common.logger import exception_logger, format_log_message
 from common.markdown_helpers import get_markdown_content_by_document_id
 from common.usage_billing import persist_model_usage_from_snapshot
 from common.usage_collector import UsageCollector
 from data.milvus.search import naive_search_for_documents
+from data.sql.base import async_session_context
 from enums.document import DocumentEmbeddingStatus, DocumentSummarizeStatus
 from router.ai import (
     _build_agent_error_message_key,
@@ -88,35 +89,6 @@ def _serialize_chunk_citation(
     ).model_dump()
 
 
-def _ensure_document_ai_access(
-    *,
-    db: Session,
-    document_id: int,
-    document_creator_id: int,
-    user_id: int,
-) -> None:
-    if document_creator_id == user_id:
-        return
-
-    db_published_document = crud.document.get_publish_document_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
-    if db_published_document is not None:
-        return
-
-    db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
-        db=db,
-        document_id=document_id,
-        user_id=user_id,
-    )
-    ensure_document_access(
-        is_creator=False,
-        has_public_document=False,
-        has_document_collaborator=db_user_document is not None,
-    )
-
-
 def _build_document_agent_system_prompt(
     *,
     system_prompt: str,
@@ -180,25 +152,35 @@ def _apply_document_agent_system_prompt(
 
 async def _build_document_context(
     *,
-    db: Session,
+    db: AsyncSession,
     document_id: int,
     viewer_user_id: int,
     question: str,
     response_language_instruction: str,
 ) -> tuple[models.document.Document, str, list[dict[str, Any]]]:
-    db_document = crud.document.get_document_by_document_id(
+    db_document = await crud.document.get_document_by_document_id_async(
         db=db,
         document_id=document_id,
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
 
-    _ensure_document_ai_access(
-        db=db,
-        document_id=document_id,
-        document_creator_id=db_document.creator_id,
-        user_id=viewer_user_id,
-    )
+    if db_document.creator_id != viewer_user_id:
+        db_published_document = await crud.document.get_publish_document_by_document_id_async(
+            db=db,
+            document_id=document_id,
+        )
+        if db_published_document is None:
+            db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
+                db=db,
+                user_id=viewer_user_id,
+                document_id=document_id,
+            )
+            ensure_document_access(
+                is_creator=False,
+                has_public_document=False,
+                has_document_collaborator=db_user_document is not None,
+            )
 
     markdown_content = await get_markdown_content_by_document_id(
         document_id=document_id,
@@ -206,7 +188,7 @@ async def _build_document_context(
     )
     markdown_excerpt = _truncate_text(markdown_content, DOCUMENT_MARKDOWN_LIMIT)
 
-    summarize_task = crud.task.get_document_summarize_task_by_document_id(
+    summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -220,7 +202,7 @@ async def _build_document_context(
 
     chunk_citations: list[dict[str, Any]] = []
     vector_context_blocks: list[str] = []
-    embedding_task = crud.task.get_document_embedding_task_by_document_id(
+    embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -309,7 +291,7 @@ async def _build_document_context(
             context,
         ]
     )
-    return db_document, system_prompt, chunk_citations
+    return db_document.id, db_document.title, system_prompt, chunk_citations
 
 
 async def _stream_document_answer_with_agent(
@@ -480,8 +462,7 @@ async def _stream_document_answer_with_agent(
 @document_ai_router.post("/ask")
 async def ask_document_ai(
     document_ask_request: schemas.document.DocumentAskRequest,
-    db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
+    user: models.user.User = Depends(get_current_user_short_lived),
 ):
     if user.default_revornix_model_id is None:
         raise schemas.error.CustomException(
@@ -507,15 +488,16 @@ async def ask_document_ai(
             code=400,
         )
 
-    db_document, system_prompt, chunk_citations = await _build_document_context(
-        db=db,
-        document_id=document_ask_request.document_id,
-        viewer_user_id=user.id,
-        question=messages[-1].content,
-        response_language_instruction=_build_ai_language_instruction(
-            user.default_ai_interaction_language,
-        ),
-    )
+    async with async_session_context() as db:
+        document_id, document_title, system_prompt, chunk_citations = await _build_document_context(
+            db=db,
+            document_id=document_ask_request.document_id,
+            viewer_user_id=user.id,
+            question=messages[-1].content,
+            response_language_instruction=_build_ai_language_instruction(
+                user.default_ai_interaction_language,
+            ),
+        )
 
     try:
         agent, model_id = await create_agent(
@@ -528,8 +510,8 @@ async def ask_document_ai(
 
     return StreamingResponse(
         _stream_document_answer_with_agent(
-            document_id=db_document.id,
-            document_title=db_document.title,
+            document_id=document_id,
+            document_title=document_title,
             user=user,
             model_id=model_id,
             system_prompt=system_prompt,

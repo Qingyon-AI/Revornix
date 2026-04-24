@@ -1,7 +1,10 @@
 import httpx
 
 
-def get_google_token(
+GOOGLE_HTTP_TIMEOUT = 20.0
+
+
+async def get_google_token(
     google_client_id: str,
     google_client_secret: str,
     code: str,
@@ -19,7 +22,21 @@ def get_google_token(
         'Accept': 'application/json',
         "Accept-Encoding": "application/json"
     }
-    # 获取google token
-    google_token_res = httpx.post(url, data=data, headers=headers)
-    google_token_res.raise_for_status()
+    async with httpx.AsyncClient(timeout=GOOGLE_HTTP_TIMEOUT) as client:
+        google_token_res = await client.post(url, data=data, headers=headers)
+        google_token_res.raise_for_status()
     return google_token_res.json()
+
+
+async def get_google_token_info(
+    google_id_token: str,
+) -> dict:
+    url = "https://oauth2.googleapis.com/tokeninfo"
+    async with httpx.AsyncClient(timeout=GOOGLE_HTTP_TIMEOUT) as client:
+        response = await client.get(
+            url,
+            params={"id_token": google_id_token},
+            headers={"Accept": "application/json"},
+        )
+        response.raise_for_status()
+    return response.json()

@@ -226,7 +226,7 @@ class VolcImageGenerateEngine(ImageGenerateEngineBase):
                 image_response = await client.get(image_payload)
                 image_response.raise_for_status()
 
-        persist_engine_usage(
+        await persist_engine_usage(
             user_id=self.user_id,
             resource_uuid=self.resource_uuid or self.engine_uuid,
             usage_details={"total": 1},

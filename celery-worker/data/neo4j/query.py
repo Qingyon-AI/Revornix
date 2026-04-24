@@ -10,7 +10,7 @@ from common.ai import (
     _get_user_ai_interaction_language,
     build_text_output_language_instruction,
 )
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from data.neo4j.search import global_search, naive_search
 from prompts.query import query_context_summary
 from proxy.ai_model_proxy import AIModelProxy
@@ -46,8 +46,8 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
 async def get_query_result_summary_llm_client(
     user_id: int
 ):
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(
             db=db, 
             user_id=user_id
         )
@@ -72,17 +72,17 @@ async def global_query(
     query: str
 ):
     # Perform search
-    results = global_search(
+    results = await global_search(
         user_id=user_id,
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
     language_instruction = build_text_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(
             db=db, 
             user_id=user_id
         )
@@ -122,17 +122,17 @@ async def naive_query(
     query: str
 ):
     # Perform search
-    results = naive_search(
+    results = await naive_search(
         user_id=user_id, 
         search_text=query
     )
     prompt = query_context_summary(query, str(results))
     language_instruction = build_text_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(
             db=db, 
             user_id=user_id
         )

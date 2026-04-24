@@ -8,17 +8,18 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langfuse import propagate_attributes
 from mcp_use import MCPAgent
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_db
+from common.dependencies import get_current_user_short_lived
 from common.interpret_event import EventInterpreter, base_event
 from common.logger import exception_logger, format_log_message
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_collector import UsageCollector
 from common.usage_billing import persist_model_usage_from_snapshot
+from data.sql.base import async_session_context
 from data.milvus.search import naive_search_for_documents
 from data.neo4j.search import section_graph_search
 from enums.document import DocumentEmbeddingStatus, DocumentSummarizeStatus
@@ -182,25 +183,25 @@ def _apply_section_agent_system_prompt(
 
 async def _build_section_context(
     *,
-    db: Session,
+    db: AsyncSession,
     section_id: int,
     viewer_user_id: int,
     question: str,
     response_language_instruction: str,
 ) -> tuple[models.section.Section, str, list[dict[str, Any]]]:
     """Assemble section-scoped prompt context from markdown, vector hits, and graph expansion."""
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=section_id,
     )
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
 
-    db_users = crud.section.get_users_for_section_by_section_id(
+    db_users = await crud.section.get_users_for_section_by_section_id_async(
         db=db,
         section_id=section_id,
     )
-    db_publish_section = crud.section.get_publish_section_by_section_id(
+    db_publish_section = await crud.section.get_publish_section_by_section_id_async(
         db=db,
         section_id=section_id,
     )
@@ -221,13 +222,13 @@ async def _build_section_context(
         else ""
     )
 
-    db_documents = crud.section.get_documents_for_section_by_section_id(
+    db_documents = await crud.section.get_documents_for_section_by_section_id_async(
         db=db,
         section_id=section_id,
     )
     document_ids = [int(document.id) for document in db_documents]
 
-    embedding_tasks = crud.task.get_document_embedding_tasks_by_document_ids(
+    embedding_tasks = await crud.task.get_document_embedding_tasks_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
@@ -237,7 +238,7 @@ async def _build_section_context(
         if task.status == DocumentEmbeddingStatus.SUCCESS
     ]
 
-    summarize_tasks = crud.task.get_document_summarize_tasks_by_document_ids(
+    summarize_tasks = await crud.task.get_document_summarize_tasks_by_document_ids_async(
         db=db,
         document_ids=document_ids,
     )
@@ -463,7 +464,7 @@ async def _build_section_context(
             context,
         ]
     )
-    return db_section, system_prompt, chunk_citations
+    return db_section.id, db_section.title, system_prompt, chunk_citations
 
 
 async def _stream_section_answer_with_agent(
@@ -636,8 +637,7 @@ async def _stream_section_answer_with_agent(
 @section_ai_router.post("/ask")
 async def ask_section_ai(
     section_ask_request: schemas.section.SectionAskRequest,
-    db: Session = Depends(get_db),
-    user: models.user.User = Depends(get_current_user),
+    user: models.user.User = Depends(get_current_user_short_lived),
 ):
     """Handle section AI chat requests through the shared MCP agent pipeline."""
     if user.default_revornix_model_id is None:
@@ -664,15 +664,16 @@ async def ask_section_ai(
             code=400,
         )
 
-    db_section, system_prompt, chunk_citations = await _build_section_context(
-        db=db,
-        section_id=section_ask_request.section_id,
-        viewer_user_id=user.id,
-        question=messages[-1].content,
-        response_language_instruction=_build_ai_language_instruction(
-            user.default_ai_interaction_language,
-        ),
-    )
+    async with async_session_context() as db:
+        section_id, section_title, system_prompt, chunk_citations = await _build_section_context(
+            db=db,
+            section_id=section_ask_request.section_id,
+            viewer_user_id=user.id,
+            question=messages[-1].content,
+            response_language_instruction=_build_ai_language_instruction(
+                user.default_ai_interaction_language,
+            ),
+        )
 
     try:
         agent, model_id = await create_agent(
@@ -685,8 +686,8 @@ async def ask_section_ai(
 
     return StreamingResponse(
         _stream_section_answer_with_agent(
-            section_id=db_section.id,
-            section_title=db_section.title,
+            section_id=section_id,
+            section_title=section_title,
             user=user,
             model_id=model_id,
             system_prompt=system_prompt,

@@ -17,7 +17,7 @@ from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from data.common import (
     close_extract_llm_client,
     extract_entities_relations,
@@ -39,7 +39,7 @@ from data.neo4j.insert import (
     upsert_relations_neo4j,
 )
 from data.neo4j.search import get_entities_by_text_and_type
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from engine.embedding.factory import get_embedding_engine
 from enums.ability import Ability
 from enums.document import (
@@ -87,7 +87,7 @@ class ChunkUpsertMetrics:
     neo4j_elapsed_ms: float
 
 
-def _flush_chunk_upserts(
+async def _flush_chunk_upserts(
     *,
     user_id: int,
     chunks_info: list[ChunkInfo],
@@ -100,14 +100,14 @@ def _flush_chunk_upserts(
         )
 
     milvus_start = time.perf_counter()
-    upsert_milvus(
+    await upsert_milvus(
         user_id=user_id,
         chunks_info=chunks_info,
     )
     milvus_elapsed_ms = (time.perf_counter() - milvus_start) * 1000
 
     neo4j_start = time.perf_counter()
-    upsert_chunks_neo4j(
+    await upsert_chunks_neo4j(
         chunks_info=chunks_info,
     )
     neo4j_elapsed_ms = (time.perf_counter() - neo4j_start) * 1000
@@ -180,10 +180,7 @@ async def _preprocess_chunk(
     summary_client: AsyncOpenAI | None = None,
 ) -> ChunkPreprocessResult:
     embedding_start = time.perf_counter()
-    embedding_raw = await asyncio.to_thread(
-        embedding_engine.embed,
-        [chunk_info.text],
-    )
+    embedding_raw = await embedding_engine.embed([chunk_info.text])
     embedding_elapsed_ms = (time.perf_counter() - embedding_start) * 1000
     chunk_info.embedding = extract_single_embedding_vector(embedding_raw)
 
@@ -247,15 +244,14 @@ async def _preprocess_chunk(
     )
 
 
-def _mark_chunk_related_tasks_failed(
+async def _mark_chunk_related_tasks_failed(
     *,
     document_id: int,
     auto_summary: bool,
 ) -> None:
     now = datetime.now(timezone.utc)
-    db = session_scope()
-    try:
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+    async with async_session_context() as db:
+        db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -264,7 +260,7 @@ def _mark_chunk_related_tasks_failed(
             db_embedding_task.update_time = now
 
         if auto_summary:
-            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -272,38 +268,33 @@ def _mark_chunk_related_tasks_failed(
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
                 db_summarize_task.update_time = now
 
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.FAILED
             db_graph_task.update_time = now
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
 
 
-def _set_graph_task_status(
+async def _set_graph_task_status(
     *,
     document_id: int,
     status: DocumentGraphStatus,
     check_document_active: bool = False,
 ) -> None:
-    db = session_scope()
-    try:
+    async with async_session_context() as db:
         if check_document_active:
-            ensure_document_active(db=db, document_id=document_id)
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            await ensure_document_active_async(db=db, document_id=document_id)
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_graph_task is not None:
             db_graph_task.status = status
             db_graph_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
 
 
 async def _init_chunk_tasks(
@@ -315,10 +306,9 @@ async def _init_chunk_tasks(
         raise Exception("Document chunk workflow missing document_id or user_id")
 
     now = datetime.now(timezone.utc)
-    db = session_scope()
-    try:
+    async with async_session_context() as db:
         # 1) 校验 document
-        db_document = crud.document.get_document_by_document_id(
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -326,7 +316,7 @@ async def _init_chunk_tasks(
             raise Exception("The document you want to process is not found")
 
         # 2) 校验 user
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -338,12 +328,12 @@ async def _init_chunk_tasks(
         state["model_id"] = db_user.default_document_reader_model_id
 
         # 3) 获取/创建任务记录，置为 进行时
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_embedding_task is None:
-            db_embedding_task = crud.task.create_document_embedding_task(
+            db_embedding_task = await crud.task.create_document_embedding_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id
@@ -354,12 +344,12 @@ async def _init_chunk_tasks(
         db_summarize_task = None
         auto_summary = bool(state.get("auto_summary", False))
         if auto_summary:
-            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_summarize_task is None:
-                db_summarize_task = crud.task.create_document_summarize_task(
+                db_summarize_task = await crud.task.create_document_summarize_task_async(
                     db=db,
                     user_id=user_id,
                     document_id=document_id,
@@ -367,12 +357,12 @@ async def _init_chunk_tasks(
             if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
                 db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
                 db_summarize_task.update_time = now
-        db_graph_task = crud.task.get_document_graph_task_by_document_id(
+        db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_graph_task is None:
-            db_graph_task = crud.task.create_document_graph_task(
+            db_graph_task = await crud.task.create_document_graph_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id
@@ -380,9 +370,7 @@ async def _init_chunk_tasks(
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
             db_graph_task.update_time = now
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -485,7 +473,7 @@ async def _process_document_chunks(
             keys = list({(e.entity_type, e.text) for e in sub_entities})
             missing_keys = [k for k in keys if k not in existing_entities_index]
             if missing_keys:
-                existing_entities_index.update(get_entities_by_text_and_type(missing_keys))
+                    existing_entities_index.update(await get_entities_by_text_and_type(missing_keys))
             dedupe_start = time.perf_counter()
             sub_entities, sub_relations = await resolve_entities_with_semantic_dedupe(
                 entities=sub_entities,
@@ -506,7 +494,7 @@ async def _process_document_chunks(
 
         chunk_upsert_batch.append(chunk_info)
         if len(chunk_upsert_batch) >= CHUNK_UPSERT_BATCH_SIZE:
-            flush_metrics = _flush_chunk_upserts(
+            flush_metrics = await _flush_chunk_upserts(
                 user_id=user_id,
                 chunks_info=chunk_upsert_batch,
             )
@@ -613,7 +601,7 @@ async def _process_document_chunks(
                     await _consume_preprocessed_result(ready_results[idx])
 
             if chunk_upsert_batch:
-                flush_metrics = _flush_chunk_upserts(
+                flush_metrics = await _flush_chunk_upserts(
                     user_id=user_id,
                     chunks_info=chunk_upsert_batch,
                 )
@@ -665,7 +653,7 @@ async def _process_document_chunks(
             await asyncio.gather(*pending_tasks, return_exceptions=True)
         exception_logger.error(f"Something is error while embedding document info: {e}")
         try:
-            _mark_chunk_related_tasks_failed(
+            await _mark_chunk_related_tasks_failed(
                 document_id=document_id,
                 auto_summary=auto_summary
             )
@@ -687,48 +675,45 @@ async def _process_document_chunks(
             "has_summary": final_summary_info is not None,
         },
     ):
-        db = session_scope()
         try:
-            ensure_document_active(db=db, document_id=document_id)
-            now = datetime.now(timezone.utc)
-            db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
-                db=db,
-                document_id=document_id
-            )
-            if db_embedding_task is not None:
-                db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
-                db_embedding_task.update_time = now
-            if auto_summary:
-                db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            async with async_session_context() as db:
+                await ensure_document_active_async(db=db, document_id=document_id)
+                now = datetime.now(timezone.utc)
+                db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
                     db=db,
                     document_id=document_id
                 )
-                if db_summarize_task is not None:
-                    db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
-                    if final_summary_info is not None:
-                        db_summarize_task.summary = final_summary_info.summary
-                    db_summarize_task.update_time = now
-                if final_summary_info is not None:
-                    db_document = crud.document.get_document_by_document_id(
+                if db_embedding_task is not None:
+                    db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+                    db_embedding_task.update_time = now
+                if auto_summary:
+                    db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                         db=db,
                         document_id=document_id
                     )
-                    if db_document is not None:
-                        db_document.title = final_summary_info.title
-                        db_document.description = final_summary_info.description
-            db.commit()
+                    if db_summarize_task is not None:
+                        db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                        if final_summary_info is not None:
+                            db_summarize_task.summary = final_summary_info.summary
+                        db_summarize_task.update_time = now
+                    if final_summary_info is not None:
+                        db_document = await crud.document.get_document_by_document_id_async(
+                            db=db,
+                            document_id=document_id
+                        )
+                        if db_document is not None:
+                            db_document.title = final_summary_info.title
+                            db_document.description = final_summary_info.description
+                await db.commit()
         except Exception:
             try:
-                _mark_chunk_related_tasks_failed(
+                await _mark_chunk_related_tasks_failed(
                     document_id=document_id,
                     auto_summary=auto_summary
                 )
             except Exception as status_error:
                 exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
             raise
-        finally:
-            db.close()
-
     # 5) 图谱构建
     deployed_by_official = check_deployed_by_official_in_fuc()
     access_token: str | None = None
@@ -744,17 +729,16 @@ async def _process_document_chunks(
             "deployed_by_official": deployed_by_official,
         },
     ):
-        db = session_scope()
-        try:
-            ensure_document_active(db=db, document_id=document_id)
-            db_document = crud.document.get_document_by_document_id(
+        async with async_session_context() as db:
+            await ensure_document_active_async(db=db, document_id=document_id)
+            db_document = await crud.document.get_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_document is None:
                 raise Exception("The document you want to process is not found")
 
-            db_user = crud.user.get_user_by_id(
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=user_id
             )
@@ -776,8 +760,6 @@ async def _process_document_chunks(
                 update_time=db_document.update_time,
                 create_time=db_document.create_time
             )
-        finally:
-            db.close()
 
     auth_status = True
     if deployed_by_official and not is_admin_or_root:
@@ -808,7 +790,7 @@ async def _process_document_chunks(
             stage_name="graph_upsert_doc",
             context={"document_id": document_id},
         ):
-            upsert_doc_neo4j(
+            await upsert_doc_neo4j(
                 docs_info=[doc_info]
             )
         with timed_stage(
@@ -817,7 +799,7 @@ async def _process_document_chunks(
             stage_name="graph_upsert_doc_chunk_relations",
             context={"document_id": document_id},
         ):
-            upsert_doc_chunk_relations()
+            await upsert_doc_chunk_relations()
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
@@ -827,7 +809,7 @@ async def _process_document_chunks(
                 "entities_count": len(entities),
             },
         ):
-            upsert_entities_neo4j(entities)
+            await upsert_entities_neo4j(entities)
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
@@ -837,7 +819,7 @@ async def _process_document_chunks(
                 "relations_count": len(relations),
             },
         ):
-            upsert_relations_neo4j(relations)
+            await upsert_relations_neo4j(relations)
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
@@ -847,23 +829,23 @@ async def _process_document_chunks(
                 "entities_count": len(entities),
             },
         ):
-            upsert_chunk_entity_relations(entities)
+            await upsert_chunk_entity_relations(entities)
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
             stage_name="graph_build_communities",
             context={"document_id": document_id},
         ):
-            create_communities_from_chunks()
-            create_community_nodes_and_relationships_with_size()
-            annotate_node_degrees()
+            await create_communities_from_chunks()
+            await create_community_nodes_and_relationships_with_size()
+            await annotate_node_degrees()
         with timed_stage(
             workflow_name=WORKFLOW_NAME,
             node_name="process_document_chunks",
             stage_name="mark_graph_success",
             context={"document_id": document_id},
         ):
-            _set_graph_task_status(
+            await _set_graph_task_status(
                 document_id=document_id,
                 status=DocumentGraphStatus.SUCCESS,
                 check_document_active=True,
@@ -871,7 +853,7 @@ async def _process_document_chunks(
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
         try:
-            _set_graph_task_status(
+            await _set_graph_task_status(
                 document_id=document_id,
                 status=DocumentGraphStatus.FAILED
             )

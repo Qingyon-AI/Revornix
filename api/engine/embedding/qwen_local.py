@@ -1,4 +1,5 @@
 import numpy as np
+import asyncio
 import torch
 from numpy.typing import NDArray
 from sentence_transformers import SentenceTransformer
@@ -30,7 +31,7 @@ class LocalQwen3EmbeddingEngine(EmbeddingEngineBase):
         self.dim = dim
 
     @torch.inference_mode()
-    def embed(self, texts: list[str]) -> NDArray[np.float32]:
+    def _embed_sync(self, texts: list[str]) -> NDArray[np.float32]:
         if not texts:
             return np.empty((0, self.dim), dtype=np.float32)
 
@@ -41,7 +42,11 @@ class LocalQwen3EmbeddingEngine(EmbeddingEngineBase):
         )
         return embeddings.astype("float32")
 
+    async def embed(self, texts: list[str]) -> NDArray[np.float32]:
+        return await asyncio.to_thread(self._embed_sync, texts)
+
 if __name__ == "__main__":
     engine = LocalQwen3EmbeddingEngine()
+    import asyncio
     from rich import print
-    print(engine.embed(["hello", "world"]))
+    print(asyncio.run(engine.embed(["hello", "world"])))

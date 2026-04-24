@@ -1,5 +1,6 @@
 import asyncio
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import crud
@@ -62,6 +63,19 @@ async def commit_with_bucket_cleanup(
         raise
 
 
+async def commit_with_bucket_cleanup_async(
+    db: AsyncSession,
+    file_service: BuiltInRemoteFileService | None = None,
+) -> None:
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        if file_service is not None:
+            await asyncio.to_thread(cleanup_user_bucket_sync, file_service)
+        raise
+
+
 async def setup_default_file_system_for_user(
     db: Session,
     db_user: models.user.User,
@@ -80,4 +94,26 @@ async def setup_default_file_system_for_user(
         description="The default file system for the user",
     )
     db_user.default_user_file_system = db_user_file_system.id
+    return await init_user_bucket_for_built_in_file_service(db_user=db_user)
+
+
+async def setup_default_file_system_for_user_async(
+    db: AsyncSession,
+    db_user: models.user.User,
+) -> BuiltInRemoteFileService:
+    db_file_system = await crud.file_system.get_file_system_by_uuid_async(
+        db=db,
+        uuid=RemoteFileService.Built_In.meta.id,
+    )
+    if db_file_system is None:
+        raise CustomException("Built-in file system not found", 404)
+    db_user_file_system = await crud.file_system.create_user_file_system_async(
+        db=db,
+        file_system_id=db_file_system.id,
+        user_id=db_user.id,
+        title="Default Minio File System",
+        description="The default file system for the user",
+    )
+    db_user.default_user_file_system = db_user_file_system.id
+    await db.flush()
     return await init_user_bucket_for_built_in_file_service(db_user=db_user)

@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_engine_config
 from enums.engine_enums import UserEngineRole, EngineCategory, EngineProvided
@@ -34,6 +35,29 @@ def create_engine_provided(
     )
     db.add(db_engine_provided)
     db.flush()
+    return db_engine_provided
+
+async def create_engine_provided_async(
+    db: AsyncSession,
+    uuid: str,
+    category: int,
+    name: str,
+    name_zh: str,
+    description: str | None = None,
+    description_zh: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_engine_provided = models.engine.EngineProvided(
+        uuid=uuid,
+        category=category,
+        name=name,
+        name_zh=name_zh,
+        description=description,
+        description_zh=description_zh,
+        create_time=now,
+    )
+    db.add(db_engine_provided)
+    await db.flush()
     return db_engine_provided
 
 def create_engine(
@@ -75,6 +99,45 @@ def create_engine(
     db.flush()
     return db_engine
 
+async def create_engine_async(
+    db: AsyncSession,
+    name: str,
+    creator_id: int,
+    engine_provided_id: int,
+    is_public: bool,
+    required_plan_level: int = 0,
+    is_official_hosted: bool = False,
+    billing_mode: int = 0,
+    billing_unit_price: float = 1.0,
+    compute_point_multiplier: float = 1.0,
+    uuid: str | None = None,
+    description: str | None = None,
+    config_json: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = uuid4().hex
+    if config_json is not None:
+        config_json = encrypt_engine_config(config_json)
+    db_engine = models.engine.Engine(
+        uuid=uuid,
+        name=name,
+        creator_id=creator_id,
+        engine_provided_id=engine_provided_id,
+        is_public=is_public,
+        required_plan_level=required_plan_level,
+        is_official_hosted=is_official_hosted,
+        billing_mode=billing_mode,
+        billing_unit_price=billing_unit_price,
+        compute_point_multiplier=compute_point_multiplier,
+        description=description,
+        config_json=config_json,
+        create_time=now
+    )
+    db.add(db_engine)
+    await db.flush()
+    return db_engine
+
 def create_user_engine(
     db: Session,
     user_id: int,
@@ -92,6 +155,23 @@ def create_user_engine(
     db.flush()
     return db_user_engine
 
+async def create_user_engine_async(
+    db: AsyncSession,
+    user_id: int,
+    engine_id: int,
+    role: int
+):
+    now = datetime.now(timezone.utc)
+    db_user_engine = models.engine.UserEngine(
+        user_id=user_id,
+        engine_id=engine_id,
+        create_time=now,
+        role=role
+    )
+    db.add(db_user_engine)
+    await db.flush()
+    return db_user_engine
+
 def get_engine_provided_by_engine_id(
     db: Session,
     engine_id: int
@@ -104,6 +184,20 @@ def get_engine_provided_by_engine_id(
     )
     return query.one_or_none()
 
+async def get_engine_provided_by_engine_id_async(
+    db: AsyncSession,
+    engine_id: int
+):
+    stmt = (
+        select(models.engine.EngineProvided)
+        .join(models.engine.Engine)
+        .where(
+            models.engine.Engine.id == engine_id,
+            models.engine.EngineProvided.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_engine_provided_by_engine_uuid(
     db: Session,
     engine_provided_uuid: str
@@ -114,6 +208,18 @@ def get_engine_provided_by_engine_uuid(
         models.engine.EngineProvided.delete_at.is_(None)
     )
     return query.one_or_none()
+
+async def get_engine_provided_by_engine_uuid_async(
+    db: AsyncSession,
+    engine_provided_uuid: str,
+):
+    result = await db.execute(
+        select(models.engine.EngineProvided).where(
+            models.engine.EngineProvided.uuid == engine_provided_uuid,
+            models.engine.EngineProvided.delete_at.is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
 
 def get_engine_by_engine_id(
     db: Session,
@@ -128,6 +234,41 @@ def get_engine_by_engine_id(
         models.engine.Engine.delete_at.is_(None)
     )
     return query.one_or_none()
+
+
+async def get_engine_by_engine_id_async(
+    db: AsyncSession,
+    engine_id: int,
+):
+    stmt = (
+        select(models.engine.Engine)
+        .options(
+            joinedload(models.engine.Engine.engine_provided),
+            joinedload(models.engine.Engine.creator)
+        )
+        .where(
+            models.engine.Engine.id == engine_id,
+            models.engine.Engine.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_engine_by_uuid_async(
+    db: AsyncSession,
+    engine_uuid: str,
+):
+    stmt = (
+        select(models.engine.Engine)
+        .options(
+            joinedload(models.engine.Engine.engine_provided)
+        )
+        .where(
+            models.engine.Engine.uuid == engine_uuid,
+            models.engine.Engine.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_engine_by_uuid(
     db: Session,
@@ -172,6 +313,21 @@ def get_user_engine_by_user_id_and_engine_id(
         )
     return query.one_or_none()
 
+async def get_user_engine_by_user_id_and_engine_id_async(
+    db: AsyncSession,
+    user_id: int,
+    engine_id: int,
+    filter_role: UserEngineRole | None = None
+):
+    stmt = select(models.engine.UserEngine).where(
+        models.engine.UserEngine.user_id == user_id,
+        models.engine.UserEngine.engine_id == engine_id,
+        models.engine.UserEngine.delete_at.is_(None),
+    )
+    if filter_role is not None:
+        stmt = stmt.where(models.engine.UserEngine.role == filter_role)
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_all_engines_provided(
     db: Session,
     keyword: str | None = None,
@@ -187,6 +343,21 @@ def get_all_engines_provided(
     if filter_category is not None:
         query = query.filter(models.engine.EngineProvided.category == filter_category)
     return query.all()
+
+async def get_all_engines_provided_async(
+    db: AsyncSession,
+    keyword: str | None = None,
+    filter_category: EngineCategory | None = None
+):
+    stmt = select(models.engine.EngineProvided).where(
+        models.engine.EngineProvided.delete_at.is_(None),
+        models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.engine.EngineProvided.name.like(f'%{keyword}%'))
+    if filter_category is not None:
+        stmt = stmt.where(models.engine.EngineProvided.category == filter_category)
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_all_engines(
     db: Session,
@@ -234,6 +405,34 @@ def get_usable_engines_for_user(
 
     return query.all()
 
+async def get_usable_engines_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    filter_category: EngineCategory | None = None
+):
+    stmt = (
+        select(models.engine.Engine)
+        .join(models.engine.EngineProvided)
+        .join(models.engine.UserEngine, models.engine.Engine.id == models.engine.UserEngine.engine_id)
+        .options(
+            joinedload(models.engine.Engine.engine_provided),
+            joinedload(models.engine.Engine.creator)
+        )
+        .where(
+            models.engine.UserEngine.user_id == user_id,
+            models.engine.UserEngine.delete_at.is_(None),
+            models.engine.Engine.delete_at.is_(None),
+            models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+        )
+        .order_by(models.engine.Engine.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.engine.Engine.name.ilike(f"%{keyword}%"))
+    if filter_category is not None:
+        stmt = stmt.where(models.engine.EngineProvided.category == filter_category)
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_engines_for_user(
     db: Session,
     user_id: int,
@@ -275,6 +474,48 @@ def search_engines_for_user(
     # 返回 [(engine, user_engine), ...]
     return query.all()
 
+async def search_engines_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    start: int | None = None,
+    limit: int | None = None,
+):
+    stmt = (
+        select(models.engine.Engine, models.engine.UserEngine)
+        .options(
+            joinedload(models.engine.Engine.creator),
+            joinedload(models.engine.Engine.engine_provided),
+        )
+        .outerjoin(
+            models.engine.UserEngine,
+            and_(
+                models.engine.UserEngine.engine_id == models.engine.Engine.id,
+                models.engine.UserEngine.user_id == user_id,
+                models.engine.UserEngine.delete_at.is_(None),
+            ),
+        )
+        .join(models.engine.EngineProvided)
+        .where(
+            models.engine.Engine.delete_at.is_(None),
+            models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+        )
+        .where(
+            or_(
+                models.engine.Engine.creator_id == user_id,
+                models.engine.Engine.is_public.is_(True),
+            )
+        )
+        .order_by(models.engine.Engine.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.engine.Engine.name.ilike(f"%{keyword}%"))
+    if start is not None:
+        stmt = stmt.where(models.engine.Engine.id <= start)
+    if limit is not None:
+        stmt = stmt.limit(limit)
+    return list((await db.execute(stmt)).all())
+
 
 def search_next_engine_for_user(
     db: Session,
@@ -312,6 +553,44 @@ def search_next_engine_for_user(
     query = query.filter(models.engine.Engine.id < engine.id)
     return query.first()
 
+async def search_next_engine_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    engine: models.engine.Engine,
+    keyword: str | None = None
+):
+    stmt = (
+        select(models.engine.Engine, models.engine.UserEngine)
+        .options(
+            joinedload(models.engine.Engine.creator),
+            joinedload(models.engine.Engine.engine_provided),
+        )
+        .outerjoin(
+            models.engine.UserEngine,
+            and_(
+                models.engine.UserEngine.engine_id == models.engine.Engine.id,
+                models.engine.UserEngine.user_id == user_id,
+                models.engine.UserEngine.delete_at.is_(None),
+            ),
+        )
+        .join(models.engine.EngineProvided)
+        .where(
+            models.engine.Engine.delete_at.is_(None),
+            models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+        )
+        .where(
+            or_(
+                models.engine.Engine.creator_id == user_id,
+                models.engine.Engine.is_public.is_(True),
+            )
+        )
+        .where(models.engine.Engine.id < engine.id)
+        .order_by(models.engine.Engine.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.engine.Engine.name.ilike(f"%{keyword}%"))
+    return (await db.execute(stmt)).first()
+
 def count_all_engines_for_user(
     db: Session,
     user_id: int,
@@ -345,3 +624,34 @@ def count_all_engines_for_user(
         query = query.filter(models.engine.Engine.name.ilike(f"%{keyword}%"))
     query = query.order_by(models.engine.Engine.id.desc())
     return query.count()
+
+async def count_all_engines_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None
+):
+    stmt = (
+        select(func.count(func.distinct(models.engine.Engine.id)))
+        .outerjoin(
+            models.engine.UserEngine,
+            and_(
+                models.engine.UserEngine.engine_id == models.engine.Engine.id,
+                models.engine.UserEngine.user_id == user_id,
+                models.engine.UserEngine.delete_at.is_(None),
+            ),
+        )
+        .join(models.engine.EngineProvided)
+        .where(
+            models.engine.Engine.delete_at.is_(None),
+            models.engine.EngineProvided.uuid.in_(SUPPORTED_ENGINE_PROVIDED_UUIDS),
+        )
+        .where(
+            or_(
+                models.engine.Engine.creator_id == user_id,
+                models.engine.Engine.is_public.is_(True),
+            )
+        )
+    )
+    if keyword:
+        stmt = stmt.where(models.engine.Engine.name.ilike(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one()

@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 from common.encrypt import encrypt_engine_config
 
@@ -40,6 +41,8 @@ def create_engine(
     is_public: bool,
     required_plan_level: int = 0,
     is_official_hosted: bool = False,
+    billing_mode: int = 0,
+    billing_unit_price: float = 1.0,
     compute_point_multiplier: float = 1.0,
     uuid: str | None = None,
     description: str | None = None,
@@ -58,6 +61,8 @@ def create_engine(
         is_public=is_public,
         required_plan_level=required_plan_level,
         is_official_hosted=is_official_hosted,
+        billing_mode=billing_mode,
+        billing_unit_price=billing_unit_price,
         compute_point_multiplier=compute_point_multiplier,
         description=description,
         config_json=config_json,
@@ -110,6 +115,21 @@ def get_engine_by_engine_id(
     )
     return query.one_or_none()
 
+
+async def get_engine_by_engine_id_async(
+    db: AsyncSession,
+    engine_id: int,
+):
+    stmt = (
+        select(models.engine.Engine)
+        .options(joinedload(models.engine.Engine.engine_provided))
+        .where(
+            models.engine.Engine.id == engine_id,
+            models.engine.Engine.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_engine_by_uuid(
     db: Session,
     engine_uuid: str
@@ -123,6 +143,21 @@ def get_engine_by_uuid(
         models.engine.Engine.delete_at.is_(None)
     )
     return query.one_or_none()
+
+
+async def get_engine_by_uuid_async(
+    db: AsyncSession,
+    engine_uuid: str,
+):
+    stmt = (
+        select(models.engine.Engine)
+        .options(joinedload(models.engine.Engine.engine_provided))
+        .where(
+            models.engine.Engine.uuid == engine_uuid,
+            models.engine.Engine.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_user_engine_by_user_engine_id(
     db: Session,
@@ -150,6 +185,22 @@ def get_user_engine_by_user_id_and_engine_id(
     if filter_role is not None:
         query = query.filter(models.engine.UserEngine.role == filter_role.value)
     return query.one_or_none()
+
+
+async def get_user_engine_by_user_id_and_engine_id_async(
+    db: AsyncSession,
+    user_id: int,
+    engine_id: int,
+    filter_role: UserEngineRole | None = None,
+):
+    stmt = select(models.engine.UserEngine).where(
+        models.engine.UserEngine.user_id == user_id,
+        models.engine.UserEngine.engine_id == engine_id,
+        models.engine.UserEngine.delete_at.is_(None),
+    )
+    if filter_role is not None:
+        stmt = stmt.where(models.engine.UserEngine.role == filter_role.value)
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_all_engines_provided(
     db: Session,

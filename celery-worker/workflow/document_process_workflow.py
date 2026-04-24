@@ -5,9 +5,9 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message, info_logger
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from data.common import get_document_markdown_length
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.document import (
     DocumentEmbeddingStatus,
     DocumentGraphStatus,
@@ -56,16 +56,15 @@ async def _init_document_process_task(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_document is None:
             raise Exception("The document you want to process is not found")
 
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -76,12 +75,12 @@ async def _init_document_process_task(
         if db_user.default_document_reader_model_id is None:
             raise Exception("The user which you want to process document has not set default document reader model")
 
-        db_document_process_task = crud.task.get_document_process_task_by_document_id(
+        db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_document_process_task is None:
-            db_document_process_task = crud.task.create_document_process_task(
+            db_document_process_task = await crud.task.create_document_process_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -91,9 +90,7 @@ async def _init_document_process_task(
             if db_document_process_task.status != DocumentProcessStatus.PROCESSING:
                 db_document_process_task.status = DocumentProcessStatus.PROCESSING
                 db_document_process_task.update_time = datetime.now(timezone.utc)
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -107,11 +104,8 @@ async def _maybe_transcribe_document(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     await run_document_transcribe_workflow(
         document_id=document_id,
@@ -128,11 +122,8 @@ async def _convert_document(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     await run_document_convert_workflow(
         document_id=document_id,
@@ -157,10 +148,9 @@ async def _apply_override(
     else:
         override_obj = DocumentOverrideProperty.model_validate(override)
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -172,9 +162,7 @@ async def _apply_override(
             db_document.title = override_obj.title
         if override_obj.description is not None:
             db_document.description = override_obj.description
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -188,11 +176,8 @@ async def _maybe_tag_document(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     await run_document_tag_workflow(
         document_id=document_id,
@@ -211,11 +196,8 @@ async def _process_document_chunks(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     markdown_length = await get_document_markdown_length(document_id)
     if markdown_length >= PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD:
@@ -233,7 +215,7 @@ async def _process_document_chunks(
             max_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
             manage_task_status=False,
         )
-        _prepare_progressive_followup_tasks(
+        await _prepare_progressive_followup_tasks(
             document_id=document_id,
             user_id=user_id,
             auto_summary=auto_summary,
@@ -271,11 +253,8 @@ async def _maybe_generate_podcast(
     if document_id is None or user_id is None:
         raise Exception("Document workflow missing document_id or user_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     await run_document_podcast_workflow(
         document_id=document_id,
@@ -291,23 +270,20 @@ async def _mark_process_success(
     if document_id is None:
         raise Exception("Document workflow missing document_id")
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_document_process_task = crud.task.get_document_process_task_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_document_process_task is not None:
             db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
             db_document_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
     return state
 
 
-def _prepare_progressive_followup_tasks(
+async def _prepare_progressive_followup_tasks(
     *,
     document_id: int,
     user_id: int,
@@ -316,16 +292,15 @@ def _prepare_progressive_followup_tasks(
     auto_graph: bool,
 ) -> None:
     now = datetime.now(timezone.utc)
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
-        db_embedding_task = crud.task.get_document_embedding_task_by_document_id(
+        db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id,
         )
         if db_embedding_task is None:
-            db_embedding_task = crud.task.create_document_embedding_task(
+            db_embedding_task = await crud.task.create_document_embedding_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -334,12 +309,12 @@ def _prepare_progressive_followup_tasks(
         db_embedding_task.update_time = now
 
         if auto_graph:
-            db_graph_task = crud.task.get_document_graph_task_by_document_id(
+            db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
             if db_graph_task is None:
-                db_graph_task = crud.task.create_document_graph_task(
+                db_graph_task = await crud.task.create_document_graph_task_async(
                     db=db,
                     user_id=user_id,
                     document_id=document_id,
@@ -348,12 +323,12 @@ def _prepare_progressive_followup_tasks(
             db_graph_task.update_time = now
 
         if auto_summary:
-            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+            db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
             if db_summarize_task is None:
-                db_summarize_task = crud.task.create_document_summarize_task(
+                db_summarize_task = await crud.task.create_document_summarize_task_async(
                     db=db,
                     user_id=user_id,
                     document_id=document_id,
@@ -363,12 +338,12 @@ def _prepare_progressive_followup_tasks(
             db_summarize_task.update_time = now
 
         if auto_podcast:
-            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+            db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
             if db_podcast_task is None:
-                db_podcast_task = crud.task.create_document_podcast_task(
+                db_podcast_task = await crud.task.create_document_podcast_task_async(
                     db=db,
                     user_id=user_id,
                     document_id=document_id,
@@ -377,9 +352,7 @@ def _prepare_progressive_followup_tasks(
             db_podcast_task.podcast_file_name = None
             db_podcast_task.update_time = now
 
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
 
 
 def _enqueue_progressive_followup_tasks(
@@ -568,9 +541,8 @@ async def run_document_process_workflow(
             ),
             exc_info=True,
         )
-        db = session_scope()
-        try:
-            db_document = crud.document.get_document_by_document_id(
+        async with async_session_context() as db:
+            db_document = await crud.document.get_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -579,14 +551,12 @@ async def run_document_process_workflow(
                 description = _truncate(f"Error: {e}", 1000)
                 db_document.title = title
                 db_document.description = description
-            db_document_process_task = crud.task.get_document_process_task_by_document_id(
+            db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_document_process_task is not None:
                 db_document_process_task.status = DocumentProcessStatus.FAILED
                 db_document_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-        finally:
-            db.close()
+            await db.commit()
         raise

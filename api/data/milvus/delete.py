@@ -1,13 +1,15 @@
+import asyncio
+
 from common.logger import info_logger
 from data.milvus.base import MILVUS_COLLECTION, milvus_client
 
 
-def clear_milvus_collection():
-    if milvus_client.has_collection(MILVUS_COLLECTION):
-        milvus_client.drop_collection(MILVUS_COLLECTION)
+async def clear_milvus_collection():
+    if await asyncio.to_thread(milvus_client.has_collection, MILVUS_COLLECTION):
+        await asyncio.to_thread(milvus_client.drop_collection, MILVUS_COLLECTION)
         info_logger.info(f"Milvus collection {MILVUS_COLLECTION} dropped.")
 
-def delete_documents_from_milvus(
+async def delete_documents_from_milvus(
     doc_ids: list[int]
 ):
     """
@@ -19,11 +21,11 @@ def delete_documents_from_milvus(
     # Milvus 删除条件
     expr = f"doc_id in [{','.join(map(str, doc_ids))}]"
 
-    milvus_client.delete(
+    await asyncio.to_thread(
+        milvus_client.delete,
         collection_name="document",
-        filter=expr
+        filter=expr,
     )
 
-    # flush 单 collection 版本
-    milvus_client.flush("document")
+    await asyncio.to_thread(milvus_client.flush, "document")
     info_logger.info(f"Deleted {len(doc_ids)} documents from Milvus")

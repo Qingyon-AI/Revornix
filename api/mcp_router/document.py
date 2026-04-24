@@ -32,7 +32,7 @@ document_mcp_router = FastMCP(
 document_mcp_router.add_middleware(UserAuthMiddleware())
 
 @document_mcp_router.tool()
-def search_document(
+async def search_document(
     keyword: str,
     ctx: Context,
     time_start: str | None = None,
@@ -69,7 +69,7 @@ def search_document(
         - It is optimized for content retrieval, not full document metadata retrieval.
     """
     user_id = get_user_id_from_ctx(ctx)
-    documents = global_search(
+    documents = await global_search(
         user_id=user_id,
         search_text=keyword,
         time_start=time_start,
@@ -79,7 +79,7 @@ def search_document(
 
 
 @document_mcp_router.tool()
-def search_document_vector(
+async def search_document_vector(
     query: str,
     ctx: Context,
 ):
@@ -108,9 +108,9 @@ def search_document_vector(
         - This is document-level retrieval and does not return chunk text.
         - Only documents accessible to the current user are searched.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_search_knowledge_vector(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_search_knowledge_vector(
             vector_search_request=schemas.document.VectorSearchRequest(query=query),
             db=db,
             user=user,
@@ -155,8 +155,8 @@ async def search_my_documents(
     Notes:
         - This tool returns list-level summaries, not full document detail records.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
         res = await api_search_all_mine_documents(
             search_all_my_document_request=schemas.document.SearchAllMyDocumentsRequest(
                 keyword=keyword,
@@ -208,8 +208,8 @@ async def search_my_unread_documents(
         - Documents already marked as read will not appear in the results.
         - Combine this with `set_document_read_status` when managing reading workflows.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
         res = await api_search_user_unread_documents(
             search_unread_list_request=schemas.document.SearchUnreadListRequest(
                 keyword=keyword,
@@ -261,8 +261,8 @@ async def search_my_recent_documents(
         - This tool depends on read-state records.
         - A document that has never been marked as read will not appear here.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
         res = await api_recent_read_document(
             search_recent_read_request=schemas.document.SearchRecentReadRequest(
                 keyword=keyword,
@@ -313,8 +313,8 @@ async def search_my_starred_documents(
     Notes:
         - Use `set_document_star_status` to add or remove stars.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
         res = await api_search_my_star_documents(
             search_my_star_documents_request=schemas.document.SearchMyStarDocumentsRequest(
                 keyword=keyword,
@@ -359,8 +359,8 @@ async def get_document_detail(
         - The request only succeeds if the current user has permission to access the document.
         - This is a detail endpoint and is not designed for large-scale listing workflows.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
         res = await api_get_document_detail(
             document_detail_request=schemas.document.DocumentDetailRequest(document_id=document_id),
             db=db,
@@ -370,7 +370,7 @@ async def get_document_detail(
 
 
 @document_mcp_router.tool()
-def list_document_labels(ctx: Context):
+async def list_document_labels(ctx: Context):
     """
     List all document tags created by the current user.
 
@@ -390,9 +390,9 @@ def list_document_labels(ctx: Context):
     Notes:
         - The result only contains tags owned by the current user.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_list_label(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_list_label(
             db=db,
             user=user,
         )
@@ -400,7 +400,7 @@ def list_document_labels(ctx: Context):
 
 
 @document_mcp_router.tool()
-def get_document_label_summary(ctx: Context):
+async def get_document_label_summary(ctx: Context):
     """
     Get aggregate statistics for the current user's document tags.
 
@@ -421,9 +421,9 @@ def get_document_label_summary(ctx: Context):
     Notes:
         - This is an aggregate summary and does not return document lists.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_get_label_summary(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_get_label_summary(
             db=db,
             user=user,
         )
@@ -431,7 +431,7 @@ def get_document_label_summary(ctx: Context):
 
 
 @document_mcp_router.tool()
-def create_document_label(
+async def create_document_label(
     name: str,
     ctx: Context,
 ):
@@ -456,9 +456,9 @@ def create_document_label(
     Notes:
         - This creates the tag definition only. It does not attach the tag to any document.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_add_label(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_add_label(
             label_add_request=schemas.document.LabelAddRequest(name=name),
             db=db,
             user=user,
@@ -467,7 +467,7 @@ def create_document_label(
 
 
 @document_mcp_router.tool()
-def delete_document_labels(
+async def delete_document_labels(
     label_ids: list[int],
     ctx: Context,
 ):
@@ -493,9 +493,9 @@ def delete_document_labels(
         - Only tags owned by the current user can be deleted.
         - This deletes tag definitions and should be used carefully.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_delete_label(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_delete_label(
             label_delete_request=schemas.document.LabelDeleteRequest(label_ids=label_ids),
             db=db,
             user=user,
@@ -504,7 +504,7 @@ def delete_document_labels(
 
 
 @document_mcp_router.tool()
-def create_document_note(
+async def create_document_note(
     document_id: int,
     content: str,
     ctx: Context,
@@ -534,9 +534,9 @@ def create_document_note(
         - This tool only creates a note and does not return note detail.
         - Use `search_document_notes` after creation if you need to read notes back.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_create_note(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_create_note(
             note_create_request=schemas.document.DocumentNoteCreateRequest(
                 document_id=document_id,
                 content=content,
@@ -548,7 +548,7 @@ def create_document_note(
 
 
 @document_mcp_router.tool()
-def search_document_notes(
+async def search_document_notes(
     document_id: int,
     ctx: Context,
     keyword: str | None = None,
@@ -582,9 +582,9 @@ def search_document_notes(
     Notes:
         - This tool queries notes, not document content.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_search_note(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_search_note(
             search_note_request=schemas.document.SearchDocumentNoteRequest(
                 document_id=document_id,
                 keyword=keyword,
@@ -598,7 +598,7 @@ def search_document_notes(
 
 
 @document_mcp_router.tool()
-def set_document_star_status(
+async def set_document_star_status(
     document_id: int,
     status: bool,
     ctx: Context,
@@ -626,9 +626,9 @@ def set_document_star_status(
     Notes:
         - This only updates the current user's own star state.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_star_document(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_star_document(
             star_request=schemas.document.StarRequest(
                 document_id=document_id,
                 status=status,
@@ -640,7 +640,7 @@ def set_document_star_status(
 
 
 @document_mcp_router.tool()
-def set_document_read_status(
+async def set_document_read_status(
     document_id: int,
     status: bool,
     ctx: Context,
@@ -670,9 +670,9 @@ def set_document_read_status(
         - This only updates the current user's own read state.
         - It affects the results of `search_my_unread_documents` and `search_my_recent_documents`.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_read_document(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_read_document(
             read_request=schemas.document.ReadRequest(
                 document_id=document_id,
                 status=status,

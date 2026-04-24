@@ -8,7 +8,7 @@ from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from base_implement.markdown_engine_base import MarkdownEngineBase
 from base_implement.stt_engine_base import STTEngineBase
 from base_implement.tts_engine_base import TTSEngineBase
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.engine_enums import UserEngineRole
 from common.encrypt import decrypt_engine_config
 from common.dependencies import (
@@ -61,34 +61,30 @@ class EngineProxy:
         available_compute_points = 0
         minimum_required_points = 1
 
-        # ---------- DB（同步世界） ----------
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
             if db_user is None:
                 raise Exception("The user is not found")
 
-            db_engine = crud.engine.get_engine_by_engine_id(
-                db=db, 
+            db_engine = await crud.engine.get_engine_by_engine_id_async(
+                db=db,
                 engine_id=engine_id
             )
             if db_engine is None:
                 raise Exception("The engine is not found")
             
-            # 如果私有且未公开 直接禁止
             if db_engine.creator_id != db_user.id and not db_engine.is_public:
                 raise Exception("The engine is not public, you are forbidden to use it")
 
-            db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(
+            db_user_engine = await crud.engine.get_user_engine_by_user_id_and_engine_id_async(
                 db=db,
                 user_id=user_id,
                 engine_id=db_engine.id,
                 filter_role=UserEngineRole.FORKER
             )
-            # 如果公开但是没有fork 阻止 同时提醒fork
             if db_engine.creator_id != db_user.id and db_engine.is_public and db_user_engine is None:
                 raise Exception("The user is not the forker of the public engine, please fork it first")
         
-            # ---------- Official engine provider check ----------
             if db_user.role != UserRole.ADMIN and db_user.role != UserRole.ROOT:
                 required_plan_level = db_engine.required_plan_level
                 if is_subscription_required_level(required_plan_level):

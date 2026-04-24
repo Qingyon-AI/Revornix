@@ -16,7 +16,7 @@ from data.custom_types.all import RelationInfo, EntityInfo
 from common.logger import exception_logger
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.user import AIInteractionLanguage
 from proxy.ai_model_proxy import AIModelProxy
 
@@ -41,9 +41,9 @@ LLM_RETRY_MAX_ATTEMPTS = 3
 LLM_RETRY_BASE_DELAY_SECONDS = 1.5
 
 
-def _get_user_ai_interaction_language(user_id: int) -> int | None:
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+async def _get_user_ai_interaction_language(user_id: int) -> int | None:
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
         if db_user is None:
             return None
         return db_user.default_ai_interaction_language
@@ -181,7 +181,7 @@ async def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
-    user_language = _get_user_ai_interaction_language(user_id)
+    user_language = await _get_user_ai_interaction_language(user_id)
     language_instruction = build_text_output_language_instruction(
         user_language,
     )
@@ -225,7 +225,7 @@ async def make_section_markdown(
                     ],
                 ),
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -247,7 +247,7 @@ async def summary_content(
     client: AsyncOpenAI | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     if model_configuration is None:
         model_configuration = (await AIModelProxy.create(
@@ -287,7 +287,7 @@ async def summary_content(
                     response_format={"type": "json_object"},
                 ),
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -321,7 +321,7 @@ async def reducer_summary(
     client: AsyncOpenAI | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     if model_configuration is None:
         model_configuration = (await AIModelProxy.create(
@@ -366,7 +366,7 @@ async def reducer_summary(
                     response_format={"type": "json_object"},
                 ),
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -535,7 +535,7 @@ async def generate_podcast_dialogue_turns(
     description: str | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
@@ -579,7 +579,7 @@ async def generate_podcast_dialogue_turns(
                     response_format={"type": "json_object"},
                 ),
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,

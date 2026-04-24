@@ -1,13 +1,13 @@
-from typing import cast
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_current_user, get_current_user_without_throw, get_db
-from common.file import get_remote_file_signed_url
+from common.dependencies import get_async_db, get_current_user, get_current_user_without_throw
+from common.file import get_remote_file_signed_urls
 from data.milvus.search import naive_search
 from enums.document import DocumentCategory
 from router.logic_helpers import ensure_document_access, resolve_infinite_scroll_meta
@@ -15,14 +15,36 @@ from router.logic_helpers import ensure_document_access, resolve_infinite_scroll
 document_query_router = APIRouter()
 
 
-def _ensure_document_access(
+async def _batch_sign_remote_fields(
+    items: list[tuple[Any, str, int]],
+) -> None:
+    if not items:
+        return
+    valid_items = [
+        (item, field_name, user_id)
+        for item, field_name, user_id in items
+        if item is not None and getattr(item, field_name) is not None
+    ]
+    if not valid_items:
+        return
+    signed_urls = await get_remote_file_signed_urls(
+        [
+            (user_id, getattr(item, field_name))
+            for item, field_name, user_id in valid_items
+        ]
+    )
+    for (item, field_name, _), signed_url in zip(valid_items, signed_urls, strict=False):
+        setattr(item, field_name, signed_url)
+
+
+async def _ensure_document_access(
     *,
-    db: Session,
+    db: AsyncSession,
     document_id: int,
     document_creator_id: int,
     user_id: int | None,
 ) -> None:
-    db_published_document = crud.document.get_publish_document_by_document_id(
+    db_published_document = await crud.document.get_publish_document_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -39,7 +61,7 @@ def _ensure_document_access(
         )
         return
 
-    db_user_document = crud.document.get_user_document_by_user_id_and_document_id(
+    db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
         db=db,
         user_id=user_id,
         document_id=document_id,
@@ -52,7 +74,7 @@ def _ensure_document_access(
 
 
 async def get_document_infos(
-    db: Session,
+    db: AsyncSession,
     documents: list[models.document.Document]
 ):
     if not documents:
@@ -60,35 +82,41 @@ async def get_document_infos(
     document_ids = [document.id for document in documents]
     creator_ids = list({document.creator_id for document in documents})
 
-    convert_tasks = crud.task.get_document_convert_tasks_by_document_ids(db=db, document_ids=document_ids)
-    embedding_tasks = crud.task.get_document_embedding_tasks_by_document_ids(db=db, document_ids=document_ids)
-    graph_tasks = crud.task.get_document_graph_tasks_by_document_ids(db=db, document_ids=document_ids)
-    podcast_tasks = crud.task.get_document_podcast_tasks_by_document_ids(db=db, document_ids=document_ids)
-    summarize_tasks = crud.task.get_document_summarize_tasks_by_document_ids(db=db, document_ids=document_ids)
-    transcribe_tasks = crud.task.get_document_transcribe_tasks_by_document_ids(db=db, document_ids=document_ids)
-    process_tasks = crud.task.get_document_process_tasks_by_document_ids(db=db, document_ids=document_ids)
-    labels_by_document_id = crud.document.get_labels_by_document_ids(db=db, document_ids=document_ids)
-    db_users = []
-    if creator_ids:
-        db_users = (
-            db.query(models.user.User)
-            .filter(
-                models.user.User.id.in_(creator_ids),
-                models.user.User.delete_at.is_(None),
-            )
-            .all()
-        )
+    task_bundle_rows = await crud.task.get_document_task_bundles_by_document_ids_async(
+        db=db,
+        document_ids=document_ids,
+    )
+    labels_by_document_id = await crud.document.get_labels_by_document_ids_async(db=db, document_ids=document_ids)
+    db_users = await crud.user.get_users_by_ids_async(
+        db=db,
+        user_ids=creator_ids,
+    )
 
-    convert_task_by_document_id = {task.document_id: task for task in convert_tasks}
-    embedding_task_by_document_id = {task.document_id: task for task in embedding_tasks}
-    graph_task_by_document_id = {task.document_id: task for task in graph_tasks}
-    podcast_task_by_document_id = {task.document_id: task for task in podcast_tasks}
-    summarize_task_by_document_id = {task.document_id: task for task in summarize_tasks}
-    transcribe_task_by_document_id = {task.document_id: task for task in transcribe_tasks}
-    process_task_by_document_id = {task.document_id: task for task in process_tasks}
+    task_bundle_by_document_id = {
+        document_id: (
+            convert_task,
+            podcast_task,
+            summarize_task,
+            embedding_task,
+            graph_task,
+            transcribe_task,
+            process_task,
+        )
+        for (
+            document_id,
+            convert_task,
+            podcast_task,
+            summarize_task,
+            embedding_task,
+            graph_task,
+            transcribe_task,
+            process_task,
+        ) in task_bundle_rows
+    }
     user_by_id = {user.id: user for user in db_users}
 
     res = []
+    remote_fields_to_sign: list[tuple[Any, str, int]] = []
     for document in documents:
         info = schemas.document.DocumentInfo.model_validate(document)
         db_user = user_by_id.get(document.creator_id)
@@ -99,7 +127,16 @@ async def get_document_infos(
             for label in labels_by_document_id.get(document.id, [])
         ]
 
-        convert_task = convert_task_by_document_id.get(document.id)
+        (
+            convert_task,
+            podcast_task,
+            summarize_task,
+            embedding_task,
+            graph_task,
+            transcribe_task,
+            process_task,
+        ) = task_bundle_by_document_id.get(document.id, (None, None, None, None, None, None, None))
+
         if convert_task is not None:
             info.convert_task = schemas.task.DocumentConvertTask(
                 status=convert_task.status,
@@ -107,13 +144,8 @@ async def get_document_infos(
                 create_time=convert_task.create_time,
                 update_time=convert_task.update_time,
             )
-            if info.convert_task.md_file_name is not None:
-                info.convert_task.md_file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=info.convert_task.md_file_name
-                )
+            remote_fields_to_sign.append((info.convert_task, "md_file_name", document.creator_id))
 
-        embedding_task = embedding_task_by_document_id.get(document.id)
         if embedding_task is not None:
             info.embedding_task = schemas.task.DocumentEmbeddingTask(
                 status=embedding_task.status,
@@ -121,7 +153,6 @@ async def get_document_infos(
                 update_time=embedding_task.update_time,
             )
 
-        graph_task = graph_task_by_document_id.get(document.id)
         if graph_task is not None:
             info.graph_task = schemas.task.DocumentGraphTask(
                 status=graph_task.status,
@@ -129,7 +160,6 @@ async def get_document_infos(
                 update_time=graph_task.update_time,
             )
 
-        podcast_task = podcast_task_by_document_id.get(document.id)
         if podcast_task is not None:
             info.podcast_task = schemas.task.DocumentPodcastTask(
                 status=podcast_task.status,
@@ -138,18 +168,9 @@ async def get_document_infos(
                 create_time=podcast_task.create_time,
                 update_time=podcast_task.update_time,
             )
-            if podcast_task.podcast_file_name is not None:
-                info.podcast_task.podcast_file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=podcast_task.podcast_file_name
-                )
-            if podcast_task.podcast_script_file_name is not None:
-                info.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=podcast_task.podcast_script_file_name
-                )
+            remote_fields_to_sign.append((info.podcast_task, "podcast_file_name", document.creator_id))
+            remote_fields_to_sign.append((info.podcast_task, "podcast_script_file_name", document.creator_id))
 
-        summarize_task = summarize_task_by_document_id.get(document.id)
         if summarize_task is not None:
             info.summarize_task = schemas.task.DocumentSummarizeTask(
                 status=summarize_task.status,
@@ -158,7 +179,6 @@ async def get_document_infos(
                 update_time=summarize_task.update_time,
             )
 
-        transcribe_task = transcribe_task_by_document_id.get(document.id)
         if transcribe_task is not None:
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
@@ -167,7 +187,6 @@ async def get_document_infos(
                 update_time=transcribe_task.update_time,
             )
 
-        process_task = process_task_by_document_id.get(document.id)
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
                 status=process_task.status,
@@ -176,17 +195,18 @@ async def get_document_infos(
             )
 
         res.append(info)
+    await _batch_sign_remote_fields(remote_fields_to_sign)
     return res
 
 
-def _resolve_document_from_detail_request(
+async def _resolve_document_from_detail_request(
     *,
-    db: Session,
+    db: AsyncSession,
     document_detail_request: schemas.document.DocumentDetailRequest,
     user: models.user.User | None,
 ) -> models.document.Document:
     if document_detail_request.document_id is not None:
-        document = crud.document.get_document_by_document_id(
+        document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_detail_request.document_id,
         )
@@ -204,7 +224,7 @@ def _resolve_document_from_detail_request(
             code=403,
         )
 
-    document = crud.document.get_website_document_by_user_id_and_url(
+    document = await crud.document.get_website_document_by_user_id_and_url_async(
         db=db,
         user_id=user.id,
         url=normalized_url,
@@ -216,17 +236,17 @@ def _resolve_document_from_detail_request(
 @document_query_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User | None = Depends(get_current_user_without_throw)
 ):
-    document = _resolve_document_from_detail_request(
+    document = await _resolve_document_from_detail_request(
         db=db,
         document_detail_request=document_detail_request,
         user=user,
     )
     document_id = document.id
 
-    _ensure_document_access(
+    await _ensure_document_access(
         db=db,
         document_id=document_id,
         document_creator_id=document.creator_id,
@@ -236,21 +256,21 @@ async def get_document_detail(
     is_star = None
     is_read = None
     if user is not None:
-        is_star = crud.document.get_star_document_by_user_id_and_document_id(
+        is_star = await crud.document.get_star_document_by_user_id_and_document_id_async(
             db=db,
             user_id=user.id,
             document_id=document_id,
         ) is not None
-        is_read = crud.document.get_read_document_by_document_id_and_user_id(
+        is_read = await crud.document.get_read_document_by_document_id_and_user_id_async(
             db=db,
             user_id=user.id,
             document_id=document_id,
         ) is not None
-    db_sections = crud.document.get_sections_by_document_id(
+    db_sections = await crud.document.get_sections_by_document_id_async(
         db=db,
         document_id=document_id,
     )
-    publish_sections = crud.section.get_publish_sections_by_section_ids(
+    publish_sections = await crud.section.get_publish_sections_by_section_ids_async(
         db=db,
         section_ids=[section.id for section in db_sections],
     )
@@ -262,7 +282,7 @@ async def get_document_detail(
     if user is not None and document.creator_id == user.id:
         visible_section_ids = {section.id for section in db_sections}
     elif user is not None:
-        visible_sections = crud.document.get_published_section_of_the_document_by_document_id(
+        visible_sections = await crud.document.get_published_section_of_the_document_by_document_id_async(
             db=db,
             document_id=document_id,
             user_id=user.id,
@@ -279,7 +299,7 @@ async def get_document_detail(
         for section in db_sections
         if section.id in visible_section_ids
     ]
-    collaborator_rows = crud.document.search_users_and_document_users_by_document_id(
+    collaborator_rows = await crud.document.search_users_and_document_users_by_document_id_async(
         db=db,
         document_id=document_id,
         limit=100,
@@ -287,13 +307,12 @@ async def get_document_detail(
     collaborators = []
     for db_user, db_user_document in collaborator_rows:
         collaborator = schemas.user.UserPublicInfo.model_validate(db_user)
-        if collaborator.avatar is not None:
-            collaborator.avatar = await get_remote_file_signed_url(
-                user_id=collaborator.id,
-                file_name=collaborator.avatar,
-            )
         collaborators.append(collaborator)
-    db_labels = crud.document.get_labels_by_document_id(
+    await _batch_sign_remote_fields([
+        (collaborator, "avatar", collaborator.id)
+        for collaborator in collaborators
+    ])
+    db_labels = await crud.document.get_labels_by_document_id_async(
         db=db,
         document_id=document_id,
     )
@@ -319,12 +338,20 @@ async def get_document_detail(
         is_star=is_star,
         is_read=is_read
     )
-    if document.category == DocumentCategory.WEBSITE:
-        website_document = crud.document.get_website_document_by_document_id(
+    subtype_bundle = None
+    if document.category in {
+        DocumentCategory.WEBSITE,
+        DocumentCategory.FILE,
+        DocumentCategory.QUICK_NOTE,
+        DocumentCategory.AUDIO,
+    }:
+        subtype_bundle = await crud.document.get_document_subtype_bundle_by_document_id_async(
             db=db,
             document_id=document_id,
         )
-        website_snapshots = crud.document.get_website_document_snapshots_by_document_id(
+    if document.category == DocumentCategory.WEBSITE:
+        website_document = subtype_bundle[0] if subtype_bundle is not None else None
+        website_snapshots = await crud.document.get_website_document_snapshots_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -334,57 +361,53 @@ async def get_document_detail(
                 latest_snapshot_time=website_snapshots[0].create_time if website_snapshots else None,
                 snapshot_count=len(website_snapshots),
             )
-        for snapshot in website_snapshots:
-            if snapshot.md_file_name is not None:
-                snapshot.md_file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=snapshot.md_file_name,
-                )
+        await _batch_sign_remote_fields([
+            (snapshot, "md_file_name", document.creator_id)
+            for snapshot in website_snapshots
+        ])
         res.website_snapshots = [
             schemas.document.WebsiteDocumentSnapshotInfo.model_validate(snapshot)
             for snapshot in website_snapshots
         ]
     elif document.category == DocumentCategory.FILE:
-        file_document = crud.document.get_file_document_by_document_id(
-            db=db,
-            document_id=document_id,
-        )
+        file_document = subtype_bundle[1] if subtype_bundle is not None else None
         if file_document is not None:
             res.file_info = schemas.document.FileDocumentInfo(
                 file_name=file_document.file_name
             )
-            if res.file_info.file_name is not None:
-                res.file_info.file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=res.file_info.file_name
-                )
     elif document.category == DocumentCategory.QUICK_NOTE:
-        quick_note_document = crud.document.get_quick_note_document_by_document_id(
-            db=db,
-            document_id=document_id,
-        )
+        quick_note_document = subtype_bundle[2] if subtype_bundle is not None else None
         if quick_note_document is not None:
             res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
                 content=quick_note_document.content
             )
     elif document.category == DocumentCategory.AUDIO:
-        audio_document = crud.document.get_audio_document_by_document_id(
-            db=db,
-            document_id=document_id,
-        )
+        audio_document = subtype_bundle[3] if subtype_bundle is not None else None
         if audio_document is not None:
             res.audio_info = schemas.document.AudioDocumentInfo(
                 audio_file_name=audio_document.audio_file_name
             )
-            if res.audio_info.audio_file_name is not None:
-                res.audio_info.audio_file_name = await get_remote_file_signed_url(
-                    user_id=document.creator_id,
-                    file_name=res.audio_info.audio_file_name
-                )
-    convert_task = crud.task.get_document_convert_task_by_document_id(
+    task_bundle_row = await crud.task.get_document_task_bundle_by_document_id_async(
         db=db,
         document_id=document_id,
     )
+    convert_task = None
+    podcast_task = None
+    summarize_task = None
+    embedding_task = None
+    graph_task = None
+    transcribe_task = None
+    process_task = None
+    if task_bundle_row is not None:
+        (
+            convert_task,
+            podcast_task,
+            summarize_task,
+            embedding_task,
+            graph_task,
+            transcribe_task,
+            process_task,
+        ) = task_bundle_row
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
             status=convert_task.status,
@@ -392,15 +415,6 @@ async def get_document_detail(
             create_time=convert_task.create_time,
             update_time=convert_task.update_time,
         )
-        if res.convert_task.md_file_name is not None:
-            res.convert_task.md_file_name = await get_remote_file_signed_url(
-                user_id=document.creator_id,
-                file_name=res.convert_task.md_file_name
-            )
-    podcast_task = crud.task.get_document_podcast_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
@@ -409,20 +423,6 @@ async def get_document_detail(
             create_time=podcast_task.create_time,
             update_time=podcast_task.update_time,
         )
-        if podcast_task.podcast_file_name is not None:
-            res.podcast_task.podcast_file_name = await get_remote_file_signed_url(
-                user_id=document.creator_id,
-                file_name=podcast_task.podcast_file_name
-            )
-        if podcast_task.podcast_script_file_name is not None:
-            res.podcast_task.podcast_script_file_name = await get_remote_file_signed_url(
-                user_id=document.creator_id,
-                file_name=podcast_task.podcast_script_file_name
-            )
-    summarize_task = crud.task.get_document_summarize_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
             status=summarize_task.status,
@@ -430,37 +430,28 @@ async def get_document_detail(
             create_time=summarize_task.create_time,
             update_time=summarize_task.update_time,
         )
-    embedding_task = crud.task.get_document_embedding_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     res.embedding_task = embedding_task
-    graph_task = crud.task.get_document_graph_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     res.graph_task = graph_task
-    transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     res.transcribe_task = transcribe_task
-    process_task = crud.task.get_document_process_task_by_document_id(
-        db=db,
-        document_id=document_id,
-    )
     res.process_task = process_task
+    await _batch_sign_remote_fields([
+        (res.file_info, "file_name", document.creator_id),
+        (res.audio_info, "audio_file_name", document.creator_id),
+        (res.convert_task, "md_file_name", document.creator_id),
+        (res.podcast_task, "podcast_file_name", document.creator_id),
+        (res.podcast_task, "podcast_script_file_name", document.creator_id),
+    ])
     return res
 
 @document_query_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_user_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = False
     next_start = None
-    db_documents = crud.document.search_user_unread_documents(
+    db_documents = await crud.document.search_user_unread_documents_async(
         db=db,
         user_id=user.id,
         start=search_unread_list_request.start,
@@ -473,7 +464,7 @@ async def search_user_unread_documents(
     documents = await get_document_infos(db=db, documents=db_documents)
     next_document = None
     if search_unread_list_request.limit > 0 and len(documents) == search_unread_list_request.limit:
-        next_document = crud.document.search_next_user_unread_document(
+        next_document = await crud.document.search_next_user_unread_document_async(
             db=db,
             user_id=user.id,
             document=db_documents[-1],
@@ -486,7 +477,7 @@ async def search_user_unread_documents(
         limit=search_unread_list_request.limit,
         next_item_id=next_document.id if next_document is not None else None,
     )
-    total = crud.document.count_user_unread_documents(
+    total = await crud.document.count_user_unread_documents_async(
         db=db,
         user_id=user.id,
         keyword=search_unread_list_request.keyword,
@@ -504,12 +495,12 @@ async def search_user_unread_documents(
 @document_query_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def recent_read_document(
     search_recent_read_request: schemas.document.SearchRecentReadRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = False
     next_start = None
-    db_documents = crud.document.search_user_recent_read_documents(
+    db_documents = await crud.document.search_user_recent_read_documents_async(
         db=db,
         user_id=user.id,
         start=search_recent_read_request.start,
@@ -521,7 +512,7 @@ async def recent_read_document(
     documents = await get_document_infos(db=db, documents=db_documents)
     next_document = None
     if search_recent_read_request.limit > 0 and len(documents) == search_recent_read_request.limit:
-        next_document = crud.document.search_next_user_recent_read_document(
+        next_document = await crud.document.search_next_user_recent_read_document_async(
             db=db,
             user_id=user.id,
             document=db_documents[-1],
@@ -534,7 +525,7 @@ async def recent_read_document(
         limit=search_recent_read_request.limit,
         next_item_id=next_document.id if next_document is not None else None,
     )
-    total = crud.document.count_user_recent_read_documents(
+    total = await crud.document.count_user_recent_read_documents_async(
         db=db,
         user_id=user.id,
         keyword=search_recent_read_request.keyword,
@@ -552,12 +543,12 @@ async def recent_read_document(
 @document_query_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_all_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = False
     next_start = None
-    db_documents = crud.document.search_user_documents(
+    db_documents = await crud.document.search_user_documents_async(
         db=db,
         user_id=user.id,
         start=search_all_my_document_request.start,
@@ -569,7 +560,7 @@ async def search_all_mine_documents(
     documents = await get_document_infos(db=db, documents=db_documents)
     next_document = None
     if search_all_my_document_request.limit > 0 and len(documents) == search_all_my_document_request.limit:
-        next_document = crud.document.search_next_user_document(
+        next_document = await crud.document.search_next_user_document_async(
             db=db,
             user_id=user.id,
             document=db_documents[-1],
@@ -582,7 +573,7 @@ async def search_all_mine_documents(
         limit=search_all_my_document_request.limit,
         next_item_id=next_document.id if next_document is not None else None,
     )
-    total = crud.document.count_user_documents(
+    total = await crud.document.count_user_documents_async(
         db=db,
         user_id=user.id,
         keyword=search_all_my_document_request.keyword,
@@ -600,12 +591,12 @@ async def search_all_mine_documents(
 @document_query_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_my_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
     has_more = False
     next_start = None
-    db_documents = crud.document.search_user_stared_documents(
+    db_documents = await crud.document.search_user_stared_documents_async(
         db=db,
         user_id=user.id,
         start=search_my_star_documents_request.start,
@@ -617,7 +608,7 @@ async def search_my_star_documents(
     documents = await get_document_infos(db=db, documents=db_documents)
     next_document = None
     if search_my_star_documents_request.limit > 0 and len(documents) == search_my_star_documents_request.limit:
-        next_document = crud.document.search_next_user_star_document(
+        next_document = await crud.document.search_next_user_star_document_async(
             db=db,
             user_id=user.id,
             document=db_documents[-1],
@@ -630,7 +621,7 @@ async def search_my_star_documents(
         limit=search_my_star_documents_request.limit,
         next_item_id=next_document.id if next_document is not None else None,
     )
-    total = crud.document.count_user_stared_documents(
+    total = await crud.document.count_user_stared_documents_async(
         db=db,
         user_id=user.id,
         keyword=search_my_star_documents_request.keyword,
@@ -648,9 +639,9 @@ async def search_my_star_documents(
 @document_query_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_public_documents(
     search_public_documents_request: schemas.document.SearchPublicDocumentsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    db_documents = crud.document.search_published_documents(
+    db_documents = await crud.document.search_published_documents_async(
         db=db,
         start=search_public_documents_request.start,
         limit=search_public_documents_request.limit,
@@ -666,7 +657,7 @@ async def search_public_documents(
         search_public_documents_request.limit > 0
         and len(db_documents) == search_public_documents_request.limit
     ):
-        next_document = crud.document.search_next_published_document(
+        next_document = await crud.document.search_next_published_document_async(
             db=db,
             document=db_documents[-1],
             keyword=search_public_documents_request.keyword,
@@ -679,7 +670,7 @@ async def search_public_documents(
         limit=search_public_documents_request.limit,
         next_item_id=next_document.id if next_document is not None else None,
     )
-    total = crud.document.count_published_documents(
+    total = await crud.document.count_published_documents_async(
         db=db,
         keyword=search_public_documents_request.keyword,
         creator_id=search_public_documents_request.creator_id,
@@ -695,21 +686,26 @@ async def search_public_documents(
     )
 
 @document_query_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
-def search_knowledge_vector(
+async def search_knowledge_vector(
     vector_search_request: schemas.document.VectorSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    hybrid_results = naive_search(
+    hybrid_results = await naive_search(
         user_id=user.id,
         search_text=vector_search_request.query
     )
-    document_ids: list[int] = [cast(int, doc.get('doc_id')) for doc in hybrid_results]
-    db_documents = crud.document.get_documents_by_document_ids(
+    document_ids: list[int] = list(
+        dict.fromkeys(cast(int, doc.get('doc_id')) for doc in hybrid_results)
+    )
+    db_documents = await crud.document.get_documents_by_document_ids_async(
         db=db,
         document_ids=document_ids
     )
+    document_by_id = {document.id: document for document in db_documents}
     documents = [
-        schemas.document.DocumentInfo.model_validate(document) for document in db_documents
+        schemas.document.DocumentInfo.model_validate(document_by_id[document_id])
+        for document_id in document_ids
+        if document_id in document_by_id
     ]
     return schemas.document.VectorSearchResponse(documents=documents)

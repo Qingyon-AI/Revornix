@@ -1,23 +1,23 @@
 import inspect
 import json
+import asyncio
+import random
 import re
+from typing import Any
 import crud
-
 from langfuse import propagate_attributes
-from pydantic import BaseModel
-
 from langfuse.openai import AsyncOpenAI
-
-from common.logger import exception_logger, format_log_message
+from prompts.podcast_dialogue import podcast_dialogue_prompt
+from prompts.summary_content import summary_content_prompt
+from prompts.reducer_summary import reducer_summary_prompt
+from prompts.make_section_markdown import make_section_markdown_prompt
+from pydantic import BaseModel
+from data.custom_types.all import RelationInfo, EntityInfo
+from common.logger import exception_logger
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
-from data.custom_types.all import EntityInfo, RelationInfo
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.user import AIInteractionLanguage
-from prompts.podcast_dialogue import podcast_dialogue_prompt
-from prompts.make_section_markdown import make_section_markdown_prompt
-from prompts.reducer_summary import reducer_summary_prompt
-from prompts.summary_content import summary_content_prompt
 from proxy.ai_model_proxy import AIModelProxy
 
 
@@ -37,9 +37,14 @@ PODCAST_DIALOGUE_MAX_TURNS = 32
 PODCAST_SENTENCE_SPLIT_RE = re.compile(r"(?<=[。！？!?；;])")
 
 
-def _get_user_ai_interaction_language(user_id: int) -> int | None:
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+LLM_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+LLM_RETRY_MAX_ATTEMPTS = 3
+LLM_RETRY_BASE_DELAY_SECONDS = 1.5
+
+
+async def _get_user_ai_interaction_language(user_id: int) -> int | None:
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
         if db_user is None:
             return None
         return db_user.default_ai_interaction_language
@@ -88,13 +93,9 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
                 await result
         except RuntimeError as e:
             if "Event loop is closed" not in str(e):
-                exception_logger.warning(
-                    format_log_message("async_llm_client_close_failed", error=e)
-                )
+                exception_logger.warning(f"Failed to close async llm client: {e}")
         except Exception as e:
-            exception_logger.warning(
-                format_log_message("async_llm_client_close_failed", error=e)
-            )
+            exception_logger.warning(f"Failed to close async llm client: {e}")
         return
 
     aclose_fn = getattr(client, "aclose", None)
@@ -105,26 +106,90 @@ async def _safe_close_async_client(client: AsyncOpenAI) -> None:
                 await result
         except RuntimeError as e:
             if "Event loop is closed" not in str(e):
-                exception_logger.warning(
-                    format_log_message("async_llm_client_aclose_failed", error=e)
-                )
+                exception_logger.warning(f"Failed to aclose async llm client: {e}")
         except Exception as e:
+            exception_logger.warning(f"Failed to aclose async llm client: {e}")
+
+
+def _get_error_status_code(error: Exception) -> int | None:
+    status_code = getattr(error, "status_code", None)
+    if isinstance(status_code, int):
+        return status_code
+
+    response = getattr(error, "response", None)
+    response_status_code = getattr(response, "status_code", None)
+    if isinstance(response_status_code, int):
+        return response_status_code
+
+    return None
+
+
+def _is_retryable_llm_error(error: Exception) -> bool:
+    status_code = _get_error_status_code(error)
+    if status_code in LLM_RETRYABLE_STATUS_CODES:
+        return True
+
+    error_text = str(error).lower()
+    return (
+        "engine_overloaded" in error_text
+        or "engine is currently overloaded" in error_text
+        or "rate limit" in error_text
+        or "too many requests" in error_text
+        or "temporarily unavailable" in error_text
+    )
+
+
+async def _call_with_llm_retry(
+    *,
+    operation_name: str,
+    call,
+    user_id: int,
+    model_id: int,
+):
+    last_error: Exception | None = None
+
+    for attempt in range(1, LLM_RETRY_MAX_ATTEMPTS + 1):
+        try:
+            return await call()
+        except Exception as error:
+            last_error = error
+            retryable = _is_retryable_llm_error(error)
+            if not retryable or attempt >= LLM_RETRY_MAX_ATTEMPTS:
+                raise
+
+            status_code = _get_error_status_code(error)
+            delay_seconds = (
+                LLM_RETRY_BASE_DELAY_SECONDS * (2 ** (attempt - 1))
+            ) + random.uniform(0, 0.35)
             exception_logger.warning(
-                format_log_message("async_llm_client_aclose_failed", error=e)
+                f"event=llm_retry_scheduled operation={operation_name} "
+                f"user_id={user_id} model_id={model_id} attempt={attempt} "
+                f"max_attempts={LLM_RETRY_MAX_ATTEMPTS} retryable={retryable} "
+                f"status_code={status_code} delay_seconds={delay_seconds:.2f} "
+                f"error={repr(error)}"
             )
+            await asyncio.sleep(delay_seconds)
+
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"{operation_name} failed without raising an exception")
 
 async def summary_content(
     user_id: int,
     model_id: int,
-    content: str
+    content: str,
+    *,
+    model_configuration: Any | None = None,
+    client: AsyncOpenAI | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=model_id
-    )).get_configuration()
+    if model_configuration is None:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
 
     system_prompt = summary_content_prompt(content=content)
 
@@ -132,26 +197,33 @@ async def summary_content(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = AsyncOpenAI(
-            api_key=model_configuration.api_key,
-            base_url=model_configuration.base_url,
-        )
-        try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert in summarizing document content.\n\n"
-                            f"{language_instruction}"
-                        ),
-                    },
-                    {"role": "user", "content": system_prompt}
-                ],
-                response_format={"type": "json_object"}
+        owns_client = client is None
+        if client is None:
+            client = AsyncOpenAI(
+                api_key=model_configuration.api_key,
+                base_url=model_configuration.base_url,
             )
-            persist_model_usage_from_completion(
+        try:
+            completion = await _call_with_llm_retry(
+                operation_name="summary_content",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert in summarizing document content.\n\n"
+                                f"{language_instruction}"
+                            ),
+                        },
+                        {"role": "user", "content": system_prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                ),
+            )
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -170,7 +242,8 @@ async def summary_content(
                 summary=summary
             )
         finally:
-            await _safe_close_async_client(client)
+            if owns_client:
+                await _safe_close_async_client(client)
 
 async def reducer_summary(
     user_id: int,
@@ -178,15 +251,19 @@ async def reducer_summary(
     current_summary: str | None,
     new_summary_to_append: str,
     new_entities: list[EntityInfo],
-    new_relations: list[RelationInfo]
+    new_relations: list[RelationInfo],
+    *,
+    model_configuration: Any | None = None,
+    client: AsyncOpenAI | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
-    model_configuration = (await AIModelProxy.create(
-        user_id=user_id,
-        model_id=model_id
-    )).get_configuration()
+    if model_configuration is None:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
 
     system_prompt = reducer_summary_prompt(
         current_summary=current_summary,
@@ -199,26 +276,33 @@ async def reducer_summary(
         user_id=str(user_id),
         tags=[f'model:{model_configuration.model_name}']
     ):
-        client = AsyncOpenAI(
-            api_key=model_configuration.api_key,
-            base_url=model_configuration.base_url,
-        )
-        try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert in summarizing document content.\n\n"
-                            f"{language_instruction}"
-                        ),
-                    },
-                    {"role": "user", "content": system_prompt}
-                ],
-                response_format={"type": "json_object"}
+        owns_client = client is None
+        if client is None:
+            client = AsyncOpenAI(
+                api_key=model_configuration.api_key,
+                base_url=model_configuration.base_url,
             )
-            persist_model_usage_from_completion(
+        try:
+            completion = await _call_with_llm_retry(
+                operation_name="reducer_summary",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert in summarizing document content.\n\n"
+                                f"{language_instruction}"
+                            ),
+                        },
+                        {"role": "user", "content": system_prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                ),
+            )
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -237,7 +321,8 @@ async def reducer_summary(
                 summary=summary
             )
         finally:
-            await _safe_close_async_client(client)
+            if owns_client:
+                await _safe_close_async_client(client)
 
 
 async def make_section_markdown(
@@ -248,7 +333,7 @@ async def make_section_markdown(
     entities: list[EntityInfo],
     relations: list[RelationInfo]
 ):
-    user_language = _get_user_ai_interaction_language(user_id)
+    user_language = await _get_user_ai_interaction_language(user_id)
     language_instruction = build_text_output_language_instruction(
         user_language,
     )
@@ -287,7 +372,7 @@ async def make_section_markdown(
                     {"role": "user", "content": prompt}
                 ],
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,
@@ -355,7 +440,7 @@ def _split_podcast_dialogue_text(text: str) -> list[str]:
 
 
 def _normalize_podcast_dialogue_turns(
-    raw_turns,
+    raw_turns: Any,
     *,
     speakers: list[str],
 ) -> list[dict[str, str]]:
@@ -436,7 +521,7 @@ async def generate_podcast_dialogue_turns(
     description: str | None = None,
 ):
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     model_configuration = (await AIModelProxy.create(
         user_id=user_id,
@@ -459,23 +544,28 @@ async def generate_podcast_dialogue_turns(
             base_url=model_configuration.base_url,
         )
         try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert podcast producer and dialogue writer. "
-                            "Your job is to create sharp, high-retention, two-host podcast scripts "
-                            "that are natural to speak aloud, structurally coherent, and faithful to the source.\n\n"
-                            f"{language_instruction}"
-                        ),
-                    },
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"}
+            completion = await _call_with_llm_retry(
+                operation_name="generate_podcast_dialogue_turns",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert podcast producer and dialogue writer. "
+                                "Your job is to create sharp, high-retention, two-host podcast scripts "
+                                "that are natural to speak aloud, structurally coherent, and faithful to the source.\n\n"
+                                f"{language_instruction}"
+                            ),
+                        },
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                ),
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=model_id,
                 completion=completion,

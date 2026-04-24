@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
-from common.dependencies import get_current_user, get_db, plan_ability_checked
+from common.dependencies import get_async_db, get_current_user, plan_ability_checked
 from enums.ability import Ability
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
@@ -13,14 +13,14 @@ from enums.section import UserSectionRole
 section_user_manage_router = APIRouter()
 
 @section_user_manage_router.post('/user/add', response_model=schemas.common.NormalResponse)
-def section_user_add_request(
+async def section_user_add_request(
     section_share_request: schemas.section.SectionUserAddRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
     _ = Depends(plan_ability_checked(Ability.SECTION_COLLABORATION.value)),
 
 ):
-    section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=user.id,
         section_id=section_share_request.section_id
@@ -28,7 +28,7 @@ def section_user_add_request(
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
         raise schemas.error.CustomException("You don't have permission to share this section", code=403)
 
-    db_exist_user_section = crud.section.get_section_user_by_section_id_and_user_id(
+    db_exist_user_section = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=section_share_request.user_id,
         section_id=section_share_request.section_id
@@ -37,28 +37,28 @@ def section_user_add_request(
     if db_exist_user_section is not None:
         raise schemas.error.CustomException("User is already in this section", code=409)
 
-    crud.section.create_section_user(
+    await crud.section.create_section_user_async(
         db=db,
         section_id=section_share_request.section_id,
         user_id=section_share_request.user_id,
         role=UserSectionRole.MEMBER,
         authority=section_share_request.authority
     )
-    db.commit()
+    await db.commit()
 
     return schemas.common.SuccessResponse()
 
 @section_user_manage_router.post('/user/modify', response_model=schemas.common.NormalResponse)
-def section_user_modify_request(
+async def section_user_modify_request(
     section_user_modify_request: schemas.section.SectionUserModifyRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
 
     if user.id == section_user_modify_request.user_id:
         raise schemas.error.CustomException("You can't modify your own authority", code=400)
 
-    section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=user.id,
         section_id=section_user_modify_request.section_id
@@ -66,7 +66,7 @@ def section_user_modify_request(
     if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
         raise schemas.error.CustomException("You don't have permission to modify member authority", code=403)
 
-    origin_section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    origin_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=section_user_modify_request.user_id,
         section_id=section_user_modify_request.section_id
@@ -83,17 +83,17 @@ def section_user_modify_request(
     if section_user_modify_request.role is not None:
         origin_section_user.role = section_user_modify_request.role
 
-    db.commit()
+    await db.commit()
 
     return schemas.common.SuccessResponse()
 
 @section_user_manage_router.post('/user/delete', response_model=schemas.common.NormalResponse)
-def delete_section_user(
+async def delete_section_user(
     section_user_delete_request: schemas.section.SectionUserDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    section_user = crud.section.get_section_user_by_section_id_and_user_id(
+    section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         user_id=user.id,
         section_id=section_user_delete_request.section_id
@@ -104,7 +104,7 @@ def delete_section_user(
     if user.id == section_user_delete_request.user_id:
         raise schemas.error.CustomException("As the creator of the section, you can't delete yourself", code=400)
 
-    crud.section.delete_section_user_by_section_id_and_user_id(
+    await crud.section.delete_section_user_by_section_id_and_user_id_async(
         db=db,
         section_id=section_user_delete_request.section_id,
         user_id=section_user_delete_request.user_id
@@ -120,5 +120,5 @@ def delete_section_user(
         }
     ).get()
 
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()

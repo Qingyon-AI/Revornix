@@ -1,13 +1,15 @@
+import asyncio
+
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
 from common.dependencies import (
+    get_async_db,
     get_current_user,
-    get_db,
 )
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionAuthority, UserSectionRole
@@ -19,17 +21,17 @@ section_subscription_manage_router = APIRouter()
 @section_subscription_manage_router.post('/subscribe', response_model=schemas.common.NormalResponse)
 async def subscribe_section(
     section_subscribe_request: schemas.section.SectionSubscribeRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
 ):
-    db_section = crud.section.get_section_by_section_id(
+    db_section = await crud.section.get_section_by_section_id_async(
         db=db,
         section_id=section_subscribe_request.section_id
     )
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
 
-    db_user_section = crud.section.get_section_user_by_section_id_and_user_id(
+    db_user_section = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
         section_id=section_subscribe_request.section_id,
         user_id=user.id
@@ -42,33 +44,36 @@ async def subscribe_section(
     )
 
     if action == "create":
-        crud.section.create_section_user(
+        await crud.section.create_section_user_async(
             db=db,
             section_id=section_subscribe_request.section_id,
             user_id=user.id,
             role=UserSectionRole.SUBSCRIBER,
             authority=UserSectionAuthority.READ_ONLY
         )
-        db_users = crud.section.get_users_for_section_by_section_id(
+        db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,
             section_id=section_subscribe_request.section_id,
             filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR]
         )
-        for db_user in db_users:
-            start_trigger_user_notification_event.delay(
+        await asyncio.gather(*[
+            asyncio.to_thread(
+                start_trigger_user_notification_event.delay,
                 user_id=db_user.id,
                 trigger_event_uuid=NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value,
                 params={
                     "section_id": section_subscribe_request.section_id,
                     "user_id": db_user.id
-                }
+                },
             )
+            for db_user in db_users
+        ])
     elif action == "delete":
-        crud.section.delete_section_user_by_section_id_and_user_id(
+        await crud.section.delete_section_user_by_section_id_and_user_id_async(
             db=db,
             section_id=section_subscribe_request.section_id,
             user_id=user.id
         )
 
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()

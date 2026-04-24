@@ -8,7 +8,7 @@ from base_implement.image_generate_engine_base import ImageGenerateEngineBase
 from base_implement.markdown_engine_base import MarkdownEngineBase
 from base_implement.stt_engine_base import STTEngineBase
 from base_implement.tts_engine_base import TTSEngineBase
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.engine_enums import UserEngineRole
 from common.encrypt import decrypt_engine_config
 from common.dependencies import (
@@ -61,13 +61,12 @@ class EngineProxy:
         available_compute_points = 0
         minimum_required_points = 1
 
-        # ---------- DB（同步世界） ----------
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
             if db_user is None:
                 raise Exception("The user is not found")
 
-            db_engine = crud.engine.get_engine_by_engine_id(
+            db_engine = await crud.engine.get_engine_by_engine_id_async(
                 db=db, 
                 engine_id=engine_id
             )
@@ -78,7 +77,7 @@ class EngineProxy:
             if db_engine.creator_id != db_user.id and not db_engine.is_public:
                 raise Exception("The engine is not public, you are forbidden to use it")
 
-            db_user_engine = crud.engine.get_user_engine_by_user_id_and_engine_id(
+            db_user_engine = await crud.engine.get_user_engine_by_user_id_and_engine_id_async(
                 db=db,
                 user_id=user_id,
                 engine_id=db_engine.id,
@@ -96,7 +95,6 @@ class EngineProxy:
                 official_hosted_check_needed = bool(db_engine.is_official_hosted)
                 minimum_required_points = get_minimum_required_points(
                     multiplier=db_engine.compute_point_multiplier,
-                    unit_price=db_engine.billing_unit_price,
                 )
 
             engine_provided_uuid = db_engine.engine_provided.uuid

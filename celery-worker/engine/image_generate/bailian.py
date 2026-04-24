@@ -128,7 +128,7 @@ class BailianImageGenerateEngine(ImageGenerateEngineBase):
 
         image_count = response_data.get("usage", {}).get("image_count")
         if isinstance(image_count, int) and image_count > 0:
-            persist_engine_usage(
+            await persist_engine_usage(
                 user_id=self.user_id,
                 resource_uuid=self.resource_uuid or self.engine_uuid,
                 usage_details={"total": image_count},

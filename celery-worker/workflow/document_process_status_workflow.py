@@ -4,7 +4,7 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 import crud
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.logger import exception_logger
 from common.document_guard import DocumentDeletedError, ensure_document_active
 from workflow.timing import add_timed_node, ainvoke_with_timing
@@ -26,25 +26,23 @@ async def _update_document_status(
     if document_id is None or status is None:
         raise Exception("Document status workflow missing document_id or status")
 
-    db = session_scope()
     try:
-        try:
-            ensure_document_active(db=db, document_id=document_id)
-        except DocumentDeletedError:
-            return state
-        db_document_process_task = crud.task.get_document_process_task_by_document_id(
-            db=db,
-            document_id=document_id
-        )
-        if db_document_process_task is not None:
-            db_document_process_task.status = status
-            db_document_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
+        async with async_session_context() as db:
+            try:
+                ensure_document_active(db=db.sync_session, document_id=document_id)
+            except DocumentDeletedError:
+                return state
+            db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
+                db=db,
+                document_id=document_id
+            )
+            if db_document_process_task is not None:
+                db_document_process_task.status = status
+                db_document_process_task.update_time = datetime.now(timezone.utc)
+                await db.commit()
     except Exception as e:
         exception_logger.error(f"Something is error while updating the document status: {e}")
         raise
-    finally:
-        db.close()
 
     return state
 

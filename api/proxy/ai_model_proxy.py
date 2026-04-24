@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 import crud
 import schemas
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.encrypt import decrypt_api_key
 from common.logger import exception_logger
 from enums.model import UserModelProviderRole
@@ -84,8 +84,8 @@ class AIModelProxy:
         minimum_required_points = 1
 
         try:
-            with session_scope() as db:
-                db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+            async with async_session_context() as db:
+                db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
                 if db_user is None:
                     raise Exception("The user is not found")
                 user_is_privileged = (
@@ -93,11 +93,11 @@ class AIModelProxy:
                     or db_user.role == UserRole.ROOT
                 )
 
-                db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
+                db_model = await crud.model.get_ai_model_by_id_async(db=db, model_id=model_id)
                 if db_model is None:
                     raise Exception("The model is not found")
 
-                db_model_provider = crud.model.get_ai_model_provider_by_id(
+                db_model_provider = await crud.model.get_ai_model_provider_by_id_async(
                     db=db,
                     provider_id=db_model.provider_id,
                 )
@@ -128,7 +128,7 @@ class AIModelProxy:
                 if not model_owned_by_user:
                     if not provider_is_public:
                         raise Exception("The model provider for the model is not public, you are forbidden to use it")
-                    db_user_model_provider = crud.model.get_user_ai_model_provider_by_user_and_model_provider_id(
+                    db_user_model_provider = await crud.model.get_user_ai_model_provider_by_user_and_model_provider_id_async(
                         db=db,
                         user_id=user_id,
                         ai_model_provider_id=db_model_provider.id,
