@@ -179,6 +179,7 @@ async def summary_content(
     model_id: int,
     content: str,
     *,
+    purpose: str = "card",
     model_configuration: Any | None = None,
     client: AsyncOpenAI | None = None,
 ):
@@ -191,7 +192,7 @@ async def summary_content(
             model_id=model_id
         )).get_configuration()
 
-    system_prompt = summary_content_prompt(content=content)
+    system_prompt = summary_content_prompt(content=content, purpose=purpose)
 
     with propagate_attributes(
         user_id=str(user_id),
@@ -359,18 +360,23 @@ async def make_section_markdown(
             base_url=model_configuration.base_url,
         )
         try:
-            completion = await client.chat.completions.create(
-                model=model_configuration.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert in summarizing document content.\n\n"
-                            f"{language_instruction}"
-                        ),
-                    },
-                    {"role": "user", "content": prompt}
-                ],
+            completion = await _call_with_llm_retry(
+                operation_name="make_section_markdown",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an expert editor for knowledge columns.\n\n"
+                                f"{language_instruction}"
+                            ),
+                        },
+                        {"role": "user", "content": prompt}
+                    ],
+                ),
             )
             await persist_model_usage_from_completion(
                 user_id=user_id,
@@ -381,9 +387,98 @@ async def make_section_markdown(
             content = completion.choices[0].message.content
             if content is None:
                 raise Exception("No content returned for ai")
-            return sanitize_mermaid_blocks(content)
+            revised_content = await revise_section_markdown(
+                user_id=user_id,
+                model_id=model_id,
+                draft_markdown=content,
+                client=client,
+                model_configuration=model_configuration,
+            )
+            return sanitize_mermaid_blocks(revised_content)
         finally:
             await _safe_close_async_client(client)
+
+
+async def revise_section_markdown(
+    user_id: int,
+    model_id: int,
+    draft_markdown: str,
+    *,
+    model_configuration: Any | None = None,
+    client: AsyncOpenAI | None = None,
+) -> str:
+    language_instruction = build_text_output_language_instruction(
+        await _get_user_ai_interaction_language(user_id),
+    )
+    if model_configuration is None:
+        model_configuration = (await AIModelProxy.create(
+            user_id=user_id,
+            model_id=model_id
+        )).get_configuration()
+
+    revision_prompt = f"""
+You are performing the final editorial revision on a Markdown knowledge column.
+
+Rewrite the draft below into a cleaner, sharper final version while preserving all source-grounded facts.
+
+Revision goals:
+- Reduce template feel, AI tone, and repetitive phrasing
+- Strengthen the opening hook and make the title more publishable if needed
+- Improve flow between sections and paragraphs
+- Remove consultant/report boilerplate and empty heading content
+- Merge repetitive bullets or paragraphs
+- Keep the piece insight-dense and readable
+- Preserve Markdown structure and any Mermaid block if it already adds value
+- Do not add facts that are not already supported by the draft
+- Output the final Markdown only
+
+Draft:
+
+{draft_markdown}
+"""
+
+    with propagate_attributes(
+        user_id=str(user_id),
+        tags=[f'model:{model_configuration.model_name}']
+    ):
+        owns_client = client is None
+        if client is None:
+            client = AsyncOpenAI(
+                api_key=model_configuration.api_key,
+                base_url=model_configuration.base_url,
+            )
+        try:
+            completion = await _call_with_llm_retry(
+                operation_name="revise_section_markdown",
+                user_id=user_id,
+                model_id=model_id,
+                call=lambda: client.chat.completions.create(
+                    model=model_configuration.model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an elite final-pass editor for long-form knowledge writing.\n\n"
+                                f"{language_instruction}"
+                            ),
+                        },
+                        {"role": "user", "content": revision_prompt}
+                    ],
+                ),
+            )
+            await persist_model_usage_from_completion(
+                user_id=user_id,
+                model_id=model_id,
+                completion=completion,
+                source="revise_section_markdown",
+            )
+            content = completion.choices[0].message.content
+            if content is None:
+                raise Exception("No content returned for ai")
+            return content
+        finally:
+            if owns_client:
+                await _safe_close_async_client(client)
 
 
 def _extract_json_object_text(content: str) -> str:
