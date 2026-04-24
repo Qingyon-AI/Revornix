@@ -15,8 +15,8 @@ from common.ai import make_section_markdown
 from common.ai import summary_content
 from common.logger import exception_logger, info_logger
 from data.custom_types.all import EntityInfo, RelationInfo
-from data.neo4j.base import neo4j_driver
-from data.sql.base import session_scope
+from data.neo4j.base import async_neo4j_driver
+from data.sql.base import async_session_context
 from enums.section import (
     SectionDocumentIntegration,
     SectionProcessStatus,
@@ -53,9 +53,9 @@ class SectionProcessState(TypedDict, total=False):
 WORKFLOW_NAME = "section_process"
 
 
-def _ensure_section_process_task_not_cancelled(section_id: int) -> None:
-    with session_scope() as db:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+async def _ensure_section_process_task_not_cancelled(section_id: int) -> None:
+    async with async_session_context() as db:
+        db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
             db=db,
             section_id=section_id,
         )
@@ -248,12 +248,12 @@ def _wrap_document_markdown_for_section(
     )
 
 
-def _get_document_ready_state(
+async def _get_document_ready_state_async(
     *,
     db,
     document_id: int,
 ) -> tuple[bool, str]:
-    db_document = crud.document.get_document_by_document_id(
+    db_document = await crud.document.get_document_by_document_id_async(
         db=db,
         document_id=document_id
     )
@@ -265,7 +265,7 @@ def _get_document_ready_state(
         return True, "ready"
 
     if category in (DocumentCategory.WEBSITE, DocumentCategory.FILE):
-        convert_task = crud.task.get_document_convert_task_by_document_id(
+        convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -278,7 +278,7 @@ def _get_document_ready_state(
         return True, "ready"
 
     if category == DocumentCategory.AUDIO:
-        transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+        transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -854,11 +854,9 @@ async def _compose_section_markdown_in_batches(
             model_id=model_id,
             content=markdown_contents[0],
         )
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-            user_language = (
-                db_user.default_ai_interaction_language if db_user is not None else None
-            )
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
+            user_language = db_user.default_ai_interaction_language if db_user is not None else None
         info_logger.info(
             f"[SectionMarkdown] fast path used: section={section_id}, "
             f"source_chars={len(markdown_contents[0])}, entities={len(entities)}, "
@@ -983,8 +981,8 @@ async def _fetch_document_markdown(
 ) -> tuple[int, str | None]:
     async with semaphore:
         try:
-            with session_scope() as db:
-                db_document = crud.document.get_document_by_document_id(
+            async with async_session_context() as db:
+                db_document = await crud.document.get_document_by_document_id_async(
                     db=db,
                     document_id=document_id,
                 )
@@ -1079,14 +1077,14 @@ async def _load_context(
 
     now = datetime.now(timezone.utc)
     force_full_rebuild = bool(state.get("force_full_rebuild"))
-    with session_scope() as db:
-        db_section = crud.section.get_section_by_section_id(
+    async with async_session_context() as db:
+        db_section = await crud.section.get_section_by_section_id_async(
             db=db,
             section_id=section_id
         )
         if db_section is None:
             raise Exception("The section which will be processed is not found.")
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -1109,12 +1107,12 @@ async def _load_context(
         if state.get("default_podcast_user_engine_id") is None:
             state["default_podcast_user_engine_id"] = db_user.default_podcast_user_engine_id
 
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
             db=db,
             section_id=section_id
         )
         if db_section_process_task is None:
-            db_section_process_task = crud.task.create_section_process_task(
+            db_section_process_task = await crud.task.create_section_process_task_async(
                 db=db,
                 user_id=user_id,
                 section_id=section_id,
@@ -1124,13 +1122,13 @@ async def _load_context(
             if db_section_process_task.status != SectionProcessStatus.PROCESSING:
                 db_section_process_task.status = SectionProcessStatus.PROCESSING
                 db_section_process_task.update_time = now
-        db.commit()
+        await db.commit()
 
-        db_section_documents_all = crud.section.get_section_documents_by_section_id(
+        db_section_documents_all = await crud.section.get_section_documents_by_section_id_async(
             db=db,
             section_id=section_id,
         )
-        db_section_documents_wait_to = crud.section.get_section_documents_by_section_id(
+        db_section_documents_wait_to = await crud.section.get_section_documents_by_section_id_async(
             db=db,
             section_id=section_id,
             filter_status=SectionDocumentIntegration.WAIT_TO
@@ -1144,7 +1142,7 @@ async def _load_context(
         ready_documents = []
         pending_documents: list[tuple[int, str]] = []
         for section_document in target_documents:
-            ready, reason = _get_document_ready_state(
+            ready, reason = await _get_document_ready_state_async(
                 db=db,
                 document_id=section_document.document_id
             )
@@ -1162,14 +1160,14 @@ async def _load_context(
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.WAIT_TO
                 db_section_process_task.update_time = now
-            db.commit()
+            await db.commit()
             state["target_document_ids"] = []
             state["skip_processing"] = True
             return state
 
         for section_document in ready_documents:
             section_document.status = SectionDocumentIntegration.SUPPLEMENTING
-        db.commit()
+        await db.commit()
 
         state["target_document_ids"] = [doc.document_id for doc in ready_documents]
 
@@ -1189,7 +1187,7 @@ async def _build_section_content(
     target_document_ids = state.get("target_document_ids", [])
     if user_id is None or section_id is None or model_id is None:
         raise Exception("Section workflow missing user_id, section_id or model_id")
-    _ensure_section_process_task_not_cancelled(section_id)
+    await _ensure_section_process_task_not_cancelled(section_id)
 
     markdown_contents: list[str] = []
     ok_document_ids: list[int] = []
@@ -1231,15 +1229,15 @@ async def _build_section_content(
         and not (current_markdown_content or "").strip()
     )
     if rebuild_from_all_documents:
-        with session_scope() as db:
-            db_section_documents_all = crud.section.get_section_documents_by_section_id(
+        async with async_session_context() as db:
+            db_section_documents_all = await crud.section.get_section_documents_by_section_id_async(
                 db=db,
                 section_id=section_id
             )
             fallback_target_ids: list[int] = []
             fallback_pending: list[tuple[int, str]] = []
             for section_document in db_section_documents_all:
-                ready, reason = _get_document_ready_state(
+                ready, reason = await _get_document_ready_state_async(
                     db=db,
                     document_id=section_document.document_id
                 )
@@ -1285,10 +1283,10 @@ async def _build_section_content(
         ok_document_ids.append(document_id)
 
     if failed_document_ids:
-        with session_scope() as db:
+        async with async_session_context() as db:
             for document_id in failed_document_ids:
                 try:
-                    crud.section.update_section_document_by_section_id_and_document_id(
+                    await crud.section.update_section_document_by_section_id_and_document_id_async(
                         db=db,
                         section_id=section_id,
                         document_id=document_id,
@@ -1299,24 +1297,24 @@ async def _build_section_content(
                         f"Failed to mark section document failed: section={section_id}, "
                         f"document={document_id}, error={update_error}"
                     )
-            db.commit()
+            await db.commit()
 
     if not markdown_contents:
-        with session_scope() as db:
-            db_section_process_task = crud.task.get_section_process_task_by_section_id(
+        async with async_session_context() as db:
+            db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
                 db=db,
                 section_id=section_id
             )
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.FAILED
                 db_section_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
+            await db.commit()
         state["skip_processing"] = True
         return state
 
     success_document_ids: list[int] = []
-    with session_scope() as db:
-        db_section_documents_all = crud.section.get_section_documents_by_section_id(
+    async with async_session_context() as db:
+        db_section_documents_all = await crud.section.get_section_documents_by_section_id_async(
             db=db,
             section_id=section_id
         )
@@ -1341,13 +1339,13 @@ async def _build_section_content(
             "graph_documents": len(graph_document_ids),
         },
     ):
-        with neo4j_driver.session() as session:
-            entities_result = session.run(
+        async with async_neo4j_driver.session() as session:
+            entities_result = await session.run(
                 ENTITY_QUERY,
                 user_id=user_id,
                 doc_ids=graph_document_ids
             )
-            for record in entities_result:
+            async for record in entities_result:
                 entities.append(
                     EntityInfo(
                         id=record["id"],
@@ -1356,12 +1354,12 @@ async def _build_section_content(
                         chunks=[]
                     )
                 )
-            relations_result = session.run(
+            relations_result = await session.run(
                 EDGE_QUERY,
                 user_id=user_id,
                 doc_ids=graph_document_ids
             )
-            for record in relations_result:
+            async for record in relations_result:
                 relations.append(
                     RelationInfo(
                         src_node=record["src_id"],
@@ -1479,8 +1477,8 @@ async def _build_section_content(
             "failed_documents": len(failed_document_ids),
         },
     ):
-        with session_scope() as db:
-            db_section = crud.section.get_section_by_section_id(
+        async with async_session_context() as db:
+            db_section = await crud.section.get_section_by_section_id_async(
                 db=db,
                 section_id=section_id
             )
@@ -1490,7 +1488,7 @@ async def _build_section_content(
 
             if ok_document_ids:
                 ok_document_id_set = set(ok_document_ids)
-                db_section_documents = crud.section.get_section_documents_by_section_id(
+                db_section_documents = await crud.section.get_section_documents_by_section_id_async(
                     db=db,
                     section_id=section_id
                 )
@@ -1498,8 +1496,8 @@ async def _build_section_content(
                     if db_section_document.document_id in ok_document_id_set:
                         db_section_document.status = SectionDocumentIntegration.SUCCESS
 
-            db.commit()
-    _ensure_section_process_task_not_cancelled(section_id)
+            await db.commit()
+    await _ensure_section_process_task_not_cancelled(section_id)
 
     if (
         state.get("auto_illustration")
@@ -1545,10 +1543,10 @@ async def _mark_section_process_success(
     section_id = state.get("section_id")
     if section_id is None:
         raise Exception("Section workflow missing section_id")
-    _ensure_section_process_task_not_cancelled(section_id)
+    await _ensure_section_process_task_not_cancelled(section_id)
 
-    with session_scope() as db:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    async with async_session_context() as db:
+        db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
             db=db,
             section_id=section_id,
         )
@@ -1556,7 +1554,7 @@ async def _mark_section_process_success(
             db_section_process_task.status = SectionProcessStatus.SUCCESS
             db_section_process_task.celery_task_id = None
             db_section_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
+            await db.commit()
     return state
 
 
@@ -1624,9 +1622,9 @@ async def run_section_process_workflow(
         )
     except WorkflowCancelledError:
         try:
-            with session_scope() as db:
+            async with async_session_context() as db:
                 now = datetime.now(timezone.utc)
-                db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
                     db=db,
                     section_id=section_id
                 )
@@ -1634,16 +1632,16 @@ async def run_section_process_workflow(
                     db_section_process_task.status = SectionProcessStatus.CANCELLED
                     db_section_process_task.celery_task_id = None
                     db_section_process_task.update_time = now
-                    db.commit()
+                    await db.commit()
         except Exception as inner_exception:
             exception_logger.error(f"Failed to update section cancel status: {inner_exception}")
         raise
     except Exception as e:
         exception_logger.error(f"Error processing section {section_id}: {e}")
         try:
-            with session_scope() as db:
+            async with async_session_context() as db:
                 now = datetime.now(timezone.utc)
-                db_section_process_task = crud.task.get_section_process_task_by_section_id(
+                db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
                     db=db,
                     section_id=section_id
                 )
@@ -1654,7 +1652,7 @@ async def run_section_process_workflow(
                     db_section_process_task.status = SectionProcessStatus.FAILED
                     db_section_process_task.celery_task_id = None
                     db_section_process_task.update_time = now
-                db_section_documents = crud.section.get_section_documents_by_section_id(
+                db_section_documents = await crud.section.get_section_documents_by_section_id_async(
                     db=db,
                     section_id=section_id
                 )
@@ -1663,7 +1661,7 @@ async def run_section_process_workflow(
                     if db_section_document.status == SectionDocumentIntegration.SUPPLEMENTING:
                         db_section_document.status = SectionDocumentIntegration.WAIT_TO
                         rolled_back_docs += 1
-                db.commit()
+                await db.commit()
                 if rolled_back_docs > 0:
                     exception_logger.warning(
                         f"Section {section_id} rollback supplementing documents to WAIT_TO: {rolled_back_docs}"

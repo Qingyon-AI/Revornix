@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
-from data.neo4j.base import neo4j_driver
+from data.neo4j.base import async_neo4j_driver
 
 def now_str():
     return datetime.now(tz=timezone.utc).isoformat()
@@ -8,7 +8,7 @@ def now_str():
 # -----------------------------
 # 1) 批量 upsert Document节点
 # -----------------------------
-def upsert_doc_neo4j(
+async def upsert_doc_neo4j(
     docs_info: list[DocumentInfo]
 ):
     cypher = """
@@ -32,26 +32,26 @@ def upsert_doc_neo4j(
             "updated_at": now
         } for d in docs_info
     ]
-    with neo4j_driver.session() as session:
-        session.run(cypher, rows=rows)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher, rows=rows)
 
 # -----------------------------
 # 1.1) Neo4j：Document -> Chunk 关系
 # -----------------------------
-def upsert_doc_chunk_relations():
+async def upsert_doc_chunk_relations():
     cypher = """
     MATCH (c:Chunk)
     WHERE c.doc_id IS NOT NULL
     MATCH (d:Document {id: c.doc_id})
     MERGE (d)-[:HAS_CHUNK]->(c)
     """
-    with neo4j_driver.session() as session:
-        session.run(cypher)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher)
 
 # -----------------------------
 # 4) 批量 upsert Chunk 节点
 # -----------------------------
-def upsert_chunks_neo4j(
+async def upsert_chunks_neo4j(
     chunks_info: list[ChunkInfo]
 ):
     cypher = """
@@ -75,13 +75,13 @@ def upsert_chunks_neo4j(
             "updated_at": now
         } for c in chunks_info
     ]
-    with neo4j_driver.session() as session:
-        session.run(cypher, rows=rows)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher, rows=rows)
 
 # -----------------------------
 # 7) 批量 upsert Entity 节点
 # -----------------------------
-def upsert_entities_neo4j(
+async def upsert_entities_neo4j(
     entities_info: list[EntityInfo]
 ):
     cypher = """
@@ -112,13 +112,13 @@ def upsert_entities_neo4j(
         }
         for e in entities_info
     ]
-    with neo4j_driver.session() as session:
-        session.run(cypher, rows=rows)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher, rows=rows)
 
 # -----------------------------
 # 8) 批量 upsert Entity -> Entity 的关系
 # -----------------------------
-def upsert_relations_neo4j(
+async def upsert_relations_neo4j(
     relations_info: list[RelationInfo]
 ):
     cypher = """
@@ -140,13 +140,13 @@ def upsert_relations_neo4j(
         }
         for r in relations_info
     ]
-    with neo4j_driver.session() as session:
-        session.run(cypher, rows=rows)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher, rows=rows)
 
 # -----------------------------
 # 8.1) Neo4j：Chunk -> Entity 关系
 # -----------------------------
-def upsert_chunk_entity_relations(
+async def upsert_chunk_entity_relations(
     entities_info: list[EntityInfo] | None = None
 ):
     if entities_info:
@@ -169,8 +169,8 @@ def upsert_chunk_entity_relations(
         MATCH (e:Entity {id: r.entity_id})
         MERGE (c)-[m:MENTIONS]->(e)
         """
-        with neo4j_driver.session() as session:
-            session.run(cypher, rows=list(mention_rows.values()))
+        async with async_neo4j_driver.session() as session:
+            await session.run(cypher, rows=list(mention_rows.values()))
         return
     cypher = """
     MATCH (e:Entity)
@@ -178,36 +178,36 @@ def upsert_chunk_entity_relations(
     MATCH (c:Chunk {id: eid})
     MERGE (c)-[:MENTIONS]->(e)
     """
-    with neo4j_driver.session() as session:
-        session.run(cypher)
+    async with async_neo4j_driver.session() as session:
+        await session.run(cypher)
 
 # -----------------------------
 # 9) 社区聚类（Louvain）
 # -----------------------------
-def create_communities_from_chunks():
-    with neo4j_driver.session() as session:
-        session.run("""
+async def create_communities_from_chunks():
+    async with async_neo4j_driver.session() as session:
+        await session.run("""
             CALL gds.graph.project(
                 'communityGraph',
                 'Entity',
                 { RELATED_TO: {orientation: 'UNDIRECTED'} }
             )
         """)
-        result = session.run("""
+        await session.run("""
             CALL gds.louvain.write(
                 'communityGraph',
                 { writeProperty: 'community' }
             ) YIELD communityCount, modularity
         """)
-        session.run("CALL gds.graph.drop('communityGraph')")
+        await session.run("CALL gds.graph.drop('communityGraph')")
 
 # -----------------------------
 # 10) 创建 Community 节点 & 关联 Entity 和 Chunk
 # -----------------------------
-def create_community_nodes_and_relationships_with_size():
+async def create_community_nodes_and_relationships_with_size():
     now = now_str()
-    with neo4j_driver.session() as session:
-        session.run("""
+    async with async_neo4j_driver.session() as session:
+        await session.run("""
             MATCH (e:Entity)
             WITH DISTINCT e.community AS comm_id
             WHERE comm_id IS NOT NULL
@@ -216,42 +216,42 @@ def create_community_nodes_and_relationships_with_size():
                 com.updated_at = datetime($now)
         """, {"now": now})
 
-        session.run("""
+        await session.run("""
             MATCH (e:Entity)
             MATCH (com:Community {id: e.community})
             MERGE (e)-[:BELONGS_TO]->(com)
         """)
 
-        session.run("""
+        await session.run("""
             MATCH (c:Chunk)-[:MENTIONS]->(e:Entity)
             MATCH (com:Community {id: e.community})
             MERGE (c)-[:BELONGS_TO]->(com)
         """)
 
-        session.run("""
+        await session.run("""
             MATCH (com:Community)<-[:BELONGS_TO]-(n)
             WITH com, count(n) AS member_count
             SET com.size = member_count
         """)
 
-        session.run("MATCH (com:Community) RETURN com.id, com.size")
+        await session.run("MATCH (com:Community) RETURN com.id, com.size")
 
 # -----------------------------
 # 11) 所有节点 degree 标注
 # -----------------------------
-def annotate_node_degrees():
-    with neo4j_driver.session() as session:
-        session.run("""
+async def annotate_node_degrees():
+    async with async_neo4j_driver.session() as session:
+        await session.run("""
             MATCH (n:Entity)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg
         """)
-        session.run("""
+        await session.run("""
             MATCH (n:Chunk)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg
         """)
-        session.run("""
+        await session.run("""
             MATCH (n:Community)
             WITH n, COUNT { (n)--() } AS deg
             SET n.degree = deg

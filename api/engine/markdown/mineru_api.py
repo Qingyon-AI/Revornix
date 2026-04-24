@@ -17,7 +17,7 @@ from base_implement.markdown_engine_base import MarkdownEngineBase, WebsiteInfo,
 from common.usage_billing import persist_engine_usage
 from enums.engine_enums import EngineProvided, EngineCategory
 from playwright.async_api import async_playwright
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.logger import info_logger, exception_logger
 from proxy.file_system_proxy import FileSystemProxy
 
@@ -117,14 +117,13 @@ class MineruApiEngine(MarkdownEngineBase):
             raise Exception("Engine is not initialized. Please initialize first.")
 
         self._validate_local_files(file_paths)
-
-        db = session_scope()
         try:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-            if not db_user:
-                raise Exception("The owner of the engine is not found.")
-            if db_user.default_user_file_system is None:
-                raise Exception("The owner of the engine has not set a default file system yet.")
+            async with async_session_context() as db:
+                db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
+                if not db_user:
+                    raise Exception("The owner of the engine is not found.")
+                if db_user.default_user_file_system is None:
+                    raise Exception("The owner of the engine has not set a default file system yet.")
 
             # 1) Apply upload URLs (batch)
             request_url = f"{self.MINERU_BASE}/api/v4/file-urls/batch"
@@ -317,8 +316,6 @@ class MineruApiEngine(MarkdownEngineBase):
         except Exception as e:
             exception_logger.error(f"MinerU extraction failed: {e}", exc_info=True)
             raise
-        finally:
-            db.close()
 
     async def analyse_website(self, url: str) -> WebsiteInfo:
         with tempfile.TemporaryDirectory(prefix="revornix-mineru-api-website-") as temp_dir_str:
@@ -332,7 +329,7 @@ class MineruApiEngine(MarkdownEngineBase):
                 await browser.close()
 
             results = await self._extract_files([str(temp_shot_pdf_path)])
-            persist_engine_usage(
+            await persist_engine_usage(
                 user_id=self.user_id,
                 resource_uuid=self.resource_uuid or self.engine_uuid,
                 usage_details={"file_count": 1},
@@ -354,7 +351,7 @@ class MineruApiEngine(MarkdownEngineBase):
 
     async def analyse_file(self, file_path: str) -> FileInfo:
         results = await self._extract_files([file_path])
-        persist_engine_usage(
+        await persist_engine_usage(
             user_id=self.user_id,
             resource_uuid=self.resource_uuid or self.engine_uuid,
             usage_details={"file_count": 1},

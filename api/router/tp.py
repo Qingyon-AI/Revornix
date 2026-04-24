@@ -3,15 +3,15 @@
 # 当使用 api key 的时候, 调用这边的接口组
 
 from fastapi import APIRouter, Depends, File, Form, Header, UploadFile
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
 from common.dependencies import (
     check_deployed_by_official,
+    get_async_db,
     get_current_user_with_api_key,
-    get_db,
     get_request_timezone,
     plan_ability_checked_in_func,
 )
@@ -91,12 +91,12 @@ async def upload_file_system(
     file: UploadFile = File(...),
     file_path: str = Form(...),
     content_type: str = Form(...),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
     if user.default_user_file_system is None:
         raise schemas.error.CustomException(message="Default file system is not configured", code=400)
-    user_file_system = crud.file_system.get_user_file_system_by_id(
+    user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=user.default_user_file_system
     )
@@ -119,7 +119,7 @@ async def upload_file_system(
 @tp_router.post('/section/create', response_model=schemas.section.SectionCreateResponse)
 async def create_section(
     section_create_request: schemas.section.SectionCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     request_timezone: str = Depends(get_request_timezone),
 ):
@@ -134,7 +134,7 @@ async def create_section(
 @tp_router.post('/section/update', response_model=schemas.common.NormalResponse)
 async def update_section(
     section_update_request: schemas.section.SectionUpdateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     request_timezone: str = Depends(get_request_timezone),
 ):
@@ -147,12 +147,12 @@ async def update_section(
 
 
 @tp_router.post('/section/delete', response_model=schemas.common.NormalResponse)
-def delete_section(
+async def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return delete_section_impl(
+    return await delete_section_impl(
         section_delete_request=section_delete_request,
         db=db,
         user=user,
@@ -162,7 +162,7 @@ def delete_section(
 @tp_router.post('/section/detail', response_model=schemas.section.SectionInfo)
 async def get_section_detail(
     section_detail_request: schemas.section.SectionDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await get_section_detail_impl(
@@ -175,7 +175,7 @@ async def get_section_detail(
 @tp_router.post('/section/ask')
 async def ask_section_ai(
     section_ask_request: schemas.section.SectionAskRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await ask_section_ai_impl(
@@ -188,7 +188,7 @@ async def ask_section_ai(
 @tp_router.post('/section/date', response_model=schemas.section.DaySectionResponse)
 async def get_section_date(
     day_section_request: schemas.section.DaySectionRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await get_date_section_info_impl(
@@ -202,12 +202,12 @@ async def get_section_date(
     '/section/documents',
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo],
 )
-def get_section_documents(
+async def get_section_documents(
     section_document_request: schemas.section.SectionDocumentRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return section_document_request_impl(
+    return await section_document_request_impl(
         section_document_request=section_document_request,
         db=db,
         user=user,
@@ -215,12 +215,12 @@ def get_section_documents(
 
 
 @tp_router.post('/section/comment/create', response_model=schemas.common.NormalResponse)
-def create_section_comment(
+async def create_section_comment(
     section_comment_create_request: schemas.section.SectionCommentCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return create_section_comment_impl(
+    return await create_section_comment_impl(
         section_comment_create_request=section_comment_create_request,
         db=db,
         user=user,
@@ -231,12 +231,12 @@ def create_section_comment(
     '/section/comment/search',
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo],
 )
-def search_section_comment(
+async def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return search_section_comment_impl(
+    return await search_section_comment_impl(
         section_comment_search_request=section_comment_search_request,
         db=db,
         user=user,
@@ -244,12 +244,12 @@ def search_section_comment(
 
 
 @tp_router.post('/section/comment/delete', response_model=schemas.common.NormalResponse)
-def delete_section_comment(
+async def delete_section_comment(
     section_comment_delete_request: schemas.section.SectionCommentDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return delete_section_comment_impl(
+    return await delete_section_comment_impl(
         section_comment_delete_request=section_comment_delete_request,
         db=db,
         user=user,
@@ -262,7 +262,7 @@ def delete_section_comment(
 )
 async def search_mine_sections(
     search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await search_mine_sections_impl(
@@ -278,7 +278,7 @@ async def search_mine_sections(
 )
 async def get_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await get_my_subscribed_sections_impl(
@@ -294,7 +294,7 @@ async def get_subscribed_sections(
 )
 async def search_public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await public_sections_impl(
@@ -310,7 +310,7 @@ async def search_public_sections(
 )
 async def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await search_user_sections_impl(
@@ -320,17 +320,17 @@ async def search_user_sections(
     )
 
 @tp_router.post('/section/label/create', response_model=schemas.section.CreateLabelResponse)
-def add_label(
+async def add_label(
     label_add_request: schemas.section.LabelAddRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
-    db_label = crud.section.create_section_label(
+    db_label = await crud.section.create_section_label_async(
         db=db,
         name=label_add_request.name,
         user_id=user.id
     )
-    db.commit()
+    await db.commit()
     return schemas.section.CreateLabelResponse(
         id=db_label.id,
         name=db_label.name
@@ -338,11 +338,11 @@ def add_label(
 
 
 @tp_router.post('/section/label/list', response_model=schemas.section.LabelListResponse)
-def list_section_label(
-    db: Session = Depends(get_db),
+async def list_section_label(
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    db_labels = crud.section.get_user_labels_by_user_id(
+    db_labels = await crud.section.get_user_labels_by_user_id_async(
         db=db,
         user_id=user.id,
     )
@@ -354,25 +354,25 @@ def list_section_label(
 
 
 @tp_router.post('/section/label/delete', response_model=schemas.common.NormalResponse)
-def delete_section_label(
+async def delete_section_label(
     label_delete_request: schemas.section.LabelDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    crud.section.delete_labels_by_label_ids(
+    await crud.section.delete_labels_by_label_ids_async(
         db=db,
         label_ids=label_delete_request.label_ids,
         user_id=user.id,
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 @tp_router.post('/section/mine/all', response_model=schemas.section.AllMySectionsResponse)
-def get_all_mine_sections(
-    db: Session = Depends(get_db),
+async def get_all_mine_sections(
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
-    db_sections = crud.section.get_user_sections(
+    db_sections = await crud.section.get_user_sections_async(
         db=db,
         user_id=user.id,
         filter_roles=[UserSectionRole.CREATOR, UserSectionRole.MEMBER]
@@ -387,7 +387,7 @@ def get_all_mine_sections(
 @tp_router.post('/section/podcast/generate', response_model=schemas.common.NormalResponse)
 async def generate_section_podcast(
     generate_podcast_request: schemas.section.GenerateSectionPodcastRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await generate_section_podcast_impl(
@@ -400,7 +400,7 @@ async def generate_section_podcast(
 @tp_router.post('/section/ppt/generate', response_model=schemas.common.NormalResponse)
 async def generate_section_ppt(
     generate_ppt_request: schemas.section.GenerateSectionPptRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await generate_section_ppt_impl(
@@ -413,7 +413,7 @@ async def generate_section_ppt(
 @tp_router.post('/section/process/trigger', response_model=schemas.common.NormalResponse)
 async def trigger_section_process(
     trigger_process_request: schemas.section.TriggerSectionProcessRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await trigger_section_process_impl(
@@ -424,12 +424,12 @@ async def trigger_section_process(
 
 
 @tp_router.post('/section/document/retry', response_model=schemas.common.NormalResponse)
-def retry_section_document(
+async def retry_section_document(
     retry_request: schemas.section.RetrySectionDocumentRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return retry_section_document_integration_impl(
+    return await retry_section_document_integration_impl(
         retry_request=retry_request,
         user=user,
         db=db,
@@ -437,12 +437,12 @@ def retry_section_document(
 
 
 @tp_router.post('/section/publish', response_model=schemas.common.NormalResponse)
-def publish_section(
+async def publish_section(
     section_publish_request: schemas.section.SectionPublishRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return section_publish_request_impl(
+    return await section_publish_request_impl(
         section_publish_request=section_publish_request,
         db=db,
         user=user,
@@ -450,12 +450,12 @@ def publish_section(
 
 
 @tp_router.post('/section/publish/get', response_model=schemas.section.SectionPublishGetResponse)
-def get_section_publish(
+async def get_section_publish(
     section_publish_get_request: schemas.section.SectionPublishGetRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return section_publish_get_request_impl(
+    return await section_publish_get_request_impl(
         section_publish_get_request=section_publish_get_request,
         db=db,
         user=user,
@@ -463,23 +463,23 @@ def get_section_publish(
 
 
 @tp_router.post('/section/republish', response_model=schemas.common.NormalResponse)
-def republish_section(
+async def republish_section(
     section_republish_request: schemas.section.SectionRePublishRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return section_republish_impl(
+    return await section_republish_impl(
         section_republish_request=section_republish_request,
         db=db,
         user=user,
     )
 
 @tp_router.post("/document/label/list", response_model=schemas.document.LabelListResponse)
-def list_label(
-    db: Session = Depends(get_db),
+async def list_label(
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
-    db_labels = crud.document.get_user_labels_by_user_id(
+    db_labels = await crud.document.get_user_labels_by_user_id_async(
         db=db,
         user_id=user.id
     )
@@ -490,17 +490,17 @@ def list_label(
     return schemas.document.LabelListResponse(data=labels)
 
 @tp_router.post("/document/label/create", response_model=schemas.document.CreateLabelResponse)
-def create_document_label(
+async def create_document_label(
     label_add_request: schemas.document.LabelAddRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key)
 ):
-    db_label = crud.document.create_document_label(
+    db_label = await crud.document.create_document_label_async(
         db=db,
         name=label_add_request.name,
         user_id=user.id
     )
-    db.commit()
+    await db.commit()
     return schemas.document.CreateLabelResponse(
         id=db_label.id,
         name=db_label.name
@@ -508,24 +508,24 @@ def create_document_label(
 
 
 @tp_router.post("/document/label/delete", response_model=schemas.common.NormalResponse)
-def delete_document_label(
+async def delete_document_label(
     label_delete_request: schemas.document.LabelDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    crud.document.delete_labels_by_label_ids(
+    await crud.document.delete_labels_by_label_ids_async(
         db=db,
         label_ids=label_delete_request.label_ids,
         user_id=user.id,
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @tp_router.post("/document/create", response_model=schemas.document.DocumentCreateResponse)
 async def create_document(
     document_create_request: schemas.document.ApiDocumentCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
     deployed_by_official: bool = Depends(check_deployed_by_official),
     x_user_timezone: str | None = Header(default=None),
@@ -538,7 +538,7 @@ async def create_document(
     access_token, _ = create_token(
         user=user
     )
-    db_api_plat_user_documents = crud.document.count_user_documents(
+    db_api_plat_user_documents = await crud.document.count_user_documents_async(
         db=db,
         user_id=user.id,
         filter_platform='api',
@@ -567,13 +567,13 @@ async def create_document(
     if document_create_request.category == DocumentCategory.WEBSITE:
         existing_website_document = None
         if document_create_request.url is not None and document_create_request.url.strip():
-            existing_website_document = crud.document.get_website_document_by_user_id_and_url(
+            existing_website_document = await crud.document.get_website_document_by_user_id_and_url_async(
                 db=db,
                 user_id=user.id,
                 url=document_create_request.url.strip(),
             )
         if existing_website_document is None:
-            db_website_documents_count = crud.document.count_user_documents(
+            db_website_documents_count = await crud.document.count_user_documents_async(
                 db=db,
                 user_id=user.id,
                 filter_category=DocumentCategory.WEBSITE
@@ -586,7 +586,7 @@ async def create_document(
                 if not auth_status and deployed_by_official:
                     raise schemas.error.CustomException("Website document limit reached for the current plan", code=403)
     elif document_create_request.category == DocumentCategory.FILE:
-        db_file_documents_count = crud.document.count_user_documents(
+        db_file_documents_count = await crud.document.count_user_documents_async(
             db=db,
             user_id=user.id,
             filter_category=DocumentCategory.FILE
@@ -616,7 +616,7 @@ async def create_document(
 @tp_router.post("/document/detail", response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await get_document_detail_impl(
@@ -629,7 +629,7 @@ async def get_document_detail(
 @tp_router.post("/document/ask")
 async def ask_document_ai(
     document_ask_request: schemas.document.DocumentAskRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await ask_document_ai_impl(
@@ -642,7 +642,7 @@ async def ask_document_ai(
 @tp_router.post("/document/ai/summary", response_model=schemas.common.NormalResponse)
 async def create_ai_summary(
     ai_summary_request: schemas.document.DocumentAiSummaryRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await create_ai_summary_impl(
@@ -655,7 +655,7 @@ async def create_ai_summary(
 @tp_router.post("/document/embedding", response_model=schemas.common.NormalResponse)
 async def create_document_embedding(
     embedding_request: schemas.document.DocumentEmbeddingRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await create_embedding_impl(
@@ -668,7 +668,7 @@ async def create_document_embedding(
 @tp_router.post("/document/transcribe", response_model=schemas.common.NormalResponse)
 async def transcribe_audio_document(
     transcribe_request: schemas.document.DocumentTranscribeRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await transcribe_audio_document_impl(
@@ -681,7 +681,7 @@ async def transcribe_audio_document(
 @tp_router.post("/document/graph/generate", response_model=schemas.common.NormalResponse)
 async def generate_document_graph(
     graph_generate_request: schemas.document.DocumentGraphGenerateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await generate_document_graph_impl(
@@ -694,7 +694,7 @@ async def generate_document_graph(
 @tp_router.post("/document/podcast/generate", response_model=schemas.common.NormalResponse)
 async def generate_document_podcast(
     generate_podcast_request: schemas.document.GenerateDocumentPodcastRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await generate_document_podcast_impl(
@@ -705,29 +705,29 @@ async def generate_document_podcast(
 
 
 @tp_router.post("/document/month/summary", response_model=schemas.document.DocumentMonthSummaryResponse)
-def get_document_month_summary(
-    db: Session = Depends(get_db),
+async def get_document_month_summary(
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return get_month_summary_impl(
+    return await get_month_summary_impl(
         db=db,
         user=user,
     )
 
 
 @tp_router.post("/document/note/create", response_model=schemas.common.NormalResponse)
-def create_document_note(
+async def create_document_note(
     note_create_request: schemas.document.DocumentNoteCreateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    crud.document.create_document_note(
+    await crud.document.create_document_note_async(
         db=db,
         user_id=user.id,
         document_id=note_create_request.document_id,
         content=note_create_request.content,
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -735,15 +735,15 @@ def create_document_note(
     "/document/note/search",
     response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo],
 )
-def search_document_notes(
+async def search_document_notes(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     has_more = True
     next_start = None
     next_note = None
-    notes = crud.document.search_all_document_notes_by_document_id(
+    notes = await crud.document.search_all_document_notes_by_document_id_async(
         db=db,
         document_id=search_note_request.document_id,
         start=search_note_request.start,
@@ -753,14 +753,14 @@ def search_document_notes(
     if len(notes) < search_note_request.limit or len(notes) == 0:
         has_more = False
     if len(notes) == search_note_request.limit:
-        next_note = crud.document.search_next_note_by_document_note(
+        next_note = await crud.document.search_next_note_by_document_note_async(
             db=db,
             document_note=notes[-1],
             keyword=search_note_request.keyword,
         )
         has_more = next_note is not None
         next_start = next_note.id if next_note is not None else None
-    total = crud.document.count_all_document_notes_by_document_id(
+    total = await crud.document.count_all_document_notes_by_document_id_async(
         db=db,
         document_id=search_note_request.document_id,
         keyword=search_note_request.keyword,
@@ -777,17 +777,17 @@ def search_document_notes(
 
 
 @tp_router.post("/document/note/delete", response_model=schemas.common.NormalResponse)
-def delete_document_note(
+async def delete_document_note(
     note_delete_request: schemas.document.DocumentNoteDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    crud.document.delete_document_notes_by_user_id_and_note_ids(
+    await crud.document.delete_document_notes_by_user_id_and_note_ids_async(
         db=db,
         user_id=user.id,
         note_ids=note_delete_request.document_note_ids,
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
@@ -797,7 +797,7 @@ def delete_document_note(
 )
 async def search_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await search_user_unread_documents_impl(
@@ -813,7 +813,7 @@ async def search_unread_documents(
 )
 async def search_recent_documents(
     search_recent_read_request: schemas.document.SearchRecentReadRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await recent_read_document_impl(
@@ -824,12 +824,12 @@ async def search_recent_documents(
 
 
 @tp_router.post("/document/update", response_model=schemas.common.NormalResponse)
-def update_document(
+async def update_document(
     document_update_request: schemas.document.DocumentUpdateRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return update_document_impl(
+    return await update_document_impl(
         document_update_request=document_update_request,
         db=db,
         user=user,
@@ -839,7 +839,7 @@ def update_document(
 @tp_router.post("/document/markdown/transform", response_model=schemas.common.NormalResponse)
 async def transform_document_markdown(
     transform_markdown_request: schemas.document.DocumentMarkdownConvertRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await transform_markdown_impl(
@@ -852,7 +852,7 @@ async def transform_document_markdown(
 @tp_router.post("/document/delete", response_model=schemas.common.NormalResponse)
 async def delete_document(
     documents_delete_request: schemas.document.DocumentDeleteRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await delete_document_impl(
@@ -868,7 +868,7 @@ async def delete_document(
 )
 async def search_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await search_my_star_documents_impl(
@@ -884,7 +884,7 @@ async def search_star_documents(
 )
 async def search_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
     return await search_all_mine_documents_impl(
@@ -898,12 +898,12 @@ async def search_mine_documents(
     "/document/vector/search",
     response_model=schemas.document.VectorSearchResponse,
 )
-def search_document_vector(
+async def search_document_vector(
     vector_search_request: schemas.document.VectorSearchRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return search_knowledge_vector_impl(
+    return await search_knowledge_vector_impl(
         vector_search_request=vector_search_request,
         db=db,
         user=user,
@@ -911,23 +911,23 @@ def search_document_vector(
 
 
 @tp_router.post("/graph/document", response_model=schemas.graph.GraphResponse)
-def document_graph(
+async def document_graph(
     document_graph_request: schemas.graph.DocumentGraphRequest,
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return document_graph_impl(
+    return await document_graph_impl(
         document_graph_request=document_graph_request,
         user=user,
     )
 
 
 @tp_router.post("/graph/section", response_model=schemas.graph.GraphResponse)
-def section_graph(
+async def section_graph(
     section_graph_request: schemas.graph.SectionGraphRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return section_graph_impl(
+    return await section_graph_impl(
         section_graph_request=section_graph_request,
         user=user,
         db=db,
@@ -935,7 +935,7 @@ def section_graph(
 
 
 @tp_router.post("/graph/search", response_model=schemas.graph.GraphResponse)
-def search_graph(
+async def search_graph(
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return graph_impl(user=user)
+    return await graph_impl(user=user)

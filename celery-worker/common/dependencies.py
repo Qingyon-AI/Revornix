@@ -5,7 +5,7 @@ import crud
 import httpx
 from jose import jwt
 from common.env import is_env_enabled
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, UNION_PAY_API_PREFIX
 from datetime import datetime, timezone
@@ -30,17 +30,6 @@ def check_deployed_by_official_in_fuc():
         return True
     return False
 
-def get_db():
-    db = session_scope()
-    try:
-        yield db
-    except Exception as e:
-        db.rollback()
-        exception_logger.error(f"Error occurred while getting db: {e}")
-        raise
-    finally:
-        db.close()
-
 def decode_jwt_token(
     token: str, 
     secret_key: str = OAUTH_SECRET_KEY
@@ -48,7 +37,7 @@ def decode_jwt_token(
     return jwt.decode(token, secret_key, algorithms=["HS256"])
 
 
-def _is_admin_or_root_from_authorization(
+async def _is_admin_or_root_from_authorization_async(
     authorization: str | None,
 ) -> bool:
     if not authorization:
@@ -66,25 +55,23 @@ def _is_admin_or_root_from_authorization(
     except Exception:
         return False
 
-    db = session_scope()
     try:
-        db_user = crud.user.get_user_by_uuid(
-            db=db,
-            uuid=user_uuid,
-        )
-        if db_user is None:
-            return False
-        return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_uuid_async(
+                db=db,
+                uuid=user_uuid,
+            )
+            if db_user is None:
+                return False
+            return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
     except Exception:
         return False
-    finally:
-        db.close()
 
 async def plan_ability_checked_in_func(
     ability: str,
     authorization: str
 ):
-    if _is_admin_or_root_from_authorization(authorization):
+    if await _is_admin_or_root_from_authorization_async(authorization):
         return True
 
     headers = { }
@@ -209,7 +196,7 @@ async def get_user_plan_start_time_in_func(
 async def get_user_plan_level_in_func(
     authorization: str | None,
 ):
-    if _is_admin_or_root_from_authorization(authorization):
+    if await _is_admin_or_root_from_authorization_async(authorization):
         return PlanAccessLevel.MAX
 
     user_plan = await get_user_plan_payload_in_func(

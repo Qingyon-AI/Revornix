@@ -170,12 +170,16 @@ def encrypt_wechat_official_message(
     ciphertext = encryptor.update(padded) + encryptor.finalize()
     return base64.b64encode(ciphertext).decode("utf-8")
 
-def get_mini_wechat_tokens(
+async def get_mini_wechat_tokens(
     app_id: str,
     app_secret: str,
     code: str
 ):
-    response_token = httpx.post(f'https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code')
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response_token = await client.post(
+            f'https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code'
+        )
+        response_token.raise_for_status()
     try:
         res = MiniWeChatTokenResponse(**response_token.json())
     except Exception:
@@ -188,12 +192,16 @@ def get_mini_wechat_tokens(
         raise
     return res
 
-def get_web_wechat_tokens(
+async def get_web_wechat_tokens(
     app_id: str,
     app_secret: str,
     code: str
 ):
-    response_token = httpx.post(f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={app_id}&secret={app_secret}&code={code}&grant_type=authorization_code')
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response_token = await client.post(
+            f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={app_id}&secret={app_secret}&code={code}&grant_type=authorization_code'
+        )
+        response_token.raise_for_status()
     try:
         res = WebWeChatTokenResponse(**response_token.json())
     except Exception:
@@ -206,15 +214,19 @@ def get_web_wechat_tokens(
         raise
     return res
 
-def get_web_user_info(
+async def get_web_user_info(
     access_token: str,
     openid: str
 ):
-    response_user_info = httpx.post(f'https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN')
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response_user_info = await client.post(
+            f'https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}&lang=zh_CN'
+        )
+        response_user_info.raise_for_status()
     return response_user_info.json()
 
 
-def get_official_wechat_access_token(
+async def get_official_wechat_access_token(
     app_id: str,
     app_secret: str,
     force_refresh: bool = False,
@@ -230,16 +242,16 @@ def get_official_wechat_access_token(
         ):
             return cached[0]
 
-    response = httpx.get(
-        "https://api.weixin.qq.com/cgi-bin/token",
-        params={
-            "grant_type": "client_credential",
-            "appid": app_id,
-            "secret": app_secret,
-        },
-        timeout=_get_timeout(),
-    )
-    response.raise_for_status()
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response = await client.get(
+            "https://api.weixin.qq.com/cgi-bin/token",
+            params={
+                "grant_type": "client_credential",
+                "appid": app_id,
+                "secret": app_secret,
+            },
+        )
+        response.raise_for_status()
     data = response.json()
     _validate_wechat_api_response(data)
     result = OfficialWeChatAccessTokenResponse(**data)
@@ -249,39 +261,41 @@ def get_official_wechat_access_token(
     return result.access_token
 
 
-def get_official_wechat_user_info(
+async def get_official_wechat_user_info(
     access_token: str,
     openid: str,
 ) -> OfficialWeChatUserInfoResponse:
-    response = httpx.get(
-        "https://api.weixin.qq.com/cgi-bin/user/info",
-        params={
-            "access_token": access_token,
-            "openid": openid,
-            "lang": "zh_CN",
-        },
-        timeout=_get_timeout(),
-    )
-    response.raise_for_status()
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response = await client.get(
+            "https://api.weixin.qq.com/cgi-bin/user/info",
+            params={
+                "access_token": access_token,
+                "openid": openid,
+                "lang": "zh_CN",
+            },
+        )
+        response.raise_for_status()
     data = response.json()
     _validate_wechat_api_response(data)
     return OfficialWeChatUserInfoResponse(**data)
 
 
-def download_official_wechat_media(
+async def download_official_wechat_media(
     access_token: str,
     media_id: str,
 ) -> WeChatMediaDownload:
-    response = httpx.get(
-        "https://api.weixin.qq.com/cgi-bin/media/get",
-        params={
-            "access_token": access_token,
-            "media_id": media_id,
-        },
+    async with httpx.AsyncClient(
         timeout=max(_get_timeout(), 30.0),
         follow_redirects=True,
-    )
-    response.raise_for_status()
+    ) as client:
+        response = await client.get(
+            "https://api.weixin.qq.com/cgi-bin/media/get",
+            params={
+                "access_token": access_token,
+                "media_id": media_id,
+            },
+        )
+        response.raise_for_status()
 
     content_type = response.headers.get("Content-Type")
     if (

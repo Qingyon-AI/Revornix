@@ -1,4 +1,6 @@
 import models
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from enums.document import DocumentGraphStatus, DocumentPodcastStatus, DocumentProcessStatus, DocumentEmbeddingStatus, DocumentMdConvertStatus, DocumentSummarizeStatus, DocumentAudioTranscribeStatus
@@ -25,6 +27,24 @@ def create_document_convert_task(
     db.flush()
     return task
 
+
+async def create_document_convert_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentMdConvertStatus = DocumentMdConvertStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentConvertToMdTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_section_process_task(
     db: Session,
     user_id: int,
@@ -44,6 +64,26 @@ def create_section_process_task(
     db.flush()
     return task
 
+
+async def create_section_process_task_async(
+    db: AsyncSession,
+    user_id: int,
+    section_id: int,
+    status: SectionProcessStatus = SectionProcessStatus.WAIT_TO,
+    trigger_type: SectionProcessTriggerType = SectionProcessTriggerType.UPDATED,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.SectionProcessTask(
+        user_id=user_id,
+        status=status,
+        section_id=section_id,
+        create_time=now,
+        trigger_type=trigger_type,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_section_podcast_task(
     db: Session,
     user_id: int,
@@ -57,6 +97,24 @@ def create_section_podcast_task(
                                           create_time=now)
     db.add(task)
     db.flush()
+    return task
+
+
+async def create_section_podcast_task_async(
+    db: AsyncSession,
+    user_id: int,
+    section_id: int,
+    status: SectionPodcastStatus = SectionPodcastStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.SectionPodcastTask(
+        user_id=user_id,
+        status=status,
+        section_id=section_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
     return task
 
 def create_document_summarize_task(
@@ -74,6 +132,24 @@ def create_document_summarize_task(
     db.flush()
     return task
 
+
+async def create_document_summarize_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentSummarizeStatus = DocumentSummarizeStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentSummarizeTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_document_podcast_task(
     db: Session,
     user_id: int,
@@ -89,6 +165,24 @@ def create_document_podcast_task(
     db.flush()
     return task
 
+
+async def create_document_podcast_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentPodcastStatus = DocumentPodcastStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentPodcastTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_document_graph_task(
     db: Session,
     user_id: int,
@@ -102,6 +196,24 @@ def create_document_graph_task(
                                          create_time=now)
     db.add(task)
     db.flush()
+    return task
+
+
+async def create_document_graph_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentGraphStatus = DocumentGraphStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentGraphTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
     return task
 
 def create_document_audio_transcribe_task(
@@ -136,6 +248,24 @@ def create_document_process_task(
     db.flush()
     return task
 
+
+async def create_document_process_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentProcessStatus = DocumentProcessStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentProcessTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_document_embedding_task(
     db: Session,
     user_id: int,
@@ -151,6 +281,24 @@ def create_document_embedding_task(
     db.flush()
     return task
 
+
+async def create_document_embedding_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentEmbeddingStatus = DocumentEmbeddingStatus.WAIT_TO,
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentEmbeddingTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def get_document_graph_task_by_document_id(
     db: Session,
     document_id: int
@@ -159,6 +307,17 @@ def get_document_graph_task_by_document_id(
     query = query.filter(models.task.DocumentGraphTask.document_id == document_id,
                          models.task.DocumentGraphTask.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_document_graph_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentGraphTask).where(
+        models.task.DocumentGraphTask.document_id == document_id,
+        models.task.DocumentGraphTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_section_podcast_task_by_section_id(
     db: Session,
@@ -169,6 +328,17 @@ def get_section_podcast_task_by_section_id(
                          models.task.SectionPodcastTask.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_section_podcast_task_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+):
+    stmt = select(models.task.SectionPodcastTask).where(
+        models.task.SectionPodcastTask.section_id == section_id,
+        models.task.SectionPodcastTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_document_podcast_task_by_document_id(
     db: Session,
     document_id: int
@@ -177,6 +347,17 @@ def get_document_podcast_task_by_document_id(
     query = query.filter(models.task.DocumentPodcastTask.document_id == document_id,
                          models.task.DocumentPodcastTask.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_document_podcast_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentPodcastTask).where(
+        models.task.DocumentPodcastTask.document_id == document_id,
+        models.task.DocumentPodcastTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_document_embedding_task_by_document_id(
     db: Session,
@@ -187,6 +368,17 @@ def get_document_embedding_task_by_document_id(
                          models.task.DocumentEmbeddingTask.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_document_embedding_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentEmbeddingTask).where(
+        models.task.DocumentEmbeddingTask.document_id == document_id,
+        models.task.DocumentEmbeddingTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_section_process_task_by_section_id(
     db: Session,
     section_id: int
@@ -196,6 +388,17 @@ def get_section_process_task_by_section_id(
                          models.task.SectionProcessTask.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_section_process_task_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+):
+    stmt = select(models.task.SectionProcessTask).where(
+        models.task.SectionProcessTask.section_id == section_id,
+        models.task.SectionProcessTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_document_summarize_task_by_document_id(
     db: Session,
     document_id: int
@@ -204,6 +407,17 @@ def get_document_summarize_task_by_document_id(
     query = query.filter(models.task.DocumentSummarizeTask.document_id == document_id,
                          models.task.DocumentSummarizeTask.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_document_summarize_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentSummarizeTask).where(
+        models.task.DocumentSummarizeTask.document_id == document_id,
+        models.task.DocumentSummarizeTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_document_summarize_tasks_by_document_ids(
     db: Session,
@@ -227,6 +441,92 @@ def get_document_process_task_by_document_id(
                          models.task.DocumentProcessTask.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_document_process_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentProcessTask).where(
+        models.task.DocumentProcessTask.document_id == document_id,
+        models.task.DocumentProcessTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_document_task_bundles_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int],
+):
+    if not document_ids:
+        return []
+    stmt = (
+        select(
+            models.document.Document.id,
+            models.task.DocumentConvertToMdTask,
+            models.task.DocumentPodcastTask,
+            models.task.DocumentSummarizeTask,
+            models.task.DocumentEmbeddingTask,
+            models.task.DocumentGraphTask,
+            models.task.DocumentAudioTranscribeTask,
+            models.task.DocumentProcessTask,
+        )
+        .select_from(models.document.Document)
+        .outerjoin(
+            models.task.DocumentConvertToMdTask,
+            and_(
+                models.task.DocumentConvertToMdTask.document_id == models.document.Document.id,
+                models.task.DocumentConvertToMdTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentPodcastTask,
+            and_(
+                models.task.DocumentPodcastTask.document_id == models.document.Document.id,
+                models.task.DocumentPodcastTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentSummarizeTask,
+            and_(
+                models.task.DocumentSummarizeTask.document_id == models.document.Document.id,
+                models.task.DocumentSummarizeTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentEmbeddingTask,
+            and_(
+                models.task.DocumentEmbeddingTask.document_id == models.document.Document.id,
+                models.task.DocumentEmbeddingTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentGraphTask,
+            and_(
+                models.task.DocumentGraphTask.document_id == models.document.Document.id,
+                models.task.DocumentGraphTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentAudioTranscribeTask,
+            and_(
+                models.task.DocumentAudioTranscribeTask.document_id == models.document.Document.id,
+                models.task.DocumentAudioTranscribeTask.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.task.DocumentProcessTask,
+            and_(
+                models.task.DocumentProcessTask.document_id == models.document.Document.id,
+                models.task.DocumentProcessTask.delete_at.is_(None),
+            ),
+        )
+        .where(
+            models.document.Document.id.in_(document_ids),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    return list((await db.execute(stmt)).all())
+
 def get_document_convert_task_by_document_id(
     db: Session,
     document_id: int
@@ -236,6 +536,17 @@ def get_document_convert_task_by_document_id(
                          models.task.DocumentConvertToMdTask.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_document_convert_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentConvertToMdTask).where(
+        models.task.DocumentConvertToMdTask.document_id == document_id,
+        models.task.DocumentConvertToMdTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_document_audio_transcribe_task_by_document_id(
     db: Session,
     document_id: int
@@ -244,3 +555,14 @@ def get_document_audio_transcribe_task_by_document_id(
     query = query.filter(models.task.DocumentAudioTranscribeTask.document_id == document_id,
                          models.task.DocumentAudioTranscribeTask.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_document_audio_transcribe_task_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.task.DocumentAudioTranscribeTask).where(
+        models.task.DocumentAudioTranscribeTask.document_id == document_id,
+        models.task.DocumentAudioTranscribeTask.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()

@@ -17,7 +17,7 @@ graph_mcp_router.add_middleware(UserAuthMiddleware())
 
 
 @graph_mcp_router.tool()
-def search_mine_graph(ctx: Context):
+async def search_mine_graph(ctx: Context):
     """
     Query the full entity-relation graph for the current user's knowledge base.
 
@@ -39,14 +39,14 @@ def search_mine_graph(ctx: Context):
         - The scope is limited to graph data owned by or accessible to the current user.
         - Large knowledge bases may produce a large number of nodes and edges.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_graph_search(user=user)
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_graph_search(user=user)
         return res.model_dump(mode="json")
 
 
 @graph_mcp_router.tool()
-def search_document_graph(
+async def search_document_graph(
     document_id: int,
     ctx: Context,
 ):
@@ -74,9 +74,9 @@ def search_document_graph(
         - The current user must have access permission for the document.
         - This tool is document-scoped and does not provide a cross-document global graph view.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_document_graph(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_document_graph(
             document_graph_request=schemas.graph.DocumentGraphRequest(document_id=document_id),
             user=user,
         )
@@ -84,7 +84,7 @@ def search_document_graph(
 
 
 @graph_mcp_router.tool()
-def search_section_graph(
+async def search_section_graph(
     section_id: int,
     ctx: Context,
 ):
@@ -112,9 +112,9 @@ def search_section_graph(
         - If the section is private, the current user must have permission to access it.
         - This tool returns a section-level aggregated graph, not single-document detail.
     """
-    with db_session() as db:
-        user = get_user_from_ctx(ctx, db)
-        res = api_section_graph(
+    async with db_session() as db:
+        user = await get_user_from_ctx(ctx, db)
+        res = await api_section_graph(
             section_graph_request=schemas.graph.SectionGraphRequest(section_id=section_id),
             user=user,
             db=db,

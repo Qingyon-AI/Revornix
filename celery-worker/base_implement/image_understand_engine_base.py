@@ -2,7 +2,7 @@ from base_implement.engine_base import EngineBase
 
 class ImageUnderstandEngineBase(EngineBase):
 
-    def understand_image(
+    async def understand_image(
         self,
         image: str,
     ) -> str | None:

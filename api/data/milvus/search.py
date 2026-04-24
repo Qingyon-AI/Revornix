@@ -1,3 +1,4 @@
+import asyncio
 from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
 from common.embedding_utils import extract_single_embedding_vector
@@ -43,20 +44,21 @@ def _build_document_filter(document_ids: list[int]) -> str:
     return f"doc_id in [{joined_document_ids}]"
 
 # ===================== 稠密向量检索 =====================
-def naive_search(
+async def naive_search(
     user_id: int, 
     search_text: str, 
     top_k: int = 5
 ) -> list[dict[str, Any]]:
     """Run dense vector search across all chunks owned by the target user."""
     embedding_engine = get_embedding_engine()
-    qvec = extract_single_embedding_vector(embedding_engine.embed([search_text]))
+    qvec = extract_single_embedding_vector(await embedding_engine.embed([search_text]))
     search_params = {
         "anns_field": "embedding",
         "metric_type": "IP",
         "params": {"nprobe": 10}
     }
-    results = cast(SearchResult, milvus_client.search(
+    results = cast(SearchResult, await asyncio.to_thread(
+        milvus_client.search,
         collection_name=MILVUS_COLLECTION,
         data=[qvec],
         filter=f"creator_id == {user_id}",
@@ -74,7 +76,7 @@ def naive_search(
     return _parse_results(results)
 
 
-def naive_search_for_documents(
+async def naive_search_for_documents(
     *,
     search_text: str,
     document_ids: list[int],
@@ -85,7 +87,7 @@ def naive_search_for_documents(
         return []
 
     embedding_engine = get_embedding_engine()
-    qvec = extract_single_embedding_vector(embedding_engine.embed([search_text]))
+    qvec = extract_single_embedding_vector(await embedding_engine.embed([search_text]))
     search_params = {
         "anns_field": "embedding",
         "metric_type": "IP",
@@ -93,7 +95,8 @@ def naive_search_for_documents(
     }
     results = cast(
         SearchResult,
-        milvus_client.search(
+        await asyncio.to_thread(
+            milvus_client.search,
             collection_name=MILVUS_COLLECTION,
             data=[qvec],
             filter=_build_document_filter(document_ids),
@@ -112,7 +115,7 @@ def naive_search_for_documents(
     return _parse_results(results)
 
 # ===================== 稀疏 BM25 检索 =====================
-def full_text_search(
+async def full_text_search(
     user_id: int, 
     search_text: str, 
     top_k: int = 5
@@ -123,9 +126,10 @@ def full_text_search(
         "metric_type": "BM25",
         "params": {}
     }
-    results = cast(SearchResult, milvus_client.search(
+    results = cast(SearchResult, await asyncio.to_thread(
+        milvus_client.search,
         collection_name=MILVUS_COLLECTION,
-        data=[search_text],  # ✅ 注意是原始字符串
+        data=[search_text],
         filter=f"creator_id == {user_id}",
         anns_field="sparse",
         limit=top_k,

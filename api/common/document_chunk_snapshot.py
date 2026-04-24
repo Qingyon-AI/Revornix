@@ -2,6 +2,7 @@ import hashlib
 
 import crud
 import models
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from common.logger import exception_logger, format_log_message
@@ -92,18 +93,67 @@ def _resolve_document_snapshot_paths(
     chunk_path, meta_path = _snapshot_paths(document.id, source_signature)
     return document.creator_id, [chunk_path, meta_path]
 
+async def _resolve_document_snapshot_paths_async(
+    *,
+    db: AsyncSession,
+    document: models.document.Document,
+) -> tuple[int, list[str]] | None:
+    source_signature: str | None = None
+    if document.category == DocumentCategory.WEBSITE or document.category == DocumentCategory.FILE:
+        convert_task = await crud.task.get_document_convert_task_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        if convert_task is None or convert_task.status != DocumentMdConvertStatus.SUCCESS or convert_task.md_file_name is None:
+            return None
+        source_signature = _hash_source_signature(
+            f"{document.category}:{convert_task.md_file_name}"
+        )
+    elif document.category == DocumentCategory.QUICK_NOTE:
+        quick_note_document = await crud.document.get_quick_note_document_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        if quick_note_document is None or quick_note_document.content is None:
+            return None
+        source_signature = _hash_source_signature(
+            f"{document.category}:{hashlib.sha256(quick_note_document.content.encode('utf-8')).hexdigest()}"
+        )
+    elif document.category == DocumentCategory.AUDIO:
+        transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+            return None
+        source_signature = _hash_source_signature(
+            f"{document.category}:{hashlib.sha256(transcribe_task.transcribed_text.encode('utf-8')).hexdigest()}"
+        )
+
+    if source_signature is None:
+        return None
+
+    chunk_path, meta_path = _snapshot_paths(document.id, source_signature)
+    return document.creator_id, [chunk_path, meta_path]
+
 
 async def delete_document_chunk_snapshots(
     *,
-    db: Session,
+    db: Session | AsyncSession,
     documents: list[models.document.Document],
 ) -> None:
     file_services: dict[int, object] = {}
     for document in documents:
-        resolved = _resolve_document_snapshot_paths(
-            db=db,
-            document=document,
-        )
+        if isinstance(db, AsyncSession):
+            resolved = await _resolve_document_snapshot_paths_async(
+                db=db,
+                document=document,
+            )
+        else:
+            resolved = _resolve_document_snapshot_paths(
+                db=db,
+                document=document,
+            )
         if resolved is None:
             continue
         creator_id, paths = resolved

@@ -2,8 +2,8 @@ from typing import Any
 
 import crud
 
-from data.sql.base import session_scope
-from data.neo4j.base import neo4j_driver
+from data.sql.base import async_session_context
+from data.neo4j.base import async_neo4j_driver
 from enums.section import SectionDocumentIntegration
 
 
@@ -72,66 +72,63 @@ def _format_graph_context(
     return "\n\n".join(parts).strip()
 
 
-def build_document_podcast_graph_context(
+async def build_document_podcast_graph_context(
     *,
     document_id: int,
 ) -> tuple[str, dict[str, int]]:
-    with neo4j_driver.session() as session:
-        entity_records = list(
-            session.run(
-                """
-                MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                WITH e, count(*) AS mention_count, coalesce(e.degree, 0) AS degree
-                RETURN e.id AS id,
-                       e.text AS text,
-                       e.entity_type AS entity_type,
-                       mention_count AS mention_count
-                ORDER BY degree DESC, mention_count DESC, id ASC
-                LIMIT $entity_limit
-                """,
-                doc_id=document_id,
-                entity_limit=PODCAST_GRAPH_MAX_ENTITIES,
-            )
+    async with async_neo4j_driver.session() as session:
+        entity_result = await session.run(
+            """
+            MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
+            WITH e, count(*) AS mention_count, coalesce(e.degree, 0) AS degree
+            RETURN e.id AS id,
+                   e.text AS text,
+                   e.entity_type AS entity_type,
+                   mention_count AS mention_count
+            ORDER BY degree DESC, mention_count DESC, id ASC
+            LIMIT $entity_limit
+            """,
+            doc_id=document_id,
+            entity_limit=PODCAST_GRAPH_MAX_ENTITIES,
         )
+        entity_records = [record async for record in entity_result]
         entity_ids = [str(record["id"]) for record in entity_records if record["id"] is not None]
 
         relation_records: list[Any] = []
         excerpt_records: list[Any] = []
         if entity_ids:
-            relation_records = list(
-                session.run(
-                    """
-                    UNWIND $entity_ids AS src_id
-                    MATCH (e1:Entity {id: src_id})-[r]->(e2:Entity)
-                    WHERE e2.id IN $entity_ids
-                    WITH e1, e2, type(r) AS relation_type, count(*) AS relation_count
-                    RETURN e1.text AS src_text,
-                           e2.text AS tgt_text,
-                           relation_type AS relation_type
-                    ORDER BY relation_count DESC, src_text ASC, tgt_text ASC, relation_type ASC
-                    LIMIT $relation_limit
-                    """,
-                    entity_ids=entity_ids,
-                    relation_limit=PODCAST_GRAPH_MAX_RELATIONS,
-                )
+            relation_result = await session.run(
+                """
+                UNWIND $entity_ids AS src_id
+                MATCH (e1:Entity {id: src_id})-[r]->(e2:Entity)
+                WHERE e2.id IN $entity_ids
+                WITH e1, e2, type(r) AS relation_type, count(*) AS relation_count
+                RETURN e1.text AS src_text,
+                       e2.text AS tgt_text,
+                       relation_type AS relation_type
+                ORDER BY relation_count DESC, src_text ASC, tgt_text ASC, relation_type ASC
+                LIMIT $relation_limit
+                """,
+                entity_ids=entity_ids,
+                relation_limit=PODCAST_GRAPH_MAX_RELATIONS,
             )
-            excerpt_records = list(
-                session.run(
-                    """
-                    MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                    WHERE e.id IN $entity_ids
-                    WITH DISTINCT c, c.idx AS chunk_idx
-                    RETURN c.id AS chunk_id,
-                           c.text AS text,
-                           chunk_idx AS idx
-                    ORDER BY chunk_idx ASC, chunk_id ASC
-                    LIMIT $excerpt_limit
-                    """,
-                    doc_id=document_id,
-                    entity_ids=entity_ids,
-                    excerpt_limit=PODCAST_GRAPH_MAX_EXCERPTS,
-                )
+            relation_records = [record async for record in relation_result]
+            excerpt_result = await session.run(
+                """
+                MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
+                WHERE e.id IN $entity_ids
+                WITH DISTINCT c, c.idx AS chunk_idx
+                RETURN c.id AS chunk_id,
+                       c.text AS text,
+                       chunk_idx AS idx
+                ORDER BY chunk_idx ASC, chunk_id ASC
+                LIMIT $excerpt_limit
+                """,
+                doc_id=document_id,
+                entity_ids=entity_ids,
+                excerpt_limit=PODCAST_GRAPH_MAX_EXCERPTS,
             )
+            excerpt_records = [record async for record in excerpt_result]
 
     entities = [
         {
@@ -170,9 +167,9 @@ def build_document_podcast_graph_context(
     }
 
 
-def _get_section_graph_document_ids(*, section_id: int) -> list[int]:
-    with session_scope() as db:
-        db_section_documents = crud.section.get_section_documents_by_section_id(
+async def _get_section_graph_document_ids_async(*, section_id: int) -> list[int]:
+    async with async_session_context() as db:
+        db_section_documents = await crud.section.get_section_documents_by_section_id_async(
             db=db,
             section_id=section_id,
         )
@@ -184,90 +181,87 @@ def _get_section_graph_document_ids(*, section_id: int) -> list[int]:
         if success_document_ids:
             return success_document_ids
 
-        documents = crud.section.get_documents_for_section_by_section_id(
+        documents = await crud.section.get_documents_for_section_by_section_id_async(
             db=db,
             section_id=section_id,
         )
         return [int(document.id) for document in documents]
 
 
-def build_section_podcast_graph_context(
+async def build_section_podcast_graph_context(
     *,
     section_id: int,
     user_id: int,
 ) -> tuple[str, dict[str, int]]:
-    document_ids = _get_section_graph_document_ids(section_id=section_id)
+    document_ids = await _get_section_graph_document_ids_async(section_id=section_id)
     if not document_ids:
         return "", {"entities": 0, "relations": 0, "excerpts": 0}
 
-    with neo4j_driver.session() as session:
-        entity_records = list(
-            session.run(
-                """
-                MATCH (d:Document)
-                WHERE d.creator_id = $user_id AND d.id IN $doc_ids
-                MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                WITH e, count(*) AS mention_count, coalesce(e.degree, 0) AS degree
-                RETURN e.id AS id,
-                       e.text AS text,
-                       e.entity_type AS entity_type,
-                       mention_count AS mention_count
-                ORDER BY degree DESC, mention_count DESC, id ASC
-                LIMIT $entity_limit
-                """,
-                user_id=user_id,
-                doc_ids=document_ids,
-                entity_limit=PODCAST_GRAPH_MAX_ENTITIES,
-            )
+    async with async_neo4j_driver.session() as session:
+        entity_result = await session.run(
+            """
+            MATCH (d:Document)
+            WHERE d.creator_id = $user_id AND d.id IN $doc_ids
+            MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
+            WITH e, count(*) AS mention_count, coalesce(e.degree, 0) AS degree
+            RETURN e.id AS id,
+                   e.text AS text,
+                   e.entity_type AS entity_type,
+                   mention_count AS mention_count
+            ORDER BY degree DESC, mention_count DESC, id ASC
+            LIMIT $entity_limit
+            """,
+            user_id=user_id,
+            doc_ids=document_ids,
+            entity_limit=PODCAST_GRAPH_MAX_ENTITIES,
         )
+        entity_records = [record async for record in entity_result]
         entity_ids = [str(record["id"]) for record in entity_records if record["id"] is not None]
 
         relation_records: list[Any] = []
         excerpt_records: list[Any] = []
         if entity_ids:
-            relation_records = list(
-                session.run(
-                    """
-                    MATCH (d:Document)
-                    WHERE d.creator_id = $user_id AND d.id IN $doc_ids
-                    MATCH (d)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(e:Entity)
-                    WITH collect(DISTINCT e) AS entities
-                    UNWIND entities AS e1
-                    MATCH (e1)-[r]->(e2)
-                    WHERE e2 IN entities AND e1.id IN $entity_ids AND e2.id IN $entity_ids
-                    WITH e1, e2, type(r) AS relation_type, count(*) AS relation_count
-                    RETURN e1.text AS src_text,
-                           e2.text AS tgt_text,
-                           relation_type AS relation_type
-                    ORDER BY relation_count DESC, src_text ASC, tgt_text ASC, relation_type ASC
-                    LIMIT $relation_limit
-                    """,
-                    user_id=user_id,
-                    doc_ids=document_ids,
-                    entity_ids=entity_ids,
-                    relation_limit=PODCAST_GRAPH_MAX_RELATIONS,
-                )
+            relation_result = await session.run(
+                """
+                MATCH (d:Document)
+                WHERE d.creator_id = $user_id AND d.id IN $doc_ids
+                MATCH (d)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(e:Entity)
+                WITH collect(DISTINCT e) AS entities
+                UNWIND entities AS e1
+                MATCH (e1)-[r]->(e2)
+                WHERE e2 IN entities AND e1.id IN $entity_ids AND e2.id IN $entity_ids
+                WITH e1, e2, type(r) AS relation_type, count(*) AS relation_count
+                RETURN e1.text AS src_text,
+                       e2.text AS tgt_text,
+                       relation_type AS relation_type
+                ORDER BY relation_count DESC, src_text ASC, tgt_text ASC, relation_type ASC
+                LIMIT $relation_limit
+                """,
+                user_id=user_id,
+                doc_ids=document_ids,
+                entity_ids=entity_ids,
+                relation_limit=PODCAST_GRAPH_MAX_RELATIONS,
             )
-            excerpt_records = list(
-                session.run(
-                    """
-                    MATCH (d:Document)
-                    WHERE d.creator_id = $user_id AND d.id IN $doc_ids
-                    MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
-                    WHERE e.id IN $entity_ids
-                    WITH DISTINCT c, c.idx AS chunk_idx
-                    RETURN c.id AS chunk_id,
-                           c.text AS text,
-                           chunk_idx AS idx
-                    ORDER BY chunk_idx ASC, chunk_id ASC
-                    LIMIT $excerpt_limit
-                    """,
-                    user_id=user_id,
-                    doc_ids=document_ids,
-                    entity_ids=entity_ids,
-                    excerpt_limit=PODCAST_GRAPH_MAX_EXCERPTS,
-                )
+            relation_records = [record async for record in relation_result]
+            excerpt_result = await session.run(
+                """
+                MATCH (d:Document)
+                WHERE d.creator_id = $user_id AND d.id IN $doc_ids
+                MATCH (d)-[:HAS_CHUNK]->(c:Chunk)-[:MENTIONS]->(e:Entity)
+                WHERE e.id IN $entity_ids
+                WITH DISTINCT c, c.idx AS chunk_idx
+                RETURN c.id AS chunk_id,
+                       c.text AS text,
+                       chunk_idx AS idx
+                ORDER BY chunk_idx ASC, chunk_id ASC
+                LIMIT $excerpt_limit
+                """,
+                user_id=user_id,
+                doc_ids=document_ids,
+                entity_ids=entity_ids,
+                excerpt_limit=PODCAST_GRAPH_MAX_EXCERPTS,
             )
+            excerpt_records = [record async for record in excerpt_result]
 
     entities = [
         {

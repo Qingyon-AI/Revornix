@@ -1,3 +1,4 @@
+import asyncio
 from typing import cast, Any
 from pymilvus.client.search_result import SearchResult
 from common.embedding_utils import extract_single_embedding_vector
@@ -29,38 +30,90 @@ def _parse_results(
             })
     return out
 
+
+def _build_document_filter(document_ids: list[int]) -> str:
+    normalized_document_ids = sorted({int(document_id) for document_id in document_ids})
+    if not normalized_document_ids:
+        return "doc_id == -1"
+    if len(normalized_document_ids) == 1:
+        return f"doc_id == {normalized_document_ids[0]}"
+    joined_document_ids = ", ".join(str(document_id) for document_id in normalized_document_ids)
+    return f"doc_id in [{joined_document_ids}]"
+
 # ===================== 稠密向量检索 =====================
-def naive_search(
+async def naive_search(
     user_id: int, 
     search_text: str, 
     top_k: int = 5
 ) -> list[dict[str, Any]]:
     embedding_engine = get_embedding_engine()
-    qvec = extract_single_embedding_vector(embedding_engine.embed([search_text]))
+    qvec = extract_single_embedding_vector(await embedding_engine.embed([search_text]))
     search_params = {
         "anns_field": "embedding",
         "metric_type": "IP",
         "params": {"nprobe": 10}
     }
-    results = cast(SearchResult, milvus_client.search(
-        collection_name=MILVUS_COLLECTION,
-        data=[qvec],
-        filter=f"creator_id == {user_id}",
-        anns_field="embedding",
-        limit=top_k,
-        search_params=search_params,
-        output_fields=[
-            "id",
-            "text",
-            "doc_id",
-            "idx",
-            "creator_id",
-        ]
-    ))
+    results = cast(
+        SearchResult,
+        await asyncio.to_thread(
+            milvus_client.search,
+            collection_name=MILVUS_COLLECTION,
+            data=[qvec],
+            filter=f"creator_id == {user_id}",
+            anns_field="embedding",
+            limit=top_k,
+            search_params=search_params,
+            output_fields=[
+                "id",
+                "text",
+                "doc_id",
+                "idx",
+                "creator_id",
+            ],
+        ),
+    )
+    return _parse_results(results)
+
+
+async def naive_search_for_documents(
+    *,
+    search_text: str,
+    document_ids: list[int],
+    top_k: int = 5,
+) -> list[dict[str, Any]]:
+    if not document_ids:
+        return []
+
+    embedding_engine = get_embedding_engine()
+    qvec = extract_single_embedding_vector(await embedding_engine.embed([search_text]))
+    search_params = {
+        "anns_field": "embedding",
+        "metric_type": "IP",
+        "params": {"nprobe": 10}
+    }
+    results = cast(
+        SearchResult,
+        await asyncio.to_thread(
+            milvus_client.search,
+            collection_name=MILVUS_COLLECTION,
+            data=[qvec],
+            filter=_build_document_filter(document_ids),
+            anns_field="embedding",
+            limit=top_k,
+            search_params=search_params,
+            output_fields=[
+                "id",
+                "text",
+                "doc_id",
+                "idx",
+                "creator_id",
+            ],
+        ),
+    )
     return _parse_results(results)
 
 # ===================== 稀疏 BM25 检索 =====================
-def full_text_search(
+async def full_text_search(
     user_id: int, 
     search_text: str, 
     top_k: int = 5
@@ -70,19 +123,23 @@ def full_text_search(
         "metric_type": "BM25",
         "params": {}
     }
-    results = cast(SearchResult, milvus_client.search(
-        collection_name=MILVUS_COLLECTION,
-        data=[search_text],  # ✅ 注意是原始字符串
-        filter=f"creator_id == {user_id}",
-        anns_field="sparse",
-        limit=top_k,
-        search_params=search_params,
-        output_fields=[
-            "id",
-            "text",
-            "doc_id",
-            "idx",
-            "creator_id",
-        ]
-    ))
+    results = cast(
+        SearchResult,
+        await asyncio.to_thread(
+            milvus_client.search,
+            collection_name=MILVUS_COLLECTION,
+            data=[search_text],
+            filter=f"creator_id == {user_id}",
+            anns_field="sparse",
+            limit=top_k,
+            search_params=search_params,
+            output_fields=[
+                "id",
+                "text",
+                "doc_id",
+                "idx",
+                "creator_id",
+            ],
+        ),
+    )
     return _parse_results(results)

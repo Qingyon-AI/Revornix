@@ -1,15 +1,14 @@
-from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 
 from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import get_http_headers
 from fastmcp.server.middleware import Middleware, MiddlewareContext
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 
 
 class UserAuthMiddleware(Middleware):
@@ -34,8 +33,8 @@ class UserAuthMiddleware(Middleware):
         return await call_next(context)
 
     async def verify_api_key_and_get_user_id(self, api_key: str):
-        with db_session() as db:
-            db_api_key = crud.api_key.get_api_key_by_api_key(
+        async with db_session() as db:
+            db_api_key = await crud.api_key.get_api_key_by_api_key_async(
                 db=db,
                 api_key=api_key,
             )
@@ -44,13 +43,10 @@ class UserAuthMiddleware(Middleware):
             return db_api_key.user_id
 
 
-@contextmanager
-def db_session() -> Generator[Session, None, None]:
-    db = session_scope()
-    try:
+@asynccontextmanager
+async def db_session():
+    async with async_session_context() as db:
         yield db
-    finally:
-        db.close()
 
 
 def get_user_id_from_ctx(ctx: Context) -> int:
@@ -60,9 +56,9 @@ def get_user_id_from_ctx(ctx: Context) -> int:
     return int(user_id)
 
 
-def get_user_from_ctx(ctx: Context, db: Session) -> models.user.User:
+async def get_user_from_ctx(ctx: Context, db: AsyncSession) -> models.user.User:
     user_id = get_user_id_from_ctx(ctx)
-    db_user = crud.user.get_user_by_id(
+    db_user = await crud.user.get_user_by_id_async(
         db=db,
         user_id=user_id,
     )

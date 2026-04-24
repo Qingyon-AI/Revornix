@@ -17,12 +17,12 @@ from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatu
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -267,9 +267,8 @@ async def _resolve_document_source_signature(
     *,
     doc_id: int,
 ) -> tuple[int, str]:
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=doc_id,
         )
@@ -279,7 +278,7 @@ async def _resolve_document_source_signature(
         creator_id = db_document.creator_id
         category = db_document.category
         if category == DocumentCategory.WEBSITE or category == DocumentCategory.FILE:
-            convert_task = crud.task.get_document_convert_task_by_document_id(
+            convert_task = await crud.task.get_document_convert_task_by_document_id_async(
                 db=db,
                 document_id=doc_id,
             )
@@ -287,7 +286,7 @@ async def _resolve_document_source_signature(
                 raise ValueError("The convert task of the document is not finished")
             signature_source = f"{category}:{convert_task.md_file_name}"
         elif category == DocumentCategory.QUICK_NOTE:
-            note = crud.document.get_quick_note_document_by_document_id(
+            note = await crud.document.get_quick_note_document_by_document_id_async(
                 db=db,
                 document_id=doc_id,
             )
@@ -295,7 +294,7 @@ async def _resolve_document_source_signature(
                 raise ValueError("Quick note document not found")
             signature_source = f"{category}:{hashlib.sha256(note.content.encode('utf-8')).hexdigest()}"
         elif category == DocumentCategory.AUDIO:
-            transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+            transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
                 db=db,
                 document_id=doc_id,
             )
@@ -305,8 +304,6 @@ async def _resolve_document_source_signature(
         else:
             raise ValueError(f"Unsupported document category: {category}")
         return creator_id, _hash_source_signature(signature_source)
-    finally:
-        db.close()
 
 
 async def get_existing_document_chunk_snapshot(
@@ -530,127 +527,125 @@ async def stream_chunk_document(
             yield chunk_info
         return
 
-    db = session_scope()
     try:
-        # 1️⃣ 获取文档与用户
-        db_document = crud.document.get_document_by_document_id(
-            db=db, 
-            document_id=doc_id
-        )
-        if db_document is None:
-            raise ValueError("Document not found")
-        db_user = crud.user.get_user_by_id(
-            db=db, 
-            user_id=db_document.creator_id
-        )
-        if db_user is None:
-            raise ValueError("User not found")
-        if db_user.default_user_file_system is None:
-            raise ValueError("User default file system not found")
-        
-        # 2️⃣ 初始化文件系统
-        remote_file_service = await FileSystemProxy.create(
-            user_id=db_user.id
-        )
+        async with async_session_context() as db:
+            # 1️⃣ 获取文档与用户
+            db_document = await crud.document.get_document_by_document_id_async(
+                db=db, 
+                document_id=doc_id
+            )
+            if db_document is None:
+                raise ValueError("Document not found")
+            db_user = await crud.user.get_user_by_id_async(
+                db=db, 
+                user_id=db_document.creator_id
+            )
+            if db_user is None:
+                raise ValueError("User not found")
+            if db_user.default_user_file_system is None:
+                raise ValueError("User default file system not found")
+            
+            # 2️⃣ 初始化文件系统
+            remote_file_service = await FileSystemProxy.create(
+                user_id=db_user.id
+            )
 
-        # 3️⃣ 获取 Markdown 内容
-        load_start = time.perf_counter()
-        markdown_content = await _load_markdown_content(
-            db, 
-            db_document, 
-            remote_file_service
-        )
-        load_elapsed_ms = (time.perf_counter() - load_start) * 1000
-        
-        if not markdown_content.strip():
-            raise ValueError("Document content is empty")
+            # 3️⃣ 获取 Markdown 内容
+            load_start = time.perf_counter()
+            markdown_content = await _load_markdown_content(
+                db, 
+                db_document, 
+                remote_file_service
+            )
+            load_elapsed_ms = (time.perf_counter() - load_start) * 1000
+            
+            if not markdown_content.strip():
+                raise ValueError("Document content is empty")
 
-        # TODO 优化chunk 应该根据文档实际类型有区分，不能一刀切用markdown
-        chunker = RecursiveChunker.from_recipe("markdown")
+            # TODO 优化chunk 应该根据文档实际类型有区分，不能一刀切用markdown
+            chunker = RecursiveChunker.from_recipe("markdown")
 
-        # 5️⃣ 按段切大文本，分步生成 chunk
-        segment_size = 100_000  # 每次处理约 10 万字符
-        segments = [
-            markdown_content[i:i + segment_size]
-            for i in range(0, len(markdown_content), segment_size)
-        ]
-
-        global_idx = 0
-        last_check = 0.0
-        chunking_elapsed_ms = 0.0
-        generated_chunks = 0
-        reached_chunk_limit = False
-        for seg_idx, segment in enumerate(segments):
-            # ✅ 在后台线程中执行 CPU 密集的 chunking
-            chunking_start = time.perf_counter()
-            raw_chunks = await asyncio.to_thread(chunker, segment)
-            chunking_elapsed_ms += (time.perf_counter() - chunking_start) * 1000
-
-            # 展平成一维 List[Chunk]
-            chunks: list[Chunk] = [
-                c
-                for group in raw_chunks
-                for c in (group if isinstance(group, list) else [group])
+            # 5️⃣ 按段切大文本，分步生成 chunk
+            segment_size = 100_000  # 每次处理约 10 万字符
+            segments = [
+                markdown_content[i:i + segment_size]
+                for i in range(0, len(markdown_content), segment_size)
             ]
 
-            for idx, chunk in enumerate(chunks):
-                now = time.monotonic()
-                if now - last_check >= 2.0:
-                    ensure_document_active(db=db, document_id=doc_id)
-                    last_check = now
-                chunk_info = ChunkInfo(
-                    id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
-                    text=chunk.text,
-                    idx=global_idx,
-                    doc_id=doc_id,
-                )
-                if chunk_info.idx < start_chunk_idx:
+            global_idx = 0
+            last_check = 0.0
+            chunking_elapsed_ms = 0.0
+            generated_chunks = 0
+            reached_chunk_limit = False
+            for seg_idx, segment in enumerate(segments):
+                # ✅ 在后台线程中执行 CPU 密集的 chunking
+                chunking_start = time.perf_counter()
+                raw_chunks = await asyncio.to_thread(chunker, segment)
+                chunking_elapsed_ms += (time.perf_counter() - chunking_start) * 1000
+
+                # 展平成一维 List[Chunk]
+                chunks: list[Chunk] = [
+                    c
+                    for group in raw_chunks
+                    for c in (group if isinstance(group, list) else [group])
+                ]
+
+                for idx, chunk in enumerate(chunks):
+                    now = time.monotonic()
+                    if now - last_check >= 2.0:
+                        await ensure_document_active_async(db=db, document_id=doc_id)
+                        last_check = now
+                    chunk_info = ChunkInfo(
+                        id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
+                        text=chunk.text,
+                        idx=global_idx,
+                        doc_id=doc_id,
+                    )
+                    if chunk_info.idx < start_chunk_idx:
+                        global_idx += 1
+                        continue
+                    if selected_chunk_indexes is not None and chunk_info.idx not in selected_chunk_indexes:
+                        global_idx += 1
+                        continue
+                    yield chunk_info
                     global_idx += 1
-                    continue
-                if selected_chunk_indexes is not None and chunk_info.idx not in selected_chunk_indexes:
-                    global_idx += 1
-                    continue
-                yield chunk_info
-                global_idx += 1
-                generated_chunks += 1
-                if max_chunks is not None and generated_chunks >= max_chunks:
-                    reached_chunk_limit = True
+                    generated_chunks += 1
+                    if max_chunks is not None and generated_chunks >= max_chunks:
+                        reached_chunk_limit = True
+                        break
+
+                # ✅ 每批后释放 GPU 显存
+                _clear_torch_cache()
+                if reached_chunk_limit:
                     break
 
-            # ✅ 每批后释放 GPU 显存
-            _clear_torch_cache()
-            if reached_chunk_limit:
-                break
-
-        info_logger.info(
-            f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
-            f"stage=stream_chunk_document, document_id={doc_id}, "
-            f"chars={len(markdown_content)}, segments={len(segments)}, "
-            f"chunks={generated_chunks}, "
-            f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}, "
-            f"{format_elapsed_fields(chunking_elapsed_ms, field_prefix='chunking_elapsed')}, "
-            f"segment_size={segment_size}, "
-            f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
-        )
+            info_logger.info(
+                f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
+                f"stage=stream_chunk_document, document_id={doc_id}, "
+                f"chars={len(markdown_content)}, segments={len(segments)}, "
+                f"chunks={generated_chunks}, "
+                f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}, "
+                f"{format_elapsed_fields(chunking_elapsed_ms, field_prefix='chunking_elapsed')}, "
+                f"segment_size={segment_size}, "
+                f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
+            )
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
         raise
-    finally:
-        db.close()
 
 
 # -----------------------------
 # 工具函数：加载 Markdown 内容
 # -----------------------------
 async def _load_markdown_content(
-    db: Session, 
+    db: AsyncSession, 
     db_document: models.document.Document, 
     remote_file_service: RemoteFileServiceProtocol
 ) -> str:
     """根据文档类型加载内容"""
     cat = db_document.category
     if cat == DocumentCategory.WEBSITE or cat == DocumentCategory.FILE:
-        convert_task = crud.task.get_document_convert_task_by_document_id(
+        convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -662,7 +657,7 @@ async def _load_markdown_content(
             file_path=convert_task.md_file_name
         ))
     elif cat == DocumentCategory.QUICK_NOTE:
-        note = crud.document.get_quick_note_document_by_document_id(
+        note = await crud.document.get_quick_note_document_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -670,7 +665,7 @@ async def _load_markdown_content(
             raise ValueError("Quick note document not found")
         return note.content or ""
     elif cat == DocumentCategory.AUDIO:
-        transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+        transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -696,16 +691,15 @@ async def get_document_markdown_length(
     if existing_snapshot is not None:
         return existing_snapshot.markdown_length
 
-    db = session_scope()
-    try:
-        db_document = crud.document.get_document_by_document_id(
+    async with async_session_context() as db:
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=doc_id,
         )
         if db_document is None:
             raise ValueError("Document not found")
 
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=db_document.creator_id,
         )
@@ -732,8 +726,6 @@ async def get_document_markdown_length(
             f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}"
         )
         return markdown_length
-    finally:
-        db.close()
 
 
 def build_sampled_chunk_indexes(
@@ -962,7 +954,7 @@ async def resolve_entities_with_semantic_dedupe(
         max_batch = 10
         for i in range(0, len(context_samples), max_batch):
             batch = context_samples[i:i + max_batch]
-            batch_vecs = await asyncio.to_thread(embedding_engine.embed, batch)
+            batch_vecs = await embedding_engine.embed(batch)
             if hasattr(batch_vecs, "tolist"):
                 batch_vecs = batch_vecs.tolist()
             embeddings.extend(list(batch_vecs))
@@ -1090,9 +1082,8 @@ async def resolve_entities_with_semantic_dedupe(
 async def get_extract_llm_client(
     user_id: int
 ) -> AsyncOpenAI:
-    db = session_scope()
-    try:
-        db_user = crud.user.get_user_by_id(
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(
             db=db, 
             user_id=user_id
         )
@@ -1111,5 +1102,3 @@ async def get_extract_llm_client(
             base_url=model_configuration.base_url,
         )
         return llm_client
-    finally:
-        db.close()

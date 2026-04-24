@@ -3,7 +3,7 @@ load_dotenv(override=True)
 
 import os
 import numpy as np
-from openai import OpenAI
+from openai import AsyncOpenAI
 from numpy.typing import NDArray
 from base_implement.embedding_engine_base import EmbeddingEngineBase
 
@@ -20,7 +20,7 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngineBase):
         self.model = model
         self.dim = dim
         
-        self.client = OpenAI(
+        self.client = AsyncOpenAI(
             # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
             # 新加坡和北京地域的API Key不同。获取API Key：https://help.aliyun.com/zh/model-studio/get-api-key
             api_key=os.environ.get('ALI_DASHSCOPE_EMBEDDING_API_KEY'),
@@ -29,12 +29,12 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngineBase):
         )
 
 
-    def embed(self, texts: list[str]) -> NDArray[np.float32]:
+    async def embed(self, texts: list[str]) -> NDArray[np.float32]:
         if not texts:
             # 没有 embedding，而不是零向量
             return np.empty((0, self.dim), dtype=np.float32)
 
-        resp = self.client.embeddings.create(
+        resp = await self.client.embeddings.create(
             model=self.model,
             input=texts,
         )
@@ -47,7 +47,8 @@ class CloudQwen3EmbeddingEngine(EmbeddingEngineBase):
         return embeddings
         
 if __name__ == "__main__":
+    import asyncio
     from rich import print
     engine = CloudQwen3EmbeddingEngine()
-    print(engine.embed(["你好"]))
-    print(engine.embed(["你好", "世界", "不错哦"]))
+    print(asyncio.run(engine.embed(["你好"])))
+    print(asyncio.run(engine.embed(["你好", "世界", "不错哦"])))

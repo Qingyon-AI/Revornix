@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 import crud
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
 from common.common import extract_title_and_summary
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.engine_enums import EngineCategory, EngineProvided
 from proxy.ai_model_proxy import AIModelProxy
 
@@ -31,7 +31,6 @@ class MarkitdownEngine(MarkdownEngineBase):
         self,
         url: str
     ) -> WebsiteInfo:
-        db = session_scope()
         # 1. 读取引擎配置 & 校验
         engine_config = self.get_engine_config()
         if not engine_config:
@@ -56,21 +55,21 @@ class MarkitdownEngine(MarkdownEngineBase):
 
         if not self.user_id:
             raise Exception("The user_id is not set.")
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=self.user_id
-        )
-        if not db_user:
-            raise Exception("The user does not exist.")
-        if not db_user.default_document_reader_model_id:
-            raise Exception("The user does not have a default document reader model.")
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
+                db=db,
+                user_id=self.user_id
+            )
+            if not db_user:
+                raise Exception("The user does not exist.")
+            if not db_user.default_document_reader_model_id:
+                raise Exception("The user does not have a default document reader model.")
+            model_id = db_user.default_document_reader_model_id
 
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
-            model_id=db_user.default_document_reader_model_id
+            model_id=model_id
         )).get_configuration()
-
-        db.close()
 
         with propagate_attributes(
             user_id=str(self.user_id),
@@ -130,7 +129,6 @@ class MarkitdownEngine(MarkdownEngineBase):
         self,
         file_path: str
     ):
-        db = session_scope()
         engine_config = self.get_engine_config()
         if engine_config is None:
             raise Exception("The engine is not initialized yet. Please initialize the engine first.")
@@ -140,21 +138,21 @@ class MarkitdownEngine(MarkdownEngineBase):
 
         if not self.user_id:
             raise Exception("The user_id is not set.")
-        db_user = crud.user.get_user_by_id(
-            db=db,
-            user_id=self.user_id
-        )
-        if not db_user:
-            raise Exception("The user does not exist.")
-        if not db_user.default_document_reader_model_id:
-            raise Exception("The user does not have a default document reader model.")
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
+                db=db,
+                user_id=self.user_id
+            )
+            if not db_user:
+                raise Exception("The user does not exist.")
+            if not db_user.default_document_reader_model_id:
+                raise Exception("The user does not have a default document reader model.")
+            model_id = db_user.default_document_reader_model_id
 
         model_configuration = (await AIModelProxy.create(
             user_id=self.user_id,
-            model_id=db_user.default_document_reader_model_id
+            model_id=model_id
         )).get_configuration()
-
-        db.close()
 
         with propagate_attributes(
             user_id=str(self.user_id),

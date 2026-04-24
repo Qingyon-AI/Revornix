@@ -6,14 +6,14 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from redis import Redis
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import schemas
-from common.dependencies import get_cache, get_current_user, get_db, get_real_ip
+from common.dependencies import get_async_db, get_cache, get_current_user, get_real_ip
 from common.jwt_utils import create_token
 from common.sms.tencent_sms import TencentSms
-from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
+from router.user_shared import commit_with_bucket_cleanup_async, setup_default_file_system_for_user_async
 from schemas.error import CustomException
 
 user_auth_phone_router = APIRouter()
@@ -44,7 +44,7 @@ async def create_user_by_sms_code(
 @user_auth_phone_router.post('/create/sms/verify', response_model=schemas.user.TokenResponse)
 async def create_user_by_sms_verify(
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
 ):
@@ -58,12 +58,12 @@ async def create_user_by_sms_verify(
     await cache.delete(
         f'user-create-sms-{sms_user_code_verify_request.phone}'
     )
-    phone_user_exist = crud.user.get_phone_user_by_phone(
+    phone_user_exist = await crud.user.get_phone_user_by_phone_async(
         db=db,
         phone=sms_user_code_verify_request.phone
     )
     if phone_user_exist is not None:
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=phone_user_exist.user_id
         )
@@ -74,7 +74,7 @@ async def create_user_by_sms_verify(
             expires_in=3600
         )
     else:
-        db_user = crud.user.create_base_user(
+        db_user = await crud.user.create_base_user_async(
             db=db,
             nickname=f'Revornix User {uuid4().hex[:8]}',
             avatar="files/default_avatar.png"
@@ -82,16 +82,16 @@ async def create_user_by_sms_verify(
         db_user.last_login_ip = ip
         db_user.last_login_time = datetime.now(timezone.utc)
 
-        crud.user.create_phone_user(
+        await crud.user.create_phone_user_async(
             db=db,
             user_id=db_user.id,
             phone=sms_user_code_verify_request.phone
         )
-        file_service = await setup_default_file_system_for_user(
+        file_service = await setup_default_file_system_for_user_async(
             db=db,
             db_user=db_user,
         )
-        await commit_with_bucket_cleanup(db=db, file_service=file_service)
+        await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
             access_token=access_token,
@@ -104,9 +104,9 @@ async def bind_phone(
     bind_phone_code_create_request: schemas.user.BindPhoneCodeCreateRequest,
     user = Depends(get_current_user),
     cache: Redis = Depends(get_cache),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    phone_exist = crud.user.get_phone_user_by_phone(
+    phone_exist = await crud.user.get_phone_user_by_phone_async(
         db=db,
         phone=bind_phone_code_create_request.phone
     )
@@ -135,7 +135,7 @@ async def bind_phone_verify(
     bind_phone_code_verify_request: schemas.user.BindPhoneCodeVerifyRequest,
     user = Depends(get_current_user),
     cache: Redis = Depends(get_cache),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     code = await cache.get(
         name=f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
@@ -147,22 +147,22 @@ async def bind_phone_verify(
     await cache.delete(
         f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
     )
-    crud.user.create_phone_user(
+    await crud.user.create_phone_user_async(
         db=db,
         user_id=user.id,
         phone=bind_phone_code_verify_request.phone
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 @user_auth_phone_router.post('/unbind/phone', response_model=schemas.common.NormalResponse)
-def unbind_phone(
+async def unbind_phone(
     user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
-    crud.user.delete_phone_user_by_user_id(
+    await crud.user.delete_phone_user_by_user_id_async(
         db=db,
         user_id=user.id
     )
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()

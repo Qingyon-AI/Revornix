@@ -14,12 +14,12 @@ from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatu
 from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -158,100 +158,86 @@ async def stream_chunk_document(
     """
     以流式方式生成 ChunkInfo，避免一次性 embedding 占用大量内存
     """
-    db = session_scope()
     try:
-        # 1️⃣ 获取文档与用户
-        db_document = crud.document.get_document_by_document_id(
-            db=db, 
-            document_id=doc_id
-        )
-        if db_document is None:
-            raise ValueError("Document not found")
-        db_user = crud.user.get_user_by_id(
-            db=db, 
-            user_id=db_document.creator_id
-        )
-        if db_user is None:
-            raise ValueError("User not found")
-        if db_user.default_user_file_system is None:
-            raise ValueError("User default file system not found")
-        
-        # 2️⃣ 初始化文件系统
-        remote_file_service = await FileSystemProxy.create(
-            user_id=db_user.id
-        )
+        async with async_session_context() as db:
+            db_document = await crud.document.get_document_by_document_id_async(
+                db=db,
+                document_id=doc_id
+            )
+            if db_document is None:
+                raise ValueError("Document not found")
+            db_user = await crud.user.get_user_by_id_async(
+                db=db,
+                user_id=db_document.creator_id
+            )
+            if db_user is None:
+                raise ValueError("User not found")
+            if db_user.default_user_file_system is None:
+                raise ValueError("User default file system not found")
 
-        # 3️⃣ 获取 Markdown 内容
-        markdown_content = await _load_markdown_content(
-            db, 
-            db_document, 
-            remote_file_service
-        )
-        
-        if not markdown_content.strip():
-            raise ValueError("Document content is empty")
+            remote_file_service = await FileSystemProxy.create(
+                user_id=db_user.id
+            )
+            markdown_content = await _load_markdown_content(
+                db,
+                db_document,
+                remote_file_service
+            )
 
-        # TODO 优化chunk 应该根据文档实际类型有区分，不能一刀切用markdown
-        chunker = RecursiveChunker.from_recipe("markdown")
+            if not markdown_content.strip():
+                raise ValueError("Document content is empty")
 
-        # 5️⃣ 按段切大文本，分步生成 chunk
-        segment_size = 100_000  # 每次处理约 10 万字符
-        segments = [
-            markdown_content[i:i + segment_size]
-            for i in range(0, len(markdown_content), segment_size)
-        ]
-
-        global_idx = 0
-        last_check = 0.0
-        for seg_idx, segment in enumerate(segments):
-            # ✅ 在后台线程中执行 CPU 密集的 chunking
-            raw_chunks = await asyncio.to_thread(chunker, segment)
-
-            # 展平成一维 List[Chunk]
-            chunks: list[Chunk] = [
-                c
-                for group in raw_chunks
-                for c in (group if isinstance(group, list) else [group])
+            chunker = RecursiveChunker.from_recipe("markdown")
+            segment_size = 100_000
+            segments = [
+                markdown_content[i:i + segment_size]
+                for i in range(0, len(markdown_content), segment_size)
             ]
 
-            for idx, chunk in enumerate(chunks):
-                now = time.monotonic()
-                if now - last_check >= 2.0:
-                    ensure_document_active(db=db, document_id=doc_id)
-                    last_check = now
-                chunk_info = ChunkInfo(
-                    id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
-                    text=chunk.text,
-                    idx=global_idx,
-                    doc_id=doc_id,
-                )
-                yield chunk_info
-                global_idx += 1
+            global_idx = 0
+            last_check = 0.0
+            for segment in segments:
+                raw_chunks = await asyncio.to_thread(chunker, segment)
+                chunks: list[Chunk] = [
+                    c
+                    for group in raw_chunks
+                    for c in (group if isinstance(group, list) else [group])
+                ]
 
-            # ✅ 每批后释放 GPU 显存
-            if torch.backends.mps.is_available():
-                torch.mps.empty_cache()
-            elif torch.cuda.is_available():
-                torch.cuda.empty_cache()
+                for chunk in chunks:
+                    now = time.monotonic()
+                    if now - last_check >= 2.0:
+                        await ensure_document_active_async(db=db, document_id=doc_id)
+                        last_check = now
+                    yield ChunkInfo(
+                        id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),
+                        text=chunk.text,
+                        idx=global_idx,
+                        doc_id=doc_id,
+                    )
+                    global_idx += 1
+
+                if torch.backends.mps.is_available():
+                    torch.mps.empty_cache()
+                elif torch.cuda.is_available():
+                    torch.cuda.empty_cache()
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
         raise
-    finally:
-        db.close()
 
 
 # -----------------------------
 # 工具函数：加载 Markdown 内容
 # -----------------------------
 async def _load_markdown_content(
-    db: Session, 
+    db: AsyncSession,
     db_document: models.document.Document, 
     remote_file_service: RemoteFileServiceProtocol
 ) -> str:
     """根据文档类型加载内容"""
     cat = db_document.category
     if cat == DocumentCategory.WEBSITE or cat == DocumentCategory.FILE:
-        convert_task = crud.task.get_document_convert_task_by_document_id(
+        convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -263,7 +249,7 @@ async def _load_markdown_content(
             file_path=convert_task.md_file_name
         ))
     elif cat == DocumentCategory.QUICK_NOTE:
-        note = crud.document.get_quick_note_document_by_document_id(
+        note = await crud.document.get_quick_note_document_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -271,7 +257,7 @@ async def _load_markdown_content(
             raise ValueError("Quick note document not found")
         return note.content or ""
     elif cat == DocumentCategory.AUDIO:
-        transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
+        transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
             db=db, 
             document_id=db_document.id
         )
@@ -609,9 +595,8 @@ async def resolve_entities_with_semantic_dedupe(
 async def get_extract_llm_client(
     user_id: int
 ) -> AsyncOpenAI:
-    db = session_scope()
-    try:
-        db_user = crud.user.get_user_by_id(
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(
             db=db, 
             user_id=user_id
         )
@@ -630,5 +615,3 @@ async def get_extract_llm_client(
             base_url=model_configuration.base_url,
         )
         return llm_client
-    finally:
-        db.close()

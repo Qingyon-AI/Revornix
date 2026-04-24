@@ -10,7 +10,7 @@ from common.ai import (
     build_structured_output_language_instruction,
 )
 from data.custom_types.all import EntityInfo, RelationInfo
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.logger import exception_logger, format_log_message, info_logger
 from common.usage_billing import persist_model_usage_from_completion
 from prompts.section_image import IMAGE_PLANNER_SYSTEM, build_image_planner_user_prompt
@@ -21,17 +21,17 @@ from schemas.section import ImagePlan, ImagePlanResult
 IMAGE_PLANNER_FULL_MARKDOWN_MAX_CHARS = 8_000
 IMAGE_PLANNER_MEDIUM_MARKDOWN_MAX_CHARS = 16_000
 IMAGE_PLANNER_LONG_MARKDOWN_MAX_CHARS = 32_000
-IMAGE_PLANNER_MEDIUM_COMPACT_MAX_CHARS = 8_000
-IMAGE_PLANNER_LONG_COMPACT_MAX_CHARS = 6_000
-IMAGE_PLANNER_XLONG_COMPACT_MAX_CHARS = 5_000
-IMAGE_PLANNER_FULL_MAX_ENTITIES = 72
-IMAGE_PLANNER_FULL_MAX_RELATIONS = 96
-IMAGE_PLANNER_MEDIUM_MAX_ENTITIES = 56
-IMAGE_PLANNER_MEDIUM_MAX_RELATIONS = 72
-IMAGE_PLANNER_LONG_MAX_ENTITIES = 40
-IMAGE_PLANNER_LONG_MAX_RELATIONS = 56
-IMAGE_PLANNER_XLONG_MAX_ENTITIES = 28
-IMAGE_PLANNER_XLONG_MAX_RELATIONS = 40
+IMAGE_PLANNER_MEDIUM_COMPACT_MAX_CHARS = 10_000
+IMAGE_PLANNER_LONG_COMPACT_MAX_CHARS = 8_000
+IMAGE_PLANNER_XLONG_COMPACT_MAX_CHARS = 6_000
+IMAGE_PLANNER_FULL_MAX_ENTITIES = 120
+IMAGE_PLANNER_FULL_MAX_RELATIONS = 160
+IMAGE_PLANNER_MEDIUM_MAX_ENTITIES = 96
+IMAGE_PLANNER_MEDIUM_MAX_RELATIONS = 140
+IMAGE_PLANNER_LONG_MAX_ENTITIES = 72
+IMAGE_PLANNER_LONG_MAX_RELATIONS = 108
+IMAGE_PLANNER_XLONG_MAX_ENTITIES = 48
+IMAGE_PLANNER_XLONG_MAX_RELATIONS = 72
 
 
 def _build_image_planner_markdown_memory(
@@ -206,8 +206,8 @@ class ImageGenerateEngineBase(EngineBase):
         entities: list[EntityInfo],
         relations: list[RelationInfo],
     ) -> ImagePlanResult:
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db, 
                 user_id=user_id
             )
@@ -239,10 +239,10 @@ class ImageGenerateEngineBase(EngineBase):
             markdown=planner_markdown,
             entities=entities_dict,
             relations=relations_dict,
-            max_images=3,
+            max_images=6,
         )
         language_instruction = build_structured_output_language_instruction(
-            _get_user_ai_interaction_language(user_id),
+            await _get_user_ai_interaction_language(user_id),
         )
 
         model_conf = (await AIModelProxy.create(
@@ -270,7 +270,7 @@ class ImageGenerateEngineBase(EngineBase):
                     ],
                     response_format={"type": "json_object"}
                 )
-                persist_model_usage_from_completion(
+                await persist_model_usage_from_completion(
                     user_id=user_id,
                     model_id=db_user.default_document_reader_model_id,
                     completion=completion,

@@ -2,7 +2,7 @@ import crud
 import json
 import schemas
 from common.logger import exception_logger
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.notification import NotificationSourceProvided, NotificationTemplate
 from notification.tool.apple import AppleNotificationTool
 from notification.tool.apple_sandbox import AppleSandboxNotificationTool
@@ -54,29 +54,28 @@ class NotificationProxy:
     # Factory（唯一推荐入口）
     # =========================
     @staticmethod
-    def create_notification_tool(
+    async def create_notification_tool(
         *,
         user_id: int,
         notification_source_id: int,
         notification_target_id: int
     ):
-        db = session_scope()
-        try:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=user_id
             )
             if db_user is None:
                 raise Exception("User not found")
 
-            notification_source = crud.notification.get_notification_source_by_id(
+            notification_source = await crud.notification.get_notification_source_by_id_async(
                 db=db,
                 notification_source_id=notification_source_id
             )
             if notification_source is None:
                 raise Exception("Notification source not found")
             
-            notification_target = crud.notification.get_notification_target_by_id(
+            notification_target = await crud.notification.get_notification_target_by_id_async(
                 db=db,
                 notification_target_id=notification_target_id
             )
@@ -111,11 +110,6 @@ class NotificationProxy:
                 )
             
             return notification_tool
-        except Exception as e:
-            exception_logger.error(f'Failed to create notification proxy: {e}')
-            raise
-        finally:
-            db.close()
 
     @staticmethod
     async def create_message_using_template(
@@ -124,8 +118,8 @@ class NotificationProxy:
         params: dict | None = None
     ):
         template_uuid: str | None = None
-        with session_scope() as db:
-            db_notification_template = crud.notification.get_notification_template_by_id(
+        async with async_session_context() as db:
+            db_notification_template = await crud.notification.get_notification_template_by_id_async(
                 db=db,
                 notification_template_id=template_id
             )

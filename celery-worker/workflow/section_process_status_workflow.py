@@ -4,7 +4,7 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 import crud
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from common.logger import exception_logger
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
@@ -25,18 +25,15 @@ async def _update_section_status(
     if section_id is None or status is None:
         raise Exception("Section status workflow missing section_id or status")
 
-    db = session_scope()
-    try:
-        db_section_process_task = crud.task.get_section_process_task_by_section_id(
+    async with async_session_context() as db:
+        db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
             db=db,
             section_id=section_id
         )
         if db_section_process_task is not None:
             db_section_process_task.status = status
             db_section_process_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
 
     return state
 

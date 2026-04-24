@@ -4,12 +4,12 @@ import string
 
 from fastapi import APIRouter, Depends
 from redis import Redis
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_cache, get_current_user, get_db
+from common.dependencies import get_async_db, get_cache, get_current_user
 from common.encrypt import encrypt_notification_target_config
 from common.logger import format_log_message, info_logger
 from common.system_email.email import RevornixSystemEmail
@@ -170,11 +170,11 @@ async def notification_ios_target_change_code_status(
 @notification_target_manage_router.post('/target/add', response_model=schemas.common.NormalResponse)
 async def add_notification_target(
     add_notification_target_request: schemas.notification.AddNotificationTargetRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
     cache: Redis = Depends(get_cache)
 ):
-    db_notification_target_provided = crud.notification.get_notification_target_provided_by_id(
+    db_notification_target_provided = await crud.notification.get_notification_target_provided_by_id_async(
         db=db,
         id=add_notification_target_request.notification_target_provided_id
     )
@@ -193,37 +193,34 @@ async def add_notification_target(
         require_config=True,
     )
 
-    db_notification_target = crud.notification.create_notification_target(
+    db_notification_target = await crud.notification.create_notification_target_async(
         db=db,
         notification_target_provided_id=add_notification_target_request.notification_target_provided_id,
         title=add_notification_target_request.title,
         description=add_notification_target_request.description,
         creator_id=user.id,
-        is_public=add_notification_target_request.is_public
+        is_public=add_notification_target_request.is_public,
     )
-
     if config_json is not None:
         db_notification_target.config_json = encrypt_notification_target_config(config_json)
-
-    crud.notification.create_user_notification_target(
+    await crud.notification.create_user_notification_target_async(
         db=db,
         notification_target_id=db_notification_target.id,
         user_id=user.id,
-        role=UserNotificationTargetRole.CREATOR
+        role=UserNotificationTargetRole.CREATOR,
     )
-    db.commit()
-
+    await db.commit()
     return schemas.common.SuccessResponse()
 
 
 @notification_target_manage_router.post('/target/update', response_model=schemas.common.NormalResponse)
 async def update_notification_target(
     update_notification_target_request: schemas.notification.UpdateNotificationTargetRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user),
     cache: Redis = Depends(get_cache)
 ):
-    db_notification_target = crud.notification.get_notification_target_by_id(
+    db_notification_target = await crud.notification.get_notification_target_by_id_async(
         db=db,
         notification_target_id=update_notification_target_request.notification_target_id
     )
@@ -253,6 +250,5 @@ async def update_notification_target(
 
     if config_json is not None:
         db_notification_target.config_json = encrypt_notification_target_config(config_json)
-
-    db.commit()
+    await db.commit()
     return schemas.common.SuccessResponse()

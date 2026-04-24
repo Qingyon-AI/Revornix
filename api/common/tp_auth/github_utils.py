@@ -1,7 +1,10 @@
 import httpx
 
 
-def get_github_token(
+GITHUB_HTTP_TIMEOUT = 20.0
+
+
+async def get_github_token(
     github_client_id: str,
     github_client_secret: str,
     code: str,
@@ -18,11 +21,12 @@ def get_github_token(
         'Accept': 'application/json',
         "Accept-Encoding": "application/json"
     }
-    # 获取github token
-    github_token_res = httpx.get(url, params=params, headers=headers)
+    async with httpx.AsyncClient(timeout=GITHUB_HTTP_TIMEOUT) as client:
+        github_token_res = await client.get(url, params=params, headers=headers)
+        github_token_res.raise_for_status()
     return github_token_res.json()
 
-def get_github_email(
+async def get_github_email(
     token: str
 ):
     url = "https://api.github.com/user/emails"
@@ -31,11 +35,12 @@ def get_github_email(
         "Authorization": f"Bearer {token}",
         "X-GitHub-Api-Version": "2022-11-28"
     }
-    # 获取github token
-    github_email_res = httpx.get(url, headers=headers)
+    async with httpx.AsyncClient(timeout=GITHUB_HTTP_TIMEOUT) as client:
+        github_email_res = await client.get(url, headers=headers)
+        github_email_res.raise_for_status()
     return github_email_res.json()
 
-def get_github_userInfo(
+async def get_github_userInfo(
     token: str
 ):
     url = "https://api.github.com/user"
@@ -45,7 +50,7 @@ def get_github_userInfo(
         "Authorization": f"Bearer {token}",
         "X-GitHub-Api-Version": "2022-11-28"
     }
-    # 获取github token
-    github_user_info_res = httpx.get(url, headers=headers)
-    github_user_info_res.raise_for_status()
+    async with httpx.AsyncClient(timeout=GITHUB_HTTP_TIMEOUT) as client:
+        github_user_info_res = await client.get(url, headers=headers)
+        github_user_info_res.raise_for_status()
     return github_user_info_res.json()

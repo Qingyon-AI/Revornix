@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
 import schemas
-from common.apscheduler.app import scheduler
+from common.apscheduler.app import initialize_scheduler_jobs, scheduler
 from common.env import is_env_enabled
 from common.logger import exception_logger, format_log_message, info_logger
 from common.request_protection import protect_request
@@ -64,6 +64,7 @@ async def lifespan(app: FastAPI):
         )
         raise
     try:
+        await initialize_scheduler_jobs()
         if not scheduler.running:
             scheduler.start()
             info_logger.info(format_log_message("scheduler_started"))

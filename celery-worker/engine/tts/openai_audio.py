@@ -77,7 +77,7 @@ class OpenAIAudioEngine(TTSEngineBase):
             tags=[f'model:{model_name}']
         ):  
             language_instruction = build_text_output_language_instruction(
-                _get_user_ai_interaction_language(self.user_id),
+                await _get_user_ai_interaction_language(self.user_id),
             )
             llm_client = AsyncOpenAI(
                 base_url=base_url,

@@ -3,7 +3,7 @@ from typing import Any
 
 from data.custom_types.all import *
 from data.milvus.search import naive_search
-from data.neo4j.base import neo4j_driver
+from data.neo4j.base import async_neo4j_driver
 
 
 def to_neo4j_datetime_str(
@@ -33,7 +33,7 @@ def build_time_filter(
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
 
-def section_graph_search(
+async def section_graph_search(
     *,
     document_ids: list[int],
     seed_chunk_ids: list[str],
@@ -57,9 +57,9 @@ def section_graph_search(
 
     entities: list[dict[str, Any]] = []
 
-    with neo4j_driver.session() as sess:
+    async with async_neo4j_driver.session() as sess:
         # 先从首轮命中的 chunks 提取“共享实体”，这些实体会作为图扩展的桥。
-        entity_records = sess.run(
+        entity_records = await sess.run(
             """
             UNWIND $chunk_ids AS chunk_id
             MATCH (seed:Chunk {id: chunk_id})<-[:HAS_CHUNK]-(seed_doc:Document)
@@ -84,7 +84,7 @@ def section_graph_search(
         )
 
         entity_ids: list[str] = []
-        for record in entity_records:
+        async for record in entity_records:
             entity_id = record.get("entity_id")
             if entity_id is None:
                 continue
@@ -104,7 +104,7 @@ def section_graph_search(
             return {"expanded_chunks": [], "entities": entities}
 
         # 再回到当前专栏文档范围内，找出同样命中这些实体但没在首轮出现过的 chunks。
-        chunk_records = sess.run(
+        chunk_records = await sess.run(
             """
             UNWIND $entity_ids AS entity_id
             MATCH (entity:Entity {id: entity_id})<-[:MENTIONS]-(chunk:Chunk)<-[:HAS_CHUNK]-(doc:Document)
@@ -133,23 +133,25 @@ def section_graph_search(
             },
         )
 
-        expanded_chunks = [
-            {
-                "chunk_id": record["chunk_id"],
-                "text": record["text"],
-                "doc_id": record["doc_id"],
-                "idx": record["idx"],
-                "entity_texts": record.get("entity_texts") or [],
-                "entity_overlap": record.get("entity_overlap"),
-            }
-            for record in chunk_records
-            if record["chunk_id"] is not None
-        ]
+        expanded_chunks = []
+        async for record in chunk_records:
+            if record["chunk_id"] is None:
+                continue
+            expanded_chunks.append(
+                {
+                    "chunk_id": record["chunk_id"],
+                    "text": record["text"],
+                    "doc_id": record["doc_id"],
+                    "idx": record["idx"],
+                    "entity_texts": record.get("entity_texts") or [],
+                    "entity_overlap": record.get("entity_overlap"),
+                }
+            )
 
     return {"expanded_chunks": expanded_chunks, "entities": entities}
 
 # ===================== Local Search =====================
-def local_search_by_entity(
+async def local_search_by_entity(
     user_id: int,
     entity_name: str,
     hops: int = 1,
@@ -161,8 +163,8 @@ def local_search_by_entity(
     - 子图遍历 Entity + Chunk
     - 过滤 chunk 所属 document 是否为当前用户
     """
-    with neo4j_driver.session() as sess:
-        result = sess.run(
+    async with async_neo4j_driver.session() as sess:
+        result = await sess.run(
             """
             // 1. 匹配目标实体
             MATCH (e:Entity)
@@ -196,18 +198,22 @@ def local_search_by_entity(
             {"ename": entity_name, "hops": hops, "limit": limit, "user_id": user_id}
         )
 
-        return [
-            {
-                "chunk_id": r["id"],
-                "text": r["text"],
-                "doc_id": r["doc_id"],
-                "idx": r["idx"]
-            }
-            for r in result if r["id"] is not None
-        ]
+        output = []
+        async for r in result:
+            if r["id"] is None:
+                continue
+            output.append(
+                {
+                    "chunk_id": r["id"],
+                    "text": r["text"],
+                    "doc_id": r["doc_id"],
+                    "idx": r["idx"]
+                }
+            )
+        return output
 
 # ===================== Global Search =====================
-def global_search(
+async def global_search(
     user_id: int,
     search_text: str,
     top_k: int = 10,
@@ -220,7 +226,7 @@ def global_search(
     1) 在 Milvus 上做全局向量检索（得到 top_k chunk）
     2) 在 Neo4j 中扩展：找到与用户相关的 Entity / Chunk / Community
     """
-    seed_chunks = naive_search(
+    seed_chunks = await naive_search(
         user_id=user_id,
         search_text=search_text,
         top_k=top_k
@@ -233,7 +239,7 @@ def global_search(
     if not chunk_ids:
         return {"seed_chunks": seed_chunks, "expanded_chunks": [], "entities": []}
 
-    with neo4j_driver.session() as sess:
+    async with async_neo4j_driver.session() as sess:
         # 构造动态 WHERE 条件（包含时间筛选）
         where_clauses = [
             "d.creator_id = $user_id"  # 用户权限控制
@@ -271,10 +277,10 @@ def global_search(
         if time_end:
             params["time_end"] = time_end
 
-        records = sess.run(cypher, params)
+        records = await sess.run(cypher, params)
 
         related_chunk_set = set()
-        for r in records:
+        async for r in records:
             if eid := r["entity_id"]:
                 entities.append({
                     "entity_id": eid,
@@ -288,7 +294,7 @@ def global_search(
 
         # 查找相关 chunk（也需校验用户权限）
         if related_chunk_set:
-            rows = sess.run(
+            rows = await sess.run(
                 """
                 UNWIND $ids AS cid
                 MATCH (c:Chunk {id: cid})<-[:HAS_CHUNK]-(d:Document)
@@ -297,7 +303,7 @@ def global_search(
                 """,
                 {"ids": list(related_chunk_set), "user_id": user_id}
             )
-            for r in rows:
+            async for r in rows:
                 expanded_chunks.append({
                     "chunk_id": r["id"],
                     "text": r["text"],

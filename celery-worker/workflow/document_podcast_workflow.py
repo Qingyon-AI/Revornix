@@ -8,7 +8,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from common.document_guard import ensure_document_active
+from common.document_guard import ensure_document_active_async
 from common.logger import info_logger
 from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_document_podcast_graph_context
@@ -18,7 +18,7 @@ from data.common import (
     get_document_markdown_length,
     stream_chunk_document,
 )
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.document import DocumentPodcastStatus, DocumentCategory
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
@@ -49,10 +49,9 @@ SAMPLED_PODCAST_MAX_TEXT_LENGTH = 12_000
 SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_200
 
 
-def _ensure_podcast_task_not_cancelled(document_id: int) -> None:
-    db = session_scope()
-    try:
-        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+async def _ensure_podcast_task_not_cancelled(document_id: int) -> None:
+    async with async_session_context() as db:
+        db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
             db=db,
             document_id=document_id,
         )
@@ -63,9 +62,6 @@ def _ensure_podcast_task_not_cancelled(document_id: int) -> None:
             raise WorkflowCancelledError(
                 f"Document podcast task cancelled: document_id={document_id}"
             )
-    finally:
-        db.close()
-
 
 def _normalize_podcast_chunk_text(text: str) -> str:
     compact = " ".join(text.split()).strip()
@@ -119,12 +115,11 @@ async def _init_podcast_task(
     user_id = state.get("user_id")
     if document_id is None or user_id is None:
         raise Exception("Document podcast workflow missing document_id or user_id")
-    _ensure_podcast_task_not_cancelled(document_id)
+    await _ensure_podcast_task_not_cancelled(document_id)
 
-    db = session_scope()
-    try:
+    async with async_session_context() as db:
         # 1) 校验 document
-        db_document = crud.document.get_document_by_document_id(
+        db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -137,7 +132,7 @@ async def _init_podcast_task(
         state["document_description"] = db_document.description or ""
 
         # 2) 校验 user
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=user_id
         )
@@ -151,12 +146,12 @@ async def _init_podcast_task(
             state["engine_id"] = db_user.default_podcast_user_engine_id
 
         # 3) 获取/创建task 标记为进行时
-        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
         if db_podcast_task is None:
-            db_podcast_task = crud.task.create_document_podcast_task(
+            db_podcast_task = await crud.task.create_document_podcast_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -164,9 +159,7 @@ async def _init_podcast_task(
         if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
             db_podcast_task.status = DocumentPodcastStatus.GENERATING
             db_podcast_task.update_time = datetime.now(timezone.utc)
-        db.commit()
-    finally:
-        db.close()
+        await db.commit()
     return state
 
 
@@ -180,17 +173,14 @@ async def _generate_document_podcast(
     engine_id = state.get("engine_id")
     if document_id is None or user_id is None or engine_id is None:
         raise Exception("Document podcast workflow missing context")
-    _ensure_podcast_task_not_cancelled(document_id)
+    await _ensure_podcast_task_not_cancelled(document_id)
 
     remote_file_service = await FileSystemProxy.create(
         user_id=user_id
     )
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     markdown_length = await get_document_markdown_length(document_id)
     prepare_started_at = time.perf_counter()
@@ -199,9 +189,8 @@ async def _generate_document_podcast(
     graph_context = ""
     graph_counts = {"entities": 0, "relations": 0, "excerpts": 0}
     if markdown_length >= SUMMARY_PREFERRED_MARKDOWN_CHAR_THRESHOLD:
-        db = session_scope()
-        try:
-            db_summarize_task = crud.task.get_document_summarize_task_by_document_id(
+        async with async_session_context() as db:
+            db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
                 document_id=document_id,
             )
@@ -209,8 +198,6 @@ async def _generate_document_podcast(
                 markdown_content = db_summarize_task.summary
                 state["podcast_mode"] = "summary"
                 source_chars = len(markdown_content)
-        finally:
-            db.close()
         if markdown_content is None and markdown_length >= SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD:
             markdown_content = await _build_sampled_podcast_text(
                 document_id=document_id,
@@ -228,7 +215,7 @@ async def _generate_document_podcast(
         source_chars = len(markdown_content)
 
     try:
-        graph_context, graph_counts = build_document_podcast_graph_context(
+        graph_context, graph_counts = await build_document_podcast_graph_context(
             document_id=document_id,
         )
     except Exception as e:
@@ -273,7 +260,7 @@ async def _generate_document_podcast(
     synthesis_result = await engine.synthesize(
         text=prepared_markdown_content
     )
-    _ensure_podcast_task_not_cancelled(document_id)
+    await _ensure_podcast_task_not_cancelled(document_id)
     info_logger.info(
         f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
         f"node=generate_document_podcast, stage=synthesize_audio, "
@@ -286,11 +273,8 @@ async def _generate_document_podcast(
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
     podcast_script_file_name = f"files/{uuid.uuid4().hex}.json"
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
 
     upload_started_at = time.perf_counter()
     await remote_file_service.upload_raw_content_to_path(
@@ -332,12 +316,11 @@ async def _mark_podcast_success(
     podcast_script_file_name = state.get("podcast_script_file_name")
     if document_id is None:
         raise Exception("Document podcast workflow missing document_id")
-    _ensure_podcast_task_not_cancelled(document_id)
+    await _ensure_podcast_task_not_cancelled(document_id)
 
-    db = session_scope()
-    try:
-        ensure_document_active(db=db, document_id=document_id)
-        db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+    async with async_session_context() as db:
+        await ensure_document_active_async(db=db, document_id=document_id)
+        db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
             db=db,
             document_id=document_id
         )
@@ -347,9 +330,7 @@ async def _mark_podcast_success(
             db_podcast_task.podcast_script_file_name = podcast_script_file_name
             db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
-            db.commit()
-    finally:
-        db.close()
+            await db.commit()
     return state
 
 
@@ -408,9 +389,8 @@ async def run_document_podcast_workflow(
             },
         )
     except WorkflowCancelledError:
-        db = session_scope()
-        try:
-            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        async with async_session_context() as db:
+            db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -418,15 +398,12 @@ async def run_document_podcast_workflow(
                 db_podcast_task.status = DocumentPodcastStatus.CANCELLED
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise
     except Exception as e:
         exception_logger.error(f"Something is error while updating the ai podcast: {e}")
-        db = session_scope()
-        try:
-            db_podcast_task = crud.task.get_document_podcast_task_by_document_id(
+        async with async_session_context() as db:
+            db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
@@ -437,7 +414,5 @@ async def run_document_podcast_workflow(
                 db_podcast_task.status = DocumentPodcastStatus.FAILED
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
-                db.commit()
-        finally:
-            db.close()
+                await db.commit()
         raise

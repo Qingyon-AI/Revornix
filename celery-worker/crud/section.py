@@ -1,7 +1,8 @@
 import models
 from datetime import datetime, timezone, date as date_type
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 from enums.section import SectionDocumentIntegration, UserSectionRole
 
 
@@ -38,6 +39,20 @@ def get_section_documents_by_section_id(
         query = query.filter(models.section.SectionDocument.status == filter_status)
     return query.all()
 
+
+async def get_section_documents_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+    filter_status: SectionDocumentIntegration | None = None,
+):
+    stmt = select(models.section.SectionDocument).where(
+        models.section.SectionDocument.section_id == section_id,
+        models.section.SectionDocument.delete_at.is_(None),
+    )
+    if filter_status is not None:
+        stmt = stmt.where(models.section.SectionDocument.status == filter_status)
+    return list((await db.execute(stmt)).scalars().all())
+
 def get_documents_for_section_by_section_id(
     db: Session, 
     section_id: int
@@ -49,6 +64,24 @@ def get_documents_for_section_by_section_id(
                          models.document.Document.delete_at.is_(None),
                          models.section.Section.delete_at.is_(None))
     return query.all()
+
+
+async def get_documents_for_section_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.section.SectionDocument)
+        .join(models.section.Section)
+        .where(
+            models.section.SectionDocument.section_id == section_id,
+            models.section.SectionDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+            models.section.Section.delete_at.is_(None),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_section_document_by_section_id_and_document_id(
     db: Session,
@@ -88,6 +121,26 @@ def get_section_by_user_and_date(
                          models.section.SectionUser.user_id == user_id)
     return query.one_or_none()
 
+
+async def get_section_by_user_and_date_async(
+    db: AsyncSession,
+    user_id: int,
+    date: date_type,
+):
+    stmt = (
+        select(models.section.Section)
+        .join(models.section.DaySection)
+        .join(models.section.SectionUser)
+        .where(
+            models.section.DaySection.date == date,
+            models.section.DaySection.delete_at.is_(None),
+            models.section.Section.delete_at.is_(None),
+            models.section.SectionUser.delete_at.is_(None),
+            models.section.SectionUser.user_id == user_id,
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_section_user_by_section_id_and_user_id(
     db: Session, 
     section_id: int, 
@@ -104,6 +157,27 @@ def get_section_user_by_section_id_and_user_id(
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.one_or_none()
+
+
+async def get_section_user_by_section_id_and_user_id_async(
+    db: AsyncSession,
+    section_id: int,
+    user_id: int,
+    filter_roles: list[UserSectionRole] | None = None,
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.section.SectionUser).where(
+        models.section.SectionUser.section_id == section_id,
+        models.section.SectionUser.user_id == user_id,
+        models.section.SectionUser.delete_at.is_(None),
+        or_(
+            models.section.SectionUser.expire_time > now,
+            models.section.SectionUser.expire_time.is_(None),
+        ),
+    )
+    if filter_roles is not None:
+        stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_users_for_section_by_section_id(
     db: Session,
@@ -131,6 +205,17 @@ def get_section_by_section_id(
                          models.section.Section.delete_at.is_(None))
     return query.one_or_none()
 
+
+async def get_section_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+):
+    stmt = select(models.section.Section).where(
+        models.section.Section.id == section_id,
+        models.section.Section.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def update_section_document_by_section_id_and_document_id(
     db: Session,
     section_id: int,
@@ -148,3 +233,23 @@ def update_section_document_by_section_id_and_document_id(
     db_section_document.status = status
     db_section_document.update_time = now
     db.flush()
+
+
+async def update_section_document_by_section_id_and_document_id_async(
+    db: AsyncSession,
+    section_id: int,
+    document_id: int,
+    status: int,
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.section.SectionDocument).where(
+        models.section.SectionDocument.section_id == section_id,
+        models.section.SectionDocument.document_id == document_id,
+        models.section.SectionDocument.delete_at.is_(None),
+    )
+    db_section_document = (await db.execute(stmt)).scalar_one_or_none()
+    if db_section_document is None:
+        raise Exception("Section document is not found")
+    db_section_document.status = status
+    db_section_document.update_time = now
+    await db.flush()

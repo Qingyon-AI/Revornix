@@ -10,7 +10,7 @@ from langfuse.openai import AsyncOpenAI
 from common.logger import exception_logger
 from prompts.document_auto_tag import document_auto_tag_prompt
 from common.markdown_helpers import get_markdown_content_by_document_id
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from proxy.ai_model_proxy import AIModelProxy
 
 
@@ -57,8 +57,8 @@ class LLMDocumentTagEngine:
     ) -> list[schemas.document.DocumentLabel] | None:
         model_id: int | None = None
         tags: list[schemas.document.DocumentLabel] = []
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(
                 db=db,
                 user_id=self.user_id
             )
@@ -70,14 +70,14 @@ class LLMDocumentTagEngine:
                 raise Exception('User does not have a default user file system')
             model_id = db_user.default_document_reader_model_id
             
-            db_document = crud.document.get_document_by_document_id(
+            db_document = await crud.document.get_document_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_document is None:
                 raise Exception("The document you want to generate the tags is not found")
             
-            db_tags = crud.document.get_user_labels_by_user_id(
+            db_tags = await crud.document.get_user_labels_by_user_id_async(
                 db=db,
                 user_id=self.user_id
             )

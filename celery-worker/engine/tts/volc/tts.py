@@ -14,7 +14,7 @@ from common.ai import generate_podcast_dialogue_turns
 from common.langfuse import langfuse
 from common.logger import exception_logger, info_logger
 from common.usage_billing import persist_engine_usage
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from engine.tts.volc.protocol import (
     EventType,
     MsgType,
@@ -101,7 +101,7 @@ class VolcTTSEngine(TTSEngineBase):
                     return speakers
         return list(DEFAULT_VOLC_PODCAST_SPEAKERS)
 
-    def _resolve_dialogue_model_id(self, config: dict[str, Any]) -> int:
+    async def _resolve_dialogue_model_id(self, config: dict[str, Any]) -> int:
         raw_dialogue_model_id = config.get("dialogue_model_id")
         if raw_dialogue_model_id not in (None, ""):
             try:
@@ -112,9 +112,8 @@ class VolcTTSEngine(TTSEngineBase):
         if self.user_id is None:
             raise Exception("The user_id is not set.")
 
-        db = session_scope()
-        try:
-            db_user = crud.user.get_user_by_id(db=db, user_id=self.user_id)
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=self.user_id)
             if db_user is None:
                 raise Exception("The user is not found")
             if db_user.default_document_reader_model_id is None:
@@ -122,8 +121,6 @@ class VolcTTSEngine(TTSEngineBase):
                     "The user has not set the default document reader model required by Volc action=3 dialogue generation"
                 )
             return db_user.default_document_reader_model_id
-        finally:
-            db.close()
 
     def _resolve_max_retries(self, config: dict[str, Any]) -> int:
         raw_max_retries = config.get("max_retries")
@@ -202,7 +199,7 @@ class VolcTTSEngine(TTSEngineBase):
             raise Exception("The user_id is not set.")
 
         speakers = self._resolve_speakers(config)
-        model_id = self._resolve_dialogue_model_id(config)
+        model_id = await self._resolve_dialogue_model_id(config)
         turns = await generate_podcast_dialogue_turns(
             user_id=self.user_id,
             model_id=model_id,
@@ -543,7 +540,7 @@ class VolcTTSEngine(TTSEngineBase):
                     token_usage_info.get("input_text_tokens", 0) > 0
                     or token_usage_info.get("output_audio_tokens", 0) > 0
                 ):
-                    persist_engine_usage(
+                    await persist_engine_usage(
                         user_id=self.user_id,
                         resource_uuid=self.resource_uuid or self.engine_uuid,
                         usage_details=token_usage_info,

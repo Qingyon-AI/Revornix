@@ -31,11 +31,11 @@ from common.tp_auth.wechat_utils import (
     get_official_wechat_user_info,
     verify_wechat_signature,
 )
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.document import DocumentCategory
 from enums.user import WeChatUserSource
 from proxy.file_system_proxy import FileSystemProxy
-from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
+from router.user_shared import commit_with_bucket_cleanup_async, setup_default_file_system_for_user_async
 
 
 WECHAT_OFFICIAL_PLATFORM = "wechat-official"
@@ -298,15 +298,15 @@ async def _ensure_user_default_file_system(
 ) -> None:
     if user.default_user_file_system is not None:
         return
-    file_service = await setup_default_file_system_for_user(
+    file_service = await setup_default_file_system_for_user_async(
         db=db,
         db_user=user,
     )
-    await commit_with_bucket_cleanup(
+    await commit_with_bucket_cleanup_async(
         db=db,
         file_service=file_service,
     )
-    db.refresh(user)
+    await db.refresh(user)
 
 
 async def _resolve_wechat_official_user(
@@ -316,13 +316,13 @@ async def _resolve_wechat_official_user(
     union_id: str,
     nickname: str | None,
 ) -> models.user.User:
-    db_official_user = crud.user.get_wechat_user_by_wechat_open_id(
+    db_official_user = await crud.user.get_wechat_user_by_wechat_open_id_async(
         db=db,
         wechat_user_open_id=openid,
         filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
     )
     if db_official_user is not None:
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=db_official_user.user_id,
         )
@@ -337,17 +337,17 @@ async def _resolve_wechat_official_user(
             db_official_user.wechat_user_name = normalized_nickname
             should_commit = True
         if should_commit:
-            db.commit()
+            await db.commit()
         return db_user
 
-    deleted_official_user = crud.user.get_wechat_user_by_wechat_open_id(
+    deleted_official_user = await crud.user.get_wechat_user_by_wechat_open_id_async(
         db=db,
         wechat_user_open_id=openid,
         filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
         include_deleted=True,
     )
     if deleted_official_user is not None and deleted_official_user.delete_at is not None:
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=deleted_official_user.user_id,
         )
@@ -357,27 +357,27 @@ async def _resolve_wechat_official_user(
             normalized_nickname = _truncate_text(nickname, 100)
             if normalized_nickname:
                 deleted_official_user.wechat_user_name = normalized_nickname
-            db.commit()
+            await db.commit()
             return db_user
 
-    db_wechat_users = crud.user.get_wechat_user_by_wechat_union_id(
+    db_wechat_users = await crud.user.get_wechat_user_by_wechat_union_id_async(
         db=db,
         wechat_user_union_id=union_id,
     )
     db_user = None
     if db_wechat_users:
-        db_user = crud.user.get_user_by_id(
+        db_user = await crud.user.get_user_by_id_async(
             db=db,
             user_id=db_wechat_users[0].user_id,
         )
     if db_user is None:
         normalized_nickname = _normalize_nickname(nickname)
-        db_user = crud.user.create_base_user(
+        db_user = await crud.user.create_base_user_async(
             db=db,
             avatar="files/default_avatar.png",
             nickname=normalized_nickname,
         )
-        crud.user.create_wechat_user(
+        await crud.user.create_wechat_user_async(
             db=db,
             user_id=db_user.id,
             wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
@@ -385,17 +385,17 @@ async def _resolve_wechat_official_user(
             wechat_user_union_id=union_id,
             wechat_user_name=_truncate_text(nickname, 100, fallback=normalized_nickname),
         )
-        file_service = await setup_default_file_system_for_user(
+        file_service = await setup_default_file_system_for_user_async(
             db=db,
             db_user=db_user,
         )
-        await commit_with_bucket_cleanup(
+        await commit_with_bucket_cleanup_async(
             db=db,
             file_service=file_service,
         )
         return db_user
 
-    crud.user.create_wechat_user(
+    await crud.user.create_wechat_user_async(
         db=db,
         user_id=db_user.id,
         wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
@@ -403,7 +403,7 @@ async def _resolve_wechat_official_user(
         wechat_user_union_id=union_id,
         wechat_user_name=_truncate_text(nickname, 100, fallback=db_user.nickname),
     )
-    db.commit()
+    await db.commit()
     return db_user
 
 
@@ -421,10 +421,9 @@ async def _save_message_media_for_user(
 
     media_download: WeChatMediaDownload | None = None
     if message.media_id:
-        media_download = await asyncio.to_thread(
-            download_official_wechat_media,
-            access_token,
-            message.media_id,
+        media_download = await download_official_wechat_media(
+            access_token=access_token,
+            media_id=message.media_id,
         )
     elif message.msg_type == "image" and message.pic_url:
         media_download = await _download_wechat_image_from_pic_url(
@@ -539,54 +538,51 @@ async def _process_wechat_official_message(
     app_id: str,
     app_secret: str,
 ) -> None:
-    db = session_scope()
     try:
-        access_token = await asyncio.to_thread(
-            get_official_wechat_access_token,
-            app_id,
-            app_secret,
+        access_token = await get_official_wechat_access_token(
+            app_id=app_id,
+            app_secret=app_secret,
         )
-        wechat_user_info = await asyncio.to_thread(
-            get_official_wechat_user_info,
-            access_token,
-            message.from_user_name,
+        wechat_user_info = await get_official_wechat_user_info(
+            access_token=access_token,
+            openid=message.from_user_name,
         )
         if wechat_user_info.unionid is None:
             raise Exception(
                 "WeChat official account unionid is missing. Please ensure the official account is bound to the same Open Platform account."
             )
 
-        db_user = await _resolve_wechat_official_user(
-            db=db,
-            openid=message.from_user_name,
-            union_id=wechat_user_info.unionid,
-            nickname=wechat_user_info.nickname,
-        )
+        async with async_session_context() as db:
+            db_user = await _resolve_wechat_official_user(
+                db=db,
+                openid=message.from_user_name,
+                union_id=wechat_user_info.unionid,
+                nickname=wechat_user_info.nickname,
+            )
 
-        if message.msg_type == "event":
-            return
+            if message.msg_type == "event":
+                return
 
-        document_request = await _build_document_request_from_message(
-            db=db,
-            user=db_user,
-            message=message,
-            access_token=access_token,
-        )
-        if document_request is None:
-            return
+            document_request = await _build_document_request_from_message(
+                db=db,
+                user=db_user,
+                message=message,
+                access_token=access_token,
+            )
+            if document_request is None:
+                return
 
-        summary_timezone = await get_cached_user_timezone(db_user.id)
-        if summary_timezone == UTC_TIMEZONE_NAME:
-            summary_timezone = WECHAT_OFFICIAL_DEFAULT_TIMEZONE
+            summary_timezone = await get_cached_user_timezone(db_user.id)
+            if summary_timezone == UTC_TIMEZONE_NAME:
+                summary_timezone = WECHAT_OFFICIAL_DEFAULT_TIMEZONE
 
-        await create_document_for_user(
-            db=db,
-            user=db_user,
-            document_create_request=document_request,
-            summary_timezone=summary_timezone,
-        )
+            await create_document_for_user(
+                db=db,
+                user=db_user,
+                document_create_request=document_request,
+                summary_timezone=summary_timezone,
+            )
     except Exception as exc:
-        db.rollback()
         exception_logger.error(
             format_log_message(
                 "wechat_official_message_process_failed",
@@ -597,23 +593,20 @@ async def _process_wechat_official_message(
                 error=exc,
             )
         )
-    finally:
-        db.close()
 
 
 async def _process_wechat_official_unsubscribe(
     openid: str,
 ) -> None:
-    db = session_scope()
     try:
-        crud.user.delete_wechat_user_by_wechat_open_id(
-            db=db,
-            wechat_user_open_id=openid,
-            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
-        )
-        db.commit()
+        async with async_session_context() as db:
+            await crud.user.delete_wechat_user_by_wechat_open_id_async(
+                db=db,
+                wechat_user_open_id=openid,
+                filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+            )
+            await db.commit()
     except Exception as exc:
-        db.rollback()
         exception_logger.error(
             format_log_message(
                 "wechat_official_unsubscribe_process_failed",
@@ -621,8 +614,6 @@ async def _process_wechat_official_unsubscribe(
                 error=exc,
             )
         )
-    finally:
-        db.close()
 
 
 @wechat_official_router.get("/official/callback", include_in_schema=False)

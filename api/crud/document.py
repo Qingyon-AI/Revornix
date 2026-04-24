@@ -2,7 +2,8 @@ from datetime import date as date_type
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import Date, cast, func, or_
+from sqlalchemy import Date, and_, cast, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
 
 import models
@@ -13,6 +14,10 @@ delete_quick_note_documents_by_document_ids = _document_delete_subtypes.delete_q
 delete_website_documents_by_document_ids = _document_delete_subtypes.delete_website_documents_by_document_ids
 delete_audio_documents_by_document_ids = _document_delete_subtypes.delete_audio_documents_by_document_ids
 delete_file_documents_by_document_ids = _document_delete_subtypes.delete_file_documents_by_document_ids
+delete_quick_note_documents_by_document_ids_async = _document_delete_subtypes.delete_quick_note_documents_by_document_ids_async
+delete_website_documents_by_document_ids_async = _document_delete_subtypes.delete_website_documents_by_document_ids_async
+delete_audio_documents_by_document_ids_async = _document_delete_subtypes.delete_audio_documents_by_document_ids_async
+delete_file_documents_by_document_ids_async = _document_delete_subtypes.delete_file_documents_by_document_ids_async
 
 
 def create_document_note(
@@ -30,6 +35,21 @@ def create_document_note(
     db.flush()
     return db_document_note
 
+async def create_document_note_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    content: str
+):
+    now = datetime.now(timezone.utc)
+    db_document_note = models.document.DocumentNote(user_id=user_id,
+                                                    document_id=document_id,
+                                                    content=content,
+                                                    create_time=now)
+    db.add(db_document_note)
+    await db.flush()
+    return db_document_note
+
 def create_document_label(
     db: Session,
     name: str,
@@ -41,6 +61,19 @@ def create_document_label(
                                      create_time=now)
     db.add(db_label)
     db.flush()
+    return db_label
+
+async def create_document_label_async(
+    db: AsyncSession,
+    name: str,
+    user_id: int
+):
+    now = datetime.now(timezone.utc)
+    db_label = models.document.Label(name=name,
+                                     user_id=user_id,
+                                     create_time=now)
+    db.add(db_label)
+    await db.flush()
     return db_label
 
 def create_base_document(
@@ -64,6 +97,27 @@ def create_base_document(
     db.flush()
     return db_document
 
+async def create_base_document_async(
+    db: AsyncSession,
+    creator_id: int,
+    title: str,
+    category: int,
+    from_plat: str,
+    cover: str | None = None,
+    description: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_document = models.document.Document(category=category,
+                                           creator_id=creator_id,
+                                           title=title,
+                                           cover=cover,
+                                           description=description,
+                                           from_plat=from_plat,
+                                           create_time=now)
+    db.add(db_document)
+    await db.flush()
+    return db_document
+
 def create_quick_note_document(
     db: Session,
     document_id: int,
@@ -73,6 +127,17 @@ def create_quick_note_document(
                                                                content=content)
     db.add(db_quick_note_document)
     db.flush()
+    return db_quick_note_document
+
+async def create_quick_note_document_async(
+    db: AsyncSession,
+    document_id: int,
+    content: str
+):
+    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id,
+                                                               content=content)
+    db.add(db_quick_note_document)
+    await db.flush()
     return db_quick_note_document
 
 def create_audio_document(
@@ -88,6 +153,19 @@ def create_audio_document(
     db.flush()
     return db_audio_document
 
+async def create_audio_document_async(
+    db: AsyncSession,
+    document_id: int,
+    audio_file_name: str
+):
+    db_audio_document = models.document.AudioDocument(
+        document_id=document_id,
+        audio_file_name=audio_file_name
+    )
+    db.add(db_audio_document)
+    await db.flush()
+    return db_audio_document
+
 def create_website_document(
     db: Session,
     document_id: int,
@@ -99,6 +177,19 @@ def create_website_document(
                                                           keywords=keywords)
     db.add(db_website_document)
     db.flush()
+    return db_website_document
+
+async def create_website_document_async(
+    db: AsyncSession,
+    document_id: int,
+    url: str,
+    keywords: str | None = None
+):
+    db_website_document = models.document.WebsiteDocument(document_id=document_id,
+                                                          url=url,
+                                                          keywords=keywords)
+    db.add(db_website_document)
+    await db.flush()
     return db_website_document
 
 
@@ -136,6 +227,17 @@ def create_file_document(
     db.flush()
     return db_file_document
 
+async def create_file_document_async(
+    db: AsyncSession,
+    document_id: int,
+    file_name: str
+):
+    db_file_document = models.document.FileDocument(document_id=document_id,
+                                                    file_name=file_name)
+    db.add(db_file_document)
+    await db.flush()
+    return db_file_document
+
 def create_user_document(
     db: Session,
     user_id: int,
@@ -151,6 +253,21 @@ def create_user_document(
     db.flush()
     return db_user_document
 
+async def create_user_document_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    authority: UserDocumentAuthority
+):
+    now = datetime.now(timezone.utc)
+    db_user_document = models.document.UserDocument(user_id=user_id,
+                                                    document_id=document_id,
+                                                    authority=authority,
+                                                    create_time=now)
+    db.add(db_user_document)
+    await db.flush()
+    return db_user_document
+
 def create_publish_document(
     db: Session,
     document_id: int,
@@ -162,6 +279,19 @@ def create_publish_document(
     )
     db.add(db_publish_document)
     db.flush()
+    return db_publish_document
+
+async def create_publish_document_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    db_publish_document = models.document.PublishDocument(
+        document_id=document_id,
+        create_time=now,
+    )
+    db.add(db_publish_document)
+    await db.flush()
     return db_publish_document
 
 def create_document_labels(
@@ -177,6 +307,19 @@ def create_document_labels(
     db.flush()
     return db_document_labels
 
+async def create_document_labels_async(
+    db: AsyncSession,
+    document_id: int,
+    label_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    db_document_labels = [models.document.DocumentLabel(document_id=document_id,
+                                                        label_id=label_id,
+                                                        create_time=now) for label_id in label_ids]
+    db.add_all(db_document_labels)
+    await db.flush()
+    return db_document_labels
+
 def get_documents_by_user_id(
     db: Session,
     user_id: int
@@ -185,6 +328,16 @@ def get_documents_by_user_id(
     query = query.filter(models.document.Document.delete_at.is_(None),
                          models.document.Document.creator_id == user_id)
     return query.all()
+
+async def get_documents_by_user_id_async(
+    db: AsyncSession,
+    user_id: int
+):
+    stmt = select(models.document.Document).where(
+        models.document.Document.delete_at.is_(None),
+        models.document.Document.creator_id == user_id,
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_read_document_by_document_id_and_user_id(
     db: Session,
@@ -196,6 +349,18 @@ def get_read_document_by_document_id_and_user_id(
                          models.document.ReadDocument.user_id == user_id,
                          models.document.ReadDocument.delete_at.is_(None))
     return query.one_or_none()
+
+async def get_read_document_by_document_id_and_user_id_async(
+    db: AsyncSession,
+    document_id: int,
+    user_id: int
+):
+    stmt = select(models.document.ReadDocument).where(
+        models.document.ReadDocument.document_id == document_id,
+        models.document.ReadDocument.user_id == user_id,
+        models.document.ReadDocument.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 
 def get_user_document_by_user_id_and_document_id(
@@ -210,6 +375,19 @@ def get_user_document_by_user_id_and_document_id(
         models.document.UserDocument.delete_at.is_(None),
     )
     return query.one_or_none()
+
+
+async def get_user_document_by_user_id_and_document_id_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+):
+    stmt = select(models.document.UserDocument).where(
+        models.document.UserDocument.user_id == user_id,
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_user_documents_by_document_ids_and_user_id(
     db: Session,
@@ -237,6 +415,17 @@ def get_publish_document_by_document_id(
     )
     return query.one_or_none()
 
+
+async def get_publish_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = select(models.document.PublishDocument).where(
+        models.document.PublishDocument.document_id == document_id,
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_publish_documents_by_document_ids(
     db: Session,
     document_ids: list[int],
@@ -250,8 +439,20 @@ def get_publish_documents_by_document_ids(
     )
     return query.all()
 
-def search_published_documents(
-    db: Session,
+async def get_publish_documents_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int],
+):
+    if not document_ids:
+        return []
+    stmt = select(models.document.PublishDocument).where(
+        models.document.PublishDocument.document_id.in_(document_ids),
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
+async def search_published_documents_async(
+    db: AsyncSession,
     start: int | None = None,
     limit: int = 10,
     label_ids: list[int] | None = None,
@@ -259,116 +460,116 @@ def search_published_documents(
     creator_id: int | None = None,
     desc: bool = True,
 ):
-    query = db.query(models.document.Document)
-    query = query.join(
-        models.document.PublishDocument,
-        models.document.PublishDocument.document_id == models.document.Document.id,
-    )
-    query = query.filter(
-        models.document.Document.delete_at.is_(None),
-        models.document.PublishDocument.delete_at.is_(None),
+    stmt = (
+        select(models.document.Document)
+        .join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.PublishDocument.delete_at.is_(None),
+        )
     )
     if creator_id is not None:
-        query = query.filter(models.document.Document.creator_id == creator_id)
+        stmt = stmt.where(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(
+        stmt = stmt.where(
             or_(
                 models.document.Document.title.like(f"%{keyword}%"),
                 models.document.Document.description.like(f"%{keyword}%"),
             )
         )
     if label_ids is not None:
-        query = query.join(models.document.DocumentLabel)
-        query = query.filter(
+        stmt = stmt.join(models.document.DocumentLabel).where(
             models.document.DocumentLabel.label_id.in_(label_ids),
             models.document.DocumentLabel.delete_at.is_(None),
         )
     if desc:
-        query = query.order_by(models.document.Document.id.desc())
+        stmt = stmt.order_by(models.document.Document.id.desc())
     else:
-        query = query.order_by(models.document.Document.id.asc())
+        stmt = stmt.order_by(models.document.Document.id.asc())
     if start is not None:
         if desc:
-            query = query.filter(models.document.Document.id <= start)
+            stmt = stmt.where(models.document.Document.id <= start)
         else:
-            query = query.filter(models.document.Document.id >= start)
-    query = query.distinct(models.document.Document.id)
-    query = query.limit(limit)
-    return query.all()
+            stmt = stmt.where(models.document.Document.id >= start)
+    stmt = stmt.distinct(models.document.Document.id).limit(limit)
+    return list((await db.execute(stmt)).scalars().all())
 
-def count_published_documents(
-    db: Session,
+async def count_published_documents_async(
+    db: AsyncSession,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     creator_id: int | None = None,
 ):
-    query = db.query(models.document.Document)
-    query = query.join(
-        models.document.PublishDocument,
-        models.document.PublishDocument.document_id == models.document.Document.id,
-    )
-    query = query.filter(
-        models.document.Document.delete_at.is_(None),
-        models.document.PublishDocument.delete_at.is_(None),
+    stmt = (
+        select(func.count(func.distinct(models.document.Document.id)))
+        .select_from(models.document.Document)
+        .join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.PublishDocument.delete_at.is_(None),
+        )
     )
     if creator_id is not None:
-        query = query.filter(models.document.Document.creator_id == creator_id)
+        stmt = stmt.where(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(
+        stmt = stmt.where(
             or_(
                 models.document.Document.title.like(f"%{keyword}%"),
                 models.document.Document.description.like(f"%{keyword}%"),
             )
         )
     if label_ids is not None:
-        query = query.join(models.document.DocumentLabel)
-        query = query.filter(
+        stmt = stmt.join(models.document.DocumentLabel).where(
             models.document.DocumentLabel.label_id.in_(label_ids),
             models.document.DocumentLabel.delete_at.is_(None),
         )
-    query = query.distinct(models.document.Document.id)
-    return query.count()
+    return int((await db.execute(stmt)).scalar_one())
 
-def search_next_published_document(
-    db: Session,
+async def search_next_published_document_async(
+    db: AsyncSession,
     document: models.document.Document,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     creator_id: int | None = None,
     desc: bool = True,
 ):
-    query = db.query(models.document.Document)
-    query = query.join(
-        models.document.PublishDocument,
-        models.document.PublishDocument.document_id == models.document.Document.id,
-    )
-    query = query.filter(
-        models.document.Document.delete_at.is_(None),
-        models.document.PublishDocument.delete_at.is_(None),
+    stmt = (
+        select(models.document.Document)
+        .join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.PublishDocument.delete_at.is_(None),
+        )
     )
     if creator_id is not None:
-        query = query.filter(models.document.Document.creator_id == creator_id)
+        stmt = stmt.where(models.document.Document.creator_id == creator_id)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(
+        stmt = stmt.where(
             or_(
                 models.document.Document.title.like(f"%{keyword}%"),
                 models.document.Document.description.like(f"%{keyword}%"),
             )
         )
     if label_ids is not None:
-        query = query.join(models.document.DocumentLabel)
-        query = query.filter(
+        stmt = stmt.join(models.document.DocumentLabel).where(
             models.document.DocumentLabel.label_id.in_(label_ids),
             models.document.DocumentLabel.delete_at.is_(None),
         )
     if desc:
-        query = query.order_by(models.document.Document.id.desc())
-        query = query.filter(models.document.Document.id < document.id)
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
     else:
-        query = query.order_by(models.document.Document.id.asc())
-        query = query.filter(models.document.Document.id > document.id)
-    query = query.distinct(models.document.Document.id)
-    return query.first()
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    stmt = stmt.distinct(models.document.Document.id)
+    return (await db.execute(stmt)).scalars().first()
 
 def get_website_document_by_user_id_and_url(
     db: Session,
@@ -389,6 +590,29 @@ def get_website_document_by_user_id_and_url(
     query = query.options(selectinload(models.document.Document.creator))
     return query.one_or_none()
 
+async def get_website_document_by_user_id_and_url_async(
+    db: AsyncSession,
+    user_id: int,
+    url: str
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.WebsiteDocument)
+        .join(
+            models.document.UserDocument,
+            models.document.UserDocument.document_id == models.document.Document.id,
+        )
+        .where(
+            models.document.WebsiteDocument.url == url,
+            models.document.WebsiteDocument.delete_at.is_(None),
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.UserDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_sections_by_document_id(
     db: Session,
     document_id: int
@@ -399,6 +623,21 @@ def get_sections_by_document_id(
                          models.section.SectionDocument.delete_at.is_(None),
                          models.section.Section.delete_at.is_(None))
     return query.all()
+
+async def get_sections_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.section.Section)
+        .join(models.section.SectionDocument)
+        .where(
+            models.section.SectionDocument.document_id == document_id,
+            models.section.SectionDocument.delete_at.is_(None),
+            models.section.Section.delete_at.is_(None),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def search_users_and_document_users_by_document_id(
     db: Session,
@@ -431,6 +670,39 @@ def search_users_and_document_users_by_document_id(
     query = query.limit(limit)
     return query.all()
 
+async def search_users_and_document_users_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.user.User, models.document.UserDocument)
+        .join(
+            models.document.UserDocument,
+            models.document.UserDocument.user_id == models.user.User.id,
+        )
+        .join(
+            models.document.Document,
+            models.document.Document.id == models.document.UserDocument.document_id,
+        )
+        .where(
+            models.document.UserDocument.document_id == document_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+            models.user.User.id != models.document.Document.creator_id,
+        )
+        .order_by(models.document.UserDocument.id.desc())
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+    if start is not None:
+        stmt = stmt.where(models.document.UserDocument.id <= start)
+    return (await db.execute(stmt)).all()
+
 def search_next_user_and_document_user_by_document_id(
     db: Session,
     document_id: int,
@@ -459,6 +731,36 @@ def search_next_user_and_document_user_by_document_id(
     query = query.order_by(models.document.UserDocument.id.desc())
     return query.first()
 
+async def search_next_user_and_document_user_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    user_document: models.document.UserDocument,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.user.User, models.document.UserDocument)
+        .join(
+            models.document.UserDocument,
+            models.document.UserDocument.user_id == models.user.User.id,
+        )
+        .join(
+            models.document.Document,
+            models.document.Document.id == models.document.UserDocument.document_id,
+        )
+        .where(
+            models.document.UserDocument.document_id == document_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+            models.user.User.id != models.document.Document.creator_id,
+            models.document.UserDocument.id < user_document.id,
+        )
+        .order_by(models.document.UserDocument.id.desc())
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).first()
+
 def count_users_and_document_users_by_document_id(
     db: Session,
     document_id: int,
@@ -484,6 +786,33 @@ def count_users_and_document_users_by_document_id(
         query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
     return query.count()
 
+async def count_users_and_document_users_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(func.count(models.document.UserDocument.id))
+        .join(
+            models.user.User,
+            models.document.UserDocument.user_id == models.user.User.id,
+        )
+        .join(
+            models.document.Document,
+            models.document.Document.id == models.document.UserDocument.document_id,
+        )
+        .where(
+            models.document.UserDocument.document_id == document_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+            models.user.User.id != models.document.Document.creator_id,
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one()
+
 def get_document_summary_by_user_id(
     db: Session,
     user_id: int,
@@ -505,6 +834,29 @@ def get_document_summary_by_user_id(
     query = query.group_by(cast(models.document.Document.create_time, Date))  # 按天分组
     query = query.order_by(cast(models.document.Document.create_time, Date))  # 按日期升序
     return query.all()
+
+async def get_document_summary_by_user_id_async(
+    db: AsyncSession,
+    user_id: int,
+    duration: int = 30
+):
+    start_date = datetime.now(timezone.utc) - timedelta(days=duration)
+    stmt = (
+        select(
+            cast(models.document.Document.create_time, Date).label("date"),
+            func.count().label("total"),
+        )
+        .join(models.document.UserDocument)
+        .where(
+            models.document.Document.create_time >= start_date,
+            models.document.UserDocument.user_id == user_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+        .group_by(cast(models.document.Document.create_time, Date))
+        .order_by(cast(models.document.Document.create_time, Date))
+    )
+    return (await db.execute(stmt)).all()
 
 def search_section_documents(
     db: Session,
@@ -541,6 +893,46 @@ def search_section_documents(
     query = query.limit(limit)
     return query.all()
 
+
+async def search_section_documents_async(
+    db: AsyncSession,
+    section_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+    desc: bool = True,
+    published_only: bool = False,
+):
+    stmt = (
+        select(models.document.Document)
+        .join(
+            models.section.SectionDocument,
+            models.document.Document.id == models.section.SectionDocument.document_id,
+        )
+        .where(
+            models.section.SectionDocument.section_id == section_id,
+            models.section.SectionDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+        .limit(limit)
+    )
+    if published_only:
+        stmt = stmt.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        ).where(models.document.PublishDocument.delete_at.is_(None))
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+    if start is not None:
+        stmt = stmt.where(
+            models.document.Document.id <= start if desc else models.document.Document.id >= start
+        )
+    stmt = stmt.order_by(
+        models.document.Document.id.desc() if desc else models.document.Document.id.asc()
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_next_section_document(
     db: Session,
     section_id: int,
@@ -570,6 +962,40 @@ def search_next_section_document(
         query = query.filter(models.document.Document.id > document.id)
     return query.first()
 
+
+async def search_next_section_document_async(
+    db: AsyncSession,
+    section_id: int,
+    document: models.document.Document,
+    keyword: str | None = None,
+    desc: bool = True,
+    published_only: bool = False,
+):
+    stmt = (
+        select(models.document.Document)
+        .join(
+            models.section.SectionDocument,
+            models.document.Document.id == models.section.SectionDocument.document_id,
+        )
+        .where(
+            models.section.SectionDocument.section_id == section_id,
+            models.section.SectionDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if published_only:
+        stmt = stmt.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        ).where(models.document.PublishDocument.delete_at.is_(None))
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+    if desc:
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+    else:
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def count_section_documents(
     db: Session,
     section_id: int,
@@ -590,6 +1016,35 @@ def count_section_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
     return query.count()
+
+
+async def count_section_documents_async(
+    db: AsyncSession,
+    section_id: int,
+    keyword: str | None = None,
+    published_only: bool = False,
+):
+    stmt = (
+        select(func.count(models.document.Document.id))
+        .select_from(models.document.Document)
+        .join(
+            models.section.SectionDocument,
+            models.document.Document.id == models.section.SectionDocument.document_id,
+        )
+        .where(
+            models.section.SectionDocument.section_id == section_id,
+            models.section.SectionDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if published_only:
+        stmt = stmt.join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        ).where(models.document.PublishDocument.delete_at.is_(None))
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one()
 
 def search_next_user_document(
     db: Session,
@@ -616,6 +1071,37 @@ def search_next_user_document(
         query = query.order_by(models.document.Document.id.asc())
         query = query.filter(models.document.Document.id > document.id)
     return query.first()
+
+async def search_next_user_document_async(
+    db: AsyncSession,
+    user_id: int,
+    document: models.document.Document,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if desc:
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+    else:
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    return (await db.execute(stmt)).scalars().first()
 
 def search_user_documents(
     db: Session,
@@ -649,6 +1135,40 @@ def search_user_documents(
     query = query.distinct(models.document.Document.id)
     query = query.limit(limit)
     return query.all()
+
+async def search_user_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+        .distinct(models.document.Document.id)
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f'%{keyword}%'))
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
+    if start is not None:
+        stmt = stmt.where(models.document.Document.id <= start if desc else models.document.Document.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
 
 def count_user_documents(
     db: Session,
@@ -689,6 +1209,53 @@ def count_user_documents(
         )
     query = query.distinct(models.document.Document.id)
     return query.count()
+
+async def count_user_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    filter_category: DocumentCategory | None = None,
+    filter_platform: str | None = None,
+    filter_date: date_type | None = None,
+    filter_timezone: str | None = None,
+):
+    stmt = (
+        select(func.count(func.distinct(models.document.Document.id)))
+        .select_from(models.document.Document)
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.Document.title.like(f'%{keyword}%'))
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if filter_category is not None:
+        stmt = stmt.where(models.document.Document.category == filter_category)
+    if filter_platform is not None:
+        stmt = stmt.where(models.document.Document.from_plat == filter_platform)
+    if filter_date is not None:
+        try:
+            zone = ZoneInfo(filter_timezone or "UTC")
+        except ZoneInfoNotFoundError:
+            zone = ZoneInfo("UTC")
+        start_local = datetime.combine(filter_date, datetime.min.time(), tzinfo=zone)
+        end_local = start_local + timedelta(days=1)
+        start = start_local.astimezone(timezone.utc)
+        end = end_local.astimezone(timezone.utc)
+        stmt = stmt.where(
+            models.document.Document.create_time >= start,
+            models.document.Document.create_time < end
+        )
+    return (await db.execute(stmt)).scalar_one()
 
 def get_published_section_of_the_document_by_document_id(
     db: Session,
@@ -731,6 +1298,38 @@ def get_published_section_of_the_document_by_document_id(
 
     return query.all()
 
+async def get_published_section_of_the_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    user_id: int | None = None
+):
+    stmt = (
+        select(models.section.Section)
+        .join(
+            models.section.SectionDocument,
+            models.section.Section.id == models.section.SectionDocument.section_id,
+        )
+        .where(
+            models.section.SectionDocument.document_id == document_id,
+            models.section.Section.delete_at.is_(None),
+            models.section.SectionDocument.delete_at.is_(None),
+        )
+    )
+    if user_id is None:
+        stmt = stmt.join(
+            models.section.PublishSection,
+            models.section.PublishSection.section_id == models.section.Section.id,
+        ).where(models.section.PublishSection.delete_at.is_(None))
+    else:
+        stmt = stmt.join(
+            models.section.SectionUser,
+            models.section.SectionUser.section_id == models.section.Section.id,
+        ).where(
+            models.section.SectionUser.user_id == user_id,
+            models.section.SectionUser.delete_at.is_(None),
+        )
+    return list((await db.execute(stmt)).scalars().all())
+
 def get_star_document_by_user_id_and_document_id(
     db: Session,
     user_id: int,
@@ -744,6 +1343,23 @@ def get_star_document_by_user_id_and_document_id(
                          models.document.StarDocument.delete_at.is_(None))
     return query.one_or_none()
 
+async def get_star_document_by_user_id_and_document_id_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int
+):
+    stmt = (
+        select(models.document.StarDocument)
+        .join(models.document.Document, models.document.StarDocument.document_id == models.document.Document.id)
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.StarDocument.user_id == user_id,
+            models.document.StarDocument.document_id == document_id,
+            models.document.StarDocument.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_document_by_document_id(
     db: Session,
     document_id: int
@@ -754,15 +1370,36 @@ def get_document_by_document_id(
     query = query.options(selectinload(models.document.Document.creator))
     return query.one_or_none()
 
-def get_documents_by_document_ids(
-    db: Session,
-    document_ids: list[int]
+
+async def get_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
 ):
-    query = db.query(models.document.Document)
-    query = query.filter(models.document.Document.id.in_(document_ids),
-                         models.document.Document.delete_at.is_(None))
-    query = query.options(selectinload(models.document.Document.creator))
-    return query.all()
+    stmt = (
+        select(models.document.Document)
+        .where(
+            models.document.Document.id == document_id,
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+async def get_documents_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int],
+):
+    if not document_ids:
+        return []
+    stmt = (
+        select(models.document.Document)
+        .where(
+            models.document.Document.id.in_(document_ids),
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_file_document_by_document_id(
     db: Session,
@@ -775,6 +1412,21 @@ def get_file_document_by_document_id(
                          models.document.FileDocument.delete_at.is_(None))
     return query.one_or_none()
 
+async def get_file_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.document.FileDocument)
+        .join(models.document.Document)
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.FileDocument.document_id == document_id,
+            models.document.FileDocument.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_audio_document_by_document_id(
     db: Session,
     document_id: int
@@ -786,6 +1438,21 @@ def get_audio_document_by_document_id(
                          models.document.AudioDocument.delete_at.is_(None))
     return query.one_or_none()
 
+async def get_audio_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.document.AudioDocument)
+        .join(models.document.Document)
+        .where(
+            models.document.Document.delete_at.is_(None),
+            models.document.AudioDocument.document_id == document_id,
+            models.document.AudioDocument.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_website_document_by_document_id(
     db: Session,
     document_id: int
@@ -796,6 +1463,69 @@ def get_website_document_by_document_id(
                          models.document.WebsiteDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
     return query.one_or_none()
+
+async def get_website_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.document.WebsiteDocument)
+        .join(models.document.Document)
+        .where(
+            models.document.WebsiteDocument.document_id == document_id,
+            models.document.WebsiteDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_document_subtype_bundle_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = (
+        select(
+            models.document.WebsiteDocument,
+            models.document.FileDocument,
+            models.document.QuickNoteDocument,
+            models.document.AudioDocument,
+        )
+        .select_from(models.document.Document)
+        .outerjoin(
+            models.document.WebsiteDocument,
+            and_(
+                models.document.WebsiteDocument.document_id == models.document.Document.id,
+                models.document.WebsiteDocument.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.document.FileDocument,
+            and_(
+                models.document.FileDocument.document_id == models.document.Document.id,
+                models.document.FileDocument.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.document.QuickNoteDocument,
+            and_(
+                models.document.QuickNoteDocument.document_id == models.document.Document.id,
+                models.document.QuickNoteDocument.delete_at.is_(None),
+            ),
+        )
+        .outerjoin(
+            models.document.AudioDocument,
+            and_(
+                models.document.AudioDocument.document_id == models.document.Document.id,
+                models.document.AudioDocument.delete_at.is_(None),
+            ),
+        )
+        .where(
+            models.document.Document.id == document_id,
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).one_or_none()
 
 
 def get_website_document_snapshots_by_document_id(
@@ -815,6 +1545,25 @@ def get_website_document_snapshots_by_document_id(
     )
     return query.all()
 
+async def get_website_document_snapshots_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    stmt = (
+        select(models.document.WebsiteDocumentSnapshot)
+        .join(models.document.Document)
+        .where(
+            models.document.WebsiteDocumentSnapshot.document_id == document_id,
+            models.document.WebsiteDocumentSnapshot.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+        .order_by(
+            models.document.WebsiteDocumentSnapshot.create_time.desc(),
+            models.document.WebsiteDocumentSnapshot.id.desc(),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def get_quick_note_document_by_document_id(
     db: Session,
     document_id: int
@@ -825,6 +1574,21 @@ def get_quick_note_document_by_document_id(
                          models.document.QuickNoteDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
     return query.one_or_none()
+
+async def get_quick_note_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.document.QuickNoteDocument)
+        .join(models.document.Document)
+        .where(
+            models.document.QuickNoteDocument.document_id == document_id,
+            models.document.QuickNoteDocument.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def search_all_documents(
     db: Session,
@@ -906,6 +1670,30 @@ def search_all_document_notes_by_document_id(
     query = query.limit(limit)
     return query.all()
 
+async def search_all_document_notes_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None
+):
+    stmt = (
+        select(models.document.DocumentNote)
+        .where(
+            models.document.DocumentNote.document_id == document_id,
+            models.document.DocumentNote.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.DocumentNote.user))
+        .distinct(models.document.DocumentNote.id)
+        .order_by(models.document.DocumentNote.id.desc())
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentNote.content.like(f'%{keyword}%'))
+    if start is not None:
+        stmt = stmt.where(models.document.DocumentNote.id <= start)
+    return list((await db.execute(stmt)).scalars().all())
+
 def count_all_document_notes_by_document_id(
     db: Session,
     document_id: int,
@@ -919,6 +1707,19 @@ def count_all_document_notes_by_document_id(
     query = query.distinct(models.document.DocumentNote.id)
     return query.count()
 
+async def count_all_document_notes_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    keyword: str | None = None
+):
+    stmt = select(func.count(func.distinct(models.document.DocumentNote.id))).where(
+        models.document.DocumentNote.document_id == document_id,
+        models.document.DocumentNote.delete_at.is_(None),
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentNote.content.like(f'%{keyword}%'))
+    return (await db.execute(stmt)).scalar_one()
+
 def search_next_note_by_document_note(
     db: Session,
     document_note: models.document.DocumentNote,
@@ -931,6 +1732,23 @@ def search_next_note_by_document_note(
     query = query.order_by(models.document.DocumentNote.id.desc())
     query = query.filter(models.document.DocumentNote.id < document_note.id)
     return query.first()
+
+async def search_next_note_by_document_note_async(
+    db: AsyncSession,
+    document_note: models.document.DocumentNote,
+    keyword: str | None = None
+):
+    stmt = (
+        select(models.document.DocumentNote)
+        .where(
+            models.document.DocumentNote.delete_at.is_(None),
+            models.document.DocumentNote.id < document_note.id,
+        )
+        .order_by(models.document.DocumentNote.id.desc())
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentNote.content.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_labels_summary(
     db: Session,
@@ -952,6 +1770,30 @@ def get_labels_summary(
     query = query.order_by(func.count(models.document.DocumentLabel.document_id).desc())
     return query.all()
 
+async def get_labels_summary_async(
+    db: AsyncSession,
+    user_id: int
+):
+    stmt = (
+        select(models.document.Label, func.count(models.document.DocumentLabel.id).label('count'))
+        .join(models.document.DocumentLabel,
+              models.document.DocumentLabel.label_id == models.document.Label.id)
+        .join(models.document.UserDocument,
+              models.document.UserDocument.document_id == models.document.DocumentLabel.document_id)
+        .join(models.document.Document,
+              models.document.Document.id == models.document.DocumentLabel.document_id)
+        .where(
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.UserDocument.user_id == user_id,
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.Label.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+        )
+        .group_by(models.document.Label.id)
+        .order_by(func.count(models.document.DocumentLabel.document_id).desc())
+    )
+    return (await db.execute(stmt)).all()
+
 def get_labels_by_document_id(
     db: Session,
     document_id: int
@@ -962,6 +1804,21 @@ def get_labels_by_document_id(
                          models.document.DocumentLabel.delete_at.is_(None),
                          models.document.Label.delete_at.is_(None))
     return query.all()
+
+async def get_labels_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = (
+        select(models.document.Label)
+        .join(models.document.DocumentLabel)
+        .where(
+            models.document.DocumentLabel.document_id == document_id,
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.Label.delete_at.is_(None),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_labels_by_document_ids(
     db: Session,
@@ -985,6 +1842,30 @@ def get_labels_by_document_ids(
         res.setdefault(document_id, []).append(label)
     return res
 
+async def get_labels_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int]
+):
+    if not document_ids:
+        return {}
+    stmt = (
+        select(models.document.DocumentLabel.document_id, models.document.Label)
+        .join(
+            models.document.Label,
+            models.document.DocumentLabel.label_id == models.document.Label.id,
+        )
+        .where(
+            models.document.DocumentLabel.document_id.in_(document_ids),
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.Label.delete_at.is_(None),
+        )
+    )
+    rows = (await db.execute(stmt)).all()
+    res: dict[int, list[models.document.Label]] = {}
+    for document_id, label in rows:
+        res.setdefault(document_id, []).append(label)
+    return res
+
 def get_document_labels_by_document_id(
     db: Session,
     document_id: int
@@ -994,6 +1875,16 @@ def get_document_labels_by_document_id(
                          models.document.DocumentLabel.delete_at.is_(None))
     return query.all()
 
+async def get_document_labels_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = select(models.document.DocumentLabel).where(
+        models.document.DocumentLabel.document_id == document_id,
+        models.document.DocumentLabel.delete_at.is_(None),
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def get_user_labels_by_user_id(
     db: Session,
     user_id: int
@@ -1002,6 +1893,16 @@ def get_user_labels_by_user_id(
     query = query.filter(models.document.Label.delete_at.is_(None),
                          models.document.Label.user_id == user_id)
     return query.all()
+
+async def get_user_labels_by_user_id_async(
+    db: AsyncSession,
+    user_id: int
+):
+    stmt = select(models.document.Label).where(
+        models.document.Label.delete_at.is_(None),
+        models.document.Label.user_id == user_id,
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def search_user_unread_documents(
     db: Session,
@@ -1043,6 +1944,49 @@ def search_user_unread_documents(
     query = query.limit(limit)
     return query.all()
 
+async def search_user_unread_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+            or_(
+                models.document.ReadDocument.delete_at.is_not(None),
+                models.document.ReadDocument.id.is_(None),
+            ),
+        )
+        .options(selectinload(models.document.Document.creator))
+        .distinct(models.document.Document.id)
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%'),
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
+    if start is not None:
+        stmt = stmt.where(models.document.Document.id <= start if desc else models.document.Document.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_next_user_unread_document(
     db: Session,
     user_id: int,
@@ -1076,6 +2020,46 @@ def search_next_user_unread_document(
         query = query.filter(models.document.Document.id > document.id)
     return query.first()
 
+async def search_next_user_unread_document_async(
+    db: AsyncSession,
+    user_id: int,
+    document: models.document.Document,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+            or_(
+                models.document.ReadDocument.delete_at.is_not(None),
+                models.document.ReadDocument.id.is_(None),
+            ),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%'),
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if desc:
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+    else:
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    return (await db.execute(stmt)).scalars().first()
+
 def count_user_unread_documents(
     db: Session,
     user_id: int,
@@ -1101,6 +2085,40 @@ def count_user_unread_documents(
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.distinct(models.document.Document.id)
     return query.count()
+
+async def count_user_unread_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None
+):
+    stmt = (
+        select(func.count(func.distinct(models.document.Document.id)))
+        .join(models.document.UserDocument)
+        .outerjoin(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.UserDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+            or_(
+                models.document.ReadDocument.delete_at.is_not(None),
+                models.document.ReadDocument.id.is_(None),
+            ),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%'),
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    return (await db.execute(stmt)).scalar_one()
 
 def search_user_recent_read_documents(
     db: Session,
@@ -1140,6 +2158,45 @@ def search_user_recent_read_documents(
     query = query.limit(limit)
     return query.all()
 
+async def search_user_recent_read_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.ReadDocument.delete_at.is_(None),
+            models.document.ReadDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+        .distinct(models.document.Document.id)
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
+    if start is not None:
+        stmt = stmt.where(models.document.Document.id <= start if desc else models.document.Document.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_next_user_recent_read_document(
     db: Session,
     user_id: int,
@@ -1171,6 +2228,42 @@ def search_next_user_recent_read_document(
         query = query.filter(models.document.Document.id > document.id)
     return query.first()
 
+async def search_next_user_recent_read_document_async(
+    db: AsyncSession,
+    user_id: int,
+    document: models.document.Document,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.ReadDocument.delete_at.is_(None),
+            models.document.ReadDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if desc:
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+    else:
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    return (await db.execute(stmt)).scalars().first()
+
 def count_user_recent_read_documents(
     db: Session,
     user_id: int,
@@ -1194,6 +2287,36 @@ def count_user_recent_read_documents(
                              models.document.DocumentLabel.label_id.in_(label_ids))
     query = query.distinct(models.document.Document.id)
     return query.count()
+
+async def count_user_recent_read_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None
+):
+    stmt = (
+        select(func.count(func.distinct(models.document.Document.id)))
+        .join(models.document.ReadDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.ReadDocument.delete_at.is_(None),
+            models.document.ReadDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    return (await db.execute(stmt)).scalar_one()
 
 def search_user_stared_documents(
     db: Session,
@@ -1233,6 +2356,45 @@ def search_user_stared_documents(
     query = query.limit(limit)
     return query.all()
 
+async def search_user_stared_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.StarDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.StarDocument.delete_at.is_(None),
+            models.document.StarDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+        .options(selectinload(models.document.Document.creator))
+        .distinct(models.document.Document.id)
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
+    if start is not None:
+        stmt = stmt.where(models.document.Document.id <= start if desc else models.document.Document.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_next_user_star_document(
     db: Session,
     user_id: int,
@@ -1264,6 +2426,42 @@ def search_next_user_star_document(
         query = query.filter(models.document.Document.id > document.id)
     return query.first()
 
+async def search_next_user_star_document_async(
+    db: AsyncSession,
+    user_id: int,
+    document: models.document.Document,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None,
+    desc: bool = True
+):
+    stmt = (
+        select(models.document.Document)
+        .join(models.document.StarDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.StarDocument.delete_at.is_(None),
+            models.document.StarDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if desc:
+        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+    else:
+        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+    return (await db.execute(stmt)).scalars().first()
+
 def count_user_stared_documents(
     db: Session,
     user_id: int,
@@ -1288,6 +2486,36 @@ def count_user_stared_documents(
     query = query.distinct(models.document.Document.id)
     return query.count()
 
+async def count_user_stared_documents_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    label_ids: list[int] | None = None
+):
+    stmt = (
+        select(func.count(func.distinct(models.document.Document.id)))
+        .join(models.document.StarDocument)
+        .outerjoin(models.document.DocumentLabel)
+        .where(
+            models.document.StarDocument.delete_at.is_(None),
+            models.document.StarDocument.user_id == user_id,
+            models.document.Document.delete_at.is_(None),
+        )
+    )
+    if label_ids is not None:
+        stmt = stmt.where(
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.DocumentLabel.label_id.in_(label_ids),
+        )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.like(f'%{keyword}%'),
+                models.document.Document.description.like(f'%{keyword}%')
+            )
+        )
+    return (await db.execute(stmt)).scalar_one()
+
 def star_document_by_document_id(
     db: Session,
     user_id: int,
@@ -1310,6 +2538,32 @@ def star_document_by_document_id(
         db.flush()
         return db_exist_star_document
 
+
+async def star_document_by_document_id_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+):
+    now = datetime.now(tz=timezone.utc)
+    db_exist_star_document = (await db.execute(
+        select(models.document.StarDocument).where(
+            models.document.StarDocument.document_id == document_id,
+            models.document.StarDocument.user_id == user_id,
+        )
+    )).scalar_one_or_none()
+    if db_exist_star_document is None:
+        db_star_document = models.document.StarDocument(
+            document_id=document_id,
+            user_id=user_id,
+            create_time=now,
+        )
+        db.add(db_star_document)
+        await db.flush()
+        return db_star_document
+    db_exist_star_document.delete_at = None
+    await db.flush()
+    return db_exist_star_document
+
 def unstar_document_by_document_id(
     db: Session,
     document_id: int,
@@ -1323,6 +2577,25 @@ def unstar_document_by_document_id(
     if db_exist_star_document is not None:
         db_exist_star_document.delete_at = now
         db.flush()
+        return db_exist_star_document
+    return None
+
+
+async def unstar_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+    user_id: int,
+):
+    now = datetime.now(timezone.utc)
+    db_exist_star_document = (await db.execute(
+        select(models.document.StarDocument).where(
+            models.document.StarDocument.document_id == document_id,
+            models.document.StarDocument.user_id == user_id,
+        )
+    )).scalar_one_or_none()
+    if db_exist_star_document is not None:
+        db_exist_star_document.delete_at = now
+        await db.flush()
         return db_exist_star_document
     return None
 
@@ -1349,6 +2622,33 @@ def read_document_by_document_id(
         db.flush()
         return db_exist_read_document
 
+
+async def read_document_by_document_id_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    db_exist_read_document = (await db.execute(
+        select(models.document.ReadDocument).where(
+            models.document.ReadDocument.document_id == document_id,
+            models.document.ReadDocument.user_id == user_id,
+        )
+    )).scalar_one_or_none()
+    if db_exist_read_document is None:
+        db_read_document = models.document.ReadDocument(
+            document_id=document_id,
+            user_id=user_id,
+            read_time=now,
+            create_time=now,
+        )
+        db.add(db_read_document)
+        await db.flush()
+        return db_read_document
+    db_exist_read_document.delete_at = None
+    await db.flush()
+    return db_exist_read_document
+
 def unread_document_by_document_id(
     db: Session,
     user_id: int,
@@ -1365,6 +2665,25 @@ def unread_document_by_document_id(
         return db_exist_read_document
     return None
 
+
+async def unread_document_by_document_id_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    db_exist_read_document = (await db.execute(
+        select(models.document.ReadDocument).where(
+            models.document.ReadDocument.document_id == document_id,
+            models.document.ReadDocument.user_id == user_id,
+        )
+    )).scalar_one_or_none()
+    if db_exist_read_document is not None:
+        db_exist_read_document.delete_at = now
+        await db.flush()
+        return db_exist_read_document
+    return None
+
 def delete_labels_by_label_ids(
     db: Session,
     user_id: int,
@@ -1378,6 +2697,25 @@ def delete_labels_by_label_ids(
     query = query.update({models.document.Label.delete_at: now}, synchronize_session=False)
     db.flush()
 
+async def delete_labels_by_label_ids_async(
+    db: AsyncSession,
+    user_id: int,
+    label_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    stmt = (
+        select(models.document.Label)
+        .where(
+            models.document.Label.id.in_(label_ids),
+            models.document.Label.user_id == user_id,
+            models.document.Label.delete_at.is_(None),
+        )
+    )
+    labels = list((await db.execute(stmt)).scalars().all())
+    for label in labels:
+        label.delete_at = now
+    await db.flush()
+
 def delete_published_document_by_document_id(
     db: Session,
     document_id: int,
@@ -1390,6 +2728,20 @@ def delete_published_document_by_document_id(
     )
     query.update({models.document.PublishDocument.delete_at: now}, synchronize_session=False)
     db.flush()
+
+async def delete_published_document_by_document_id_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.document.PublishDocument).where(
+        models.document.PublishDocument.document_id == document_id,
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    publish_document = (await db.execute(stmt)).scalar_one_or_none()
+    if publish_document is not None:
+        publish_document.delete_at = now
+    await db.flush()
 
 def delete_user_document_by_document_id_and_user_id(
     db: Session,
@@ -1406,6 +2758,22 @@ def delete_user_document_by_document_id_and_user_id(
     query.update({models.document.UserDocument.delete_at: now}, synchronize_session=False)
     db.flush()
 
+async def delete_user_document_by_document_id_and_user_id_async(
+    db: AsyncSession,
+    document_id: int,
+    user_id: int,
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.document.UserDocument).where(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.user_id == user_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
+    user_document = (await db.execute(stmt)).scalar_one_or_none()
+    if user_document is not None:
+        user_document.delete_at = now
+    await db.flush()
+
 def delete_document_labels_by_document_ids(
     db: Session,
     document_ids: list[int]
@@ -1417,6 +2785,22 @@ def delete_document_labels_by_document_ids(
     query = query.update({models.document.DocumentLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
+async def delete_document_labels_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    if not document_ids:
+        return
+    stmt = select(models.document.DocumentLabel).where(
+        models.document.DocumentLabel.document_id.in_(document_ids),
+        models.document.DocumentLabel.delete_at.is_(None),
+    )
+    labels = list((await db.execute(stmt)).scalars().all())
+    for label in labels:
+        label.delete_at = now
+    await db.flush()
+
 def delete_document_labels_by_label_ids(
     db: Session,
     label_ids: list[int]
@@ -1427,6 +2811,20 @@ def delete_document_labels_by_label_ids(
                          models.document.DocumentLabel.delete_at.is_(None))
     query = query.update({models.document.DocumentLabel.delete_at: now})
     db.flush()
+
+async def delete_document_labels_by_label_ids_async(
+    db: AsyncSession,
+    label_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.document.DocumentLabel).where(
+        models.document.DocumentLabel.label_id.in_(label_ids),
+        models.document.DocumentLabel.delete_at.is_(None),
+    )
+    document_labels = list((await db.execute(stmt)).scalars().all())
+    for document_label in document_labels:
+        document_label.delete_at = now
+    await db.flush()
 
 def delete_user_documents_by_document_ids(
     db: Session,
@@ -1499,6 +2897,57 @@ def delete_user_documents_by_document_ids(
 
     db.flush()
 
+async def delete_user_documents_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int],
+    user_id: int
+):
+    now = datetime.now(timezone.utc)
+    if not document_ids:
+        return
+    stmt = (
+        select(models.document.Document.id)
+        .join(models.document.UserDocument)
+        .where(
+            models.document.Document.id.in_(document_ids),
+            models.document.UserDocument.user_id == user_id,
+            models.document.UserDocument.delete_at.is_(None),
+            models.document.UserDocument.authority == UserDocumentAuthority.OWNER,
+        )
+    )
+    ids_to_update = [row[0] for row in (await db.execute(stmt)).all()]
+    if not ids_to_update:
+        return
+
+    for model in (
+        models.document.Document,
+        models.document.WebsiteDocument,
+        models.document.FileDocument,
+        models.document.QuickNoteDocument,
+        models.document.UserDocument,
+        models.document.DocumentLabel,
+        models.document.StarDocument,
+        models.document.ReadDocument,
+        models.document.DocumentNote,
+        models.section.SectionDocument,
+    ):
+        column = getattr(model, "document_id", None)
+        if column is None and model is models.document.Document:
+            model_ids = [obj for obj in ids_to_update]
+            stmt = select(model).where(
+                model.id.in_(model_ids),
+                model.delete_at.is_(None),
+            )
+        else:
+            stmt = select(model).where(
+                column.in_(ids_to_update),
+                model.delete_at.is_(None),
+            )
+        rows = list((await db.execute(stmt)).scalars().all())
+        for row in rows:
+            row.delete_at = now
+    await db.flush()
+
 def delete_document_notes_by_document_ids(
     db: Session,
     document_ids: list[int]
@@ -1509,6 +2958,22 @@ def delete_document_notes_by_document_ids(
                          models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
+
+async def delete_document_notes_by_document_ids_async(
+    db: AsyncSession,
+    document_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    if not document_ids:
+        return
+    stmt = select(models.document.DocumentNote).where(
+        models.document.DocumentNote.document_id.in_(document_ids),
+        models.document.DocumentNote.delete_at.is_(None),
+    )
+    notes = list((await db.execute(stmt)).scalars().all())
+    for note in notes:
+        note.delete_at = now
+    await db.flush()
 
 def delete_document_notes_by_user_id_and_note_ids(
     db: Session,
@@ -1522,6 +2987,22 @@ def delete_document_notes_by_user_id_and_note_ids(
                          models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
     db.flush()
+
+async def delete_document_notes_by_user_id_and_note_ids_async(
+    db: AsyncSession,
+    user_id: int,
+    note_ids: list[int]
+):
+    now = datetime.now(timezone.utc)
+    stmt = select(models.document.DocumentNote).where(
+        models.document.DocumentNote.note_id.in_(note_ids),
+        models.document.DocumentNote.user_id == user_id,
+        models.document.DocumentNote.delete_at.is_(None),
+    )
+    notes = list((await db.execute(stmt)).scalars().all())
+    for note in notes:
+        note.delete_at = now
+    await db.flush()
 
 def delete_website_document_by_website_document_ids(
     db: Session,

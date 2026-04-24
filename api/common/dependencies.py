@@ -9,8 +9,9 @@ from datetime import datetime, timezone
 from jose import jwt
 from redis import Redis
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from config.oauth2 import OAUTH_SECRET_KEY
 from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_API_PREFIX
 from urllib.parse import urlparse
@@ -67,18 +68,17 @@ async def reject_if_official(
         return True
     raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
 
-def get_db():
-    db = session_scope()
-    try:
-        yield db
-    except Exception as e:
-        db.rollback()
-        exception_logger.error(
-            format_log_message("db_session_failed", error=e)
-        )
-        raise
-    finally:
-        db.close()
+async def get_async_db():
+    async with async_session_context() as db:
+        try:
+            yield db
+        except Exception as e:
+            await db.rollback()
+            exception_logger.error(
+                format_log_message("async_db_session_failed", error=e)
+            )
+            raise
+
 
 def decode_jwt_token(
     token: str, 
@@ -87,7 +87,50 @@ def decode_jwt_token(
     return jwt.decode(token, secret_key, algorithms=["HS256"])
 
 
-def _is_admin_or_root_from_authorization(
+async def resolve_current_user_from_token(
+    *,
+    request: Request,
+    token: str,
+    raw_timezone: str | None = None,
+) -> models.user.User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = decode_jwt_token(token=token)
+        uuid: str | None = payload.get("sub")
+        if uuid is None:
+            raise credentials_exception
+    except HTTPException:
+        raise
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="required_auth_short_lived", error=e)
+        )
+        raise credentials_exception
+
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
+        )
+        if user is None:
+            raise credentials_exception
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=raw_timezone,
+        )
+        return user
+
+
+async def _is_admin_or_root_from_authorization_async(
     authorization: str | None,
 ) -> bool:
     if not authorization:
@@ -105,19 +148,17 @@ def _is_admin_or_root_from_authorization(
     except Exception:
         return False
 
-    db = session_scope()
-    try:
-        db_user = crud.user.get_user_by_uuid(
-            db=db,
-            uuid=user_uuid,
-        )
-        if db_user is None:
+    async with async_session_context() as db:
+        try:
+            db_user = await crud.user.get_user_by_uuid_async(
+                db=db,
+                uuid=user_uuid,
+            )
+            if db_user is None:
+                return False
+            return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
+        except Exception:
             return False
-        return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
-    except Exception:
-        return False
-    finally:
-        db.close()
 
 def get_cache(request: Request) -> Redis:
     return request.app.state.redis
@@ -153,15 +194,15 @@ def get_request_timezone(
 ) -> str:
     return normalize_timezone_name(x_user_timezone)
 
-def get_api_key(
+async def get_api_key(
     api_key: str | None = Header(default=None), 
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     if api_key is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API Key")
-    db_api_key = crud.api_key.get_api_key_by_api_key(
-        db=db, 
-        api_key=api_key
+    db_api_key = await crud.api_key.get_api_key_by_api_key_async(
+        db=db,
+        api_key=api_key,
     )
     if db_api_key is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
@@ -170,30 +211,30 @@ def get_api_key(
 async def get_current_user_with_api_key(
     request: Request,
     api_key: models.api_key.ApiKey = Depends(get_api_key),
-    db: Session = Depends(get_db),
     x_user_timezone: str | None = Header(default=None),
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials"
     )
-    user = crud.user.get_user_by_id(
-        db=db,
-        user_id=api_key.user_id
-    )
-    if user is None:
-        raise credentials_exception
-    if user.is_forbidden:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are forbidden"
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_id_async(
+            db=db,
+            user_id=api_key.user_id,
         )
-    await _cache_user_timezone(
-        request=request,
-        user_id=user.id,
-        raw_timezone=x_user_timezone,
-    )
-    return user
+        if user is None:
+            raise credentials_exception
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
 
 def get_real_ip(
     request: Request, 
@@ -221,7 +262,6 @@ def get_authorization_header(
 async def get_current_user_without_throw(
     request: Request,
     authorization: str | None = Header(default=None),
-    db: Session = Depends(get_db),
     x_user_timezone: str | None = Header(default=None),
 ):
     authenticate_value = "Bearer"
@@ -238,28 +278,28 @@ async def get_current_user_without_throw(
             format_log_message("token_decode_failed", source="optional_auth", error=e)
         )
         return None
-    user = crud.user.get_user_by_uuid(
-        db=db, 
-        uuid=uuid
-    )
-    if user is None:
-        return None
-    if user.is_forbidden:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are forbidden"
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
         )
-    await _cache_user_timezone(
-        request=request,
-        user_id=user.id,
-        raw_timezone=x_user_timezone,
-    )
-    return user
+        if user is None:
+            return None
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
 
 async def get_current_user(
     request: Request,
     authorization: str | None = Header(default=None), 
-    db: Session = Depends(get_db),
     x_user_timezone: str | None = Header(default=None),
 ):
     authenticate_value = "Bearer"
@@ -280,29 +320,50 @@ async def get_current_user(
             format_log_message("token_decode_failed", source="required_auth", error=e)
         )
         raise credentials_exception
-    user = crud.user.get_user_by_uuid(
-        db=db, 
-        uuid=uuid
-    )
-    if user is None:
-        raise credentials_exception
-    if user.is_forbidden:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are forbidden"
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
         )
-    await _cache_user_timezone(
+        if user is None:
+            raise credentials_exception
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
+
+
+async def get_current_user_short_lived(
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_user_timezone: str | None = Header(default=None),
+):
+    authenticate_value = "Bearer"
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    if authorization is None or not authorization.startswith(authenticate_value):
+        raise credentials_exception
+    token = authorization.replace("Bearer ", "", 1)
+    return await resolve_current_user_from_token(
         request=request,
-        user_id=user.id,
+        token=token,
         raw_timezone=x_user_timezone,
     )
-    return user
 
 async def plan_ability_checked_in_func(
     ability: str,
     authorization: str
 ):
-    if _is_admin_or_root_from_authorization(authorization):
+    if await _is_admin_or_root_from_authorization_async(authorization):
         return True
 
     headers = { }
@@ -420,7 +481,7 @@ async def get_user_plan_start_time_in_func(
 async def get_user_plan_level_in_func(
     authorization: str | None,
 ) -> PlanAccessLevel:
-    if _is_admin_or_root_from_authorization(authorization):
+    if await _is_admin_or_root_from_authorization_async(authorization):
         return PlanAccessLevel.MAX
 
     user_plan = await get_user_plan_payload_in_func(
@@ -546,7 +607,7 @@ def plan_ability_checked(
         # 如果不是官方的部署 那么就直接返回True表示该能力可用
         if not deployed_by_official:
             return True
-        if _is_admin_or_root_from_authorization(authorization):
+        if await _is_admin_or_root_from_authorization_async(authorization):
             return True
 
         headers = { }

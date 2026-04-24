@@ -1,10 +1,12 @@
+import asyncio
+
 from data.milvus.delete import clear_milvus_collection
 from data.milvus.base import milvus_client
 from pymilvus import DataType, Function, FunctionType
 from common.logger import info_logger
 
-def init_document_collection():
-    clear_milvus_collection()
+async def init_document_collection():
+    await clear_milvus_collection()
     schema = milvus_client.create_schema(
         auto_id=False,
         enable_dynamic_fields=True,
@@ -52,4 +54,4 @@ def init_document_collection():
     info_logger.info('Milvus collection created')
 
 if __name__ == "__main__":
-    init_document_collection()
+    asyncio.run(init_document_collection())

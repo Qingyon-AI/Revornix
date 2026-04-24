@@ -20,7 +20,7 @@ from common.ai import (
 from common.logger import exception_logger, info_logger
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_billing import persist_model_usage_from_completion
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from prompts.section_ppt import PPT_SCRIPT_SYSTEM, build_ppt_script_user_prompt
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.engine_proxy import EngineProxy
@@ -237,8 +237,8 @@ async def _plan_section_ppt(
     markdown: str,
     model_id: int | None = None,
 ) -> PptPlanResult:
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
     if db_user is None:
         raise RuntimeError("User not found")
     resolved_model_id = model_id or db_user.default_document_reader_model_id
@@ -248,7 +248,7 @@ async def _plan_section_ppt(
     script_markdown = _compact_markdown(markdown, PPT_SCRIPT_MAX_CHARS)
     user_prompt = build_ppt_script_user_prompt(markdown=script_markdown)
     language_instruction = build_structured_output_language_instruction(
-        _get_user_ai_interaction_language(user_id),
+        await _get_user_ai_interaction_language(user_id),
     )
     model_conf = (
         await AIModelProxy.create(
@@ -277,7 +277,7 @@ async def _plan_section_ppt(
                 ],
                 response_format={"type": "json_object"},
             )
-            persist_model_usage_from_completion(
+            await persist_model_usage_from_completion(
                 user_id=user_id,
                 model_id=resolved_model_id,
                 completion=completion,
@@ -366,9 +366,9 @@ async def run_section_ppt_workflow(
     now = _normalize_datetime()
     existing_manifest: dict | None = None
 
-    with session_scope() as db:
-        db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
-        db_section = crud.section.get_section_by_section_id(db=db, section_id=section_id)
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
+        db_section = await crud.section.get_section_by_section_id_async(db=db, section_id=section_id)
         if db_user is None:
             raise RuntimeError("User not found")
         if db_section is None:

@@ -6,13 +6,12 @@ load_dotenv(override=True)
 import os
 from alembic.config import Config
 from alembic import command
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 from common.logger import exception_logger, info_logger
 from config.base import BASE_DIR, ROOT_USER_NAME, ROOT_USER_PASSWORD
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 
 from common.dependencies import check_deployed_by_official_in_fuc
 deployed_by_official = check_deployed_by_official_in_fuc()
@@ -90,22 +89,10 @@ if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
 alembic_cfg = Config(str(BASE_DIR / "alembic.ini"))
 
 # =========================================================
-# 并发保护：PG advisory lock，避免多进程同时 init/seed
-# =========================================================
-INIT_LOCK_KEY = 20260121  # 你项目里固定一个整数即可，别随意变
-
-def acquire_init_lock(db: Session) -> bool:
-    return bool(db.execute(text("SELECT pg_try_advisory_lock(:k)"), {"k": INIT_LOCK_KEY}).scalar())
-
-def release_init_lock(db: Session) -> None:
-    db.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": INIT_LOCK_KEY})
-
-
-# =========================================================
 # Seed 数据（要求：尽量幂等）
 # 注意：这里仍保留你原逻辑，但强烈建议把 crud.create_* 改成 upsert/on_conflict
 # =========================================================
-async def seed_database(db: Session):
+async def seed_database(db: AsyncSession):
     # -------- File Systems --------
     file_systems: list[RemoteFileServiceProtocol] = [
         BuiltInRemoteFileService(),
@@ -114,8 +101,8 @@ async def seed_database(db: Session):
         GenericS3RemoteFileService(),
     ]
     for fs in file_systems:
-        if crud.file_system.get_file_system_by_uuid(db=db, uuid=fs.file_service_uuid) is None:
-            crud.file_system.create_file_system(
+        if await crud.file_system.get_file_system_by_uuid_async(db=db, uuid=fs.file_service_uuid) is None:
+            await crud.file_system.create_file_system_async(
                 db=db,
                 uuid=fs.file_service_uuid,
                 name=fs.file_service_name,
@@ -124,34 +111,34 @@ async def seed_database(db: Session):
                 description_zh=fs.file_service_description_zh
             )
     # 创建 Root 用户
-    db_root_user = crud.user.get_root_user(db=db)
+    db_root_user = await crud.user.get_root_user_async(db=db)
     if db_root_user is None:
-        db_root_user = crud.user.create_base_user(
+        db_root_user = await crud.user.create_base_user_async(
             db=db,
             avatar='default_avatar.png',
             nickname="Revornix Official",
             role=UserRole.ROOT
         )
 
-        db_email_info_for_root_user = crud.user.get_email_user_by_user_id(
+        db_email_info_for_root_user = await crud.user.get_email_user_by_user_id_async(
             db=db,
             user_id=db_root_user.id
         )
         if db_email_info_for_root_user is None:
-            crud.user.create_email_user(
+            await crud.user.create_email_user_async(
                 db=db,
                 user_id=db_root_user.id,
                 email=ROOT_USER_NAME,
                 password=ROOT_USER_PASSWORD
             )
         # init the default file system for the user
-        db_file_system = crud.file_system.get_file_system_by_uuid(
+        db_file_system = await crud.file_system.get_file_system_by_uuid_async(
             db=db,
             uuid=RemoteFileService.Built_In.meta.id
         )
         if db_file_system is None:
             raise CustomException('The Built-In File System is Not Found', 404)
-        db_user_file_system = crud.file_system.create_user_file_system(
+        db_user_file_system = await crud.file_system.create_user_file_system_async(
             db=db,
             file_system_id=db_file_system.id,
             user_id=db_root_user.id,
@@ -165,7 +152,7 @@ async def seed_database(db: Session):
         file_service.bucket = db_root_user.uuid
         await file_service.init_client()
         # 这里不要 commit，统一由外层 commit（更安全）
-        db.flush()
+        await db.flush()
 
     # -------- Notification Templates --------
     templates: list[NotificationTemplate] = [
@@ -176,8 +163,8 @@ async def seed_database(db: Session):
         RemovedFromSectionNotificationTemplate(),
     ]
     for tpl in templates:
-        if crud.notification.get_notification_template_by_uuid(db, tpl.uuid) is None:
-            crud.notification.create_notification_template(
+        if await crud.notification.get_notification_template_by_uuid_async(db, tpl.uuid) is None:
+            await crud.notification.create_notification_template_async(
                 db=db,
                 uuid=tpl.uuid,
                 name=tpl.name,
@@ -194,8 +181,8 @@ async def seed_database(db: Session):
         SectionSubscribedNotificationTriggerEvent(),
     ]
     for trigger in triggers:
-        if crud.notification.get_trigger_event_by_uuid(db, trigger.uuid) is None:
-            crud.notification.create_notification_trigger_event(
+        if await crud.notification.get_trigger_event_by_uuid_async(db, trigger.uuid) is None:
+            await crud.notification.create_notification_trigger_event_async(
                 db=db,
                 uuid=trigger.uuid,
                 name=trigger.name,
@@ -219,8 +206,8 @@ async def seed_database(db: Session):
         VolcSTTStandardEngine()
     ]
     for ep in engine_provideds:
-        if crud.engine.get_engine_provided_by_engine_uuid(db=db, engine_provided_uuid=ep.engine_uuid) is None:
-            crud.engine.create_engine_provided(
+        if await crud.engine.get_engine_provided_by_engine_uuid_async(db=db, engine_provided_uuid=ep.engine_uuid) is None:
+            await crud.engine.create_engine_provided_async(
                 db=db,
                 category=ep.engine_category,
                 uuid=ep.engine_uuid,
@@ -240,12 +227,12 @@ async def seed_database(db: Session):
         TelegramNotificationSourceProvided(),
     ]
     for notification_source_provided in notification_source_provideds:
-        db_nsp = crud.notification.get_notification_source_provided_by_uuid(
+        db_nsp = await crud.notification.get_notification_source_provided_by_uuid_async(
             db=db,
             uuid=notification_source_provided.uuid
         )
         if db_nsp is None:
-            crud.notification.create_notification_source_provided(
+            await crud.notification.create_notification_source_provided_async(
                 db=db,
                 uuid=notification_source_provided.uuid,
                 name=notification_source_provided.name,
@@ -267,12 +254,12 @@ async def seed_database(db: Session):
         TelegramNotificationTargetProvided(),
     ]
     for notification_target_provided in notification_target_provideds:
-        db_ntp = crud.notification.get_notification_target_provided_by_uuid(
+        db_ntp = await crud.notification.get_notification_target_provided_by_uuid_async(
             db=db,
             uuid=notification_target_provided.uuid
         )
         if db_ntp is None:
-            crud.notification.create_notification_target_provided(
+            await crud.notification.create_notification_target_provided_async(
                 db=db,
                 uuid=notification_target_provided.uuid,
                 name=notification_target_provided.name,
@@ -290,9 +277,9 @@ async def seed_database(db: Session):
         model_providers: list[OfficialModelProvider] = [OfficialModelProvider.Revornix]
         for provider in model_providers:
             meta = provider.meta
-            db_ai_model_provider = crud.model.get_ai_model_provider_by_uuid(db, meta.id)
+            db_ai_model_provider = await crud.model.get_ai_model_provider_by_uuid_async(db, meta.id)
             if db_ai_model_provider is None:
-                db_ai_model_provider = crud.model.create_ai_model_provider(
+                db_ai_model_provider = await crud.model.create_ai_model_provider_async(
                     db=db,
                     uuid=meta.id,
                     name=meta.title,
@@ -302,13 +289,13 @@ async def seed_database(db: Session):
                     base_url=os.environ.get("OFFICIAL_MODEL_PROVIDER_BASE_URL"),
                     is_public=True
                 )
-                crud.model.create_user_ai_model_provider(
+                await crud.model.create_user_ai_model_provider_async(
                     db=db,
                     user_id=db_root_user.id,
                     ai_model_provider_id=db_ai_model_provider.id,
                     role=UserModelProviderRole.CREATOR
                 )
-            db_provider_models = crud.model.get_ai_models_for_ai_model_provider(
+            db_provider_models = await crud.model.get_ai_models_for_ai_model_provider_async(
                 db=db,
                 provider_id=db_ai_model_provider.id,
             )
@@ -317,7 +304,7 @@ async def seed_database(db: Session):
                 None,
             )
             if seeded_model is None:
-                crud.model.create_ai_model(
+                await crud.model.create_ai_model_async(
                     db=db,
                     name='gpt-5.4',
                     description='gpt-5.4',
@@ -336,16 +323,16 @@ async def seed_database(db: Session):
             Engine.Official_Volc_Standard_STT
         ]
         for e in engines:
-            db_engine = crud.engine.get_engine_by_uuid(db=db, engine_uuid=e.meta.uuid)
+            db_engine = await crud.engine.get_engine_by_uuid_async(db=db, engine_uuid=e.meta.uuid)
             if db_engine is None:
-                db_engine_provider = crud.engine.get_engine_provided_by_engine_uuid(
+                db_engine_provider = await crud.engine.get_engine_provided_by_engine_uuid_async(
                     db=db,
                     engine_provided_uuid=e.meta.engine_provided.meta.uuid
                 )
                 if db_engine_provider is None:
                     raise RuntimeError(f"❌ EngineProvided {e.meta.engine_provided.meta.uuid} not found")
 
-                db_engine = crud.engine.create_engine(
+                db_engine = await crud.engine.create_engine_async(
                     db=db,
                     uuid=e.meta.uuid,
                     name=e.meta.name,
@@ -367,7 +354,7 @@ async def seed_database(db: Session):
                     creator_id=db_root_user.id,
                     engine_provided_id=db_engine_provider.id
                 )
-                crud.engine.create_user_engine(
+                await crud.engine.create_user_engine_async(
                     db=db,
                     user_id=db_root_user.id,
                     engine_id=db_engine.id,
@@ -383,16 +370,16 @@ async def seed_database(db: Session):
             NotificationSource.Official_TELEGRAM
         ]
         for notification_source in notification_sources:
-            if crud.notification.get_notification_source_by_uuid(db=db, uuid=notification_source.meta.uuid) is None:
+            if await crud.notification.get_notification_source_by_uuid_async(db=db, uuid=notification_source.meta.uuid) is None:
                 
-                db_notification_source_provided = crud.notification.get_notification_source_provided_by_uuid(
+                db_notification_source_provided = await crud.notification.get_notification_source_provided_by_uuid_async(
                     db=db,
                     uuid=notification_source.meta.notification_source_provided.meta.uuid
                 )
                 if db_notification_source_provided is None:
                     raise RuntimeError(f"❌ NotificationSourceProvided {notification_source.meta.notification_source_provided.meta.uuid} not found")
                 
-                db_notification_source = crud.notification.create_notification_source(
+                db_notification_source = await crud.notification.create_notification_source_async(
                     db=db,
                     notification_source_provided_id=db_notification_source_provided.id,
                     creator_id=db_root_user.id,
@@ -401,7 +388,7 @@ async def seed_database(db: Session):
                     uuid=notification_source.meta.uuid,
                     is_public=True
                 )
-                crud.notification.create_user_notification_source(
+                await crud.notification.create_user_notification_source_async(
                     db=db,
                     user_id=db_root_user.id,
                     notification_source_id=db_notification_source.id,
@@ -433,18 +420,16 @@ async def main():
     info_logger.warning("STEP 1: Alembic upgrade done.")
 
     # 3) seed（你原逻辑）
-    db = session_scope()
-    try:
-        info_logger.info("🌱 Seeding database...")
-        await seed_database(db=db)
-        db.commit()
-        info_logger.info("✅ Database initialized successfully")
-    except Exception as e:
-        db.rollback()
-        exception_logger.exception(f"❌ Database initialization failed: {e}")
-        raise
-    finally:
-        db.close()
+    async with async_session_context() as db:
+        try:
+            info_logger.info("🌱 Seeding database...")
+            await seed_database(db=db)
+            await db.commit()
+            info_logger.info("✅ Database initialized successfully")
+        except Exception as e:
+            await db.rollback()
+            exception_logger.exception(f"❌ Database initialization failed: {e}")
+            raise
 
 
 if __name__ == "__main__":

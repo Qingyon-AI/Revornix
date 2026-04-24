@@ -5,7 +5,7 @@ import uuid
 import base64
 from common.logger import info_logger
 from common.file import get_remote_file_signed_url
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.engine_enums import EngineProvided, EngineCategory
 from base_implement.stt_engine_base import STTEngineBase
 
@@ -58,8 +58,8 @@ class VolcSTTFastEngine(STTEngineBase):
         if not user_id:
             raise Exception("Engine is not initialized. Please initialize first.")
 
-        with session_scope() as db:
-            db_user = crud.user.get_user_by_id(db=db, user_id=user_id)
+        async with async_session_context() as db:
+            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
             if not db_user:
                 raise Exception("The owner of the engine is not found.")
             if db_user.default_user_file_system is None:

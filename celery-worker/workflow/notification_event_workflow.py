@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 import crud
 from common.logger import exception_logger
 from proxy.notification_proxy import NotificationProxy
-from data.sql.base import session_scope
+from data.sql.base import async_session_context
 from enums.notification import NotificationContentType
 from notification.template.platform_message_builder import build_multi_platform_message
 from workflow.timing import add_timed_node, ainvoke_with_timing
@@ -49,8 +49,7 @@ async def _dispatch_notification(
 
     async with semaphore:
         try:
-            notification_tool = await asyncio.to_thread(
-                NotificationProxy.create_notification_tool,
+            notification_tool = await NotificationProxy.create_notification_tool(
                 user_id=user_id,
                 notification_source_id=source_id,
                 notification_target_id=target_id,
@@ -117,14 +116,14 @@ async def _trigger_notification_event(
     params = state.get("params")
 
     payloads: list[NotificationDispatchPayload] = []
-    with session_scope() as db:
-        db_trigger_event = crud.notification.get_trigger_event_by_uuid(
+    async with async_session_context() as db:
+        db_trigger_event = await crud.notification.get_trigger_event_by_uuid_async(
             db=db,
             uuid=trigger_event_uuid
         )
         if db_trigger_event is None:
             raise Exception("Trigger event not found")
-        db_notification_tasks = crud.notification.get_notification_tasks_by_user_id_and_notification_trigger_event(
+        db_notification_tasks = await crud.notification.get_notification_tasks_by_user_id_and_notification_trigger_event_async(
             db=db,
             user_id=user_id,
             trigger_event_uuid=db_trigger_event.uuid
@@ -138,7 +137,7 @@ async def _trigger_notification_event(
                 "notification_target_id": db_notification_task.notification_target_id,
             }
             if db_notification_task.content_type == NotificationContentType.CUSTOM:
-                db_custom_notification_content = crud.notification.get_notification_task_content_custom_by_notification_task_id(
+                db_custom_notification_content = await crud.notification.get_notification_task_content_custom_by_notification_task_id_async(
                     db=db,
                     notification_task_id=db_notification_task.id
                 )
@@ -149,7 +148,7 @@ async def _trigger_notification_event(
                 payload["cover"] = db_custom_notification_content.cover
                 payload["link"] = db_custom_notification_content.link
             elif db_notification_task.content_type == NotificationContentType.TEMPLATE:
-                db_template_notification_content = crud.notification.get_notification_task_content_template_by_notification_task_id(
+                db_template_notification_content = await crud.notification.get_notification_task_content_template_by_notification_task_id_async(
                     db=db,
                     notification_task_id=db_notification_task.id
                 )

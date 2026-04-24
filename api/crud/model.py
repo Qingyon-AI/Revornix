@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 
 import models
@@ -28,6 +29,25 @@ def create_user_ai_model_provider(
     )
     db.add(db_user_provider)
     db.flush()
+    return db_user_provider
+
+
+async def create_user_ai_model_provider_async(
+    db: AsyncSession,
+    user_id: int,
+    ai_model_provider_id: int,
+    role: UserModelProviderRole,
+):
+    now = datetime.now(timezone.utc)
+
+    db_user_provider = models.model.UserAIModelProvider(
+        user_id=user_id,
+        ai_model_provider_id=ai_model_provider_id,
+        role=role,
+        create_time=now,
+    )
+    db.add(db_user_provider)
+    await db.flush()
     return db_user_provider
 
 def create_ai_model_provider(
@@ -62,6 +82,36 @@ def create_ai_model_provider(
     db.flush()
     return db_ai_provider
 
+
+async def create_ai_model_provider_async(
+    db: AsyncSession,
+    name: str,
+    creator_id: int,
+    description: str | None = None,
+    uuid: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
+    is_public: bool = False,
+):
+    now = datetime.now(timezone.utc)
+    if uuid is None:
+        uuid = uuid4().hex
+    if api_key is not None:
+        api_key = encrypt_api_key(api_key)
+    db_ai_provider = models.model.AIModelProvider(
+        name=name,
+        description=description,
+        uuid=uuid,
+        creator_id=creator_id,
+        create_time=now,
+        api_key=api_key,
+        base_url=base_url,
+        is_public=is_public,
+    )
+    db.add(db_ai_provider)
+    await db.flush()
+    return db_ai_provider
+
 def create_ai_model(
     db: Session,
     name: str,
@@ -92,6 +142,34 @@ def create_ai_model(
     db.flush()
     return new_model
 
+
+async def create_ai_model_async(
+    db: AsyncSession,
+    name: str,
+    provider_id: int,
+    description: str | None = None,
+    required_plan_level: int = 0,
+    is_official_hosted: bool = False,
+    compute_point_multiplier: float = 1.0,
+    uuid: str | None = None,
+):
+    now = datetime.now(timezone.utc)
+    new_model = models.model.AIModel(
+        name=name,
+        description=description,
+        required_plan_level=required_plan_level,
+        provider_id=provider_id,
+        is_official_hosted=is_official_hosted,
+        compute_point_multiplier=compute_point_multiplier,
+        uuid=uuid,
+        create_time=now,
+    )
+    if uuid is None:
+        new_model.uuid = uuid4().hex
+    db.add(new_model)
+    await db.flush()
+    return new_model
+
 def get_user_ai_model_provider_by_user_and_model_provider_id(
     db: Session,
     user_id: int,
@@ -109,6 +187,22 @@ def get_user_ai_model_provider_by_user_and_model_provider_id(
     if filter_role is not None:
         query = query.filter(models.model.UserAIModelProvider.role == filter_role)
     return query.one_or_none()
+
+
+async def get_user_ai_model_provider_by_user_and_model_provider_id_async(
+    db: AsyncSession,
+    user_id: int,
+    ai_model_provider_id: int,
+    filter_role: UserModelProviderRole | None = None,
+):
+    stmt = select(models.model.UserAIModelProvider).where(
+        models.model.UserAIModelProvider.user_id == user_id,
+        models.model.UserAIModelProvider.ai_model_provider_id == ai_model_provider_id,
+        models.model.UserAIModelProvider.delete_at.is_(None),
+    )
+    if filter_role is not None:
+        stmt = stmt.where(models.model.UserAIModelProvider.role == filter_role)
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_ai_model_by_uuid(
     db: Session,
@@ -137,6 +231,20 @@ def get_ai_model_by_id(
                          models.model.AIModel.delete_at.is_(None))
     return query.one_or_none()
 
+async def get_ai_model_by_id_async(
+    db: AsyncSession,
+    model_id: int
+):
+    stmt = (
+        select(models.model.AIModel)
+        .options(joinedload(models.model.AIModel.provider))
+        .where(
+            models.model.AIModel.id == model_id,
+            models.model.AIModel.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 def get_ai_model_provider_by_uuid(
     db: Session,
     uuid: str
@@ -148,6 +256,18 @@ def get_ai_model_provider_by_uuid(
     query = query.filter(models.model.AIModelProvider.uuid == uuid,
                          models.model.AIModelProvider.delete_at.is_(None))
     return query.one_or_none()
+
+async def get_ai_model_provider_by_uuid_async(
+    db: AsyncSession,
+    uuid: str,
+):
+    result = await db.execute(
+        select(models.model.AIModelProvider).where(
+            models.model.AIModelProvider.uuid == uuid,
+            models.model.AIModelProvider.delete_at.is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
 
 def get_ai_model_provider_by_id(
     db: Session,
@@ -163,6 +283,21 @@ def get_ai_model_provider_by_id(
     query = query.filter(models.model.AIModelProvider.id == provider_id,
                          models.model.AIModelProvider.delete_at.is_(None))
     return query.one_or_none()
+
+
+async def get_ai_model_provider_by_id_async(
+    db: AsyncSession,
+    provider_id: int,
+):
+    stmt = (
+        select(models.model.AIModelProvider)
+        .options(joinedload(models.model.AIModelProvider.creator))
+        .where(
+            models.model.AIModelProvider.id == provider_id,
+            models.model.AIModelProvider.delete_at.is_(None),
+        )
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_ai_models_for_ai_model_provider(
     db: Session,
@@ -180,6 +315,21 @@ def get_ai_models_for_ai_model_provider(
         models.model.AIModel.delete_at.is_(None)
     )
     return query.all()
+
+
+async def get_ai_models_for_ai_model_provider_async(
+    db: AsyncSession,
+    provider_id: int,
+):
+    stmt = (
+        select(models.model.AIModel)
+        .options(joinedload(models.model.AIModel.provider))
+        .where(
+            models.model.AIModel.provider_id == provider_id,
+            models.model.AIModel.delete_at.is_(None),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
 
 def get_ai_model_providers_for_user(
     db: Session,
@@ -201,6 +351,27 @@ def get_ai_model_providers_for_user(
     query = query.order_by(models.model.AIModelProvider.id.desc())
 
     return query.all()
+
+
+async def get_ai_model_providers_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.model.AIModelProvider)
+        .join(models.model.UserAIModelProvider)
+        .options(joinedload(models.model.AIModelProvider.creator))
+        .where(
+            models.model.UserAIModelProvider.user_id == user_id,
+            models.model.UserAIModelProvider.delete_at.is_(None),
+            models.model.AIModelProvider.delete_at.is_(None),
+        )
+        .order_by(models.model.AIModelProvider.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    return list((await db.execute(stmt)).scalars().all())
 
 def search_ai_model_providers_for_user(
     db: Session,
@@ -238,6 +409,42 @@ def search_ai_model_providers_for_user(
     # 返回 [(provider, user_provider_config_or_none), ...]
     return query.all()
 
+
+async def search_ai_model_providers_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+    start: int | None = None,
+    limit: int | None = None,
+):
+    stmt = (
+        select(models.model.AIModelProvider, models.model.UserAIModelProvider)
+        .options(joinedload(models.model.AIModelProvider.creator))
+        .outerjoin(
+            models.model.UserAIModelProvider,
+            and_(
+                models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+                models.model.UserAIModelProvider.user_id == user_id,
+                models.model.UserAIModelProvider.delete_at.is_(None),
+            ),
+        )
+        .where(models.model.AIModelProvider.delete_at.is_(None))
+        .where(
+            or_(
+                models.model.AIModelProvider.creator_id == user_id,
+                models.model.AIModelProvider.is_public.is_(True),
+            )
+        )
+        .order_by(models.model.AIModelProvider.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    if start is not None:
+        stmt = stmt.where(models.model.AIModelProvider.id <= start)
+    if limit is not None:
+        stmt = stmt.limit(limit)
+    return list((await db.execute(stmt)).all())
+
 def search_next_ai_model_providers_for_user(
     db: Session,
     user_id: int,
@@ -266,6 +473,37 @@ def search_next_ai_model_providers_for_user(
     query = query.filter(models.model.AIModelProvider.id < provider.id)
     return query.first()
 
+
+async def search_next_ai_model_providers_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    provider: models.model.AIModelProvider,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.model.AIModelProvider, models.model.UserAIModelProvider)
+        .outerjoin(
+            models.model.UserAIModelProvider,
+            and_(
+                models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+                models.model.UserAIModelProvider.user_id == user_id,
+                models.model.UserAIModelProvider.delete_at.is_(None),
+            ),
+        )
+        .where(models.model.AIModelProvider.delete_at.is_(None))
+        .where(
+            or_(
+                models.model.AIModelProvider.creator_id == user_id,
+                models.model.AIModelProvider.is_public.is_(True),
+            )
+        )
+        .where(models.model.AIModelProvider.id < provider.id)
+        .order_by(models.model.AIModelProvider.id.desc())
+    )
+    if keyword:
+        stmt = stmt.where(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    return (await db.execute(stmt)).first()
+
 def count_all_ai_model_providers_for_user(
     db: Session,
     user_id: int,
@@ -291,6 +529,35 @@ def count_all_ai_model_providers_for_user(
         query = query.filter(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
     query = query.order_by(models.model.AIModelProvider.id.desc())
     return query.count()
+
+
+async def count_all_ai_model_providers_for_user_async(
+    db: AsyncSession,
+    user_id: int,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(func.count())
+        .select_from(models.model.AIModelProvider)
+        .outerjoin(
+            models.model.UserAIModelProvider,
+            and_(
+                models.model.UserAIModelProvider.ai_model_provider_id == models.model.AIModelProvider.id,
+                models.model.UserAIModelProvider.user_id == user_id,
+                models.model.UserAIModelProvider.delete_at.is_(None),
+            ),
+        )
+        .where(models.model.AIModelProvider.delete_at.is_(None))
+        .where(
+            or_(
+                models.model.AIModelProvider.creator_id == user_id,
+                models.model.AIModelProvider.is_public.is_(True),
+            )
+        )
+    )
+    if keyword:
+        stmt = stmt.where(models.model.AIModelProvider.name.ilike(f"%{keyword}%"))
+    return int((await db.execute(stmt)).scalar() or 0)
 
 def delete_ai_model_providers(
     db: Session,
