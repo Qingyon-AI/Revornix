@@ -174,6 +174,18 @@ export const getSectionDetail = async (data: SectionDetailRequest): Promise<Sect
     })
 }
 
+export const getSectionMarkdownContent = async (data: SectionDetailRequest): Promise<string> => {
+    return await request(sectionApi.getSectionMarkdownContent, {
+        data
+    })
+}
+
+export const getSEOSectionMarkdownContentInServer = async (data: SectionSeoDetailRequest): Promise<string> => {
+    return await serverRequest(sectionApi.getSEOSectionMarkdownContent, {
+        data
+    })
+}
+
 export const getSectionDetailInServer = async (
     data: SectionDetailRequest,
     headers: Headers,

@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
@@ -482,6 +483,77 @@ async def get_section_detail(
         include_process_trigger_metadata=True,
     )
     return res
+
+
+@section_detail_query_router.post('/markdown/content', response_class=PlainTextResponse)
+async def get_section_markdown_content(
+    section_detail_request: schemas.section.SectionDetailRequest,
+    user: models.user.User = Depends(get_current_user_without_throw),
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_section = await crud.section.get_section_by_section_id_async(
+        db=db,
+        section_id=section_detail_request.section_id
+    )
+    if db_section is None:
+        raise schemas.error.CustomException("Section not found", code=404)
+
+    db_users = await crud.section.get_users_for_section_by_section_id_async(
+        db=db,
+        section_id=section_detail_request.section_id,
+        filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR]
+    )
+    db_publish_section = await crud.section.get_publish_section_by_section_id_async(
+        db=db,
+        section_id=section_detail_request.section_id
+    )
+    if db_publish_section is None:
+        ensure_private_section_access(
+            user_id=user.id if user is not None else None,
+            member_user_ids=[db_user.id for db_user in db_users],
+        )
+
+    if db_section.md_file_name is None:
+        raise schemas.error.CustomException("Section markdown is not ready", code=404)
+
+    remote_file_service = await FileSystemProxy.create(user_id=db_section.creator_id)
+    raw_content = await remote_file_service.get_file_content_by_file_path(
+        file_path=db_section.md_file_name
+    )
+    if isinstance(raw_content, bytes):
+        return PlainTextResponse(content=raw_content.decode("utf-8"))
+    return PlainTextResponse(content=raw_content)
+
+
+@section_detail_query_router.post('/detail/seo/markdown/content', response_class=PlainTextResponse)
+async def get_seo_section_markdown_content(
+    section_seo_detail_request: schemas.section.SectionSeoDetailRequest,
+    user: models.user.User = Depends(get_current_user_without_throw),
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_publish_section = await crud.section.get_publish_section_by_uuid_async(
+        db=db,
+        uuid=section_seo_detail_request.uuid,
+    )
+    if db_publish_section is None:
+        raise schemas.error.CustomException("Published section not found", code=404)
+
+    db_section = await crud.section.get_section_by_section_id_async(
+        db=db,
+        section_id=db_publish_section.section_id,
+    )
+    if db_section is None:
+        raise schemas.error.CustomException("Section not found", code=404)
+    if db_section.md_file_name is None:
+        raise schemas.error.CustomException("Section markdown is not ready", code=404)
+
+    remote_file_service = await FileSystemProxy.create(user_id=db_section.creator_id)
+    raw_content = await remote_file_service.get_file_content_by_file_path(
+        file_path=db_section.md_file_name
+    )
+    if isinstance(raw_content, bytes):
+        return PlainTextResponse(content=raw_content.decode("utf-8"))
+    return PlainTextResponse(content=raw_content)
 
 @section_detail_query_router.post('/date', response_model=schemas.section.DaySectionResponse)
 async def get_date_section_info(

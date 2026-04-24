@@ -30,7 +30,7 @@ import {
 	fetchPublicSectionComments,
 	fetchPublicSectionDocuments,
 	fetchPublicSectionGraph,
-	fetchRemoteTextContent,
+	fetchPublicSectionMarkdownContent,
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { notFound } from 'next/navigation';
@@ -171,7 +171,7 @@ const SEOSectionDetail = async (props: {
 
 	if (section_res && section_res.md_file_name) {
 		const [markdown_res] = await utils.to(
-			fetchRemoteTextContent(section_res.md_file_name),
+			fetchPublicSectionMarkdownContent({ uuid }),
 		);
 		markdown = markdown_res ?? null;
 	}

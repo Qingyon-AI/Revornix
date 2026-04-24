@@ -9,6 +9,8 @@ export default {
     deleteSection: API_PREFIX + "/section/delete",
     getAllMineSections: API_PREFIX + "/section/mine/all",
     getSectionDetail: API_PREFIX + "/section/detail",
+    getSectionMarkdownContent: API_PREFIX + "/section/markdown/content",
+    getSEOSectionMarkdownContent: API_PREFIX + "/section/detail/seo/markdown/content",
     getSEOSectionDetail: API_PREFIX + "/section/detail/seo",
     updateSection: API_PREFIX + "/section/update",
     subscribeSection: API_PREFIX + "/section/subscribe",

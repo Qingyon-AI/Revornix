@@ -1,6 +1,7 @@
 from typing import Any, cast
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
@@ -10,6 +11,7 @@ from common.dependencies import get_async_db, get_current_user, get_current_user
 from common.file import get_remote_file_signed_urls
 from data.milvus.search import naive_search
 from enums.document import DocumentCategory
+from proxy.file_system_proxy import FileSystemProxy
 from router.logic_helpers import ensure_document_access, resolve_infinite_scroll_meta
 
 document_query_router = APIRouter()
@@ -233,6 +235,41 @@ async def _resolve_document_from_detail_request(
         raise schemas.error.CustomException("Document not found", code=404)
     return document
 
+
+async def _resolve_document_markdown_file_path(
+    *,
+    db: AsyncSession,
+    document: models.document.Document,
+    snapshot_id: int | None,
+) -> str:
+    if snapshot_id is not None:
+        if document.category != DocumentCategory.WEBSITE:
+            raise schemas.error.CustomException("Snapshot is only supported for website documents", code=400)
+        website_snapshots = await crud.document.get_website_document_snapshots_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        snapshot = next(
+            (item for item in website_snapshots if item.id == snapshot_id),
+            None,
+        )
+        if snapshot is None:
+            raise schemas.error.CustomException("Website snapshot not found", code=404)
+        if snapshot.md_file_name is None:
+            raise schemas.error.CustomException("Document markdown is not ready", code=404)
+        return snapshot.md_file_name
+
+    task_bundle_row = await crud.task.get_document_task_bundle_by_document_id_async(
+        db=db,
+        document_id=document.id,
+    )
+    if task_bundle_row is None:
+        raise schemas.error.CustomException("Document markdown is not ready", code=404)
+    convert_task = task_bundle_row[0]
+    if convert_task is None or convert_task.md_file_name is None:
+        raise schemas.error.CustomException("Document markdown is not ready", code=404)
+    return convert_task.md_file_name
+
 @document_query_router.post('/detail', response_model=schemas.document.DocumentDetailResponse)
 async def get_document_detail(
     document_detail_request: schemas.document.DocumentDetailRequest,
@@ -442,6 +479,40 @@ async def get_document_detail(
         (res.podcast_task, "podcast_script_file_name", document.creator_id),
     ])
     return res
+
+
+@document_query_router.post('/markdown/content', response_class=PlainTextResponse)
+async def get_document_markdown_content(
+    document_markdown_request: schemas.document.DocumentMarkdownContentRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User | None = Depends(get_current_user_without_throw)
+):
+    document = await _resolve_document_from_detail_request(
+        db=db,
+        document_detail_request=schemas.document.DocumentDetailRequest(
+            document_id=document_markdown_request.document_id,
+            url=document_markdown_request.url,
+        ),
+        user=user,
+    )
+    await _ensure_document_access(
+        db=db,
+        document_id=document.id,
+        document_creator_id=document.creator_id,
+        user_id=user.id if user is not None else None,
+    )
+    markdown_file_path = await _resolve_document_markdown_file_path(
+        db=db,
+        document=document,
+        snapshot_id=document_markdown_request.snapshot_id,
+    )
+    remote_file_service = await FileSystemProxy.create(user_id=document.creator_id)
+    raw_content = await remote_file_service.get_file_content_by_file_path(
+        file_path=markdown_file_path
+    )
+    if isinstance(raw_content, bytes):
+        return PlainTextResponse(content=raw_content.decode("utf-8"))
+    return PlainTextResponse(content=raw_content)
 
 @document_query_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
 async def search_user_unread_documents(
