@@ -12,7 +12,6 @@ from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.ai import make_section_markdown
-from common.ai import summary_content
 from common.logger import exception_logger, info_logger
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import async_neo4j_driver
@@ -102,7 +101,6 @@ SECTION_MARKDOWN_MAX_ENTITIES = 200
 SECTION_MARKDOWN_MAX_RELATIONS = 300
 SECTION_MARKDOWN_CONTEXT_HEAD_CHAR_LIMIT = 4_000
 SECTION_MARKDOWN_CONTEXT_MEMORY_CHAR_LIMIT = 5_000
-SECTION_MARKDOWN_FAST_PATH_MAX_CHARS = 4_500
 SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT = 12
 SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT = 12
 SECTION_IMAGE_MIN_CONTENT_CHARS = 2_000
@@ -179,37 +177,37 @@ def _get_section_heading_labels(
 
     if resolved_language == AIInteractionLanguage.CHINESE:
         return {
-            "title": "专栏总结",
-            "executive_summary": "执行摘要",
-            "key_insights": "关键洞察",
-            "detailed_analysis": "详细分析",
-            "graph_interpretation": "知识图谱解读",
-            "core_entities": "核心实体",
-            "core_relations": "核心关系",
-            "no_key_insights": "未提取出关键洞察。",
-            "no_graph_signals": "未提取出知识图谱信号。",
-            "conclusion": "结论与建议",
-            "prioritize_themes_prefix": "优先关注以下主题：",
-            "continue_tracking_prefix": "继续跟踪这些核心概念：",
-            "review_source_content": "回看源内容，并补充更结构化的材料。",
-            "add_more_source_material": "补充更多源材料，以增强实体和关系覆盖。",
+            "title": "专栏草稿",
+            "introduction": "导语",
+            "core_arguments": "核心观点",
+            "deep_dive": "主题展开",
+            "connections": "关联脉络",
+            "core_entities": "关键实体",
+            "core_relations": "关键关系",
+            "no_key_insights": "暂未提炼出足够明确的核心观点。",
+            "no_graph_signals": "当前材料中没有足够稳定的实体关系可展开。",
+            "closing": "结语",
+            "prioritize_themes_prefix": "最值得继续展开的主题是：",
+            "continue_tracking_prefix": "可以继续跟踪这些关键概念：",
+            "review_source_content": "建议回到源材料，补充更具体的事实、案例或论据。",
+            "add_more_source_material": "建议补充更多源材料，以增强主题之间的关联密度。",
         }
 
     return {
-        "title": "Section Summary",
-        "executive_summary": "Executive Summary",
-        "key_insights": "Key Insights",
-        "detailed_analysis": "Detailed Analysis",
-        "graph_interpretation": "Knowledge Graph Interpretation",
-        "core_entities": "Core Entities",
-        "core_relations": "Core Relations",
-        "no_key_insights": "No key insights extracted.",
-        "no_graph_signals": "No knowledge graph signals were extracted.",
-        "conclusion": "Conclusion & Recommendations",
-        "prioritize_themes_prefix": "Prioritize the themes around",
-        "continue_tracking_prefix": "Continue tracking the core concepts:",
-        "review_source_content": "Review the source content and enrich the section with more structured material.",
-        "add_more_source_material": "Add more source material to strengthen entity and relation coverage.",
+        "title": "Column Draft",
+        "introduction": "Introduction",
+        "core_arguments": "Core Arguments",
+        "deep_dive": "Deep Dive",
+        "connections": "Connections & Patterns",
+        "core_entities": "Key Entities",
+        "core_relations": "Key Relations",
+        "no_key_insights": "No clear core arguments were extracted.",
+        "no_graph_signals": "There are not enough stable graph signals to expand here.",
+        "closing": "Closing Thoughts",
+        "prioritize_themes_prefix": "The strongest theme to develop next is",
+        "continue_tracking_prefix": "Keep tracking these key concepts:",
+        "review_source_content": "Review the source material and add more concrete evidence or examples.",
+        "add_more_source_material": "Add more source material to strengthen cross-theme connections.",
     }
 
 
@@ -693,7 +691,7 @@ def _build_fast_section_markdown(
     top_entities = entities[:SECTION_MARKDOWN_FAST_PATH_ENTITY_LIMIT]
     top_relations = relations[:SECTION_MARKDOWN_FAST_PATH_RELATION_LIMIT]
 
-    lines = [f"# {title}", "", f"## {labels['executive_summary']}", ""]
+    lines = [f"# {title}", "", f"## {labels['introduction']}", ""]
     if description:
         lines.append(description)
         lines.append("")
@@ -701,16 +699,16 @@ def _build_fast_section_markdown(
         lines.append(summary_body)
         lines.append("")
 
-    lines.extend([f"## {labels['key_insights']}", ""])
+    lines.extend([f"## {labels['core_arguments']}", ""])
     if key_points:
         lines.extend([f"- {item}" for item in key_points])
     else:
         lines.append(f"- {labels['no_key_insights']}")
     lines.append("")
 
-    lines.extend([f"## {labels['detailed_analysis']}", "", detail_excerpt, ""])
+    lines.extend([f"## {labels['deep_dive']}", "", detail_excerpt, ""])
 
-    lines.extend([f"## {labels['graph_interpretation']}", ""])
+    lines.extend([f"## {labels['connections']}", ""])
     if top_entities:
         lines.append(f"### {labels['core_entities']}")
         lines.append("")
@@ -732,7 +730,7 @@ def _build_fast_section_markdown(
         lines.append(labels["no_graph_signals"])
         lines.append("")
 
-    lines.extend([f"## {labels['conclusion']}", ""])
+    lines.extend([f"## {labels['closing']}", ""])
     if key_points:
         if language == AIInteractionLanguage.CHINESE or (
             language == AIInteractionLanguage.AUTO and _contains_cjk(summary_body)
@@ -844,34 +842,6 @@ async def _compose_section_markdown_in_batches(
     entities: list[EntityInfo],
     relations: list[RelationInfo],
 ) -> str:
-    if (
-        current_markdown_content is None
-        and len(markdown_contents) == 1
-        and len(markdown_contents[0]) <= SECTION_MARKDOWN_FAST_PATH_MAX_CHARS
-    ):
-        fast_summary = await summary_content(
-            user_id=user_id,
-            model_id=model_id,
-            content=markdown_contents[0],
-        )
-        async with async_session_context() as db:
-            db_user = await crud.user.get_user_by_id_async(db=db, user_id=user_id)
-            user_language = db_user.default_ai_interaction_language if db_user is not None else None
-        info_logger.info(
-            f"[SectionMarkdown] fast path used: section={section_id}, "
-            f"source_chars={len(markdown_contents[0])}, entities={len(entities)}, "
-            f"relations={len(relations)}"
-        )
-        return _build_fast_section_markdown(
-            language=user_language,
-            summary_title=fast_summary.title,
-            summary_description=fast_summary.description,
-            summary_body=fast_summary.summary,
-            source_markdown=markdown_contents[0],
-            entities=entities,
-            relations=relations,
-        )
-
     pending_batches = _build_markdown_batches(
         markdown_contents=markdown_contents,
         max_batch_chars=SECTION_MARKDOWN_BATCH_CHAR_LIMIT,
