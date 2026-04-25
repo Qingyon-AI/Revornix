@@ -411,6 +411,7 @@ class VolcTTSEngine(TTSEngineBase):
                     websocket = None
                     round_completed = True
                     session_finished = False
+                    attempt_final_audio_url: AnyUrl | None = None
                     current_round_audio_chunks = []
                     try:
                         attempt_payload = dict(req_params)
@@ -492,7 +493,7 @@ class VolcTTSEngine(TTSEngineBase):
                                 meta_info = data.get("meta_info") or {}
                                 audio_url = meta_info.get("audio_url")
                                 if audio_url:
-                                    final_audio_url = AnyUrl(audio_url)
+                                    attempt_final_audio_url = AnyUrl(audio_url)
                                 continue
 
                             if msg.event == EventType.UsageResponse:
@@ -513,6 +514,9 @@ class VolcTTSEngine(TTSEngineBase):
                             DEFAULT_VOLC_WAIT_EVENT_TYPES,
                             EventType.ConnectionFinished,
                         )
+
+                        if attempt_final_audio_url is not None:
+                            final_audio_url = attempt_final_audio_url
 
                         if final_audio_url is not None or completed_audio_chunks:
                             break
