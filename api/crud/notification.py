@@ -700,6 +700,18 @@ async def get_trigger_event_by_uuid_async(
     )
     return result.scalar_one_or_none()
 
+async def get_trigger_event_by_id_async(
+    db: AsyncSession,
+    trigger_event_id: int,
+):
+    result = await db.execute(
+        select(models.notification.TriggerEvent).where(
+            models.notification.TriggerEvent.id == trigger_event_id,
+            models.notification.TriggerEvent.delete_at.is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
+
 def get_all_trigger_events(
     db: Session
 ):
