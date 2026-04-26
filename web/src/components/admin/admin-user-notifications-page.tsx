@@ -213,6 +213,7 @@ const AdminUserNotificationsPage = ({
 		title: form.title.trim(),
 		notification_source_id: Number(form.notification_source_id),
 		notification_target_id: Number(form.notification_target_id),
+		trigger_type: 0,
 		trigger_event_id: form.trigger_event_id ? Number(form.trigger_event_id) : undefined,
 		enable: form.enable,
 	});
