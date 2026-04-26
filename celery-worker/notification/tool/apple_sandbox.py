@@ -46,6 +46,109 @@ def _resolve_notification_link(link: str | None) -> str | None:
     return normalized_link
 
 
+def _extract_ios_navigation_params(
+    ios_path: str,
+    ios_query: dict[str, str | list[str]],
+) -> dict[str, object]:
+    """Parse path/query into flat iOS navigation keys for the APNs userInfo payload."""
+    path = ios_path.strip("/")
+    parts = path.split("/") if path else []
+    params: dict[str, object] = {}
+
+    for qkey in ("label_id", "labelId"):
+        if qkey in ios_query:
+            raw = ios_query[qkey]
+            val = raw if isinstance(raw, str) else (raw[0] if raw else None)
+            if val is not None:
+                try:
+                    params["label_id"] = int(val)
+                except ValueError:
+                    pass
+            break
+    for qkey in ("label_name", "labelName"):
+        if qkey in ios_query:
+            raw = ios_query[qkey]
+            val = raw if isinstance(raw, str) else (raw[0] if raw else None)
+            if val is not None:
+                params["label_name"] = val
+            break
+
+    if not parts:
+        return params
+
+    if parts == ["daily-report"]:
+        params["navigate"] = "daily-report"
+        return params
+    if parts == ["document", "mine"]:
+        params["navigate"] = "document-mine"
+        return params
+    if parts == ["document", "recent"]:
+        params["navigate"] = "document-recent"
+        return params
+    if parts in (["document", "star"], ["document", "stared"]):
+        params["navigate"] = "document-star"
+        return params
+    if parts == ["document", "unread"]:
+        params["navigate"] = "document-unread"
+        return params
+    if parts == ["section", "mine"]:
+        params["navigate"] = "section-mine"
+        return params
+    if parts == ["section", "subscribed"]:
+        params["navigate"] = "section-subscribed"
+        return params
+    if parts == ["section", "community"]:
+        params["navigate"] = "section-community"
+        return params
+
+    if len(parts) == 3 and parts[0] == "section" and parts[1] == "detail":
+        try:
+            params["navigate"] = "section-detail"
+            params["section_id"] = int(parts[2])
+            return params
+        except ValueError:
+            pass
+
+    if len(parts) == 2 and parts[0] == "section":
+        params["navigate"] = "section-detail"
+        params["section_publish_uuid"] = parts[1]
+        return params
+
+    if len(parts) == 3 and parts[0] == "document" and parts[1] == "detail":
+        try:
+            params["navigate"] = "document-detail"
+            params["document_id"] = int(parts[2])
+            return params
+        except ValueError:
+            pass
+
+    if len(parts) == 2 and parts[0] == "document":
+        try:
+            params["navigate"] = "document-detail"
+            params["document_id"] = int(parts[1])
+            return params
+        except ValueError:
+            pass
+
+    if len(parts) == 3 and parts[0] == "user" and parts[1] == "detail":
+        try:
+            params["navigate"] = "user-detail"
+            params["user_id"] = int(parts[2])
+            return params
+        except ValueError:
+            pass
+
+    if len(parts) == 2 and parts[0] == "user":
+        try:
+            params["navigate"] = "user-detail"
+            params["user_id"] = int(parts[1])
+            return params
+        except ValueError:
+            pass
+
+    return params
+
+
 def _build_notification_route(link: str | None) -> dict[str, object] | None:
     normalized_link = _resolve_notification_link(link)
     if normalized_link is None:
@@ -289,8 +392,13 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
         if route_payload is not None:
             data.update({
                 "link": route_payload.get("web_url"),
-                "route": route_payload,
             })
+            nav_params = _extract_ios_navigation_params(
+                route_payload.get("ios_path", ""),
+                route_payload.get("ios_query", {}),
+            )
+            if nav_params:
+                data.update(nav_params)
         if cover is not None:
             data.update({'sender_avatar': cover})
         async with httpx.AsyncClient(http2=True, timeout=10) as client:
