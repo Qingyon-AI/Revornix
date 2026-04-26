@@ -23,23 +23,12 @@ class NotificationTriggerEventUUID(Enum):
     SECTION_UPDATED = '97072bb797d148d2a1607f10cb1ebf83'
     SECTION_SUBSCRIBED = '8c79f93f9dbd4b20bddb3c3a1bd57377'
 
-class NotificationTriggerType(IntEnum):
-    EVENT = 0
-    SCHEDULER = 1
-
-class NotificationContentType(IntEnum):
-    CUSTOM = 0
-    TEMPLATE = 1
 
 class NotificationTemplateMeta(NamedTuple):
     uuid: str
     name: str
 
 class NotificationTemplate(Enum):
-    DAILY_SUMMARY = NotificationTemplateMeta(
-        uuid='8f5016dc375e447f82729df765b12847',
-        name='Daily Summary',
-    )
     SECTION_COMMENTED = NotificationTemplateMeta(
         uuid='1ba024dfd7c249d8a09bb873dca708e6',
         name='Section Commented',

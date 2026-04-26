@@ -196,8 +196,32 @@ def get_users_for_section_by_section_id(
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     return query.all()
 
+async def get_users_for_section_by_section_id_async(
+    db: AsyncSession,
+    section_id: int,
+    filter_roles: list[UserSectionRole] | None = None,
+):
+    now = datetime.now(timezone.utc)
+    stmt = (
+        select(models.user.User)
+        .join(models.section.SectionUser)
+        .where(
+            models.user.User.delete_at.is_(None),
+            models.section.SectionUser.delete_at.is_(None),
+            models.section.SectionUser.section_id == section_id,
+            or_(
+                models.section.SectionUser.expire_time > now,
+                models.section.SectionUser.expire_time.is_(None),
+            ),
+        )
+    )
+    if filter_roles is not None:
+        stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
+    return list((await db.execute(stmt)).scalars().all())
+
+
 def get_section_by_section_id(
-    db: Session, 
+    db: Session,
     section_id: int
 ):
     query = db.query(models.section.Section)

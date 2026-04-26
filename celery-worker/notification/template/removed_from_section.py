@@ -3,9 +3,14 @@ from typing import cast
 import crud
 from data.sql.base import async_session_context
 from enums.section import UserSectionRole
-from notification.template.platform_message_builder import build_multi_platform_message
+from notification.template.platform_message_builder import (
+    APP_BRAND,
+    build_multi_platform_message,
+    make_card_title,
+)
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
+
 
 class RemovedFromSectionNotificationTemplate(NotificationTemplate):
 
@@ -26,10 +31,10 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
     ):
         if params is None:
             raise Exception("params is None")
-        
+
         receiver_id = cast(int, params.get('receiver_id'))
         section_id = cast(int, params.get('section_id'))
-        
+
         if receiver_id is None or section_id is None:
             raise Exception(f"receiver_id or section_id is None, params: {params.items()}")
 
@@ -65,40 +70,76 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
                 )
             except Exception:
                 cover = None
-        title = "You Are Removed from Section"
+
         if section_role == UserSectionRole.MEMBER:
-            plain_content = (
-                f"You have been removed from section {section_title}. "
-                "You will no longer be able to collaborate on this section or receive update notifications. "
-                "If you have any questions, please contact the section owner."
+            consequence = (
+                "You will no longer be able to collaborate on this section "
+                "or receive update notifications."
             )
         elif section_role == UserSectionRole.SUBSCRIBER:
-            plain_content = (
-                f"You have been removed from section {section_title}. "
-                "You will no longer receive update notifications for this section. "
-                "If you have any questions, please contact the section owner."
-            )
+            consequence = "You will no longer receive update notifications for this section."
         else:
-            plain_content = (
-                f"You have been removed from section {section_title}. "
-                "If you have any questions, please contact the section owner."
-            )
+            consequence = "You no longer have access to this section."
 
         link = f'/section/detail/{section_id}'
-        markdown_content = f"### {title}\n\n{plain_content}"
-        email_html = (
-            f"<p>{plain_content}</p>"
-            "<p>If needed, contact the section owner for more details.</p>"
+        base_title = "Removed from Section"
+        plain_content = (
+            f"You have been removed from section \"{section_title}\". {consequence} "
+            "If you have any questions, please contact the section owner."
         )
+
+        email_title = f"[{APP_BRAND}] You were removed from \"{section_title}\""
+        email_html = (
+            f"<h2 style='margin:0 0 12px'>Section access change</h2>"
+            f"<p>You have been removed from <strong>{section_title}</strong>.</p>"
+            f"<p>{consequence}</p>"
+            f"<p>If you have any questions, please contact the section owner.</p>"
+        )
+        email_plain = (
+            f"Section access change.\n\n"
+            f"You have been removed from \"{section_title}\". {consequence} "
+            "If you have any questions, please contact the section owner."
+        )
+
+        apple_title = "Section access removed"
+        apple_text = f"You were removed from \"{section_title}\"."
+
+        telegram_title = f"Removed · {section_title}"
+        telegram_text = (
+            f"You have been removed from \"{section_title}\".\n"
+            f"{consequence}"
+        )
+
+        feishu_title = make_card_title("🚪", f"Removed from Section · {section_title}")
+        feishu_markdown = (
+            f"You have been removed from **{section_title}**.\n\n"
+            f"{consequence}\n\n"
+            f"If you have any questions, please contact the section owner."
+        )
+        dingtalk_title = feishu_title
+        dingtalk_markdown = (
+            f"### 🚪 Removed from Section\n\n"
+            f"You have been removed from **{section_title}**.\n\n"
+            f"{consequence}\n\n"
+            f"If you have any questions, please contact the section owner."
+        )
+
         return build_multi_platform_message(
-            title=title,
+            title=base_title,
             plain_content=plain_content,
             link=link,
             cover=cover,
+            email_title=email_title,
             email_html=email_html,
-            email_plain=plain_content,
-            feishu_markdown=markdown_content,
-            dingtalk_markdown=markdown_content,
-            telegram_text=plain_content,
-            apple_text=plain_content,
+            email_plain=email_plain,
+            apple_title=apple_title,
+            apple_text=apple_text,
+            apple_sandbox_title=apple_title,
+            apple_sandbox_text=apple_text,
+            telegram_title=telegram_title,
+            telegram_text=telegram_text,
+            feishu_title=feishu_title,
+            feishu_markdown=feishu_markdown,
+            dingtalk_title=dingtalk_title,
+            dingtalk_markdown=dingtalk_markdown,
         )

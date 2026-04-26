@@ -22,7 +22,6 @@ import { Input } from '@/components/ui/input';
 import { getQueryClient } from '@/lib/get-query-client';
 import {
 	getNotificationTaskDetail,
-	getNotificationTemplate,
 	getTriggerEvents,
 	getUsableNotificationSources,
 	getUsableNotificationTargets,
@@ -43,16 +42,11 @@ import {
 	SelectValue,
 } from '../ui/select';
 import SelectEmpty from '../ui/select-empty';
-import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Info, Loader2 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { NotificationTriggerType } from '@/enums/notification';
-import FileUpload from '../document/file-upload';
 
 const UpdateNotificationTask = ({
 	notification_task_id,
@@ -74,55 +68,40 @@ const UpdateNotificationTask = ({
 		.object({
 			notification_task_id: z.number(),
 			title: z.string(),
-			notification_title: z.string().optional().nullable(),
-			notification_content: z.string().optional().nullable(),
-			notification_cover: z.string().optional().nullable(),
-			notification_link: z.string().optional().nullable(),
-			content_type: z.number(),
-			notification_template_id: z.coerce
+			trigger_event_id: z.coerce
 				.number({
-					required_error: 'Please select the template',
+					required_error: 'Please select the trigger event',
 				})
-				.optional(),
-			trigger_type: z.number(),
-			trigger_scheduler_cron: z.string().optional(),
-			trigger_event_id: z.number().optional(),
+				.int()
+				.positive('Please select the trigger event'),
 			enable: z.boolean(),
-			notification_source_id: z.coerce.number().optional(),
-			notification_target_id: z.coerce.number().optional(),
+			notification_source_id: z.coerce
+				.number({
+					required_error: 'Please select the source',
+				})
+				.int()
+				.positive('Please select the source'),
+			notification_target_id: z.coerce
+				.number({
+					required_error: 'Please select the target',
+				})
+				.int()
+				.positive('Please select the target'),
 		})
 		.superRefine((data, ctx) => {
-			// If content type is 0 => title required
-			if (data.content_type === 0) {
-				if (!data.title || data.title.trim() === '') {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Title is required when content type is 'custom content'",
-						path: ['title'],
-					});
-				}
+			if (!data.title || data.title.trim() === '') {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'Title is required',
+					path: ['title'],
+				});
 			}
 
-			// If content type is 1 => template_id required
-			if (data.content_type === 1) {
-				if (!data.notification_template_id) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Template is required when content type is 'template'",
-						path: ['notification_template_id'],
-					});
-				}
-			}
 		});
 
 	const { data: triggerEvents } = useQuery({
 		queryKey: ['notification-trigger-event'],
 		queryFn: getTriggerEvents,
-	});
-
-	const { data: notificationTemplates } = useQuery({
-		queryKey: ['notification-template'],
-		queryFn: getNotificationTemplate,
 	});
 
 	const { data: mineNotificationSources } = useQuery({
@@ -141,10 +120,7 @@ const UpdateNotificationTask = ({
 		defaultValues: {
 			notification_task_id: notification_task_id,
 			title: '',
-			notification_title: '',
-			notification_content: '',
 			enable: true,
-			content_type: 0,
 		},
 	});
 
@@ -222,25 +198,17 @@ const UpdateNotificationTask = ({
 
 	useEffect(() => {
 		if (data) {
-			const defaultValues: z.infer<typeof formSchema> = {
+			const defaultValues = {
 				notification_task_id: notification_task_id,
 				title: data.title,
-				trigger_type: data.trigger_type,
-				trigger_scheduler_cron: data.trigger_scheduler?.cron_expr,
 				trigger_event_id: data.trigger_event?.trigger_event_id,
 				enable: data.enable,
 				notification_source_id: data.notification_source?.id,
 				notification_target_id: data.notification_target?.id,
-				content_type: data.content_type,
-				notification_title: data.notification_title ?? undefined,
-				notification_content: data.notification_content ?? undefined,
-				notification_template_id: data.notification_template_id ?? undefined,
-				notification_cover: data.notification_cover ?? undefined,
-				notification_link: data.notification_link ?? undefined,
 			};
 			form.reset(defaultValues, {});
 		}
-	}, [data, notification_task_id]);
+	}, [data, form, notification_task_id]);
 
 	return (
 		<>
@@ -423,45 +391,69 @@ const UpdateNotificationTask = ({
 										}}
 									/>
 									<FormField
-										name='trigger_type'
+										name='trigger_event_id'
 										control={form.control}
 										render={({ field }) => {
 											return (
 												<FormItem>
 													<FormLabel>
 														{t(
-															'setting_notification_task_manage_form_trigger_type',
+															'setting_notification_task_manage_form_trigger_event_id',
 														)}
 													</FormLabel>
 													<Select
 														onValueChange={(value) =>
 															field.onChange(Number(value))
 														}
-														defaultValue={
+														value={
 															field.value || field.value === 0
-																? field.value.toString()
+																? String(field.value)
 																: undefined
 														}>
 														<SelectTrigger className='w-full'>
 															<SelectValue
 																placeholder={t(
-																	'setting_notification_task_manage_form_trigger_type_placeholder',
-																)}
-															/>
+																	'setting_notification_task_manage_form_trigger_event_id_placeholder',
+																)}>
+																{(() => {
+																	const sel = triggerEvents?.data.find(
+																		(item) => item.id === field.value,
+																	);
+																	return sel
+																		? locale === 'zh'
+																			? sel.name_zh
+																			: sel.name
+																		: null;
+																})()}
+															</SelectValue>
 														</SelectTrigger>
 														<SelectContent className='w-full'>
-															<SelectGroup>
-																<SelectItem value={'0'}>
-																	{t(
-																		'setting_notification_task_manage_form_trigger_type_event',
-																	)}
-																</SelectItem>
-																<SelectItem value={'1'}>
-																	{t(
-																		'setting_notification_task_manage_form_trigger_type_scheduler',
-																	)}
-																</SelectItem>
-															</SelectGroup>
+															{triggerEvents?.data.length ? (
+																<SelectGroup>
+																	{triggerEvents.data.map((item, index) => {
+																		return (
+																			<SelectItem
+																				key={index}
+																				value={item.id.toString()}>
+																				<div className='flex flex-col w-fit'>
+																					<div className='font-bold text-xs w-fit'>
+																						{locale === 'zh'
+																							? item.name_zh
+																							: item.name}
+																					</div>
+																					<div className='font-bold text-xs text-muted-foreground w-fit'>
+																						{locale === 'zh'
+																							? item.description_zh
+																							: item.description}
+																					</div>
+																				</div>
+																			</SelectItem>
+																		);
+																	})}
+																</SelectGroup>
+															) : (
+																<SelectEmpty message={t('select_empty')} />
+															)}
 														</SelectContent>
 													</Select>
 													<FormMessage />
@@ -469,311 +461,6 @@ const UpdateNotificationTask = ({
 											);
 										}}
 									/>
-
-									{form.watch('trigger_type') ===
-										NotificationTriggerType.EVENT && (
-										<FormField
-											name='trigger_event_id'
-											control={form.control}
-											render={({ field }) => {
-												return (
-													<FormItem>
-														<FormLabel>
-															{t(
-																'setting_notification_task_manage_form_trigger_event_id',
-															)}
-														</FormLabel>
-														<Select
-															onValueChange={(value) =>
-																field.onChange(Number(value))
-															}
-															defaultValue={
-																field.value || field.value === 0
-																	? String(field.value)
-																	: undefined
-															}>
-															<SelectTrigger className='w-full'>
-																<SelectValue
-																	placeholder={t(
-																		'setting_notification_task_manage_form_trigger_event_id_placeholder',
-																	)}>
-																	{(() => {
-																		const sel = triggerEvents?.data.find(
-																			(item) => item.id === field.value,
-																		);
-																		return sel
-																			? locale === 'zh'
-																				? sel.name_zh
-																				: sel.name
-																			: null;
-																	})()}
-																</SelectValue>
-															</SelectTrigger>
-															<SelectContent className='w-full'>
-																{triggerEvents?.data.length ? (
-																	<SelectGroup>
-																		{triggerEvents.data.map((item, index) => {
-																			return (
-																				<SelectItem
-																					key={index}
-																					value={item.id.toString()}>
-																					<div className='flex flex-col w-fit'>
-																						<div className='font-bold text-xs w-fit'>
-																							{locale === 'zh'
-																								? item.name_zh
-																								: item.name}
-																						</div>
-																						<div className='font-bold text-xs text-muted-foreground w-fit'>
-																							{locale === 'zh'
-																								? item.description_zh
-																								: item.description}
-																						</div>
-																					</div>
-																				</SelectItem>
-																			);
-																		})}
-																	</SelectGroup>
-																) : (
-																	<SelectEmpty message={t('select_empty')} />
-																)}
-															</SelectContent>
-														</Select>
-														<FormMessage />
-													</FormItem>
-												);
-											}}
-										/>
-									)}
-
-									{form.watch('trigger_type') ===
-										NotificationTriggerType.SCHEDULER && (
-										<FormField
-											name='trigger_scheduler_cron'
-											control={form.control}
-											render={({ field }) => {
-												return (
-													<FormItem>
-														<FormLabel>
-															{t(
-																'setting_notification_task_manage_form_trigger_scheduler',
-															)}
-															<Tooltip>
-																<TooltipTrigger>
-																	<Info size={15} />
-																</TooltipTrigger>
-																<TooltipContent>
-																	{t(
-																		'setting_notification_task_manage_form_trigger_scheduler_alert',
-																	)}
-																	<Link
-																		className='ml-1 underline underline-offset-2'
-																		href={'https://en.wikipedia.org/wiki/Cron'}>
-																		Cron wiki
-																	</Link>
-																</TooltipContent>
-															</Tooltip>
-														</FormLabel>
-														<Input
-															className='font-mono'
-															placeholder={t(
-																'setting_notification_task_manage_form_trigger_scheduler_placeholder',
-															)}
-															{...field}
-														/>
-														<FormMessage />
-													</FormItem>
-												);
-											}}
-										/>
-									)}
-									<Tabs
-										value={form.watch('content_type')?.toString()}
-										onValueChange={(value) => {
-											form.setValue('content_type', Number(value));
-										}}>
-										<TabsList className='w-full mb-1'>
-											<TabsTrigger value='1'>
-												{t(
-													'setting_notification_task_manage_form_content_type_template',
-												)}
-											</TabsTrigger>
-											<TabsTrigger value='0'>
-												{t(
-													'setting_notification_task_manage_form_content_type_custom',
-												)}
-											</TabsTrigger>
-										</TabsList>
-										<TabsContent value='1'>
-											<FormField
-												name='notification_template_id'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>
-																{t(
-																	'setting_notification_task_manage_form_template',
-																)}
-															</FormLabel>
-															<Select
-																onValueChange={(value) =>
-																	field.onChange(Number(value))
-																}
-																defaultValue={
-																	field.value ? String(field.value) : undefined
-																}>
-																<SelectTrigger className='w-full'>
-																	<SelectValue
-																		placeholder={t(
-																			'setting_notification_task_manage_form_template_placeholder',
-																		)}>
-																		{(() => {
-																			const sel =
-																				notificationTemplates?.data.find(
-																					(item) => item.id === field.value,
-																				);
-																			return sel
-																				? locale === 'zh'
-																					? sel.name_zh
-																					: sel.name
-																				: null;
-																		})()}
-																	</SelectValue>
-																</SelectTrigger>
-																<SelectContent className='w-full'>
-																	{notificationTemplates?.data.length ? (
-																		<SelectGroup>
-																			{notificationTemplates.data.map(
-																				(item, index) => {
-																					return (
-																						<SelectItem
-																							key={index}
-																							value={item.id.toString()}>
-																							<div className='flex flex-col w-fit'>
-																								<div className='font-bold text-xs w-fit'>
-																									{locale === 'zh'
-																										? item.name_zh
-																										: item.name}
-																								</div>
-																								<div className='font-bold text-xs text-muted-foreground w-fit'>
-																									{locale === 'zh'
-																										? item.description_zh
-																										: item.description}
-																								</div>
-																							</div>
-																						</SelectItem>
-																					);
-																				},
-																			)}
-																		</SelectGroup>
-																	) : (
-																		<SelectEmpty message={t('select_empty')} />
-																	)}
-																</SelectContent>
-															</Select>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-										</TabsContent>
-										<TabsContent value='0' className='space-y-3'>
-											<FormField
-												name='notification_title'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>
-																{t(
-																	'setting_notification_task_manage_form_title',
-																)}
-															</FormLabel>
-															<Input
-																{...field}
-																placeholder={t(
-																	'setting_notification_task_manage_form_title_placeholder',
-																)}
-																value={field.value || ''}
-															/>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<FormField
-												name='notification_content'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>
-																{t(
-																	'setting_notification_task_manage_form_content',
-																)}
-															</FormLabel>
-															<Textarea
-																{...field}
-																placeholder={t(
-																	'setting_notification_task_manage_form_content_placeholder',
-																)}
-																value={field.value || ''}
-															/>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<FormField
-												name='notification_link'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>
-																{t(
-																	'setting_notification_task_manage_form_link',
-																)}
-															</FormLabel>
-															<Input
-																{...field}
-																placeholder={t(
-																	'setting_notification_task_manage_form_link_placeholder',
-																)}
-																value={field.value || ''}
-															/>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<FormField
-												name='notification_cover'
-												control={form.control}
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>
-																{t(
-																	'setting_notification_task_manage_form_cover',
-																)}
-															</FormLabel>
-															<FileUpload
-																accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
-																className='h-20'
-																defaultFileName={field.value || ''}
-																onSuccess={(file_name) => {
-																	field.onChange(file_name);
-																}}
-																onDelete={() => field.onChange(null)}
-															/>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-										</TabsContent>
-									</Tabs>
 									<FormField
 										name='enable'
 										control={form.control}

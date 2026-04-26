@@ -274,15 +274,8 @@ export const addAdminUserNotificationTask = async (data: {
 	notification_target_id: number;
 	enable: boolean;
 	title: string;
-	content_type: number;
-	notification_template_id?: number;
-	notification_title?: string;
-	notification_content?: string;
-	notification_cover?: string;
-	notification_link?: string;
 	trigger_type: number;
 	trigger_event_id?: number;
-	trigger_scheduler_cron?: string;
 }): Promise<NormalResponse> => {
 	return await request(adminApi.addUserNotificationTask, { data });
 };
@@ -291,16 +284,9 @@ export const updateAdminUserNotificationTask = async (data: {
 	user_id: number;
 	notification_task_id: number;
 	title?: string;
-	content_type?: number;
 	enable?: boolean;
-	notification_template_id?: number;
 	trigger_type?: number;
-	trigger_scheduler_cron?: string;
 	trigger_event_id?: number;
-	notification_title?: string;
-	notification_content?: string;
-	notification_link?: string;
-	notification_cover?: string;
 	notification_source_id?: number;
 	notification_target_id?: number;
 }): Promise<NormalResponse> => {

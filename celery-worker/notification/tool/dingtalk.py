@@ -89,7 +89,7 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         normalized_content = content if content is not None else plain_content
         normalized_link = self._resolve_notification_link(link)
 
-        lines = [f"### {normalized_title}"]
+        lines = []
         if normalized_content:
             lines.append(normalized_content)
 
@@ -99,7 +99,7 @@ class DingTalkNotificationTool(NotificationToolProtocol):
         if normalized_link:
             lines.append(f"[点击查看详情]({normalized_link})")
 
-        text = textwrap.dedent("\n\n".join(lines)).strip()
+        text = textwrap.dedent("\n\n".join(lines)).strip() if lines else normalized_title
 
         payload = {
             "msgtype": "markdown",

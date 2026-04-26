@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BellRing, Loader2, Plus, Trash2, Upload } from 'lucide-react';
@@ -13,13 +13,9 @@ import {
 	getAdminUserNotificationTasks,
 	getAdminUserUsableNotificationSources,
 	getAdminUserUsableNotificationTargets,
-	uploadAdminUserNotificationCover,
 	updateAdminUserNotificationTask,
 } from '@/service/admin';
-import { getNotificationTemplate, getTriggerEvents } from '@/service/notification';
-import { NotificationContentType, NotificationTriggerType } from '@/enums/notification';
-import { cn, replacePath } from '@/lib/utils';
-import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { getTriggerEvents } from '@/service/notification';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,7 +62,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import SelectEmpty from '@/components/ui/select-empty';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import {
 	Table,
 	TableBody,
@@ -80,15 +75,7 @@ type TaskFormState = {
 	title: string;
 	notification_source_id: string;
 	notification_target_id: string;
-	trigger_type: string;
 	trigger_event_id: string;
-	trigger_scheduler_cron: string;
-	content_type: string;
-	notification_template_id: string;
-	notification_title: string;
-	notification_content: string;
-	notification_link: string;
-	notification_cover: string;
 	enable: boolean;
 };
 
@@ -96,15 +83,7 @@ const DEFAULT_TASK_FORM: TaskFormState = {
 	title: '',
 	notification_source_id: '',
 	notification_target_id: '',
-	trigger_type: String(NotificationTriggerType.EVENT),
 	trigger_event_id: '',
-	trigger_scheduler_cron: '',
-	content_type: String(NotificationContentType.CUSTOM),
-	notification_template_id: '',
-	notification_title: '',
-	notification_content: '',
-	notification_link: '',
-	notification_cover: '',
 	enable: true,
 };
 
@@ -141,11 +120,6 @@ const AdminUserNotificationsPage = ({
 	const triggerEventsQuery = useQuery({
 		queryKey: ['notification-trigger-events-admin'],
 		queryFn: getTriggerEvents,
-	});
-
-	const templatesQuery = useQuery({
-		queryKey: ['notification-templates-admin'],
-		queryFn: getNotificationTemplate,
 	});
 
 	const tasksQuery = useQuery({
@@ -208,13 +182,6 @@ const AdminUserNotificationsPage = ({
 		},
 	});
 
-	const uploadCoverMutation = useMutation({
-		mutationFn: uploadAdminUserNotificationCover,
-		onError(error: Error) {
-			toast.error(error.message);
-		},
-	});
-
 	useEffect(() => {
 		if (!taskDetailQuery.data) {
 			return;
@@ -223,15 +190,7 @@ const AdminUserNotificationsPage = ({
 			title: taskDetailQuery.data.title || '',
 			notification_source_id: String(taskDetailQuery.data.notification_source?.id || ''),
 			notification_target_id: String(taskDetailQuery.data.notification_target?.id || ''),
-			trigger_type: String(taskDetailQuery.data.trigger_type),
 			trigger_event_id: String(taskDetailQuery.data.trigger_event?.trigger_event_id || ''),
-			trigger_scheduler_cron: taskDetailQuery.data.trigger_scheduler?.cron_expr || '',
-			content_type: String(taskDetailQuery.data.content_type),
-			notification_template_id: String(taskDetailQuery.data.notification_template_id || ''),
-			notification_title: taskDetailQuery.data.notification_title || '',
-			notification_content: taskDetailQuery.data.notification_content || '',
-			notification_link: taskDetailQuery.data.notification_link || '',
-			notification_cover: taskDetailQuery.data.notification_cover || '',
 			enable: taskDetailQuery.data.enable,
 		});
 	}, [taskDetailQuery.data]);
@@ -242,22 +201,8 @@ const AdminUserNotificationsPage = ({
 			toast.error(t('admin_notifications_task_form_required'));
 			return false;
 		}
-		if (form.content_type === String(NotificationContentType.CUSTOM)) {
-			if (!form.notification_title.trim() || !form.notification_content.trim()) {
-				toast.error(t('admin_notifications_task_custom_required'));
-				return false;
-			}
-		}
-		if (form.content_type === String(NotificationContentType.TEMPLATE) && !form.notification_template_id) {
-			toast.error(t('admin_notifications_task_template_required'));
-			return false;
-		}
-		if (form.trigger_type === String(NotificationTriggerType.EVENT) && !form.trigger_event_id) {
+		if (!form.trigger_event_id) {
 			toast.error(t('admin_notifications_task_event_required'));
-			return false;
-		}
-		if (form.trigger_type === String(NotificationTriggerType.SCHEDULER) && !form.trigger_scheduler_cron.trim()) {
-			toast.error(t('admin_notifications_task_scheduler_required'));
 			return false;
 		}
 		return true;
@@ -268,30 +213,7 @@ const AdminUserNotificationsPage = ({
 		title: form.title.trim(),
 		notification_source_id: Number(form.notification_source_id),
 		notification_target_id: Number(form.notification_target_id),
-		trigger_type: Number(form.trigger_type),
-		trigger_event_id:
-			form.trigger_type === String(NotificationTriggerType.EVENT) && form.trigger_event_id
-				? Number(form.trigger_event_id)
-				: undefined,
-		trigger_scheduler_cron:
-			form.trigger_type === String(NotificationTriggerType.SCHEDULER)
-				? form.trigger_scheduler_cron.trim()
-				: undefined,
-		content_type: Number(form.content_type),
-		notification_template_id:
-			form.content_type === String(NotificationContentType.TEMPLATE) && form.notification_template_id
-				? Number(form.notification_template_id)
-				: undefined,
-		notification_title:
-			form.content_type === String(NotificationContentType.CUSTOM)
-				? form.notification_title.trim()
-				: undefined,
-		notification_content:
-			form.content_type === String(NotificationContentType.CUSTOM)
-				? form.notification_content.trim()
-				: undefined,
-		notification_link: form.notification_link.trim() || undefined,
-		notification_cover: form.notification_cover.trim() || undefined,
+		trigger_event_id: form.trigger_event_id ? Number(form.trigger_event_id) : undefined,
 		enable: form.enable,
 	});
 
@@ -311,28 +233,6 @@ const AdminUserNotificationsPage = ({
 
 	const taskMutationPending =
 		createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
-
-	const handleCreateCoverUpload = async (file: File) => {
-		const response = await uploadCoverMutation.mutateAsync({
-			user_id: userId,
-			file,
-		});
-		setCreateForm((current) => ({
-			...current,
-			notification_cover: response.file_path,
-		}));
-	};
-
-	const handleEditCoverUpload = async (file: File) => {
-		const response = await uploadCoverMutation.mutateAsync({
-			user_id: userId,
-			file,
-		});
-		setEditForm((current) => ({
-			...current,
-			notification_cover: response.file_path,
-		}));
-	};
 
 	return (
 		<div className='p-6 sm:p-7'>
@@ -388,20 +288,16 @@ const AdminUserNotificationsPage = ({
 											{tasks.map((task) => (
 												<TableRow key={task.id}>
 													<TableCell className='whitespace-normal'>
-														<div className='font-medium'>{task.title}</div>
-														<div className='text-xs text-muted-foreground'>
-															{task.trigger_type === NotificationTriggerType.EVENT
-																? t('setting_notification_task_manage_form_trigger_type_event')
-																: task.trigger_scheduler?.cron_expr || '-'}
-														</div>
+													<div className='font-medium'>{task.title}</div>
+													<div className='text-xs text-muted-foreground'>
+														{t('setting_notification_task_manage_form_trigger_type_event')}
+													</div>
 													</TableCell>
 													<TableCell>{task.notification_source?.title || '-'}</TableCell>
 													<TableCell>{task.notification_target?.title || '-'}</TableCell>
 													<TableCell>
 														<Badge variant='outline' className='rounded-full'>
-															{task.content_type === NotificationContentType.CUSTOM
-																? t('setting_notification_task_manage_form_content_type_custom')
-																: t('setting_notification_task_manage_form_content_type_template')}
+															{t('setting_notification_task_manage_form_trigger_type_event')}
 														</Badge>
 													</TableCell>
 													<TableCell>
@@ -467,20 +363,16 @@ const AdminUserNotificationsPage = ({
 						<TaskForm
 							form={createForm}
 							onChange={setCreateForm}
-							userId={userId}
 							usableSources={usableSourcesQuery.data?.data ?? []}
 							usableTargets={usableTargetsQuery.data?.data ?? []}
 							triggerEvents={triggerEventsQuery.data?.data ?? []}
-							templates={templatesQuery.data?.data ?? []}
-							onUploadCover={handleCreateCoverUpload}
-							coverUploading={uploadCoverMutation.isPending}
 						/>
 					</div>
 					<DialogFooter className='sticky bottom-0 z-10 border-t border-border/60 bg-background px-6 py-4'>
 						<Button variant='outline' onClick={() => setCreateOpen(false)}>
 							{t('cancel')}
 						</Button>
-						<Button onClick={submitCreate} disabled={taskMutationPending || uploadCoverMutation.isPending}>
+						<Button onClick={submitCreate} disabled={taskMutationPending}>
 							{taskMutationPending ? <Loader2 className='size-4 animate-spin' /> : null}
 							{t('create')}
 						</Button>
@@ -503,13 +395,9 @@ const AdminUserNotificationsPage = ({
 							<TaskForm
 								form={editForm}
 								onChange={setEditForm}
-								userId={userId}
 								usableSources={usableSourcesQuery.data?.data ?? []}
 								usableTargets={usableTargetsQuery.data?.data ?? []}
 								triggerEvents={triggerEventsQuery.data?.data ?? []}
-								templates={templatesQuery.data?.data ?? []}
-								onUploadCover={handleEditCoverUpload}
-								coverUploading={uploadCoverMutation.isPending}
 							/>
 						</div>
 					)}
@@ -517,7 +405,7 @@ const AdminUserNotificationsPage = ({
 						<Button variant='outline' onClick={() => setEditTaskId(null)}>
 							{t('cancel')}
 						</Button>
-						<Button onClick={submitUpdate} disabled={taskMutationPending || taskDetailQuery.isLoading || uploadCoverMutation.isPending}>
+						<Button onClick={submitUpdate} disabled={taskMutationPending || taskDetailQuery.isLoading}>
 							{taskMutationPending ? <Loader2 className='size-4 animate-spin' /> : null}
 							{t('save')}
 						</Button>
@@ -592,23 +480,15 @@ const AdminUserNotificationsPage = ({
 const TaskForm = ({
 	form,
 	onChange,
-	userId,
 	usableSources,
 	usableTargets,
 	triggerEvents,
-	templates,
-	onUploadCover,
-	coverUploading,
 }: {
 	form: TaskFormState;
 	onChange: (form: TaskFormState) => void;
-	userId: number;
 	usableSources: Array<{ id: number; title: string }>;
 	usableTargets: Array<{ id: number; title: string }>;
 	triggerEvents: Array<{ id: number; name: string; name_zh: string }>;
-	templates: Array<{ id: number; name: string; name_zh: string }>;
-	onUploadCover: (file: File) => Promise<void>;
-	coverUploading: boolean;
 }) => {
 	const t = useTranslations();
 
@@ -671,238 +551,34 @@ const TaskForm = ({
 				</div>
 				<div className='grid gap-2 rounded-2xl border border-border/60 bg-muted/20 p-4'>
 				<Label>{t('setting_notification_task_manage_form_trigger_type')}</Label>
-				<Select value={form.trigger_type} onValueChange={(value) => setField('trigger_type', value)}>
-					<SelectTrigger className='h-11 w-full rounded-xl'>
-						<SelectValue placeholder={t('setting_notification_task_manage_form_trigger_type_placeholder')} />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value={String(NotificationTriggerType.EVENT)}>
-							{t('setting_notification_task_manage_form_trigger_type_event')}
-						</SelectItem>
-						<SelectItem value={String(NotificationTriggerType.SCHEDULER)}>
-							{t('setting_notification_task_manage_form_trigger_type_scheduler')}
-						</SelectItem>
-					</SelectContent>
-				</Select>
+				<div className='flex h-11 items-center rounded-xl border border-input bg-background px-3 text-sm'>
+					{t('setting_notification_task_manage_form_trigger_type_event')}
+				</div>
 				</div>
 				<div className='grid gap-2 rounded-2xl border border-border/60 bg-muted/20 p-4'>
-				<Label>{form.trigger_type === String(NotificationTriggerType.EVENT)
-					? t('setting_notification_task_manage_form_trigger_event_id')
-					: t('setting_notification_task_manage_form_trigger_scheduler')}</Label>
-				{form.trigger_type === String(NotificationTriggerType.EVENT) ? (
-					<Select
-						value={form.trigger_event_id}
-						onValueChange={(value) => setField('trigger_event_id', value)}>
-						<SelectTrigger className='h-11 w-full rounded-xl'>
-							<SelectValue placeholder={t('setting_notification_task_manage_form_trigger_event_id_placeholder')} />
-						</SelectTrigger>
-						<SelectContent>
-							{triggerEvents.length > 0 ? (
-								triggerEvents.map((item) => (
-									<SelectItem key={item.id} value={String(item.id)}>{item.name_zh || item.name}</SelectItem>
-								))
-							) : (
-								<SelectEmpty message={t('select_empty')} />
-							)}
-						</SelectContent>
-					</Select>
-				) : (
-					<Input
-						className='h-11 rounded-xl px-3 py-2 text-sm'
-						value={form.trigger_scheduler_cron}
-						onChange={(event) => setField('trigger_scheduler_cron', event.target.value)}
-						placeholder={t('setting_notification_task_manage_form_trigger_scheduler_placeholder')}
-					/>
-				)}
-				</div>
-			</div>
-
-			<div className='rounded-[24px] border border-border/60 bg-background/60 p-5'>
-				<div className='mb-4 grid gap-5 lg:grid-cols-2'>
-					<div className='grid gap-2 lg:col-span-2'>
-				<Label>{t('setting_notification_task_manage_form_content_type')}</Label>
-				<Select value={form.content_type} onValueChange={(value) => setField('content_type', value)}>
+				<Label>{t('setting_notification_task_manage_form_trigger_event_id')}</Label>
+				<Select
+					value={form.trigger_event_id}
+					onValueChange={(value) => setField('trigger_event_id', value)}>
 					<SelectTrigger className='h-11 w-full rounded-xl'>
-						<SelectValue placeholder={t('setting_notification_task_manage_form_trigger_type_placeholder')} />
+						<SelectValue placeholder={t('setting_notification_task_manage_form_trigger_event_id_placeholder')} />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value={String(NotificationContentType.CUSTOM)}>
-							{t('setting_notification_task_manage_form_content_type_custom')}
-						</SelectItem>
-						<SelectItem value={String(NotificationContentType.TEMPLATE)}>
-							{t('setting_notification_task_manage_form_content_type_template')}
-						</SelectItem>
+						{triggerEvents.length > 0 ? (
+							triggerEvents.map((item) => (
+								<SelectItem key={item.id} value={String(item.id)}>{item.name_zh || item.name}</SelectItem>
+							))
+						) : (
+							<SelectEmpty message={t('select_empty')} />
+						)}
 					</SelectContent>
 				</Select>
-					</div>
 				</div>
-			{form.content_type === String(NotificationContentType.TEMPLATE) ? (
-				<div className='grid gap-2 lg:max-w-md'>
-					<Label>{t('setting_notification_task_manage_form_template')}</Label>
-					<Select
-						value={form.notification_template_id}
-						onValueChange={(value) => setField('notification_template_id', value)}>
-						<SelectTrigger className='h-11 w-full rounded-xl'>
-							<SelectValue placeholder={t('setting_notification_task_manage_form_template_placeholder')} />
-						</SelectTrigger>
-						<SelectContent>
-							{templates.length > 0 ? (
-								templates.map((item) => (
-									<SelectItem key={item.id} value={String(item.id)}>{item.name_zh || item.name}</SelectItem>
-								))
-							) : (
-								<SelectEmpty message={t('select_empty')} />
-							)}
-						</SelectContent>
-					</Select>
-				</div>
-			) : (
-				<div className='grid gap-5 lg:grid-cols-2'>
-					<div className='grid gap-2 lg:col-span-2'>
-						<Label>{t('setting_notification_task_manage_form_title')}</Label>
-							<Input
-								className='h-11 rounded-xl'
-								placeholder={t('setting_notification_task_manage_form_title_placeholder')}
-								value={form.notification_title}
-								onChange={(event) => setField('notification_title', event.target.value)}
-							/>
-					</div>
-					<div className='grid gap-2 lg:col-span-2'>
-						<Label>{t('setting_notification_task_manage_form_content')}</Label>
-							<Textarea
-								className='min-h-28 rounded-xl'
-								placeholder={t('setting_notification_task_manage_form_content_placeholder')}
-								value={form.notification_content}
-								onChange={(event) => setField('notification_content', event.target.value)}
-							/>
-					</div>
-					<div className='grid gap-2 lg:col-span-2'>
-						<Label>{t('setting_notification_task_manage_form_link')}</Label>
-							<Input
-								className='h-11 rounded-xl'
-								placeholder={t('setting_notification_task_manage_form_link_placeholder')}
-								value={form.notification_link}
-								onChange={(event) => setField('notification_link', event.target.value)}
-							/>
-					</div>
-					<div className='grid gap-2 lg:col-span-2'>
-						<Label>{t('setting_notification_task_manage_form_cover')}</Label>
-						<NotificationCoverField
-							userId={userId}
-							value={form.notification_cover}
-							onChange={(value) => setField('notification_cover', value)}
-							onUpload={onUploadCover}
-							uploading={coverUploading}
-						/>
-					</div>
-				</div>
-			)}
 			</div>
 			<div className='flex min-h-12 items-center rounded-2xl border border-border/60 bg-muted/20 px-4'>
 				<Switch checked={form.enable} onCheckedChange={(checked) => setField('enable', checked)} />
 				<Label className='ml-3'>{t('setting_notification_task_manage_form_enable')}</Label>
 			</div>
-		</div>
-	);
-};
-
-const NotificationCoverField = ({
-	userId,
-	value,
-	onChange,
-	onUpload,
-	uploading,
-}: {
-	userId: number;
-	value: string;
-	onChange: (value: string) => void;
-	onUpload: (file: File) => Promise<void>;
-	uploading: boolean;
-}) => {
-	const t = useTranslations();
-	const inputRef = useRef<HTMLInputElement>(null);
-	const previewSrc = value ? replacePath(value, userId) : null;
-
-	const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (!file) return;
-		if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
-			toast.error(
-				t('file_upload_size_exceeded', {
-					size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-				}),
-			);
-			event.target.value = '';
-			return;
-		}
-		try {
-			await onUpload(file);
-		} finally {
-			event.target.value = '';
-		}
-	};
-
-	return (
-		<div className='rounded-[18px] border border-border/60 bg-muted/20 p-3.5'>
-			<div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
-				<div className='relative h-20 w-full overflow-hidden rounded-xl border border-border/60 bg-background sm:w-32'>
-					{previewSrc ? (
-						<img
-							src={previewSrc}
-							alt='notification cover'
-							className='h-full w-full object-cover'
-						/>
-					) : (
-						<div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-							{t('setting_notification_task_manage_form_cover')}
-						</div>
-					)}
-					{uploading ? (
-						<div className='absolute inset-0 flex items-center justify-center bg-background/70'>
-							<Loader2 className='size-5 animate-spin' />
-						</div>
-						) : null}
-				</div>
-				<div className='min-w-0 flex-1 space-y-2'>
-					<div className='line-clamp-1 text-sm text-muted-foreground'>
-						{value || t('admin_notification_cover_hint')}
-					</div>
-					<div className='text-[11px] text-muted-foreground'>
-						{t('upload_limit_hint', {
-							size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-						})}
-					</div>
-					<div className='flex flex-wrap gap-2'>
-						<Button
-							type='button'
-							variant='outline'
-							size='sm'
-							onClick={() => inputRef.current?.click()}
-							disabled={uploading}>
-							<Upload className='size-4' />
-							{value ? t('admin_notification_cover_update') : t('admin_notification_cover_upload')}
-						</Button>
-						<Button
-							type='button'
-							variant='ghost'
-							size='sm'
-							onClick={() => onChange('')}
-							disabled={uploading || !value}
-							className={cn(!value && 'pointer-events-none opacity-50')}>
-							<Trash2 className='size-4' />
-							{t('delete')}
-						</Button>
-					</div>
-				</div>
-			</div>
-			<input
-				ref={inputRef}
-				type='file'
-				accept='image/png,image/jpeg,image/webp,image/gif'
-				className='hidden'
-				onChange={handleChange}
-				disabled={uploading}
-			/>
 		</div>
 	);
 };

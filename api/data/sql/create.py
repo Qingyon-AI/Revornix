@@ -48,7 +48,6 @@ from notification.target.dingtalk_notification_target_provided import DingTalkNo
 from notification.target.email_notification_target_provided import EmailNotificationTargetProvided
 from notification.target.feishu_notification_target_provided import FeishuNotificationTargetProvided
 from notification.target.telegram_notification_target_provided import TelegramNotificationTargetProvided
-from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
@@ -158,7 +157,6 @@ async def seed_database(db: AsyncSession):
     templates: list[NotificationTemplate] = [
         SectionCommentedNotificationTemplate(),
         SectionUpdatedNotificationTemplate(),
-        DailySummaryNotificationTemplate(),
         SectionSubscribedNotificationTemplate(),
         RemovedFromSectionNotificationTemplate(),
     ]

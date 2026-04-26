@@ -10,7 +10,6 @@ from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
-from notification.template.daily_summary import DailySummaryNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
@@ -127,9 +126,7 @@ class NotificationProxy:
                 raise Exception("Notification template not found")
             template_uuid = db_notification_template.uuid
 
-        if template_uuid == NotificationTemplate.DAILY_SUMMARY.meta.uuid:
-            notification_template = DailySummaryNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_COMMENTED.meta.uuid:
+        if template_uuid == NotificationTemplate.SECTION_COMMENTED.meta.uuid:
             notification_template = SectionCommentedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_UPDATED.meta.uuid:
             notification_template = SectionUpdatedNotificationTemplate()

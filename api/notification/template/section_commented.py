@@ -3,7 +3,11 @@ from typing import cast
 import crud
 from data.sql.base import async_session_context
 from enums.section import UserSectionRole
-from notification.template.platform_message_builder import build_multi_platform_message
+from notification.template.platform_message_builder import (
+    APP_BRAND,
+    build_multi_platform_message,
+    make_card_title,
+)
 from protocol.notification_template import NotificationTemplate
 from common.file import get_remote_file_signed_url
 
@@ -27,10 +31,10 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
     ):
         if params is None:
             raise Exception("params is None")
-        
+
         receiver_id = cast(int, params.get('receiver_id'))
         section_id = cast(int, params.get('section_id'))
-        
+
         if receiver_id is None or section_id is None:
             raise Exception(f"receiver_id or section_id is None, params: {params.items()}")
 
@@ -60,29 +64,67 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
                 user_id=section_creator_id,
                 file_name=section_cover
             )
-        title = "Section Commented"
+
         if section_role == UserSectionRole.MEMBER:
-            plain_content = f"Someone commented on section {section_title} that you participate in. Check it out."
+            relation_phrase = "you participate in"
         elif section_role == UserSectionRole.CREATOR:
-            plain_content = f"Someone commented on section {section_title} that you created. Check it out."
+            relation_phrase = "you created"
         else:
             raise Exception("user is not a member or creator of the section")
 
         link = f'/section/detail/{section_id}'
-        markdown_content = f"### {title}\n\n{plain_content}"
+        base_title = "Section Commented"
+        plain_content = f"Someone commented on section \"{section_title}\" that {relation_phrase}. Check it out."
+
+        email_title = f"[{APP_BRAND}] New comment on \"{section_title}\""
         email_html = (
-            f"<p>{plain_content}</p>"
-            "<p>Open the section page to read the latest comments.</p>"
+            f"<h2 style='margin:0 0 12px'>New comment on your section</h2>"
+            f"<p>Someone left a new comment on <strong>{section_title}</strong> that {relation_phrase}.</p>"
+            f"<p>Open the section page to read and reply.</p>"
         )
+        email_plain = (
+            f"New comment on your section.\n\n"
+            f"Someone commented on \"{section_title}\" ({relation_phrase}). "
+            f"Open the section page to read and reply."
+        )
+
+        apple_title = "New comment"
+        apple_text = f"New comment on \"{section_title}\"."
+
+        telegram_title = f"New comment · {section_title}"
+        telegram_text = (
+            f"Someone commented on \"{section_title}\" ({relation_phrase}).\n"
+            f"Tap the link to read and reply."
+        )
+
+        feishu_title = make_card_title("💬", f"New Comment · {section_title}")
+        feishu_markdown = (
+            f"Someone left a new comment on **{section_title}** that {relation_phrase}.\n\n"
+            f"Open the section page to read and reply."
+        )
+        dingtalk_title = feishu_title
+        dingtalk_markdown = (
+            f"### 💬 New Comment\n\n"
+            f"Someone commented on **{section_title}** that {relation_phrase}.\n\n"
+            f"[Click to read and reply]({link})"
+        )
+
         return build_multi_platform_message(
-            title=title,
+            title=base_title,
             plain_content=plain_content,
             link=link,
             cover=cover,
+            email_title=email_title,
             email_html=email_html,
-            email_plain=plain_content,
-            feishu_markdown=markdown_content,
-            dingtalk_markdown=markdown_content,
-            telegram_text=plain_content,
-            apple_text=plain_content,
+            email_plain=email_plain,
+            apple_title=apple_title,
+            apple_text=apple_text,
+            apple_sandbox_title=apple_title,
+            apple_sandbox_text=apple_text,
+            telegram_title=telegram_title,
+            telegram_text=telegram_text,
+            feishu_title=feishu_title,
+            feishu_markdown=feishu_markdown,
+            dingtalk_title=dingtalk_title,
+            dingtalk_markdown=dingtalk_markdown,
         )
