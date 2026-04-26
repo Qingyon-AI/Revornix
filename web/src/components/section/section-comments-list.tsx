@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/empty';
 import { MessageSquareText } from 'lucide-react';
 import SectionCommentCard from './section-comment-card';
+import { useUserContext } from '@/provider/user-provider';
 
 const SectionCommentsList = ({
 	section_id,
@@ -26,6 +27,7 @@ const SectionCommentsList = ({
 	publicMode?: boolean;
 }) => {
 	const t = useTranslations();
+	const { mainUserInfo } = useUserContext();
 	const keyword = '';
 	const initialPageParam = {
 		limit: 10,
@@ -87,7 +89,11 @@ const SectionCommentsList = ({
 							<div
 								key={comment.id}
 								ref={index === comments.length - 1 ? bottomRef : undefined}>
-								<SectionCommentCard comment={comment} />
+								<SectionCommentCard
+								comment={comment}
+								currentUserId={publicMode ? undefined : mainUserInfo?.id}
+								sectionId={section_id}
+							/>
 							</div>
 						);
 					})}

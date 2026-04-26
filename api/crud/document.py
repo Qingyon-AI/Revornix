@@ -2982,7 +2982,7 @@ def delete_document_notes_by_user_id_and_note_ids(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.document.DocumentNote)
-    query = query.filter(models.document.DocumentNote.note_id.in_(note_ids),
+    query = query.filter(models.document.DocumentNote.id.in_(note_ids),
                          models.document.DocumentNote.user_id == user_id,
                          models.document.DocumentNote.delete_at.is_(None))
     query = query.update({models.document.DocumentNote.delete_at: now})
@@ -2995,7 +2995,7 @@ async def delete_document_notes_by_user_id_and_note_ids_async(
 ):
     now = datetime.now(timezone.utc)
     stmt = select(models.document.DocumentNote).where(
-        models.document.DocumentNote.note_id.in_(note_ids),
+        models.document.DocumentNote.id.in_(note_ids),
         models.document.DocumentNote.user_id == user_id,
         models.document.DocumentNote.delete_at.is_(None),
     )

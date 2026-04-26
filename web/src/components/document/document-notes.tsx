@@ -1,17 +1,29 @@
-import { getDocumentDetail, searchDocumentNotes } from '@/service/document';
+import { getDocumentDetail, searchDocumentNotes, deleteDocumentNote } from '@/service/document';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import DocumentCommentForm from './document-comment-form';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Clock3, OctagonAlert, StickyNote } from 'lucide-react';
+import { Clock3, Loader2, StickyNote, TrashIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
+import { toast } from 'sonner';
+import { getQueryClient } from '@/lib/get-query-client';
+import { Button } from '../ui/button';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '../ui/alert-dialog';
 import {
 	Empty,
 	EmptyDescription,
@@ -25,6 +37,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 
 	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
+	const queryClient = getQueryClient();
 
 	const { data: document } = useQuery({
 		queryKey: ['getDocumentDetail', id],
@@ -60,19 +73,28 @@ const DocumentNotes = ({ id }: { id: number }) => {
 		inView && !isFetching && hasNextPage && fetchNextPage();
 	}, [inView, isFetching, hasNextPage, fetchNextPage]);
 
+	const [deletingNoteId, setDeletingNoteId] = useState<number | null>(null);
+	const [openDeleteId, setOpenDeleteId] = useState<number | null>(null);
+
+	const handleDeleteNote = async (noteId: number) => {
+		setDeletingNoteId(noteId);
+		try {
+			await deleteDocumentNote({ document_note_ids: [noteId] });
+			toast.success(t('document_note_delete_success'));
+			queryClient.invalidateQueries({ queryKey: ['searchDocumentNotes', id, keyword] });
+			setOpenDeleteId(null);
+		} catch {
+			toast.error(t('document_note_delete_failed'));
+		} finally {
+			setDeletingNoteId(null);
+		}
+	};
+
 	return (
 		<div className='flex h-full min-h-0 flex-col gap-4'>
-			{document?.creator?.id !== mainUserInfo?.id && (
-				<Alert className='rounded-2xl border-destructive/30 bg-destructive/10 dark:bg-destructive/20'>
-					<OctagonAlert className='h-4 w-4 text-destructive!' />
-					<AlertDescription>{t('document_notes_tips')}</AlertDescription>
-				</Alert>
-			)}
-			{document?.creator?.id === mainUserInfo?.id && (
-				<div className='shrink-0'>
-					<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
-				</div>
-			)}
+			<div className='shrink-0'>
+				<DocumentCommentForm documentId={id} commentSearchKeyword={keyword} />
+			</div>
 
 			<div className='min-h-0 flex-1 overflow-y-auto'>
 				{!isFetching && notes.length === 0 ? (
@@ -83,21 +105,20 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							</EmptyMedia>
 							<EmptyTitle>{t('document_notes_empty')}</EmptyTitle>
 							<EmptyDescription>
-								{document?.creator?.id === mainUserInfo?.id
-									? t('document_notes_description')
-									: t('document_notes_tips')}
+								{t('document_notes_description')}
 							</EmptyDescription>
 						</EmptyHeader>
 					</Empty>
 				) : (
 					<div className='flex flex-col gap-3'>
 						{notes.map((note, index) => {
+							const isOwner = mainUserInfo?.id === note.user.id;
 							return (
 								<div
 									key={note.id}
 									ref={index === notes.length - 1 ? bottomRef : undefined}
 									className='rounded-3xl border border-border/60 bg-card/55 px-4 py-3.5 shadow-[0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-sm'>
-									<div className='mb-3 flex items-start gap-3'>
+									<div className='mb-3 flex items-start justify-between gap-3'>
 										<div
 											className='flex min-w-0 cursor-pointer items-center gap-3'
 											onClick={() =>
@@ -130,8 +151,53 @@ const DocumentNotes = ({ id }: { id: number }) => {
 												) : null}
 											</div>
 										</div>
+
+										{isOwner && (
+											<AlertDialog
+												open={openDeleteId === note.id}
+												onOpenChange={(o) =>
+													setOpenDeleteId(o ? note.id : null)
+												}>
+												<AlertDialogTrigger asChild>
+													<Button
+														variant='ghost'
+														size='icon'
+														className='size-8 shrink-0 rounded-xl text-muted-foreground hover:text-destructive'>
+														<TrashIcon className='size-4' />
+													</Button>
+												</AlertDialogTrigger>
+												<AlertDialogContent>
+													<AlertDialogHeader>
+														<AlertDialogTitle>
+															{t('document_note_delete_confirm')}
+														</AlertDialogTitle>
+														<AlertDialogDescription>
+															{t('document_note_delete_description')}
+														</AlertDialogDescription>
+													</AlertDialogHeader>
+													<AlertDialogFooter>
+														<AlertDialogCancel
+															disabled={deletingNoteId === note.id}>
+															{t('cancel')}
+														</AlertDialogCancel>
+														<Button
+															variant='destructive'
+															onClick={() => handleDeleteNote(note.id)}
+															disabled={deletingNoteId === note.id}
+															className='rounded-xl'>
+															{deletingNoteId === note.id ? (
+																<Loader2 className='size-4 animate-spin' />
+															) : (
+																<TrashIcon className='size-4' />
+															)}
+															{t('delete')}
+														</Button>
+													</AlertDialogFooter>
+												</AlertDialogContent>
+											</AlertDialog>
+										)}
 									</div>
-									<p className='whitespace-pre-wrap break-words text-sm leading-6 text-foreground/92'>
+									<p className='whitespace-pre-wrap wrap-break-word text-sm leading-6 text-foreground/92'>
 										{note.content}
 									</p>
 								</div>
