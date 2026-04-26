@@ -138,6 +138,9 @@ class SectionCommentSearchRequest(BaseModel):
 class SectionCommentDeleteRequest(BaseModel):
     section_comment_ids: list[int]
 
+class SectionCommentDetailRequest(BaseModel):
+    section_comment_id: int
+
 class SectionCommentCreateRequest(BaseModel):
     content: str
     section_id: int

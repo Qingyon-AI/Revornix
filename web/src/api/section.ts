@@ -17,6 +17,7 @@ export default {
     createComment: API_PREFIX + "/section/comment/create",
     deleteComment: API_PREFIX + "/section/comment/delete",
     searchComment: API_PREFIX + "/section/comment/search",
+    getCommentDetail: API_PREFIX + "/section/comment/detail",
     mySubscribedSecitions: API_PREFIX + "/section/subscribed",
     createLabel: API_PREFIX + "/section/label/create",
     getMineLabels: API_PREFIX + "/section/label/list",

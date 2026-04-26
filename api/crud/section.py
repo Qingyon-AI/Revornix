@@ -97,6 +97,20 @@ async def create_section_comment_async(
     await db.flush()
     return db_section_comment
 
+async def get_section_comment_by_id_async(
+    db: AsyncSession,
+    comment_id: int,
+):
+    stmt = (
+        select(models.section.SectionComment)
+        .where(
+            models.section.SectionComment.id == comment_id,
+            models.section.SectionComment.delete_at.is_(None),
+        )
+        .options(selectinload(models.section.SectionComment.creator))
+    )
+    return (await db.execute(stmt)).scalars().first()
+
 def create_section_user(
     db: Session,
     section_id: int,

@@ -1,4 +1,11 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { MessageCircleMore } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import {
 	Sheet,
 	SheetContent,
@@ -9,8 +16,6 @@ import {
 } from '../ui/sheet';
 import { Button } from '../ui/button';
 import SectionComments from './section-comments';
-import { MessageCircleMore } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const SectionOperateComment = ({
 	section_id,
@@ -24,8 +29,20 @@ const SectionOperateComment = ({
 	iconOnly?: boolean;
 }) => {
 	const t = useTranslations();
+	const searchParams = useSearchParams();
+	const commentIdParam = searchParams.get('comment_id');
+	const anchorCommentId = commentIdParam ? Number(commentIdParam) : undefined;
+
+	const [open, setOpen] = useState(false);
+
+	useEffect(() => {
+		if (anchorCommentId) {
+			setOpen(true);
+		}
+	}, [anchorCommentId]);
+
 	return (
-		<Sheet>
+		<Sheet open={open} onOpenChange={setOpen}>
 			<SheetTrigger asChild>
 				<Button
 					title={t('section_comments')}
@@ -44,7 +61,7 @@ const SectionOperateComment = ({
 					</SheetDescription>
 				</SheetHeader>
 				<div className='min-h-0 flex-1 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
-					<SectionComments section_id={section_id} />
+					<SectionComments section_id={section_id} anchorCommentId={anchorCommentId} />
 				</div>
 			</SheetContent>
 		</Sheet>
