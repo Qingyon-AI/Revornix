@@ -1369,6 +1369,7 @@
     "section_comments": "评论",
     "section_comments_description": "围绕这个专栏补充观点、上下文或纠错说明。",
     "section_comments_empty": "暂无评论",
+    "section_comment_anchor_label": "来自通知的评论",
     "section_comment_delete_success": "评论删除成功",
     "section_comment_delete_failed": "删除评论失败",
     "section_comment_delete_confirm": "确认删除评论",

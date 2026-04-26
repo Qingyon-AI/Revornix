@@ -1369,6 +1369,7 @@
     "section_comments": "Comments",
     "section_comments_description": "Add context, follow-up thoughts, or corrections around this section.",
     "section_comments_empty": "No comments",
+    "section_comment_anchor_label": "Comment from notification",
     "section_comment_delete_success": "Comment deleted successfully",
     "section_comment_delete_failed": "Failed to delete comment",
     "section_comment_delete_confirm": "Confirm Delete Comment",

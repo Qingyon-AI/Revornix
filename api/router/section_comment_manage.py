@@ -60,7 +60,7 @@ async def create_section_comment(
         user_id=user.id,
     )
 
-    await crud.section.create_section_comment_async(
+    db_comment = await crud.section.create_section_comment_async(
         db=db,
         section_id=section_comment_create_request.section_id,
         creator_id=user.id,
@@ -79,7 +79,8 @@ async def create_section_comment(
             trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
             params={
                 "section_id": section_comment_create_request.section_id,
-                "receiver_id": db_user.id
+                "receiver_id": db_user.id,
+                "comment_id": db_comment.id,
             },
         )
         for db_user in db_users
@@ -146,3 +147,22 @@ async def delete_section_comment(
     await db.commit()
 
     return schemas.common.SuccessResponse()
+
+@section_comment_manage_router.post('/comment/detail', response_model=schemas.section.SectionCommentInfo)
+async def get_section_comment_detail(
+    section_comment_detail_request: schemas.section.SectionCommentDetailRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user_without_throw),
+):
+    db_comment = await crud.section.get_section_comment_by_id_async(
+        db=db,
+        comment_id=section_comment_detail_request.section_comment_id,
+    )
+    if db_comment is None:
+        raise schemas.error.CustomException("Comment not found", code=404)
+    await _ensure_section_comment_access(
+        db=db,
+        section_id=db_comment.section_id,
+        user_id=user.id if user is not None else None,
+    )
+    return schemas.section.SectionCommentInfo.model_validate(db_comment)

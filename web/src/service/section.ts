@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentInfo, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -228,6 +228,12 @@ export const searchSectionComment = async (data: SectionCommentSearchRequest): P
 
 export const searchPublicSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
     return await publicRequest(sectionApi.searchComment, {
+        data
+    })
+}
+
+export const getSectionCommentDetail = async (data: { section_comment_id: number }): Promise<SectionCommentInfo> => {
+    return await request(sectionApi.getCommentDetail, {
         data
     })
 }
