@@ -34,13 +34,6 @@ import {
     NotificationTriggerEventToJSON,
     NotificationTriggerEventToJSONTyped,
 } from './NotificationTriggerEvent';
-import type { NotificationTriggerScheduler } from './NotificationTriggerScheduler';
-import {
-    NotificationTriggerSchedulerFromJSON,
-    NotificationTriggerSchedulerFromJSONTyped,
-    NotificationTriggerSchedulerToJSON,
-    NotificationTriggerSchedulerToJSONTyped,
-} from './NotificationTriggerScheduler';
 
 /**
  * 
@@ -73,53 +66,11 @@ export interface NotificationTask {
      */
     enable: boolean;
     /**
-     * 
-     * @type {number}
-     * @memberof NotificationTask
-     */
-    content_type: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof NotificationTask
-     */
-    trigger_type: number;
-    /**
-     * 
+     *
      * @type {NotificationTriggerEvent}
      * @memberof NotificationTask
      */
     trigger_event?: NotificationTriggerEvent | null;
-    /**
-     * 
-     * @type {NotificationTriggerScheduler}
-     * @memberof NotificationTask
-     */
-    trigger_scheduler?: NotificationTriggerScheduler | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTask
-     */
-    notification_title?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTask
-     */
-    notification_content?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTask
-     */
-    notification_link?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof NotificationTask
-     */
-    notification_cover?: string | null;
     /**
      * 
      * @type {number}
@@ -160,8 +111,6 @@ export function instanceOfNotificationTask(value: object): value is Notification
     if (!('creator_id' in value) || value['creator_id'] === undefined) return false;
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('enable' in value) || value['enable'] === undefined) return false;
-    if (!('content_type' in value) || value['content_type'] === undefined) return false;
-    if (!('trigger_type' in value) || value['trigger_type'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
     if (!('update_time' in value) || value['update_time'] === undefined) return false;
     return true;
@@ -181,14 +130,7 @@ export function NotificationTaskFromJSONTyped(json: any, ignoreDiscriminator: bo
         'creator_id': json['creator_id'],
         'title': json['title'],
         'enable': json['enable'],
-        'content_type': json['content_type'],
-        'trigger_type': json['trigger_type'],
         'trigger_event': json['trigger_event'] == null ? undefined : NotificationTriggerEventFromJSON(json['trigger_event']),
-        'trigger_scheduler': json['trigger_scheduler'] == null ? undefined : NotificationTriggerSchedulerFromJSON(json['trigger_scheduler']),
-        'notification_title': json['notification_title'] == null ? undefined : json['notification_title'],
-        'notification_content': json['notification_content'] == null ? undefined : json['notification_content'],
-        'notification_link': json['notification_link'] == null ? undefined : json['notification_link'],
-        'notification_cover': json['notification_cover'] == null ? undefined : json['notification_cover'],
         'notification_template_id': json['notification_template_id'] == null ? undefined : json['notification_template_id'],
         'notification_source': json['notification_source'] == null ? undefined : NotificationSourceFromJSON(json['notification_source']),
         'notification_target': json['notification_target'] == null ? undefined : NotificationTargetFromJSON(json['notification_target']),
@@ -212,14 +154,7 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'creator_id': value['creator_id'],
         'title': value['title'],
         'enable': value['enable'],
-        'content_type': value['content_type'],
-        'trigger_type': value['trigger_type'],
         'trigger_event': NotificationTriggerEventToJSON(value['trigger_event']),
-        'trigger_scheduler': NotificationTriggerSchedulerToJSON(value['trigger_scheduler']),
-        'notification_title': value['notification_title'],
-        'notification_content': value['notification_content'],
-        'notification_link': value['notification_link'],
-        'notification_cover': value['notification_cover'],
         'notification_template_id': value['notification_template_id'],
         'notification_source': NotificationSourceToJSON(value['notification_source']),
         'notification_target': NotificationTargetToJSON(value['notification_target']),
@@ -227,4 +162,3 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

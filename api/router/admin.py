@@ -20,15 +20,13 @@ from config.base import UNION_PAY_API_PREFIX
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
-from enums.notification import NotificationContentType, NotificationTriggerType
 from enums.section import UserSectionRole
 from enums.user import UserRole
 from proxy.file_system_proxy import FileSystemProxy
 from router.notification_task_manage import (
     _build_notification_task_response,
-    _get_scheduler_cron_expr,
-    _remove_task_schedule,
-    _schedule_task,
+    _sync_notification_task_event_configuration,
+    _validate_notification_source_target_pair,
 )
 from router.logic_helpers import group_document_ids_by_category
 from router.section_detail_query import _build_section_info_response
@@ -1005,59 +1003,27 @@ async def add_admin_user_notification_task(
     db_user = await crud.user.get_user_by_id_async(db=db, user_id=request.user_id)
     if db_user is None:
         raise schemas.error.CustomException("User not found", code=404)
+    await _validate_notification_source_target_pair(
+        db=db,
+        notification_source_id=request.notification_source_id,
+        notification_target_id=request.notification_target_id,
+    )
+    if request.trigger_event_id is None:
+        raise schemas.error.CustomException("Trigger event ID is required", code=400)
 
     db_notification_task = await crud.notification.create_notification_task_async(
         db=db,
         creator_id=db_user.id,
         title=request.title,
-        content_type=request.content_type,
         notification_target_id=request.notification_target_id,
         notification_source_id=request.notification_source_id,
-        trigger_type=request.trigger_type,
         enable=request.enable,
     )
-    if request.content_type == NotificationContentType.CUSTOM:
-        if request.notification_title is None or request.notification_content is None:
-            raise schemas.error.CustomException("Notification title is required", code=400)
-        await crud.notification.create_notification_task_content_custom_async(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            title=request.notification_title,
-            content=request.notification_content,
-            link=request.notification_link,
-            cover=request.notification_cover,
-        )
-    elif request.content_type == NotificationContentType.TEMPLATE:
-        if request.notification_template_id is None:
-            raise schemas.error.CustomException("Notification template ID is required", code=400)
-        await crud.notification.create_notification_task_content_template_async(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            notification_template_id=request.notification_template_id,
-        )
-
-    if request.trigger_type == NotificationTriggerType.SCHEDULER and request.trigger_scheduler_cron:
-        await crud.notification.create_notification_task_trigger_scheduler_async(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            cron_expr=request.trigger_scheduler_cron,
-        )
-    elif request.trigger_type == NotificationTriggerType.EVENT and request.trigger_event_id:
-        await crud.notification.create_notification_task_trigger_event_async(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            trigger_event_id=request.trigger_event_id,
-        )
-
-    if request.enable and request.trigger_type == NotificationTriggerType.SCHEDULER:
-        if request.trigger_scheduler_cron is None:
-            raise schemas.error.CustomException("Scheduler cron expression is required", code=400)
-        await _schedule_task(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            notification_target_id=db_notification_task.notification_target_id,
-            cron_expr=request.trigger_scheduler_cron,
-        )
+    await _sync_notification_task_event_configuration(
+        db=db,
+        notification_task_id=db_notification_task.id,
+        trigger_event_id=request.trigger_event_id,
+    )
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -1086,101 +1052,26 @@ async def update_admin_user_notification_task(
     if request.title is not None:
         db_notification_task.title = request.title
 
-    if db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
-        _remove_task_schedule(db_notification_task.id)
-
-    if request.content_type is not None:
-        db_notification_task.content_type = request.content_type
-
-    if request.content_type == NotificationContentType.CUSTOM:
-        db_notification_task_content_custom = await crud.notification.get_notification_task_content_custom_by_notification_task_id_async(
+    if request.notification_source_id is not None or request.notification_target_id is not None:
+        await _validate_notification_source_target_pair(
             db=db,
-            notification_task_id=request.notification_task_id,
+            notification_source_id=request.notification_source_id or db_notification_task.notification_source_id,
+            notification_target_id=request.notification_target_id or db_notification_task.notification_target_id,
         )
-        if request.notification_title is None or request.notification_content is None:
-            raise schemas.error.CustomException("Notification title is required for custom notifications", code=400)
-        if db_notification_task_content_custom is None:
-            await crud.notification.create_notification_task_content_custom_async(
-                db=db,
-                notification_task_id=request.notification_task_id,
-                title=request.notification_title,
-                content=request.notification_content,
-                link=request.notification_link,
-                cover=request.notification_cover,
-            )
-        else:
-            db_notification_task_content_custom.title = request.notification_title
-            db_notification_task_content_custom.content = request.notification_content
-            db_notification_task_content_custom.cover = request.notification_cover
-            db_notification_task_content_custom.link = request.notification_link
-    elif request.content_type == NotificationContentType.TEMPLATE:
-        if request.notification_template_id is None:
-            raise schemas.error.CustomException("Notification template ID is required for template notifications", code=400)
-        db_notification_task_content_template = await crud.notification.get_notification_task_content_template_by_notification_task_id_async(
-            db=db,
-            notification_task_id=request.notification_task_id,
-        )
-        if db_notification_task_content_template is None:
-            await crud.notification.create_notification_task_content_template_async(
-                db=db,
-                notification_task_id=request.notification_task_id,
-                notification_template_id=request.notification_template_id,
-            )
-        else:
-            db_notification_task_content_template.notification_template_id = request.notification_template_id
-
     if request.notification_source_id is not None:
         db_notification_task.notification_source_id = request.notification_source_id
     if request.notification_target_id is not None:
         db_notification_task.notification_target_id = request.notification_target_id
 
-    if request.trigger_type is not None:
-        db_notification_task.trigger_type = request.trigger_type
-    if request.trigger_type == NotificationTriggerType.SCHEDULER:
-        if request.trigger_scheduler_cron is not None:
-            db_notification_task_trigger_scheduler = await crud.notification.get_notification_task_trigger_scheduler_by_notification_task_id_async(
-                db=db,
-                notification_task_id=request.notification_task_id,
-            )
-            if db_notification_task_trigger_scheduler is None:
-                await crud.notification.create_notification_task_trigger_scheduler_async(
-                    db=db,
-                    notification_task_id=request.notification_task_id,
-                    cron_expr=request.trigger_scheduler_cron,
-                )
-            else:
-                db_notification_task_trigger_scheduler.cron_expr = request.trigger_scheduler_cron
-    elif request.trigger_type == NotificationTriggerType.EVENT:
-        if request.trigger_event_id is not None:
-            db_notification_task_trigger_event = await crud.notification.get_notification_task_trigger_event_by_notification_task_id_async(
-                db=db,
-                notification_task_id=request.notification_task_id,
-            )
-            if db_notification_task_trigger_event is None:
-                await crud.notification.create_notification_task_trigger_event_async(
-                    db=db,
-                    notification_task_id=request.notification_task_id,
-                    trigger_event_id=request.trigger_event_id,
-                )
-            else:
-                db_notification_task_trigger_event.trigger_event_id = request.trigger_event_id
+    if request.trigger_event_id is not None:
+        await _sync_notification_task_event_configuration(
+            db=db,
+            notification_task_id=request.notification_task_id,
+            trigger_event_id=request.trigger_event_id,
+        )
 
     if request.enable is not None:
         db_notification_task.enable = request.enable
-
-    _remove_task_schedule(db_notification_task.id)
-    if db_notification_task.enable and db_notification_task.trigger_type == NotificationTriggerType.SCHEDULER:
-        cron_expr = await _get_scheduler_cron_expr(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            request_cron_expr=request.trigger_scheduler_cron,
-        )
-        await _schedule_task(
-            db=db,
-            notification_task_id=db_notification_task.id,
-            notification_target_id=db_notification_task.notification_target_id,
-            cron_expr=cron_expr,
-        )
 
     db_notification_task.update_time = now
     await db.commit()
@@ -1207,17 +1098,11 @@ async def delete_admin_user_notification_task(
         notification_task_ids=request.notification_task_ids,
     )
     for notification_task_id in request.notification_task_ids:
-        await crud.notification.delete_notification_task_content_custom_by_notification_task_id_async(
-            db=db,
-            user_id=db_user.id,
-            notification_task_id=notification_task_id,
-        )
         await crud.notification.delete_notification_task_content_template_by_notification_task_id_async(
             db=db,
             user_id=db_user.id,
             notification_task_id=notification_task_id,
         )
-        _remove_task_schedule(notification_task_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 

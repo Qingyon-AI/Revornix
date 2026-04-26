@@ -894,7 +894,7 @@ async def delete_section(
                 trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
                 params={
                     "section_id": section_delete_request.section_id,
-                    "user_id": db_user.id
+                    "receiver_id": db_user.id
                 }
             )
     return schemas.common.SuccessResponse()

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 
 import models
-from enums.notification import NotificationTriggerType, UserNotificationSourceRole, UserNotificationTargetRole
+from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole
 from uuid import uuid4
 
 
@@ -129,26 +129,35 @@ def create_notification_task(
     db: Session,
     creator_id: int,
     title: str,
-    content_type: int,
     notification_source_id: int,
     notification_target_id: int,
-    trigger_type: int,
     enable: bool
 ):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(
         creator_id=creator_id,
         title=title,
-        content_type=content_type,
+        content_type=1,
         notification_source_id=notification_source_id,
         notification_target_id=notification_target_id,
-        trigger_type=trigger_type,
+        trigger_type=0,
         create_time=now,
         enable=enable
     )
     db.add(notification_task)
     db.flush()
     return notification_task
+
+def get_trigger_event_by_id(
+    db: Session,
+    trigger_event_id: int
+):
+    query = db.query(models.notification.TriggerEvent)
+    query = query.filter(
+        models.notification.TriggerEvent.id == trigger_event_id,
+        models.notification.TriggerEvent.delete_at.is_(None)
+    )
+    return query.one_or_none()
 
 def create_notification_task_trigger_event(
     db: Session,
@@ -662,7 +671,6 @@ def get_notification_tasks_by_user_id_and_notification_trigger_event(
                        models.notification.TriggerEvent.id == models.notification.NotificationTaskTriggerEvent.trigger_event_id)
     query = query.filter(
         models.notification.NotificationTask.creator_id == user_id,
-        models.notification.NotificationTask.trigger_type == NotificationTriggerType.EVENT,
         models.notification.NotificationTask.delete_at.is_(None),
         models.notification.NotificationTaskTriggerEvent.delete_at.is_(None),
         models.notification.TriggerEvent.uuid == trigger_event_uuid
@@ -1443,20 +1451,18 @@ async def create_notification_task_async(
     db: AsyncSession,
     creator_id: int,
     title: str,
-    content_type: int,
     notification_source_id: int,
     notification_target_id: int,
-    trigger_type: int,
     enable: bool,
 ):
     now = datetime.now(timezone.utc)
     notification_task = models.notification.NotificationTask(
         creator_id=creator_id,
         title=title,
-        content_type=content_type,
+        content_type=1,
         notification_source_id=notification_source_id,
         notification_target_id=notification_target_id,
-        trigger_type=trigger_type,
+        trigger_type=0,
         create_time=now,
         enable=enable,
     )

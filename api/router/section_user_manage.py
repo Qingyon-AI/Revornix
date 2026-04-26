@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -111,14 +113,15 @@ async def delete_section_user(
     )
 
     # 由于删除用户之后就该用户和该专栏的记录就被删除了，后续发送通知的时候无法判断用户专栏关系，所以此处先发送通知再提交事务
-    start_trigger_user_notification_event.delay(
+    await asyncio.to_thread(
+        start_trigger_user_notification_event.delay,
         user_id=section_user_delete_request.user_id,
         trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
         params={
             "section_id": section_user_delete_request.section_id,
-            "user_id": section_user_delete_request.user_id
-        }
-    ).get()
+            "receiver_id": section_user_delete_request.user_id,
+        },
+    )
 
     await db.commit()
     return schemas.common.SuccessResponse()

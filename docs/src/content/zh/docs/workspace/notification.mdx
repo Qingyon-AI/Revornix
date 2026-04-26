@@ -188,7 +188,7 @@ import StaticImage from '../../../../components/static-image';
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20251124135940420.png)
 
-支持时间触发和事件触发，你可以自行根据实际需求选择。
+当前通知任务仅支持事件触发，不再提供时间触发配置。
 
 事件触发支持以下事件：
 
@@ -197,12 +197,9 @@ import StaticImage from '../../../../components/static-image';
 - SectionSubscribed 你创建/参与的专栏被订阅
 - SectionUpdated 你参与/订阅的专栏发生更新
 
-通知任务支持自定义内容和模板内容。如果你需要实时消息，建议使用模板内容，因为模板可以随事件动态填充上下文。
+通知任务会根据你选择的事件自动匹配对应模板，不需要手动选择模板参数。当前内置映射如下：
 
-内置模板包括：
-
-- Daily Summary Template 每日总结模版
-- Removed From Section Template 被移出专栏的通知模版
-- Section Commented Template 专栏被评论的通知模版
-- Section Subscribed Template 专栏被订阅的通知模版
-- Section Updated Template 专栏发生更新通知模版
+- Removed From Section -> 被移出专栏的通知模板
+- Section Commented -> 专栏被评论的通知模板
+- Section Subscribed -> 专栏被订阅的通知模板
+- Section Updated -> 专栏发生更新的通知模板

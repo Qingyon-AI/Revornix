@@ -63,7 +63,7 @@ async def subscribe_section(
                 trigger_event_uuid=NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value,
                 params={
                     "section_id": section_subscribe_request.section_id,
-                    "user_id": db_user.id
+                    "receiver_id": db_user.id
                 },
             )
             for db_user in db_users

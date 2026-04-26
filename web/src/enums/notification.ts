@@ -7,15 +7,6 @@ export enum NotificationSourceProvidedUUID {
     TELEGRAM = 'b8d1c80d974a468d8206b717f2ed02fc'
 }
 
-export enum NotificationContentType {
-    CUSTOM = 0,
-    TEMPLATE = 1
-}
-
-export enum NotificationTriggerType {
-    EVENT = 0,
-    SCHEDULER = 1
-}
 
 export enum NotificationTargetProvidedUUID {
     EMAIL = '341ff369ce32418abb8b4f12ac607059',

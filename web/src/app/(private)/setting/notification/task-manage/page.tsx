@@ -30,7 +30,6 @@ import DeleteNotificationTask from '@/components/notification/delete-notificatio
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { PaginationNotificationTask } from '@/generated';
-import { NotificationContentType } from '@/enums/notification';
 
 interface NotificationTarget {
 	id: number;
@@ -165,40 +164,6 @@ const NotificationTaskManagePage = () => {
 					</div>
 				);
 			},
-		},
-		{
-			accessorKey: 'trigger_type',
-			header: () => {
-				return (
-					<div className='w-full'>
-						{t('setting_notification_task_manage_form_trigger_type')}
-					</div>
-				);
-			},
-			cell: ({ row }) => (
-				<div className='flex flex-row gap-2 items-center'>
-					{row.getValue('trigger_type') === 0
-						? t('setting_notification_task_manage_form_trigger_type_event')
-						: t('setting_notification_task_manage_form_trigger_type_scheduler')}
-				</div>
-			),
-		},
-		{
-			accessorKey: 'content_type',
-			header: () => {
-				return (
-					<div className='w-full'>
-						{t('setting_notification_task_manage_form_content_type')}
-					</div>
-				);
-			},
-			cell: ({ row }) => (
-				<div className='flex flex-row gap-2 items-center'>
-					{row.getValue('content_type') === NotificationContentType.CUSTOM
-						? t('setting_notification_task_manage_form_content_type_custom')
-						: t('setting_notification_task_manage_form_content_type_template')}
-				</div>
-			),
 		},
 		{
 			accessorKey: 'enable',

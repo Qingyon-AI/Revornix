@@ -281,22 +281,12 @@ class NotificationTaskDetailRequest(BaseModel):
 class NotificationTriggerEvent(BaseModel):
     trigger_event_id: int
 
-class NotificationTriggerScheduler(BaseModel):
-    cron_expr: str
-
 class NotificationTask(BaseModel):
     id: int
     creator_id: int
     title: str
     enable: bool
-    content_type: int
-    trigger_type: int
     trigger_event: NotificationTriggerEvent | None = None
-    trigger_scheduler: NotificationTriggerScheduler | None = None
-    notification_title: str | None = None
-    notification_content: str | None = None
-    notification_link: str | None = None
-    notification_cover: str | None = None
     notification_template_id: int | None = None
     notification_source: NotificationSource | None = None
     notification_target: NotificationTarget | None = None
@@ -309,16 +299,8 @@ class DeleteNotificationTaskRequest(BaseModel):
 class UpdateNotificationTaskRequest(BaseModel):
     notification_task_id: int
     title: str | None = None
-    content_type: int | None = None
     enable: bool | None = None
-    notification_template_id: int | None = None
-    trigger_type: int | None = None
-    trigger_scheduler_cron: str | None = None
     trigger_event_id: int | None = None
-    notification_title: str | None = None
-    notification_content: str | None = None
-    notification_link: str | None = None
-    notification_cover: str | None = None
     notification_source_id: int | None = None
     notification_target_id: int | None = None
 
@@ -327,15 +309,7 @@ class AddNotificationTaskRequest(BaseModel):
     notification_target_id: int
     enable: bool
     title: str
-    content_type: int
-    notification_template_id: int | None = None
-    notification_title: str | None = None
-    notification_content: str | None = None
-    notification_cover: str | None = None
-    notification_link: str | None = None
-    trigger_type: int
     trigger_event_id: int | None = None
-    trigger_scheduler_cron: str | None = None
 
 class NotificationTemplate(BaseModel):
     id: int

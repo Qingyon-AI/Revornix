@@ -54,3 +54,16 @@ def get_root_user(
         models.user.User.delete_at.is_(None)
     )
     return query.one_or_none()
+
+
+async def get_users_by_ids_async(
+    db: AsyncSession,
+    user_ids: list[int],
+):
+    if not user_ids:
+        return []
+    stmt = select(models.user.User).where(
+        models.user.User.id.in_(user_ids),
+        models.user.User.delete_at.is_(None),
+    )
+    return list((await db.execute(stmt)).scalars().all())

@@ -79,7 +79,7 @@ async def create_section_comment(
             trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
             params={
                 "section_id": section_comment_create_request.section_id,
-                "user_id": db_user.id
+                "receiver_id": db_user.id
             },
         )
         for db_user in db_users

@@ -391,7 +391,7 @@ def start_trigger_user_notification_event(
     trigger_event_uuid: str,
     params: dict | None = None,
 ):
-    from workflow.notification_event_workflow import run_notification_event_workflow
+    from notification.dispatch import run_notification_event_workflow
 
     _run(
         run_notification_event_workflow(
