@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date as date_type
 from datetime import datetime
 
@@ -382,3 +384,51 @@ class LabelSummaryItem(BaseModel):
 
 class LabelSummaryResponse(BaseModel):
     data: list[LabelSummaryItem]
+
+
+class DocumentCommentInfo(BaseModel):
+    id: int
+    content: str
+    create_time: datetime
+    update_time: datetime | None
+    creator: UserPublicInfo
+    parent_id: int | None = None
+    root_id: int | None = None
+    reply_user: UserPublicInfo | None = None
+    like_count: int = 0
+    liked: bool = False
+    reply_count: int = 0
+    preview_replies: list[DocumentCommentInfo] = Field(default_factory=list)
+
+
+class DocumentCommentSearchRequest(BaseModel):
+    document_id: int
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+    keyword: str | None = None
+    sort: str = Field(default="time", description="time | hot")
+    preview_reply_limit: int = Field(default=2, ge=0, le=5)
+
+
+class DocumentCommentReplySearchRequest(BaseModel):
+    root_comment_id: int
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+
+
+class DocumentCommentLikeRequest(BaseModel):
+    document_comment_id: int
+
+
+class DocumentCommentDeleteRequest(BaseModel):
+    document_comment_ids: list[int]
+
+
+class DocumentCommentDetailRequest(BaseModel):
+    document_comment_id: int
+
+
+class DocumentCommentCreateRequest(BaseModel):
+    content: str
+    document_id: int
+    parent_id: int | None = None

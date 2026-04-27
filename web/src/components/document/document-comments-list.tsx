@@ -2,11 +2,11 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
-	searchPublicSectionComment,
-	searchSectionComment,
-	type InifiniteScrollPagnitionSectionCommentInfo,
-	type SectionCommentSortType,
-} from '@/service/section';
+	searchDocumentComment,
+	searchPublicDocumentComment,
+	type DocumentCommentSortType,
+	type InifiniteScrollPagnitionDocumentCommentInfo,
+} from '@/service/document';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Skeleton } from '../ui/skeleton';
@@ -18,34 +18,30 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { MessageSquareText, RefreshCw } from 'lucide-react';
-import {
-	Tabs,
-	TabsList,
-	TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import SectionCommentCard from './section-comment-card';
+import DocumentCommentCard from './document-comment-card';
 import { useUserContext } from '@/provider/user-provider';
 
-const SectionCommentsList = ({
-	section_id,
+const DocumentCommentsList = ({
+	document_id,
 	initialData,
 	publicMode = false,
 }: {
-	section_id: number;
-	initialData?: InifiniteScrollPagnitionSectionCommentInfo;
+	document_id: number;
+	initialData?: InifiniteScrollPagnitionDocumentCommentInfo;
 	publicMode?: boolean;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
 	const keyword = '';
-	const [sort, setSort] = useState<SectionCommentSortType>('time');
+	const [sort, setSort] = useState<DocumentCommentSortType>('time');
 
 	const initialPageParam = {
 		limit: 10,
-		keyword: keyword,
-		section_id: section_id,
+		keyword,
+		document_id,
 		sort,
 	};
 
@@ -59,33 +55,33 @@ const SectionCommentsList = ({
 		hasNextPage,
 		refetch,
 	} = useInfiniteQuery({
-			queryKey: ['searchSectionComment', keyword, sort, section_id],
-			queryFn: (pageParam) =>
-				publicMode
-					? searchPublicSectionComment({ ...pageParam.pageParam })
-					: searchSectionComment({ ...pageParam.pageParam }),
-			initialPageParam,
-			initialData:
-				sort === 'time' && initialData
-					? {
-							pages: [initialData],
-							pageParams: [initialPageParam],
-						}
-					: undefined,
-			retry: publicMode ? false : undefined,
-			refetchOnWindowFocus: publicMode ? false : undefined,
-			getNextPageParam: (lastPage) => {
-				return lastPage.has_more
-					? {
-							start: lastPage.next_start,
-							limit: lastPage.limit,
-							keyword: keyword,
-							section_id: section_id,
-							sort,
-						}
-					: undefined;
-			},
-		});
+		queryKey: ['searchDocumentComment', keyword, sort, document_id],
+		queryFn: (pageParam) =>
+			publicMode
+				? searchPublicDocumentComment({ ...pageParam.pageParam })
+				: searchDocumentComment({ ...pageParam.pageParam }),
+		initialPageParam,
+		initialData:
+			sort === 'time' && initialData
+				? {
+						pages: [initialData],
+						pageParams: [initialPageParam],
+					}
+				: undefined,
+		retry: publicMode ? false : undefined,
+		refetchOnWindowFocus: publicMode ? false : undefined,
+		getNextPageParam: (lastPage) => {
+			return lastPage.has_more
+				? {
+						start: lastPage.next_start,
+						limit: lastPage.limit,
+						keyword,
+						document_id,
+						sort,
+					}
+				: undefined;
+		},
+	});
 
 	const comments = data?.pages.flatMap((page) => page.elements) || [];
 
@@ -98,13 +94,17 @@ const SectionCommentsList = ({
 			<div className='flex shrink-0 items-center justify-between gap-2'>
 				<Tabs
 					value={sort}
-					onValueChange={(v) => setSort(v as SectionCommentSortType)}>
+					onValueChange={(v) => setSort(v as DocumentCommentSortType)}>
 					<TabsList className='h-8 rounded-full'>
-						<TabsTrigger value='time' className='h-7 rounded-full px-3 text-xs'>
-							{t('section_comment_sort_time')}
+						<TabsTrigger
+							value='time'
+							className='h-7 rounded-full px-3 text-xs'>
+							{t('document_comment_sort_time')}
 						</TabsTrigger>
-						<TabsTrigger value='hot' className='h-7 rounded-full px-3 text-xs'>
-							{t('section_comment_sort_hot')}
+						<TabsTrigger
+							value='hot'
+							className='h-7 rounded-full px-3 text-xs'>
+							{t('document_comment_sort_hot')}
 						</TabsTrigger>
 					</TabsList>
 				</Tabs>
@@ -129,41 +129,45 @@ const SectionCommentsList = ({
 							<EmptyMedia variant='icon'>
 								<MessageSquareText />
 							</EmptyMedia>
-							<EmptyDescription>{t('section_comments_empty')}</EmptyDescription>
+							<EmptyDescription>
+								{t('document_comments_empty')}
+							</EmptyDescription>
 						</EmptyHeader>
 					</Empty>
 				) : (
 					<div className='flex flex-col gap-3'>
-						{comments.map((comment, index) => {
-							return (
-								<div
-									key={comment.id}
-									ref={index === comments.length - 1 ? bottomRef : undefined}>
-									<SectionCommentCard
-										comment={comment}
-										currentUserId={publicMode ? undefined : mainUserInfo?.id}
-										sectionId={section_id}
-										publicMode={publicMode}
-									/>
-								</div>
-							);
-						})}
+						{comments.map((comment, index) => (
+							<div
+								key={comment.id}
+								ref={
+									index === comments.length - 1 ? bottomRef : undefined
+								}>
+								<DocumentCommentCard
+									comment={comment}
+									currentUserId={publicMode ? undefined : mainUserInfo?.id}
+									documentId={document_id}
+									publicMode={publicMode}
+								/>
+							</div>
+						))}
 						{isFetching && !data && (
 							<div className='flex flex-col gap-3'>
-								{[...Array(12)].map((_, index) => {
-									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
-									);
-								})}
+								{[...Array(12)].map((_, index) => (
+									<Skeleton
+										className='h-28 w-full rounded-3xl'
+										key={index}
+									/>
+								))}
 							</div>
 						)}
 						{isFetchingNextPage && data && (
 							<div className='flex flex-col gap-3'>
-								{[...Array(12)].map((_, index) => {
-									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
-									);
-								})}
+								{[...Array(12)].map((_, index) => (
+									<Skeleton
+										className='h-28 w-full rounded-3xl'
+										key={index}
+									/>
+								))}
 							</div>
 						)}
 					</div>
@@ -173,4 +177,4 @@ const SectionCommentsList = ({
 	);
 };
 
-export default SectionCommentsList;
+export default DocumentCommentsList;

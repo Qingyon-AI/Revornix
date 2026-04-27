@@ -69,6 +69,7 @@ import {
 	DrawerTrigger,
 } from '../ui/drawer';
 import DocumentNotes from './document-notes';
+import DocumentOperateComment from './document-operate-comment';
 import { DocumentCategory } from '@/enums/document';
 import DocumentConfiguration from './document-configuration';
 import { useUserContext } from '@/provider/user-provider';
@@ -711,6 +712,21 @@ const DocumentOperate = ({
 		);
 	};
 
+	const renderCommentAction = (
+		buttonClassName: string,
+		onTriggerClick?: () => void,
+		iconOnly = false,
+	) => {
+		return (
+			<DocumentOperateComment
+				document_id={id}
+				className={buttonClassName}
+				onTriggerClick={onTriggerClick}
+				iconOnly={iconOnly}
+			/>
+		);
+	};
+
 	const renderMobilePanelAction = ({
 		icon: Icon,
 		label,
@@ -755,6 +771,10 @@ const DocumentOperate = ({
 		{
 			key: 'notes',
 			node: renderNotesAction(desktopIconButtonClassName, undefined, true),
+		},
+		{
+			key: 'comment',
+			node: renderCommentAction(desktopIconButtonClassName, undefined, true),
 		},
 		{
 			key: 'delete',
@@ -853,6 +873,9 @@ const DocumentOperate = ({
 														closeMobileMenu,
 													)}
 													{renderNotesAction(
+														mobileActionButtonClassName,
+													)}
+													{renderCommentAction(
 														mobileActionButtonClassName,
 													)}
 													{renderDeleteAction(

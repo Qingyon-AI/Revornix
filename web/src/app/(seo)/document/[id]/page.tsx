@@ -18,9 +18,12 @@ import {
 	fetchPublicDocumentGraph,
 	fetchPublicDocumentDetail,
 	fetchPublicDocumentMarkdownContent,
+	fetchPublicDocumentComments,
 	getPublicSectionHref,
 	isSeoNotFoundError,
 } from '@/lib/seo';
+import DocumentCommentsList from '@/components/document/document-comments-list';
+import SeoDocumentCommentGate from '@/components/seo/seo-document-comment-gate';
 import { replacePath } from '@/lib/utils';
 import { ArrowRight, CalendarClock, FileDown, Globe2 } from 'lucide-react';
 import { Metadata } from 'next';
@@ -156,6 +159,11 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		const initialGraph = await fetchPublicDocumentGraph({
 			document_id: documentId,
 		}).catch(() => null);
+		const initialComments = await fetchPublicDocumentComments({
+			document_id: documentId,
+			keyword: '',
+			limit: 10,
+		}).catch(() => undefined);
 		const markdown = await getDocumentMarkdown(document);
 		const categoryLabel = getCategoryLabel(document.category, t);
 		const coverSrc = getDocumentCoverSrc(document);
@@ -541,6 +549,29 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						</div>
 					</div>
 				</div>
+
+				<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
+					<div className='space-y-2'>
+						<h2 className='text-2xl font-semibold tracking-tight'>
+							{t('document_comments')}
+						</h2>
+						<p className='text-sm leading-6 text-muted-foreground'>
+							{t('document_comments_description')}
+						</p>
+					</div>
+
+					<div className='space-y-5'>
+						<SeoDocumentCommentGate
+							documentId={document.id}
+							loginHref={`/login?redirect_to=${encodeURIComponent(`/document/${document.id}`)}`}
+						/>
+						<DocumentCommentsList
+							document_id={document.id}
+							initialData={initialComments}
+							publicMode
+						/>
+					</div>
+				</section>
 			</div>
 		);
 	} catch (error) {
