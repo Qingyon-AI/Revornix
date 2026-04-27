@@ -843,8 +843,34 @@ async def update_section(
                 timezone_name=scheduler_timezone,
             )
 
+    content_changed = (
+        section_update_request.title is not None
+        or section_update_request.description is not None
+        or section_update_request.cover is not None
+        or section_update_request.labels is not None
+    )
+
     db_section.update_time = now
     await db.commit()
+
+    if content_changed:
+        db_recipients = await crud.section.get_users_for_section_by_section_id_async(
+            db=db,
+            section_id=section_update_request.section_id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER],
+        )
+        for db_recipient in db_recipients:
+            if db_recipient.id == user.id:
+                continue
+            start_trigger_user_notification_event.delay(
+                user_id=db_recipient.id,
+                trigger_event_uuid=NotificationTriggerEventUUID.SECTION_CONTENT_UPDATED.value,
+                params={
+                    "section_id": section_update_request.section_id,
+                    "receiver_id": db_recipient.id,
+                },
+            )
+
     return schemas.common.SuccessResponse()
 
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)

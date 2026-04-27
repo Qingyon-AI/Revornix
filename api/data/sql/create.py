@@ -48,12 +48,22 @@ from notification.target.dingtalk_notification_target_provided import DingTalkNo
 from notification.target.email_notification_target_provided import EmailNotificationTargetProvided
 from notification.target.feishu_notification_target_provided import FeishuNotificationTargetProvided
 from notification.target.telegram_notification_target_provided import TelegramNotificationTargetProvided
+from notification.template.document_podcast_ready import DocumentPodcastReadyNotificationTemplate
+from notification.template.document_process_completed import DocumentProcessCompletedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
+from notification.template.section_content_updated import SectionContentUpdatedNotificationTemplate
+from notification.template.section_podcast_ready import SectionPodcastReadyNotificationTemplate
+from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.trigger_event.document_podcast_ready import DocumentPodcastReadyNotificationTriggerEvent
+from notification.trigger_event.document_process_completed import DocumentProcessCompletedNotificationTriggerEvent
 from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
 from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
+from notification.trigger_event.section_content_updated import SectionContentUpdatedNotificationTriggerEvent
+from notification.trigger_event.section_podcast_ready import SectionPodcastReadyNotificationTriggerEvent
+from notification.trigger_event.section_ppt_ready import SectionPptReadyNotificationTriggerEvent
 from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
 from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
 
@@ -159,6 +169,11 @@ async def seed_database(db: AsyncSession):
         SectionUpdatedNotificationTemplate(),
         SectionSubscribedNotificationTemplate(),
         RemovedFromSectionNotificationTemplate(),
+        SectionContentUpdatedNotificationTemplate(),
+        SectionPodcastReadyNotificationTemplate(),
+        SectionPptReadyNotificationTemplate(),
+        DocumentProcessCompletedNotificationTemplate(),
+        DocumentPodcastReadyNotificationTemplate(),
     ]
     for tpl in templates:
         if await crud.notification.get_notification_template_by_uuid_async(db, tpl.uuid) is None:
@@ -177,6 +192,11 @@ async def seed_database(db: AsyncSession):
         SectionUpdatedNotificationTriggerEvent(),
         SectionCommentedNotificationTriggerEvent(),
         SectionSubscribedNotificationTriggerEvent(),
+        SectionContentUpdatedNotificationTriggerEvent(),
+        SectionPodcastReadyNotificationTriggerEvent(),
+        SectionPptReadyNotificationTriggerEvent(),
+        DocumentProcessCompletedNotificationTriggerEvent(),
+        DocumentPodcastReadyNotificationTriggerEvent(),
     ]
     for trigger in triggers:
         if await crud.notification.get_trigger_event_by_uuid_async(db, trigger.uuid) is None:
@@ -413,8 +433,8 @@ async def main():
         info_logger.warning(f"STEP 0: No migration generated: {e}")
 
     # 2) 应用到最新
-    info_logger.warning("STEP 1: Running alembic upgrade head...")
-    command.upgrade(alembic_cfg, "head")
+    info_logger.warning("STEP 1: Running alembic upgrade heads...")
+    command.upgrade(alembic_cfg, "heads")
     info_logger.warning("STEP 1: Alembic upgrade done.")
 
     # 3) seed（你原逻辑）

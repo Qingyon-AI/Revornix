@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
+from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.logger import info_logger
 from data.sql.base import async_session_context
-from enums.section import SectionPodcastStatus
+from enums.notification import NotificationTriggerEventUUID
+from enums.section import SectionPodcastStatus, UserSectionRole
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_section_podcast_graph_context
@@ -233,6 +235,31 @@ async def _mark_section_podcast_success(
             db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
             await db.commit()
+
+        db_recipients = await crud.section.get_users_for_section_by_section_id_async(
+            db=db,
+            section_id=section_id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
+        )
+
+    for db_recipient in db_recipients:
+        try:
+            current_app.send_task(
+                "common.celery.app.start_trigger_user_notification_event",
+                kwargs={
+                    "user_id": db_recipient.id,
+                    "trigger_event_uuid": NotificationTriggerEventUUID.SECTION_PODCAST_READY.value,
+                    "params": {
+                        "section_id": section_id,
+                        "receiver_id": db_recipient.id,
+                    },
+                },
+            )
+        except Exception as e:
+            exception_logger.error(
+                f"Failed to dispatch section_podcast_ready notification: section_id={section_id}, user_id={db_recipient.id}, error={e}"
+            )
+
     return state
 
 
