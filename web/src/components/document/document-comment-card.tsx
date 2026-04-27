@@ -38,6 +38,7 @@ type Props = {
 	rootComment?: DocumentCommentInfo;
 	publicMode?: boolean;
 	isReply?: boolean;
+	loginHref?: string;
 };
 
 const DocumentCommentCard = ({
@@ -47,6 +48,7 @@ const DocumentCommentCard = ({
 	rootComment,
 	publicMode = false,
 	isReply = false,
+	loginHref,
 }: Props) => {
 	const router = useRouter();
 	const t = useTranslations();
@@ -64,6 +66,16 @@ const DocumentCommentCard = ({
 	const isOwner =
 		currentUserId !== undefined && comment.creator.id === currentUserId;
 	const canInteract = currentUserId !== undefined;
+
+	const ensureLoggedInOrRedirect = () => {
+		if (canInteract) return true;
+		if (loginHref) {
+			router.push(loginHref);
+		} else {
+			toast.error(t('seo_login_required_to_interact'));
+		}
+		return false;
+	};
 
 	const rootIdForInvalidation = rootComment
 		? rootComment.id
@@ -107,7 +119,8 @@ const DocumentCommentCard = ({
 	};
 
 	const handleToggleLike = async () => {
-		if (!canInteract || likeBusy) return;
+		if (likeBusy) return;
+		if (!ensureLoggedInOrRedirect()) return;
 		const previouslyLiked = optimisticLiked;
 		const previousCount = optimisticLikeCount;
 		setLikeBusy(true);
@@ -239,7 +252,7 @@ const DocumentCommentCard = ({
 				<Button
 					variant='ghost'
 					size='sm'
-					disabled={!canInteract || likeBusy}
+					disabled={likeBusy}
 					onClick={handleToggleLike}
 					className={cn(
 						'h-7 gap-1 rounded-full px-2 text-xs',
@@ -255,16 +268,17 @@ const DocumentCommentCard = ({
 						: t('document_comment_like')}
 				</Button>
 
-				{canInteract && (
-					<Button
-						variant='ghost'
-						size='sm'
-						onClick={() => setReplying((v) => !v)}
-						className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
-						<MessageCircle className='size-3.5' />
-						{t('document_comment_reply')}
-					</Button>
-				)}
+				<Button
+					variant='ghost'
+					size='sm'
+					onClick={() => {
+						if (!ensureLoggedInOrRedirect()) return;
+						setReplying((v) => !v);
+					}}
+					className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
+					<MessageCircle className='size-3.5' />
+					{t('document_comment_reply')}
+				</Button>
 			</div>
 
 			{replying && canInteract && (
@@ -293,6 +307,7 @@ const DocumentCommentCard = ({
 					documentId={documentId}
 					currentUserId={currentUserId}
 					publicMode={publicMode}
+					loginHref={loginHref}
 				/>
 			)}
 		</div>

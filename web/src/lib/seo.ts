@@ -7,9 +7,11 @@ import {
 	DocumentDetailRequest,
 	DocumentDetailResponse,
 	GraphResponse,
+	InifiniteScrollPagnitionDocumentNoteInfo,
 	InifiniteScrollPagnitionSectionInfo,
 	InifiniteScrollPagnitionSectionDocumentInfo,
 	InifiniteScrollPagnitionDocumentInfo,
+	SearchDocumentNoteRequest,
 	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
@@ -129,6 +131,14 @@ export const fetchPublicDocumentComments = async (
 	data: DocumentCommentSearchRequest,
 ): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
 	return await serverRequest(documentApi.searchComment, {
+		data,
+	});
+};
+
+export const fetchPublicDocumentNotes = async (
+	data: SearchDocumentNoteRequest,
+): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+	return await serverRequest(documentApi.searchPublicDocumentNotes, {
 		data,
 	});
 };

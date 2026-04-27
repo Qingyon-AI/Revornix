@@ -52,4 +52,13 @@ async def _delete_documents_tx(
         
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(clear_data())
+
+    from data.neo4j.base import close_neo4j_driver_for_current_loop
+
+    async def _main() -> None:
+        try:
+            await clear_data()
+        finally:
+            await close_neo4j_driver_for_current_loop()
+
+    asyncio.run(_main())

@@ -32,10 +32,12 @@ const SectionCommentsList = ({
 	section_id,
 	initialData,
 	publicMode = false,
+	loginHref,
 }: {
 	section_id: number;
 	initialData?: InifiniteScrollPagnitionSectionCommentInfo;
 	publicMode?: boolean;
+	loginHref?: string;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -141,9 +143,10 @@ const SectionCommentsList = ({
 									ref={index === comments.length - 1 ? bottomRef : undefined}>
 									<SectionCommentCard
 										comment={comment}
-										currentUserId={publicMode ? undefined : mainUserInfo?.id}
+										currentUserId={mainUserInfo?.id}
 										sectionId={section_id}
 										publicMode={publicMode}
+										loginHref={loginHref}
 									/>
 								</div>
 							);

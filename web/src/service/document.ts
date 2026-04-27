@@ -243,6 +243,18 @@ export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Prom
     })
 }
 
+export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+    return await publicRequest(documentApi.searchPublicDocumentNotes, {
+        data
+    })
+}
+
+export const fetchPublicDocumentNotesInServer = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+    return await serverRequest(documentApi.searchPublicDocumentNotes, {
+        data
+    })
+}
+
 export const summaryMonthDocumentCount = async (): Promise<DocumentMonthSummaryResponse> => {
     return await request(documentApi.summaryMonthDocumentCount)
 }

@@ -28,10 +28,12 @@ const DocumentCommentsList = ({
 	document_id,
 	initialData,
 	publicMode = false,
+	loginHref,
 }: {
 	document_id: number;
 	initialData?: InifiniteScrollPagnitionDocumentCommentInfo;
 	publicMode?: boolean;
+	loginHref?: string;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -144,9 +146,10 @@ const DocumentCommentsList = ({
 								}>
 								<DocumentCommentCard
 									comment={comment}
-									currentUserId={publicMode ? undefined : mainUserInfo?.id}
+									currentUserId={mainUserInfo?.id}
 									documentId={document_id}
 									publicMode={publicMode}
+									loginHref={loginHref}
 								/>
 							</div>
 						))}

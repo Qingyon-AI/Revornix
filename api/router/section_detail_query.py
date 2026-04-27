@@ -531,7 +531,7 @@ async def get_seo_section_markdown_content(
     user: models.user.User = Depends(get_current_user_without_throw),
     db: AsyncSession = Depends(get_async_db),
 ):
-    db_publish_section = await crud.section.get_publish_section_by_uuid_async(
+    db_publish_section = await crud.section.get_publish_sections_by_uuid_async(
         db=db,
         uuid=section_seo_detail_request.uuid,
     )
