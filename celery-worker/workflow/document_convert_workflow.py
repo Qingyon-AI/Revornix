@@ -295,6 +295,12 @@ async def _mark_convert_success(
         db_convert_task.status = DocumentMdConvertStatus.SUCCESS
         db_convert_task.md_file_name = md_file_name
         db_convert_task.update_time = datetime.now(timezone.utc)
+        db_document = await crud.document.get_document_by_document_id_async(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is not None:
+            db_document.content_update_time = datetime.now(timezone.utc)
         if category == DocumentCategory.WEBSITE:
             website_url = state.get("website_url")
             if website_url is not None:

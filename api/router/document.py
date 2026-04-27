@@ -16,7 +16,6 @@ from common.celery.app import (
     start_process_document_summarize,
     start_process_document_transcribe,
     start_process_section,
-    update_document_process_status,
 )
 from common.document_creation import create_document_for_user
 from common.dependencies import (
@@ -39,7 +38,6 @@ from enums.document import (
     DocumentGraphStatus,
     DocumentMdConvertStatus,
     DocumentPodcastStatus,
-    DocumentProcessStatus,
     DocumentSummarizeStatus,
     UserDocumentAuthority,
 )
@@ -85,64 +83,6 @@ def _has_document_write_access(authority: int | None) -> bool:
         UserDocumentAuthority.READ_AND_WRITE,
     ]
 
-
-async def _sync_document_process_task_after_subtask_change(
-    *,
-    db: AsyncSession,
-    document_id: int,
-) -> None:
-    db_process_task = await crud.task.get_document_process_task_by_document_id_async(
-        db=db,
-        document_id=document_id,
-    )
-    if db_process_task is None:
-        return
-
-    has_active_subtask = any(
-        task is not None and task.status in active_statuses
-        for task, active_statuses in (
-            (
-                await crud.task.get_document_summarize_task_by_document_id_async(
-                    db=db,
-                    document_id=document_id,
-                ),
-                [DocumentSummarizeStatus.WAIT_TO, DocumentSummarizeStatus.SUMMARIZING],
-            ),
-            (
-                await crud.task.get_document_embedding_task_by_document_id_async(
-                    db=db,
-                    document_id=document_id,
-                ),
-                [DocumentEmbeddingStatus.WAIT_TO, DocumentEmbeddingStatus.EMBEDDING],
-            ),
-            (
-                await crud.task.get_document_graph_task_by_document_id_async(
-                    db=db,
-                    document_id=document_id,
-                ),
-                [DocumentGraphStatus.WAIT_TO, DocumentGraphStatus.BUILDING],
-            ),
-            (
-                await crud.task.get_document_podcast_task_by_document_id_async(
-                    db=db,
-                    document_id=document_id,
-                ),
-                [DocumentPodcastStatus.WAIT_TO, DocumentPodcastStatus.GENERATING],
-            ),
-            (
-                await crud.task.get_document_audio_transcribe_task_by_document_id_async(
-                    db=db,
-                    document_id=document_id,
-                ),
-                [DocumentAudioTranscribeStatus.WAIT_TO, DocumentAudioTranscribeStatus.TRANSCRIBING],
-            ),
-        )
-    )
-    if has_active_subtask:
-        return
-
-    db_process_task.status = DocumentProcessStatus.SUCCESS
-    db_process_task.update_time = datetime.now(timezone.utc)
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
 async def get_label_summary(
@@ -343,18 +283,12 @@ async def create_ai_summary(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a summary", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = datetime.now(timezone.utc)
     task_result = start_process_document_summarize.apply_async(
         kwargs={
             "document_id": db_document.id,
             "user_id": user.id,
             "model_id": selected_model_id,
         },
-        link=update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS,
-        ),
     )
     db_exist_summarize_task.celery_task_id = task_result.id
     await db.commit()
@@ -414,17 +348,11 @@ async def create_embedding(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating embeddings", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = now
     task_result = start_process_document_embedding.apply_async(
         kwargs={
             "document_id": db_document.id,
             "user_id": user.id,
         },
-        link=update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS,
-        ),
     )
     db_embedding_task.celery_task_id = task_result.id
     await db.commit()
@@ -498,18 +426,12 @@ async def transcribe_audio_document(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before transcription", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = now
     task_result = start_process_document_transcribe.apply_async(
         kwargs={
             "document_id": db_document.id,
             "user_id": user.id,
             "engine_id": selected_engine_id,
         },
-        link=update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS,
-        ),
     )
     db_transcribe_task.celery_task_id = task_result.id
     await db.commit()
@@ -581,18 +503,12 @@ async def generate_graph(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a graph", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = now
     task_result = start_process_document_graph.apply_async(
         kwargs={
             "document_id": db_document.id,
             "user_id": user.id,
             "model_id": selected_model_id,
         },
-        link=update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS,
-        ),
     )
     db_graph_generate_task.celery_task_id = task_result.id
     await db.commit()
@@ -669,18 +585,12 @@ async def generate_podcast(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a podcast", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = now
     task_result = start_process_document_podcast.apply_async(
         kwargs={
             "document_id": db_document.id,
             "user_id": user.id,
             "engine_id": selected_engine_id,
         },
-        link=update_document_process_status.si(
-            document_id=db_document.id,
-            status=DocumentProcessStatus.SUCCESS,
-        ),
     )
     db_exist_podcast_task.celery_task_id = task_result.id
     await db.commit()
@@ -708,7 +618,6 @@ async def cancel_ai_summary(
         raise schemas.error.CustomException("No active summary task to cancel", code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    await _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -734,7 +643,6 @@ async def cancel_embedding(
         raise schemas.error.CustomException("No active embedding task to cancel", code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    await _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -760,7 +668,6 @@ async def cancel_transcribe(
         raise schemas.error.CustomException("No active transcription task to cancel", code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    await _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -786,7 +693,6 @@ async def cancel_graph(
         raise schemas.error.CustomException("No active graph task to cancel", code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    await _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -812,7 +718,6 @@ async def cancel_podcast(
         raise schemas.error.CustomException("No active podcast task to cancel", code=409)
     revoke_task(cancelled_task.celery_task_id)
     cancelled_task.celery_task_id = None
-    await _sync_document_process_task_after_subtask_change(db=db, document_id=cancel_request.document_id)
     await db.commit()
     return schemas.common.SuccessResponse()
 
@@ -921,8 +826,6 @@ async def transform_markdown(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before Markdown conversion", code=400)
-    db_process_task.status = DocumentProcessStatus.PROCESSING
-    db_process_task.update_time = now
 
     db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
         db=db,
@@ -1003,6 +906,7 @@ async def update_document(
         if db_quick_note_document is None:
             raise schemas.error.CustomException("Quick note content not found", code=404)
         db_quick_note_document.content = document_update_request.content
+        db_document.content_update_time = now
     if document_update_request.labels is not None:
         exist_document_labels = await crud.document.get_document_labels_by_document_id_async(
             db=db,
@@ -1078,4 +982,34 @@ async def update_document(
     await db.commit()
     if section_process_tasks is not None:
         section_process_tasks.apply_async()
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/touch-content', response_model=schemas.common.NormalResponse)
+async def touch_document_content(
+    request: schemas.document.DocumentDetailRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    if request.document_id is None:
+        raise schemas.error.CustomException("document_id is required", code=400)
+    db_document = await crud.document.get_document_by_document_id_async(
+        db=db,
+        document_id=request.document_id
+    )
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = await _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    db_document.content_update_time = datetime.now(timezone.utc)
+    await db.commit()
     return schemas.common.SuccessResponse()

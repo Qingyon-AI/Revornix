@@ -88,6 +88,7 @@ class Document(Base):
     category: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: file, 1: website, 2: quick-note, 3: audio')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    content_update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     creator: Mapped[User] = relationship("User", backref="created_documents")

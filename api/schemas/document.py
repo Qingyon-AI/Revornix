@@ -314,6 +314,7 @@ class DocumentDetailResponse(BaseModel):
     cover: str | None = None
     create_time: datetime
     update_time: datetime | None
+    content_update_time: datetime | None = None
     labels: list[DocumentLabel] = []
     creator: UserPublicInfo
     sections: list[BaseSectionInfo] = []
