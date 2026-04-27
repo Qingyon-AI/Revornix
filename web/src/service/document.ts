@@ -344,6 +344,12 @@ export const updateDocument = async (data: DocumentUpdateRequest): Promise<Norma
     })
 }
 
+export const touchDocumentContent = async (data: { document_id: number }): Promise<NormalResponse> => {
+    return await request(documentApi.touchDocumentContent, {
+        data
+    })
+}
+
 export const readDocument = async (data: ReadRequest): Promise<NormalResponse> => {
     return await request(documentApi.readDocument, {
         data

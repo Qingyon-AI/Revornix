@@ -7,6 +7,7 @@ import {
 	getDocumentMarkdownContent,
 	transformToMarkdown,
 	updateDocument,
+	touchDocumentContent,
 } from '@/service/document';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
@@ -166,6 +167,7 @@ const WebsiteDocumentDetail = ({
 			labels: document.labels?.map((label) => label.id) ?? [],
 			sections: document.sections?.map((section) => section.id) ?? [],
 		});
+		await touchDocumentContent({ document_id: id });
 	};
 
 	const handleSaveMarkdown = async (content: string) => {

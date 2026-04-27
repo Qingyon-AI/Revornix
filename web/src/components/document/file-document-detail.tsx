@@ -7,6 +7,7 @@ import {
 	getDocumentMarkdownContent,
 	transformToMarkdown,
 	updateDocument,
+	touchDocumentContent,
 } from '@/service/document';
 import 'katex/dist/katex.min.css';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
@@ -146,6 +147,7 @@ const FileDocumentDetail = ({
 			labels: document.labels?.map((label) => label.id) ?? [],
 			sections: document.sections?.map((section) => section.id) ?? [],
 		});
+		await touchDocumentContent({ document_id: id });
 	};
 
 	const handleSaveMarkdown = async (content: string) => {

@@ -3,7 +3,6 @@ import type { DocumentDetailResponse, SectionInfo } from '@/generated';
 import {
 	DocumentGraphStatus,
 	DocumentPodcastStatus,
-	DocumentProcessStatus,
 	DocumentSummarizeStatus,
 	DocumentEmbeddingStatus,
 } from '@/enums/document';
@@ -43,16 +42,6 @@ const isNewerThan = (left: Date | null, right: Date | null): boolean => {
 	return left.getTime() > right.getTime();
 };
 
-const hasNewerNonSuccessTask = (
-	baseTime: Date | null,
-	task: TimedTask,
-	successStatus: number,
-): boolean => {
-	if (!baseTime || typeof task?.status !== 'number') return false;
-	if (task.status === successStatus) return false;
-	return isNewerThan(getTaskTime(task), baseTime);
-};
-
 const hasNewerSuccessTask = (
 	baseTime: Date | null,
 	task: TimedTask,
@@ -65,7 +54,7 @@ const hasNewerSuccessTask = (
 export const getDocumentFreshnessState = (
 	document?: DocumentDetailResponse | null,
 ) => {
-	const contentTime = toDate(document?.update_time ?? document?.create_time);
+	const contentTime = toDate(document?.content_update_time ?? document?.create_time);
 	const embeddingTime = hasStatus(
 		document?.embedding_task,
 		DocumentEmbeddingStatus.SUCCESS,
@@ -91,27 +80,14 @@ export const getDocumentFreshnessState = (
 		embeddingTime && isNewerThan(contentTime, embeddingTime),
 	);
 
-	const summaryStale =
-		Boolean(summaryTime && isNewerThan(contentTime, summaryTime)) ||
-		hasNewerNonSuccessTask(
-			summaryTime,
-			document?.process_task,
-			DocumentProcessStatus.SUCCESS,
-		);
-	const graphStale =
-		Boolean(graphTime && isNewerThan(contentTime, graphTime)) ||
-		hasNewerNonSuccessTask(
-			graphTime,
-			document?.process_task,
-			DocumentProcessStatus.SUCCESS,
-		);
+	const summaryStale = Boolean(
+		summaryTime && isNewerThan(contentTime, summaryTime),
+	);
+	const graphStale = Boolean(
+		graphTime && isNewerThan(contentTime, graphTime),
+	);
 	const podcastStale =
 		Boolean(podcastTime && isNewerThan(contentTime, podcastTime)) ||
-		hasNewerNonSuccessTask(
-			podcastTime,
-			document?.process_task,
-			DocumentProcessStatus.SUCCESS,
-		) ||
 		hasNewerSuccessTask(
 			podcastTime,
 			document?.summarize_task,

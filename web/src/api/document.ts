@@ -9,6 +9,7 @@ export default {
     documentDetail: API_PREFIX + '/document/detail',
     getDocumentMarkdownContent: API_PREFIX + '/document/markdown/content',
     updateDocument: API_PREFIX + '/document/update',
+    touchDocumentContent: API_PREFIX + '/document/touch-content',
     starDocument: API_PREFIX + '/document/star',
     readDocument: API_PREFIX + '/document/read',
     deleteDocument: API_PREFIX + '/document/delete',

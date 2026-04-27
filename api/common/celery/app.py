@@ -42,7 +42,6 @@ start_process_document_graph = _task("common.celery.app.start_process_document_g
 start_process_document_summarize = _task("common.celery.app.start_process_document_summarize")
 start_process_document_transcribe = _task("common.celery.app.start_process_document_transcribe")
 start_process_document_podcast = _task("common.celery.app.start_process_document_podcast")
-update_document_process_status = _task("common.celery.app.update_document_process_status")
 start_process_section_podcast = _task("common.celery.app.start_process_section_podcast")
 start_process_section_ppt = _task("common.celery.app.start_process_section_ppt")
 update_section_process_status = _task("common.celery.app.update_section_process_status")
@@ -79,6 +78,5 @@ __all__ = [
     "start_trigger_user_notification_event",
     "finalize_section_images",
     "revoke_task",
-    "update_document_process_status",
     "update_section_process_status",
 ]

@@ -174,7 +174,13 @@ export interface DocumentDetailResponse {
      */
     update_time: Date | null;
     /**
-     * 
+     *
+     * @type {Date}
+     * @memberof DocumentDetailResponse
+     */
+    content_update_time?: Date | null;
+    /**
+     *
      * @type {Array<DocumentLabel>}
      * @memberof DocumentDetailResponse
      */
@@ -315,6 +321,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'cover': json['cover'] == null ? undefined : json['cover'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
+        'content_update_time': (json['content_update_time'] == null ? null : new Date(json['content_update_time'])),
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(DocumentLabelFromJSON)),
         'creator': UserPublicInfoFromJSON(json['creator']),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoFromJSON)),
@@ -355,6 +362,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'cover': value['cover'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
+        'content_update_time': value['content_update_time'] == null ? value['content_update_time'] : value['content_update_time'].toISOString(),
         'labels': value['labels'] == null ? undefined : ((value['labels'] as Array<any>).map(DocumentLabelToJSON)),
         'creator': UserPublicInfoToJSON(value['creator']),
         'sections': value['sections'] == null ? undefined : ((value['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoToJSON)),

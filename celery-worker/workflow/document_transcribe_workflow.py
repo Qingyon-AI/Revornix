@@ -135,6 +135,12 @@ async def _transcribe_document_audio(
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = datetime.now(timezone.utc)
+        db_document = await crud.document.get_document_by_document_id_async(
+            db=db,
+            document_id=document_id
+        )
+        if db_document is not None:
+            db_document.content_update_time = datetime.now(timezone.utc)
         await db.commit()
     return state
 
