@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import EmailBindLocal from '@/components/user/email-bind-local';
 import AvatarUpdate from '@/components/user/avatar-update';
-import CoverUpdate from '@/components/user/cover-update';
+import CoverUpdateDialog from '@/components/user/cover-update-dialog';
 import NicknameUpdate from '@/components/user/nickname-update';
 import SloganUpdate from '@/components/user/slogan-update';
 import DeleteUserButton from '@/components/user/delete-user-button';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import UserUUID from '@/components/user/uuid';
+import SeoPageLink from '@/components/user/seo-page-link';
 import GitHubBind from '@/components/user/github-bind';
 import GoogleBind from '@/components/user/google-bind';
 import PhoneBind from '@/components/user/phone-bind';
@@ -59,7 +60,7 @@ const AccountPage = async () => {
 							</div>
 						</Label>
 						<div className='flex flex-col gap-2'>
-							<CoverUpdate />
+							<CoverUpdateDialog />
 						</div>
 					</div>
 					<Separator />
@@ -214,6 +215,18 @@ const AccountPage = async () => {
 									{t('account_api_key_go_to_configure')}
 								</Button>
 							</Link>
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('account_seo_page')}
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_seo_page_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<SeoPageLink />
 						</div>
 					</div>
 				</CardContent>
