@@ -84,6 +84,8 @@ async def create_section_comment_async(
     creator_id: int,
     content: str,
     parent_id: int | None = None,
+    root_id: int | None = None,
+    reply_user_id: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_section_comment = models.section.SectionComment(
@@ -91,6 +93,8 @@ async def create_section_comment_async(
         creator_id=creator_id,
         content=content,
         parent_id=parent_id,
+        root_id=root_id,
+        reply_user_id=reply_user_id,
         create_time=now,
     )
     db.add(db_section_comment)
@@ -107,7 +111,10 @@ async def get_section_comment_by_id_async(
             models.section.SectionComment.id == comment_id,
             models.section.SectionComment.delete_at.is_(None),
         )
-        .options(selectinload(models.section.SectionComment.creator))
+        .options(
+            selectinload(models.section.SectionComment.creator),
+            selectinload(models.section.SectionComment.reply_user),
+        )
     )
     return (await db.execute(stmt)).scalars().first()
 
@@ -981,7 +988,15 @@ async def search_parent_degree_section_comments_async(
     keyword: str | None = None,
     start: int | None = None,
     limit: int = 10,
+    sort: str = "time",
 ):
+    """Top-level (parent_id IS NULL) section comments.
+
+    For sort == "time": cursor `start` is the last seen comment id (id-desc).
+    For sort == "hot": cursor `start` is the offset (skip count) since like_count
+    isn't monotonic. Pagination consistency may drift slightly if likes change
+    while paging — acceptable trade-off for hot ordering.
+    """
     stmt = (
         select(models.section.SectionComment)
         .where(
@@ -989,14 +1004,22 @@ async def search_parent_degree_section_comments_async(
             models.section.SectionComment.section_id == section_id,
             models.section.SectionComment.parent_id.is_(None),
         )
-        .order_by(models.section.SectionComment.id.desc())
         .options(selectinload(models.section.SectionComment.creator))
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(models.section.SectionComment.content.like(f"%{keyword}%"))
-    if start is not None:
-        stmt = stmt.where(models.section.SectionComment.id <= start)
+    if sort == "hot":
+        stmt = stmt.order_by(
+            models.section.SectionComment.like_count.desc(),
+            models.section.SectionComment.id.desc(),
+        )
+        if start is not None and start > 0:
+            stmt = stmt.offset(start)
+    else:
+        stmt = stmt.order_by(models.section.SectionComment.id.desc())
+        if start is not None:
+            stmt = stmt.where(models.section.SectionComment.id <= start)
     return list((await db.execute(stmt)).scalars().all())
 
 def count_parent_degree_section_comments(
@@ -1062,6 +1085,158 @@ async def search_next_parent_degree_section_comment_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(models.section.SectionComment.content.like(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def search_section_comment_replies_async(
+    db: AsyncSession,
+    root_comment_id: int,
+    start: int | None = None,
+    limit: int = 10,
+):
+    """Replies are flattened under their root_id, ordered by id ascending (chronological)."""
+    stmt = (
+        select(models.section.SectionComment)
+        .where(
+            models.section.SectionComment.delete_at.is_(None),
+            models.section.SectionComment.root_id == root_comment_id,
+        )
+        .order_by(models.section.SectionComment.id.asc())
+        .options(
+            selectinload(models.section.SectionComment.creator),
+            selectinload(models.section.SectionComment.reply_user),
+        )
+        .limit(limit)
+    )
+    if start is not None:
+        stmt = stmt.where(models.section.SectionComment.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
+
+
+async def count_section_comment_replies_async(
+    db: AsyncSession,
+    root_comment_id: int,
+):
+    stmt = select(func.count(models.section.SectionComment.id)).where(
+        models.section.SectionComment.delete_at.is_(None),
+        models.section.SectionComment.root_id == root_comment_id,
+    )
+    return (await db.execute(stmt)).scalar_one()
+
+
+async def count_replies_for_root_ids_async(
+    db: AsyncSession,
+    root_ids: list[int],
+):
+    if not root_ids:
+        return {}
+    stmt = (
+        select(
+            models.section.SectionComment.root_id,
+            func.count(models.section.SectionComment.id),
+        )
+        .where(
+            models.section.SectionComment.delete_at.is_(None),
+            models.section.SectionComment.root_id.in_(root_ids),
+        )
+        .group_by(models.section.SectionComment.root_id)
+    )
+    rows = (await db.execute(stmt)).all()
+    return {row[0]: row[1] for row in rows}
+
+
+async def get_preview_replies_for_root_ids_async(
+    db: AsyncSession,
+    root_ids: list[int],
+    per_root_limit: int = 2,
+):
+    """Return earliest-N replies per root_id. Issues one small query per root."""
+    grouped: dict[int, list] = {rid: [] for rid in root_ids}
+    if not root_ids or per_root_limit <= 0:
+        return grouped
+    for rid in root_ids:
+        stmt = (
+            select(models.section.SectionComment)
+            .where(
+                models.section.SectionComment.delete_at.is_(None),
+                models.section.SectionComment.root_id == rid,
+            )
+            .order_by(models.section.SectionComment.id.asc())
+            .options(
+                selectinload(models.section.SectionComment.creator),
+                selectinload(models.section.SectionComment.reply_user),
+            )
+            .limit(per_root_limit)
+        )
+        grouped[rid] = list((await db.execute(stmt)).scalars().all())
+    return grouped
+
+
+async def like_section_comment_async(
+    db: AsyncSession,
+    comment_id: int,
+    user_id: int,
+):
+    """Idempotent like. Returns True if a new like was inserted."""
+    existing_stmt = select(models.section.SectionCommentLike).where(
+        models.section.SectionCommentLike.comment_id == comment_id,
+        models.section.SectionCommentLike.user_id == user_id,
+    )
+    existing = (await db.execute(existing_stmt)).scalars().first()
+    if existing is not None:
+        return False
+    now = datetime.now(timezone.utc)
+    db.add(models.section.SectionCommentLike(
+        comment_id=comment_id,
+        user_id=user_id,
+        create_time=now,
+    ))
+    await db.execute(
+        models.section.SectionComment.__table__.update()
+        .where(models.section.SectionComment.id == comment_id)
+        .values(like_count=models.section.SectionComment.like_count + 1)
+    )
+    await db.flush()
+    return True
+
+
+async def unlike_section_comment_async(
+    db: AsyncSession,
+    comment_id: int,
+    user_id: int,
+):
+    """Idempotent unlike. Returns True if a like was removed."""
+    existing_stmt = select(models.section.SectionCommentLike).where(
+        models.section.SectionCommentLike.comment_id == comment_id,
+        models.section.SectionCommentLike.user_id == user_id,
+    )
+    existing = (await db.execute(existing_stmt)).scalars().first()
+    if existing is None:
+        return False
+    await db.delete(existing)
+    await db.execute(
+        models.section.SectionComment.__table__.update()
+        .where(
+            models.section.SectionComment.id == comment_id,
+            models.section.SectionComment.like_count > 0,
+        )
+        .values(like_count=models.section.SectionComment.like_count - 1)
+    )
+    await db.flush()
+    return True
+
+
+async def get_user_liked_comment_ids_async(
+    db: AsyncSession,
+    user_id: int,
+    comment_ids: list[int],
+):
+    if not comment_ids:
+        return set()
+    stmt = select(models.section.SectionCommentLike.comment_id).where(
+        models.section.SectionCommentLike.user_id == user_id,
+        models.section.SectionCommentLike.comment_id.in_(comment_ids),
+    )
+    return {row[0] for row in (await db.execute(stmt)).all()}
 
 def search_published_sections(
     db: Session,
@@ -2280,12 +2455,24 @@ async def delete_section_comments_by_section_comment_ids_async(
     if not section_comment_ids:
         return
     now = datetime.now(timezone.utc)
+    # Owner-check: only soft-delete comments the user owns
+    owned_stmt = select(models.section.SectionComment.id).where(
+        models.section.SectionComment.id.in_(section_comment_ids),
+        models.section.SectionComment.delete_at.is_(None),
+        models.section.SectionComment.creator_id == user_id,
+    )
+    owned_ids = [row[0] for row in (await db.execute(owned_stmt)).all()]
+    if not owned_ids:
+        return
+    # Soft-delete the targeted comments and any replies whose root is among them
     await db.execute(
         models.section.SectionComment.__table__.update()
         .where(
-            models.section.SectionComment.id.in_(section_comment_ids),
             models.section.SectionComment.delete_at.is_(None),
-            models.section.SectionComment.creator_id == user_id,
+            or_(
+                models.section.SectionComment.id.in_(owned_ids),
+                models.section.SectionComment.root_id.in_(owned_ids),
+            ),
         )
         .values(delete_at=now)
     )

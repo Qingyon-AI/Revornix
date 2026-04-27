@@ -128,12 +128,29 @@ class SectionCommentInfo(BaseModel):
     create_time: datetime
     update_time: datetime | None
     creator: UserPublicInfo
+    parent_id: int | None = None
+    root_id: int | None = None
+    reply_user: UserPublicInfo | None = None
+    like_count: int = 0
+    liked: bool = False
+    reply_count: int = 0
+    preview_replies: list[SectionCommentInfo] = Field(default_factory=list)
 
 class SectionCommentSearchRequest(BaseModel):
     section_id: int
     start: int | None = None
     limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     keyword: str | None = None
+    sort: str = Field(default="time", description="time | hot")
+    preview_reply_limit: int = Field(default=2, ge=0, le=5)
+
+class SectionCommentReplySearchRequest(BaseModel):
+    root_comment_id: int
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+
+class SectionCommentLikeRequest(BaseModel):
+    section_comment_id: int
 
 class SectionCommentDeleteRequest(BaseModel):
     section_comment_ids: list[int]
@@ -144,6 +161,7 @@ class SectionCommentDetailRequest(BaseModel):
 class SectionCommentCreateRequest(BaseModel):
     content: str
     section_id: int
+    parent_id: int | None = None
 
 class SectionSubscribeRequest(BaseModel):
     section_id: int
