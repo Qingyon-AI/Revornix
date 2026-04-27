@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -158,3 +158,32 @@ class DocumentNote(Base):
 
     user: Mapped[User] = relationship("User", backref="document_notes")
     document: Mapped[Document] = relationship("Document", backref="notes")
+
+
+class DocumentComment(Base):
+    __tablename__ = "document_comment"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), nullable=False, index=True)
+    creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
+    content: Mapped[str] = mapped_column(String(500), nullable=False)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("document_comment.id"), index=True, comment='Direct parent comment id; null for top-level')
+    root_id: Mapped[int | None] = mapped_column(ForeignKey("document_comment.id"), index=True, comment='Top-level ancestor id; null for top-level. Replies are flattened under their root for B-station style display')
+    reply_user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True, comment='When the parent is itself a reply, the user being replied to')
+    like_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default='0')
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    creator: Mapped[User] = relationship("User", foreign_keys=[creator_id], backref="created_document_comments")
+    reply_user: Mapped[User | None] = relationship("User", foreign_keys=[reply_user_id])
+
+
+class DocumentCommentLike(Base):
+    __tablename__ = "document_comment_like"
+    __table_args__ = (UniqueConstraint("comment_id", "user_id", name="uq_document_comment_like_comment_user"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    comment_id: Mapped[int] = mapped_column(ForeignKey("document_comment.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

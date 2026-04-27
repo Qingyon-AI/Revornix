@@ -1,5 +1,5 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest } from '@/generated'
+import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest, UserPublicInfo } from '@/generated'
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
@@ -352,4 +352,103 @@ export const deleteDocument = async (data: DocumentDeleteRequest): Promise<Norma
 
 export const getDocumentLabelSummary = async (): Promise<LabelSummaryResponse> => {
     return await request(documentApi.getDocumentLabelSummary)
+}
+
+// -----------------------------------------------------------------------------
+// Document comments — mirror of section comment service
+// -----------------------------------------------------------------------------
+
+export type DocumentCommentSortType = 'time' | 'hot'
+
+export type DocumentCommentInfo = {
+    id: number
+    content: string
+    create_time: string
+    update_time?: string | null
+    creator: UserPublicInfo
+    parent_id?: number | null
+    root_id?: number | null
+    reply_user?: UserPublicInfo | null
+    like_count: number
+    liked: boolean
+    reply_count: number
+    preview_replies: DocumentCommentInfo[]
+}
+
+export type InifiniteScrollPagnitionDocumentCommentInfo = {
+    total: number
+    start?: number | null
+    limit: number
+    has_more: boolean
+    elements: DocumentCommentInfo[]
+    next_start?: number | null
+}
+
+export type DocumentCommentCreateRequest = {
+    content: string
+    document_id: number
+    parent_id?: number | null
+}
+
+export type DocumentCommentSearchRequest = {
+    document_id: number
+    start?: number | null
+    limit?: number
+    keyword?: string | null
+    sort?: DocumentCommentSortType
+    preview_reply_limit?: number
+}
+
+export type DocumentCommentReplySearchRequest = {
+    root_comment_id: number
+    start?: number | null
+    limit?: number
+}
+
+export type DocumentCommentLikeRequest = {
+    document_comment_id: number
+}
+
+export type DocumentCommentDeleteRequest = {
+    document_comment_ids: number[]
+}
+
+export const createDocumentComment = async (data: DocumentCommentCreateRequest): Promise<NormalResponse> => {
+    return await request(documentApi.createComment, { data })
+}
+
+export const deleteDocumentComment = async (data: DocumentCommentDeleteRequest): Promise<NormalResponse> => {
+    return await request(documentApi.deleteComment, { data })
+}
+
+export const searchDocumentComment = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+    return await request(documentApi.searchComment, { data })
+}
+
+export const searchPublicDocumentComment = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+    return await publicRequest(documentApi.searchComment, { data })
+}
+
+export const searchDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+    return await request(documentApi.searchCommentReplies, { data })
+}
+
+export const searchPublicDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+    return await publicRequest(documentApi.searchCommentReplies, { data })
+}
+
+export const likeDocumentComment = async (data: DocumentCommentLikeRequest): Promise<NormalResponse> => {
+    return await request(documentApi.likeComment, { data })
+}
+
+export const unlikeDocumentComment = async (data: DocumentCommentLikeRequest): Promise<NormalResponse> => {
+    return await request(documentApi.unlikeComment, { data })
+}
+
+export const getDocumentCommentDetail = async (data: { document_comment_id: number }): Promise<DocumentCommentInfo> => {
+    return await request(documentApi.getCommentDetail, { data })
+}
+
+export const fetchPublicDocumentCommentsInServer = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+    return await serverRequest(documentApi.searchComment, { data })
 }

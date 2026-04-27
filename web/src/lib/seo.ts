@@ -23,6 +23,10 @@ import type {
 	InifiniteScrollPagnitionSectionCommentInfo,
 	SectionCommentSearchRequest,
 } from '@/service/section';
+import type {
+	InifiniteScrollPagnitionDocumentCommentInfo,
+	DocumentCommentSearchRequest,
+} from '@/service/document';
 import { serverRequest } from '@/lib/request-server';
 
 export type PublicSectionInfo = SectionInfo & {
@@ -117,6 +121,14 @@ export const fetchPublicSectionComments = async (
 	data: SectionCommentSearchRequest,
 ): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
 	return await serverRequest(sectionApi.searchComment, {
+		data,
+	});
+};
+
+export const fetchPublicDocumentComments = async (
+	data: DocumentCommentSearchRequest,
+): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+	return await serverRequest(documentApi.searchComment, {
 		data,
 	});
 };

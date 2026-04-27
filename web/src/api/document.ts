@@ -40,4 +40,11 @@ export default {
     cancelDocumentEmbedding: API_PREFIX + '/document/embedding/cancel',
     transcribeDocument: API_PREFIX + '/document/transcribe',
     cancelDocumentTranscribe: API_PREFIX + '/document/transcribe/cancel',
-} 
+    createComment: API_PREFIX + '/document/comment/create',
+    deleteComment: API_PREFIX + '/document/comment/delete',
+    searchComment: API_PREFIX + '/document/comment/search',
+    searchCommentReplies: API_PREFIX + '/document/comment/reply/search',
+    likeComment: API_PREFIX + '/document/comment/like',
+    unlikeComment: API_PREFIX + '/document/comment/unlike',
+    getCommentDetail: API_PREFIX + '/document/comment/detail',
+}

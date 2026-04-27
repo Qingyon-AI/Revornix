@@ -3028,3 +3028,316 @@ def delete_website_document_by_website_document_ids(
         .update({models.document.WebsiteDocument.delete_at: now}, synchronize_session=False)
 
     db.flush()
+
+
+# ---------------------------------------------------------------------------
+# Document comments (mirror of section comments — see api/crud/section.py)
+# ---------------------------------------------------------------------------
+
+
+async def create_document_comment_async(
+    db: AsyncSession,
+    document_id: int,
+    creator_id: int,
+    content: str,
+    parent_id: int | None = None,
+    root_id: int | None = None,
+    reply_user_id: int | None = None,
+):
+    now = datetime.now(timezone.utc)
+    db_comment = models.document.DocumentComment(
+        document_id=document_id,
+        creator_id=creator_id,
+        content=content,
+        parent_id=parent_id,
+        root_id=root_id,
+        reply_user_id=reply_user_id,
+        create_time=now,
+    )
+    db.add(db_comment)
+    await db.flush()
+    return db_comment
+
+
+async def get_document_comment_by_id_async(
+    db: AsyncSession,
+    comment_id: int,
+):
+    stmt = (
+        select(models.document.DocumentComment)
+        .where(
+            models.document.DocumentComment.id == comment_id,
+            models.document.DocumentComment.delete_at.is_(None),
+        )
+        .options(
+            selectinload(models.document.DocumentComment.creator),
+            selectinload(models.document.DocumentComment.reply_user),
+        )
+    )
+    return (await db.execute(stmt)).scalars().first()
+
+
+async def search_parent_degree_document_comments_async(
+    db: AsyncSession,
+    document_id: int,
+    keyword: str | None = None,
+    start: int | None = None,
+    limit: int = 10,
+    sort: str = "time",
+):
+    stmt = (
+        select(models.document.DocumentComment)
+        .where(
+            models.document.DocumentComment.delete_at.is_(None),
+            models.document.DocumentComment.document_id == document_id,
+            models.document.DocumentComment.parent_id.is_(None),
+        )
+        .options(selectinload(models.document.DocumentComment.creator))
+        .limit(limit)
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+    if sort == "hot":
+        stmt = stmt.order_by(
+            models.document.DocumentComment.like_count.desc(),
+            models.document.DocumentComment.id.desc(),
+        )
+        if start is not None and start > 0:
+            stmt = stmt.offset(start)
+    else:
+        stmt = stmt.order_by(models.document.DocumentComment.id.desc())
+        if start is not None:
+            stmt = stmt.where(models.document.DocumentComment.id <= start)
+    return list((await db.execute(stmt)).scalars().all())
+
+
+async def count_parent_degree_document_comments_async(
+    db: AsyncSession,
+    document_id: int,
+    keyword: str | None = None,
+):
+    stmt = select(func.count(func.distinct(models.document.DocumentComment.id))).where(
+        models.document.DocumentComment.delete_at.is_(None),
+        models.document.DocumentComment.document_id == document_id,
+        models.document.DocumentComment.parent_id.is_(None),
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one()
+
+
+async def search_next_parent_degree_document_comment_async(
+    db: AsyncSession,
+    document_id: int,
+    document_comment: models.document.DocumentComment,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.document.DocumentComment)
+        .where(
+            models.document.DocumentComment.delete_at.is_(None),
+            models.document.DocumentComment.document_id == document_id,
+            models.document.DocumentComment.parent_id.is_(None),
+            models.document.DocumentComment.id < document_comment.id,
+        )
+        .order_by(models.document.DocumentComment.id.desc())
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def search_document_comment_replies_async(
+    db: AsyncSession,
+    root_comment_id: int,
+    start: int | None = None,
+    limit: int = 10,
+):
+    stmt = (
+        select(models.document.DocumentComment)
+        .where(
+            models.document.DocumentComment.delete_at.is_(None),
+            models.document.DocumentComment.root_id == root_comment_id,
+        )
+        .order_by(models.document.DocumentComment.id.asc())
+        .options(
+            selectinload(models.document.DocumentComment.creator),
+            selectinload(models.document.DocumentComment.reply_user),
+        )
+        .limit(limit)
+    )
+    if start is not None:
+        stmt = stmt.where(models.document.DocumentComment.id >= start)
+    return list((await db.execute(stmt)).scalars().all())
+
+
+async def count_document_comment_replies_async(
+    db: AsyncSession,
+    root_comment_id: int,
+):
+    stmt = select(func.count(models.document.DocumentComment.id)).where(
+        models.document.DocumentComment.delete_at.is_(None),
+        models.document.DocumentComment.root_id == root_comment_id,
+    )
+    return (await db.execute(stmt)).scalar_one()
+
+
+async def count_document_replies_for_root_ids_async(
+    db: AsyncSession,
+    root_ids: list[int],
+):
+    if not root_ids:
+        return {}
+    stmt = (
+        select(
+            models.document.DocumentComment.root_id,
+            func.count(models.document.DocumentComment.id),
+        )
+        .where(
+            models.document.DocumentComment.delete_at.is_(None),
+            models.document.DocumentComment.root_id.in_(root_ids),
+        )
+        .group_by(models.document.DocumentComment.root_id)
+    )
+    rows = (await db.execute(stmt)).all()
+    return {row[0]: row[1] for row in rows}
+
+
+async def get_preview_document_replies_for_root_ids_async(
+    db: AsyncSession,
+    root_ids: list[int],
+    per_root_limit: int = 2,
+):
+    grouped: dict[int, list] = {rid: [] for rid in root_ids}
+    if not root_ids or per_root_limit <= 0:
+        return grouped
+    for rid in root_ids:
+        stmt = (
+            select(models.document.DocumentComment)
+            .where(
+                models.document.DocumentComment.delete_at.is_(None),
+                models.document.DocumentComment.root_id == rid,
+            )
+            .order_by(models.document.DocumentComment.id.asc())
+            .options(
+                selectinload(models.document.DocumentComment.creator),
+                selectinload(models.document.DocumentComment.reply_user),
+            )
+            .limit(per_root_limit)
+        )
+        grouped[rid] = list((await db.execute(stmt)).scalars().all())
+    return grouped
+
+
+async def like_document_comment_async(
+    db: AsyncSession,
+    comment_id: int,
+    user_id: int,
+):
+    existing_stmt = select(models.document.DocumentCommentLike).where(
+        models.document.DocumentCommentLike.comment_id == comment_id,
+        models.document.DocumentCommentLike.user_id == user_id,
+    )
+    existing = (await db.execute(existing_stmt)).scalars().first()
+    if existing is not None:
+        return False
+    now = datetime.now(timezone.utc)
+    db.add(models.document.DocumentCommentLike(
+        comment_id=comment_id,
+        user_id=user_id,
+        create_time=now,
+    ))
+    await db.execute(
+        models.document.DocumentComment.__table__.update()
+        .where(models.document.DocumentComment.id == comment_id)
+        .values(like_count=models.document.DocumentComment.like_count + 1)
+    )
+    await db.flush()
+    return True
+
+
+async def unlike_document_comment_async(
+    db: AsyncSession,
+    comment_id: int,
+    user_id: int,
+):
+    existing_stmt = select(models.document.DocumentCommentLike).where(
+        models.document.DocumentCommentLike.comment_id == comment_id,
+        models.document.DocumentCommentLike.user_id == user_id,
+    )
+    existing = (await db.execute(existing_stmt)).scalars().first()
+    if existing is None:
+        return False
+    await db.delete(existing)
+    await db.execute(
+        models.document.DocumentComment.__table__.update()
+        .where(
+            models.document.DocumentComment.id == comment_id,
+            models.document.DocumentComment.like_count > 0,
+        )
+        .values(like_count=models.document.DocumentComment.like_count - 1)
+    )
+    await db.flush()
+    return True
+
+
+async def get_user_liked_document_comment_ids_async(
+    db: AsyncSession,
+    user_id: int,
+    comment_ids: list[int],
+):
+    if not comment_ids:
+        return set()
+    stmt = select(models.document.DocumentCommentLike.comment_id).where(
+        models.document.DocumentCommentLike.user_id == user_id,
+        models.document.DocumentCommentLike.comment_id.in_(comment_ids),
+    )
+    return {row[0] for row in (await db.execute(stmt)).all()}
+
+
+async def delete_document_comments_by_comment_ids_async(
+    db: AsyncSession,
+    user_id: int,
+    document_comment_ids: list[int],
+):
+    if not document_comment_ids:
+        return
+    now = datetime.now(timezone.utc)
+    owned_stmt = select(models.document.DocumentComment.id).where(
+        models.document.DocumentComment.id.in_(document_comment_ids),
+        models.document.DocumentComment.delete_at.is_(None),
+        models.document.DocumentComment.creator_id == user_id,
+    )
+    owned_ids = [row[0] for row in (await db.execute(owned_stmt)).all()]
+    if not owned_ids:
+        return
+    await db.execute(
+        models.document.DocumentComment.__table__.update()
+        .where(
+            models.document.DocumentComment.delete_at.is_(None),
+            or_(
+                models.document.DocumentComment.id.in_(owned_ids),
+                models.document.DocumentComment.root_id.in_(owned_ids),
+            ),
+        )
+        .values(delete_at=now)
+    )
+    await db.flush()
+
+
+async def get_collaborator_user_ids_for_document_async(
+    db: AsyncSession,
+    document_id: int,
+):
+    """All user ids tied to a document (creator + collaborators) — for notifications."""
+    db_document = await get_document_by_document_id_async(db=db, document_id=document_id)
+    user_ids: set[int] = set()
+    if db_document is not None:
+        user_ids.add(db_document.creator_id)
+    stmt = select(models.document.UserDocument.user_id).where(
+        models.document.UserDocument.document_id == document_id,
+        models.document.UserDocument.delete_at.is_(None),
+    )
+    for row in (await db.execute(stmt)).all():
+        user_ids.add(row[0])
+    return list(user_ids)
