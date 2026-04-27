@@ -96,7 +96,7 @@ async def _init_embedding_task(
                 document_id=document_id
             )
             if db_embedding_task is None:
-                db_embedding_task = crud.task.create_document_embedding_task(
+                db_embedding_task = await crud.task.create_document_embedding_task_async(
                     db=db,
                     user_id=user_id,
                     document_id=document_id,
@@ -218,7 +218,7 @@ async def _mark_embedding_success(
     await _ensure_embedding_task_not_cancelled(document_id)
 
     async with async_session_context() as db:
-        ensure_document_active(db=db.sync_session, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,
             document_id=document_id

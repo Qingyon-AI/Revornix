@@ -8,7 +8,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
@@ -161,7 +161,7 @@ async def _convert_document_content(
     website_url: str | None = None
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         if category == DocumentCategory.FILE:
             db_file_document = await crud.document.get_file_document_by_document_id_async(
                 db=db,
@@ -235,7 +235,7 @@ async def _convert_document_content(
         state["website_keywords"] = web_info.keywords
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
@@ -262,7 +262,7 @@ async def _convert_document_content(
     md_file_name = f"markdown/{uuid.uuid4().hex}.md"
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
     await remote_file_service.upload_raw_content_to_path(
         file_path=md_file_name,
         content=content.encode("utf-8"),
@@ -285,7 +285,7 @@ async def _mark_convert_success(
         raise Exception("Document convert workflow missing document_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_convert_task = await crud.task.get_document_convert_task_by_document_id_async(
             db=db,
             document_id=document_id

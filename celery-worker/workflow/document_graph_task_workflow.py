@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph, END
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from data.common import (
     close_extract_llm_client,
     stream_chunk_document,
@@ -112,7 +112,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
             raise Exception("The user has not access to the knowledge graph ability")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
@@ -305,7 +305,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
     await _ensure_graph_task_not_cancelled(document_id)
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id

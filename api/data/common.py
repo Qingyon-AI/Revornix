@@ -16,7 +16,7 @@ from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
 from data.sql.base import async_session_context
 from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -207,7 +207,7 @@ async def stream_chunk_document(
                 for chunk in chunks:
                     now = time.monotonic()
                     if now - last_check >= 2.0:
-                        await ensure_document_active_async(db=db, document_id=doc_id)
+                        await ensure_document_active(db=db, document_id=doc_id)
                         last_check = now
                     yield ChunkInfo(
                         id=make_chunk_id(doc_id=doc_id, idx=global_idx, text=chunk.text),

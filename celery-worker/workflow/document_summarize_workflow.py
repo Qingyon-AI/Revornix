@@ -91,7 +91,7 @@ async def _init_summarize_task(
             document_id=document_id
         )
         if db_summarize_task is None:
-            db_summarize_task = crud.task.create_document_summarize_task(
+            db_summarize_task = await crud.task.create_document_summarize_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -257,7 +257,7 @@ async def _mark_summarize_success(
         },
     ):
         async with async_session_context() as db:
-            ensure_document_active(db=db.sync_session, document_id=document_id)
+            await ensure_document_active(db=db, document_id=document_id)
             db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
                 document_id=document_id

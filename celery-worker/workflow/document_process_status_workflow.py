@@ -29,7 +29,7 @@ async def _update_document_status(
     try:
         async with async_session_context() as db:
             try:
-                ensure_document_active(db=db.sync_session, document_id=document_id)
+                await ensure_document_active(db=db, document_id=document_id)
             except DocumentDeletedError:
                 return state
             db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
