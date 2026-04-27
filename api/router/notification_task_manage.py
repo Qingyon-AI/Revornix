@@ -20,6 +20,11 @@ TRIGGER_EVENT_TEMPLATE_UUID_MAP = {
     NotificationTriggerEventUUID.SECTION_COMMENTED.value: NotificationTemplate.SECTION_COMMENTED.meta.uuid,
     NotificationTriggerEventUUID.SECTION_UPDATED.value: NotificationTemplate.SECTION_UPDATED.meta.uuid,
     NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value: NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_CONTENT_UPDATED.value: NotificationTemplate.SECTION_CONTENT_UPDATED.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_PODCAST_READY.value: NotificationTemplate.SECTION_PODCAST_READY.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_PPT_READY.value: NotificationTemplate.SECTION_PPT_READY.meta.uuid,
+    NotificationTriggerEventUUID.DOCUMENT_PROCESS_COMPLETED.value: NotificationTemplate.DOCUMENT_PROCESS_COMPLETED.meta.uuid,
+    NotificationTriggerEventUUID.DOCUMENT_PODCAST_READY.value: NotificationTemplate.DOCUMENT_PODCAST_READY.meta.uuid,
 }
 
 

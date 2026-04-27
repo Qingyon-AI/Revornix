@@ -14,6 +14,11 @@ class NotificationTriggerEventUUID(Enum):
     SECTION_COMMENTED = '2840a3b104124bd59afbae2a57c93dbf'
     SECTION_UPDATED = '97072bb797d148d2a1607f10cb1ebf83'
     SECTION_SUBSCRIBED = '8c79f93f9dbd4b20bddb3c3a1bd57377'
+    SECTION_CONTENT_UPDATED = '7a3c2f1e8d4b4a9eb3c8f2d6e4c1a9b0'
+    SECTION_PODCAST_READY = 'c4f8a2d6b1e34e7faab9c3d8e5f2a7b1'
+    SECTION_PPT_READY = '5b8e3d2c7a1f49a3b6c8d4e2f5a7b9c1'
+    DOCUMENT_PROCESS_COMPLETED = '3e6b9a1c5d2847f0a8c4b7e9f2d3a4b5'
+    DOCUMENT_PODCAST_READY = '8f1c4e6a9b3d4f7eb2a5c8d1e3f6a9b4'
 
 
 class NotificationTemplateMeta(NamedTuple):
@@ -36,6 +41,26 @@ class NotificationTemplate(Enum):
     REMOVED_FROM_SECTION = NotificationTemplateMeta(
         uuid='25a2b86e0ed24ef1964ea94d906ebbd7',
         name='Removed From Section',
+    )
+    SECTION_CONTENT_UPDATED = NotificationTemplateMeta(
+        uuid='9d7e5b2c4a3f4d8eb1c7e6d5a2b3f1e9',
+        name='Section Content Updated',
+    )
+    SECTION_PODCAST_READY = NotificationTemplateMeta(
+        uuid='e1d3b7c9a2f4456f8c5d6e7a8b9c0d1e',
+        name='Section Podcast Ready',
+    )
+    SECTION_PPT_READY = NotificationTemplateMeta(
+        uuid='f9a4c8e2d5b14f6dab7c2d3e8f1a5b6c',
+        name='Section PPT Ready',
+    )
+    DOCUMENT_PROCESS_COMPLETED = NotificationTemplateMeta(
+        uuid='2a7d4f1c6b3e495a9c8d3f2e1b6a5d4c',
+        name='Document Process Completed',
+    )
+    DOCUMENT_PODCAST_READY = NotificationTemplateMeta(
+        uuid='b6e3a8d2c5f147a9b1d4e7f3a2c5b8d6',
+        name='Document Podcast Ready',
     )
 
     @property

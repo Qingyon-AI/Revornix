@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
+from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
@@ -20,6 +21,7 @@ from data.common import (
 )
 from data.sql.base import async_session_context
 from enums.document import DocumentPodcastStatus, DocumentCategory
+from enums.notification import NotificationTriggerEventUUID
 from common.markdown_helpers import get_markdown_content_by_document_id
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
@@ -331,6 +333,31 @@ async def _mark_podcast_success(
             db_podcast_task.celery_task_id = None
             db_podcast_task.update_time = datetime.now(timezone.utc)
             await db.commit()
+
+        db_document = await crud.document.get_document_by_document_id_async(
+            db=db,
+            document_id=document_id,
+        )
+        recipient_id = db_document.creator_id if db_document is not None else None
+
+    if recipient_id is not None:
+        try:
+            current_app.send_task(
+                "common.celery.app.start_trigger_user_notification_event",
+                kwargs={
+                    "user_id": recipient_id,
+                    "trigger_event_uuid": NotificationTriggerEventUUID.DOCUMENT_PODCAST_READY.value,
+                    "params": {
+                        "document_id": document_id,
+                        "receiver_id": recipient_id,
+                    },
+                },
+            )
+        except Exception as e:
+            exception_logger.error(
+                f"Failed to dispatch document_podcast_ready notification: document_id={document_id}, user_id={recipient_id}, error={e}"
+            )
+
     return state
 
 

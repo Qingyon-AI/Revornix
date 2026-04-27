@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from io import BytesIO
 
 import crud
+from celery import current_app
 from langfuse import propagate_attributes
 from langfuse.openai import AsyncOpenAI
 
@@ -21,6 +22,8 @@ from common.logger import exception_logger, info_logger
 from common.markdown_helpers import get_markdown_content_by_section_id
 from common.usage_billing import persist_model_usage_from_completion
 from data.sql.base import async_session_context
+from enums.notification import NotificationTriggerEventUUID
+from enums.section import UserSectionRole
 from prompts.section_ppt import PPT_SCRIPT_SYSTEM, build_ppt_script_user_prompt
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.engine_proxy import EngineProxy
@@ -528,6 +531,31 @@ async def run_section_ppt_workflow(
             manifest_path=manifest_path,
             payload=manifest,
         )
+
+        async with async_session_context() as db:
+            db_recipients = await crud.section.get_users_for_section_by_section_id_async(
+                db=db,
+                section_id=section_id,
+                filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR],
+            )
+
+        for db_recipient in db_recipients:
+            try:
+                current_app.send_task(
+                    "common.celery.app.start_trigger_user_notification_event",
+                    kwargs={
+                        "user_id": db_recipient.id,
+                        "trigger_event_uuid": NotificationTriggerEventUUID.SECTION_PPT_READY.value,
+                        "params": {
+                            "section_id": section_id,
+                            "receiver_id": db_recipient.id,
+                        },
+                    },
+                )
+            except Exception as e:
+                exception_logger.error(
+                    f"Failed to dispatch section_ppt_ready notification: section_id={section_id}, user_id={db_recipient.id}, error={e}"
+                )
     except WorkflowCancelledError:
         cancelled_manifest = {
             **initial_manifest,
