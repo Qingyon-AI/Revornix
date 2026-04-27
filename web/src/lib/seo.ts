@@ -7,20 +7,22 @@ import {
 	DocumentDetailRequest,
 	DocumentDetailResponse,
 	GraphResponse,
-	InifiniteScrollPagnitionSectionCommentInfo,
 	InifiniteScrollPagnitionSectionInfo,
 	InifiniteScrollPagnitionSectionDocumentInfo,
 	InifiniteScrollPagnitionDocumentInfo,
 	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
-	SectionCommentSearchRequest,
 	SectionDocumentRequest,
 	SectionGraphRequest,
 	SectionInfo,
 	UserInfoRequest,
 	UserPublicInfo,
 } from '@/generated';
+import type {
+	InifiniteScrollPagnitionSectionCommentInfo,
+	SectionCommentSearchRequest,
+} from '@/service/section';
 import { serverRequest } from '@/lib/request-server';
 
 export type PublicSectionInfo = SectionInfo & {

@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionCommentInfo, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentCreateRequest, SectionCommentDeleteRequest, SectionCommentInfo, SectionCommentSearchRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentDeleteRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse, UserPublicInfo } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -208,6 +208,57 @@ export const getSEOSectionDetail = async (data: SectionSeoDetailRequest): Promis
     })
 }
 
+export type SectionCommentSortType = 'time' | 'hot'
+
+export type SectionCommentInfo = {
+    id: number
+    content: string
+    create_time: string
+    update_time?: string | null
+    creator: UserPublicInfo
+    parent_id?: number | null
+    root_id?: number | null
+    reply_user?: UserPublicInfo | null
+    like_count: number
+    liked: boolean
+    reply_count: number
+    preview_replies: SectionCommentInfo[]
+}
+
+export type InifiniteScrollPagnitionSectionCommentInfo = {
+    total: number
+    start?: number | null
+    limit: number
+    has_more: boolean
+    elements: SectionCommentInfo[]
+    next_start?: number | null
+}
+
+export type SectionCommentCreateRequest = {
+    content: string
+    section_id: number
+    parent_id?: number | null
+}
+
+export type SectionCommentSearchRequest = {
+    section_id: number
+    start?: number | null
+    limit?: number
+    keyword?: string | null
+    sort?: SectionCommentSortType
+    preview_reply_limit?: number
+}
+
+export type SectionCommentReplySearchRequest = {
+    root_comment_id: number
+    start?: number | null
+    limit?: number
+}
+
+export type SectionCommentLikeRequest = {
+    section_comment_id: number
+}
+
 export const createSectionComment = async (data: SectionCommentCreateRequest): Promise<NormalResponse> => {
     return await request(sectionApi.createComment, {
         data
@@ -228,6 +279,30 @@ export const searchSectionComment = async (data: SectionCommentSearchRequest): P
 
 export const searchPublicSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
     return await publicRequest(sectionApi.searchComment, {
+        data
+    })
+}
+
+export const searchSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+    return await request(sectionApi.searchCommentReplies, {
+        data
+    })
+}
+
+export const searchPublicSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+    return await publicRequest(sectionApi.searchCommentReplies, {
+        data
+    })
+}
+
+export const likeSectionComment = async (data: SectionCommentLikeRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.likeComment, {
+        data
+    })
+}
+
+export const unlikeSectionComment = async (data: SectionCommentLikeRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.unlikeComment, {
         data
     })
 }

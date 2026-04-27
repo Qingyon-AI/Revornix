@@ -52,13 +52,13 @@ const SectionCommentAnchor = ({ commentId }: { commentId: number }) => {
 						<div
 							className='flex min-w-0 cursor-pointer items-center gap-3'
 							onClick={() => router.push(`/user/detail/${comment.creator.id}`)}>
-							<Avatar className='size-10 ring-1 ring-border/70'>
+							<Avatar className='size-8 ring-1 ring-border/70'>
 								<AvatarImage
 									src={replacePath(comment.creator.avatar, comment.creator.id)}
 									alt='avatar'
-									className='size-10 object-cover'
+									className='size-8 object-cover'
 								/>
-								<AvatarFallback className='size-10 font-semibold'>
+								<AvatarFallback className='size-8 font-semibold'>
 									{comment.creator.nickname.slice(0, 1) ?? '?'}
 								</AvatarFallback>
 							</Avatar>

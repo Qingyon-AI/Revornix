@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date as date_type
 from datetime import datetime
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -107,9 +107,23 @@ class SectionComment(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), nullable=False, index=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
     content: Mapped[str] = mapped_column(String(500), nullable=False)
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("section_comment.id"), index=True, comment='The id of the parent comment')
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("section_comment.id"), index=True, comment='Direct parent comment id; null for top-level')
+    root_id: Mapped[int | None] = mapped_column(ForeignKey("section_comment.id"), index=True, comment='Top-level ancestor id; null for top-level. Replies are flattened under their root for B-station style display')
+    reply_user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True, comment='When the parent is itself a reply, the user being replied to')
+    like_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default='0')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    creator: Mapped[User] = relationship("User", backref="created_section_comments")
+    creator: Mapped[User] = relationship("User", foreign_keys=[creator_id], backref="created_section_comments")
+    reply_user: Mapped[User | None] = relationship("User", foreign_keys=[reply_user_id])
+
+
+class SectionCommentLike(Base):
+    __tablename__ = "section_comment_like"
+    __table_args__ = (UniqueConstraint("comment_id", "user_id", name="uq_section_comment_like_comment_user"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    comment_id: Mapped[int] = mapped_column(ForeignKey("section_comment.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
