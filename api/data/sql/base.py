@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine as create_sqlalchemy_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -21,8 +20,6 @@ engine = create_sqlalchemy_engine(
     pool_pre_ping=True,    # ✅ 必加
     echo=False
 )
-
-session_scope = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 async_engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,

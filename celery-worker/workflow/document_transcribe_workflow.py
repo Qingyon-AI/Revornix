@@ -74,7 +74,7 @@ async def _init_transcribe_task(
             document_id=document_id
         )
         if db_transcribe_task is None:
-            db_transcribe_task = crud.task.create_document_audio_transcribe_task(
+            db_transcribe_task = await crud.task.create_document_audio_transcribe_task_async(
                 db=db,
                 user_id=user_id,
                 document_id=document_id,
@@ -103,7 +103,7 @@ async def _transcribe_document_audio(
     audio_file_name = None
     async with async_session_context() as db:
         await _ensure_transcribe_task_not_cancelled(document_id)
-        ensure_document_active(db=db.sync_session, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_audio_document = await crud.document.get_audio_document_by_document_id_async(
             db=db,
             document_id=document_id
@@ -124,7 +124,7 @@ async def _transcribe_document_audio(
     )
 
     async with async_session_context() as db:
-        ensure_document_active(db=db.sync_session, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
             db=db,
             document_id=document_id

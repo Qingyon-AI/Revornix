@@ -17,7 +17,7 @@ from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
 from common.logger import exception_logger, info_logger
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from data.common import (
     close_extract_llm_client,
     extract_entities_relations,
@@ -286,7 +286,7 @@ async def _set_graph_task_status(
 ) -> None:
     async with async_session_context() as db:
         if check_document_active:
-            await ensure_document_active_async(db=db, document_id=document_id)
+            await ensure_document_active(db=db, document_id=document_id)
         db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
@@ -677,7 +677,7 @@ async def _process_document_chunks(
     ):
         try:
             async with async_session_context() as db:
-                await ensure_document_active_async(db=db, document_id=document_id)
+                await ensure_document_active(db=db, document_id=document_id)
                 now = datetime.now(timezone.utc)
                 db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
                     db=db,
@@ -730,7 +730,7 @@ async def _process_document_chunks(
         },
     ):
         async with async_session_context() as db:
-            await ensure_document_active_async(db=db, document_id=document_id)
+            await ensure_document_active(db=db, document_id=document_id)
             db_document = await crud.document.get_document_by_document_id_async(
                 db=db,
                 document_id=document_id

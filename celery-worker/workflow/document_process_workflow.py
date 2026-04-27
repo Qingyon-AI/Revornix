@@ -5,7 +5,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message, info_logger
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from data.common import get_document_markdown_length
 from data.sql.base import async_session_context
 from enums.document import (
@@ -105,7 +105,7 @@ async def _maybe_transcribe_document(
         raise Exception("Document workflow missing document_id or user_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     await run_document_transcribe_workflow(
         document_id=document_id,
@@ -123,7 +123,7 @@ async def _convert_document(
         raise Exception("Document workflow missing document_id or user_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     await run_document_convert_workflow(
         document_id=document_id,
@@ -149,7 +149,7 @@ async def _apply_override(
         override_obj = DocumentOverrideProperty.model_validate(override)
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_document = await crud.document.get_document_by_document_id_async(
             db=db,
             document_id=document_id
@@ -177,7 +177,7 @@ async def _maybe_tag_document(
         raise Exception("Document workflow missing document_id or user_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     await run_document_tag_workflow(
         document_id=document_id,
@@ -197,7 +197,7 @@ async def _process_document_chunks(
         raise Exception("Document workflow missing document_id or user_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     markdown_length = await get_document_markdown_length(document_id)
     if markdown_length >= PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD:
@@ -254,7 +254,7 @@ async def _maybe_generate_podcast(
         raise Exception("Document workflow missing document_id or user_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     await run_document_podcast_workflow(
         document_id=document_id,
@@ -271,7 +271,7 @@ async def _mark_process_success(
         raise Exception("Document workflow missing document_id")
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
             db=db,
             document_id=document_id
@@ -293,7 +293,7 @@ async def _prepare_progressive_followup_tasks(
 ) -> None:
     now = datetime.now(timezone.utc)
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
         db_embedding_task = await crud.task.get_document_embedding_task_by_document_id_async(
             db=db,

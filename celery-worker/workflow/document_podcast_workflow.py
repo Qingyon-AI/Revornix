@@ -8,7 +8,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from common.document_guard import ensure_document_active_async
+from common.document_guard import ensure_document_active
 from common.logger import info_logger
 from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_document_podcast_graph_context
@@ -180,7 +180,7 @@ async def _generate_document_podcast(
     )
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     markdown_length = await get_document_markdown_length(document_id)
     prepare_started_at = time.perf_counter()
@@ -274,7 +274,7 @@ async def _generate_document_podcast(
     podcast_script_file_name = f"files/{uuid.uuid4().hex}.json"
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
 
     upload_started_at = time.perf_counter()
     await remote_file_service.upload_raw_content_to_path(
@@ -319,7 +319,7 @@ async def _mark_podcast_success(
     await _ensure_podcast_task_not_cancelled(document_id)
 
     async with async_session_context() as db:
-        await ensure_document_active_async(db=db, document_id=document_id)
+        await ensure_document_active(db=db, document_id=document_id)
         db_podcast_task = await crud.task.get_document_podcast_task_by_document_id_async(
             db=db,
             document_id=document_id

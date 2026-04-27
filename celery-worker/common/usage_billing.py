@@ -549,47 +549,6 @@ async def record_model_usage(
     )
 
 
-def get_monthly_used_points(
-    db: Session,
-    *,
-    user_id: int,
-    resource_uuid: str,
-    at: datetime | None = None,
-    cycle_anchor_at: datetime | None = None,
-) -> int:
-    start_time, end_time = get_cycle_window(
-        at,
-        cycle_anchor_at=cycle_anchor_at,
-    )
-    return crud.usage.sum_usage_ledger_points_in_window(
-        db=db,
-        user_id=user_id,
-        resource_uuid=resource_uuid,
-        start_time=start_time,
-        end_time=end_time,
-    )
-
-
-def get_monthly_model_used_points(
-    db: Session,
-    *,
-    user_id: int,
-    model_id: int,
-    at: datetime | None = None,
-    cycle_anchor_at: datetime | None = None,
-) -> int:
-    db_model = crud.model.get_ai_model_by_id(db=db, model_id=model_id)
-    if db_model is None:
-        return 0
-    return get_monthly_used_points(
-        db=db,
-        user_id=user_id,
-        resource_uuid=db_model.uuid,
-        at=at,
-        cycle_anchor_at=cycle_anchor_at,
-    )
-
-
 async def _resolve_model_charge_points(
     *,
     db: AsyncSession,
