@@ -19,10 +19,12 @@ import {
 	fetchPublicDocumentDetail,
 	fetchPublicDocumentMarkdownContent,
 	fetchPublicDocumentComments,
+	fetchPublicDocumentNotes,
 	getPublicSectionHref,
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import DocumentCommentsList from '@/components/document/document-comments-list';
+import DocumentNotesPublicList from '@/components/document/document-notes-public-list';
 import SeoDocumentCommentGate from '@/components/seo/seo-document-comment-gate';
 import { replacePath } from '@/lib/utils';
 import { ArrowRight, CalendarClock, FileDown, Globe2 } from 'lucide-react';
@@ -160,6 +162,11 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			document_id: documentId,
 		}).catch(() => null);
 		const initialComments = await fetchPublicDocumentComments({
+			document_id: documentId,
+			keyword: '',
+			limit: 10,
+		}).catch(() => undefined);
+		const initialNotes = await fetchPublicDocumentNotes({
 			document_id: documentId,
 			keyword: '',
 			limit: 10,
@@ -532,7 +539,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 
 						<Separator />
 
-						<div className='mx-auto w-full max-w-[820px] overflow-x-hidden'>
+						<div className='mx-auto w-full max-w-[920px] overflow-x-hidden'>
 							<TipTapMarkdownViewer
 								content={
 									markdown || document.description || t('document_no_md')
@@ -553,6 +560,22 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 				<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
 					<div className='space-y-2'>
 						<h2 className='text-2xl font-semibold tracking-tight'>
+							{t('seo_document_notes_title')}
+						</h2>
+						<p className='text-sm leading-6 text-muted-foreground'>
+							{t('seo_document_notes_description')}
+						</p>
+					</div>
+
+					<DocumentNotesPublicList
+						document_id={document.id}
+						initialData={initialNotes}
+					/>
+				</section>
+
+				<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
+					<div className='space-y-2'>
+						<h2 className='text-2xl font-semibold tracking-tight'>
 							{t('document_comments')}
 						</h2>
 						<p className='text-sm leading-6 text-muted-foreground'>
@@ -569,6 +592,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							document_id={document.id}
 							initialData={initialComments}
 							publicMode
+							loginHref={`/login?redirect_to=${encodeURIComponent(`/document/${document.id}`)}`}
 						/>
 					</div>
 				</section>

@@ -57,7 +57,28 @@ def _initialize_worker_sentry() -> None:
 
 
 def _run(coro):
-    return asyncio.run(coro)
+    """Drive ``coro`` on a fresh event loop and clean up per-loop resources.
+
+    Each celery task gets its own loop via ``asyncio.run``. Resources whose
+    lifetime is tied to the loop (notably the neo4j async driver, which binds
+    to the loop that created it) are closed inside that same loop here, in a
+    ``finally`` block, so they never leak across loops.
+    """
+    async def _wrapped():
+        try:
+            return await coro
+        finally:
+            # Imported lazily to avoid a circular import (data.neo4j.base
+            # depends on common.logger which is in the same package tree).
+            try:
+                from data.neo4j.base import close_neo4j_driver_for_current_loop
+                await close_neo4j_driver_for_current_loop()
+            except Exception as cleanup_exc:  # pragma: no cover — defensive
+                exception_logger.warning(
+                    f"neo4j per-loop cleanup failed: {cleanup_exc}"
+                )
+
+    return asyncio.run(_wrapped())
 
 
 def _start_background_coroutine(target, *, name: str) -> None:

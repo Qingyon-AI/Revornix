@@ -148,7 +148,7 @@ const EditableMarkdownPanel = ({
 			) : null}
 
 			{isEditing ? (
-				<div className='mx-auto w-full max-w-[880px] space-y-4'>
+				<div className='mx-auto w-full max-w-[880px] space-y-4 mt-5'>
 					<NoticeBox tone='warning'>{t('markdown_edit_stale_hint')}</NoticeBox>
 					<div className='mb-5 overflow-hidden rounded-[28px] border border-border/60 bg-background/65 shadow-none'>
 						<TipTapEditor

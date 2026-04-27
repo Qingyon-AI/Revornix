@@ -51,6 +51,7 @@ from router.document_user_manage import document_user_manage_router
 from router.document_user_query import document_user_query_router
 from router.document_query import document_query_router
 from router.document_comment_manage import document_comment_manage_router
+from router.document_note_public_query import document_note_public_query_router
 from router.logic_helpers import ensure_document_manage_access, ensure_document_write_access
 
 document_router = APIRouter()
@@ -61,6 +62,7 @@ document_router.include_router(document_publish_manage_router)
 document_router.include_router(document_user_manage_router)
 document_router.include_router(document_user_query_router)
 document_router.include_router(document_comment_manage_router)
+document_router.include_router(document_note_public_query_router)
 
 
 async def _get_document_collaborator(

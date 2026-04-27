@@ -19,6 +19,7 @@ type Props = {
 	documentId: number;
 	currentUserId?: number;
 	publicMode?: boolean;
+	loginHref?: string;
 };
 
 const DocumentCommentReplies = ({
@@ -26,6 +27,7 @@ const DocumentCommentReplies = ({
 	documentId,
 	currentUserId,
 	publicMode = false,
+	loginHref,
 }: Props) => {
 	const t = useTranslations();
 	const [expanded, setExpanded] = useState(false);
@@ -82,6 +84,7 @@ const DocumentCommentReplies = ({
 					rootComment={rootComment}
 					publicMode={publicMode}
 					isReply
+					loginHref={loginHref}
 				/>
 			))}
 

@@ -544,7 +544,7 @@ const SEOSectionDetail = async (props: {
 					) : null}
 				</div>
 
-				<div className='mx-auto w-full max-w-[820px] overflow-x-hidden'>
+				<div className='mx-auto w-full max-w-[920px] overflow-x-hidden'>
 					<TipTapMarkdownViewer
 						content={markdown ? markdown : t('section_no_md')}
 						ownerId={section?.creator?.id}
@@ -571,6 +571,7 @@ const SEOSectionDetail = async (props: {
 								section_id={section.id}
 								initialData={initialComments}
 								publicMode
+								loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
 							/>
 						</div>
 					</section>
