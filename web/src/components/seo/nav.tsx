@@ -3,6 +3,7 @@ import { BookText } from 'lucide-react';
 import Link from 'next/link';
 import NavUser from './nav-user';
 import PublicNavControls from './public-nav-controls';
+import { Button } from '@/components/ui/button';
 
 const Nav = async () => {
 	const t = await getTranslations();
@@ -37,14 +38,16 @@ const Nav = async () => {
 				</div>
 
 				<div className='flex shrink-0 items-center gap-1.5'>
-					<Link
-						href='https://revornix.com'
-						target='_blank'
-						className='inline-flex md:hidden'>
-						<span className='flex size-8 items-center justify-center rounded-xl border border-border/60 bg-background/72 text-muted-foreground transition-colors hover:text-foreground'>
+					<Button
+						asChild
+						variant='outline'
+						size='icon-sm'
+						className='rounded-xl border-border/60 bg-background/72 shadow-none md:hidden'
+						aria-label={t('seo_nav_docs')}>
+						<Link href='https://revornix.com' target='_blank'>
 							<BookText className='size-4' />
-						</span>
-					</Link>
+						</Link>
+					</Button>
 					<PublicNavControls />
 					<NavUser />
 				</div>
