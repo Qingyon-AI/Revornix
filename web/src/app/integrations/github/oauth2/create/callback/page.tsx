@@ -4,7 +4,7 @@ import { createUserByGithub } from '@/service/user';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import Cookies from 'js-cookie';
+import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { decodeRedirectState } from '@/lib/safe-redirect';
@@ -27,10 +27,7 @@ const GitHubCreatePage = () => {
 			);
 			return;
 		}
-		Cookies.set('access_token', res.access_token, {
-			expires: res.expires_in / 1000,
-		});
-		Cookies.set('refresh_token', res.refresh_token);
+		setAuthCookies(res);
 		refreshMainUserInfo();
 		window.location.replace(buildPublicAppUrl(redirectTo));
 	};

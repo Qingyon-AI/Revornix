@@ -10,6 +10,7 @@ import {
 	useState,
 } from 'react';
 import Cookies from 'js-cookie';
+import { clearAuthCookies } from '@/lib/auth-cookies';
 import { QueryObserverResult, useQuery } from '@tanstack/react-query';
 import { getMyInfo, getUserInfoForPaySystem } from '@/service/user';
 import { PrivateUserInfo } from '@/generated';
@@ -115,8 +116,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 	}, [mainInfo, paySystemInfo]);
 
 	const logOut = useCallback(() => {
-		Cookies.remove('access_token');
-		Cookies.remove('refresh_token');
+		clearAuthCookies();
 		window.location.reload();
 	}, []);
 

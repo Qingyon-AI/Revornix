@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
-import Cookies from 'js-cookie';
+import { setAuthCookies } from '@/lib/auth-cookies';
 import {
 	CardContent,
 	CardDescription,
@@ -114,8 +114,7 @@ export function RegisterFormCloud() {
 			return;
 		}
 		toast.success(t('seo_register_success'));
-		Cookies.set('access_token', res.access_token);
-		Cookies.set('refresh_token', res.refresh_token);
+		setAuthCookies(res);
 		refreshMainUserInfo();
 		router.push('/dashboard');
 		setSubmitting(false);
