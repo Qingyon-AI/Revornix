@@ -31,14 +31,13 @@ const NavUser = () => {
 	return (
 		<>
 			{!mainUserInfo && pathname !== '/login' && (
-				<Link href={'/login'}>
-					<Button
-						variant={'outline'}
-						size='sm'
-						className='hidden rounded-xl px-4 md:inline-flex'>
-						{t('seo_nav_login_in')}
-					</Button>
-				</Link>
+				<Button
+					asChild
+					variant='outline'
+					size='sm'
+					className='rounded-xl border-border/60 bg-background/72 px-3 shadow-none'>
+					<Link href={'/login'}>{t('seo_nav_login_in')}</Link>
+				</Button>
 			)}
 			{mainUserInfo && (
 				<DropdownMenu>
