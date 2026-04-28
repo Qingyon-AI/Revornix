@@ -198,10 +198,29 @@ const NotificationRecordCard = ({
 			<Dialog open={showNotification} onOpenChange={setShowNotification}>
 				<DialogContent className='flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[28px] p-0 sm:max-w-2xl'>
 					<DialogHeader className='sticky top-0 z-10 border-b border-border/60 bg-background px-6 pb-4 pt-6'>
-						<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-							<DialogTitle className='min-w-0'>{notification.title}</DialogTitle>
-							{notification.link ? (
-								<Link href={notification.link} className='shrink-0'>
+						<DialogTitle className='min-w-0'>{notification.title}</DialogTitle>
+					</DialogHeader>
+					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+						<div className='flex flex-col gap-4'>
+							{notification.cover && (
+								<img
+									src={replacePath(notification.cover, notification.creator.id)}
+									alt='notification cover'
+									className='rounded aspect-video w-full object-cover'
+								/>
+							)}
+							{isHtmlContent ? (
+								<div
+									className='prose prose-sm max-w-none break-words dark:prose-invert prose-a:text-primary prose-img:rounded-xl'
+									dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+								/>
+							) : (
+								<div className='whitespace-pre-wrap break-words'>
+									{notificationContent}
+								</div>
+							)}
+							{notification.link && (
+								<Link href={notification.link} className='w-fit'>
 									<Button
 										size='sm'
 										variant='outline'
@@ -209,28 +228,7 @@ const NotificationRecordCard = ({
 										{t('notification_record_go_to_link')}
 									</Button>
 								</Link>
-							) : null}
-						</div>
-					</DialogHeader>
-					<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-						<div className='flex flex-col gap-2'>
-						{notification.cover && (
-							<img
-								src={replacePath(notification.cover, notification.creator.id)}
-								alt='notification cover'
-								className='rounded aspect-video w-full object-cover'
-							/>
-						)}
-						{isHtmlContent ? (
-							<div
-								className='prose prose-sm max-w-none break-words dark:prose-invert prose-a:text-primary prose-img:rounded-xl'
-								dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-							/>
-						) : (
-							<div className='whitespace-pre-wrap break-words'>
-								{notificationContent}
-							</div>
-						)}
+							)}
 						</div>
 					</div>
 					<DialogFooter className='sticky bottom-0 z-10 flex items-center justify-between! border-t border-border/60 bg-background px-6 py-4'>

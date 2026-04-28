@@ -19,22 +19,29 @@ const DocumentComments = ({
 	loginHref?: string;
 }) => {
 	return (
-		<div className='flex h-full min-h-0 flex-col gap-4'>
+		<div className='flex h-full min-h-0 flex-col'>
 			{anchorCommentId ? (
-				<DocumentCommentAnchor
-					commentId={anchorCommentId}
-					documentId={document_id}
-					loginHref={loginHref}
-				/>
+				<div className='shrink-0 px-4 pt-4 sm:px-5'>
+					<DocumentCommentAnchor
+						commentId={anchorCommentId}
+						documentId={document_id}
+						loginHref={loginHref}
+					/>
+				</div>
 			) : null}
-			<div className='min-h-0 flex-1 overflow-hidden'>
+			<div className='min-h-0 flex-1 overflow-hidden px-4 sm:px-5'>
 				<DocumentCommentsList
 					document_id={document_id}
 					initialData={initialData}
 					publicMode={publicMode}
+					loginHref={loginHref}
 				/>
 			</div>
-			{!publicMode && <DocumentCommentInput document_id={document_id} />}
+			{!publicMode && (
+				<div className='shrink-0 border-t border-border/60'>
+					<DocumentCommentInput document_id={document_id} flat />
+				</div>
+			)}
 		</div>
 	);
 };

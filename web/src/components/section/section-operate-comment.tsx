@@ -60,7 +60,7 @@ const SectionOperateComment = ({
 						{t('section_comments_description')}
 					</SheetDescription>
 				</SheetHeader>
-				<div className='min-h-0 flex-1 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+				<div className='min-h-0 flex-1'>
 					<SectionComments section_id={section_id} anchorCommentId={anchorCommentId} />
 				</div>
 			</SheetContent>

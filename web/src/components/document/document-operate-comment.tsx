@@ -64,7 +64,7 @@ const DocumentOperateComment = ({
 						{t('document_comments_description')}
 					</SheetDescription>
 				</SheetHeader>
-				<div className='min-h-0 flex-1 px-4 pb-4 pt-4 sm:px-5 sm:pb-5'>
+				<div className='min-h-0 flex-1'>
 					<DocumentComments
 						document_id={document_id}
 						anchorCommentId={anchorCommentId}
