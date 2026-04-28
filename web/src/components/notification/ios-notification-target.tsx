@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useNotificationWSStore } from '@/store/notification-ws';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { generateUUID } from '@/lib/uuid';
 
 type IOSBindStatus = 'waiting' | 'scanned' | 'confirm' | 'canceled';
 
@@ -12,7 +13,7 @@ const IOSNotificationTarget = ({ env }: { env: 'prod' | 'sandbox' }) => {
 	const t = useTranslations();
 	const [qrCode, setQrCode] = useState('');
 	const [status, setStatus] = useState<IOSBindStatus>('waiting');
-	const [codeUuid, setCodeUuid] = useState(() => crypto.randomUUID());
+	const [codeUuid, setCodeUuid] = useState(() => generateUUID());
 	const form = useFormContext();
 	const currentEvent = useNotificationWSStore(
 		(state) => state.iosBindEvents[codeUuid],
@@ -33,7 +34,7 @@ const IOSNotificationTarget = ({ env }: { env: 'prod' | 'sandbox' }) => {
 	const regenerateQrCode = useCallback(() => {
 		removeIOSBindEvent(codeUuid);
 		setStatus('waiting');
-		setCodeUuid(crypto.randomUUID());
+		setCodeUuid(generateUUID());
 	}, [codeUuid, removeIOSBindEvent]);
 
 	useEffect(() => {

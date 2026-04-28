@@ -24,6 +24,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { updateUserInfo } from '@/service/user';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { generateUUID } from '@/lib/uuid';
 
 const CoverUpdateDialog = () => {
 	const t = useTranslations();
@@ -79,7 +80,7 @@ const CoverUpdateDialog = () => {
 
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploading(true);
-		const name = crypto.randomUUID();
+		const name = generateUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
 		const [_, err] = await utils.to(fileService.uploadFile(fileName, file));

@@ -152,6 +152,12 @@ async def bind_phone_verify(
     await cache.delete(
         f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
     )
+    phone_exist = await crud.user.get_phone_user_by_phone_async(
+        db=db,
+        phone=bind_phone_code_verify_request.phone
+    )
+    if phone_exist:
+        raise CustomException(message='Phone number is already registered', code=400)
     await crud.user.create_phone_user_async(
         db=db,
         user_id=user.id,

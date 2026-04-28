@@ -38,7 +38,10 @@ from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
-from router.user_shared import commit_with_bucket_cleanup, setup_default_file_system_for_user
+from router.user_shared import (
+    commit_with_bucket_cleanup_async,
+    setup_default_file_system_for_user_async,
+)
 from schemas.error import CustomException
 
 user_router = APIRouter()
@@ -89,6 +92,7 @@ async def search_user(
     users = []
     db_users = []
     db_next_user = None
+    total = 0
     if search_user_request.filter_name == 'email':
         db_users = await crud.user.search_user_by_email_async(
             db=db,
@@ -108,7 +112,7 @@ async def search_user(
                 email_user=db_users[-1],
                 keyword=search_user_request.filter_value
             )
-    if search_user_request.filter_name == 'nickname':
+    elif search_user_request.filter_name == 'nickname':
         db_users = await crud.user.search_user_by_nickname_async(
             db=db,
             keyword=search_user_request.filter_value,
@@ -127,7 +131,7 @@ async def search_user(
                 user=db_users[-1],
                 keyword=search_user_request.filter_value
             )
-    if search_user_request.filter_name == 'uuid':
+    elif search_user_request.filter_name == 'uuid':
         db_users = await crud.user.search_user_by_uuid_async(
             db=db,
             uuid=search_user_request.filter_value,
@@ -489,11 +493,11 @@ async def create_user_by_email_verify(
         password=email_user_create_verify_request.password,
         nickname=email_user_create_verify_request.email
     )
-    file_service = await setup_default_file_system_for_user(
+    file_service = await setup_default_file_system_for_user_async(
         db=db,
         db_user=db_user,
     )
-    await commit_with_bucket_cleanup(db=db, file_service=file_service)
+    await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='Failed to create authentication token', code=500)
@@ -530,11 +534,11 @@ async def create_user_by_email(
         password=email_user_create_verify_request.password,
         nickname=email_user_create_verify_request.email
     )
-    file_service = await setup_default_file_system_for_user(
+    file_service = await setup_default_file_system_for_user_async(
         db=db,
         db_user=db_user,
     )
-    await commit_with_bucket_cleanup(db=db, file_service=file_service)
+    await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
     access_token, refresh_token = create_token(db_user)
     if access_token is None or refresh_token is None:
         raise CustomException(message='Failed to create authentication token', code=500)

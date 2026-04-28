@@ -13,6 +13,7 @@ import {
 } from '@/lib/upload';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
+import { generateUUID } from '@/lib/uuid';
 
 export type AIImageAttachment = {
 	path: string;
@@ -100,8 +101,8 @@ export const useAIImageAttachments = () => {
 
 			const suffix = file.name.split('.').pop();
 			const filePath = suffix
-				? `images/ai/${crypto.randomUUID()}.${suffix}`
-				: `images/ai/${crypto.randomUUID()}`;
+				? `images/ai/${generateUUID()}.${suffix}`
+				: `images/ai/${generateUUID()}`;
 
 			const [, error] = await utils.to(fileService.uploadFile(filePath, file));
 			if (error) {

@@ -75,6 +75,7 @@ import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { generateUUID } from '@/lib/uuid';
 
 type TipTapEditorProps = {
 	value?: string;
@@ -742,7 +743,7 @@ const TipTapEditor = ({
 						model_id: selectedContinuationModelId,
 						messages: [
 							{
-								chat_id: crypto.randomUUID(),
+								chat_id: generateUUID(),
 								role: 'user',
 								content: prompt,
 							},
@@ -851,9 +852,9 @@ const TipTapEditor = ({
 			const normalizedExtension = extension === 'svg+xml' ? 'svg' : extension;
 			const file = await decodeDataUrlToFile(
 				image.data_url,
-				`illustration-${crypto.randomUUID()}.${normalizedExtension}`,
+				`illustration-${generateUUID()}.${normalizedExtension}`,
 			);
-			const filePath = `images/quick-note/${crypto.randomUUID()}.${normalizedExtension}`;
+			const filePath = `images/quick-note/${generateUUID()}.${normalizedExtension}`;
 			const fileService = new FileService(userFileSystemDetail.file_system_id);
 			await fileService.uploadFile(filePath, file);
 
@@ -920,8 +921,8 @@ const TipTapEditor = ({
 		try {
 			const suffix = file.name.split('.').pop();
 			const filePath = suffix
-				? `images/quick-note/${crypto.randomUUID()}.${suffix}`
-				: `images/quick-note/${crypto.randomUUID()}`;
+				? `images/quick-note/${generateUUID()}.${suffix}`
+				: `images/quick-note/${generateUUID()}`;
 			const fileService = new FileService(userFileSystemDetail.file_system_id);
 			await fileService.uploadFile(filePath, file);
 			editor

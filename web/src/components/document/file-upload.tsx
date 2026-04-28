@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { formatUploadSize } from '@/lib/upload';
+import { generateUUID } from '@/lib/uuid';
 
 const FileUpload = ({
 	onSuccess,
@@ -87,7 +88,7 @@ const FileUpload = ({
 		setUploadingStatus('uploading');
 		setFile(file);
 
-		const name = crypto.randomUUID();
+		const name = generateUUID();
 		const suffix = file.name.split('.').pop();
 		const newFileName = `files/${name}.${suffix}`;
 

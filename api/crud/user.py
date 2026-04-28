@@ -1775,10 +1775,10 @@ async def delete_wechat_user_by_wechat_open_id_async(
             models.user.WechatUser.wechat_user_open_id == wechat_user_open_id,
             models.user.WechatUser.delete_at.is_(None),
         )
-        .values(delete_at=now)
     )
     if filter_wechat_platform is not None:
         stmt = stmt.where(models.user.WechatUser.wechat_platform == filter_wechat_platform)
+    stmt = stmt.values(delete_at=now)
     await db.execute(stmt)
     await db.flush()
 
