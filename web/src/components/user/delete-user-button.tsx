@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
-import Cookies from 'js-cookie';
+import { clearAuthCookies } from '@/lib/auth-cookies';
 import { deleteUser } from '@/service/user';
 import { useTranslations } from 'next-intl';
 
@@ -32,8 +32,7 @@ const DeleteUserButton = ({ className }: { className?: string }) => {
 		}
 		await utils.sleep(500);
 		toast.success(t('account_delete_success'));
-		Cookies.remove('access_token');
-		Cookies.remove('refresh_token');
+		clearAuthCookies();
 		setDeleteUserSubmitStatus(false);
 		window.location.reload();
 	};

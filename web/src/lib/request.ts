@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { updateToken } from '@/service/user';
 import qs from 'qs';
 import Cookies from 'js-cookie'
+import { setAuthCookies, clearAuthCookies } from '@/lib/auth-cookies';
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
 import { getUserTimeZone } from '@/lib/time';
@@ -43,8 +44,7 @@ const handleAuthExpired = (
 ) => {
     isRefreshing = false;
     toast.error(message);
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
+    clearAuthCookies();
     setTimeout(() => {
         window.location.reload()
     }, 500);
@@ -80,8 +80,7 @@ async function refreshToken() {
         };
         const [res] = await utils.to(updateToken(refresh_token));
         if (res) {
-            Cookies.set('access_token', res.access_token);
-            Cookies.set('refresh_token', res.refresh_token);
+            setAuthCookies(res);
             isRefreshing = false;
             onAccessTokenFetched();
             return;

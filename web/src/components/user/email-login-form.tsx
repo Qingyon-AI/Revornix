@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
-import Cookies from 'js-cookie';
+import { setAuthCookies } from '@/lib/auth-cookies';
 import {
 	CardContent,
 	CardDescription,
@@ -94,8 +94,7 @@ const EmailLoginForm = () => {
 			toast.error(err.message);
 			setSubmitLoading(false);
 		} else {
-			Cookies.set('access_token', res.access_token, { path: '/' });
-			Cookies.set('refresh_token', res.refresh_token, { path: '/' });
+			setAuthCookies(res);
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
 			void refreshMainUserInfo();

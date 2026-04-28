@@ -5,7 +5,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import Cookies from 'js-cookie';
+import { setAuthCookies } from '@/lib/auth-cookies';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { decodeRedirectState } from '@/lib/safe-redirect';
@@ -27,8 +27,7 @@ const WeChatCreatePage = () => {
 			return;
 		}
 		if (!res) return;
-		Cookies.set('access_token', res.access_token);
-		Cookies.set('refresh_token', res.refresh_token);
+		setAuthCookies(res);
 		refreshMainUserInfo();
 		router.replace(redirectTo);
 	};
