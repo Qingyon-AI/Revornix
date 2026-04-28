@@ -109,14 +109,24 @@ app = FastAPI(
         lifespan=lifespan
     )
 
-origins = [
-    "*"
-]
+import os
+
+# CORS_ALLOWED_ORIGINS: comma-separated list of allowed origins.
+# Why: the spec forbids ["*"] together with allow_credentials=True; browsers
+# reject such responses for credentialed requests. Configure explicit origins
+# in deployment; fall back to "*" only when credentials are disabled.
+_raw_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
+if _raw_origins:
+    origins = [item.strip() for item in _raw_origins.split(",") if item.strip()]
+    allow_credentials = True
+else:
+    origins = ["*"]
+    allow_credentials = False
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

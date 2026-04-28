@@ -14,7 +14,11 @@ from common.tp_auth.wechat_utils import get_mini_wechat_tokens, get_web_user_inf
 from enums.user import WeChatUserSource
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from data.sql.base import async_session_context
-from router.user_shared import commit_with_bucket_cleanup_async, setup_default_file_system_for_user_async
+from router.user_shared import (
+    authorize_existing_oauth_user,
+    commit_with_bucket_cleanup_async,
+    setup_default_file_system_for_user_async,
+)
 from schemas.error import CustomException
 
 user_auth_wechat_router = APIRouter()
@@ -48,6 +52,7 @@ async def create_user_by_wechat_mini(
                 db=db,
                 user_id=db_exist_wechat_user_by_open_id.user_id
             )
+            await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
             access_token, refresh_token = create_token(db_user)
             return schemas.user.TokenResponse(
                 access_token=access_token,
@@ -136,6 +141,7 @@ async def create_user_by_wechat_web(
                 db=db,
                 user_id=db_exist_wechat_user_by_openid.user_id
             )
+            await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
             access_token, refresh_token = create_token(db_user)
             return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
 

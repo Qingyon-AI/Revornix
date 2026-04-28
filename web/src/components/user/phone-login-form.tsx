@@ -97,7 +97,7 @@ const PhoneLoginForm = () => {
 			})
 		);
 		if (err || !res) {
-			toast.error(err.message);
+			toast.error(err?.message ?? t('seo_login_failed'));
 			setSubmitLoading(false);
 		} else {
 			setAuthCookies(res);
@@ -125,7 +125,7 @@ const PhoneLoginForm = () => {
 			createUserSMSCode({ phone: phoneForm.getValues('phone') })
 		);
 		if (err || !res) {
-			toast.error(err.message);
+			toast.error(err?.message ?? t('seo_login_failed'));
 			setSendingCode(false);
 			return;
 		}

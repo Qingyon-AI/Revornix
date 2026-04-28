@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+import os
+
 import crud
 import models
 import schemas
@@ -80,11 +82,22 @@ async def get_async_db():
             raise
 
 
+REFRESH_TOKEN_TYPE = "refresh"
+
+
 def decode_jwt_token(
-    token: str, 
+    token: str,
     secret_key: str = OAUTH_SECRET_KEY
 ):
     return jwt.decode(token, secret_key, algorithms=["HS256"])
+
+
+def _reject_if_refresh_token(payload: dict) -> None:
+    if payload.get("type") == REFRESH_TOKEN_TYPE:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token cannot be used as access token",
+        )
 
 
 async def resolve_current_user_from_token(
@@ -102,6 +115,7 @@ async def resolve_current_user_from_token(
         uuid: str | None = payload.get("sub")
         if uuid is None:
             raise credentials_exception
+        _reject_if_refresh_token(payload)
     except HTTPException:
         raise
     except Exception as e:
@@ -236,19 +250,38 @@ async def get_current_user_with_api_key(
         )
         return user
 
+def _trusted_proxy_count() -> int:
+    """Number of trusted reverse-proxy hops in front of the API.
+
+    Why: blindly trusting X-Forwarded-For[0] lets any client spoof their IP
+    by sending the header. By counting from the right we skip exactly the
+    hops we control. Default 0 = ignore X-Forwarded-For entirely (safe for
+    direct exposure). Set TRUSTED_PROXY_COUNT=1 behind one reverse proxy.
+    """
+    raw = os.environ.get("TRUSTED_PROXY_COUNT", "0")
+    try:
+        value = int(raw)
+        return max(value, 0)
+    except ValueError:
+        return 0
+
+
 def get_real_ip(
-    request: Request, 
+    request: Request,
     x_forwarded_for: str | None = Header(default=None)
 ) -> str | None:
-    if x_forwarded_for:
-        # 取第一个IP，因为X-Forwarded-For可能包含多个IP，由逗号分隔
-        ip = x_forwarded_for.split(",")[0]
-    else:
-        if request.client:
-            ip = request.client.host
-        else:
-            ip = None
-    return ip
+    trusted_hops = _trusted_proxy_count()
+    if x_forwarded_for and trusted_hops > 0:
+        forwarded_chain = [item.strip() for item in x_forwarded_for.split(",") if item.strip()]
+        if forwarded_chain:
+            # X-Forwarded-For chains: client, proxy1, proxy2, ...
+            # The right-most entries are appended by the closest proxies we
+            # control; pick the entry just before our trusted hops.
+            index = max(len(forwarded_chain) - trusted_hops, 0)
+            return forwarded_chain[index]
+    if request.client:
+        return request.client.host
+    return None
 
 def get_authorization_header(
     authorization: str | None = Header(default=None)
@@ -273,6 +306,8 @@ async def get_current_user_without_throw(
         uuid: str | None = payload.get("sub")
         if uuid is None:
             return None
+        if payload.get("type") == REFRESH_TOKEN_TYPE:
+            return None
     except Exception as e:
         exception_logger.warning(
             format_log_message("token_decode_failed", source="optional_auth", error=e)
@@ -286,10 +321,7 @@ async def get_current_user_without_throw(
         if user is None:
             return None
         if user.is_forbidden:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are forbidden"
-            )
+            return None
         await _cache_user_timezone(
             request=request,
             user_id=user.id,
@@ -315,6 +347,9 @@ async def get_current_user(
         uuid: str | None = payload.get("sub")
         if uuid is None:
             raise credentials_exception
+        _reject_if_refresh_token(payload)
+    except HTTPException:
+        raise
     except Exception as e:
         exception_logger.warning(
             format_log_message("token_decode_failed", source="required_auth", error=e)

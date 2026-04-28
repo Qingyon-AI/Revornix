@@ -3,7 +3,7 @@
 import { createUserByWechat } from '@/service/user';
 import { useRouter } from 'nextjs-toploader/app';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { useUserContext } from '@/provider/user-provider';
@@ -14,19 +14,19 @@ const WeChatCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
 	const router = useRouter();
+	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
 	const onCreateWeChatUser = async (code: string) => {
 		const [res, err] = await utils.to(createUserByWechat({ code }));
-		if (err) {
-			toast.error(err.message);
+		if (err || !res) {
+			toast.error(err?.message ?? 'WeChat login failed');
 			await utils.sleep(1000);
 			router.replace(`/login?redirect_to=${encodeURIComponent(redirectTo)}`);
 			return;
 		}
-		if (!res) return;
 		setAuthCookies(res);
 		refreshMainUserInfo();
 		router.replace(redirectTo);
@@ -37,6 +37,8 @@ const WeChatCreatePage = () => {
 			router.replace('/login');
 			return;
 		}
+		if (consumed.current) return;
+		consumed.current = true;
 		onCreateWeChatUser(code);
 	}, [code]);
 

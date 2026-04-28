@@ -1,4 +1,5 @@
-import random
+import asyncio
+import secrets
 import string
 from datetime import datetime, timezone
 
@@ -25,7 +26,7 @@ from common.dependencies import (
 )
 from common.file import get_remote_file_signed_url, get_remote_file_signed_urls
 from common.hash import verify_password
-from common.jwt_utils import create_token
+from common.jwt_utils import REFRESH_TOKEN_TYPE, create_token
 from common.logger import exception_logger, format_log_message
 from common.resource_plan_access import (
     ensure_default_resources_access,
@@ -438,7 +439,7 @@ async def create_user_by_email_code(
     ):
         raise CustomException("Email already exists", code=400)
     else:
-        code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+        code = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
         await cache.set(
             name=f'user-create-by-email-{email_create_request.email}',
             value=code,
@@ -581,7 +582,7 @@ async def bind_email_code(
     )
     if email_exist:
         raise CustomException(message='Email already exists', code=400)
-    code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+    code = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
     await cache.set(
         name=f'{user.id}-user-bind-email-{bind_email_request.email}',
         value=code,
@@ -636,7 +637,7 @@ async def bind_email(
         user_id=user.id
     )
     if db_user_email is not None:
-        crud.user.delete_email_user_by_user_id(
+        await crud.user.delete_email_user_by_user_id_async(
             db=db,
             user_id=user.id
         )
@@ -779,12 +780,18 @@ async def login(
     db: AsyncSession = Depends(get_async_db),
     ip: str | None = Depends(get_real_ip)
 ):
+    # Login endpoint should not return 401, otherwise frontend global 401
+    # interceptor may trigger meaningless refresh-token loops.
+    invalid_credentials = CustomException(message="Email or password is incorrect", code=400)
+
     user = await crud.user.get_user_by_email_async(
         db=db,
         email=user_login_request.email
     )
     if user is None:
-        raise CustomException(message="Email is not registered", code=404)
+        # Why uniform error: distinct "email not registered" leaks which
+        # accounts exist on the platform.
+        raise invalid_credentials
     if user.is_forbidden:
         raise schemas.error.CustomException(message="User is forbidden", code=403)
     email_user = await crud.user.get_email_user_by_user_id_async(
@@ -792,14 +799,12 @@ async def login(
         user_id=user.id
     )
     if email_user is None:
-        raise CustomException(message="Email is not registered", code=404)
-    if not user or not verify_password(
+        raise invalid_credentials
+    if not verify_password(
         stored_password=email_user.hashed_password,
         provided_password=user_login_request.password
     ):
-        # Login endpoint should not return 401, otherwise frontend global 401
-        # interceptor may trigger meaningless refresh-token loops.
-        raise CustomException(message="Email or password is incorrect", code=400)
+        raise invalid_credentials
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     await db.commit()
@@ -825,7 +830,10 @@ async def update_token(
         # Refresh endpoint should not return 401 to avoid refresh-loop in frontend.
         raise CustomException(message="Refresh token has expired, please log in again", code=403) from e
     user_uuid: str | None = payload.get("sub")
+    token_type = payload.get("type")
     if user_uuid is None:
+        raise CustomException(message="Refresh token is invalid", code=403)
+    if token_type is not None and token_type != REFRESH_TOKEN_TYPE:
         raise CustomException(message="Refresh token is invalid", code=403)
     user = await crud.user.get_user_by_uuid_async(
         db=db,
@@ -943,14 +951,6 @@ async def delete_user(
             db=db,
             document_ids=audio_document_ids
         )
-    await asyncio.to_thread(
-        delete_documents_and_related_from_neo4j,
-        doc_ids=document_ids,
-    )
-    await asyncio.to_thread(
-        delete_documents_from_milvus,
-        doc_ids=document_ids,
-    )
     db_sections = await crud.section.get_sections_by_user_id_async(
         db=db,
         user_id=user.id
@@ -986,6 +986,30 @@ async def delete_user(
                 removed_from_section_notifications_to_send.append((db_user.id, db_section.id))
 
     await db.commit()
+
+    # External-store cleanup runs only after the SQL commit succeeds.
+    # Why: previously these ran before commit; if the commit failed, Neo4j /
+    # Milvus would be wiped while Postgres rows remained, leaving orphans.
+    if document_ids:
+        try:
+            await asyncio.to_thread(
+                delete_documents_and_related_from_neo4j,
+                doc_ids=document_ids,
+            )
+        except Exception as e:
+            exception_logger.exception(
+                format_log_message("delete_user_neo4j_cleanup_failed", user_id=user.id, error=e)
+            )
+        try:
+            await asyncio.to_thread(
+                delete_documents_from_milvus,
+                doc_ids=document_ids,
+            )
+        except Exception as e:
+            exception_logger.exception(
+                format_log_message("delete_user_milvus_cleanup_failed", user_id=user.id, error=e)
+            )
+
     for target_user_id, section_id in removed_from_section_notifications_to_send:
         start_trigger_user_notification_event.delay(
             user_id=target_user_id,

@@ -1,5 +1,5 @@
 import json
-import random
+import secrets
 import string
 
 from fastapi import APIRouter, Depends
@@ -122,7 +122,7 @@ async def notification_email_target_send(
     target_email = email_target_send_code_request.email
     if not target_email:
         raise schemas.error.CustomException(message="Email address is required", code=400)
-    code = "".join(random.sample(string.ascii_letters + string.digits, 6))
+    code = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(6))
     await cache.set(
         name=f'{user.id}-user-notification-target-add-{target_email}',
         value=code,

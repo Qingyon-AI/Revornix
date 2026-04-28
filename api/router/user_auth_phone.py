@@ -1,5 +1,5 @@
 import asyncio
-import random
+import secrets
 import string
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -13,7 +13,11 @@ import schemas
 from common.dependencies import get_async_db, get_cache, get_current_user, get_real_ip
 from common.jwt_utils import create_token
 from common.sms.tencent_sms import TencentSms
-from router.user_shared import commit_with_bucket_cleanup_async, setup_default_file_system_for_user_async
+from router.user_shared import (
+    authorize_existing_oauth_user,
+    commit_with_bucket_cleanup_async,
+    setup_default_file_system_for_user_async,
+)
 from schemas.error import CustomException
 
 user_auth_phone_router = APIRouter()
@@ -23,7 +27,7 @@ async def create_user_by_sms_code(
     sms_user_code_create_request: schemas.user.SmsUserCodeCreateRequest,
     cache: Redis = Depends(get_cache)
 ):
-    code = "".join(random.sample(string.digits, 6))
+    code = "".join(secrets.choice(string.digits) for _ in range(6))
     await cache.set(
         name=f'user-create-sms-{sms_user_code_create_request.phone}',
         value=code,
@@ -67,6 +71,7 @@ async def create_user_by_sms_verify(
             db=db,
             user_id=phone_user_exist.user_id
         )
+        await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
         access_token, refresh_token = create_token(db_user)
         return schemas.user.TokenResponse(
             access_token=access_token,
@@ -112,7 +117,7 @@ async def bind_phone(
     )
     if phone_exist:
         raise CustomException(message='Phone number is already registered', code=400)
-    code = "".join(random.sample(string.digits, 6))
+    code = "".join(secrets.choice(string.digits) for _ in range(6))
 
     def _send_sms():
         sms_client = TencentSms.get_official_sms_client()

@@ -1,4 +1,4 @@
-import uuid
+import secrets
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ async def create_api_key(
     db_api_key = await crud.api_key.create_api_key_async(
         db=db,
         user_id=user.id,
-        api_key=uuid.uuid4().hex ,
+        api_key=secrets.token_hex(32),
         description=api_key_create_request.description
     )
     await db.commit()
@@ -43,7 +43,8 @@ async def search_api_key(
         user_id=user.id,
         keyword=search_api_key_request.keyword
     )
-    total_pages = count // search_api_key_request.page_size if count % search_api_key_request.page_size == 0 else count // search_api_key_request.page_size + 1
+    page_size = search_api_key_request.page_size
+    total_pages = (count + page_size - 1) // page_size if page_size > 0 else 0
     return schemas.pagination.Pagination(
         total_elements=count,
         total_pages=total_pages,

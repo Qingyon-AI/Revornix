@@ -2,7 +2,7 @@
 
 import { createUserByGithub } from '@/service/user';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
@@ -13,6 +13,7 @@ import { buildPublicAppUrl } from '@/lib/oauth';
 const GitHubCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
+	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
@@ -20,7 +21,7 @@ const GitHubCreatePage = () => {
 	const onCreateGitHubUser = async (code: string) => {
 		const [res, err] = await utils.to(createUserByGithub({ code }));
 		if (err || !res) {
-			toast.error(err.message);
+			toast.error(err?.message ?? 'GitHub login failed');
 			await utils.sleep(1000);
 			window.location.replace(
 				buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)
@@ -37,6 +38,8 @@ const GitHubCreatePage = () => {
 			window.location.replace(buildPublicAppUrl('/login'));
 			return;
 		}
+		if (consumed.current) return;
+		consumed.current = true;
 		onCreateGitHubUser(code);
 	}, [code]);
 

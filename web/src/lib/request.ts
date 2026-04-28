@@ -156,7 +156,10 @@ export const request = <T>(url: string, initialOptions?: RequestOptions): Promis
 
         let finalUrl = url;
         if (method === 'GET' && initialOptions?.data) {
-            finalUrl = finalUrl + '?' + qs.stringify(initialOptions.data, { skipNulls: true });
+            const query = qs.stringify(initialOptions.data, { skipNulls: true });
+            if (query) {
+                finalUrl += finalUrl.includes('?') ? `&${query}` : `?${query}`;
+            }
         }
 
         // 🟦【关键补充】捕获 fetch 网络层错误（Failed to fetch、CORS 错误、DNS 错误、证书错误等）

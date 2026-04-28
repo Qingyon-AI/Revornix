@@ -1783,6 +1783,7 @@
     "seo_login_email_format_error": "Invalid email format",
     "seo_login_password_no_less_than": "Password must be at least 8 characters",
     "seo_login_success": "Login Successful",
+    "seo_login_failed": "Login failed. Please try again later.",
     "seo_login": "Login",
     "seo_login_description": "Enter your info to login",
     "seo_login_form_email": "Email",

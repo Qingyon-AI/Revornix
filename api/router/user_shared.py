@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -9,6 +10,24 @@ from common.logger import exception_logger, format_log_message
 from enums.file import RemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from schemas.error import CustomException
+
+
+async def authorize_existing_oauth_user(
+    db: AsyncSession,
+    db_user: models.user.User,
+    ip: str | None,
+) -> None:
+    """Validate an existing user signing in via OAuth and refresh login metadata.
+
+    Why: prior to this, OAuth flows returned a fresh token without checking
+    `is_forbidden`, letting banned users keep logging in. Also kept
+    last_login_ip/time stale for OAuth re-logins.
+    """
+    if db_user.is_forbidden:
+        raise CustomException(message="User is forbidden", code=403)
+    db_user.last_login_ip = ip
+    db_user.last_login_time = datetime.now(timezone.utc)
+    await db.commit()
 
 
 def cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:

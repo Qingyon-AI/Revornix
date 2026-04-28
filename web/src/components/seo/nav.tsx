@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { BookText } from 'lucide-react';
 import Link from 'next/link';
 import NavUser from './nav-user';
@@ -7,10 +8,14 @@ import { Button } from '@/components/ui/button';
 
 const Nav = async () => {
 	const t = await getTranslations();
+	const cookieStore = await cookies();
+	const isLoggedIn = Boolean(cookieStore.get('access_token'));
 
 	const navLinks = [
 		{ href: '/community', label: t('seo_nav_community') },
-		{ href: '/dashboard', label: t('seo_nav_dashboard') },
+		...(isLoggedIn
+			? [{ href: '/dashboard', label: t('seo_nav_dashboard') }]
+			: []),
 		{ href: 'https://revornix.com', label: t('seo_nav_docs'), external: true },
 	];
 

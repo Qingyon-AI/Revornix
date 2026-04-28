@@ -175,6 +175,9 @@ async def get_notification_sources(
             }
         )
 
+    # Sequential because get_notification_source_info shares the AsyncSession.
+    # AsyncSession is not safe for concurrent use; gathering would corrupt
+    # session state. Real fix is N+1 -> one IN query in the CRUD layer.
     data = []
     for item in db_notification_sources:
         data.append(await get_notification_source_info(item[0]))
@@ -282,6 +285,7 @@ async def get_notification_target(
             }
         )
 
+    # Sequential: see comment in get_notification_sources above.
     data = []
     for item in db_notification_targets:
         data.append(await get_notification_target_info(item[0]))
