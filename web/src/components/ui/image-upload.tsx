@@ -9,10 +9,8 @@ import { FileService } from '@/lib/file';
 import { toast } from 'sonner';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { useQuery } from '@tanstack/react-query';
-import {
-	formatUploadSize,
-	IMAGE_MAX_UPLOAD_BYTES,
-} from '@/lib/upload';
+import { generateUUID } from '@/lib/uuid';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 
 const ImageUpload = ({
 	onSuccess,
@@ -71,7 +69,7 @@ const ImageUpload = ({
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploadingStatus('uploading');
 		setFile(file);
-		const name = crypto.randomUUID();
+		const name = generateUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `files/${name}.${suffix}`;
 		await utils.sleep(2000);

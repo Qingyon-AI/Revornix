@@ -8,7 +8,7 @@ import models
 import schemas
 import httpx
 from datetime import datetime, timezone
-from jose import jwt
+import jwt
 from redis import Redis
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -277,7 +277,7 @@ def get_real_ip(
             # X-Forwarded-For chains: client, proxy1, proxy2, ...
             # The right-most entries are appended by the closest proxies we
             # control; pick the entry just before our trusted hops.
-            index = max(len(forwarded_chain) - trusted_hops, 0)
+            index = max(len(forwarded_chain) - trusted_hops - 1, 0)
             return forwarded_chain[index]
     if request.client:
         return request.client.host

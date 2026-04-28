@@ -14,6 +14,7 @@ import { getUserFileSystemDetail } from '@/service/file-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { replacePath } from '@/lib/utils';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { generateUUID } from '@/lib/uuid';
 
 const AvatarUpdate = () => {
 	const t = useTranslations();
@@ -69,7 +70,7 @@ const AvatarUpdate = () => {
 		}
 		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
 		setUploadingStatus(true);
-		const name = crypto.randomUUID();
+		const name = generateUUID();
 		const suffix = file.name.split('.').pop();
 		const fileName = `images/${name}.${suffix}`;
 		const [, err] = await utils.to(fileService.uploadFile(fileName, file));

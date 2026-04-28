@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import type { WeChatInfo } from '@/generated';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 import { buildWechatCallbackUrl } from '@/lib/oauth';
+import { generateUUID } from '@/lib/uuid';
 
 const getWechatPlatformLabel = (
 	t: ReturnType<typeof useTranslations>,
@@ -49,7 +50,7 @@ const WeChatBind = () => {
 			process.env.NEXT_PUBLIC_WECHAT_APP_ID
 		}&redirect_uri=${encodeURIComponent(
 			redirectUri,
-		)}&response_type=code&scope=snsapi_login&state=${crypto.randomUUID()}#wechat_redirect`;
+		)}&response_type=code&scope=snsapi_login&state=${generateUUID()}#wechat_redirect`;
 	}, []);
 
 	const handleUnBindWeChat = async () => {

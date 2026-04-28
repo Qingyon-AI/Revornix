@@ -47,6 +47,7 @@ import {
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import DocumentCreateAdvancedSection from './document-create-advanced-section';
+import { generateUUID } from '@/lib/uuid';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -239,7 +240,7 @@ const AddAudio = () => {
 
 		const { file, fileName } = audioResultToFile(
 			audioResult,
-			crypto.randomUUID(),
+			generateUUID(),
 		);
 
 		if (!mainUserInfo?.default_user_file_system) {

@@ -47,6 +47,7 @@ import { settingAnchorHrefs } from '@/lib/setting-navigation';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import AIModelSelect from '@/components/ai/model-select';
 import { useEffect, useState } from 'react';
+import { generateUUID } from '@/lib/uuid';
 
 const MessageSendForm = () => {
 	const router = useRouter();
@@ -266,7 +267,7 @@ const MessageSendForm = () => {
 		}
 
 		const newMessage = {
-			chat_id: crypto.randomUUID(),
+			chat_id: generateUUID(),
 			content: trimmedMessage,
 			images: imagePaths.length > 0 ? [...imagePaths] : undefined,
 			role: 'user',

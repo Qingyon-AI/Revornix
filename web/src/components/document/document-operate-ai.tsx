@@ -31,6 +31,7 @@ import {
 } from '../ui/sheet';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
+import { generateUUID } from '@/lib/uuid';
 
 const phaseLabelMap: Record<AIPhase, string> = {
 	idle: 'revornix_ai_phase_idle',
@@ -485,7 +486,7 @@ const DocumentOperateAI = ({
 		}
 
 		const nextUserMessage: Message = {
-			chat_id: crypto.randomUUID(),
+			chat_id: generateUUID(),
 			role: 'user',
 			content: trimmedInput,
 			images: imagePaths.length > 0 ? [...imagePaths] : undefined,

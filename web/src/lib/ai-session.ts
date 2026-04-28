@@ -1,5 +1,6 @@
 import { Message, SessionItem } from '@/types/ai';
 import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
+import { generateUUID } from '@/lib/uuid';
 
 const DEFAULT_SESSION_TITLE = 'New Session';
 const LEGACY_TIMESTAMP_TITLE = /^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/;
@@ -52,7 +53,7 @@ const hydrateMessage = (messageLike: Partial<Message>): Message => {
 	};
 
 	return {
-		chat_id: message.chat_id ?? crypto.randomUUID(),
+		chat_id: message.chat_id ?? generateUUID(),
 		role: message.role ?? 'assistant',
 		content: message.content ?? '',
 		images: Array.isArray(message.images) ? message.images : undefined,
@@ -107,7 +108,7 @@ export const hydrateSessionItem = (sessionLike: Partial<SessionItem>): SessionIt
 	const lastMessage = getLastMessage(messages);
 
 	return {
-		id: sessionLike.id ?? crypto.randomUUID(),
+		id: sessionLike.id ?? generateUUID(),
 		title,
 		messages,
 		preview,
@@ -124,7 +125,7 @@ export const createEmptySession = (overrides: Partial<SessionItem> = {}) => {
 	const now = new Date().toISOString();
 
 	return hydrateSessionItem({
-		id: overrides.id ?? crypto.randomUUID(),
+		id: overrides.id ?? generateUUID(),
 		title: overrides.title ?? DEFAULT_SESSION_TITLE,
 		messages: overrides.messages ?? [],
 		preview: overrides.preview ?? '',
