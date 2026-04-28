@@ -1783,6 +1783,7 @@
     "seo_login_email_format_error": "邮箱格式错误",
     "seo_login_password_no_less_than": "密码至少8位",
     "seo_login_success": "登录成功",
+    "seo_login_failed": "登录失败，请稍后重试",
     "seo_login": "登录",
     "seo_login_description": "输入邮箱密码信息来登录你的账号",
     "seo_login_form_email": "邮箱",

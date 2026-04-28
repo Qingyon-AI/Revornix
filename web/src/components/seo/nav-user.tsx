@@ -12,7 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BadgeCheck, Bell, LogOut } from 'lucide-react';
+import { BadgeCheck, Bell, LayoutDashboard, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
@@ -42,7 +42,10 @@ const NavUser = () => {
 			{mainUserInfo && (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Link className='text-xs' href={'/dashboard'}>
+						<button
+							type='button'
+							className='rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring'
+							aria-label={mainUserInfo.nickname}>
 							<Avatar className='size-8'>
 								<AvatarImage
 									src={mainUserInfo.avatar}
@@ -50,10 +53,10 @@ const NavUser = () => {
 									className='object-cover size-8'
 								/>
 								<AvatarFallback className='size-8 font-semibold'>
-									{mainUserInfo.nickname.slice(0, 1) ?? '?'}
+									{mainUserInfo.nickname?.slice(0, 1) || '?'}
 								</AvatarFallback>
 							</Avatar>
-						</Link>
+						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
 						className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
@@ -62,11 +65,16 @@ const NavUser = () => {
 						sideOffset={4}>
 						<DropdownMenuLabel className='p-0 font-normal'>
 							<div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-								<img
-									src={mainUserInfo.avatar!}
-									alt={'avatar'}
-									className='object-cover size-8 rounded-lg'
-								/>
+								<Avatar className='size-8 rounded-lg'>
+									<AvatarImage
+										src={mainUserInfo.avatar}
+										alt={mainUserInfo.nickname}
+										className='object-cover size-8 rounded-lg'
+									/>
+									<AvatarFallback className='size-8 rounded-lg font-semibold'>
+										{mainUserInfo.nickname?.slice(0, 1) || '?'}
+									</AvatarFallback>
+								</Avatar>
 								<div className='grid flex-1 text-left text-sm leading-tight'>
 									<span className='truncate font-semibold line-clamp-1'>
 										{mainUserInfo.nickname}
@@ -107,6 +115,10 @@ const NavUser = () => {
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
+							<DropdownMenuItem onClick={() => router.push('/dashboard')}>
+								<LayoutDashboard />
+								{t('seo_nav_dashboard')}
+							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => router.push('/account')}>
 								<BadgeCheck />
 								{t('user_account')}

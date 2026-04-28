@@ -11,7 +11,11 @@ from common.jwt_utils import create_token
 from common.oauth_redirect import build_public_oauth_redirect_uri
 from common.tp_auth.google_utils import get_google_token, get_google_token_info
 from data.sql.base import async_session_context
-from router.user_shared import commit_with_bucket_cleanup_async, setup_default_file_system_for_user_async
+from router.user_shared import (
+    authorize_existing_oauth_user,
+    commit_with_bucket_cleanup_async,
+    setup_default_file_system_for_user_async,
+)
 from schemas.error import CustomException
 
 user_auth_google_router = APIRouter()
@@ -56,6 +60,7 @@ async def create_user_by_google(
                 db=db,
                 user_id=db_google_user_exist.user_id
             )
+            await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
             access_token, refresh_token = create_token(db_user)
             return schemas.user.TokenResponse(
                 access_token=access_token,

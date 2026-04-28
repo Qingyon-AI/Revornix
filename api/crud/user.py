@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -297,7 +297,7 @@ def create_email_user(
     else:
         # 如果是在用户页面绑定邮箱的情况下的话，那么这里需要随机新建一串字符串作为初始密码
         characters = string.ascii_letters + string.digits
-        random_password = ''.join(random.choice(characters) for _ in range(12))
+        random_password = ''.join(secrets.choice(characters) for _ in range(12))
         user_data.update({
             "hashed_password": hash_password(random_password),
             "is_initial_password": True,
@@ -331,7 +331,7 @@ async def create_email_user_async(
         user_data["hashed_password"] = hash_password(password)
     else:
         characters = string.ascii_letters + string.digits
-        random_password = ''.join(random.choice(characters) for _ in range(12))
+        random_password = ''.join(secrets.choice(characters) for _ in range(12))
         user_data.update({
             "hashed_password": hash_password(random_password),
             "is_initial_password": True,

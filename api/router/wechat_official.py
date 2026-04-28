@@ -55,6 +55,27 @@ WECHAT_OFFICIAL_SUBSCRIBE_WELCOME_MESSAGE = (
 wechat_official_router = APIRouter()
 
 
+# Strong references to background tasks. Why: asyncio.create_task only keeps
+# a weak reference; without this set, GC can collect a still-running task and
+# silently cancel it, dropping incoming WeChat messages mid-processing.
+_background_tasks: set[asyncio.Task] = set()
+
+
+def _spawn_background(coro) -> asyncio.Task:
+    task = asyncio.create_task(coro)
+    _background_tasks.add(task)
+
+    def _on_done(t: asyncio.Task):
+        _background_tasks.discard(t)
+        try:
+            t.result()  # 触发异常
+        except Exception as e:
+            exception_logger.exception("Background task failed", exc_info=e)
+
+    task.add_done_callback(_on_done)
+    return task
+
+
 @dataclass(slots=True)
 class WeChatOfficialIncomingMessage:
     to_user_name: str
@@ -737,7 +758,7 @@ async def receive_wechat_official_message(
     if incoming_message.msg_type == "event":
         if incoming_message.event == "subscribe":
             if app_id and app_secret:
-                asyncio.create_task(
+                _spawn_background(
                     _process_wechat_official_message(
                         incoming_message,
                         app_id,
@@ -752,7 +773,7 @@ async def receive_wechat_official_message(
                 nonce=nonce,
             )
         if incoming_message.event == "unsubscribe":
-            asyncio.create_task(
+            _spawn_background(
                 _process_wechat_official_unsubscribe(
                     incoming_message.from_user_name,
                 )
@@ -785,7 +806,7 @@ async def receive_wechat_official_message(
             nonce=nonce,
         )
 
-    asyncio.create_task(
+    _spawn_background(
         _process_wechat_official_message(
             incoming_message,
             app_id,

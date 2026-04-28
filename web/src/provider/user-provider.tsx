@@ -56,19 +56,6 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 		queryFn: getUserInfoForPaySystem,
 	});
 
-	const isSameMainUserInfo = (
-		left?: PrivateUserInfo,
-		right?: PrivateUserInfo,
-	) => {
-		if (left === right) {
-			return true;
-		}
-		if (!left || !right) {
-			return false;
-		}
-		return JSON.stringify(left) === JSON.stringify(right);
-	};
-
 	const isSamePaySystemUserInfo = (
 		left?: UserResponseDTO,
 		right?: UserResponseDTO,
@@ -102,9 +89,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 
 	useEffect(() => {
 		if (mainInfo) {
-			setMainUserInfo((current) =>
-				isSameMainUserInfo(current, mainInfo) ? current : mainInfo,
-			);
+			setMainUserInfo(mainInfo);
 		}
 		if (paySystemInfo) {
 			setPaySystemUserInfo((current) =>
@@ -126,9 +111,10 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 	}, []);
 
 	useEffect(() => {
-		Cookies.get('access_token') && refreshMainUserInfo();
-		Cookies.get('access_token') && refreshPaySystemInfo();
-	}, []);
+		if (!Cookies.get('access_token')) return;
+		refreshMainUserInfo();
+		refreshPaySystemInfo();
+	}, [refreshMainUserInfo, refreshPaySystemInfo]);
 
 	const value = useMemo(
 		() => ({

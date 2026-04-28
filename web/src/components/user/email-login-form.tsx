@@ -91,7 +91,7 @@ const EmailLoginForm = () => {
 			})
 		);
 		if (err || !res) {
-			toast.error(err.message);
+			toast.error(err?.message ?? t('seo_login_failed'));
 			setSubmitLoading(false);
 		} else {
 			setAuthCookies(res);

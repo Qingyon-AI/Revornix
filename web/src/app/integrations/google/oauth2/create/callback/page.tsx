@@ -2,7 +2,7 @@
 
 import { createUserByGoogle } from '@/service/user';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
@@ -13,6 +13,7 @@ import { buildPublicAppUrl } from '@/lib/oauth';
 const GoogleCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
 	const searchParams = useSearchParams();
+	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
@@ -20,7 +21,7 @@ const GoogleCreatePage = () => {
 	const onCreateGoogleUser = async (code: string) => {
 		const [res, err] = await utils.to(createUserByGoogle({ code }));
 		if (err || !res) {
-			toast.error(err.message);
+			toast.error(err?.message ?? 'Google login failed');
 			await utils.sleep(1000);
 			window.location.replace(
 				buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)
@@ -37,6 +38,8 @@ const GoogleCreatePage = () => {
 			window.location.replace(buildPublicAppUrl('/login'));
 			return;
 		}
+		if (consumed.current) return;
+		consumed.current = true;
 		onCreateGoogleUser(code);
 	}, [code]);
 
