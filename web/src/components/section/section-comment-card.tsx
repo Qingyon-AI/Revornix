@@ -2,7 +2,8 @@
 
 import { Clock3, Heart, Loader2, MessageCircle, TrashIcon } from 'lucide-react';
 import { useRouter } from 'nextjs-toploader/app';
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -61,7 +62,10 @@ const SectionCommentCard = ({
 	const [optimisticLikeCount, setOptimisticLikeCount] = useState(
 		comment.like_count ?? 0
 	);
-	const [likeBusy, setLikeBusy] = useState(false);
+	useEffect(() => {
+		setOptimisticLiked(comment.liked);
+		setOptimisticLikeCount(comment.like_count ?? 0);
+	}, [comment.liked, comment.like_count]);
 
 	const isOwner =
 		currentUserId !== undefined && comment.creator.id === currentUserId;
@@ -118,29 +122,102 @@ const SectionCommentCard = ({
 		}
 	};
 
-	const handleToggleLike = async () => {
-		if (likeBusy) return;
-		if (!ensureLoggedInOrRedirect()) return;
-		const previouslyLiked = optimisticLiked;
-		const previousCount = optimisticLikeCount;
-		setLikeBusy(true);
-		setOptimisticLiked(!previouslyLiked);
-		setOptimisticLikeCount(
-			previouslyLiked ? Math.max(previousCount - 1, 0) : previousCount + 1
-		);
-		try {
-			if (previouslyLiked) {
+	const likeMutation = useMutation({
+		mutationFn: async ({ liked }: { liked: boolean }) => {
+			if (liked) {
 				await unlikeSectionComment({ section_comment_id: comment.id });
 			} else {
 				await likeSectionComment({ section_comment_id: comment.id });
 			}
-		} catch {
-			setOptimisticLiked(previouslyLiked);
-			setOptimisticLikeCount(previousCount);
+		},
+		onMutate: async ({ liked }) => {
+			await queryClient.cancelQueries({
+				queryKey: ['getSectionCommentDetail', comment.id],
+			});
+			await queryClient.cancelQueries({
+				predicate: (query) =>
+					query.queryKey[0] === 'searchSectionComment' &&
+					query.queryKey[3] === sectionId,
+			});
+
+			const previousDetail = queryClient.getQueryData([
+				'getSectionCommentDetail',
+				comment.id,
+			]);
+			const previousLists = queryClient.getQueriesData({
+				predicate: (query) =>
+					query.queryKey[0] === 'searchSectionComment' &&
+					query.queryKey[3] === sectionId,
+			});
+
+			queryClient.setQueryData(
+				['getSectionCommentDetail', comment.id],
+				(old: any) => {
+					if (!old) return old;
+					return {
+						...old,
+						liked: !liked,
+						like_count: liked
+							? Math.max((old.like_count ?? 0) - 1, 0)
+							: (old.like_count ?? 0) + 1,
+					};
+				}
+			);
+
+			previousLists.forEach(([queryKey]) => {
+				queryClient.setQueryData(queryKey, (old: any) => {
+					if (!old?.pages) return old;
+					return {
+						...old,
+						pages: old.pages.map((page: any) => ({
+							...page,
+							elements: page.elements.map((c: any) =>
+								c.id === comment.id
+									? {
+											...c,
+											liked: !liked,
+											like_count: liked
+												? Math.max(
+														(c.like_count ?? 0) - 1,
+														0
+													)
+												: (c.like_count ?? 0) + 1,
+										}
+									: c
+							),
+						})),
+					};
+				});
+			});
+
+			return { previousDetail, previousLists };
+		},
+		onError: (_err, _variables, context) => {
+			if (context?.previousDetail) {
+				queryClient.setQueryData(
+					['getSectionCommentDetail', comment.id],
+					context.previousDetail
+				);
+			}
+			context?.previousLists.forEach(([queryKey, data]) => {
+				queryClient.setQueryData(queryKey, data);
+			});
 			toast.error(t('section_comment_like_failed'));
-		} finally {
-			setLikeBusy(false);
-		}
+		},
+	});
+
+	const handleToggleLike = () => {
+		if (likeMutation.isPending || !comment) return;
+		if (!ensureLoggedInOrRedirect()) return;
+		const previouslyLiked = optimisticLiked;
+		const previousCount = optimisticLikeCount;
+		setOptimisticLiked(!previouslyLiked);
+		setOptimisticLikeCount(
+			previouslyLiked
+				? Math.max(previousCount - 1, 0)
+				: previousCount + 1
+		);
+		likeMutation.mutate({ liked: previouslyLiked });
 	};
 
 	return (
@@ -252,7 +329,7 @@ const SectionCommentCard = ({
 				<Button
 					variant='ghost'
 					size='sm'
-					disabled={likeBusy}
+					disabled={likeMutation.isPending}
 					onClick={handleToggleLike}
 					className={cn(
 						'h-7 gap-1 rounded-full px-2 text-xs',

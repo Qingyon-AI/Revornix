@@ -10,16 +10,22 @@ const DocumentComments = ({
 	anchorCommentId,
 	initialData,
 	publicMode = false,
+	loginHref,
 }: {
 	document_id: number;
 	anchorCommentId?: number;
 	initialData?: InifiniteScrollPagnitionDocumentCommentInfo;
 	publicMode?: boolean;
+	loginHref?: string;
 }) => {
 	return (
 		<div className='flex h-full min-h-0 flex-col gap-4'>
 			{anchorCommentId ? (
-				<DocumentCommentAnchor commentId={anchorCommentId} />
+				<DocumentCommentAnchor
+					commentId={anchorCommentId}
+					documentId={document_id}
+					loginHref={loginHref}
+				/>
 			) : null}
 			<div className='min-h-0 flex-1 overflow-hidden'>
 				<DocumentCommentsList
