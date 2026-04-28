@@ -48,6 +48,7 @@ from notification.target.dingtalk_notification_target_provided import DingTalkNo
 from notification.target.email_notification_target_provided import EmailNotificationTargetProvided
 from notification.target.feishu_notification_target_provided import FeishuNotificationTargetProvided
 from notification.target.telegram_notification_target_provided import TelegramNotificationTargetProvided
+from notification.template.document_commented import DocumentCommentedNotificationTemplate
 from notification.template.document_podcast_ready import DocumentPodcastReadyNotificationTemplate
 from notification.template.document_process_completed import DocumentProcessCompletedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
@@ -57,6 +58,7 @@ from notification.template.section_podcast_ready import SectionPodcastReadyNotif
 from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.trigger_event.document_commented import DocumentCommentedNotificationTriggerEvent
 from notification.trigger_event.document_podcast_ready import DocumentPodcastReadyNotificationTriggerEvent
 from notification.trigger_event.document_process_completed import DocumentProcessCompletedNotificationTriggerEvent
 from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
@@ -174,6 +176,7 @@ async def seed_database(db: AsyncSession):
         SectionPptReadyNotificationTemplate(),
         DocumentProcessCompletedNotificationTemplate(),
         DocumentPodcastReadyNotificationTemplate(),
+        DocumentCommentedNotificationTemplate(),
     ]
     for tpl in templates:
         if await crud.notification.get_notification_template_by_uuid_async(db, tpl.uuid) is None:
@@ -197,6 +200,7 @@ async def seed_database(db: AsyncSession):
         SectionPptReadyNotificationTriggerEvent(),
         DocumentProcessCompletedNotificationTriggerEvent(),
         DocumentPodcastReadyNotificationTriggerEvent(),
+        DocumentCommentedNotificationTriggerEvent(),
     ]
     for trigger in triggers:
         if await crud.notification.get_trigger_event_by_uuid_async(db, trigger.uuid) is None:

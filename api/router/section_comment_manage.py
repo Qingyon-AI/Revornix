@@ -128,7 +128,7 @@ async def create_section_comment(
                 "comment_id": db_comment.id,
             },
         )
-        for db_user in db_users
+        for db_user in db_users if db_user.id != user.id
     ])
     return schemas.common.SuccessResponse()
 

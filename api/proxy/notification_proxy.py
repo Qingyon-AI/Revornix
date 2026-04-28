@@ -10,6 +10,7 @@ from notification.tool.dingtalk import DingTalkNotificationTool
 from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
+from notification.template.document_commented import DocumentCommentedNotificationTemplate
 from notification.template.document_podcast_ready import DocumentPodcastReadyNotificationTemplate
 from notification.template.document_process_completed import DocumentProcessCompletedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
@@ -133,6 +134,8 @@ class NotificationProxy:
 
         if template_uuid == NotificationTemplate.SECTION_COMMENTED.meta.uuid:
             notification_template = SectionCommentedNotificationTemplate()
+        elif template_uuid == NotificationTemplate.DOCUMENT_COMMENTED.meta.uuid:
+            notification_template = DocumentCommentedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_UPDATED.meta.uuid:
             notification_template = SectionUpdatedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid:

@@ -1,14 +1,18 @@
+import asyncio
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
+from common.celery.app import start_trigger_user_notification_event
 from common.dependencies import (
     get_async_db,
     get_current_user,
     get_current_user_without_throw,
 )
+from enums.notification import NotificationTriggerEventUUID
 from router.logic_helpers import ensure_document_access
 
 document_comment_manage_router = APIRouter()
@@ -105,7 +109,7 @@ async def create_document_comment(
         if db_parent.root_id is not None:
             reply_user_id = db_parent.creator_id
 
-    await crud.document.create_document_comment_async(
+    db_comment = await crud.document.create_document_comment_async(
         db=db,
         document_id=request_data.document_id,
         creator_id=user.id,
@@ -115,6 +119,25 @@ async def create_document_comment(
         reply_user_id=reply_user_id,
     )
     await db.commit()
+
+    collaborator_ids = await crud.document.get_collaborator_user_ids_for_document_async(
+        db=db,
+        document_id=request_data.document_id,
+    )
+    target_user_ids = [uid for uid in collaborator_ids if uid != user.id]
+    await asyncio.gather(*[
+        asyncio.to_thread(
+            start_trigger_user_notification_event.delay,
+            user_id=uid,
+            trigger_event_uuid=NotificationTriggerEventUUID.DOCUMENT_COMMENTED.value,
+            params={
+                "document_id": request_data.document_id,
+                "receiver_id": uid,
+                "comment_id": db_comment.id,
+            },
+        )
+        for uid in target_user_ids
+    ])
     return schemas.common.SuccessResponse()
 
 
