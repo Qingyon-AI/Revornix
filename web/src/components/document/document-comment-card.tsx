@@ -223,32 +223,32 @@ const DocumentCommentCard = ({
 	return (
 		<div
 			className={cn(
-				'rounded-3xl border border-border/60 bg-card/55 px-4 py-3.5 shadow-[0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-sm',
-				isReply && 'rounded-2xl px-3 py-2.5'
+				'rounded-2xl bg-card/55 space-y-1.5',
+				isReply && 'rounded-xl'
 			)}>
-			<div className='mb-2 flex items-start justify-between gap-3'>
+			<div className='flex items-start justify-between gap-3'>
 				<div
 					className='flex min-w-0 cursor-pointer items-center gap-3'
 					onClick={() => router.push(`/user/detail/${comment.creator.id}`)}>
 					<Avatar
 						className={cn(
 							'ring-1 ring-border/70',
-							isReply ? 'size-6' : 'size-8'
+							isReply ? 'size-5' : 'size-7'
 						)}>
 						<AvatarImage
 							src={replacePath(comment.creator.avatar, comment.creator.id)}
 							alt='avatar'
-							className={cn('object-cover', isReply ? 'size-6' : 'size-8')}
+							className={cn('object-cover', isReply ? 'size-5' : 'size-7')}
 						/>
 						<AvatarFallback
 							className={cn(
 								'font-semibold',
-								isReply ? 'size-6 text-xs' : 'size-8'
+								isReply ? 'size-5 text-[10px]' : 'size-7 text-xs'
 							)}>
 							{comment.creator.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>
-					<div className='min-w-0 space-y-1'>
+					<div className='min-w-0 space-y-0.5'>
 						<p
 							className={cn(
 								'truncate font-semibold',
@@ -265,14 +265,68 @@ const DocumentCommentCard = ({
 					</div>
 				</div>
 
+			</div>
+
+			<p
+				className={cn(
+					'whitespace-pre-wrap wrap-break-word leading-5 text-foreground/92',
+					isReply ? 'text-[13px]' : 'text-sm'
+				)}>
+				{isReply && comment.reply_user && (
+					<button
+						type='button'
+						onClick={(e) => {
+							e.stopPropagation();
+							router.push(`/user/detail/${comment.reply_user!.id}`);
+						}}
+						className='mr-1 cursor-pointer text-sky-600 hover:underline dark:text-sky-400'>
+						@{comment.reply_user.nickname}
+					</button>
+				)}
+				{comment.content}
+			</p>
+
+			<div className='flex items-center gap-1'>
+				<Button
+					variant='ghost'
+					size='sm'
+					disabled={likeMutation.isPending}
+					onClick={handleToggleLike}
+					className={cn(
+						'h-6 gap-1 rounded-full px-2 text-xs',
+						optimisticLiked
+							? 'text-rose-500 hover:text-rose-500'
+							: 'text-muted-foreground hover:text-foreground'
+					)}>
+					<Heart
+						className={cn('size-3.5', optimisticLiked && 'fill-current')}
+					/>
+					{optimisticLikeCount > 0
+						? optimisticLikeCount
+						: t('document_comment_like')}
+				</Button>
+
+				<Button
+					variant='ghost'
+					size='sm'
+					onClick={() => {
+						if (!ensureLoggedInOrRedirect()) return;
+						setReplying((v) => !v);
+					}}
+					className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
+					<MessageCircle className='size-3.5' />
+					{t('document_comment_reply')}
+				</Button>
+
 				{isOwner && (
 					<AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
 						<AlertDialogTrigger asChild>
 							<Button
 								variant='ghost'
-								size='icon'
-								className='size-8 shrink-0 rounded-xl text-muted-foreground hover:text-destructive'>
-								<TrashIcon className='size-4' />
+								size='sm'
+								className='h-6 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-destructive'>
+								<TrashIcon className='size-3.5' />
+								{t('delete')}
 							</Button>
 						</AlertDialogTrigger>
 						<AlertDialogContent>
@@ -304,58 +358,6 @@ const DocumentCommentCard = ({
 						</AlertDialogContent>
 					</AlertDialog>
 				)}
-			</div>
-
-			<p
-				className={cn(
-					'whitespace-pre-wrap wrap-break-word leading-6 text-foreground/92',
-					isReply ? 'text-[13px]' : 'text-sm'
-				)}>
-				{isReply && comment.reply_user && (
-					<button
-						type='button'
-						onClick={(e) => {
-							e.stopPropagation();
-							router.push(`/user/detail/${comment.reply_user!.id}`);
-						}}
-						className='mr-1 cursor-pointer text-sky-600 hover:underline dark:text-sky-400'>
-						@{comment.reply_user.nickname}
-					</button>
-				)}
-				{comment.content}
-			</p>
-
-			<div className='mt-2 flex items-center gap-1'>
-				<Button
-					variant='ghost'
-					size='sm'
-					disabled={likeMutation.isPending}
-					onClick={handleToggleLike}
-					className={cn(
-						'h-7 gap-1 rounded-full px-2 text-xs',
-						optimisticLiked
-							? 'text-rose-500 hover:text-rose-500'
-							: 'text-muted-foreground hover:text-foreground'
-					)}>
-					<Heart
-						className={cn('size-3.5', optimisticLiked && 'fill-current')}
-					/>
-					{optimisticLikeCount > 0
-						? optimisticLikeCount
-						: t('document_comment_like')}
-				</Button>
-
-				<Button
-					variant='ghost'
-					size='sm'
-					onClick={() => {
-						if (!ensureLoggedInOrRedirect()) return;
-						setReplying((v) => !v);
-					}}
-					className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
-					<MessageCircle className='size-3.5' />
-					{t('document_comment_reply')}
-				</Button>
 			</div>
 
 			{replying && canInteract && (

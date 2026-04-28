@@ -168,35 +168,35 @@ const DocumentCommentAnchor = ({
 				<span>{t('document_comment_anchor_label')}</span>
 			</div>
 			{isLoading ? (
-				<Skeleton className='h-24 w-full rounded-3xl' />
+				<Skeleton className='h-20 w-full rounded-2xl' />
 			) : comment ? (
 				<div
 					className={cn(
-						'relative rounded-3xl border px-4 py-3.5 transition-colors duration-700',
+						'relative py-2.5 transition-colors duration-700 space-y-1.5',
 						highlighted
-							? 'border-primary/40 bg-primary/8 shadow-[0_0_0_3px_rgba(var(--primary-rgb),0.07)]'
-							: 'border-border/60 bg-card/55 shadow-[0_1px_0_rgba(255,255,255,0.03)]'
+							? 'bg-primary/8'
+							: 'bg-card/55'
 					)}>
-					<div className='mb-3 flex items-start gap-3'>
+					<div className='flex items-start gap-3'>
 						<div
 							className='flex min-w-0 cursor-pointer items-center gap-3'
 							onClick={() =>
 								router.push(`/user/detail/${comment.creator.id}`)
 							}>
-							<Avatar className='size-8 ring-1 ring-border/70'>
+							<Avatar className='size-7 ring-1 ring-border/70'>
 								<AvatarImage
 									src={replacePath(
 										comment.creator.avatar,
 										comment.creator.id
 									)}
 									alt='avatar'
-									className='size-8 object-cover'
+									className='size-7 object-cover'
 								/>
-								<AvatarFallback className='size-8 font-semibold'>
+								<AvatarFallback className='size-7 text-xs font-semibold'>
 									{comment.creator.nickname.slice(0, 1) ?? '?'}
 								</AvatarFallback>
 							</Avatar>
-							<div className='min-w-0 space-y-1'>
+							<div className='min-w-0 space-y-0.5'>
 								<p className='truncate text-sm font-semibold'>
 									{comment.creator.nickname}
 								</p>
@@ -212,18 +212,18 @@ const DocumentCommentAnchor = ({
 							</div>
 						</div>
 					</div>
-					<p className='whitespace-pre-wrap wrap-break-word text-sm leading-6 text-foreground/92'>
+					<p className='whitespace-pre-wrap wrap-break-word text-sm leading-5 text-foreground/92'>
 						{comment.content}
 					</p>
 
-					<div className='mt-2 flex items-center gap-1'>
+					<div className='flex items-center gap-1'>
 						<Button
 							variant='ghost'
 							size='sm'
 							disabled={likeMutation.isPending}
 							onClick={handleToggleLike}
 							className={cn(
-								'h-7 gap-1 rounded-full px-2 text-xs',
+								'h-6 gap-1 rounded-full px-2 text-xs',
 								comment.liked
 									? 'text-rose-500 hover:text-rose-500'
 									: 'text-muted-foreground hover:text-foreground'
@@ -246,7 +246,7 @@ const DocumentCommentAnchor = ({
 								if (!ensureLoggedInOrRedirect()) return;
 								setReplying((v) => !v);
 							}}
-							className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
+							className='h-6 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
 							<MessageCircle className='size-3.5' />
 							{t('document_comment_reply')}
 						</Button>

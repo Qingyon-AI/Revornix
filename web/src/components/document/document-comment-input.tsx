@@ -22,6 +22,8 @@ type Props = {
 	placeholder?: string;
 	autoFocus?: boolean;
 	compact?: boolean;
+	className?: string;
+	flat?: boolean;
 	onCancel?: () => void;
 	onSuccess?: () => void;
 };
@@ -33,6 +35,8 @@ const DocumentCommentInput = ({
 	placeholder,
 	autoFocus,
 	compact = false,
+	className,
+	flat = false,
 	onCancel,
 	onSuccess,
 }: Props) => {
@@ -116,8 +120,11 @@ const DocumentCommentInput = ({
 						<FormItem>
 							<div
 								className={cn(
-									'rounded-3xl border border-border/70 bg-card/80 backdrop-blur-sm',
-									compact ? 'p-2' : 'p-3'
+									flat
+										? 'bg-transparent'
+										: 'rounded-3xl border border-border/70 bg-card/80 backdrop-blur-sm',
+									compact ? 'p-2' : 'p-3',
+									className
 								)}>
 								<Textarea
 									rows={compact ? 2 : 3}
@@ -139,9 +146,9 @@ const DocumentCommentInput = ({
 										}
 									}}
 								/>
-								<div className='mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-2'>
+								<div className={cn('mt-2 flex flex-wrap items-center justify-between gap-3 pt-2', !flat && 'border-t border-border/60')}>
 									<div className='flex items-center gap-2 text-xs text-muted-foreground'>
-										<div className='flex size-7 items-center justify-center rounded-lg border border-border/60 bg-background/70'>
+										<div className={cn('flex size-7 items-center justify-center rounded-lg', flat ? 'bg-muted/50' : 'border border-border/60 bg-background/70')}>
 											<CornerDownLeft className='size-3.5' />
 										</div>
 										<span>{t('document_comment_submit_shortcut')}</span>
