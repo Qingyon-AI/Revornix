@@ -27,6 +27,7 @@ class NotificationTriggerEventUUID(Enum):
     SECTION_PPT_READY = '5b8e3d2c7a1f49a3b6c8d4e2f5a7b9c1'
     DOCUMENT_PROCESS_COMPLETED = '3e6b9a1c5d2847f0a8c4b7e9f2d3a4b5'
     DOCUMENT_PODCAST_READY = '8f1c4e6a9b3d4f7eb2a5c8d1e3f6a9b4'
+    DOCUMENT_COMMENTED = 'bc665a75ead04dd9b12ce2f0bb6d5763'
 
 
 class NotificationTemplateMeta(NamedTuple):
@@ -69,6 +70,10 @@ class NotificationTemplate(Enum):
     DOCUMENT_PODCAST_READY = NotificationTemplateMeta(
         uuid='b6e3a8d2c5f147a9b1d4e7f3a2c5b8d6',
         name='Document Podcast Ready',
+    )
+    DOCUMENT_COMMENTED = NotificationTemplateMeta(
+        uuid='04d4219387d24a559f2f2a01382a99a5',
+        name='Document Commented',
     )
 
     @property

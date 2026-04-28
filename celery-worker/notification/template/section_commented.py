@@ -34,6 +34,7 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
 
         receiver_id = cast(int, params.get('receiver_id'))
         section_id = cast(int, params.get('section_id'))
+        comment_id = params.get('comment_id')
 
         if receiver_id is None or section_id is None:
             raise Exception(f"receiver_id or section_id is None, params: {params.items()}")
@@ -72,7 +73,7 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
         else:
             raise Exception("user is not a member or creator of the section")
 
-        link = f'/section/detail/{section_id}'
+        link = f'/section/detail/{section_id}?comment_id={comment_id}' if comment_id else f'/section/detail/{section_id}'
         base_title = "Section Commented"
         plain_content = f"Someone commented on section \"{section_title}\" that {relation_phrase}. Check it out."
 
