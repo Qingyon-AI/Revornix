@@ -16,6 +16,7 @@ import { searchGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Spinner } from '@/components/ui/spinner';
 
 const GraphPage = () => {
 	const t = useTranslations();
@@ -46,11 +47,12 @@ const GraphPage = () => {
 		})) ?? [];
 
 	return (
-		<div className='flex min-h-0 min-w-0 flex-1 w-full flex-col px-5 pb-5'>
+		<div className='flex min-h-0 min-w-0 flex-1 w-full'>
 			<div className='relative flex min-h-0 min-w-0 flex-1'>
 				{isLoading ? (
-					<div className='h-full w-full'>
-						<Skeleton className='h-full w-full rounded-2xl' />
+					<div className='h-full w-full flex justify-center items-center'>
+						{t('loading')}
+						<Spinner />
 					</div>
 				) : null}
 				{isError ? (
