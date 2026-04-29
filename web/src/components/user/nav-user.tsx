@@ -195,13 +195,13 @@ export function NavUser() {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant='ghost' className='h-auto px-3 py-2 justify-start'>
-					<Avatar className='size-6' title={mainUserInfo.nickname ?? ''}>
+					<Avatar className='size-7' title={mainUserInfo.nickname ?? ''}>
 						<AvatarImage
 							src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
 							alt='avatar'
-							className='size-6 object-cover'
+							className='size-7 object-cover'
 						/>
-						<AvatarFallback className='size-6 font-semibold'>
+						<AvatarFallback className='size-7 font-semibold'>
 							{mainUserInfo.nickname.slice(0, 1) ?? '?'}
 						</AvatarFallback>
 					</Avatar>

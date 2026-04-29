@@ -219,7 +219,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarContent>
 			<SidebarFooter className='flex flex-row gap-2 items-center p-3'>
 				<Button asChild className='rounded-full flex-1' variant='outline'>
-					<Link href='/revornix-ai'>{t('sidebar_revornix_ai')}</Link>
+					<Link href='/revornix-ai'>
+						<BotIcon />
+						{t('sidebar_revornix_ai')}
+					</Link>
 				</Button>
 				<Button
 					asChild
