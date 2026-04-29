@@ -39,7 +39,7 @@ const PrivateLayoutShell = ({
 					</div>
 
 					<header className='sticky top-0 z-20 px-5 pb-3 pt-3 backdrop-blur'>
-						<div className='flex min-h-13 items-center justify-between rounded-2xl border border-border/60 bg-card/80 px-3 shadow-[0_16px_36px_-30px_rgba(15,23,42,0.32)] backdrop-blur-xl'>
+						<div className='flex items-center justify-between backdrop-blur-xl'>
 							<div className='flex min-w-0 flex-1 items-center gap-1.5'>
 								<SidebarTrigger className='size-6 shrink-0 rounded-xl' />
 								<TopNav />

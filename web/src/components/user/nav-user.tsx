@@ -192,146 +192,137 @@ export function NavUser() {
 	const showPlanUpgrade = host && isAllowedDeployHost(host);
 
 	return (
-		<SidebarMenu>
-			<SidebarMenuItem>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<SidebarMenuButton
-							size='lg'
-							className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
-							<Avatar className='size-8' title={mainUserInfo.nickname ?? ''}>
-								<AvatarImage
-									src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
-									alt='avatar'
-									className='size-8 object-cover'
-								/>
-								<AvatarFallback className='size-8 font-semibold'>
-									{mainUserInfo.nickname.slice(0, 1) ?? '?'}
-								</AvatarFallback>
-							</Avatar>
-							<div className='grid flex-1 text-left text-sm leading-tight'>
-								<span className='truncate font-semibold'>
-									{mainUserInfo.nickname}
-								</span>
-								<span className='truncate text-xs text-muted-foreground'>
-									{mainUserInfo.slogan || t('user_no_slogan')}
-								</span>
-							</div>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button variant='ghost' className='h-auto px-3 py-2 justify-start'>
+					<Avatar className='size-6' title={mainUserInfo.nickname ?? ''}>
+						<AvatarImage
+							src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+							alt='avatar'
+							className='size-6 object-cover'
+						/>
+						<AvatarFallback className='size-6 font-semibold'>
+							{mainUserInfo.nickname.slice(0, 1) ?? '?'}
+						</AvatarFallback>
+					</Avatar>
+					<div className='grid flex-1 text-left text-sm leading-tight'>
+						<span className='truncate font-semibold'>
+							{mainUserInfo.nickname}
+						</span>
+						<span className='truncate text-xs text-muted-foreground'>
+							{mainUserInfo.slogan || t('user_no_slogan')}
+						</span>
+					</div>
+				</Button>
+			</DropdownMenuTrigger>
 
-							<ChevronsUpDown className='ml-auto size-4' />
-						</SidebarMenuButton>
-					</DropdownMenuTrigger>
+			<DropdownMenuContent
+				className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+				side={isMobile ? 'bottom' : 'right'}
+				align='end'
+				sideOffset={4}>
+				<DropdownMenuLabel className='p-0 font-normal'>
+					<div className='flex items-center gap-2 px-1 py-1.5'>
+						<Avatar>
+							<AvatarImage
+								src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
+								alt='avatar'
+								className='size-8 object-cover'
+							/>
+							<AvatarFallback className='size-8 font-semibold'>
+								{mainUserInfo.nickname.slice(0, 1) ?? '?'}
+							</AvatarFallback>
+						</Avatar>
+						<div className='grid flex-1 text-sm'>
+							<span className='font-semibold truncate'>
+								{mainUserInfo.nickname}
+							</span>
+							<span className='text-xs text-muted-foreground truncate'>
+								{mainUserInfo.slogan || t('user_no_slogan')}
+							</span>
+						</div>
+					</div>
 
-					<DropdownMenuContent
-						className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
-						side={isMobile ? 'bottom' : 'right'}
-						align='end'
-						sideOffset={4}>
-						<DropdownMenuLabel className='p-0 font-normal'>
-							<div className='flex items-center gap-2 px-1 py-1.5'>
-								<Avatar>
-									<AvatarImage
-										src={replacePath(mainUserInfo.avatar, mainUserInfo.id)}
-										alt='avatar'
-										className='size-8 object-cover'
-									/>
-									<AvatarFallback className='size-8 font-semibold'>
-										{mainUserInfo.nickname.slice(0, 1) ?? '?'}
-									</AvatarFallback>
-								</Avatar>
-								<div className='grid flex-1 text-sm'>
-									<span className='font-semibold truncate'>
-										{mainUserInfo.nickname}
-									</span>
-									<span className='text-xs text-muted-foreground truncate'>
-										{mainUserInfo.slogan || t('user_no_slogan')}
-									</span>
-								</div>
-							</div>
-
-							<div className='flex gap-1'>
-								<Link href='/user/fans' className='flex-1'>
-									<Button variant='link' size='sm' className='w-full'>
-										<span className='text-xs text-muted-foreground'>
-											{t('user_fans')}
-										</span>
-										<span className='ml-1 font-bold'>{mainUserInfo.fans}</span>
-									</Button>
-								</Link>
-								<Link href='/user/follows' className='flex-1'>
-									<Button variant='link' size='sm' className='w-full'>
-										<span className='text-xs text-muted-foreground'>
-											{t('user_follows')}
-										</span>
-										<span className='ml-1 font-bold'>
-											{mainUserInfo.follows}
-										</span>
-									</Button>
-								</Link>
-							</div>
-						</DropdownMenuLabel>
-
-						<DropdownMenuSeparator />
-
-						<DropdownMenuGroup>
-							<DropdownMenuItem onClick={() => router.push('/account')}>
-								<BadgeCheck />
-								{t('user_account')}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => router.push('/account/notifications')}>
-								<Bell />
-								{t('user_notifications')}
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
-
-						{showPlanUpgrade && (
-							<>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => router.push('/account/plan')}>
-									<Sparkles />
-									{t('account_plan_upgrade')}
-								</DropdownMenuItem>
-							</>
+					<div
+						className={cn('w-full grid items-center gap-1', {
+							'grid-cols-2':
+								(mainUserInfo.role === UserRole.ROOT ||
+									mainUserInfo.role === UserRole.ADMIN) &&
+								paySystemUserInfo?.userPlan?.plan?.product,
+						})}>
+						{paySystemUserInfo?.userPlan?.plan?.product && (
+							<Badge className='w-full flex items-center gap-1 rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
+								<Sparkles className='size-3' />
+								<span>{paySystemUserInfo.userPlan.plan.product.name}</span>
+							</Badge>
 						)}
+						{mainUserInfo.role === UserRole.ROOT && (
+							<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
+								<Badge className='bg-background text-foreground rounded-full border-none w-full'>
+									{t('root_user')}
+								</Badge>
+							</div>
+						)}
+						{mainUserInfo.role === UserRole.ADMIN && (
+							<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
+								<Badge className='bg-background text-foreground rounded-full border-none w-full'>
+									{t('admin_user')}
+								</Badge>
+							</div>
+						)}
+					</div>
 
+					<div className='flex gap-1'>
+						<Link href='/user/fans' className='flex-1'>
+							<Button variant='link' size='sm' className='w-full'>
+								<span className='text-xs text-muted-foreground'>
+									{t('user_fans')}
+								</span>
+								<span className='ml-1 font-bold'>{mainUserInfo.fans}</span>
+							</Button>
+						</Link>
+						<Link href='/user/follows' className='flex-1'>
+							<Button variant='link' size='sm' className='w-full'>
+								<span className='text-xs text-muted-foreground'>
+									{t('user_follows')}
+								</span>
+								<span className='ml-1 font-bold'>{mainUserInfo.follows}</span>
+							</Button>
+						</Link>
+					</div>
+				</DropdownMenuLabel>
+
+				<DropdownMenuSeparator />
+
+				<DropdownMenuGroup>
+					<DropdownMenuItem onClick={() => router.push('/account')}>
+						<BadgeCheck />
+						{t('user_account')}
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onClick={() => router.push('/account/notifications')}>
+						<Bell />
+						{t('user_notifications')}
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
+
+				{showPlanUpgrade && (
+					<>
 						<DropdownMenuSeparator />
-
-						<DropdownMenuItem onClick={onLogout}>
-							<LogOut />
-							{t('user_logout')}
+						<DropdownMenuItem onClick={() => router.push('/account/plan')}>
+							<Sparkles />
+							{t('account_plan_upgrade')}
 						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				<div
-					className={cn('w-full grid items-center gap-1', {
-						'grid-cols-2':
-							(mainUserInfo.role === UserRole.ROOT ||
-								mainUserInfo.role === UserRole.ADMIN) &&
-							paySystemUserInfo?.userPlan?.plan?.product,
-					})}>
-					{paySystemUserInfo?.userPlan?.plan?.product && (
-						<Badge className='w-full flex items-center gap-1 rounded-full border-none bg-linear-to-r from-sky-500 to-indigo-600 text-white'>
-							<Sparkles className='size-3' />
-							<span>{paySystemUserInfo.userPlan.plan.product.name}</span>
-						</Badge>
-					)}
-					{mainUserInfo.role === UserRole.ROOT && (
-						<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
-							<Badge className='bg-background text-foreground rounded-full border-none w-full'>
-								{t('root_user')}
-							</Badge>
-						</div>
-					)}
-					{mainUserInfo.role === UserRole.ADMIN && (
-						<div className='bg-linear-to-r from-sky-400 to-indigo-600 rounded-full p-0.5 flex items-center justify-center'>
-							<Badge className='bg-background text-foreground rounded-full border-none w-full'>
-								{t('admin_user')}
-							</Badge>
-						</div>
-					)}
-				</div>
-			</SidebarMenuItem>
-		</SidebarMenu>
+					</>
+				)}
+
+				<DropdownMenuSeparator />
+
+				<DropdownMenuItem onClick={onLogout}>
+					<LogOut />
+					{t('user_logout')}
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }

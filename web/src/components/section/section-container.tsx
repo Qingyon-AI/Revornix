@@ -205,7 +205,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 					<>
 						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
-							<div className='mx-auto mb-6 w-full max-w-[980px] overflow-hidden rounded-[28px] shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
+							<div className='mx-auto w-full overflow-hidden'>
 								<div className='relative'>
 									<ImageWithFallback
 										src={sectionCoverSrc}

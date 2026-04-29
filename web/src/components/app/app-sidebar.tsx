@@ -8,8 +8,8 @@ import {
 	LifeBuoy,
 	PlusCircle,
 	ChartNetwork,
-	SatelliteDish,
 	ShieldCheck,
+	SquarePen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { NavUser } from '@/components/user/nav-user';
@@ -25,10 +25,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import darklogo from '@/static/logo.dark.png';
-import logo from '@/static/logo.png';
-import AddDocumentBox from '../document/add-document-box';
-import Image from 'next/image';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
 import { useUserContext } from '@/provider/user-provider';
@@ -41,36 +37,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar {...props}>
 			<SidebarHeader className='p-3'>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton size='lg' asChild>
-							<Link href='/dashboard'>
-								<div className='flex aspect-square size-10 items-center justify-center'>
-									<Image src={logo} alt='logo' className='block dark:hidden' />
-									<Image
-										src={darklogo}
-										alt='logo'
-										className='hidden dark:block'
-									/>
-									<SatelliteDish className='size-4 text-emerald-700/80 dark:text-emerald-200/80' />
-								</div>
-								<div className='grid flex-1 text-left text-sm leading-tight'>
-									<span className='truncate font-semibold tracking-tight'>
-										{t('website_title')}
-									</span>
-									<span className='truncate text-xs text-sidebar-foreground/70'>
-										{t('website_description')}
-									</span>
-								</div>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
+				<NavUser />
 			</SidebarHeader>
 			<SidebarContent>
-				<div className='md:px-3'>
-					<AddDocumentBox />
-				</div>
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -100,16 +69,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										<ChartNetwork />
 										<Link href={'/graph'} className='w-full'>
 											{t('sidebar_graph')}
-										</Link>
-									</div>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-							<SidebarMenuItem>
-								<SidebarMenuButton asChild>
-									<div className='w-full'>
-										<BotIcon />
-										<Link href={'/revornix-ai'} className='w-full'>
-											{t('sidebar_revornix_ai')}
 										</Link>
 									</div>
 								</SidebarMenuButton>
@@ -258,8 +217,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter>
-				<NavUser />
+			<SidebarFooter className='flex flex-row gap-2 items-center p-3'>
+				<Button asChild className='rounded-full flex-1' variant='outline'>
+					<Link href='/revornix-ai'>{t('sidebar_revornix_ai')}</Link>
+				</Button>
+				<Button
+					asChild
+					variant={'outline'}
+					className='rounded-full'
+					size={'icon'}>
+					<Link href={'/document/create'}>
+						<SquarePen />
+					</Link>
+				</Button>
 			</SidebarFooter>
 		</Sidebar>
 	);
