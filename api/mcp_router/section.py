@@ -1,6 +1,7 @@
 from fastmcp import Context, FastMCP
 
 import schemas
+from enums.section import UserSectionRole
 from mcp_router.auth import (
     UserAuthMiddleware,
     db_session,
@@ -1116,7 +1117,7 @@ async def list_section_users(
     keyword: str | None = None,
     start: int | None = None,
     limit: int = 10,
-    filter_roles: list[int] | None = None,
+    filter_roles: list[UserSectionRole] | None = None,
 ):
     """
     List users associated with a section.

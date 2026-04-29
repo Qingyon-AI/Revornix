@@ -28,8 +28,8 @@ class UserAuthMiddleware(Middleware):
             raise ToolError("Access denied: invalid token")
 
         if context.fastmcp_context:
-            context.fastmcp_context.set_state("api_key", api_key)
-            context.fastmcp_context.set_state("user_id", user_id)
+            await context.fastmcp_context.set_state("api_key", api_key)
+            await context.fastmcp_context.set_state("user_id", user_id)
 
         return await call_next(context)
 
@@ -50,15 +50,15 @@ async def db_session():
         yield db
 
 
-def get_user_id_from_ctx(ctx: Context) -> int:
-    user_id = ctx.get_state("user_id")
+async def get_user_id_from_ctx(ctx: Context) -> int:
+    user_id = await ctx.get_state("user_id")
     if not user_id:
         raise ToolError("Access denied: missing user_id")
     return int(user_id)
 
 
 async def get_user_from_ctx(ctx: Context, db: AsyncSession) -> models.user.User:
-    user_id = get_user_id_from_ctx(ctx)
+    user_id = await get_user_id_from_ctx(ctx)
     db_user = await crud.user.get_user_by_id_async(
         db=db,
         user_id=user_id,
