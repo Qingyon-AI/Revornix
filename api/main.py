@@ -25,6 +25,7 @@ from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
 from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from mcp_router.graph import graph_mcp_router
+from mcp_router.section import section_mcp_router
 from router.ai import ai_router
 from router.admin import admin_router
 from router.api_key import api_key_router
@@ -44,6 +45,7 @@ from schemas.error import normalize_error_message
 common_mcp_app = common_mcp_router.http_app()
 document_mcp_app = document_mcp_router.http_app()
 graph_mcp_app = graph_mcp_router.http_app()
+section_mcp_app = section_mcp_router.http_app()
 
 
 @asynccontextmanager
@@ -86,6 +88,9 @@ async def lifespan(app: FastAPI):
             info_logger.info(format_log_message("graph_mcp_lifespan_starting"))
             await stack.enter_async_context(graph_mcp_app.lifespan(app))
             info_logger.info(format_log_message("graph_mcp_lifespan_started"))
+            info_logger.info(format_log_message("section_mcp_lifespan_starting"))
+            await stack.enter_async_context(section_mcp_app.lifespan(app))
+            info_logger.info(format_log_message("section_mcp_lifespan_started"))
             info_logger.info(format_log_message("fastapi_lifespan_started"))
             yield
     finally:
@@ -150,6 +155,7 @@ app.include_router(wechat_official_router, prefix="/wechat", tags=["wechat"])
 app.mount("/mcp-server/common", common_mcp_app)
 app.mount("/mcp-server/document", document_mcp_app)
 app.mount("/mcp-server/graph", graph_mcp_app)
+app.mount("/mcp-server/section", section_mcp_app)
 
 @app.get('/health')
 async def health():

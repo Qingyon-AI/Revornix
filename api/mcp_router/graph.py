@@ -29,14 +29,16 @@ async def search_mine_graph(ctx: Context):
         degree, and source document or chunk references.
 
     When not to use:
-        - Do not use this tool to fetch document body text or document details.
-        - Do not use this tool for keyword-based content retrieval.
+        - Do not use this tool to fetch document body text or document metadata.
+        - Do not use this tool for keyword or semantic content retrieval; use document search tools instead.
+        - Do not use this tool when you only need the graph for a single document or section.
 
     Examples:
-        - Fetch the current user's global knowledge graph
+        - Fetch the current user's global knowledge graph.
+        - Build a relationship overview across all accessible documents.
 
     Notes:
-        - The scope is limited to graph data owned by or accessible to the current user.
+        - The scope is limited to graph data owned by or accessible to the authenticated user.
         - Large knowledge bases may produce a large number of nodes and edges.
     """
     async with db_session() as db:
@@ -57,22 +59,24 @@ async def search_document_graph(
     to each other, or when you want a document-specific graph view for visualization or structured analysis.
 
     Args:
-        document_id: Target document ID.
+        document_id: Target document ID. The authenticated user must have access to this document.
 
     Returns:
         A graph object containing `nodes` and `edges`. Node sources point back to related document chunks,
         which helps with evidence tracing.
 
     When not to use:
-        - Do not use this tool for document metadata. Use `get_document_detail`.
-        - Do not use this tool for semantic search. Use the document search tools instead.
+        - Do not use this tool for document metadata; use `get_document_detail`.
+        - Do not use this tool for semantic search; use `search_document` or `search_document_vector`.
+        - Do not use this tool for cross-document graph analysis; use `search_mine_graph` or `search_section_graph`.
 
     Examples:
-        - Fetch the graph for a document: `document_id=128`
+        - Fetch the graph for document 128: `document_id=128`
+        - Inspect entity relationships in a specific source document.
 
     Notes:
-        - The current user must have access permission for the document.
-        - This tool is document-scoped and does not provide a cross-document global graph view.
+        - This tool is document-scoped and does not provide a global graph view.
+        - If the graph has not been generated for the document, the result may be empty.
     """
     async with db_session() as db:
         user = await get_user_from_ctx(ctx, db)
@@ -95,22 +99,24 @@ async def search_section_graph(
     inspect shared entities across multiple documents, or build a section-level graph visualization.
 
     Args:
-        section_id: Target section ID.
+        section_id: Target section ID. The authenticated user must have access to this section.
 
     Returns:
         A graph object containing `nodes` and `edges`. Nodes include source document and chunk references
         so the caller can trace graph evidence back to section content.
 
     When not to use:
-        - Do not use this tool to fetch section details or section document lists.
+        - Do not use this tool to fetch section metadata or section document lists.
         - Do not use this tool when you only need the graph for a single document.
+        - Do not use this tool for keyword retrieval over section content.
 
     Examples:
-        - Fetch the aggregated graph for a section: `section_id=32`
+        - Fetch the aggregated graph for section 32: `section_id=32`
+        - Compare entities shared across documents in one section.
 
     Notes:
-        - If the section is private, the current user must have permission to access it.
-        - This tool returns a section-level aggregated graph, not single-document detail.
+        - If the section is private, the authenticated user must be a member or creator.
+        - This tool returns a section-level aggregated graph, not a single-document detail response.
     """
     async with db_session() as db:
         user = await get_user_from_ctx(ctx, db)
