@@ -37,6 +37,7 @@ import TipTapEditor from '../markdown/tiptap-editor';
 import DocumentCreateAdvancedSection from './document-create-advanced-section';
 
 const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
+const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
 const QUICK_NOTE_AUTO_SAVE_DELAY = 1200;
 
 const normalizeQuickNoteContent = (content: string) =>
@@ -240,6 +241,32 @@ const AddQuickNote = () => {
 		}
 
 		restoredDraftKeyRef.current = draftStorageKey;
+
+		const importedRaw = window.localStorage.getItem(
+			QUICK_NOTE_IMPORT_STORAGE_KEY,
+		);
+		if (importedRaw) {
+			try {
+				const imported = JSON.parse(importedRaw) as { content?: string };
+				const importedContent = imported?.content ?? '';
+				if (importedContent.trim().length > 0) {
+					const normalizedDraft = buildDraftPayload({
+						...form.getValues(),
+						content: importedContent,
+					});
+					form.reset(normalizedDraft);
+					lastSavedDraftRef.current = JSON.stringify(normalizedDraft);
+					setEditorInstanceKey((current) => current + 1);
+					toast.success(t('revornix_ai_quick_note_imported'));
+					window.localStorage.removeItem(QUICK_NOTE_IMPORT_STORAGE_KEY);
+					return;
+				}
+			} catch (error) {
+				console.error(error);
+			}
+			window.localStorage.removeItem(QUICK_NOTE_IMPORT_STORAGE_KEY);
+		}
+
 		const storedDraft = window.localStorage.getItem(draftStorageKey);
 		if (!storedDraft) {
 			return;

@@ -98,7 +98,7 @@ const RevornixAI = () => {
 				ref={containerRef}
 				className='min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5'>
 				{currentSession?.messages && currentSession.messages.length > 0 ? (
-					<div className='flex w-full flex-col gap-3'>
+					<div className='mx-auto flex w-full max-w-3xl flex-col gap-3'>
 						{currentSession.messages.map((message, index) => {
 							const isLastMessage =
 								index === currentSession.messages.length - 1;
@@ -130,8 +130,10 @@ const RevornixAI = () => {
 					</div>
 				)}
 			</div>
-			<div className='sticky bottom-0 z-10 shrink-0 border-t border-border/60 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/88'>
-				<MessageSendForm />
+			<div className='sticky bottom-0 z-10 shrink-0 bg-transparent'>
+				<div className='mx-auto w-full max-w-3xl'>
+					<MessageSendForm />
+				</div>
 			</div>
 		</div>
 	);

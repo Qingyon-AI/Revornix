@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Message } from '@/types/ai';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
 	Accordion,
@@ -17,38 +16,62 @@ import {
 	CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
-	BotIcon,
 	ChevronDownIcon,
 	CheckCircle2Icon,
+	CheckIcon,
 	CopyIcon,
 	FileTextIcon,
+	NotebookPenIcon,
 	PenLineIcon,
 	SparkleIcon,
-	UserIcon,
 	WrenchIcon,
 	XCircleIcon,
 } from 'lucide-react';
+import { useRouter } from 'nextjs-toploader/app';
 import { isEmpty } from 'lodash-es';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import CustomMarkdown from '../ui/custom-markdown';
+import ImagePreview from '../ui/image-preview';
 
 const legacyPhaseLabelMap: Record<string, string> = {
-	'正在理解你的问题': 'revornix_ai_phase_thinking',
+	正在理解你的问题: 'revornix_ai_phase_thinking',
 	'工具返回结果，继续思考': 'revornix_ai_phase_thinking',
-	'正在生成回答': 'revornix_ai_phase_writing',
+	正在生成回答: 'revornix_ai_phase_writing',
 	'服务处理失败，请稍后重试。': 'revornix_ai_error_server_failed',
-	'The server failed to complete the request.': 'revornix_ai_error_server_failed',
+	'The server failed to complete the request.':
+		'revornix_ai_error_server_failed',
 	'MCP 工具调用达到步骤上限，未能在限制内完成。':
 		'revornix_ai_error_mcp_recursion_limit',
 	'The MCP tool-calling workflow hit its step limit before completion.':
 		'revornix_ai_error_mcp_recursion_limit',
 };
 
+const PhaseIcon = ({ phase, size = 12 }: { phase?: string; size?: number }) => {
+	switch (phase) {
+		case 'thinking':
+			return <SparkleIcon size={size} />;
+		case 'writing':
+			return <PenLineIcon size={size} />;
+		case 'tool':
+		case 'tool_result':
+			return <WrenchIcon size={size} />;
+		case 'done':
+			return <CheckCircle2Icon size={size} />;
+		case 'error':
+			return <XCircleIcon size={size} />;
+		default:
+			return null;
+	}
+};
+
+const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
+
 const MessageCard = ({ message }: { message: Message }) => {
 	const t = useTranslations();
+	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
 	const ai_workflow = message.ai_workflow;
 	const ai_state = message.ai_state;
@@ -102,6 +125,23 @@ const MessageCard = ({ message }: { message: Message }) => {
 		document.body.removeChild(textarea);
 	};
 
+	const handleSaveAsQuickNote = () => {
+		const content = message.content?.trim();
+		if (!content) {
+			toast.error(t('copy_failed'));
+			return;
+		}
+		try {
+			window.localStorage.setItem(
+				QUICK_NOTE_IMPORT_STORAGE_KEY,
+				JSON.stringify({ content: message.content }),
+			);
+		} catch (error) {
+			console.error(error);
+		}
+		router.push('/document/create');
+	};
+
 	const handleCopyMarkdown = async () => {
 		if (!message.content?.trim()) {
 			toast.error(t('copy_failed'));
@@ -145,33 +185,23 @@ const MessageCard = ({ message }: { message: Message }) => {
 		return (
 			<div
 				className={cn(
-					'mt-3 grid gap-2.5',
+					'grid gap-2',
 					singleImage ? 'grid-cols-1' : 'grid-cols-2',
 				)}>
 				{message.images.map((imagePath) => (
-					<a
+					<ImagePreview
 						key={imagePath}
-						href={replacePath(imagePath, mainUserInfo.id)}
-						target='_blank'
-						rel='noreferrer'
+						src={replacePath(imagePath, mainUserInfo.id)}
+						alt='uploaded image'
 						className={cn(
-							'group relative overflow-hidden rounded-[22px] border border-border/60 bg-muted/30 shadow-sm transition-transform hover:-translate-y-0.5',
-							singleImage
-								? 'max-w-[320px]'
-								: 'aspect-square min-h-[140px]',
-						)}>
-						<div className='pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100' />
-						<img
-							src={replacePath(imagePath, mainUserInfo.id)}
-							alt='uploaded image'
-							className={cn(
-								'h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]',
-								singleImage
-									? 'max-h-[280px] min-h-[180px]'
-									: 'aspect-square',
-							)}
-						/>
-					</a>
+							'rounded-lg bg-muted/40',
+							singleImage ? 'max-w-[320px]' : 'aspect-square min-h-[140px]',
+						)}
+						imageClassName={cn(
+							'h-full w-full object-cover',
+							singleImage ? 'max-h-[280px] min-h-[180px]' : 'aspect-square',
+						)}
+					/>
 				))}
 			</div>
 		);
@@ -189,66 +219,45 @@ const MessageCard = ({ message }: { message: Message }) => {
 				open={citationsOpen}
 				onOpenChange={setCitationsOpen}
 				className='mt-3'>
-				<div className='rounded-xl border border-border/50 bg-muted/30 px-3 py-2'>
-					<div className='flex items-center justify-between gap-3'>
-						<div className='min-w-0 flex-1'>
-							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
-								<span>{t('section_ai_references')}</span>
-								<span className='rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] leading-none'>
-									{chunkCitations.length}
-								</span>
-							</div>
-							{summary && (
-								<div className='mt-1 line-clamp-1 text-xs text-muted-foreground/90'>
-									{summary}
-								</div>
+				<CollapsibleTrigger asChild>
+					<button
+						type='button'
+						className='inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors'>
+						<span>
+							{t('section_ai_references')} · {chunkCitations.length}
+						</span>
+						{summary && (
+							<span className='line-clamp-1 max-w-[280px]'>{summary}</span>
+						)}
+						<ChevronDownIcon
+							className={cn(
+								'size-3 transition-transform',
+								citationsOpen && 'rotate-180',
 							)}
-						</div>
-						<CollapsibleTrigger asChild>
-							<button
-								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground'>
-								<span>
-									{citationsOpen
-										? t('section_ai_references_hide')
-										: t('section_ai_references_show')}
-								</span>
-								<ChevronDownIcon
-									className={cn(
-										'size-3.5 transition-transform',
-										citationsOpen && 'rotate-180',
-									)}
-								/>
-							</button>
-						</CollapsibleTrigger>
-					</div>
-					<CollapsibleContent className='pt-2'>
-						<div className='flex max-h-44 flex-col gap-2 overflow-auto pr-1'>
-							{chunkCitations.map((citation) => (
-								<div
-									key={citation.chunk_id}
-									className='rounded-lg border border-border/50 bg-background p-2.5'>
-									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-muted p-1'>
-											<FileTextIcon className='size-3 text-muted-foreground' />
+						/>
+					</button>
+				</CollapsibleTrigger>
+				<CollapsibleContent className='pt-2'>
+					<div className='flex max-h-44 flex-col gap-1.5 overflow-auto'>
+						{chunkCitations.map((citation) => (
+							<div
+								key={citation.chunk_id}
+								className='rounded-lg bg-muted/40 p-2'>
+								<div className='flex min-w-0 items-start gap-2'>
+									<FileTextIcon className='size-3 mt-0.5 shrink-0 text-muted-foreground' />
+									<div className='min-w-0 flex-1'>
+										<div className='line-clamp-1 text-xs font-medium'>
+											{citation.document_title}
 										</div>
-										<div className='min-w-0 flex-1'>
-											<div className='line-clamp-1 text-xs font-medium text-foreground'>
-												{citation.document_title}
-											</div>
-											<div className='mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground/80'>
-												Document #{citation.document_id}
-											</div>
-										</div>
+										<p className='mt-0.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
+											{cleanReferenceExcerpt(citation.excerpt)}
+										</p>
 									</div>
-									<p className='mt-1.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
-										{cleanReferenceExcerpt(citation.excerpt)}
-									</p>
 								</div>
-							))}
-						</div>
-					</CollapsibleContent>
-				</div>
+							</div>
+						))}
+					</div>
+				</CollapsibleContent>
 			</Collapsible>
 		);
 	};
@@ -262,214 +271,154 @@ const MessageCard = ({ message }: { message: Message }) => {
 			<Collapsible
 				open={sourcesOpen}
 				onOpenChange={setSourcesOpen}
-				className='mt-3'>
-				<div className='rounded-xl border border-border/50 bg-muted/30 px-3 py-2'>
-					<div className='flex items-center justify-between gap-3'>
-						<div className='min-w-0 flex-1'>
-							<div className='flex items-center gap-2 text-[11px] font-medium tracking-wide text-muted-foreground'>
-								<span>{t('revornix_ai_sources')}</span>
-								<span className='rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] leading-none'>
-									{documentSources.length}
-								</span>
-							</div>
-							<div className='mt-1 line-clamp-1 text-xs text-muted-foreground/90'>
-								{documentSources
-									.slice(0, 2)
-									.map((source) => source.document_title)
-									.join(' · ')}
-							</div>
-						</div>
-						<CollapsibleTrigger asChild>
-							<button
-								type='button'
-								className='inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground'>
-								<span>
-									{sourcesOpen
-										? t('revornix_ai_sources_hide')
-										: t('revornix_ai_sources_show')}
-								</span>
-								<ChevronDownIcon
-									className={cn(
-										'size-3.5 transition-transform',
-										sourcesOpen && 'rotate-180',
-									)}
-								/>
-							</button>
-						</CollapsibleTrigger>
-					</div>
-					<CollapsibleContent className='pt-2'>
-						<div className='flex max-h-44 flex-col gap-2 overflow-auto pr-1'>
-							{documentSources.map((source) => (
-								<div
-									key={`${source.document_id}-${source.source_tool ?? 'source'}`}
-									className='rounded-lg border border-border/50 bg-background p-2.5'>
-									<div className='flex min-w-0 items-start gap-2'>
-										<div className='mt-0.5 rounded-md border border-border/50 bg-muted p-1'>
-											<FileTextIcon className='size-3 text-muted-foreground' />
+				className='mt-2'>
+				<CollapsibleTrigger asChild>
+					<button
+						type='button'
+						className='inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors'>
+						<span>
+							{t('revornix_ai_sources')} · {documentSources.length}
+						</span>
+						<span className='line-clamp-1 max-w-[280px]'>
+							{documentSources
+								.slice(0, 2)
+								.map((source) => source.document_title)
+								.join(' · ')}
+						</span>
+						<ChevronDownIcon
+							className={cn(
+								'size-3 transition-transform',
+								sourcesOpen && 'rotate-180',
+							)}
+						/>
+					</button>
+				</CollapsibleTrigger>
+				<CollapsibleContent className='pt-2'>
+					<div className='flex max-h-44 flex-col gap-1.5 overflow-auto'>
+						{documentSources.map((source) => (
+							<div
+								key={`${source.document_id}-${source.source_tool ?? 'source'}`}
+								className='rounded-lg bg-muted/40 p-2'>
+								<div className='flex min-w-0 items-start gap-2'>
+									<FileTextIcon className='size-3 mt-0.5 shrink-0 text-muted-foreground' />
+									<div className='min-w-0 flex-1'>
+										<div className='line-clamp-1 text-xs font-medium'>
+											{source.document_title}
 										</div>
-										<div className='min-w-0 flex-1'>
-											<div className='line-clamp-1 text-xs font-medium text-foreground'>
-												{source.document_title}
-											</div>
-											<div className='mt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground/80'>
-												Document #{source.document_id}
-											</div>
-											{source.section_titles &&
-												source.section_titles.length > 0 && (
-													<div className='mt-1 line-clamp-1 text-[11px] text-muted-foreground'>
-														{source.section_titles.join(' · ')}
-													</div>
-												)}
-										</div>
+										{source.section_titles &&
+											source.section_titles.length > 0 && (
+												<div className='mt-0.5 line-clamp-1 text-[11px] text-muted-foreground'>
+													{source.section_titles.join(' · ')}
+												</div>
+											)}
+										{source.description && (
+											<p className='mt-0.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
+												{source.description}
+											</p>
+										)}
 									</div>
-									{source.description && (
-										<p className='mt-1.5 line-clamp-2 break-words text-[11px] leading-5 text-muted-foreground'>
-											{source.description}
-										</p>
-									)}
 								</div>
-							))}
-						</div>
-					</CollapsibleContent>
-				</div>
+							</div>
+						))}
+					</div>
+				</CollapsibleContent>
 			</Collapsible>
 		);
 	};
-	return (
-		<div
-			className={cn('flex w-full', {
-				'justify-end': message.role === 'user',
-			})}>
-			<div
-				className={cn(
-					'min-w-0 overflow-hidden rounded-[26px] border px-3.5 py-3 shadow-sm transition-colors',
-					message.role === 'user'
-						? 'max-w-[min(82%,760px)] border-primary/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.04),rgba(15,23,42,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]'
-						: 'max-w-[min(92%,1080px)] border-border/70 bg-card/95',
-				)}>
-				<div className='mb-3 flex items-center justify-between gap-3'>
-					<div
-						className={cn(
-							'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide',
-							message.role === 'user'
-								? 'border-primary/15 bg-background/70 text-foreground/80'
-								: 'border-border/60 bg-muted/40 text-muted-foreground',
-						)}>
-						{message.role === 'user' ? (
-							<UserIcon className='size-3.5' />
-						) : (
-							<BotIcon className='size-3.5' />
-						)}
-						<span>
-							{message.role === 'user'
-								? t('revornix_ai_you_label')
-								: t('website_title')}
-						</span>
-					</div>
-					<Button
-						type='button'
-						size='sm'
-						variant='ghost'
-						className='h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground'
-						aria-label={t('copy')}
-						onClick={handleCopyMarkdown}>
-						<CopyIcon className='size-3.5' />
-						<span>{copied ? t('copied') : t('copy')}</span>
-					</Button>
+
+	if (message.role === 'user') {
+		return (
+			<div className='flex w-full justify-end'>
+				<div className='min-w-0 flex flex-col items-end gap-2 max-w-[min(82%,640px)]'>
+					{renderMessageImages()}
+					{message.content?.trim() && (
+						<div className='rounded-2xl bg-muted px-3.5 py-2 text-sm break-words'>
+							<CustomMarkdown content={message.content} />
+						</div>
+					)}
 				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className='flex w-full'>
+			<div className='min-w-0 w-full'>
 				{ai_state && (
-					<Alert className='mb-4 rounded-[22px] border-border/60 bg-muted/30 px-4 py-3'>
-						<AlertDescription>
-							<Accordion type='multiple' className='w-full'>
-								<AccordionItem value='state'>
-									<AccordionTrigger className='py-0'>
-										<div className='flex flex-row gap-2 items-center'>
-											{ai_state.phase === 'thinking' && (
-												<SparkleIcon size={12} />
-											)}
-											{ai_state.phase === 'writing' && (
-												<PenLineIcon size={12} />
-											)}
-											{ai_state.phase === 'tool' && <WrenchIcon size={12} />}
-											{ai_state.phase === 'done' && (
-												<CheckCircle2Icon size={12} />
-											)}
-											{ai_state.phase === 'error' && (
-												<XCircleIcon size={12} />
-											)}
-											<AlertTitle className='font-bold text-primary'>
-												{resolvePhaseLabel(ai_state?.label)}
-											</AlertTitle>
-										</div>
-									</AccordionTrigger>
-									<AccordionContent className='mt-3 pb-0'>
-										{ai_workflow && (
-											<div className='space-y-1'>
-												<div className='relative pl-5'>
-													<div className='absolute left-1.5 top-0 bottom-0 w-px bg-border' />
-
-													<div className='space-y-2'>
-														{ai_workflow.map((step, index) => {
-															return (
-																<div className='flex flex-col text-xs' key={index}>
-																	<div className='flex flex-row items-center gap-2'>
-																		{step.phase === 'thinking' && (
-																			<SparkleIcon size={12} />
-																		)}
-																		{step.phase === 'writing' && (
-																			<PenLineIcon size={12} />
-																		)}
-																		{step.phase === 'tool' && (
-																			<WrenchIcon size={12} />
-																		)}
-																		{step.phase === 'tool_result' && (
-																			<WrenchIcon size={12} />
-																		)}
-																		{step.phase === 'done' && (
-																			<CheckCircle2Icon size={12} />
-																		)}
-																		{step.phase === 'error' && (
-																			<XCircleIcon size={12} />
-																		)}
-																		<span>{resolvePhaseLabel(step.label)}</span>
-																	</div>
-
-																	{!isEmpty(step.meta) && (
-																		<div className='mt-1 w-fit pl-5'>
-																			{(step.phase === 'tool' ||
-																				step.phase === 'tool_result') &&
-																			step.meta?.tool && (
-																					<div className='break-all rounded-full border border-border/50 bg-background px-2 py-0.5 text-[11px]'>
-																						{step.meta.tool}
-																					</div>
-																				)}
-																		</div>
-																	)}
-																</div>
-															);
-														})}
+					<Accordion type='multiple' className='w-full mb-1'>
+						<AccordionItem value='state' className='border-none'>
+							<AccordionTrigger className='py-1 hover:no-underline'>
+								<div className='flex flex-row gap-2 items-center text-xs text-muted-foreground'>
+									<PhaseIcon phase={ai_state.phase} />
+									<span>{resolvePhaseLabel(ai_state?.label)}</span>
+								</div>
+							</AccordionTrigger>
+							<AccordionContent className='pb-1 pt-1'>
+								{ai_workflow && (
+									<div className='relative pl-4 ml-1'>
+										<div className='absolute left-0 top-1 bottom-1 w-px bg-border' />
+										<div className='space-y-1.5'>
+											{ai_workflow.map((step, index) => (
+												<div
+													className='flex flex-col text-xs text-muted-foreground'
+													key={index}>
+													<div className='flex flex-row items-center gap-2'>
+														<PhaseIcon phase={step.phase} />
+														<span>{resolvePhaseLabel(step.label)}</span>
 													</div>
+													{!isEmpty(step.meta) &&
+														(step.phase === 'tool' ||
+															step.phase === 'tool_result') &&
+														step.meta?.tool && (
+															<div className='mt-1 ml-5 w-fit break-all rounded-md bg-muted px-1.5 py-0.5 text-[11px]'>
+																{step.meta.tool}
+															</div>
+														)}
 												</div>
-											</div>
-										)}
-									</AccordionContent>
-								</AccordionItem>
-							</Accordion>
-						</AlertDescription>
-					</Alert>
+											))}
+										</div>
+									</div>
+								)}
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
 				)}
 
-				{message.role === 'user' && renderMessageImages()}
-				<div
-					className={cn(
-						'max-w-none break-words',
-						message.role === 'user' && message.images?.length ? 'mt-4' : undefined,
-					)}>
+				<div className='max-w-none break-words text-sm leading-relaxed'>
 					<CustomMarkdown content={message.content} />
 				</div>
-				{message.role !== 'user' && renderMessageImages()}
-				{message.role === 'assistant' && renderChunkCitations()}
-				{message.role === 'assistant' && renderDocumentSources()}
+				{renderMessageImages()}
+				{renderChunkCitations()}
+				{renderDocumentSources()}
+
+				{message.content?.trim() && (
+					<div className='mt-1.5 flex items-center gap-0.5 -ml-2'>
+						<Button
+							type='button'
+							size='sm'
+							variant='ghost'
+							className='h-7 w-7 p-0 text-muted-foreground hover:text-foreground'
+							aria-label={t('copy')}
+							title={copied ? t('copied') : t('copy')}
+							onClick={handleCopyMarkdown}>
+							{copied ? (
+								<CheckIcon className='size-3.5' />
+							) : (
+								<CopyIcon className='size-3.5' />
+							)}
+						</Button>
+						<Button
+							type='button'
+							size='sm'
+							variant='ghost'
+							className='h-7 w-7 p-0 text-muted-foreground hover:text-foreground'
+							aria-label={t('revornix_ai_save_as_quick_note')}
+							title={t('revornix_ai_save_as_quick_note')}
+							onClick={handleSaveAsQuickNote}>
+							<NotebookPenIcon className='size-3.5' />
+						</Button>
+					</div>
+				)}
 			</div>
 		</div>
 	);

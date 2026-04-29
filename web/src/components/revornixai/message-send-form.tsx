@@ -5,15 +5,15 @@ import aiApi from '@/api/ai';
 import Cookies from 'js-cookie';
 import {
 	ImagePlus,
-	Info,
 	Loader2,
 	Send,
 	SlidersHorizontal,
+	Wrench,
 	X,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { AIEvent, Message } from '@/types/ai';
-import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Form, FormField, FormItem } from '@/components/ui/form';
 import { Switch } from '../ui/switch';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +31,7 @@ import {
 import { useRouter } from 'nextjs-toploader/app';
 import { useAiChatStore } from '@/store/ai-chat';
 import { createEmptySession } from '@/lib/ai-session';
-import { replacePath } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import {
 	Drawer,
 	DrawerContent,
@@ -418,266 +418,234 @@ const MessageSendForm = () => {
 		!isUploadingImages &&
 		(selectedModelId !== mainUserInfo?.default_revornix_model_id ||
 			(!revornixModel.loading && !revornixModel.subscriptionLocked));
-	const defaultModelName = default_llm_model?.name
-		? default_llm_model.name
-		: t('setting_revornix_model_empty');
 
-	const renderDesktopToolbar = () => {
-		return (
-			<div className='p-2 flex flex-wrap items-center gap-1.5 border-b border-border/60'>
-				<div className='inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/60 bg-background px-3 text-xs'>
-					<span className='shrink-0 text-muted-foreground'>
-						{t('use_model')}
-					</span>
-					<AIModelSelect
-						value={selectedModelId}
-						onChange={setSelectedModelId}
-						disabled={mutateSendMessage.isPending}
-						variant='inline'
-						size='sm'
-						placeholder={t('setting_model_select')}
+	const renderInlineModelSelect = () => (
+		<AIModelSelect
+			value={selectedModelId}
+			onChange={setSelectedModelId}
+			disabled={mutateSendMessage.isPending}
+			variant='inline'
+			size='sm'
+			placeholder={t('setting_model_select')}
+		/>
+	);
+
+	const renderMcpToggle = () => (
+		<FormField
+			control={form.control}
+			name='enable_mcp'
+			render={({ field }) => (
+				<FormItem className='inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 hover:bg-muted'>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<button
+									type='button'
+									onClick={() => field.onChange(!field.value)}
+									className={cn(
+										'inline-flex items-center gap-1.5 text-xs',
+										field.value ? 'text-foreground' : 'text-muted-foreground',
+									)}>
+									<Wrench className='size-3.5' />
+									<span>{t('revornix_ai_mcp_status')}</span>
+								</button>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>{t('revornix_ai_mcp_description')}</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+					<Switch
+						checked={field.value}
+						onCheckedChange={(e) => field.onChange(e)}
+						className='scale-75'
 					/>
-				</div>
-				<FormField
-					control={form.control}
-					name='enable_mcp'
-					render={({ field }) => (
-						<FormItem className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5'>
-							<FormLabel className='flex flex-row items-center gap-1.5 text-xs font-medium text-foreground'>
-								{t('revornix_ai_mcp_status')}
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Info className='size-3.5 text-muted-foreground' />
-										</TooltipTrigger>
-										<TooltipContent>
-											<p>{t('revornix_ai_mcp_description')}</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							</FormLabel>
-							<Switch
-								checked={field.value}
-								onCheckedChange={(e) => {
-									field.onChange(e);
-								}}
-							/>
-							<span className='h-3.5 w-px shrink-0 bg-border' />
-							<Link
-								href={settingAnchorHrefs.mcpServerManage}
-								className='text-xs text-muted-foreground transition-colors hover:text-foreground'>
-								{t('revornix_ai_go_to_configure_mcp')}
-							</Link>
-						</FormItem>
-					)}
-				/>
-			</div>
-		);
-	};
-
-	const renderMobileToolbar = () => {
-		return (
-			<div className='mb-2 flex items-center gap-1.5'>
-				<div className='min-w-0 flex-1 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs text-muted-foreground'>
-					<div className='truncate'>
-						<span>{t('revornix_ai_default_model')}</span>
-						<span className='mx-1'>·</span>
-						<span className='font-medium text-foreground'>
-							{defaultModelName}
-						</span>
-					</div>
-				</div>
-				<Drawer>
-					<DrawerTrigger asChild>
-						<Button
-							type='button'
-							variant='outline'
-							size='icon'
-							className='size-9 rounded-full border-border/60 bg-background shadow-none'
-							aria-label={t('revornix_ai_mobile_compose_settings')}>
-							<SlidersHorizontal className='size-4' />
-						</Button>
-					</DrawerTrigger>
-					<DrawerContent className='max-h-[80vh] rounded-t-[28px] border-t border-border/70 bg-card'>
-						<DrawerHeader className='border-b border-border/60 px-5 pb-4 pt-5 text-left'>
-							<DrawerTitle className='text-lg tracking-tight'>
-								{t('revornix_ai_mobile_compose_settings')}
-							</DrawerTitle>
-							<DrawerDescription className='text-sm leading-6'>
-								{t('revornix_ai_mobile_compose_settings_description')}
-							</DrawerDescription>
-						</DrawerHeader>
-						<div className='space-y-3 overflow-auto px-4 py-4'>
-							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
-								<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-									{t('use_model')}
-								</div>
-								<div className='mt-3'>
-									<AIModelSelect
-										value={selectedModelId}
-										onChange={setSelectedModelId}
-										disabled={mutateSendMessage.isPending}
-										variant='panel'
-										className='w-full'
-										placeholder={t('setting_model_select')}
-									/>
-								</div>
-								<div className='mt-2 text-xs text-muted-foreground'>
-									{t('current_default_model', {
-										model: defaultModelName,
-									})}
-								</div>
-							</div>
-							<div className='rounded-[22px] border border-border/60 bg-background p-4'>
-								<div className='flex items-start justify-between gap-3'>
-									<div className='min-w-0'>
-										<div className='flex items-center gap-1.5 text-sm font-semibold'>
-											{t('revornix_ai_mcp_status')}
-											<TooltipProvider>
-												<Tooltip>
-													<TooltipTrigger asChild>
-														<Info className='size-3.5 text-muted-foreground' />
-													</TooltipTrigger>
-													<TooltipContent>
-														<p>{t('revornix_ai_mcp_description')}</p>
-													</TooltipContent>
-												</Tooltip>
-											</TooltipProvider>
-										</div>
-										<p className='mt-2 text-sm leading-6 text-muted-foreground'>
-											{t('revornix_ai_mcp_description')}
-										</p>
-									</div>
-									<Switch
-										checked={enableMcp}
-										onCheckedChange={(checked) => {
-											form.setValue('enable_mcp', checked, {
-												shouldDirty: true,
-											});
-										}}
-									/>
-								</div>
-								<Link
-									href={settingAnchorHrefs.mcpServerManage}
-									className='mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4'>
-									{t('revornix_ai_go_to_configure_mcp')}
-								</Link>
-							</div>
-						</div>
-					</DrawerContent>
-				</Drawer>
-			</div>
-		);
-	};
+				</FormItem>
+			)}
+		/>
+	);
 
 	return (
 		<Form {...form}>
-			<form onSubmit={onSubmitMessageForm}>
-				<div className='rounded-[22px] bg-card'>
-					<div>
-						{isMobile ? renderMobileToolbar() : renderDesktopToolbar()}
-						<FormField
-							control={form.control}
-							name='message'
-							render={({ field }) => (
-								<FormItem className='flex-1 gap-0'>
-									{attachments.length > 0 && mainUserInfo?.id ? (
-										<div className='flex flex-wrap gap-2 p-2'>
-											{attachments.map((attachment) => (
-												<div
-													key={attachment.path}
-													className='group relative h-14 w-14 overflow-hidden rounded-xl border border-border/60 bg-muted/30 sm:h-16 sm:w-16'>
-													<img
-														src={replacePath(attachment.path, mainUserInfo.id)}
-														alt={attachment.name}
-														className='h-full w-full object-cover'
-													/>
-													<button
-														type='button'
-														className='absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
-														onClick={() => removeAttachment(attachment.path)}
-														aria-label={t('delete')}>
-														<X className='size-3' />
-													</button>
-												</div>
-											))}
-										</div>
-									) : null}
-									<Textarea
-										className={`bg-transparent! resize-none overflow-y-auto rounded-[14px] border-none bg-transparent px-3 py-2.5 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 ${
-											isMobile
-												? 'min-h-[120px] max-h-[220px] pb-[3.25rem]'
-												: 'min-h-[112px] max-h-[240px] pb-[3.25rem] pr-[3.5rem]'
-										}`}
-										placeholder={t('revornix_ai_message_placeholder')}
-										disabled={mutateSendMessage.isPending}
-										{...field}
-										onKeyDown={(e) => {
-											if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-												e.preventDefault();
-												form.handleSubmit(
-													onFormValidateSuccess,
-													onFormValidateError,
-												)();
-											}
-										}}
-									/>
-									<div className='absolute inset-x-2.5 bottom-2.5 flex items-end justify-between gap-2 z-1'>
-										<Button
-											type='button'
-											size='sm'
-											variant='outline'
-											className='h-9 rounded-full text-[11px]'
-											onClick={openPicker}
-											disabled={
-												mutateSendMessage.isPending || isUploadingImages
-											}>
-											{isUploadingImages ? (
-												<Loader2 className='size-3.5 animate-spin' />
-											) : (
-												<ImagePlus className='size-3.5' />
-											)}
-											<span>{t('upload_image')}</span>
-										</Button>
-										<span className='text-[11px] text-muted-foreground'>
-											{t('upload_limit_hint', {
-												size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-											})}
-										</span>
-										<div className='flex flex-row items-center gap-2'>
-											{!isMobile ? (
-												<div className='flex items-center gap-1.5 text-[11px] text-muted-foreground'>
-													<kbd className='pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-full border border-border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground'>
-														<span className='text-xs font-bold'>⌘</span>
-														<span className='font-bold'>Enter</span>
-													</kbd>
-													<span>{t('revornix_ai_quickly_send')}</span>
-												</div>
-											) : null}
-											<Button
-												type='submit'
-												size='icon'
-												variant='default'
-												disabled={!canSubmit}
-												className='size-9 rounded-[14px]'>
-												<Send className='size-4' />
-											</Button>
-										</div>
+			<form onSubmit={onSubmitMessageForm} className='pb-3'>
+				<div className='rounded-2xl border border-border/60 bg-background shadow-sm focus-within:border-border focus-within:shadow-md transition-shadow'>
+					<FormField
+						control={form.control}
+						name='message'
+						render={({ field }) => (
+							<FormItem className='gap-0'>
+								{attachments.length > 0 && mainUserInfo?.id ? (
+									<div className='flex flex-wrap gap-2 px-3 pt-3'>
+										{attachments.map((attachment) => (
+											<div
+												key={attachment.path}
+												className='group relative h-14 w-14 overflow-hidden rounded-lg bg-muted/40'>
+												<img
+													src={replacePath(attachment.path, mainUserInfo.id)}
+													alt={attachment.name}
+													className='h-full w-full object-cover'
+												/>
+												<button
+													type='button'
+													className='absolute right-0.5 top-0.5 inline-flex size-4 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm transition hover:bg-background'
+													onClick={() => removeAttachment(attachment.path)}
+													aria-label={t('delete')}>
+													<X className='size-2.5' />
+												</button>
+											</div>
+										))}
 									</div>
-									<input
-										ref={imageInputRef}
-										type='file'
-										accept='image/*'
-										multiple
-										className='hidden'
-										onChange={(event) => {
-											void handleFileChange(event);
-										}}
-									/>
-								</FormItem>
-							)}
-						/>
-					</div>
+								) : null}
+								<Textarea
+									className='resize-none overflow-y-auto border-none bg-transparent! px-3.5 pt-3 pb-1 text-sm leading-6 shadow-none outline-none ring-0 focus-visible:ring-0 min-h-[56px] max-h-[240px]'
+									placeholder={t('revornix_ai_message_placeholder')}
+									disabled={mutateSendMessage.isPending}
+									{...field}
+									onKeyDown={(e) => {
+										if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+											e.preventDefault();
+											form.handleSubmit(
+												onFormValidateSuccess,
+												onFormValidateError,
+											)();
+										}
+									}}
+								/>
+								<div className='flex items-center justify-between gap-2 px-2 pb-2'>
+									<div className='flex items-center gap-0.5 min-w-0'>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														type='button'
+														size='icon'
+														variant='ghost'
+														className='size-8 rounded-full text-muted-foreground hover:text-foreground'
+														onClick={openPicker}
+														disabled={
+															mutateSendMessage.isPending || isUploadingImages
+														}>
+														{isUploadingImages ? (
+															<Loader2 className='size-4 animate-spin' />
+														) : (
+															<ImagePlus className='size-4' />
+														)}
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>
+														{t('upload_image')} ·{' '}
+														{t('upload_limit_hint', {
+															size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+														})}
+													</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+										{isMobile ? (
+											<Drawer>
+												<DrawerTrigger asChild>
+													<Button
+														type='button'
+														variant='ghost'
+														size='icon'
+														className='size-8 rounded-full text-muted-foreground hover:text-foreground'
+														aria-label={t('revornix_ai_mobile_compose_settings')}>
+														<SlidersHorizontal className='size-4' />
+													</Button>
+												</DrawerTrigger>
+												<DrawerContent className='max-h-[80vh] rounded-t-[28px] border-t border-border/70 bg-card'>
+													<DrawerHeader className='border-b border-border/60 px-5 pb-4 pt-5 text-left'>
+														<DrawerTitle className='text-lg tracking-tight'>
+															{t('revornix_ai_mobile_compose_settings')}
+														</DrawerTitle>
+														<DrawerDescription className='text-sm leading-6'>
+															{t('revornix_ai_mobile_compose_settings_description')}
+														</DrawerDescription>
+													</DrawerHeader>
+													<div className='space-y-3 overflow-auto px-4 py-4'>
+														<div className='rounded-2xl bg-muted/40 p-4'>
+															<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
+																{t('use_model')}
+															</div>
+															<div className='mt-3'>
+																<AIModelSelect
+																	value={selectedModelId}
+																	onChange={setSelectedModelId}
+																	disabled={mutateSendMessage.isPending}
+																	variant='panel'
+																	className='w-full'
+																	placeholder={t('setting_model_select')}
+																/>
+															</div>
+														</div>
+														<div className='rounded-2xl bg-muted/40 p-4'>
+															<div className='flex items-start justify-between gap-3'>
+																<div className='min-w-0'>
+																	<div className='flex items-center gap-1.5 text-sm font-semibold'>
+																		{t('revornix_ai_mcp_status')}
+																	</div>
+																	<p className='mt-2 text-sm leading-6 text-muted-foreground'>
+																		{t('revornix_ai_mcp_description')}
+																	</p>
+																</div>
+																<Switch
+																	checked={enableMcp}
+																	onCheckedChange={(checked) => {
+																		form.setValue('enable_mcp', checked, {
+																			shouldDirty: true,
+																		});
+																	}}
+																/>
+															</div>
+															<Link
+																href={settingAnchorHrefs.mcpServerManage}
+																className='mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4'>
+																{t('revornix_ai_go_to_configure_mcp')}
+															</Link>
+														</div>
+													</div>
+												</DrawerContent>
+											</Drawer>
+										) : (
+											<>
+												<div className='inline-flex h-8 items-center rounded-full px-2 hover:bg-muted'>
+													{renderInlineModelSelect()}
+												</div>
+												{renderMcpToggle()}
+											</>
+										)}
+									</div>
+									<div className='flex flex-row items-center gap-2'>
+										{!isMobile && (
+											<kbd className='pointer-events-none hidden lg:inline-flex h-6 select-none items-center gap-1 rounded-md bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground'>
+												<span>⌘</span>
+												<span>Enter</span>
+											</kbd>
+										)}
+										<Button
+											type='submit'
+											size='icon'
+											variant='default'
+											disabled={!canSubmit}
+											className='size-8 rounded-full'>
+											<Send className='size-3.5' />
+										</Button>
+									</div>
+								</div>
+								<input
+									ref={imageInputRef}
+									type='file'
+									accept='image/*'
+									multiple
+									className='hidden'
+									onChange={(event) => {
+										void handleFileChange(event);
+									}}
+								/>
+							</FormItem>
+						)}
+					/>
 				</div>
 			</form>
 		</Form>
