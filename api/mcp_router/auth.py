@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
+from common.timezone import normalize_timezone_name
 from data.sql.base import async_session_context
 
 
@@ -65,3 +66,18 @@ async def get_user_from_ctx(ctx: Context, db: AsyncSession) -> models.user.User:
     if db_user is None:
         raise ToolError("Access denied: user not found")
     return db_user
+
+
+def get_request_timezone_from_headers() -> str:
+    headers = get_http_headers()
+    return normalize_timezone_name(headers.get("x-user-timezone"))
+
+
+def get_raw_user_timezone_from_headers() -> str | None:
+    headers = get_http_headers()
+    return headers.get("x-user-timezone")
+
+
+def get_authorization_from_headers() -> str | None:
+    headers = get_http_headers()
+    return headers.get("authorization")
