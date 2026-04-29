@@ -43,8 +43,7 @@ const SectionCommentAnchor = ({
 		isError,
 	} = useQuery({
 		queryKey: ['getSectionCommentDetail', commentId],
-		queryFn: () =>
-			getSectionCommentDetail({ section_comment_id: commentId }),
+		queryFn: () => getSectionCommentDetail({ section_comment_id: commentId }),
 		retry: false,
 	});
 
@@ -108,7 +107,7 @@ const SectionCommentAnchor = ({
 							? Math.max((old.like_count ?? 0) - 1, 0)
 							: (old.like_count ?? 0) + 1,
 					};
-				}
+				},
 			);
 
 			previousLists.forEach(([queryKey]) => {
@@ -124,13 +123,10 @@ const SectionCommentAnchor = ({
 											...c,
 											liked: !liked,
 											like_count: liked
-												? Math.max(
-														(c.like_count ?? 0) - 1,
-														0
-													)
+												? Math.max((c.like_count ?? 0) - 1, 0)
 												: (c.like_count ?? 0) + 1,
 										}
-									: c
+									: c,
 							),
 						})),
 					};
@@ -143,7 +139,7 @@ const SectionCommentAnchor = ({
 			if (context?.previousDetail) {
 				queryClient.setQueryData(
 					['getSectionCommentDetail', commentId],
-					context.previousDetail
+					context.previousDetail,
 				);
 			}
 			context?.previousLists.forEach(([queryKey, data]) => {
@@ -163,7 +159,7 @@ const SectionCommentAnchor = ({
 
 	return (
 		<div className='shrink-0'>
-			<div className='mb-3 flex items-center gap-1.5 px-1 text-xs font-medium text-primary'>
+			<div className='mb-2 flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground'>
 				<Pin className='size-3.5' />
 				<span>{t('section_comment_anchor_label')}</span>
 			</div>
@@ -173,9 +169,9 @@ const SectionCommentAnchor = ({
 				<div
 					className={cn(
 						'relative py-2.5 transition-colors duration-700 space-y-1.5',
-						highlighted
-							? 'bg-primary/8'
-							: 'bg-card/55',
+						{
+							'bg-primary/8': highlighted,
+						},
 					)}>
 					<div className='flex items-start gap-3'>
 						<div
@@ -192,10 +188,14 @@ const SectionCommentAnchor = ({
 								</AvatarFallback>
 							</Avatar>
 							<div className='min-w-0 space-y-0.5'>
-								<p className='truncate text-sm font-semibold'>{comment.creator.nickname}</p>
+								<p className='truncate text-sm font-semibold'>
+									{comment.creator.nickname}
+								</p>
 								<div className='flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground'>
 									<Clock3 className='size-3.5' />
-									<span>{formatInUserTimeZone(comment.create_time, 'MM-dd HH:mm')}</span>
+									<span>
+										{formatInUserTimeZone(comment.create_time, 'MM-dd HH:mm')}
+									</span>
 								</div>
 							</div>
 						</div>
@@ -214,12 +214,14 @@ const SectionCommentAnchor = ({
 								'h-6 gap-1 rounded-full px-2 text-xs',
 								comment.liked
 									? 'text-rose-500 hover:text-rose-500'
-									: 'text-muted-foreground hover:text-foreground'
+									: 'text-muted-foreground hover:text-foreground',
 							)}>
 							<Heart
 								className={cn('size-3.5', comment.liked && 'fill-current')}
 							/>
-							{(comment.like_count ?? 0) > 0 ? comment.like_count : t('section_comment_like')}
+							{(comment.like_count ?? 0) > 0
+								? comment.like_count
+								: t('section_comment_like')}
 						</Button>
 
 						<Button

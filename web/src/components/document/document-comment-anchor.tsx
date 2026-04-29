@@ -43,8 +43,7 @@ const DocumentCommentAnchor = ({
 		isError,
 	} = useQuery({
 		queryKey: ['getDocumentCommentDetail', commentId],
-		queryFn: () =>
-			getDocumentCommentDetail({ document_comment_id: commentId }),
+		queryFn: () => getDocumentCommentDetail({ document_comment_id: commentId }),
 		retry: false,
 	});
 
@@ -108,7 +107,7 @@ const DocumentCommentAnchor = ({
 							? Math.max((old.like_count ?? 0) - 1, 0)
 							: (old.like_count ?? 0) + 1,
 					};
-				}
+				},
 			);
 
 			previousLists.forEach(([queryKey]) => {
@@ -124,13 +123,10 @@ const DocumentCommentAnchor = ({
 											...c,
 											liked: !liked,
 											like_count: liked
-												? Math.max(
-														(c.like_count ?? 0) - 1,
-														0
-													)
+												? Math.max((c.like_count ?? 0) - 1, 0)
 												: (c.like_count ?? 0) + 1,
 										}
-									: c
+									: c,
 							),
 						})),
 					};
@@ -143,7 +139,7 @@ const DocumentCommentAnchor = ({
 			if (context?.previousDetail) {
 				queryClient.setQueryData(
 					['getDocumentCommentDetail', commentId],
-					context.previousDetail
+					context.previousDetail,
 				);
 			}
 			context?.previousLists.forEach(([queryKey, data]) => {
@@ -163,7 +159,7 @@ const DocumentCommentAnchor = ({
 
 	return (
 		<div className='shrink-0'>
-			<div className='mb-3 flex items-center gap-1.5 px-1 text-xs font-medium text-primary'>
+			<div className='mb-2 flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground'>
 				<Pin className='size-3.5' />
 				<span>{t('document_comment_anchor_label')}</span>
 			</div>
@@ -173,22 +169,17 @@ const DocumentCommentAnchor = ({
 				<div
 					className={cn(
 						'relative py-2.5 transition-colors duration-700 space-y-1.5',
-						highlighted
-							? 'bg-primary/8'
-							: 'bg-card/55'
+						{
+							'bg-primary/8': highlighted,
+						},
 					)}>
 					<div className='flex items-start gap-3'>
 						<div
 							className='flex min-w-0 cursor-pointer items-center gap-3'
-							onClick={() =>
-								router.push(`/user/detail/${comment.creator.id}`)
-							}>
+							onClick={() => router.push(`/user/detail/${comment.creator.id}`)}>
 							<Avatar className='size-7 ring-1 ring-border/70'>
 								<AvatarImage
-									src={replacePath(
-										comment.creator.avatar,
-										comment.creator.id
-									)}
+									src={replacePath(comment.creator.avatar, comment.creator.id)}
 									alt='avatar'
 									className='size-7 object-cover'
 								/>
@@ -203,10 +194,7 @@ const DocumentCommentAnchor = ({
 								<div className='flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground'>
 									<Clock3 className='size-3.5' />
 									<span>
-										{formatInUserTimeZone(
-											comment.create_time,
-											'MM-dd HH:mm'
-										)}
+										{formatInUserTimeZone(comment.create_time, 'MM-dd HH:mm')}
 									</span>
 								</div>
 							</div>
@@ -226,13 +214,10 @@ const DocumentCommentAnchor = ({
 								'h-6 gap-1 rounded-full px-2 text-xs',
 								comment.liked
 									? 'text-rose-500 hover:text-rose-500'
-									: 'text-muted-foreground hover:text-foreground'
+									: 'text-muted-foreground hover:text-foreground',
 							)}>
 							<Heart
-								className={cn(
-									'size-3.5',
-									comment.liked && 'fill-current'
-								)}
+								className={cn('size-3.5', comment.liked && 'fill-current')}
 							/>
 							{(comment.like_count ?? 0) > 0
 								? comment.like_count
@@ -258,12 +243,9 @@ const DocumentCommentAnchor = ({
 								document_id={documentId}
 								parent_id={comment.id}
 								rootIdForInvalidation={comment.id}
-								placeholder={t(
-									'document_comment_reply_placeholder',
-									{
-										nickname: comment.creator.nickname,
-									}
-								)}
+								placeholder={t('document_comment_reply_placeholder', {
+									nickname: comment.creator.nickname,
+								})}
 								compact
 								autoFocus
 								onCancel={() => setReplying(false)}
