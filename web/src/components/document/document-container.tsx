@@ -97,10 +97,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	const { mainUserInfo } = useUserContext();
 	const { setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
-	const [selectedGraphModelId, setSelectedGraphModelId] = useState<number | null>(
-		mainUserInfo?.default_document_reader_model_id ?? null,
-	);
-	const [isGraphGenerateDialogOpen, setIsGraphGenerateDialogOpen] = useState(false);
+	const [selectedGraphModelId, setSelectedGraphModelId] = useState<
+		number | null
+	>(mainUserInfo?.default_document_reader_model_id ?? null);
+	const [isGraphGenerateDialogOpen, setIsGraphGenerateDialogOpen] =
+		useState(false);
 	const [hasRenderableGraph, setHasRenderableGraph] = useState(false);
 	const userUnreadDocumentQueryKey = [
 		'searchUserUnreadDocument',
@@ -140,24 +141,24 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					tone: 'warning' as const,
 				}
 			: document?.graph_task?.status === DocumentGraphStatus.SUCCESS
-			? {
-					badge: t('document_graph_status_success'),
-					tone: 'success' as const,
-				}
-			: document?.graph_task?.status === DocumentGraphStatus.FAILED
 				? {
-						badge: t('document_graph_status_failed'),
-						tone: 'danger' as const,
+						badge: t('document_graph_status_success'),
+						tone: 'success' as const,
 					}
-				: document?.graph_task?.status === DocumentGraphStatus.BUILDING
+				: document?.graph_task?.status === DocumentGraphStatus.FAILED
 					? {
-							badge: t('document_graph_status_doing'),
-							tone: 'default' as const,
+							badge: t('document_graph_status_failed'),
+							tone: 'danger' as const,
 						}
-					: {
-							badge: t('document_graph_status_todo'),
-							tone: 'warning' as const,
-						};
+					: document?.graph_task?.status === DocumentGraphStatus.BUILDING
+						? {
+								badge: t('document_graph_status_doing'),
+								tone: 'default' as const,
+							}
+						: {
+								badge: t('document_graph_status_todo'),
+								tone: 'warning' as const,
+							};
 	const graphActionLabel = document?.graph_task
 		? t('document_graph_regenerate')
 		: t('document_graph_generate');
@@ -173,7 +174,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			return t('document_graph_generate_failed_default');
 		}
 		if (
-			message.includes('Paid subscription or available compute points required.')
+			message.includes(
+				'Paid subscription or available compute points required.',
+			)
 		) {
 			return t('document_graph_generate_failed_access');
 		}
@@ -331,7 +334,9 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			{document && primaryAudioSrc ? (
 				<MobileAutoAudioTrack
 					src={primaryAudioSrc}
-					scriptUrl={document.podcast_task?.podcast_script_file_name ?? undefined}
+					scriptUrl={
+						document.podcast_task?.podcast_script_file_name ?? undefined
+					}
 					title={document.title || t('document_no_title')}
 					artist={document.creator?.nickname || 'AI Generated'}
 					cover={documentCoverSrc ?? undefined}
@@ -353,7 +358,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 						</div>
 					)}
 					{documentCoverSrc ? (
-						<div className='mx-auto mb-6 w-full max-w-[980px] rounded-[28px] overflow-hidden shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
+						<div className='mx-auto w-full overflow-hidden'>
 							<div className='relative'>
 								<ImageWithFallback
 									src={documentCoverSrc}
@@ -391,34 +396,35 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			</div>
 
 			{document && isCompactViewport ? (
-				<div
-					className={`fixed right-4 z-50 ${mobileOperateOffsetClassName}`}>
+				<div className={`fixed right-4 z-50 ${mobileOperateOffsetClassName}`}>
 					<div className='pointer-events-auto'>
 						<DocumentOperate id={id} />
 					</div>
 				</div>
 			) : null}
-		<ResourceConfirmDialog
-			open={isGraphGenerateDialogOpen}
-			onOpenChange={setIsGraphGenerateDialogOpen}
-			title={graphActionLabel}
-			description={t('resource_dialog_graph_description')}
-			confirmLabel={graphActionLabel}
-			confirmDisabled={!selectedGraphModelId}
-			confirmLoading={mutateGenerateDocumentGraph.isPending}
-			onConfirm={() => {
-				mutateGenerateDocumentGraph.mutate();
-			}}>
-			<div className='space-y-2'>
-				<p className='text-sm font-medium text-foreground'>{t('use_model')}</p>
-				<AIModelSelect
-					value={selectedGraphModelId}
-					onChange={setSelectedGraphModelId}
-					className='w-full'
-					placeholder={t('setting_default_model_choose')}
-				/>
-			</div>
-		</ResourceConfirmDialog>
+			<ResourceConfirmDialog
+				open={isGraphGenerateDialogOpen}
+				onOpenChange={setIsGraphGenerateDialogOpen}
+				title={graphActionLabel}
+				description={t('resource_dialog_graph_description')}
+				confirmLabel={graphActionLabel}
+				confirmDisabled={!selectedGraphModelId}
+				confirmLoading={mutateGenerateDocumentGraph.isPending}
+				onConfirm={() => {
+					mutateGenerateDocumentGraph.mutate();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>
+						{t('use_model')}
+					</p>
+					<AIModelSelect
+						value={selectedGraphModelId}
+						onChange={setSelectedGraphModelId}
+						className='w-full'
+						placeholder={t('setting_default_model_choose')}
+					/>
+				</div>
+			</ResourceConfirmDialog>
 		</>
 	);
 };
