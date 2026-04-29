@@ -338,7 +338,7 @@ const SectionOperate = ({
 								{mobilePanelMeta.description}
 							</SheetDescription>
 						</SheetHeader>
-						<div className='min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] px-4 py-4 sm:px-5 sm:py-5'>
+						<div className='min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] px-4 py-4 sm:px-5 sm:py-5 space-y-4'>
 							{mobilePanel === 'info' ? (
 								<SectionInfo id={id} />
 							) : mobilePanel === 'graph' ? (

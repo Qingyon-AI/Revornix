@@ -4,6 +4,7 @@ import type { InifiniteScrollPagnitionDocumentCommentInfo } from '@/service/docu
 import DocumentCommentInput from './document-comment-input';
 import DocumentCommentsList from './document-comments-list';
 import DocumentCommentAnchor from './document-comment-anchor';
+import { Separator } from '../ui/separator';
 
 const DocumentComments = ({
 	document_id,
@@ -27,9 +28,10 @@ const DocumentComments = ({
 						documentId={document_id}
 						loginHref={loginHref}
 					/>
+					<Separator />
 				</div>
 			) : null}
-			<div className='min-h-0 flex-1 overflow-hidden px-4 sm:px-5'>
+			<div className='min-h-0 flex-1 overflow-hidden px-4 sm:px-5 pt-4'>
 				<DocumentCommentsList
 					document_id={document_id}
 					initialData={initialData}

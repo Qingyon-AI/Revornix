@@ -223,7 +223,7 @@ const DocumentCommentCard = ({
 	return (
 		<div
 			className={cn(
-				'rounded-2xl bg-card/55 space-y-1.5',
+				'rounded-2xl space-y-1.5',
 				isReply && 'rounded-xl'
 			)}>
 			<div className='flex items-start justify-between gap-3'>
