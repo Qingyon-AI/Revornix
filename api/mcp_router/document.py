@@ -92,7 +92,7 @@ async def search_document(
         - This tool only searches data accessible to the authenticated user.
         - It is optimized for content retrieval, not full document metadata retrieval.
     """
-    user_id = get_user_id_from_ctx(ctx)
+    user_id = await get_user_id_from_ctx(ctx)
     documents = await global_search(
         user_id=user_id,
         search_text=keyword,
