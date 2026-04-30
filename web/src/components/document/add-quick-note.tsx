@@ -5,36 +5,51 @@ import { z } from 'zod';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Info, Loader2, OctagonAlert, Sparkles } from 'lucide-react';
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type FormEvent,
+} from 'react';
+import {
+	FolderInput,
+	Info,
+	Loader2,
+	OctagonAlert,
+	Podcast,
+	Save,
+	Sparkles,
+	Tags,
+	WandSparkles,
+} from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import AddLabelDialog from '@/components/document/add-document-label-dialog';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
 import { useTranslations } from 'next-intl';
 import { useUserContext } from '@/provider/user-provider';
-import { Alert, AlertDescription } from '../ui/alert';
 import { useSearchParams } from 'next/navigation';
 import MultipleSelector from '../ui/multiple-selector';
 import { getQueryClient } from '@/lib/get-query-client';
-import { Tooltip } from '../ui/tooltip';
-import { TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import TipTapEditor from '../markdown/tiptap-editor';
-import DocumentCreateAdvancedSection from './document-create-advanced-section';
+import {
+	DocumentCreateAutomationOption,
+	DocumentCreatePanelTitle,
+} from './document-create-layout';
 
 const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
 const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
@@ -112,9 +127,7 @@ const AddQuickNote = () => {
 		},
 	});
 
-	const onSubmitMessageForm = async (
-		event: React.FormEvent<HTMLFormElement>,
-	) => {
+	const onSubmitMessageForm = async (event: FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
 				event.preventDefault();
@@ -364,115 +377,110 @@ const AddQuickNote = () => {
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex w-full flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
-					<FormField
-						control={form.control}
-						name='content'
-						render={({ field }) => {
-							return (
-								<FormItem className='flex min-h-[360px] flex-col lg:h-full lg:min-h-0 lg:flex-1'>
-									<TipTapEditor
-										key={editorInstanceKey}
-										value={field.value}
-										onChange={field.onChange}
-										placeholder={t('document_create_note_placeholded')}
-										className='h-full min-h-[360px] flex-1 bg-muted/20 lg:min-h-[320px]'
-										enableImageUpload
-										enableDrawing
-										ownerId={mainUserInfo?.id}
-									/>
-									<FormMessage />
-								</FormItem>
-							);
-						}}
-					/>
-					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
-						<DocumentCreateAdvancedSection>
-							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+					className='grid w-full grid-cols-1 gap-3 overflow-visible lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden xl:grid-cols-[minmax(0,1fr)_400px]'>
+					<section className='min-w-0 lg:min-h-0'>
+						<FormField
+							control={form.control}
+							name='content'
+							render={({ field }) => {
+								return (
+									<FormItem className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
+										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
+											<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-3'>
+												<DocumentCreatePanelTitle
+													icon={WandSparkles}
+													title={t('document_create_quick_note')}
+												/>
+											</div>
+											<TipTapEditor
+												key={editorInstanceKey}
+												value={field.value}
+												onChange={field.onChange}
+												placeholder={t('document_create_note_placeholded')}
+												className='min-h-[400px] flex-1 rounded-none border-0 bg-muted/10 shadow-none lg:min-h-0'
+												enableImageUpload
+												enableDrawing
+												ownerId={mainUserInfo?.id}
+											/>
+										</div>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
+						/>
+					</section>
+
+					<aside className='min-w-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:min-h-0 lg:overflow-y-auto lg:pr-1 space-y-3'>
+						<div className='space-y-3 rounded-md border border-border/70 bg-muted/20 p-3 shadow-sm'>
+							<div className='space-y-3'>
+								<DocumentCreatePanelTitle
+									icon={Sparkles}
+									title={t('document_create_more_config')}
+								/>
 								<FormField
 									name='auto_summary'
 									control={form.control}
-									render={({ field }) => {
-										return (
-											<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-												<div className='flex flex-row gap-1 items-center'>
-													<FormLabel className='flex flex-row gap-1 items-center'>
-														{t('document_create_ai_summary')}
-														<Sparkles size={15} />
-													</FormLabel>
-													<Switch
-														disabled={documentReaderUnavailable && !field.value}
-														checked={field.value}
-														onCheckedChange={(e) => {
-															field.onChange(e);
-														}}
-													/>
-												</div>
-												<FormDescription>
-													{t('document_create_ai_summary_description')}
-												</FormDescription>
-												{documentReaderUnavailable && (
-													<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-														<OctagonAlert className='h-4 w-4 text-destructive!' />
-														<AlertDescription>
-															{documentReaderModel.subscriptionLocked
-																? t('default_resource_subscription_locked')
-																: t('document_create_ai_summary_engine_unset')}
-														</AlertDescription>
-													</Alert>
+									render={({ field }) => (
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={WandSparkles}
+												title={t('document_create_ai_summary')}
+												description={t(
+													'document_create_ai_summary_description',
 												)}
-											</FormItem>
-										);
-									}}
+												checked={field.value}
+												disabled={documentReaderUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													documentReaderUnavailable
+														? documentReaderModel.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_ai_summary_engine_unset')
+														: undefined
+												}
+											/>
+										</FormItem>
+									)}
 								/>
 								<FormField
 									name='auto_podcast'
 									control={form.control}
-									render={({ field }) => {
-										return (
-											<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-												<div className='flex flex-row gap-1 items-center'>
-													<FormLabel className='flex flex-row gap-1 items-center'>
-														{t('document_create_auto_podcast')}
-														<Sparkles size={15} />
-													</FormLabel>
-													<Switch
-														disabled={podcastEngineUnavailable && !field.value}
-														checked={field.value}
-														onCheckedChange={(e) => {
-															field.onChange(e);
-														}}
-													/>
-												</div>
-												<FormDescription>
-													{t('document_create_auto_podcast_description')}
-												</FormDescription>
-												{podcastEngineUnavailable && (
-													<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-														<OctagonAlert className='h-4 w-4 text-destructive!' />
-														<AlertDescription>
-															{podcastEngine.subscriptionLocked
-																? t('default_resource_subscription_locked')
-																: t(
-																		'document_create_auto_podcast_engine_unset',
-																	)}
-														</AlertDescription>
-													</Alert>
+									render={({ field }) => (
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={Podcast}
+												title={t('document_create_auto_podcast')}
+												description={t(
+													'document_create_auto_podcast_description',
 												)}
-											</FormItem>
-										);
-									}}
+												checked={field.value}
+												disabled={podcastEngineUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													podcastEngineUnavailable
+														? podcastEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: t('document_create_auto_podcast_engine_unset')
+														: undefined
+												}
+											/>
+										</FormItem>
+									)}
 								/>
 							</div>
 
-							<div className='flex w-full flex-col gap-5 xl:flex-row xl:items-center'>
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={Tags}
+									title={t('document_create_label_placeholder')}
+								/>
 								{labels ? (
 									<FormField
 										control={form.control}
 										name='labels'
 										render={({ field }) => {
 											return (
-												<FormItem className='min-w-0 flex-1 gap-0'>
+												<FormItem className='min-w-0 gap-0'>
 													<MultipleSelector
 														onCreate={async ({ label }) => {
 															await mutateCreateDocumentLabel.mutateAsync({
@@ -485,7 +493,7 @@ const AddQuickNote = () => {
 														}))}
 														onChange={(value) => {
 															field.onChange(
-																value.map(({ label, value }) => Number(value)),
+																value.map(({ value }) => Number(value)),
 															);
 														}}
 														value={
@@ -506,14 +514,22 @@ const AddQuickNote = () => {
 									name='auto_tag'
 									control={form.control}
 									render={({ field }) => {
+										const autoTagAlert = documentReaderUnavailable
+											? documentReaderModel.subscriptionLocked
+												? t('default_resource_subscription_locked')
+												: t('document_create_auto_tag_engine_unset')
+											: null;
+
 										return (
-											<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[220px]'>
-												<div className='flex flex-row items-center'>
-													<FormLabel htmlFor='auto_tag'>
+											<FormItem className='rounded-md border border-border/70 bg-background p-3'>
+												<div className='flex items-center gap-3'>
+													<FormLabel
+														htmlFor='auto_tag'
+														className='flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium'>
 														{t('document_create_auto_tag')}
 														<Tooltip>
-															<TooltipTrigger>
-																<Info size={15} />
+															<TooltipTrigger type='button'>
+																<Info className='size-4 text-muted-foreground' />
 															</TooltipTrigger>
 															<TooltipContent>
 																{t('document_create_auto_tag_description')}
@@ -522,23 +538,16 @@ const AddQuickNote = () => {
 													</FormLabel>
 													<Switch
 														id='auto_tag'
-														className='ml-auto'
 														disabled={documentReaderUnavailable && !field.value}
 														checked={field.value}
-														onCheckedChange={(e) => {
-															field.onChange(e);
-														}}
+														onCheckedChange={field.onChange}
 													/>
-													{documentReaderUnavailable && (
+													{autoTagAlert && (
 														<Tooltip>
-															<TooltipTrigger>
-																<OctagonAlert className='ml-2 h-4 w-4 text-destructive!' />
+															<TooltipTrigger type='button'>
+																<OctagonAlert className='size-4 text-destructive!' />
 															</TooltipTrigger>
-															<TooltipContent>
-																{documentReaderModel.subscriptionLocked
-																	? t('default_resource_subscription_locked')
-																	: t('document_create_auto_tag_engine_unset')}
-															</TooltipContent>
+															<TooltipContent>{autoTagAlert}</TooltipContent>
 														</Tooltip>
 													)}
 												</div>
@@ -548,44 +557,50 @@ const AddQuickNote = () => {
 								/>
 							</div>
 
-							{sections ? (
-								<FormField
-									control={form.control}
-									name='sections'
-									render={({ field }) => {
-										return (
-											<FormItem className='space-y-0'>
-												<MultipleSelector
-													options={sections.data.map((section) => {
-														return {
-															label: section.title,
-															value: section.id.toString(),
-														};
-													})}
-													onChange={(value) => {
-														field.onChange(
-															value.map(({ label, value }) => Number(value)),
-														);
-													}}
-													value={
-														field.value
-															? field.value.map((item) => item.toString())
-															: []
-													}
-													placeholder={t('document_create_section_choose')}
-												/>
-											</FormItem>
-										);
-									}}
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={FolderInput}
+									title={t('document_create_section_choose')}
 								/>
-							) : (
-								<SelectorSkeleton />
-							)}
-						</DocumentCreateAdvancedSection>
-
+								{sections ? (
+									<FormField
+										control={form.control}
+										name='sections'
+										render={({ field }) => {
+											return (
+												<FormItem className='space-y-0'>
+													<MultipleSelector
+														options={sections.data.map((section) => {
+															return {
+																label: section.title,
+																value: section.id.toString(),
+															};
+														})}
+														onChange={(value) => {
+															field.onChange(
+																value.map(({ value }) => Number(value)),
+															);
+														}}
+														value={
+															field.value
+																? field.value.map((item) => item.toString())
+																: []
+														}
+														placeholder={t('document_create_section_choose')}
+													/>
+												</FormItem>
+											);
+										}}
+									/>
+								) : (
+									<SelectorSkeleton />
+								)}
+							</div>
+						</div>
 						<Button
 							type='submit'
-							className='mt-4 w-full'
+							size='lg'
+							className='w-full'
 							disabled={
 								mutateCreateDocument.isPending ||
 								!form.watch('content') ||
@@ -593,12 +608,13 @@ const AddQuickNote = () => {
 								(form.watch('auto_summary') && documentReaderUnavailable) ||
 								(form.watch('auto_podcast') && podcastEngineUnavailable)
 							}>
+							<Save className='size-4' />
 							{t('document_create_submit')}
 							{mutateCreateDocument.isPending && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-					</div>
+					</aside>
 				</form>
 			</Form>
 		</>

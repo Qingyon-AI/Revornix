@@ -1,6 +1,6 @@
 import { utils } from '@kinda/utils';
-import { FileIcon, Info, Loader2, Trash2 } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { FileIcon, Info, Loader2, Trash2, UploadCloud } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -33,6 +33,7 @@ const FileUpload = ({
 	const [fileName, setFileName] = useState<string | null>(null); // ⭐保存文件路径
 	const upload = useRef<HTMLInputElement>(null);
 	const [uploadingStatus, setUploadingStatus] = useState<string | null>(null);
+	const [isDragActive, setIsDragActive] = useState(false);
 
 	// 加载用户文件系统信息
 	const { data: userFileSystemDetail } = useQuery({
@@ -62,55 +63,67 @@ const FileUpload = ({
 		upload.current?.click();
 	};
 
+	const uploadSelectedFile = useCallback(
+		async (selectedFile: File | null | undefined) => {
+			const file = selectedFile;
+			if (!file) return;
+
+			if (maxSizeBytes && file.size > maxSizeBytes) {
+				toast.error(
+					t('file_upload_size_exceeded', {
+						size: formatUploadSize(maxSizeBytes),
+					}),
+				);
+				if (upload.current) {
+					upload.current.value = '';
+				}
+				return;
+			}
+
+			if (!mainUserInfo?.default_user_file_system) {
+				toast.error(t('error_default_file_system_not_found'));
+				return;
+			}
+
+			const fileService = new FileService(userFileSystemDetail?.file_system_id!);
+
+			setUploadingStatus('uploading');
+			setFile(file);
+
+			const name = generateUUID();
+			const suffix = file.name.split('.').pop();
+			const newFileName = `files/${name}.${suffix}`;
+
+			try {
+				await utils.sleep(2000);
+				await fileService.uploadFile(newFileName, file);
+
+				setFileName(newFileName);
+				onSuccess && onSuccess(newFileName);
+				setUploadingStatus('done');
+			} catch (error) {
+				setFile(null);
+				setFileName(null);
+				setUploadingStatus(null);
+				if (upload.current) {
+					upload.current.value = '';
+				}
+				toast.error(error instanceof Error ? error.message : t('upload_failed'));
+			}
+		},
+		[
+			mainUserInfo?.default_user_file_system,
+			maxSizeBytes,
+			onSuccess,
+			t,
+			userFileSystemDetail?.file_system_id,
+		],
+	);
+
 	const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
-
-		if (maxSizeBytes && file.size > maxSizeBytes) {
-			toast.error(
-				t('file_upload_size_exceeded', {
-					size: formatUploadSize(maxSizeBytes),
-				}),
-			);
-			if (upload.current) {
-				upload.current.value = '';
-			}
-			return;
-		}
-
-		if (!mainUserInfo?.default_user_file_system) {
-			toast.error(t('error_default_file_system_not_found'));
-			return;
-		}
-
-		const fileService = new FileService(userFileSystemDetail?.file_system_id!);
-
-		setUploadingStatus('uploading');
-		setFile(file);
-
-		const name = generateUUID();
-		const suffix = file.name.split('.').pop();
-		const newFileName = `files/${name}.${suffix}`;
-
-		try {
-			await utils.sleep(2000);
-			await fileService.uploadFile(newFileName, file);
-
-			// ⭐更新文件路径
-			setFileName(newFileName);
-
-			onSuccess && onSuccess(newFileName);
-
-			setUploadingStatus('done');
-		} catch (error) {
-			setFile(null);
-			setFileName(null);
-			setUploadingStatus(null);
-			if (upload.current) {
-				upload.current.value = '';
-			}
-			toast.error(error instanceof Error ? error.message : t('upload_failed'));
-		}
+		await uploadSelectedFile(file);
 	};
 
 	const handleDeleteFile = () => {
@@ -126,11 +139,45 @@ const FileUpload = ({
 		onDelete && onDelete();
 	};
 
+	const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+		if (uploadingStatus) return;
+		event.preventDefault();
+		setIsDragActive(true);
+	};
+
+	const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+		if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+			return;
+		}
+		setIsDragActive(false);
+	};
+
+	const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+		if (uploadingStatus) return;
+		event.preventDefault();
+		setIsDragActive(false);
+
+		const droppedFiles = Array.from(event.dataTransfer.files ?? []);
+		if (!droppedFiles.length) {
+			return;
+		}
+		if (droppedFiles.length > 1) {
+			toast.error(t('document_create_file_upload_single_only'));
+			return;
+		}
+		await uploadSelectedFile(droppedFiles[0]);
+	};
+
 	return (
 		<div
 			onClick={handleOnUploadFile}
+			onDragOver={handleDragOver}
+			onDragLeave={handleDragLeave}
+			onDrop={(event) => void handleDrop(event)}
 			className={cn(
 				'relative flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/25 px-5 py-8 text-center text-sm text-muted-foreground transition hover:border-foreground/20 hover:bg-muted/45',
+				isDragActive &&
+					'border-primary/60 bg-primary/8 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.25)]',
 				className,
 			)}>
 			{uploadingStatus && (
@@ -156,12 +203,25 @@ const FileUpload = ({
 
 			{!uploadingStatus && (
 				<>
-					<div className='flex size-12 items-center justify-center rounded-full bg-background shadow-sm'>
-						<FileIcon className='size-5' />
+					<div
+						className={cn(
+							'flex size-14 items-center justify-center rounded-full bg-background shadow-sm transition-colors',
+							isDragActive && 'bg-primary/10 text-primary',
+						)}>
+						{isDragActive ? (
+							<UploadCloud className='size-6' />
+						) : (
+							<FileIcon className='size-5' />
+						)}
 					</div>
 					<div className='flex flex-col items-center gap-1.5 text-center'>
 						<span className='font-medium text-foreground'>
-							{t('document_create_file_upload')}
+							{isDragActive
+								? t('document_create_file_upload_drop_here')
+								: t('document_create_file_upload')}
+						</span>
+						<span className='text-xs text-muted-foreground'>
+							{t('document_create_file_upload_drag_hint')}
 						</span>
 						{maxSizeBytes && (
 							<span className='inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground shadow-sm'>

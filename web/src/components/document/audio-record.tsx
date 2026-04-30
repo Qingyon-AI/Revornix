@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Info, Mic, Pause, Play, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
@@ -26,6 +26,11 @@ type AudioRecordProps = {
 	onDelete?: () => void;
 	onRecordReady?: (result: AudioRecordResult) => void;
 	maxDurationMs?: number;
+	showDeleteButton?: boolean;
+};
+
+export type AudioRecordHandle = {
+	clear: () => Promise<void>;
 };
 
 type RecordingState = 'idle' | 'recording' | 'paused';
@@ -42,7 +47,10 @@ const buildVisualizerBars = (
 	data: Uint8Array<ArrayBuffer>,
 	previousBars: number[],
 ) => {
-	const binsPerBar = Math.max(1, Math.floor(data.length / VISUALIZER_BAR_COUNT));
+	const binsPerBar = Math.max(
+		1,
+		Math.floor(data.length / VISUALIZER_BAR_COUNT),
+	);
 	return Array.from({ length: VISUALIZER_BAR_COUNT }, (_, index) => {
 		const start = index * binsPerBar;
 		const end = Math.min(data.length, start + binsPerBar);
@@ -58,19 +66,19 @@ const buildVisualizerBars = (
 	});
 };
 
-const AudioRecord = ({
+const AudioRecord = forwardRef<AudioRecordHandle, AudioRecordProps>(function AudioRecord({
 	className,
 	onDelete,
 	onRecordReady,
 	maxDurationMs = AUDIO_DOCUMENT_MAX_DURATION_MS,
-}: AudioRecordProps) => {
+	showDeleteButton = true,
+}: AudioRecordProps, ref) {
 	const t = useTranslations();
 	const { resolvedTheme } = useTheme();
 	const [recordingState, setRecordingState] = useState<RecordingState>('idle');
 	const [elapsedMs, setElapsedMs] = useState(0);
 	const [hasAudio, setHasAudio] = useState(false);
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [previewDurationMs, setPreviewDurationMs] = useState<number | null>(
 		null,
 	);
@@ -535,6 +543,13 @@ const AudioRecord = ({
 		onDelete?.();
 	};
 
+	useImperativeHandle(
+		ref,
+		() => ({
+			clear: handleDelete,
+		}),
+	);
+
 	useEffect(() => {
 		clearWaveform();
 	}, []);
@@ -578,84 +593,75 @@ const AudioRecord = ({
 					duration: durationLimitLabel,
 				})
 			: recordingState === 'recording'
-			? t('document_audio_record_pause')
-			: recordingState === 'paused'
-				? t('document_audio_record_resume')
-				: t('document_audio_record_start');
+				? t('document_audio_record_pause')
+				: recordingState === 'paused'
+					? t('document_audio_record_resume')
+					: t('document_audio_record_start');
 	const canDelete = recordingState !== 'idle' || hasAudio;
 
 	return (
 		<div
 			className={cn(
-				'flex h-full flex-col gap-4 rounded-xl border border-border/60 bg-muted/20 p-4 sm:p-5',
+				'flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border/60 bg-background',
 				className,
 			)}>
-			<div className='flex items-center justify-between'>
-				<div className='flex items-center gap-2 text-sm text-muted-foreground'>
-					<Mic className='h-4 w-4' />
-					<span>{t('document_audio_record_duration')}</span>
+			<div className='flex shrink-0 flex-col gap-3 border-b border-border/60 p-3 sm:p-4'>
+				<div className='flex items-center justify-between gap-3'>
+					<div className='flex items-center gap-2 text-sm font-medium'>
+						<span
+							className={cn(
+								'flex size-8 items-center justify-center rounded-md border border-border/70 bg-muted text-muted-foreground',
+								recordingState === 'recording' &&
+									'border-emerald-500/30 bg-emerald-500/10 text-emerald-500',
+							)}>
+							<Mic className='h-4 w-4' />
+						</span>
+						<span>{t('document_audio_record_duration')}</span>
+					</div>
+					<div className='flex items-center gap-3'>
+						<span className='rounded-md border border-border/70 bg-muted/50 px-2 py-1 text-xs text-muted-foreground'>
+							{t('document_audio_record_limit_tag', {
+								duration: durationLimitLabel,
+							})}
+						</span>
+						<span className='font-mono text-base font-semibold tabular-nums'>
+							{formatLiveMediaDuration(elapsedMs)}
+						</span>
+					</div>
 				</div>
-				<div className='flex items-center gap-3'>
-					<span className='text-xs text-muted-foreground'>
-						{t('document_audio_record_limit_tag', {
+				<div className='flex items-start gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs leading-5 text-muted-foreground'>
+					<Info className='mt-0.5 size-3.5 shrink-0' />
+					<span>
+						{t('document_audio_record_limit_hint', {
 							duration: durationLimitLabel,
 						})}
 					</span>
-					<span className='font-mono text-sm'>
-						{formatLiveMediaDuration(elapsedMs)}
-					</span>
 				</div>
 			</div>
-			<div className='flex items-start gap-2 rounded-2xl border border-border/60 bg-background/80 px-3 py-2.5 text-xs leading-5 text-muted-foreground'>
-				<Info className='mt-0.5 size-3.5 shrink-0' />
-				<span>
-					{t('document_audio_record_limit_hint', {
-						duration: durationLimitLabel,
-					})}
-				</span>
-			</div>
-			<div className='relative h-40 w-full overflow-hidden rounded-[20px] border border-emerald-500/15 bg-background/90 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
-				<div className='pointer-events-none absolute inset-0 hidden dark:block'>
-					<div className='absolute left-6 top-6 h-16 w-16 rounded-full bg-emerald-400/10 blur-2xl animate-pulse' />
-					<div className='absolute right-8 bottom-8 h-20 w-20 rounded-full bg-sky-400/10 blur-3xl animate-pulse [animation-delay:-1.2s]' />
-				</div>
-				<canvas
-					ref={canvasRef}
-					className='relative h-full w-full text-primary'
-					aria-label={t('document_audio_record_waveform')}
-				/>
-			</div>
-			{hasReachedDurationLimit && (
-				<div className='rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200'>
-					{t('document_audio_record_limit_reached', {
-						duration: durationLimitLabel,
-					})}
-				</div>
-			)}
-			{audioUrl && (
-				<div className='flex flex-col gap-2'>
-					<div className='flex items-center justify-between text-xs text-muted-foreground'>
-						<span>{t('document_audio_record_preview')}</span>
-						{previewDurationMs !== null && (
-							<span>
-								{t('document_audio_record_total_duration')}:{' '}
-								{formatMediaDuration(previewDurationMs)}
-							</span>
-						)}
+			<div className='flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4'>
+				<div className='relative min-h-[220px] flex-1 overflow-hidden rounded-lg border border-emerald-500/15 bg-background/90 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
+					<div className='pointer-events-none absolute inset-0 hidden dark:block'>
+						<div className='absolute left-8 top-8 h-20 w-20 rounded-full bg-emerald-400/10 blur-2xl animate-pulse' />
+						<div className='absolute right-10 bottom-10 h-24 w-24 rounded-full bg-sky-400/10 blur-3xl animate-pulse [animation-delay:-1.2s]' />
 					</div>
-					<audio
-						ref={audioRef}
-						controls
-						preload='metadata'
-						src={audioUrl}
-						className='w-full'
+					<canvas
+						ref={canvasRef}
+						className='relative h-full w-full text-primary'
+						aria-label={t('document_audio_record_waveform')}
 					/>
 				</div>
-			)}
-			<div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+				{hasReachedDurationLimit && (
+					<div className='rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200'>
+						{t('document_audio_record_limit_reached', {
+							duration: durationLimitLabel,
+						})}
+					</div>
+				)}
+			</div>
+			<div className='flex shrink-0 flex-col gap-2 border-t border-border/60 bg-muted/20 p-3 sm:flex-row sm:items-center sm:p-4'>
 				<Button
 					type='button'
-					className='w-full sm:w-auto'
+					className='w-full sm:w-auto flex-1'
 					disabled={hasReachedDurationLimit && recordingState !== 'recording'}
 					onClick={
 						recordingState === 'recording'
@@ -671,18 +677,20 @@ const AudioRecord = ({
 					)}
 					<span className='ml-2'>{primaryActionLabel}</span>
 				</Button>
-				<Button
-					type='button'
-					variant='secondary'
-					className='w-full sm:w-auto'
-					onClick={handleDelete}
-					disabled={!canDelete}>
-					<Trash2 className='h-4 w-4' />
-					<span className='ml-2'>{t('document_audio_record_delete')}</span>
-				</Button>
+				{showDeleteButton && (
+					<Button
+						type='button'
+						variant='secondary'
+						className='w-full sm:w-auto'
+						onClick={handleDelete}
+						disabled={!canDelete}>
+						<Trash2 className='h-4 w-4' />
+						<span className='ml-2'>{t('document_audio_record_delete')}</span>
+					</Button>
+				)}
 			</div>
 		</div>
 	);
-};
+});
 
 export default AudioRecord;
