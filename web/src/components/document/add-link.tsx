@@ -5,26 +5,33 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
-import { useState } from 'react';
+import { useMemo, type FormEvent } from 'react';
 import {
 	AlertCircleIcon,
+	ArrowUpRight,
+	FolderInput,
+	Globe,
 	Info,
+	Link2,
 	Loader2,
 	OctagonAlert,
+	Podcast,
+	Save,
+	ShieldCheck,
 	Sparkles,
+	Tags,
+	WandSparkles,
 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
 import MultipleSelector from '@/components/ui/multiple-selector';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
@@ -39,7 +46,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
-import DocumentCreateAdvancedSection from './document-create-advanced-section';
+import {
+	DocumentCreateAutomationOption,
+	DocumentCreatePanelTitle,
+} from './document-create-layout';
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+	InputGroupText,
+} from '../ui/input-group';
 
 const AddLink = () => {
 	const queryClient = getQueryClient();
@@ -104,9 +120,7 @@ const AddLink = () => {
 		},
 	});
 
-	const onSubmitMessageForm = async (
-		event: React.FormEvent<HTMLFormElement>,
-	) => {
+	const onSubmitMessageForm = async (event: FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
 				event.preventDefault();
@@ -149,101 +163,169 @@ const AddLink = () => {
 		podcastEngine.loading ||
 		!podcastEngine.configured ||
 		podcastEngine.subscriptionLocked;
+	const currentUrl = form.watch('url');
+	const parsedUrl = useMemo(() => {
+		if (!currentUrl?.trim()) {
+			return null;
+		}
+
+		try {
+			return new URL(currentUrl);
+		} catch {
+			return null;
+		}
+	}, [currentUrl]);
+	const normalizedHref = parsedUrl?.href ?? '';
+	const hostname = parsedUrl?.hostname?.replace(/^www\./, '') ?? '';
+	const protocolLabel = parsedUrl?.protocol?.replace(':', '').toUpperCase();
 
 	return (
 		<>
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
-					<div className='flex w-full flex-col gap-4 overflow-visible lg:min-h-0 lg:min-w-0 lg:flex-1 lg:gap-5 lg:overflow-y-auto lg:pr-1'>
-						{!websiteParseEngine.configured && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('document_create_link_engine_unset')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('document_create_link_engine_unset_description_1')}
-										<Link
-											href={settingAnchorHrefs.defaultWebsiteParseEngine}
-											className='inline-block underline underline-offset-2 font-bold'>
-											{t('document_create_link_engine_unset_description_2')}
-										</Link>
-										{t('document_create_link_engine_unset_description_3')}
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
-						{websiteParseEngine.subscriptionLocked && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('default_resource_unavailable_title')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('default_resource_subscription_locked')}{' '}
-										<Link
-											href={settingAnchorHrefs.defaultWebsiteParseEngine}
-											className='inline-block font-bold underline underline-offset-2'>
-											{t('revornix_ai_default_model_goto')}
-										</Link>
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
+					className='grid w-full grid-cols-1 gap-3 overflow-visible lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden xl:grid-cols-[minmax(0,1fr)_400px]'>
+					<section className='min-w-0 lg:flex lg:min-h-0 lg:flex-1'>
 						<FormField
 							name='url'
 							control={form.control}
 							render={({ field }) => {
 								return (
-									<FormItem className='flex min-h-[360px] flex-col lg:min-h-0 lg:flex-1'>
-										<Textarea
-											placeholder={t('document_create_link_placeholder')}
-											{...field}
-											fieldSizing='fixed'
-											className='h-full min-h-[360px] flex-1 resize-none rounded-xl bg-muted/20 lg:min-h-[320px]'
-										/>
+									<FormItem className='flex min-h-[400px] w-full flex-col lg:h-full lg:min-h-0'>
+										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
+											<div className='flex h-10 shrink-0 items-center border-b border-border/60 px-3'>
+												<DocumentCreatePanelTitle
+													icon={Link2}
+													title={t('document_create_link')}
+												/>
+											</div>
+											<div className='flex min-h-[400px] flex-1 flex-col p-4 sm:p-5 lg:min-h-0 lg:p-6 space-y-5'>
+												<InputGroup className='h-12 rounded-lg border-border/70 bg-background shadow-none'>
+													<InputGroupAddon align='inline-start'>
+														<InputGroupText>
+															<Link2 className='size-4' />
+														</InputGroupText>
+													</InputGroupAddon>
+													<InputGroupInput
+														placeholder={t('document_create_link_example')}
+														autoComplete='off'
+														autoCapitalize='none'
+														autoCorrect='off'
+														spellCheck={false}
+														{...field}
+														className='h-12 text-sm'
+													/>
+												</InputGroup>
+												<div className='flex flex-wrap items-center gap-2'>
+													<div className='rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs text-muted-foreground flex flex-row items-center'>
+														<Globe className='mr-1 inline size-3.5' />
+														{hostname || t('document_create_link_status_url')}
+													</div>
+													<div className='rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs text-muted-foreground flex flex-row items-center'>
+														<ShieldCheck className='mr-1 inline size-3.5' />
+														{protocolLabel ||
+															t('document_create_link_status_protocol')}
+													</div>
+													{normalizedHref ? (
+														<a
+															href={normalizedHref}
+															target='_blank'
+															rel='noreferrer'
+															className='inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground flex flex-row items-center'>
+															<ArrowUpRight className='size-3.5' />
+															{t('document_create_link_open')}
+														</a>
+													) : null}
+												</div>
+												<div className='rounded-lg border border-dashed border-border/60 bg-muted/10 px-4 py-3'>
+													<p className='text-sm font-medium text-foreground/90'>
+														{t('document_create_link_tip_title')}
+													</p>
+													<div className='mt-2 space-y-1.5 text-xs leading-5 text-muted-foreground'>
+														<p>{t('document_create_link_tip_support')}</p>
+														<p>{t('document_create_link_tip_process')}</p>
+														<p>
+															{t('document_create_link_tip_example', {
+																example: t('document_create_link_example'),
+															})}
+														</p>
+													</div>
+												</div>
+											</div>
+										</div>
 										<FormMessage />
 									</FormItem>
 								);
 							}}
 						/>
-					</div>
-					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:sticky lg:bottom-0 lg:z-10 lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
-						<DocumentCreateAdvancedSection>
-							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+					</section>
+
+					<aside className='min-w-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:min-h-0 lg:overflow-y-auto lg:pr-1 space-y-3'>
+						<div className='space-y-3 rounded-md border border-border/70 bg-muted/20 p-3 shadow-sm'>
+							{!websiteParseEngine.configured && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('document_create_link_engine_unset')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('document_create_link_engine_unset_description_1')}
+											<Link
+												href={settingAnchorHrefs.defaultWebsiteParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('document_create_link_engine_unset_description_2')}
+											</Link>
+											{t('document_create_link_engine_unset_description_3')}
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							{websiteParseEngine.subscriptionLocked && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('default_resource_unavailable_title')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('default_resource_subscription_locked')}{' '}
+											<Link
+												href={settingAnchorHrefs.defaultWebsiteParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('revornix_ai_default_model_goto')}
+											</Link>
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							<div className='space-y-3'>
+								<DocumentCreatePanelTitle
+									icon={Sparkles}
+									title={t('document_create_more_config')}
+								/>
 								<FormField
 									name='auto_summary'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_ai_summary')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={documentReaderUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_ai_summary_description')}
-											</FormDescription>
-											{documentReaderUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{documentReaderModel.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={WandSparkles}
+												title={t('document_create_ai_summary')}
+												description={t(
+													'document_create_ai_summary_description',
+												)}
+												checked={field.value}
+												disabled={documentReaderUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													documentReaderUnavailable
+														? documentReaderModel.subscriptionLocked
 															? t('default_resource_subscription_locked')
-															: t('document_create_ai_summary_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
+															: t('document_create_ai_summary_engine_unset')
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
@@ -251,36 +333,33 @@ const AddLink = () => {
 									name='auto_podcast'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_auto_podcast')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={podcastEngineUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_auto_podcast_description')}
-											</FormDescription>
-											{podcastEngineUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{podcastEngine.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={Podcast}
+												title={t('document_create_auto_podcast')}
+												description={t(
+													'document_create_auto_podcast_description',
+												)}
+												checked={field.value}
+												disabled={podcastEngineUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													podcastEngineUnavailable
+														? podcastEngine.subscriptionLocked
 															? t('default_resource_subscription_locked')
-															: t('document_create_auto_podcast_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
+															: t('document_create_auto_podcast_engine_unset')
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
 							</div>
-							<div className='flex w-full flex-col gap-5 xl:flex-row xl:items-center'>
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={Tags}
+									title={t('document_create_label_placeholder')}
+								/>
 								{labels ? (
 									<FormField
 										control={form.control}
@@ -319,13 +398,15 @@ const AddLink = () => {
 									name='auto_tag'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[220px]'>
-											<div className='flex flex-row items-center'>
-												<FormLabel htmlFor='auto_tag'>
+										<FormItem className='rounded-md border border-border/70 bg-background p-3'>
+											<div className='flex items-center gap-3'>
+												<FormLabel
+													htmlFor='auto_tag'
+													className='flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium'>
 													{t('document_create_auto_tag')}
 													<Tooltip>
-														<TooltipTrigger>
-															<Info size={15} />
+														<TooltipTrigger type='button'>
+															<Info className='size-4 text-muted-foreground' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{t('document_create_auto_tag_description')}
@@ -334,15 +415,14 @@ const AddLink = () => {
 												</FormLabel>
 												<Switch
 													id='auto_tag'
-													className='ml-auto'
 													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
+													onCheckedChange={field.onChange}
 												/>
 												{documentReaderUnavailable && (
 													<Tooltip>
-														<TooltipTrigger>
-															<OctagonAlert className='ml-2 h-4 w-4 text-destructive!' />
+														<TooltipTrigger type='button'>
+															<OctagonAlert className='size-4 text-destructive!' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{documentReaderModel.subscriptionLocked
@@ -356,39 +436,46 @@ const AddLink = () => {
 									)}
 								/>
 							</div>
-							{sections ? (
-								<FormField
-									control={form.control}
-									name='sections'
-									render={({ field }) => (
-										<FormItem className='space-y-0'>
-											<MultipleSelector
-												options={sections.data.map((section) => ({
-													label: section.title,
-													value: section.id.toString(),
-												}))}
-												onChange={(value) =>
-													field.onChange(
-														value.map(({ value }) => Number(value)),
-													)
-												}
-												value={
-													field.value
-														? field.value.map((item) => item.toString())
-														: []
-												}
-												placeholder={t('document_create_section_choose')}
-											/>
-										</FormItem>
-									)}
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={FolderInput}
+									title={t('document_create_section_choose')}
 								/>
-							) : (
-								<SelectorSkeleton />
-							)}
-						</DocumentCreateAdvancedSection>
+								{sections ? (
+									<FormField
+										control={form.control}
+										name='sections'
+										render={({ field }) => (
+											<FormItem className='space-y-0'>
+												<MultipleSelector
+													options={sections.data.map((section) => ({
+														label: section.title,
+														value: section.id.toString(),
+													}))}
+													onChange={(value) =>
+														field.onChange(
+															value.map(({ value }) => Number(value)),
+														)
+													}
+													value={
+														field.value
+															? field.value.map((item) => item.toString())
+															: []
+													}
+													placeholder={t('document_create_section_choose')}
+												/>
+											</FormItem>
+										)}
+									/>
+								) : (
+									<SelectorSkeleton />
+								)}
+							</div>
+						</div>
 						<Button
 							type='submit'
-							className='mt-4 w-full'
+							size='lg'
+							className='w-full'
 							disabled={
 								mutateCreateDocument.isPending ||
 								websiteParseEngineUnavailable ||
@@ -397,12 +484,13 @@ const AddLink = () => {
 								(form.watch('auto_podcast') && podcastEngineUnavailable) ||
 								!form.watch('url')
 							}>
+							<Save className='size-4' />
 							{t('document_create_submit')}
 							{mutateCreateDocument.isPending && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-					</div>
+					</aside>
 				</form>
 			</Form>
 		</>

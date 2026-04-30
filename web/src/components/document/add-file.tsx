@@ -5,26 +5,31 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
-import { useState } from 'react';
+import type { FormEvent } from 'react';
 import {
 	AlertCircleIcon,
+	FileCheck2,
+	FileUp,
+	FolderInput,
 	Info,
 	Loader2,
 	OctagonAlert,
+	Podcast,
+	Save,
 	Sparkles,
+	Tags,
+	WandSparkles,
 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
 import MultipleSelector from '@/components/ui/multiple-selector';
-import AddLabelDialog from '@/components/document/add-document-label-dialog';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
@@ -38,10 +43,13 @@ import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
-import { FILE_DOCUMENT_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { FILE_DOCUMENT_MAX_UPLOAD_BYTES, formatUploadSize } from '@/lib/upload';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
-import DocumentCreateAdvancedSection from './document-create-advanced-section';
+import {
+	DocumentCreateAutomationOption,
+	DocumentCreatePanelTitle,
+} from './document-create-layout';
 
 const AddFile = () => {
 	const queryClient = getQueryClient();
@@ -106,9 +114,7 @@ const AddFile = () => {
 		},
 	});
 
-	const onSubmitMessageForm = async (
-		event: React.FormEvent<HTMLFormElement>,
-	) => {
+	const onSubmitMessageForm = async (event: FormEvent<HTMLFormElement>) => {
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
 				event.preventDefault();
@@ -151,104 +157,170 @@ const AddFile = () => {
 		podcastEngine.loading ||
 		!podcastEngine.configured ||
 		podcastEngine.subscriptionLocked;
+	const currentFileName = form.watch('file_name');
 
 	return (
 		<>
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
-					<div className='flex w-full flex-col gap-4 overflow-visible lg:min-h-0 lg:min-w-0 lg:flex-1 lg:gap-5 lg:overflow-y-auto lg:pr-1'>
-						{!fileParseEngine.configured && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('document_create_file_engine_unset')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('document_create_file_engine_unset_description_1')}
-										<Link
-											href={settingAnchorHrefs.defaultFileParseEngine}
-											className='inline-block underline underline-offset-2 font-bold'>
-											{t('document_create_file_engine_unset_description_2')}
-										</Link>
-										{t('document_create_file_engine_unset_description_3')}
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
-						{fileParseEngine.subscriptionLocked && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('default_resource_unavailable_title')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('default_resource_subscription_locked')}{' '}
-										<Link
-											href={settingAnchorHrefs.defaultFileParseEngine}
-											className='inline-block font-bold underline underline-offset-2'>
-											{t('revornix_ai_default_model_goto')}
-										</Link>
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
+					className='grid w-full grid-cols-1 gap-3 overflow-visible lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden xl:grid-cols-[minmax(0,1fr)_400px]'>
+					<section className='min-w-0 lg:flex lg:min-h-0 lg:flex-1'>
 						<FormField
 							name='file_name'
 							control={form.control}
 							render={({ field }) => {
 								return (
-									<FormItem className='flex min-h-[360px] flex-col lg:min-h-0 lg:flex-1'>
-										<FileUpload
-											accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
-											className='h-full min-h-[360px] flex-1 lg:min-h-[320px]'
-											maxSizeBytes={FILE_DOCUMENT_MAX_UPLOAD_BYTES}
-											onSuccess={(file_name) => {
-												field.onChange(file_name);
-											}}
-											onDelete={() => field.onChange(null)}
-										/>
+									<FormItem className='flex min-h-[400px] w-full flex-col lg:h-full lg:min-h-0'>
+										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
+											<div className='flex h-10 shrink-0 items-center border-b border-border/60 px-3'>
+												<DocumentCreatePanelTitle
+													icon={FileUp}
+													title={t('document_create_file')}
+												/>
+											</div>
+											<div className='flex min-h-[400px] flex-1 flex-col p-4 sm:p-5 lg:min-h-0 lg:p-6'>
+												<div className='flex w-full flex-1 flex-col gap-5'>
+													<FileUpload
+														accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
+														className='min-h-[320px] flex-1 rounded-2xl border-border/70 bg-muted/10 lg:min-h-0'
+														maxSizeBytes={FILE_DOCUMENT_MAX_UPLOAD_BYTES}
+														onSuccess={(file_name) => {
+															field.onChange(file_name);
+														}}
+														onDelete={() => field.onChange(null)}
+													/>
+													<div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+														<div className='rounded-lg border border-border/70 bg-muted/20 p-3'>
+															<div className='mb-2 flex size-8 items-center justify-center rounded-md border border-border/70 bg-background text-muted-foreground'>
+																<FileCheck2 className='size-4' />
+															</div>
+															<p className='text-sm font-medium'>
+																{t('document_create_file_upload_single_title')}
+															</p>
+															<p className='mt-1 text-xs leading-5 text-muted-foreground'>
+																{t(
+																	'document_create_file_upload_single_description',
+																)}
+															</p>
+														</div>
+														<div className='rounded-lg border border-border/70 bg-muted/20 p-3'>
+															<div className='mb-2 flex size-8 items-center justify-center rounded-md border border-border/70 bg-background text-muted-foreground'>
+																<Info className='size-4' />
+															</div>
+															<p className='text-sm font-medium'>
+																{t('document_create_file_upload_limit_title')}
+															</p>
+															<p className='mt-1 text-xs leading-5 text-muted-foreground'>
+																{t('document_create_file_upload_limit_hint', {
+																	size: formatUploadSize(
+																		FILE_DOCUMENT_MAX_UPLOAD_BYTES,
+																	),
+																})}
+															</p>
+														</div>
+														<div className='rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2 xl:col-span-1'>
+															<div className='mb-2 flex size-8 items-center justify-center rounded-md border border-border/70 bg-background text-muted-foreground'>
+																<FileUp className='size-4' />
+															</div>
+															<p className='text-sm font-medium'>
+																{t(
+																	'document_create_file_upload_supported_title',
+																)}
+															</p>
+															<p className='mt-1 break-words text-xs leading-5 text-muted-foreground'>
+																{t(
+																	'document_create_file_upload_supported_description',
+																)}
+															</p>
+														</div>
+													</div>
+													{currentFileName && (
+														<div className='rounded-lg border border-dashed border-border/60 bg-muted/10 px-4 py-3 text-xs text-muted-foreground'>
+															<p className='font-medium text-foreground/90'>
+																{t('document_create_file_upload_current')}
+															</p>
+															<p className='mt-1 break-all leading-5'>
+																{currentFileName}
+															</p>
+														</div>
+													)}
+												</div>
+											</div>
+										</div>
 										<FormMessage />
 									</FormItem>
 								);
 							}}
 						/>
-					</div>
-					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:sticky lg:bottom-0 lg:z-10 lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
-						<DocumentCreateAdvancedSection>
-							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+					</section>
+
+					<aside className='min-w-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:min-h-0 lg:overflow-y-auto lg:pr-1 space-y-3'>
+						<div className='space-y-3 rounded-md border border-border/70 bg-muted/20 p-3 shadow-sm'>
+							{!fileParseEngine.configured && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('document_create_file_engine_unset')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('document_create_file_engine_unset_description_1')}
+											<Link
+												href={settingAnchorHrefs.defaultFileParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('document_create_file_engine_unset_description_2')}
+											</Link>
+											{t('document_create_file_engine_unset_description_3')}
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							{fileParseEngine.subscriptionLocked && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('default_resource_unavailable_title')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('default_resource_subscription_locked')}{' '}
+											<Link
+												href={settingAnchorHrefs.defaultFileParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('revornix_ai_default_model_goto')}
+											</Link>
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							<div className='space-y-3'>
+								<DocumentCreatePanelTitle
+									icon={Sparkles}
+									title={t('document_create_more_config')}
+								/>
 								<FormField
 									name='auto_summary'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_ai_summary')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={documentReaderUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_ai_summary_description')}
-											</FormDescription>
-											{documentReaderUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{documentReaderModel.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={WandSparkles}
+												title={t('document_create_ai_summary')}
+												description={t(
+													'document_create_ai_summary_description',
+												)}
+												checked={field.value}
+												disabled={documentReaderUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													documentReaderUnavailable
+														? documentReaderModel.subscriptionLocked
 															? t('default_resource_subscription_locked')
-															: t('document_create_ai_summary_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
+															: t('document_create_ai_summary_engine_unset')
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
@@ -256,36 +328,33 @@ const AddFile = () => {
 									name='auto_podcast'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_auto_podcast')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={podcastEngineUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_auto_podcast_description')}
-											</FormDescription>
-											{podcastEngineUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{podcastEngine.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={Podcast}
+												title={t('document_create_auto_podcast')}
+												description={t(
+													'document_create_auto_podcast_description',
+												)}
+												checked={field.value}
+												disabled={podcastEngineUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													podcastEngineUnavailable
+														? podcastEngine.subscriptionLocked
 															? t('default_resource_subscription_locked')
-															: t('document_create_auto_podcast_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
+															: t('document_create_auto_podcast_engine_unset')
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
 							</div>
-							<div className='flex w-full flex-col gap-5 xl:flex-row xl:items-center'>
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={Tags}
+									title={t('document_create_label_placeholder')}
+								/>
 								{labels ? (
 									<FormField
 										control={form.control}
@@ -324,13 +393,15 @@ const AddFile = () => {
 									name='auto_tag'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[220px]'>
-											<div className='flex flex-row items-center'>
-												<FormLabel htmlFor='auto_tag'>
+										<FormItem className='rounded-md border border-border/70 bg-background p-3'>
+											<div className='flex items-center gap-3'>
+												<FormLabel
+													htmlFor='auto_tag'
+													className='flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium'>
 													{t('document_create_auto_tag')}
 													<Tooltip>
-														<TooltipTrigger>
-															<Info size={15} />
+														<TooltipTrigger type='button'>
+															<Info className='size-4 text-muted-foreground' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{t('document_create_auto_tag_description')}
@@ -339,15 +410,14 @@ const AddFile = () => {
 												</FormLabel>
 												<Switch
 													id='auto_tag'
-													className='ml-auto'
 													disabled={documentReaderUnavailable && !field.value}
 													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
+													onCheckedChange={field.onChange}
 												/>
 												{documentReaderUnavailable && (
 													<Tooltip>
-														<TooltipTrigger>
-															<OctagonAlert className='ml-2 h-4 w-4 text-destructive!' />
+														<TooltipTrigger type='button'>
+															<OctagonAlert className='size-4 text-destructive!' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{documentReaderModel.subscriptionLocked
@@ -361,39 +431,46 @@ const AddFile = () => {
 									)}
 								/>
 							</div>
-							{sections ? (
-								<FormField
-									control={form.control}
-									name='sections'
-									render={({ field }) => (
-										<FormItem className='space-y-0'>
-											<MultipleSelector
-												options={sections.data.map((section) => ({
-													label: section.title,
-													value: section.id.toString(),
-												}))}
-												onChange={(value) =>
-													field.onChange(
-														value.map(({ value }) => Number(value)),
-													)
-												}
-												value={
-													field.value
-														? field.value.map((item) => item.toString())
-														: []
-												}
-												placeholder={t('document_create_section_choose')}
-											/>
-										</FormItem>
-									)}
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={FolderInput}
+									title={t('document_create_section_choose')}
 								/>
-							) : (
-								<SelectorSkeleton />
-							)}
-						</DocumentCreateAdvancedSection>
+								{sections ? (
+									<FormField
+										control={form.control}
+										name='sections'
+										render={({ field }) => (
+											<FormItem className='space-y-0'>
+												<MultipleSelector
+													options={sections.data.map((section) => ({
+														label: section.title,
+														value: section.id.toString(),
+													}))}
+													onChange={(value) =>
+														field.onChange(
+															value.map(({ value }) => Number(value)),
+														)
+													}
+													value={
+														field.value
+															? field.value.map((item) => item.toString())
+															: []
+													}
+													placeholder={t('document_create_section_choose')}
+												/>
+											</FormItem>
+										)}
+									/>
+								) : (
+									<SelectorSkeleton />
+								)}
+							</div>
+						</div>
 						<Button
 							type='submit'
-							className='mt-4 w-full'
+							size='lg'
+							className='w-full'
 							disabled={
 								mutateCreateDocument.isPending ||
 								fileParseEngineUnavailable ||
@@ -402,12 +479,13 @@ const AddFile = () => {
 								(form.watch('auto_podcast') && podcastEngineUnavailable) ||
 								!form.watch('file_name')
 							}>
+							<Save className='size-4' />
 							{t('document_create_submit')}
 							{mutateCreateDocument.isPending && (
 								<Loader2 className='size-4 animate-spin' />
 							)}
 						</Button>
-					</div>
+					</aside>
 				</form>
 			</Form>
 		</>

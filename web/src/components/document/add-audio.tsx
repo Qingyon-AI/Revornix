@@ -5,25 +5,25 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
-import { useRef, useState } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import {
 	AlertCircleIcon,
+	FileAudio,
+	FolderInput,
 	Info,
 	Loader2,
 	OctagonAlert,
+	Save,
 	Sparkles,
+	Tags,
+	TextCursorInput,
+	Trash2,
+	WandSparkles,
 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import {
-	Form,
-	FormDescription,
-	FormField,
-	FormItem,
-	FormLabel,
-} from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import MultipleSelector from '@/components/ui/multiple-selector';
-import AddLabelDialog from '@/components/document/add-document-label-dialog';
 import { Switch } from '../ui/switch';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
@@ -35,7 +35,10 @@ import { useUserContext } from '@/provider/user-provider';
 import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
-import AudioRecord, { type AudioRecordResult } from './audio-record';
+import AudioRecord, {
+	type AudioRecordHandle,
+	type AudioRecordResult,
+} from './audio-record';
 import { FileService } from '@/lib/file';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { Field } from '../ui/field';
@@ -46,8 +49,12 @@ import {
 } from '@/lib/document-media';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
-import DocumentCreateAdvancedSection from './document-create-advanced-section';
 import { generateUUID } from '@/lib/uuid';
+import {
+	DocumentCreateAutomationOption,
+	DocumentCreatePanelTitle,
+} from './document-create-layout';
+import AudioPlayer from '../ui/audio-player';
 
 const AddAudio = () => {
 	const queryClient = getQueryClient();
@@ -92,6 +99,7 @@ const AddAudio = () => {
 	const [submitting, setSubmitting] = useState(false);
 
 	const [audioResult, setAudioResult] = useState<AudioRecordResult>();
+	const audioRecordRef = useRef<AudioRecordHandle>(null);
 	const lastUploadedRef = useRef<{
 		sourceUrl: string;
 		filePath: string;
@@ -123,9 +131,7 @@ const AddAudio = () => {
 		},
 	});
 
-	const onSubmitMessageForm = async (
-		event: React.FormEvent<HTMLFormElement>,
-	) => {
+	const onSubmitMessageForm = async (event: FormEvent<HTMLFormElement>) => {
 		setSubmitting(true);
 		if (event) {
 			if (typeof event.preventDefault === 'function') {
@@ -238,10 +244,7 @@ const AddAudio = () => {
 			return;
 		}
 
-		const { file, fileName } = audioResultToFile(
-			audioResult,
-			generateUUID(),
-		);
+		const { file, fileName } = audioResultToFile(audioResult, generateUUID());
 
 		if (!mainUserInfo?.default_user_file_system) {
 			toast.error(t('error_default_file_system_not_found'));
@@ -261,96 +264,104 @@ const AddAudio = () => {
 			<Form {...form}>
 				<form
 					onSubmit={onSubmitMessageForm}
-					className='flex flex-col gap-5 overflow-visible lg:h-full lg:min-h-0 lg:gap-0 lg:overflow-hidden'>
-					<div className='flex w-full flex-col gap-4 overflow-visible lg:min-h-0 lg:min-w-0 lg:flex-1 lg:gap-5 lg:overflow-y-auto lg:pr-1'>
-						{!fileParseEngine.configured && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('document_create_file_engine_unset')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('document_create_file_engine_unset_description_1')}
-										<Link
-											href={settingAnchorHrefs.defaultFileParseEngine}
-											className='inline-block underline underline-offset-2 font-bold'>
-											{t('document_create_file_engine_unset_description_2')}
-										</Link>
-										{t('document_create_file_engine_unset_description_3')}
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
-						{fileParseEngine.subscriptionLocked && (
-							<Alert>
-								<AlertCircleIcon />
-								<AlertTitle>
-									{t('default_resource_unavailable_title')}
-								</AlertTitle>
-								<AlertDescription>
-									<p>
-										{t('default_resource_subscription_locked')}{' '}
-										<Link
-											href={settingAnchorHrefs.defaultFileParseEngine}
-											className='inline-block font-bold underline underline-offset-2'>
-											{t('revornix_ai_default_model_goto')}
-										</Link>
-									</p>
-								</AlertDescription>
-							</Alert>
-						)}
-						<Field className='min-h-[360px] lg:min-h-0 lg:flex-1'>
-							<AudioRecord
-								className='h-full min-h-[360px] lg:min-h-[320px]'
-								maxDurationMs={AUDIO_DOCUMENT_MAX_DURATION_MS}
-								onRecordReady={(result: AudioRecordResult) => {
-									if (lastUploadedRef.current?.sourceUrl !== result.url) {
+					className='grid w-full grid-cols-1 gap-3 overflow-visible lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_360px] lg:overflow-hidden xl:grid-cols-[minmax(0,1fr)_400px]'>
+					<section className='min-w-0 lg:flex lg:min-h-0'>
+						<Field className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
+							<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
+								<div className='flex h-10 shrink-0 items-center border-b border-border/60 px-3'>
+									<DocumentCreatePanelTitle
+										icon={FileAudio}
+										title={t('document_create_audio')}
+									/>
+								</div>
+								<AudioRecord
+									ref={audioRecordRef}
+									className='min-h-[400px] flex-1 rounded-none border-0 lg:min-h-0'
+									maxDurationMs={AUDIO_DOCUMENT_MAX_DURATION_MS}
+									showDeleteButton={false}
+									onRecordReady={(result: AudioRecordResult) => {
+										if (lastUploadedRef.current?.sourceUrl !== result.url) {
+											lastUploadedRef.current = null;
+											form.setValue('file_name', '');
+										}
+										setAudioResult(result);
+									}}
+									onDelete={() => {
 										lastUploadedRef.current = null;
 										form.setValue('file_name', '');
-									}
-									setAudioResult(result);
-								}}
-								onDelete={() => {
-									lastUploadedRef.current = null;
-									form.setValue('file_name', '');
-									setAudioResult(undefined);
-								}}
-							/>
+										setAudioResult(undefined);
+									}}
+								/>
+							</div>
 						</Field>
-					</div>
-					<div className='pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:sticky lg:bottom-0 lg:z-10 lg:shrink-0 lg:pt-4 lg:backdrop-blur'>
-						<DocumentCreateAdvancedSection>
-							<div className='grid grid-cols-1 gap-5 md:grid-cols-2'>
+					</section>
+
+					<aside className='min-w-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:min-h-0 lg:overflow-y-auto lg:pr-1 space-y-3'>
+						<div className='space-y-3 rounded-md border border-border/70 bg-muted/20 p-3 shadow-sm'>
+							{!fileParseEngine.configured && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('document_create_file_engine_unset')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('document_create_file_engine_unset_description_1')}
+											<Link
+												href={settingAnchorHrefs.defaultFileParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('document_create_file_engine_unset_description_2')}
+											</Link>
+											{t('document_create_file_engine_unset_description_3')}
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							{fileParseEngine.subscriptionLocked && (
+								<Alert>
+									<AlertCircleIcon />
+									<AlertTitle>
+										{t('default_resource_unavailable_title')}
+									</AlertTitle>
+									<AlertDescription>
+										<p>
+											{t('default_resource_subscription_locked')}{' '}
+											<Link
+												href={settingAnchorHrefs.defaultFileParseEngine}
+												className='inline-block font-bold underline underline-offset-2'>
+												{t('revornix_ai_default_model_goto')}
+											</Link>
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
+							<div className='space-y-3'>
+								<DocumentCreatePanelTitle
+									icon={Sparkles}
+									title={t('document_create_more_config')}
+								/>
 								<FormField
 									name='auto_summary'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_ai_summary')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={documentReaderUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_ai_summary_description')}
-											</FormDescription>
-											{documentReaderUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{documentReaderModel.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={WandSparkles}
+												title={t('document_create_ai_summary')}
+												description={t(
+													'document_create_ai_summary_description',
+												)}
+												checked={field.value}
+												disabled={documentReaderUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													documentReaderUnavailable
+														? documentReaderModel.subscriptionLocked
 															? t('default_resource_subscription_locked')
-															: t('document_create_ai_summary_engine_unset')}
-													</AlertDescription>
-												</Alert>
-											)}
+															: t('document_create_ai_summary_engine_unset')
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
@@ -358,38 +369,35 @@ const AddAudio = () => {
 									name='auto_transcribe'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='rounded-lg border border-input bg-background/80 p-3'>
-											<div className='flex flex-row gap-1 items-center'>
-												<FormLabel className='flex flex-row gap-1 items-center'>
-													{t('document_create_auto_transcribe')}
-													<Sparkles size={15} />
-												</FormLabel>
-												<Switch
-													disabled={transcribeEngineUnavailable && !field.value}
-													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
-												/>
-											</div>
-											<FormDescription>
-												{t('document_create_auto_transcribe_description')}
-											</FormDescription>
-											{transcribeEngineUnavailable && (
-												<Alert className='bg-destructive/10 dark:bg-destructive/20'>
-													<OctagonAlert className='h-4 w-4 text-destructive!' />
-													<AlertDescription>
-														{transcribeEngine.subscriptionLocked
+										<FormItem>
+											<DocumentCreateAutomationOption
+												icon={TextCursorInput}
+												title={t('document_create_auto_transcribe')}
+												description={t(
+													'document_create_auto_transcribe_description',
+												)}
+												checked={field.value}
+												disabled={transcribeEngineUnavailable && !field.value}
+												onCheckedChange={field.onChange}
+												alert={
+													transcribeEngineUnavailable
+														? transcribeEngine.subscriptionLocked
 															? t('default_resource_subscription_locked')
 															: t(
 																	'document_create_auto_transcribe_engine_unset',
-																)}
-													</AlertDescription>
-												</Alert>
-											)}
+																)
+														: undefined
+												}
+											/>
 										</FormItem>
 									)}
 								/>
 							</div>
-							<div className='flex w-full flex-col gap-5 xl:flex-row xl:items-center'>
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={Tags}
+									title={t('document_create_label_placeholder')}
+								/>
 								{labels ? (
 									<FormField
 										control={form.control}
@@ -428,13 +436,15 @@ const AddAudio = () => {
 									name='auto_tag'
 									control={form.control}
 									render={({ field }) => (
-										<FormItem className='w-full shrink-0 rounded-md border border-input bg-background/80 p-3 xl:w-auto xl:min-w-[240px]'>
-											<div className='flex flex-row items-center'>
-												<FormLabel htmlFor='auto_tag'>
+										<FormItem className='rounded-md border border-border/70 bg-background p-3'>
+											<div className='flex items-center gap-3'>
+												<FormLabel
+													htmlFor='auto_tag'
+													className='flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium'>
 													{t('document_create_auto_tag')}
 													<Tooltip>
-														<TooltipTrigger>
-															<Info size={15} />
+														<TooltipTrigger type='button'>
+															<Info className='size-4 text-muted-foreground' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{t('document_create_auto_tag_description')}
@@ -443,18 +453,17 @@ const AddAudio = () => {
 												</FormLabel>
 												<Switch
 													id='auto_tag'
-													className='ml-auto'
 													disabled={
 														(documentReaderUnavailable && !field.value) ||
 														!form.watch('auto_transcribe')
 													}
 													checked={field.value}
-													onCheckedChange={(e) => field.onChange(e)}
+													onCheckedChange={field.onChange}
 												/>
 												{documentReaderUnavailable && (
 													<Tooltip>
-														<TooltipTrigger>
-															<OctagonAlert className='ml-2 h-4 w-4 text-destructive!' />
+														<TooltipTrigger type='button'>
+															<OctagonAlert className='size-4 text-destructive!' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{documentReaderModel.subscriptionLocked
@@ -465,8 +474,8 @@ const AddAudio = () => {
 												)}
 												{!form.watch('auto_transcribe') && (
 													<Tooltip>
-														<TooltipTrigger>
-															<OctagonAlert className='ml-2 h-4 w-4 text-destructive!' />
+														<TooltipTrigger type='button'>
+															<OctagonAlert className='size-4 text-destructive!' />
 														</TooltipTrigger>
 														<TooltipContent>
 															{t('document_create_auto_tag_with_transcribe')}
@@ -478,39 +487,98 @@ const AddAudio = () => {
 									)}
 								/>
 							</div>
-							{sections ? (
-								<FormField
-									control={form.control}
-									name='sections'
-									render={({ field }) => (
-										<FormItem className='space-y-0'>
-											<MultipleSelector
-												options={sections.data.map((section) => ({
-													label: section.title,
-													value: section.id.toString(),
-												}))}
-												onChange={(value) =>
-													field.onChange(
-														value.map(({ value }) => Number(value)),
-													)
-												}
-												value={
-													field.value
-														? field.value.map((item) => item.toString())
-														: []
-												}
-												placeholder={t('document_create_section_choose')}
-											/>
-										</FormItem>
-									)}
+							<div className='space-y-3 border-t border-border/60 pt-3'>
+								<DocumentCreatePanelTitle
+									icon={FolderInput}
+									title={t('document_create_section_choose')}
 								/>
-							) : (
-								<SelectorSkeleton />
-							)}
-						</DocumentCreateAdvancedSection>
+								{sections ? (
+									<FormField
+										control={form.control}
+										name='sections'
+										render={({ field }) => (
+											<FormItem className='space-y-0'>
+												<MultipleSelector
+													options={sections.data.map((section) => ({
+														label: section.title,
+														value: section.id.toString(),
+													}))}
+													onChange={(value) =>
+														field.onChange(
+															value.map(({ value }) => Number(value)),
+														)
+													}
+													value={
+														field.value
+															? field.value.map((item) => item.toString())
+															: []
+													}
+													placeholder={t('document_create_section_choose')}
+												/>
+											</FormItem>
+										)}
+									/>
+								) : (
+									<SelectorSkeleton />
+								)}
+							</div>
+						</div>
+						{audioResult && (
+							<div className='overflow-hidden rounded-lg border border-border/70 bg-background shadow-sm'>
+								<div className='flex items-center justify-between gap-3 border-b border-border/60 bg-muted/20 px-3 py-2.5'>
+									<div className='flex min-w-0 items-center gap-2.5'>
+										<div className='flex size-9 shrink-0 items-center justify-center rounded-md border border-border/70 bg-background text-muted-foreground'>
+											<FileAudio className='size-4' />
+										</div>
+										<div className='min-w-0'>
+											<p className='truncate text-sm font-medium'>
+												{t('document_create_audio')}
+											</p>
+											<p className='truncate text-xs text-muted-foreground'>
+												{t('document_audio_record_duration')}
+											</p>
+										</div>
+									</div>
+									<span className='shrink-0 rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs font-medium tabular-nums text-foreground/90'>
+										{formatMediaDuration(audioResult.durationMs)}
+									</span>
+								</div>
+								<div className='space-y-3 p-3'>
+									<AudioPlayer
+										src={audioResult.url}
+										title={
+											form.watch('title')?.trim() || t('document_create_audio')
+										}
+										artist={formatMediaDuration(audioResult.durationMs)}
+										variant='compact'
+										className='rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 shadow-none'
+									/>
+									<div className='flex flex-wrap gap-2'>
+										<span className='rounded-full border border-border/70 bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground'>
+											{t('document_audio_record_duration')}
+										</span>
+										<span className='rounded-full border border-border/70 bg-background px-2.5 py-1 text-xs font-medium tabular-nums text-foreground/90'>
+											{formatMediaDuration(audioResult.durationMs)}
+										</span>
+									</div>
+									<div className='flex justify-end'>
+										<Button
+											type='button'
+											variant='outline'
+											size='sm'
+											className='h-8 rounded-full border-border/70 px-3 text-xs shadow-none'
+											onClick={() => void audioRecordRef.current?.clear()}>
+											<Trash2 className='size-3.5' />
+											{t('document_audio_record_delete')}
+										</Button>
+									</div>
+								</div>
+							</div>
+						)}
 						<Button
 							type='submit'
-							className='mt-4 w-full'
+							size='lg'
+							className='w-full'
 							disabled={
 								submitting ||
 								fileParseEngineUnavailable ||
@@ -523,10 +591,11 @@ const AddAudio = () => {
 										!form.watch('auto_transcribe'))) ||
 								!audioResult
 							}>
+							<Save className='size-4' />
 							{t('document_create_submit')}
 							{submitting && <Loader2 className='size-4 animate-spin' />}
 						</Button>
-					</div>
+					</aside>
 				</form>
 			</Form>
 		</>
