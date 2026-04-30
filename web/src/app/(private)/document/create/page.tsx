@@ -19,10 +19,10 @@ const CreatePage = async (props: { searchParams: SearchParams }) => {
 	await props.searchParams;
 	const t = await getTranslations();
 	return (
-		<div className='flex min-h-0 flex-1 flex-col overflow-x-hidden lg:h-full lg:overflow-hidden'>
+		<div className='flex min-h-0 flex-1 flex-col overflow-x-hidden lg:h-[calc(100dvh-var(--private-top-header-height,3.5rem))] lg:max-h-[calc(100dvh-var(--private-top-header-height,3.5rem))] lg:overflow-hidden'>
 			<Tabs
 				defaultValue={'quick-note'}
-				className='flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4 pt-3 sm:px-5 md:pb-4 lg:h-full lg:overflow-hidden lg:px-6 lg:pt-3'>
+				className='flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4 pt-3 sm:px-5 md:pb-4 lg:h-full lg:max-h-full lg:overflow-hidden lg:px-6 lg:pt-3'>
 				<div className='flex shrink-0 flex-col gap-2 border-b border-border/60 pb-3 pt-1 lg:flex-row lg:items-center lg:justify-between lg:gap-6'>
 					<div className='min-w-0'>
 						<p className='text-base font-semibold tracking-normal'>

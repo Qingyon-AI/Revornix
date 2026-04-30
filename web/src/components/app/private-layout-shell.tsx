@@ -28,7 +28,13 @@ const PrivateLayoutShell = ({
 		<SidebarProvider>
 			<RightSidebarProvider>
 				<AppSidebar />
-				<SidebarInset className='bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),radial-gradient(circle_at_left_top,rgba(59,130,246,0.08),transparent_24%)]'>
+				<SidebarInset
+					style={
+						{
+							'--private-top-header-height': '3.5rem',
+						} as React.CSSProperties
+					}
+					className='bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),radial-gradient(circle_at_left_top,rgba(59,130,246,0.08),transparent_24%)]'>
 					<HashHighlighter />
 					<div className='pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]'>
 						<div className='absolute inset-0'>
@@ -38,8 +44,8 @@ const PrivateLayoutShell = ({
 						</div>
 					</div>
 
-					<header className='sticky top-0 z-20 px-5 pb-3 pt-3 backdrop-blur'>
-						<div className='flex items-center justify-between backdrop-blur-xl'>
+					<header className='sticky top-0 z-20 h-[var(--private-top-header-height)] px-5 backdrop-blur'>
+						<div className='flex h-full items-center justify-between backdrop-blur-xl'>
 							<div className='flex min-w-0 flex-1 items-center gap-1.5'>
 								<SidebarTrigger className='size-6 shrink-0 rounded-xl' />
 								<TopNav />
