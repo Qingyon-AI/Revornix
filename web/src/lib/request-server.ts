@@ -2,6 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import qs from 'qs';
+import { cookies, headers as nextHeaders } from 'next/headers';
 
 interface RequestOptions {
     method?: 'POST' | 'GET';
@@ -16,9 +17,31 @@ type ErrorResponse = {
 };
 
 export const serverRequest = async <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
+    const headers = new Headers(initialOptions?.headers || undefined);
+    if (!headers.has('Content-Type')) {
+        headers.append('Content-Type', 'application/json');
+    }
     headers.append('Trace-Id', uuidv4());
+
+    try {
+        const cookieStore = await cookies();
+        const accessToken = cookieStore.get('access_token')?.value;
+        if (accessToken && !headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${accessToken}`);
+        }
+    } catch {
+        // Ignore cookie access failures and continue as anonymous.
+    }
+
+    try {
+        const requestHeaders = await nextHeaders();
+        const userTimeZone = requestHeaders.get('x-user-timezone');
+        if (userTimeZone && !headers.has('X-User-Timezone')) {
+            headers.set('X-User-Timezone', userTimeZone);
+        }
+    } catch {
+        // Ignore header access failures when request context is unavailable.
+    }
 
     const method = initialOptions?.method || 'POST';
 

@@ -311,7 +311,7 @@ const SectionCommentCard = ({
 						if (!ensureLoggedInOrRedirect()) return;
 						setReplying((v) => !v);
 					}}
-					className='h-7 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
+					className='h-6 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground'>
 					<MessageCircle className='size-3.5' />
 					{t('section_comment_reply')}
 				</Button>

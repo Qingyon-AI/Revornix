@@ -31,7 +31,7 @@ const DocumentComments = ({
 					<Separator />
 				</div>
 			) : null}
-			<div className='min-h-0 flex-1 overflow-hidden px-4 sm:px-5 pt-4'>
+			<div className='min-h-0 flex-1 overflow-hidden p-4'>
 				<DocumentCommentsList
 					document_id={document_id}
 					initialData={initialData}
