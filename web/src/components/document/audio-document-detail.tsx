@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { Skeleton } from '../ui/skeleton';
+import { MarkdownContentSkeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import {
 	cancelDocumentTranscribe,
@@ -147,7 +147,7 @@ const AudioDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative', className)}>
+		<div className={cn('h-full w-full relative pt-4', className)}>
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.TRANSCRIBING && (
@@ -225,7 +225,7 @@ const AudioDocumentDetail = ({
 				!isError &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.SUCCESS && (
-					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
+					<MarkdownContentSkeleton className='min-h-[calc(100dvh-14rem)]' />
 				)}
 			{markdown && !isError && (
 				<>

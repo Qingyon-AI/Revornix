@@ -191,10 +191,10 @@ const DocumentInfo = ({ id }: { id: number }) => {
 
 	if (isPending) {
 		return (
-			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
+			<div className='space-y-4'>
 				<div className='space-y-4'>
 					<div className='space-y-2'>
-						<Skeleton className='h-9 w-[78%] rounded-2xl' />
+						<Skeleton className='h-9 w-[78%] rounded-xl' />
 						<Skeleton className='h-4 w-full rounded-full' />
 						<Skeleton className='h-4 w-[84%] rounded-full' />
 					</div>
@@ -206,12 +206,20 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 					</div>
 				</div>
-				<div className='flex flex-wrap gap-1.5'>
-					<Skeleton className='h-7 w-28 rounded-full' />
-					<Skeleton className='h-7 w-24 rounded-full' />
+
+				<div className='space-y-3 border-t border-border/50 pt-5'>
+					<div className='flex items-center gap-2'>
+						<Skeleton className='size-3.5 rounded' />
+						<Skeleton className='h-3.5 w-28 rounded-full' />
+					</div>
+					<div className='flex flex-wrap gap-2'>
+						<Skeleton className='h-8 w-28 rounded-full' />
+						<Skeleton className='h-8 w-24 rounded-full' />
+					</div>
 				</div>
+
 				<div className='grid grid-cols-2 gap-3'>
-					{Array.from({ length: 2 }).map((_, index) => (
+					{Array.from({ length: 4 }).map((_, index) => (
 						<div
 							key={index}
 							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
@@ -226,12 +234,32 @@ const DocumentInfo = ({ id }: { id: number }) => {
 						</div>
 					))}
 				</div>
-				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+
+				<div className='flex flex-wrap gap-1.5'>
+					<Skeleton className='h-7 w-20 rounded-full' />
+					<Skeleton className='h-7 w-24 rounded-full' />
+					<Skeleton className='h-7 w-16 rounded-full' />
+				</div>
+
+				<div className='flex flex-wrap gap-2'>
 					<Skeleton className='h-9 w-32 rounded-full' />
 					<Skeleton className='h-9 w-36 rounded-full' />
-					<Skeleton className='h-9 w-32 rounded-full' />
 				</div>
-				<Skeleton className='h-32 w-full rounded-[24px]' />
+
+				<div className='space-y-4 border-t border-border/50 pt-5'>
+					<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+						<div className='flex items-start gap-3'>
+							<Skeleton className='size-10 rounded-xl' />
+							<div className='min-w-0 flex-1 space-y-2'>
+								<Skeleton className='h-4 w-24 rounded-full' />
+								<Skeleton className='h-5 w-40 rounded-full' />
+								<Skeleton className='h-4 w-full rounded-full' />
+								<Skeleton className='h-4 w-4/5 rounded-full' />
+							</div>
+							<Skeleton className='h-8 w-20 rounded-full' />
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}

@@ -2,7 +2,7 @@
 
 import AddNotificationTarget from '@/components/notification/add-notification-target';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton } from '@/components/ui/skeleton';
 import { getMineNotificationTargets } from '@/service/notification';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -123,14 +123,14 @@ const NotificationTargetManagePage = () => {
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}

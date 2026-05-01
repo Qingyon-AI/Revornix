@@ -3,7 +3,7 @@
 import MineFileSystemAddCard from '@/components/setting/mine-file-system-add-card';
 import MineFileSystemCard from '@/components/setting/mine-file-system-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton } from '@/components/ui/skeleton';
 import { getMineFileSystems } from '@/service/file-system';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircleIcon } from 'lucide-react';
@@ -32,12 +32,18 @@ const FileSystemPage = () => {
 					{t('setting_file_system_page_alert')}
 				</AlertDescription>
 			</Alert>
-			{isFetching && !mineFileSystems && <Skeleton className='w-full h-52' />}
-				{isError && (
-					<div className='w-full h-full flex justify-center items-center'>
-						<p className='text-muted-foreground text-xs'>{t('something_wrong')}</p>
-					</div>
-				)}
+			{isFetching && !mineFileSystems && (
+				<div className='grid grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-4'>
+					{Array.from({ length: 4 }).map((_, index) => (
+						<ResourceCardSkeleton key={index} />
+					))}
+				</div>
+			)}
+			{isError && (
+				<div className='flex h-full w-full items-center justify-center'>
+					<p className='text-xs text-muted-foreground'>{t('something_wrong')}</p>
+				</div>
+			)}
 			{isSuccess && (
 				<div className='grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-5'>
 					{mineFileSystems?.data?.map((file_system, index) => {

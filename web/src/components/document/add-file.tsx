@@ -46,10 +46,7 @@ import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import { FILE_DOCUMENT_MAX_UPLOAD_BYTES, formatUploadSize } from '@/lib/upload';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
-import {
-	DocumentCreateAutomationOption,
-	DocumentCreatePanelTitle,
-} from './document-create-layout';
+import { AutomationOption, PanelTitle } from '@/components/form-panel';
 
 const AddFile = () => {
 	const queryClient = getQueryClient();
@@ -174,7 +171,7 @@ const AddFile = () => {
 									<FormItem className='flex min-h-[400px] w-full flex-col lg:h-full lg:min-h-0'>
 										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
 											<div className='flex h-10 shrink-0 items-center border-b border-border/60 px-3'>
-												<DocumentCreatePanelTitle
+												<PanelTitle
 													icon={FileUp}
 													title={t('document_create_file')}
 												/>
@@ -295,7 +292,7 @@ const AddFile = () => {
 								</Alert>
 							)}
 							<div className='space-y-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Sparkles}
 									title={t('document_create_more_config')}
 								/>
@@ -304,7 +301,7 @@ const AddFile = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={WandSparkles}
 												title={t('document_create_ai_summary')}
 												description={t(
@@ -329,7 +326,7 @@ const AddFile = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={Podcast}
 												title={t('document_create_auto_podcast')}
 												description={t(
@@ -351,7 +348,7 @@ const AddFile = () => {
 								/>
 							</div>
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Tags}
 									title={t('document_create_label_placeholder')}
 								/>
@@ -432,7 +429,7 @@ const AddFile = () => {
 								/>
 							</div>
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={FolderInput}
 									title={t('document_create_section_choose')}
 								/>

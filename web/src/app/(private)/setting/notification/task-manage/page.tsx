@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { TablePanelSkeleton } from '@/components/ui/skeleton';
 import {
 	getMineNotificationTask,
 	updateNotificationTask,
@@ -214,7 +214,7 @@ const NotificationTaskManagePage = () => {
 				<AddNotificationTask />
 			</div>
 			<div className='rounded-md border'>
-				{isLoading && <Skeleton className='w-full h-64' />}
+				{isLoading && <TablePanelSkeleton className='border-0 shadow-none' />}
 				{!isLoading && (
 					<Table>
 						<TableHeader>

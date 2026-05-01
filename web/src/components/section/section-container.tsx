@@ -21,60 +21,7 @@ import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 
 import SectionMarkdown from './section-markdown';
 import SectionOperate from './section-operate';
-import { Skeleton } from '../ui/skeleton';
 import SectionDetailSidebar from './section-detail-sidebar';
-
-const SectionDetailSkeleton = () => {
-	return (
-		<div className='mx-auto flex h-full w-full max-w-[980px] flex-col gap-6'>
-			<div className='overflow-hidden rounded-[28px] border border-border/60 bg-background/40 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.48)]'>
-				<Skeleton className='aspect-[16/6.5] w-full rounded-none sm:aspect-[16/6]' />
-			</div>
-
-			<div className='space-y-5'>
-				<div className='mx-auto w-full max-w-[880px] space-y-4'>
-					<Skeleton className='h-4 w-40 rounded-full' />
-					<div className='space-y-3'>
-						<Skeleton className='h-8 w-[72%] rounded-2xl sm:h-10' />
-						<Skeleton className='h-5 w-[92%] rounded-full' />
-						<Skeleton className='h-5 w-[68%] rounded-full' />
-					</div>
-					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-						<Skeleton className='mx-auto h-4 w-64 rounded-full sm:w-80' />
-					</div>
-				</div>
-
-				<div className='mx-auto w-full max-w-[880px] space-y-6 rounded-[28px] border border-border/60 bg-background/30 p-5 sm:p-6'>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[86%] rounded-full' />
-						<Skeleton className='h-5 w-[72%] rounded-full' />
-					</div>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-[94%] rounded-full' />
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[82%] rounded-full' />
-					</div>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[90%] rounded-full' />
-						<Skeleton className='h-5 w-[78%] rounded-full' />
-					</div>
-					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-						<Skeleton className='mx-auto h-4 w-56 rounded-full sm:w-72' />
-					</div>
-				</div>
-			</div>
-
-			<div className='border-t border-border/60 grid w-full grid-cols-7 gap-2 bg-background/55 p-2.5 backdrop-blur-xl'>
-				{Array.from({ length: 7 }).map((_, index) => (
-					<Skeleton key={index} className='h-11 w-full rounded-[20px]' />
-				))}
-			</div>
-		</div>
-	);
-};
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -203,7 +150,6 @@ const SectionContainer = ({ id }: { id: number }) => {
 			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
 				<div className='min-h-0 flex-1 overflow-hidden'>
 					<>
-						{isPending && !section ? <SectionDetailSkeleton /> : null}
 						{sectionCoverSrc ? (
 							<div className='mx-auto w-full overflow-hidden'>
 								<div className='relative'>

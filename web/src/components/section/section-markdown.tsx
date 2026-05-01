@@ -20,43 +20,7 @@ import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import NoticeBox from '../ui/notice-box';
-import { Skeleton } from '../ui/skeleton';
-
-const SectionMarkdownSkeleton = ({ className }: { className?: string }) => {
-	return (
-		<div
-			className={cn(
-				'mx-auto flex w-full max-w-[880px] flex-col gap-6',
-				className,
-			)}>
-			<div className='space-y-4 pt-1'>
-				<Skeleton className='h-10 w-56 rounded-2xl sm:h-11 sm:w-72' />
-				<Skeleton className='h-5 w-40 rounded-full sm:w-56' />
-			</div>
-			<div className='space-y-4'>
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-11/12 rounded-full' />
-				<Skeleton className='h-5 w-4/5 rounded-full' />
-			</div>
-			<div className='space-y-4 pt-2'>
-				<Skeleton className='h-8 w-40 rounded-2xl' />
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-10/12 rounded-full' />
-			</div>
-			<div className='space-y-4 pt-2'>
-				<Skeleton className='h-8 w-32 rounded-2xl' />
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-full rounded-full' />
-				<Skeleton className='h-5 w-9/12 rounded-full' />
-			</div>
-			<div className='mt-auto rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-				<Skeleton className='mx-auto h-4 w-60 rounded-full sm:w-72' />
-			</div>
-		</div>
-	);
-};
+import { MarkdownContentSkeleton } from '../ui/skeleton';
 
 const SectionMarkdown = ({
 	id,
@@ -128,10 +92,7 @@ const SectionMarkdown = ({
 	const containsImagePlaceholder = (content?: string) =>
 		Boolean(content?.includes('section-image-placeholder:'));
 
-	const onGetMarkdown = async (
-		sourceKey: string,
-		forceReload = false,
-	) => {
+	const onGetMarkdown = async (sourceKey: string, forceReload = false) => {
 		if (!section) return;
 		if (
 			!forceReload &&
@@ -222,14 +183,17 @@ const SectionMarkdown = ({
 		setPlaceholderPollingDelay(undefined);
 	}, [shouldStopPlaceholderPolling]);
 
-	useInterval(() => {
-		if (shouldStopPlaceholderPolling) {
-			return;
-		}
-		const { sourceKey } = latestMarkdownSourceRef.current;
-		if (!sourceKey) return;
-		void onGetMarkdown(sourceKey, true);
-	}, shouldStopPlaceholderPolling ? undefined : placeholderPollingDelay);
+	useInterval(
+		() => {
+			if (shouldStopPlaceholderPolling) {
+				return;
+			}
+			const { sourceKey } = latestMarkdownSourceRef.current;
+			if (!sourceKey) return;
+			void onGetMarkdown(sourceKey, true);
+		},
+		shouldStopPlaceholderPolling ? undefined : placeholderPollingDelay,
+	);
 
 	const hasMarkdownFile = Boolean(section?.md_file_name);
 	const isMarkdownProcessing =
@@ -291,11 +255,11 @@ const SectionMarkdown = ({
 	};
 
 	return (
-		<div className={cn(className)}>
+		<div className={cn('pt-4', className)}>
 			{showEmpty ? (
 				<div
 					className={cn(
-						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground mb-6',
+						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground my-6',
 						contentFallbackMinHeightClassName,
 					)}>
 					<div className='max-w-md space-y-2'>
@@ -314,11 +278,12 @@ const SectionMarkdown = ({
 							'flex items-center justify-center',
 							contentFallbackMinHeightClassName,
 						)}>
-						<SectionMarkdownSkeleton />
+						<MarkdownContentSkeleton showToolbar={canEditMarkdown} />
 					</div>
 				) : (
-					<SectionMarkdownSkeleton
+					<MarkdownContentSkeleton
 						className={contentFallbackMinHeightClassName}
+						showToolbar={canEditMarkdown}
 					/>
 				)
 			) : null}

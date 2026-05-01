@@ -13,7 +13,7 @@ import { searchUserSection } from '@/service/section';
 import SectionCard from '../section/section-card';
 import SectionCardSkeleton from '../section/section-card-skeleton';
 import SectionListTable from '../section/section-list-table';
-import { Skeleton } from '../ui/skeleton';
+import { ResourceCardSkeleton, Skeleton, UserCardSkeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import CardViewToggle from '../ui/card-view-toggle';
 import { toast } from 'sonner';
@@ -236,10 +236,19 @@ const UserContainer = ({ id }: { id: number }) => {
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-6 pt-1 sm:px-5 lg:px-6'>
 			{isFetchingUserInfo && !userInfo ? (
 				<>
-					<Skeleton className='h-64 w-full rounded-[30px]' />
+					<div className='rounded-xl border border-border/60 bg-card p-5 shadow-sm'>
+						<Skeleton className='h-36 w-full rounded-lg sm:h-44' />
+						<div className='mt-5 flex flex-col gap-4 sm:flex-row sm:items-end'>
+							<Skeleton className='size-24 rounded-full' />
+							<div className='flex-1 space-y-2'>
+								<Skeleton className='h-7 w-52 rounded-full' />
+								<Skeleton className='h-4 w-full max-w-xl rounded-full' />
+							</div>
+						</div>
+					</div>
 					<div className='grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]'>
-						<Skeleton className='h-64 w-full rounded-[28px]' />
-						<Skeleton className='h-64 w-full rounded-[28px]' />
+						<ResourceCardSkeleton />
+						<UserCardSkeleton />
 					</div>
 					<div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
 						{[...Array(6)].map((_, index) => {

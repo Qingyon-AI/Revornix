@@ -15,6 +15,7 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import SectionGraph from './section-graph';
 import SectionInfo from './section-info';
@@ -58,7 +59,16 @@ const SidebarSection = ({
 const SectionGraphCardSkeleton = () => (
 	<div className='space-y-5'>
 		<Separator className='bg-border/50' />
-		<div className='h-[300px] rounded-[22px] bg-muted/45' />
+		<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+			<div className='flex items-start gap-3'>
+				<Skeleton className='size-10 rounded-xl' />
+				<div className='min-w-0 flex-1 space-y-2'>
+					<Skeleton className='h-4 w-24 rounded-full' />
+					<Skeleton className='h-5 w-32 rounded-full' />
+					<Skeleton className='h-4 w-full rounded-full' />
+				</div>
+			</div>
+		</div>
 	</div>
 );
 

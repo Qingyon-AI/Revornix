@@ -1,7 +1,7 @@
 'use client';
 
 import ModelProviderCard from '@/components/setting/model-provider-card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton } from '@/components/ui/skeleton';
 import { searchAiModelProvider } from '@/service/ai';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -111,14 +111,14 @@ const ModelSettingPage = () => {
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}

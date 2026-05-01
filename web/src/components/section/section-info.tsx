@@ -93,7 +93,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 
 	if (isFetching && !isFetched) {
 		return (
-			<div className='space-y-4 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5'>
+			<div className='space-y-4'>
 				<div className='space-y-4'>
 					<div className='space-y-2'>
 						<Skeleton className='h-9 w-[78%] rounded-2xl' />

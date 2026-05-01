@@ -2,7 +2,7 @@ import { getDocumentDetail, searchDocumentNotes, deleteDocumentNote } from '@/se
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
@@ -208,7 +208,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							<div className='flex flex-col gap-3'>
 								{[...Array(8)].map((_, index) => {
 									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} />
 									);
 								})}
 							</div>
@@ -217,7 +217,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 							<div className='flex flex-col gap-3'>
 								{[...Array(4)].map((_, index) => {
 									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} />
 									);
 								})}
 							</div>

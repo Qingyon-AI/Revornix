@@ -44,7 +44,7 @@ import {
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
 import { getQueryClient } from '@/lib/get-query-client';
-import { Skeleton } from '@/components/ui/skeleton';
+import { TablePanelSkeleton } from '@/components/ui/skeleton';
 import { useCopyToClipboard } from 'react-use';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -266,7 +266,7 @@ const ApiKeyPage = () => {
 					</Dialog>
 				</div>
 				<div className='rounded-md border'>
-					{isFetching && <Skeleton className='w-full h-64' />}
+					{isFetching && <TablePanelSkeleton className='border-0 shadow-none' />}
 					{!isFetching && (
 						<Table>
 							<TableHeader>

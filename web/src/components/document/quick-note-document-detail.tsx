@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { getDocumentDetail, updateDocument } from '@/service/document';
 import 'katex/dist/katex.min.css';
-import { Skeleton } from '../ui/skeleton';
+import { MarkdownContentSkeleton } from '../ui/skeleton';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -82,7 +82,7 @@ const QuickDocumentDetail = ({
 	};
 
 	return (
-		<div className={cn('h-full w-full relative', className)}>
+		<div className={cn('h-full w-full relative pt-4', className)}>
 			{isError && error && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (
@@ -92,7 +92,12 @@ const QuickDocumentDetail = ({
 					)}
 				</div>
 			)}
-			{isFetching && !isRefetching && <Skeleton className='w-full h-full' />}
+			{isFetching && !isRefetching && (
+				<MarkdownContentSkeleton
+					className='min-h-[calc(100dvh-14rem)]'
+					showToolbar={canEditMarkdown}
+				/>
+			)}
 			{!isError && (
 				<>
 					<EditableMarkdownPanel

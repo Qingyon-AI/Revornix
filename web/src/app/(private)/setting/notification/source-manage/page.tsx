@@ -2,7 +2,7 @@
 
 import AddNotificationSource from '@/components/notification/add-notification-source';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton } from '@/components/ui/skeleton';
 import { getMineNotificationSources } from '@/service/notification';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -122,14 +122,14 @@ const NotificationSourceManagePage = () => {
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}

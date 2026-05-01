@@ -13,7 +13,7 @@ import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 import {
 	Empty,
 	EmptyDescription,
@@ -132,14 +132,14 @@ const DocumentNotesPublicList = ({ document_id, initialData }: Props) => {
 			{isFetching && !data && (
 				<div className='flex flex-col gap-3'>
 					{[...Array(6)].map((_, index) => (
-						<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+						<ListItemSkeleton key={index} />
 					))}
 				</div>
 			)}
 			{isFetchingNextPage && data && (
 				<div className='flex flex-col gap-3'>
 					{[...Array(4)].map((_, index) => (
-						<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+						<ListItemSkeleton key={index} />
 					))}
 				</div>
 			)}

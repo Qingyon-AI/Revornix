@@ -7,7 +7,7 @@ import { FormDescription, FormLabel } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
-export const DocumentCreatePanelTitle = ({
+export const PanelTitle = ({
 	icon: Icon,
 	title,
 	children,
@@ -31,7 +31,7 @@ export const DocumentCreatePanelTitle = ({
 	);
 };
 
-export const DocumentCreateAutomationOption = ({
+export const AutomationOption = ({
 	title,
 	description,
 	checked,

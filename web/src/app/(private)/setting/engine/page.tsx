@@ -8,7 +8,7 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton } from '@/components/ui/skeleton';
 import { searchCommunityEngines } from '@/service/engine';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Cpu, Info, XCircleIcon } from 'lucide-react';
@@ -111,14 +111,14 @@ const EnginePage = () => {
 				{isFetching && !data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(12)].map((number, index) => {
-							return <Skeleton key={index} className='h-64 w-full' />;
+							return <ResourceCardSkeleton key={index} />;
 						})}
 					</>
 				)}

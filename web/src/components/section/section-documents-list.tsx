@@ -6,7 +6,7 @@ import { searchPublicSectionDocuments, searchSectionDocuments } from '@/service/
 import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import NoticeBox from '../ui/notice-box';
 
@@ -93,14 +93,14 @@ const SectionDocumentsList = ({
 			{isFetching && !data && (
 				<>
 					{[...Array(10)].map((number, index) => {
-						return <Skeleton className='h-40 w-full' key={index} />;
+						return <ListItemSkeleton key={index} className='py-5' />;
 					})}
 				</>
 			)}
 			{isFetchingNextPage && data && (
 				<>
 					{[...Array(10)].map((number, index) => {
-						return <Skeleton className='h-40 w-full' key={index} />;
+						return <ListItemSkeleton key={index} className='py-5' />;
 					})}
 				</>
 			)}

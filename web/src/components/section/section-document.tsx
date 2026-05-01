@@ -32,7 +32,7 @@ import {
 import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 import { SectionProcessStatus, UserSectionRole } from '@/enums/section';
 import {
 	Empty,
@@ -319,7 +319,7 @@ const SectionDocument = ({
 							<>
 								{[...Array(10)].map((_, index) => {
 									return (
-										<Skeleton className='h-40 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} className='py-5' />
 									);
 								})}
 							</>
@@ -328,7 +328,7 @@ const SectionDocument = ({
 							<>
 								{[...Array(10)].map((_, index) => {
 									return (
-										<Skeleton className='h-40 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} className='py-5' />
 									);
 								})}
 							</>

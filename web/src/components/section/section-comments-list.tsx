@@ -9,7 +9,7 @@ import {
 } from '@/service/section';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import {
 	Empty,
@@ -155,7 +155,7 @@ const SectionCommentsList = ({
 							<div className='flex flex-col gap-3'>
 								{[...Array(12)].map((_, index) => {
 									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} />
 									);
 								})}
 							</div>
@@ -164,7 +164,7 @@ const SectionCommentsList = ({
 							<div className='flex flex-col gap-3'>
 								{[...Array(12)].map((_, index) => {
 									return (
-										<Skeleton className='h-28 w-full rounded-3xl' key={index} />
+										<ListItemSkeleton key={index} />
 									);
 								})}
 							</div>
