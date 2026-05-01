@@ -84,7 +84,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton, TablePanelSkeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
 	Table,
@@ -325,7 +325,7 @@ const AdminUserComputeLedgerTable = ({ userId }: { userId: number }) => {
 	const endIndex = total === 0 ? 0 : Math.min((page + 1) * pageSize, total);
 
 	if (isLoading) {
-		return <Skeleton className='h-72 rounded-[24px]' />;
+		return <TablePanelSkeleton />;
 	}
 
 	if (isError) {
@@ -985,7 +985,7 @@ const AdminUsersPage = () => {
 					</div>
 
 					{usersQuery.isLoading ? (
-						<Skeleton className='h-[320px] rounded-[24px]' />
+						<TablePanelSkeleton />
 					) : usersQuery.isError ? (
 						<Empty className='rounded-[24px]'>
 							<EmptyHeader>
@@ -1230,7 +1230,7 @@ const AdminUsersPage = () => {
 					</DialogHeader>
 					{viewUserQuery.isLoading || !viewUserQuery.data ? (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-							<Skeleton className='h-56 rounded-[24px]' />
+							<ResourceCardSkeleton />
 						</div>
 					) : (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>

@@ -257,6 +257,16 @@ const StarDocumentPage = () => {
 									</div>
 								);
 							})}
+						{isFetchingNextPage &&
+							data &&
+							[...Array(12)].map((_, index) => {
+								return (
+									<DocumentCardSkeleton
+										key={`next-${index}`}
+										layout={viewMode}
+									/>
+								);
+							})}
 					</div>
 				) : data ? (
 					<>
@@ -284,13 +294,6 @@ const StarDocumentPage = () => {
 							footer={<ListLoadingIndicator centered />}
 						/>
 					)
-				)}
-				{isFetchingNextPage && data && viewMode === 'grid' && (
-					<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-						{[...Array(12)].map((number, index) => {
-							return <DocumentCardSkeleton key={index} layout={viewMode} />;
-						})}
-					</div>
 				)}
 			</div>
 		</>

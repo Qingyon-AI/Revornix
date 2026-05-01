@@ -93,7 +93,7 @@ const EditableMarkdownPanel = ({
 	};
 
 	return (
-		<div className={cn('relative w-full pt-5', className)}>
+		<div className={cn('relative w-full', className)}>
 			{editable ? (
 				<div className='mx-auto flex w-full max-w-[880px] items-center justify-between gap-3 rounded-[22px] border border-border/50 bg-background/35 px-4 py-3 shadow-none'>
 					<div className='min-w-0'>

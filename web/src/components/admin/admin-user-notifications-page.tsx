@@ -59,7 +59,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton, TablePanelSkeleton } from '@/components/ui/skeleton';
 import SelectEmpty from '@/components/ui/select-empty';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -261,7 +261,7 @@ const AdminUserNotificationsPage = ({
 						</CardHeader>
 						<CardContent className='space-y-4'>
 							{tasksQuery.isLoading ? (
-								<Skeleton className='h-64 rounded-[20px]' />
+								<TablePanelSkeleton />
 							) : tasks.length === 0 ? (
 								<Empty className='rounded-[20px] border border-border/60'>
 									<EmptyHeader>
@@ -389,7 +389,7 @@ const AdminUserNotificationsPage = ({
 					</DialogHeader>
 					{taskDetailQuery.isLoading ? (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-							<Skeleton className='h-72 rounded-[24px]' />
+							<ResourceCardSkeleton />
 						</div>
 					) : (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>

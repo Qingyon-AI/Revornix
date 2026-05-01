@@ -50,10 +50,7 @@ import {
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { generateUUID } from '@/lib/uuid';
-import {
-	DocumentCreateAutomationOption,
-	DocumentCreatePanelTitle,
-} from './document-create-layout';
+import { AutomationOption, PanelTitle } from '@/components/form-panel';
 import AudioPlayer from '../ui/audio-player';
 
 const AddAudio = () => {
@@ -269,7 +266,7 @@ const AddAudio = () => {
 						<Field className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
 							<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
 								<div className='flex h-10 shrink-0 items-center border-b border-border/60 px-3'>
-									<DocumentCreatePanelTitle
+									<PanelTitle
 										icon={FileAudio}
 										title={t('document_create_audio')}
 									/>
@@ -336,7 +333,7 @@ const AddAudio = () => {
 								</Alert>
 							)}
 							<div className='space-y-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Sparkles}
 									title={t('document_create_more_config')}
 								/>
@@ -345,7 +342,7 @@ const AddAudio = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={WandSparkles}
 												title={t('document_create_ai_summary')}
 												description={t(
@@ -370,7 +367,7 @@ const AddAudio = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={TextCursorInput}
 												title={t('document_create_auto_transcribe')}
 												description={t(
@@ -394,7 +391,7 @@ const AddAudio = () => {
 								/>
 							</div>
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Tags}
 									title={t('document_create_label_placeholder')}
 								/>
@@ -488,7 +485,7 @@ const AddAudio = () => {
 								/>
 							</div>
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={FolderInput}
 									title={t('document_create_section_choose')}
 								/>

@@ -55,7 +55,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCardSkeleton, TablePanelSkeleton } from '@/components/ui/skeleton';
 import {
 	Table,
 	TableBody,
@@ -203,7 +203,7 @@ const AdminDocumentsPage = () => {
 					</div>
 
 					{documentsQuery.isLoading ? (
-						<Skeleton className='h-[320px] rounded-[24px]' />
+						<TablePanelSkeleton />
 					) : documentsQuery.isError ? (
 						<Empty className='rounded-[24px]'>
 							<EmptyHeader>
@@ -328,7 +328,7 @@ const AdminDocumentsPage = () => {
 					</DialogHeader>
 					{detailQuery.isLoading || !detailQuery.data ? (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
-							<Skeleton className='h-64 rounded-[24px]' />
+							<ResourceCardSkeleton />
 						</div>
 					) : (
 						<div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>

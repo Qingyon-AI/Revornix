@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { Skeleton } from '../ui/skeleton';
+import { MarkdownContentSkeleton } from '../ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import {
 	getDocumentDetail,
@@ -220,7 +220,7 @@ const FileDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative', className)}>
+		<div className={cn('h-full w-full relative pt-4', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className={statusContainerClassName}>
 					{error?.message ?? <p>{markdownGetError}</p>}
@@ -301,7 +301,10 @@ const FileDocumentDetail = ({
 				!isError &&
 				!markdownGetError &&
 				document.convert_task?.status === DocumentMdConvertStatus.SUCCESS && (
-					<Skeleton className='mx-auto min-h-0 w-full max-w-[880px] rounded-[28px]' />
+					<MarkdownContentSkeleton
+						className='min-h-[calc(100dvh-14rem)]'
+						showToolbar={canEditMarkdown}
+					/>
 				)}
 			{markdown && !isError && !markdownGetError && (
 				<>

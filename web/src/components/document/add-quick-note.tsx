@@ -46,10 +46,7 @@ import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import TipTapEditor from '../markdown/tiptap-editor';
-import {
-	DocumentCreateAutomationOption,
-	DocumentCreatePanelTitle,
-} from './document-create-layout';
+import { AutomationOption, PanelTitle } from '@/components/form-panel';
 
 const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
 const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
@@ -387,7 +384,7 @@ const AddQuickNote = () => {
 									<FormItem className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
 										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
 											<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-3'>
-												<DocumentCreatePanelTitle
+												<PanelTitle
 													icon={WandSparkles}
 													title={t('document_create_quick_note')}
 												/>
@@ -413,7 +410,7 @@ const AddQuickNote = () => {
 					<aside className='min-w-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:min-h-0 lg:overflow-y-auto lg:pr-1 space-y-3'>
 						<div className='space-y-3 rounded-md border border-border/70 bg-muted/20 p-3 shadow-sm'>
 							<div className='space-y-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Sparkles}
 									title={t('document_create_more_config')}
 								/>
@@ -422,7 +419,7 @@ const AddQuickNote = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={WandSparkles}
 												title={t('document_create_ai_summary')}
 												description={t(
@@ -447,7 +444,7 @@ const AddQuickNote = () => {
 									control={form.control}
 									render={({ field }) => (
 										<FormItem>
-											<DocumentCreateAutomationOption
+											<AutomationOption
 												icon={Podcast}
 												title={t('document_create_auto_podcast')}
 												description={t(
@@ -470,7 +467,7 @@ const AddQuickNote = () => {
 							</div>
 
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={Tags}
 									title={t('document_create_label_placeholder')}
 								/>
@@ -558,7 +555,7 @@ const AddQuickNote = () => {
 							</div>
 
 							<div className='space-y-3 border-t border-border/60 pt-3'>
-								<DocumentCreatePanelTitle
+								<PanelTitle
 									icon={FolderInput}
 									title={t('document_create_section_choose')}
 								/>

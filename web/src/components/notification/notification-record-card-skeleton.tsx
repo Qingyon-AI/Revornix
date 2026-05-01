@@ -1,7 +1,7 @@
-import { Skeleton } from '../ui/skeleton';
+import { ListItemSkeleton } from '../ui/skeleton';
 
 const NotificationRecordCardSkeleton = () => {
-	return <Skeleton className='h-12 w-full' />;
+	return <ListItemSkeleton />;
 };
 
 export default NotificationRecordCardSkeleton;

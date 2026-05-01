@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import AudioDocumentDetail from './audio-document-detail';
 import DocumentOperate from './document-operate';
 import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
-import { Skeleton } from '../ui/skeleton';
+import { MarkdownContentSkeleton } from '../ui/skeleton';
 import { replacePath } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DocumentGraphStatus } from '@/enums/document';
@@ -41,53 +41,7 @@ import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 
 const DocumentDetailSkeleton = () => {
 	return (
-		<div className='mx-auto flex h-full w-full max-w-[980px] flex-col gap-6'>
-			<div className='overflow-hidden rounded-[28px] border border-border/60 bg-background/40 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.18)]'>
-				<Skeleton className='aspect-[16/6.5] w-full rounded-none sm:aspect-[16/6]' />
-			</div>
-
-			<div className='space-y-5'>
-				<div className='mx-auto w-full max-w-[880px] space-y-4'>
-					<Skeleton className='h-4 w-40 rounded-full' />
-					<div className='space-y-3'>
-						<Skeleton className='h-8 w-[72%] rounded-2xl sm:h-10' />
-						<Skeleton className='h-5 w-[92%] rounded-full' />
-						<Skeleton className='h-5 w-[68%] rounded-full' />
-					</div>
-					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-						<Skeleton className='mx-auto h-4 w-64 rounded-full sm:w-80' />
-					</div>
-				</div>
-
-				<div className='mx-auto w-full max-w-[880px] space-y-6 rounded-[28px] border border-border/60 bg-background/30 p-5 sm:p-6'>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[86%] rounded-full' />
-						<Skeleton className='h-5 w-[72%] rounded-full' />
-					</div>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-[94%] rounded-full' />
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[82%] rounded-full' />
-					</div>
-					<div className='space-y-3'>
-						<Skeleton className='h-5 w-full rounded-full' />
-						<Skeleton className='h-5 w-[90%] rounded-full' />
-						<Skeleton className='h-5 w-[78%] rounded-full' />
-					</div>
-					<div className='rounded-[24px] border border-border/60 bg-background/45 px-4 py-3'>
-						<Skeleton className='mx-auto h-4 w-56 rounded-full sm:w-72' />
-					</div>
-				</div>
-			</div>
-
-			<div className='grid w-full grid-cols-8 gap-2 rounded-[28px] border border-border/60 bg-background/75 p-2.5 backdrop-blur-xl'>
-				{Array.from({ length: 8 }).map((_, index) => (
-					<Skeleton key={index} className='h-11 w-full rounded-[20px]' />
-				))}
-			</div>
-		</div>
+		<MarkdownContentSkeleton className='min-h-[calc(100dvh-14rem)] pt-2' />
 	);
 };
 

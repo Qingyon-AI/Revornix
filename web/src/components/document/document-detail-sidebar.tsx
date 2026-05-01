@@ -16,6 +16,7 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import DocumentAudio from './document-audio';
 import DocumentGraph from './document-graph';
@@ -59,29 +60,106 @@ const SidebarSection = ({
 
 const DocumentSidebarSkeleton = () => {
 	return (
-			<div className='space-y-5'>
+		<div className='space-y-4'>
+			<section className='space-y-4'>
 				<div className='space-y-4'>
-				<div className='h-8 w-[72%] rounded-2xl bg-muted/70' />
-				<div className='h-4 w-full rounded-full bg-muted/60' />
-				<div className='h-4 w-5/6 rounded-full bg-muted/60' />
-				<div className='h-12 rounded-2xl bg-muted/55' />
+					<div className='space-y-2'>
+						<Skeleton className='h-9 w-[78%] rounded-xl' />
+						<Skeleton className='h-4 w-full rounded-full' />
+						<Skeleton className='h-4 w-[84%] rounded-full' />
+					</div>
+					<div className='flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5'>
+						<Skeleton className='size-10 rounded-full' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-4 w-28 rounded-full' />
+							<Skeleton className='h-3 w-24 rounded-full' />
+						</div>
+					</div>
+				</div>
+
+				<div className='space-y-3 border-t border-border/50 pt-5'>
+					<div className='flex items-center gap-2'>
+						<Skeleton className='size-3.5 rounded' />
+						<Skeleton className='h-3.5 w-28 rounded-full' />
+					</div>
+					<div className='flex flex-wrap gap-2'>
+						<Skeleton className='h-8 w-28 rounded-full' />
+						<Skeleton className='h-8 w-24 rounded-full' />
+					</div>
+				</div>
+
 				<div className='grid grid-cols-2 gap-3'>
-					{Array.from({ length: 2 }).map((_, index) => (
-						<div key={index} className='h-18 rounded-2xl bg-muted/45' />
+					{Array.from({ length: 4 }).map((_, index) => (
+						<div
+							key={index}
+							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+							<div className='flex items-start gap-2.5'>
+								<Skeleton className='size-6 shrink-0 rounded-lg' />
+								<div className='min-w-0 flex-1 space-y-1.5'>
+									<Skeleton className='h-3 w-16 rounded-full' />
+									<Skeleton className='h-4 w-24 rounded-full' />
+									<Skeleton className='h-3 w-28 rounded-full' />
+								</div>
+							</div>
+						</div>
 					))}
 				</div>
-				<div className='h-28 rounded-[22px] bg-muted/50' />
+
+				<div className='flex flex-wrap gap-1.5'>
+					<Skeleton className='h-7 w-20 rounded-full' />
+					<Skeleton className='h-7 w-24 rounded-full' />
+					<Skeleton className='h-7 w-16 rounded-full' />
 				</div>
 
-			<div className='space-y-5'>
-				<Separator className='bg-border/50' />
-				<div className='h-24 rounded-[22px] bg-muted/45' />
-			</div>
+				<div className='flex flex-wrap gap-2'>
+					<Skeleton className='h-9 w-32 rounded-full' />
+					<Skeleton className='h-9 w-36 rounded-full' />
+				</div>
 
-			<div className='space-y-5'>
+				<div className='space-y-4 border-t border-border/50 pt-5'>
+					<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+						<div className='flex items-start gap-3'>
+							<Skeleton className='size-10 rounded-xl' />
+							<div className='min-w-0 flex-1 space-y-2'>
+								<Skeleton className='h-4 w-24 rounded-full' />
+								<Skeleton className='h-5 w-40 rounded-full' />
+								<Skeleton className='h-4 w-full rounded-full' />
+								<Skeleton className='h-4 w-4/5 rounded-full' />
+							</div>
+							<Skeleton className='h-8 w-20 rounded-full' />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section className='space-y-4'>
 				<Separator className='bg-border/50' />
-				<div className='h-[300px] rounded-[22px] bg-muted/45' />
-			</div>
+				<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+					<div className='flex items-start gap-3'>
+						<Skeleton className='size-10 rounded-xl' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-4 w-24 rounded-full' />
+							<Skeleton className='h-5 w-36 rounded-full' />
+							<Skeleton className='h-4 w-4/5 rounded-full' />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section className='space-y-4'>
+				<Separator className='bg-border/50' />
+				<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+					<div className='flex items-start gap-3'>
+						<Skeleton className='size-10 rounded-xl' />
+						<div className='min-w-0 flex-1 space-y-2'>
+							<Skeleton className='h-4 w-24 rounded-full' />
+							<Skeleton className='h-5 w-32 rounded-full' />
+							<Skeleton className='h-4 w-full rounded-full' />
+						</div>
+						<Skeleton className='h-8 w-20 rounded-full' />
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 };

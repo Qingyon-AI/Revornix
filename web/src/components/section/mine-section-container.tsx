@@ -254,6 +254,16 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 									</div>
 								);
 							})}
+						{isFetchingNextPage &&
+							data &&
+							[...Array(12)].map((_, index) => {
+								return (
+									<SectionCardSkeleton
+										key={`next-${index}`}
+										layout={viewMode}
+									/>
+								);
+							})}
 					</div>
 				) : data ? (
 					<>
@@ -281,13 +291,6 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 							footer={<ListLoadingIndicator centered />}
 						/>
 					)
-				)}
-				{isFetchingNextPage && data && viewMode === 'grid' && (
-					<div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'>
-						{[...Array(12)].map((number, index) => {
-							return <SectionCardSkeleton key={index} layout={viewMode} />;
-						})}
-					</div>
 				)}
 			</div>
 		</>

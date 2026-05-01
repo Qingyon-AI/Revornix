@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { UserCardSkeleton } from '@/components/ui/skeleton';
 import UserFanCard from '@/components/user/user-fan-card';
 import { useUserContext } from '@/provider/user-provider';
 import { getUserFans } from '@/service/user';
@@ -68,14 +68,14 @@ const UserFans = () => {
 				{isFetching && !data && (
 					<>
 						{[...Array(20)].map((number, index) => {
-							return <Skeleton className='w-full h-36' key={index} />;
+							return <UserCardSkeleton key={index} />;
 						})}
 					</>
 				)}
 				{isFetchingNextPage && data && (
 					<>
 						{[...Array(20)].map((number, index) => {
-							return <Skeleton className='w-full h-36' key={index} />;
+							return <UserCardSkeleton key={index} />;
 						})}
 					</>
 				)}
