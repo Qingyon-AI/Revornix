@@ -105,13 +105,17 @@ const SectionOperate = ({
 	};
 
 	const openMobileAiDialog = () => {
-		setShowMobileAi(true);
 		setShowMobileMenu(false);
+		window.setTimeout(() => {
+			setShowMobileAi(true);
+		}, 180);
 	};
 
 	const openMobileShareDialog = () => {
-		setShowMobileShare(true);
 		setShowMobileMenu(false);
+		window.setTimeout(() => {
+			setShowMobileShare(true);
+		}, 180);
 	};
 
 	const mobilePanelMeta =

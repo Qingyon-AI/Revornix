@@ -38,6 +38,7 @@ import ImageWithFallback from '../ui/image-with-fallback';
 import { useRightSidebar } from '@/provider/right-sidebar-provider';
 import DocumentDetailSidebar from './document-detail-sidebar';
 import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
+import { useAudioPlayer } from '@/provider/audio-player-provider';
 
 const DocumentDetailSkeleton = () => {
 	return (
@@ -50,6 +51,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	const queryClient = getQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const { setContent, clearContent } = useRightSidebar();
+	const { track: audioTrack } = useAudioPlayer();
 	const isCompactViewport = useIsMobile(1280);
 	const [selectedGraphModelId, setSelectedGraphModelId] = useState<
 		number | null
@@ -83,7 +85,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.audio_info?.audio_file_name ||
 		document?.podcast_task?.podcast_file_name ||
 		null;
-	const mobileOperateOffsetClassName = primaryAudioSrc
+	const hasMobileFloatingAudioPlayer = Boolean(primaryAudioSrc || audioTrack);
+	const mobileOperateOffsetClassName = hasMobileFloatingAudioPlayer
 		? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))]'
 		: 'bottom-[calc(1rem+env(safe-area-inset-bottom))]';
 	const freshnessState = getDocumentFreshnessState(document);
