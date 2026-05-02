@@ -65,11 +65,15 @@ const DocumentOperateShare = ({
 	className,
 	onTriggerClick,
 	iconOnly = false,
+	open,
+	onOpenChange,
 }: {
 	document_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
 	iconOnly?: boolean;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -229,7 +233,7 @@ const DocumentOperateShare = ({
 	};
 
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogTrigger asChild>
 				<Button
 					title={t('document_share')}

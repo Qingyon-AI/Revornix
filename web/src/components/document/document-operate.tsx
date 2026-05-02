@@ -27,6 +27,7 @@ import {
 	Loader2,
 	Menu,
 	NotebookPen,
+	ShareIcon,
 	Star,
 	StarOff,
 	Trash,
@@ -106,6 +107,7 @@ const DocumentOperate = ({
 		useState(false);
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
+	const [showMobileShare, setShowMobileShare] = useState(false);
 
 	const { mainUserInfo } = useUserContext();
 	const userUnreadDocumentQueryKey = [
@@ -437,6 +439,12 @@ const DocumentOperate = ({
 		setShowMobileMenu(false);
 		window.setTimeout(() => {
 			setMobilePanel(panel);
+		}, 180);
+	};
+	const openMobileShareDialog = () => {
+		setShowMobileMenu(false);
+		window.setTimeout(() => {
+			setShowMobileShare(true);
 		}, 180);
 	};
 	const closeMobilePanel = () => {
@@ -856,10 +864,13 @@ const DocumentOperate = ({
 														mobileActionButtonClassName,
 														closeMobileMenu,
 													)}
-													{renderShareAction(
-														mobileActionButtonClassName,
-														closeMobileMenu,
-													)}
+													{data.creator.id === mainUserInfo?.id
+														? renderMobilePanelAction({
+																icon: ShareIcon,
+																label: t('document_share'),
+																onClick: openMobileShareDialog,
+															})
+														: null}
 													{renderAiAction(
 														mobileActionButtonClassName,
 														closeMobileMenu,
@@ -924,6 +935,15 @@ const DocumentOperate = ({
 									</div>
 								</SheetContent>
 							</Sheet>
+							{data.creator.id === mainUserInfo?.id ? (
+								<DocumentOperateShare
+									document_id={id}
+									open={showMobileShare}
+									onOpenChange={setShowMobileShare}
+									className='hidden'
+									iconOnly
+								/>
+							) : null}
 						</>
 					) : (
 						<div

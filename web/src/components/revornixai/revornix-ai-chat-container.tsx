@@ -1,12 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import ChatHistory from './chat-history';
 import MessageCard from './message-card';
 import MessageSendForm from './message-send-form';
 import CreateSessionButton from './create-session-button';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
 import { useAiChatStore } from '@/store/ai-chat';
 import { useUserContext } from '@/provider/user-provider';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,27 +20,65 @@ const RevornixAI = () => {
 	const currentSession = useAiChatStore((s) => s.currentSession());
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
-	const messageEndRef = useRef<HTMLDivElement | null>(null);
+	const shouldStickToBottomRef = useRef(true);
+	const scrollFrameRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		if (!mainUserInfo?.id) return;
 		bindUserScope(mainUserInfo.id);
 	}, [mainUserInfo?.id, bindUserScope]);
 
-	const isAtBottom = () => {
+	const isNearBottom = useCallback(() => {
 		const el = containerRef.current;
 		if (!el) return true;
 
 		return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-	};
+	}, []);
+
+	const handleScroll = useCallback(() => {
+		shouldStickToBottomRef.current = isNearBottom();
+	}, [isNearBottom]);
+
+	const scrollToBottom = useCallback(() => {
+		const el = containerRef.current;
+		if (!el) return;
+
+		el.scrollTop = el.scrollHeight;
+	}, []);
+
+	useLayoutEffect(() => {
+		shouldStickToBottomRef.current = true;
+	}, [currentSession?.id]);
+
+	useLayoutEffect(() => {
+		if (!shouldStickToBottomRef.current) return;
+
+		scrollToBottom();
+
+		if (scrollFrameRef.current !== null) {
+			window.cancelAnimationFrame(scrollFrameRef.current);
+		}
+
+		scrollFrameRef.current = window.requestAnimationFrame(() => {
+			scrollToBottom();
+			scrollFrameRef.current = null;
+		});
+	}, [
+		currentSession?.id,
+		currentSession?.messages?.length,
+		currentSession?.messages?.at(-1)?.content,
+		currentSession?.messages?.at(-1)?.ai_state?.phase,
+		currentSession?.messages?.at(-1)?.ai_workflow?.length,
+		scrollToBottom,
+	]);
 
 	useEffect(() => {
-		if (!isAtBottom()) return;
-
-		messageEndRef.current?.scrollIntoView({
-			behavior: 'auto',
-		});
-	}, [currentSession?.messages?.at(-1)?.content]);
+		return () => {
+			if (scrollFrameRef.current !== null) {
+				window.cancelAnimationFrame(scrollFrameRef.current);
+			}
+		};
+	}, []);
 
 	if (mainUserInfo?.id && ownerUserId !== mainUserInfo.id) {
 		return null;
@@ -57,32 +94,32 @@ const RevornixAI = () => {
 			: t('revornix_ai_empty_session_description');
 
 	return (
-		<div className='flex h-full min-h-0 flex-col'>
-			<div className='shrink-0 border-b border-border/60 px-4 py-3 sm:px-5 sticky top-0 z-30 backdrop-blur'>
-				<div className='flex flex-col gap-3 lg:flex-row items-center lg:justify-between'>
+		<div className='flex h-[calc(100dvh-var(--private-top-header-height,3.5rem))] max-h-[calc(100dvh-var(--private-top-header-height,3.5rem))] min-h-0 flex-col overflow-hidden'>
+			<div className='sticky top-0 z-30 shrink-0 border-b border-border/60 px-3 py-2.5 backdrop-blur sm:px-5 sm:py-3'>
+				<div className='flex items-start justify-between gap-3'>
 					<div className='min-w-0 flex-1'>
-						<div className='flex min-w-0 items-center gap-3'>
-							<div className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground'>
-								<BotIcon className='size-4.5' />
+						<div className='flex min-w-0 items-start gap-2.5 sm:items-center sm:gap-3'>
+							<div className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground sm:size-9 sm:rounded-xl'>
+								<BotIcon className='size-4 sm:size-4.5' />
 							</div>
 							<div className='min-w-0'>
-								<div className='flex flex-wrap items-center gap-2'>
-									<div className='truncate text-base font-semibold tracking-tight'>
+								<div className='flex min-w-0 items-center gap-2'>
+									<div className='truncate text-sm font-semibold tracking-tight sm:text-base'>
 										{currentSessionTitle}
 									</div>
 									{currentSession?.model_name ? (
-										<div className='rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-muted-foreground'>
+										<div className='shrink-0 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[11px] text-muted-foreground sm:px-2.5 sm:py-1 sm:text-xs'>
 											{currentSession.model_name}
 										</div>
 									) : null}
 								</div>
-								<div className='mt-1 line-clamp-2 text-sm text-muted-foreground'>
+								<div className='mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground sm:mt-1 sm:line-clamp-2 sm:text-sm'>
 									{currentSessionPreview}
 								</div>
 							</div>
 						</div>
 					</div>
-					<div className='flex flex-row gap-2'>
+					<div className='flex shrink-0 flex-row gap-2'>
 						{isMobile ? (
 							<ChatHistory compactTrigger showCreateAction />
 						) : (
@@ -96,17 +133,13 @@ const RevornixAI = () => {
 			</div>
 			<div
 				ref={containerRef}
+				onScroll={handleScroll}
 				className='min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5'>
 				{currentSession?.messages && currentSession.messages.length > 0 ? (
 					<div className='mx-auto flex w-full max-w-3xl flex-col gap-3'>
 						{currentSession.messages.map((message, index) => {
-							const isLastMessage =
-								index === currentSession.messages.length - 1;
-
 							return (
-								<div
-									key={index}
-									ref={isLastMessage ? messageEndRef : undefined}>
+								<div key={index}>
 									<MessageCard message={message} />
 								</div>
 							);
@@ -131,7 +164,7 @@ const RevornixAI = () => {
 				)}
 			</div>
 			<div className='sticky bottom-0 z-10 shrink-0 bg-transparent'>
-				<div className='mx-auto w-full max-w-3xl'>
+				<div className='mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)] px-3 sm:px-0 sm:pb-0'>
 					<MessageSendForm />
 				</div>
 			</div>

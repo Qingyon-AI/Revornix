@@ -9,6 +9,7 @@ import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
 import DocumentVisibilityHint from './document-visibility-hint';
 import ImageWithFallback from '../ui/image-with-fallback';
+import DocumentCardPodcast from './document-card-podcast';
 
 const DocumentCard = ({
 	document,
@@ -103,6 +104,9 @@ const DocumentCard = ({
 								})}
 							</div>
 						) : null}
+						<div className='sm:col-span-2'>
+							<DocumentCardPodcast document={document} />
+						</div>
 					</div>
 					<div className='hidden justify-end sm:flex'>
 						<div className='flex flex-wrap justify-end gap-2'>
@@ -149,6 +153,7 @@ const DocumentCard = ({
 						})}
 					</div>
 				)}
+				<DocumentCardPodcast document={document} />
 				<div className='mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground'>
 					<DocumentVisibilityHint documentId={document.id} />
 					<div className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1'>
