@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 import httpx
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 import crud
 import models
@@ -1248,6 +1249,7 @@ async def search_admin_documents(
         (
             await db.execute(
                 select(models.document.Document)
+                .options(selectinload(models.document.Document.creator))
                 .join(models.user.User, models.user.User.id == models.document.Document.creator_id)
                 .where(*filters)
                 .order_by(models.document.Document.id.desc())
@@ -1420,6 +1422,7 @@ async def search_admin_sections(
         (
             await db.execute(
                 select(models.section.Section)
+                .options(selectinload(models.section.Section.creator))
                 .join(models.user.User, models.user.User.id == models.section.Section.creator_id)
                 .where(*filters)
                 .order_by(models.section.Section.id.desc())
