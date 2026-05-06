@@ -359,8 +359,8 @@ async def _delete_user_with_related_resources(
             document_ids=audio_document_ids,
         )
 
-    delete_documents_and_related_from_neo4j(doc_ids=document_ids)
-    delete_documents_from_milvus(doc_ids=document_ids)
+    await delete_documents_and_related_from_neo4j(doc_ids=document_ids)
+    await delete_documents_from_milvus(doc_ids=document_ids)
 
     db_sections = await crud.section.get_sections_by_user_id_async(
         db=db,
@@ -1378,8 +1378,8 @@ async def delete_admin_documents(
             document_ids=grouped_document_ids[DocumentCategory.AUDIO],
         )
 
-    delete_documents_and_related_from_neo4j(doc_ids=document_ids)
-    delete_documents_from_milvus(doc_ids=document_ids)
+    await delete_documents_and_related_from_neo4j(doc_ids=document_ids)
+    await delete_documents_from_milvus(doc_ids=document_ids)
     await db.commit()
     return schemas.common.SuccessResponse(message="The documents are deleted successfully.")
 

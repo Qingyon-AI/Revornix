@@ -253,7 +253,7 @@ async def _build_section_context(
         for document in db_documents
     }
     # 首轮仍然使用向量召回，保证用户问题和专栏文档内容的语义匹配优先成立。
-    vector_hits = naive_search_for_documents(
+    vector_hits = await naive_search_for_documents(
         search_text=question,
         document_ids=embedded_document_ids,
         top_k=SECTION_TOP_K,
@@ -309,7 +309,7 @@ async def _build_section_context(
     if document_ids and graph_seed_chunk_ids:
         try:
             # 图扩展只在当前专栏关联文档范围内做，避免把全局图里的无关内容捞进来。
-            graph_result = section_graph_search(
+            graph_result = await section_graph_search(
                 document_ids=document_ids,
                 seed_chunk_ids=graph_seed_chunk_ids,
                 expand_limit=SECTION_GRAPH_TOP_K,
@@ -594,7 +594,7 @@ async def _stream_section_answer_with_agent(
 
     usage_snapshot = usage_collector.snapshot()
     if usage_snapshot is not None:
-        persist_model_usage_from_snapshot(
+        await persist_model_usage_from_snapshot(
             user_id=user.id,
             model_id=model_id,
             snapshot=usage_snapshot,
