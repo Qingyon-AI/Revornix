@@ -2,8 +2,15 @@
 
 import { Mermaid } from '@ant-design/x';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { AlertCircle, ChevronDown, Grid3X3, Sparkles } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+	AlertCircle,
+	Check,
+	ChevronDown,
+	Copy,
+	Grid3X3,
+	Sparkles,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
 	NodeViewContent,
 	NodeViewWrapper,
@@ -19,6 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { common, createLowlight } from 'lowlight';
 
 const lowlight = createLowlight(common);
@@ -119,6 +127,63 @@ const MermaidCodeBlockView = ({
 		? getMermaidDiagramHintError(normalizedDiagram)
 		: null;
 	const [isCodeBlockHidden, setIsCodeBlockHidden] = useState(!isEditable);
+	const [copied, setCopied] = useState(false);
+	const copyResetTimerRef = useRef<number | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (copyResetTimerRef.current) {
+				window.clearTimeout(copyResetTimerRef.current);
+			}
+		};
+	}, []);
+
+	const copyCodeToClipboard = async () => {
+		try {
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(rawSource);
+			} else {
+				const textarea = document.createElement('textarea');
+				textarea.value = rawSource;
+				textarea.setAttribute('readonly', 'true');
+				textarea.style.position = 'absolute';
+				textarea.style.left = '-9999px';
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
+			}
+			setCopied(true);
+			if (copyResetTimerRef.current) {
+				window.clearTimeout(copyResetTimerRef.current);
+			}
+			copyResetTimerRef.current = window.setTimeout(() => {
+				setCopied(false);
+			}, 1600);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const renderCopyButton = () => {
+		return (
+			<Button
+				type='button'
+				variant='ghost'
+				className='text-muted-foreground hover:text-foreground text-xs'
+				contentEditable={false}
+				onMouseDown={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
+				}}
+				onClick={() => {
+					void copyCodeToClipboard();
+				}}>
+				{copied ? <Check className='size-3.5' /> : <Copy className='size-3.5' />}
+				{copied ? 'Copied' : 'Copy'}
+			</Button>
+		);
+	};
 
 	const selectCodeBlock = () => {
 		if (!isEditable) {
@@ -154,7 +219,7 @@ const MermaidCodeBlockView = ({
 				}}>
 				<SelectTrigger
 					size='sm'
-					className='h-8 min-w-32 gap-1 border-border/60 bg-background/80 text-xs shadow-none'
+					className='h-8 gap-1 border-border/60 bg-background/80 text-xs shadow-none'
 					contentEditable={false}
 					onMouseDown={(event) => {
 						event.preventDefault();
@@ -226,7 +291,10 @@ const MermaidCodeBlockView = ({
 							<div className='text-xs font-medium text-muted-foreground'>
 								Code Block
 							</div>
-							{renderLanguageControl()}
+							<div className='flex items-center gap-2'>
+								{renderCopyButton()}
+								{renderLanguageControl()}
+							</div>
 						</div>
 						<div className='overflow-x-auto'>
 							<NodeViewContent className='whitespace-pre p-3 font-mono text-[13px] leading-5 [&_.ProseMirror-trailingBreak]:hidden' />
@@ -263,6 +331,7 @@ const MermaidCodeBlockView = ({
 							</div>
 						</div>
 						<div className='flex items-center gap-2'>
+							{renderCopyButton()}
 							<button
 								type='button'
 								className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
