@@ -2,7 +2,7 @@ import { useMDXComponents } from '@/mdx-components';
 import { generateStaticParamsFor, importPage } from 'nextra/pages';
 
 export const generateStaticParams = async () => {
-	const allParams = await generateStaticParamsFor('mdxPath')();
+	const allParams = await generateStaticParamsFor('mdxPath', 'lang')();
 	return allParams
 		.filter((params) => params.mdxPath?.[0] === 'blogs')
 		.map((params) => ({
