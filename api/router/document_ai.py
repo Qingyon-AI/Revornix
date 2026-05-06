@@ -210,7 +210,7 @@ async def _build_document_context(
         embedding_task is not None
         and embedding_task.status == DocumentEmbeddingStatus.SUCCESS
     ):
-        vector_hits = naive_search_for_documents(
+        vector_hits = await naive_search_for_documents(
             search_text=question,
             document_ids=[document_id],
             top_k=DOCUMENT_TOP_K,
@@ -418,7 +418,7 @@ async def _stream_document_answer_with_agent(
 
     usage_snapshot = usage_collector.snapshot()
     if usage_snapshot is not None:
-        persist_model_usage_from_snapshot(
+        await persist_model_usage_from_snapshot(
             user_id=user.id,
             model_id=model_id,
             snapshot=usage_snapshot,

@@ -1079,7 +1079,7 @@ async def stream_ops_with_agent(
                 usage=usage_snapshot,
             )
         )
-        persist_model_usage_from_snapshot(
+        await persist_model_usage_from_snapshot(
             user_id=user_id,
             model_id=model_id,
             snapshot=usage_snapshot,
