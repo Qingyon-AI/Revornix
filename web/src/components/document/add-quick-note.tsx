@@ -58,7 +58,7 @@ const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
 const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
 const QUICK_NOTE_AUTO_SAVE_DELAY = 1200;
 
-type QuickNoteEditorMode = 'visual' | 'source';
+type QuickNoteEditorMode = 'visual' | 'visual-loading' | 'source';
 
 const normalizeQuickNoteContent = (content: string) =>
 	normalizeEditorMarkdown(content);
@@ -113,6 +113,22 @@ const AddQuickNote = () => {
 	}, []);
 
 	useEffect(() => {
+		if (editorMode !== 'visual-loading') {
+			return;
+		}
+
+		const frameId = window.requestAnimationFrame(() => {
+			window.setTimeout(() => {
+				setEditorMode('visual');
+			}, 0);
+		});
+
+		return () => {
+			window.cancelAnimationFrame(frameId);
+		};
+	}, [editorMode]);
+
+	useEffect(() => {
 		if (!isEditorFullscreen) {
 			document.body.style.overflow = '';
 			return;
@@ -131,6 +147,13 @@ const AddQuickNote = () => {
 			window.removeEventListener('keydown', onKeyDown);
 		};
 	}, [isEditorFullscreen]);
+
+	const queueVisualMode = (content: string) => {
+		form.setValue('content', normalizeQuickNoteContent(content), {
+			shouldDirty: true,
+		});
+		setEditorMode('visual-loading');
+	};
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -419,7 +442,7 @@ const AddQuickNote = () => {
 								return (
 									<FormItem className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
 										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
-											<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-3'>
+											<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-2 py-1.5'>
 												<PanelTitle
 													icon={WandSparkles}
 													title={t('document_create_quick_note')}
@@ -465,6 +488,31 @@ const AddQuickNote = () => {
 														</Tooltip>
 													}
 												/>
+											) : editorMode === 'visual-loading' ? (
+												(() => {
+													const visualLoading = (
+														<div
+															className={
+																isEditorFullscreen
+																	? 'flex h-full min-h-0 flex-col items-center justify-center gap-3 bg-background text-sm text-muted-foreground'
+																	: 'flex min-h-[400px] flex-1 flex-col items-center justify-center gap-3 bg-muted/10 text-sm text-muted-foreground lg:min-h-0'
+															}>
+															<Loader2 className='size-5 animate-spin' />
+															<span>{t('markdown_edit_visual_mode')}</span>
+														</div>
+													);
+
+													if (isEditorFullscreen && isMounted) {
+														return createPortal(
+															<div className='fixed inset-0 z-50 bg-background'>
+																{visualLoading}
+															</div>,
+															document.body,
+														);
+													}
+
+													return visualLoading;
+												})()
 											) : (
 												(() => {
 													const fullscreenLabel = isEditorFullscreen
@@ -477,7 +525,7 @@ const AddQuickNote = () => {
 																	? 'flex h-full min-h-0 flex-col bg-background'
 																	: 'flex min-h-0 flex-1 flex-col bg-muted/10'
 															}>
-															<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-3'>
+															<div className='flex shrink-0 items-center justify-between border-b border-border/60 px-2 py-1.5'>
 																<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
 																	<Code2 className='size-3.5' />
 																	{t('markdown_edit_source_mode')}
@@ -492,15 +540,9 @@ const AddQuickNote = () => {
 																				className='h-8 px-2'
 																				title={t('markdown_edit_visual_mode')}
 																				onClick={() => {
-																					field.onChange(
-																						normalizeQuickNoteContent(
-																							field.value ?? '',
-																						),
+																					queueVisualMode(
+																						field.value ?? '',
 																					);
-																					setEditorInstanceKey(
-																						(current) => current + 1,
-																					);
-																					setEditorMode('visual');
 																				}}>
 																				<Eye className='size-4' />
 																				{t('markdown_edit_visual_mode')}
@@ -535,14 +577,18 @@ const AddQuickNote = () => {
 																	</Tooltip>
 																</div>
 															</div>
-															<Textarea
-																value={field.value}
-																onChange={field.onChange}
-																placeholder={t('markdown_edit_source_placeholder')}
-																fieldSizing='fixed'
-																spellCheck={false}
-																className='min-h-[360px] flex-1 resize-none rounded-none border-0 bg-transparent p-5 font-mono text-[13px] leading-6 shadow-none focus-visible:ring-0 lg:min-h-0'
-															/>
+															<div className='flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5'>
+																<div className='mx-auto h-full w-full max-w-[880px]'>
+																	<Textarea
+																		value={field.value}
+																		onChange={field.onChange}
+																		placeholder={t('markdown_edit_source_placeholder')}
+																		fieldSizing='fixed'
+																		spellCheck={false}
+																		className='min-h-[360px] h-full resize-none rounded-none border-0 bg-transparent! p-0 font-mono text-[13px] leading-6 shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0 lg:min-h-0'
+																	/>
+																</div>
+															</div>
 														</div>
 													);
 
