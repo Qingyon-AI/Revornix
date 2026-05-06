@@ -161,7 +161,7 @@ const MarkdownImage = (props: any) => {
 			alt={typeof props?.alt === 'string' ? props.alt : 'markdown image'}
 			className='my-4'
 			imageClassName={cn(
-				'max-w-full rounded-xl border border-border/60 shadow-sm',
+				'h-auto w-full max-w-full rounded-xl border border-border/60 object-cover shadow-sm',
 				props?.className,
 			)}
 		/>

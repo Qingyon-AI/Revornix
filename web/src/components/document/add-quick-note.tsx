@@ -12,7 +12,11 @@ import {
 	useState,
 	type FormEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
+	Code2,
+	Expand,
+	Eye,
 	FolderInput,
 	Info,
 	Loader2,
@@ -20,6 +24,7 @@ import {
 	Podcast,
 	Save,
 	Sparkles,
+	Shrink,
 	Tags,
 	WandSparkles,
 } from 'lucide-react';
@@ -33,6 +38,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
 import { useRouter } from 'nextjs-toploader/app';
 import { getAllMineSections } from '@/service/section';
 import { useTranslations } from 'next-intl';
@@ -51,6 +57,8 @@ import { AutomationOption, PanelTitle } from '@/components/form-panel';
 const QUICK_NOTE_DRAFT_STORAGE_KEY = 'revornix.quick-note.draft';
 const QUICK_NOTE_IMPORT_STORAGE_KEY = 'revornix.quick-note.import';
 const QUICK_NOTE_AUTO_SAVE_DELAY = 1200;
+
+type QuickNoteEditorMode = 'visual' | 'source';
 
 const normalizeQuickNoteContent = (content: string) =>
 	normalizeEditorMarkdown(content);
@@ -95,6 +103,34 @@ const AddQuickNote = () => {
 	const restoredDraftKeyRef = useRef<string | null>(null);
 	const lastSavedDraftRef = useRef<string>('');
 	const [editorInstanceKey, setEditorInstanceKey] = useState(0);
+	const [editorMode, setEditorMode] =
+		useState<QuickNoteEditorMode>('visual');
+	const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (!isEditorFullscreen) {
+			document.body.style.overflow = '';
+			return;
+		}
+
+		document.body.style.overflow = 'hidden';
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				setIsEditorFullscreen(false);
+			}
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		return () => {
+			document.body.style.overflow = '';
+			window.removeEventListener('keydown', onKeyDown);
+		};
+	}, [isEditorFullscreen]);
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -389,16 +425,139 @@ const AddQuickNote = () => {
 													title={t('document_create_quick_note')}
 												/>
 											</div>
-											<TipTapEditor
-												key={editorInstanceKey}
-												value={field.value}
-												onChange={field.onChange}
-												placeholder={t('document_create_note_placeholded')}
-												className='min-h-[400px] flex-1 rounded-none border-0 bg-muted/10 shadow-none lg:min-h-0'
-												enableImageUpload
-												enableDrawing
-												ownerId={mainUserInfo?.id}
-											/>
+											{editorMode === 'visual' ? (
+												<TipTapEditor
+													key={editorInstanceKey}
+													value={field.value}
+													onChange={field.onChange}
+													placeholder={t('document_create_note_placeholded')}
+													className='min-h-[400px] flex-1 rounded-none border-0 bg-muted/10 shadow-none lg:min-h-0'
+													enableImageUpload
+													enableDrawing
+													ownerId={mainUserInfo?.id}
+													fullscreen={isEditorFullscreen}
+													onFullscreenChange={setIsEditorFullscreen}
+													toolbarEnd={
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<Button
+																	type='button'
+																	variant='ghost'
+																	size='icon'
+																	className='size-8'
+																	title={t('markdown_edit_source_mode')}
+																	onMouseDown={(event) => event.preventDefault()}
+																	onClick={() => {
+																		field.onChange(
+																			normalizeQuickNoteContent(field.value ?? ''),
+																		);
+																		setEditorMode('source');
+																	}}>
+																	<Code2 className='size-4' />
+																	<span className='sr-only'>
+																		{t('markdown_edit_source_mode')}
+																	</span>
+																</Button>
+															</TooltipTrigger>
+															<TooltipContent>
+																{t('markdown_edit_source_mode')}
+															</TooltipContent>
+														</Tooltip>
+													}
+												/>
+											) : (
+												(() => {
+													const fullscreenLabel = isEditorFullscreen
+														? t('exit_fullscreen')
+														: t('enter_fullscreen');
+													const sourceEditor = (
+														<div
+															className={
+																isEditorFullscreen
+																	? 'flex h-full min-h-0 flex-col bg-background'
+																	: 'flex min-h-0 flex-1 flex-col bg-muted/10'
+															}>
+															<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-3'>
+																<div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
+																	<Code2 className='size-3.5' />
+																	{t('markdown_edit_source_mode')}
+																</div>
+																<div className='flex items-center gap-1'>
+																	<Tooltip>
+																		<TooltipTrigger asChild>
+																			<Button
+																				type='button'
+																				variant='ghost'
+																				size='sm'
+																				className='h-8 px-2'
+																				title={t('markdown_edit_visual_mode')}
+																				onClick={() => {
+																					field.onChange(
+																						normalizeQuickNoteContent(
+																							field.value ?? '',
+																						),
+																					);
+																					setEditorInstanceKey(
+																						(current) => current + 1,
+																					);
+																					setEditorMode('visual');
+																				}}>
+																				<Eye className='size-4' />
+																				{t('markdown_edit_visual_mode')}
+																			</Button>
+																		</TooltipTrigger>
+																		<TooltipContent>
+																			{t('markdown_edit_visual_mode')}
+																		</TooltipContent>
+																	</Tooltip>
+																	<Tooltip>
+																		<TooltipTrigger asChild>
+																			<Button
+																				type='button'
+																				variant='ghost'
+																				size='icon'
+																				className='size-8'
+																				title={fullscreenLabel}
+																				onClick={() =>
+																					setIsEditorFullscreen((current) => !current)
+																				}>
+																				{isEditorFullscreen ? (
+																					<Shrink className='size-4' />
+																				) : (
+																					<Expand className='size-4' />
+																				)}
+																				<span className='sr-only'>
+																					{fullscreenLabel}
+																				</span>
+																			</Button>
+																		</TooltipTrigger>
+																		<TooltipContent>{fullscreenLabel}</TooltipContent>
+																	</Tooltip>
+																</div>
+															</div>
+															<Textarea
+																value={field.value}
+																onChange={field.onChange}
+																placeholder={t('markdown_edit_source_placeholder')}
+																fieldSizing='fixed'
+																spellCheck={false}
+																className='min-h-[360px] flex-1 resize-none rounded-none border-0 bg-transparent p-5 font-mono text-[13px] leading-6 shadow-none focus-visible:ring-0 lg:min-h-0'
+															/>
+														</div>
+													);
+
+													if (isEditorFullscreen && isMounted) {
+														return createPortal(
+															<div className='fixed inset-0 z-50 bg-background'>
+																{sourceEditor}
+															</div>,
+															document.body,
+														);
+													}
+
+													return sourceEditor;
+												})()
+											)}
 										</div>
 										<FormMessage />
 									</FormItem>

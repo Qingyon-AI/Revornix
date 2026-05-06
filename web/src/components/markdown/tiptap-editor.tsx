@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
@@ -85,6 +85,9 @@ type TipTapEditorProps = {
 	enableImageUpload?: boolean;
 	enableDrawing?: boolean;
 	ownerId?: number;
+	toolbarEnd?: ReactNode;
+	fullscreen?: boolean;
+	onFullscreenChange?: (fullscreen: boolean) => void;
 };
 
 type ContinuePreset = 'rewrite' | 'expand' | 'summarize' | 'formalize';
@@ -165,6 +168,9 @@ const TipTapEditor = ({
 	enableImageUpload = false,
 	enableDrawing = false,
 	ownerId,
+	toolbarEnd,
+	fullscreen,
+	onFullscreenChange,
 }: TipTapEditorProps) => {
 	const TEXT_COLORS = [
 		'#ef4444',
@@ -232,7 +238,7 @@ const TipTapEditor = ({
 	}, []);
 
 	useEffect(() => {
-		if (!isFallbackFullscreen) {
+		if (!(fullscreen ?? isFallbackFullscreen)) {
 			document.body.style.overflow = '';
 			return;
 		}
@@ -241,7 +247,7 @@ const TipTapEditor = ({
 
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') {
-				setIsFallbackFullscreen(false);
+				setFullscreenState(false);
 			}
 		};
 
@@ -250,7 +256,7 @@ const TipTapEditor = ({
 			document.body.style.overflow = '';
 			window.removeEventListener('keydown', onKeyDown);
 		};
-	}, [isFallbackFullscreen]);
+	}, [fullscreen, isFallbackFullscreen]);
 
 	const syncPlaceholderState = (editorInstance: {
 		isEmpty: boolean;
@@ -301,6 +307,9 @@ const TipTapEditor = ({
 			],
 			content: normalizeEditorMarkdown(value),
 			contentType: 'markdown',
+			editorProps: {
+				transformPastedText: (text) => normalizeEditorMarkdown(text),
+			},
 			onCreate: ({ editor }) => {
 				syncPlaceholderState(editor);
 			},
@@ -438,8 +447,13 @@ const TipTapEditor = ({
 			isActive && 'border-foreground/30 bg-accent text-accent-foreground',
 		);
 
+	const setFullscreenState = (nextFullscreen: boolean) => {
+		setIsFallbackFullscreen(nextFullscreen);
+		onFullscreenChange?.(nextFullscreen);
+	};
+
 	const handleToggleFullscreen = async () => {
-		setIsFallbackFullscreen((current) => !current);
+		setFullscreenState(!(fullscreen ?? isFallbackFullscreen));
 	};
 
 	const applyTextColor = (color: string) => {
@@ -945,7 +959,7 @@ const TipTapEditor = ({
 		}
 	};
 
-	const showFullscreen = isFallbackFullscreen;
+	const showFullscreen = fullscreen ?? isFallbackFullscreen;
 	const fullscreenLabel = showFullscreen
 		? t('exit_fullscreen')
 		: t('enter_fullscreen');
@@ -1312,6 +1326,7 @@ const TipTapEditor = ({
 					<Sigma className='size-4 rotate-180' />
 				</Button>
 				<div className='ml-auto' />
+				{toolbarEnd}
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
@@ -1346,7 +1361,7 @@ const TipTapEditor = ({
 			</div>
 			<EditorContent
 				editor={editor}
-				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[15px] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:max-h-[32rem] [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-contain [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
+				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[15px] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
 			/>
 			<Dialog
 				open={isContinueDialogOpen}
@@ -1496,7 +1511,7 @@ const TipTapEditor = ({
 		</div>
 	);
 
-	if (isFallbackFullscreen && isMounted) {
+	if (showFullscreen && isMounted) {
 		return createPortal(
 			<div className='fixed inset-0 z-50 bg-background'>
 				<div className='flex h-full w-full min-h-0'>

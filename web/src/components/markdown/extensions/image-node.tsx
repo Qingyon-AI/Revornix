@@ -19,30 +19,38 @@ const ImageNodeView = ({
 }: NodeViewProps) => {
 	const src = typeof node.attrs.src === 'string' ? node.attrs.src : '';
 	const alt = typeof node.attrs.alt === 'string' ? node.attrs.alt : '';
+	const trimmedAlt = alt.trim();
 	const ownerId = extension.options.ownerId as number | undefined;
 	const resolvedSrc = src && ownerId ? replacePath(src, ownerId) : src;
 
 	return (
 		<NodeViewWrapper>
-			<BlockNodeShell
-				selected={selected && editor.isEditable}
-				className='w-full max-w-full'
-				contentClassName='max-w-full overflow-hidden bg-background'>
-				{resolvedSrc ? (
-					<ImageWithFallback
-						src={resolvedSrc}
-						alt={alt}
-						preview
-						className='!my-0 block h-auto max-h-[32rem] w-full max-w-full rounded-2xl object-contain shadow-sm'
-						fallbackClassName='min-h-40 rounded-2xl border border-dashed border-border/70'
-						fallbackSvgClassName='max-w-[240px] p-5'
-					/>
-				) : (
-					<div className='flex min-h-40 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/30 px-4 text-sm text-muted-foreground'>
-						Image unavailable
-					</div>
-				)}
-			</BlockNodeShell>
+			<figure>
+				<BlockNodeShell
+					selected={selected && editor.isEditable}
+					className='w-full max-w-full'
+					contentClassName='max-w-full overflow-hidden bg-background'>
+					{resolvedSrc ? (
+						<ImageWithFallback
+							src={resolvedSrc}
+							alt={alt}
+							preview
+							className='!my-0 block h-auto w-full max-w-full rounded-2xl object-cover shadow-sm'
+							fallbackClassName='min-h-40 rounded-2xl border border-dashed border-border/70'
+							fallbackSvgClassName='max-w-[240px] p-5'
+						/>
+					) : (
+						<div className='flex min-h-40 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/30 px-4 text-sm text-muted-foreground'>
+							Image unavailable
+						</div>
+					)}
+				</BlockNodeShell>
+				{trimmedAlt ? (
+					<figcaption className='px-3 pt-0 text-center text-xs leading-5 text-muted-foreground pb-2.5'>
+						{trimmedAlt}
+					</figcaption>
+				) : null}
+			</figure>
 		</NodeViewWrapper>
 	);
 };
@@ -85,16 +93,19 @@ const ImageNode = Node.create<{
 	},
 
 	renderHTML({ HTMLAttributes }) {
-		const src = typeof HTMLAttributes.src === 'string' ? HTMLAttributes.src : '';
+		const src =
+			typeof HTMLAttributes.src === 'string' ? HTMLAttributes.src : '';
 		const resolvedSrc =
-			src && this.options.ownerId ? replacePath(src, this.options.ownerId) : src;
+			src && this.options.ownerId
+				? replacePath(src, this.options.ownerId)
+				: src;
 
 		return [
 			'img',
 			mergeAttributes(HTMLAttributes, {
 				src: resolvedSrc,
 				class:
-					'max-h-[32rem] w-auto max-w-full rounded-xl border border-border/60 object-contain shadow-sm',
+					'h-auto w-full max-w-full rounded-xl border border-border/60 object-cover shadow-sm',
 			}),
 		];
 	},
@@ -131,7 +142,8 @@ const ImageNode = Node.create<{
 				? node.attrs.alt.replace(/\]/g, '\\]')
 				: '';
 		const title =
-			typeof node.attrs?.title === 'string' && node.attrs.title.trim().length > 0
+			typeof node.attrs?.title === 'string' &&
+			node.attrs.title.trim().length > 0
 				? ` "${String(node.attrs.title).replace(/"/g, '\\"')}"`
 				: '';
 
