@@ -100,6 +100,20 @@ type ContinueSelectionSnapshot = {
 const AI_CONTINUATION_TIMEOUT_MS = 45_000;
 const AI_ILLUSTRATION_TIMEOUT_MS = 60_000;
 const AI_CONTINUATION_MAX_CHARS = 600;
+const FENCED_CODE_BLOCK_ONLY_PATTERN =
+	/^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
+
+const parseFencedCodeBlock = (text: string) => {
+	const match = text.match(/^(```|~~~)([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/);
+	if (!match) {
+		return null;
+	}
+
+	return {
+		language: match[2]?.trim().toLowerCase() || 'plaintext',
+		content: match[3] ?? '',
+	};
+};
 
 const CONTINUE_WRITING_SYSTEM_PROMPT = `你是一个专业的中文写作助手。
 
@@ -309,6 +323,35 @@ const TipTapEditor = ({
 			contentType: 'markdown',
 			editorProps: {
 				transformPastedText: (text) => normalizeEditorMarkdown(text),
+				handlePaste: (view, event) => {
+					const text = event.clipboardData?.getData('text/plain');
+					if (!text) {
+						return false;
+					}
+
+					const normalizedText = normalizeEditorMarkdown(text);
+					if (!FENCED_CODE_BLOCK_ONLY_PATTERN.test(normalizedText.trim())) {
+						return false;
+					}
+
+					const parsed = parseFencedCodeBlock(normalizedText.trim());
+					const codeBlockType = view.state.schema.nodes.codeBlock;
+					if (!parsed || !codeBlockType) {
+						return false;
+					}
+
+					event.preventDefault();
+					const node = codeBlockType.create(
+						{
+							language: parsed.language,
+						},
+						parsed.content
+							? view.state.schema.text(parsed.content)
+							: undefined,
+					);
+					view.dispatch(view.state.tr.replaceSelectionWith(node).scrollIntoView());
+					return true;
+				},
 			},
 			onCreate: ({ editor }) => {
 				syncPlaceholderState(editor);
