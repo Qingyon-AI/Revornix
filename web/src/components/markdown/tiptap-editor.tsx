@@ -321,6 +321,30 @@ const TipTapEditor = ({
 		[resolvedOwnerId],
 	);
 
+	useEffect(() => {
+		if (!editor) {
+			return;
+		}
+
+		const normalizedValue = normalizeEditorMarkdown(value);
+		const currentMarkdown = normalizeEditorMarkdown(editor.getMarkdown());
+		if (currentMarkdown === normalizedValue) {
+			syncPlaceholderState(editor);
+			return;
+		}
+
+		const { from, to } = editor.state.selection;
+		editor.commands.setContent(normalizedValue, {
+			contentType: 'markdown',
+		});
+		const nextDocSize = editor.state.doc.content.size;
+		editor.commands.setTextSelection({
+			from: Math.min(from, nextDocSize),
+			to: Math.min(to, nextDocSize),
+		});
+		syncPlaceholderState(editor);
+	}, [editor, value, placeholder]);
+
 	const toolbarState = useEditorState({
 		editor,
 		selector: ({ editor: currentEditor }) => ({
