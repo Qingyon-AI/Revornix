@@ -6,8 +6,8 @@ import {
 	ReactNodeViewRenderer,
 	type NodeViewProps,
 } from '@tiptap/react';
-import { GripVertical, Minus, Plus, Table2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Minus, Plus, Table2, Trash2 } from 'lucide-react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -19,13 +19,26 @@ import {
 import BlockNodeShell from './block-node-shell';
 
 type TableCellRow = string[];
-type DropPlacement = 'before' | 'after';
+type TableSelection =
+	| { type: 'row'; index: number }
+	| { type: 'column'; index: number }
+	| null;
 
 const DEFAULT_TABLE_CONTENT: TableCellRow[] = [
 	['Header 1', 'Header 2', 'Header 3'],
 	['Cell 1', 'Cell 2', 'Cell 3'],
 	['Cell 4', 'Cell 5', 'Cell 6'],
 ];
+
+const getColumnCount = (content: TableCellRow[]) =>
+	Math.max(...content.map((row) => row.length), 1);
+
+const normalizeTableShape = (content: TableCellRow[]) => {
+	const columnCount = getColumnCount(content);
+	return content.map((row) =>
+		Array.from({ length: columnCount }, (_, index) => row[index] ?? ''),
+	);
+};
 
 const encodeTableContent = (content: TableCellRow[]) =>
 	encodeURIComponent(JSON.stringify(content));
@@ -43,7 +56,7 @@ const decodeTableContent = (value: string | null): TableCellRow[] => {
 				(row) => Array.isArray(row) && row.every((cell) => typeof cell === 'string'),
 			)
 		) {
-			return parsed as TableCellRow[];
+			return normalizeTableShape(parsed as TableCellRow[]);
 		}
 	} catch {
 		// Fall back to default content below.
@@ -60,10 +73,68 @@ const normalizeTableContent = (content?: unknown): TableCellRow[] => {
 			(row) => Array.isArray(row) && row.every((cell) => typeof cell === 'string'),
 		)
 	) {
-		return content as TableCellRow[];
+		return normalizeTableShape(content as TableCellRow[]);
 	}
 
 	return DEFAULT_TABLE_CONTENT;
+};
+
+type TableCellTextareaProps = {
+	value: string;
+	className?: string;
+	onChange: (value: string) => void;
+	onFocus: () => void;
+};
+
+const TableCellTextarea = ({
+	value,
+	className,
+	onChange,
+	onFocus,
+}: TableCellTextareaProps) => {
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+	const syncTextareaHeight = useCallback(() => {
+		const textarea = textareaRef.current;
+		if (!textarea) {
+			return;
+		}
+
+		const parentHeight = textarea.parentElement?.clientHeight ?? 0;
+		textarea.style.height = 'auto';
+		textarea.style.height = `${Math.max(textarea.scrollHeight, parentHeight)}px`;
+	}, []);
+
+	useLayoutEffect(() => {
+		syncTextareaHeight();
+	}, [syncTextareaHeight, value]);
+
+	useLayoutEffect(() => {
+		const parent = textareaRef.current?.parentElement;
+		if (!parent || typeof ResizeObserver === 'undefined') {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(syncTextareaHeight);
+		resizeObserver.observe(parent);
+
+		return () => resizeObserver.disconnect();
+	}, [syncTextareaHeight]);
+
+	return (
+		<textarea
+			ref={textareaRef}
+			value={value}
+			rows={1}
+			wrap='soft'
+			draggable={false}
+			onFocus={onFocus}
+			onMouseDown={(event) => event.stopPropagation()}
+			onClick={(event) => event.stopPropagation()}
+			onChange={(event) => onChange(event.target.value)}
+			className={className}
+		/>
+	);
 };
 
 const TableNodeView = ({
@@ -71,24 +142,16 @@ const TableNodeView = ({
 	editor,
 	updateAttributes,
 	selected,
-	getPos,
 }: NodeViewProps) => {
 	const t = useTranslations();
 	const isEditable = editor.isEditable;
 	const table = normalizeTableContent(node.attrs.content);
-	const columnCount = Math.max(...table.map((row) => row.length), 1);
-	const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-	const [selectedColumnIndex, setSelectedColumnIndex] = useState<number | null>(null);
-	const [draggedRowIndex, setDraggedRowIndex] = useState<number | null>(null);
-	const [draggedColumnIndex, setDraggedColumnIndex] = useState<number | null>(null);
-	const [rowDropPreview, setRowDropPreview] = useState<{
-		index: number;
-		placement: DropPlacement;
-	} | null>(null);
-	const [columnDropPreview, setColumnDropPreview] = useState<{
-		index: number;
-		placement: DropPlacement;
-	} | null>(null);
+	const columnCount = getColumnCount(table);
+	const [tableSelection, setTableSelection] = useState<TableSelection>(null);
+	const selectedRowIndex =
+		tableSelection?.type === 'row' ? tableSelection.index : null;
+	const selectedColumnIndex =
+		tableSelection?.type === 'column' ? tableSelection.index : null;
 
 	const commitTable = (nextTable: TableCellRow[]) => {
 		updateAttributes({
@@ -108,6 +171,22 @@ const TableNodeView = ({
 		commitTable(nextTable);
 	};
 
+	const toggleRowSelection = (rowIndex: number) => {
+		setTableSelection((current) =>
+			current?.type === 'row' && current.index === rowIndex
+				? null
+				: { type: 'row', index: rowIndex },
+		);
+	};
+
+	const toggleColumnSelection = (columnIndex: number) => {
+		setTableSelection((current) =>
+			current?.type === 'column' && current.index === columnIndex
+				? null
+				: { type: 'column', index: columnIndex },
+		);
+	};
+
 	const addRow = () => {
 		commitTable([
 			...table,
@@ -121,14 +200,12 @@ const TableNodeView = ({
 	};
 
 	const removeRow = (rowIndex = table.length - 1) => {
-		if (table.length <= 2) {
+		if (table.length <= 1) {
 			return;
 		}
 
 		commitTable(table.filter((_, currentRowIndex) => currentRowIndex !== rowIndex));
-		setSelectedRowIndex((current) =>
-			current === null ? null : current === rowIndex ? null : current > rowIndex ? current - 1 : current,
-		);
+		setTableSelection(null);
 	};
 
 	const addColumn = () => {
@@ -146,361 +223,182 @@ const TableNodeView = ({
 	};
 
 	const removeColumn = (columnIndex = columnCount - 1) => {
-		if (columnCount <= 2) {
+		if (columnCount <= 1) {
 			return;
 		}
 
 		commitTable(
-			table.map((row) => row.filter((_, currentColumnIndex) => currentColumnIndex !== columnIndex)),
+			table.map((row) =>
+				row.filter(
+					(_, currentColumnIndex) => currentColumnIndex !== columnIndex,
+				),
+			),
 		);
-		setSelectedColumnIndex((current) =>
-			current === null ? null : current === columnIndex ? null : current > columnIndex ? current - 1 : current,
-		);
+		setTableSelection(null);
 	};
 
-	const moveRow = (
-		fromIndex: number,
-		targetIndex: number,
-		placement: DropPlacement = 'before',
-	) => {
-		if (fromIndex < 0 || targetIndex < 0) {
+	const removeSelected = () => {
+		if (!tableSelection) {
 			return;
 		}
 
-		const nextTable = [...table];
-		const [movedRow] = nextTable.splice(fromIndex, 1);
-		let insertIndex = targetIndex + (placement === 'after' ? 1 : 0);
-		if (fromIndex < insertIndex) {
-			insertIndex -= 1;
-		}
-		if (insertIndex === fromIndex) {
-			return;
-		}
-		nextTable.splice(insertIndex, 0, movedRow);
-		commitTable(nextTable);
-		setSelectedRowIndex(insertIndex);
-	};
-
-	const moveColumn = (
-		fromIndex: number,
-		targetIndex: number,
-		placement: DropPlacement = 'before',
-	) => {
-		if (fromIndex < 0 || targetIndex < 0) {
+		if (tableSelection.type === 'row') {
+			removeRow(tableSelection.index);
 			return;
 		}
 
-		let insertIndex = targetIndex + (placement === 'after' ? 1 : 0);
-		if (fromIndex < insertIndex) {
-			insertIndex -= 1;
-		}
-		if (insertIndex === fromIndex) {
-			return;
-		}
-
-		const nextTable = table.map((row) => {
-			const nextRow = [...row];
-			const [movedCell] = nextRow.splice(fromIndex, 1);
-			nextRow.splice(insertIndex, 0, movedCell);
-			return nextRow;
-		});
-		commitTable(nextTable);
-		setSelectedColumnIndex(insertIndex);
+		removeColumn(tableSelection.index);
 	};
 
-	const selectRow = (rowIndex: number) => {
-		setSelectedRowIndex(rowIndex);
-		setSelectedColumnIndex(null);
-	};
+	const canRemoveSelected =
+		tableSelection?.type === 'row'
+			? table.length > 1
+			: tableSelection?.type === 'column'
+				? columnCount > 1
+				: false;
 
-	const selectColumn = (columnIndex: number) => {
-		setSelectedColumnIndex(columnIndex);
-		setSelectedRowIndex(null);
-	};
-
-	const isRowSelected = (rowIndex: number) => selectedRowIndex === rowIndex;
-	const isColumnSelected = (columnIndex: number) =>
-		selectedColumnIndex === columnIndex;
-	const hasRowSelection = selectedRowIndex !== null;
-	const hasColumnSelection = selectedColumnIndex !== null;
-	const getRowDropPlacement = (
-		event: React.DragEvent<HTMLTableRowElement>,
-	) => {
-		const rect = event.currentTarget.getBoundingClientRect();
-		return event.clientY - rect.top < rect.height / 2 ? 'before' : 'after';
-	};
-	const getColumnDropPlacement = (
-		event: React.DragEvent<HTMLTableCellElement>,
-	) => {
-		const rect = event.currentTarget.getBoundingClientRect();
-		return event.clientX - rect.left < rect.width / 2 ? 'before' : 'after';
-	};
-	const isRowDropPreview = (rowIndex: number, placement: DropPlacement) =>
-		rowDropPreview?.index === rowIndex && rowDropPreview.placement === placement;
-	const isColumnDropPreview = (
-		columnIndex: number,
-		placement: DropPlacement,
-	) =>
-		columnDropPreview?.index === columnIndex &&
-		columnDropPreview.placement === placement;
-	const getCellChromeClassName = (
-		rowIndex: number,
-		columnIndex: number,
-	) => {
-		const classes: string[] = [];
-		if (isRowSelected(rowIndex)) {
-			classes.push('bg-primary/12');
+	const getCellSelectionClassName = (rowIndex: number, cellIndex: number) => {
+		if (selectedRowIndex === rowIndex || selectedColumnIndex === cellIndex) {
+			return 'bg-primary/10';
 		}
-		if (isColumnSelected(columnIndex)) {
-			classes.push(rowIndex === 0 ? 'bg-primary/12' : 'bg-primary/8');
-		}
-		if (isRowDropPreview(rowIndex, 'before')) {
-			classes.push('shadow-[inset_0_3px_0_0_hsl(var(--primary))]');
-		}
-		if (isRowDropPreview(rowIndex, 'after')) {
-			classes.push('shadow-[inset_0_-3px_0_0_hsl(var(--primary))]');
-		}
-		if (isColumnDropPreview(columnIndex, 'before')) {
-			classes.push('shadow-[inset_3px_0_0_0_hsl(var(--primary))]');
-		}
-		if (isColumnDropPreview(columnIndex, 'after')) {
-			classes.push('shadow-[inset_-3px_0_0_0_hsl(var(--primary))]');
-		}
-		return classes.join(' ');
-	};
-
-	const selectNode = () => {
-		const position = typeof getPos === 'function' ? getPos() : null;
-		if (typeof position !== 'number') {
-			return;
-		}
-		editor.chain().focus().setNodeSelection(position).run();
+		return '';
 	};
 
 	return (
-		<NodeViewWrapper>
+		<NodeViewWrapper className='group/table-node'>
 			<BlockNodeShell
 				selected={selected && isEditable}
-				contentClassName='p-3'>
-			<div className='mb-3 flex items-center justify-between gap-3'>
-				<div className='flex items-center gap-2 text-sm font-medium text-foreground'>
-					<Table2 className='size-4' />
-					<span>{t('document_create_table_node')}</span>
-				</div>
-				{isEditable && (
-					<div className='flex items-center gap-2'>
-						<Button type='button' variant='outline' size='sm' onClick={addRow}>
-							<Plus className='size-4' />
-							{t('document_create_table_add_row')}
-						</Button>
-						<Button
-							type='button'
-							variant='outline'
-							size='sm'
-							onClick={() => removeRow()}
-							disabled={table.length <= 2}>
-							<Minus className='size-4' />
-							{t('document_create_table_remove_row')}
-						</Button>
-						<Button type='button' variant='outline' size='sm' onClick={addColumn}>
-							<Plus className='size-4' />
-							{t('document_create_table_add_column')}
-						</Button>
-						<Button
-							type='button'
-							variant='outline'
-							size='sm'
-							onClick={() => removeColumn()}
-							disabled={columnCount <= 2}>
-							<Minus className='size-4' />
-							{t('document_create_table_remove_column')}
-						</Button>
-						{hasRowSelection && (
-							<Button
-								type='button'
-								variant='outline'
-								size='sm'
-								onClick={() => removeRow(selectedRowIndex)}>
-								<Trash2 className='size-4' />
-								{t('document_create_table_delete_selected_row')}
-							</Button>
-						)}
-						{hasColumnSelection && (
-							<Button
-								type='button'
-								variant='outline'
-								size='sm'
-								onClick={() => removeColumn(selectedColumnIndex)}>
-								<Trash2 className='size-4' />
-								{t('document_create_table_delete_selected_column')}
-							</Button>
-						)}
+				contentClassName='relative rounded-lg border-0 bg-transparent p-0'>
+			{isEditable && (
+				<div
+					className='absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md border border-border/70 bg-background/95 p-1 opacity-0 shadow-sm backdrop-blur transition-opacity group-hover/table-node:opacity-100 focus-within:opacity-100'
+					contentEditable={false}>
+					<div className='mr-1 hidden items-center gap-1 px-1 text-[11px] font-medium text-muted-foreground sm:flex'>
+						<Table2 className='size-3' />
+						<span>Table</span>
 					</div>
-				)}
-			</div>
-			<div className='overflow-x-auto rounded-xl border border-border/70 bg-background'>
-				<table className='my-0 w-full min-w-[520px] border-collapse'>
+					<Button
+						type='button'
+						variant='ghost'
+						size='icon'
+						className='size-7'
+						title={t('document_create_table_add_row')}
+						onClick={addRow}>
+						<Plus className='size-3.5' />
+					</Button>
+					<Button
+						type='button'
+						variant='ghost'
+						size='icon'
+						className='size-7'
+						title={t('document_create_table_remove_row')}
+						onClick={() => removeRow()}
+						disabled={table.length <= 1}>
+						<Minus className='size-3.5' />
+					</Button>
+					<div className='mx-1 h-4 w-px bg-border/70' />
+					<Button
+						type='button'
+						variant='ghost'
+						size='icon'
+						className='size-7'
+						title={t('document_create_table_add_column')}
+						onClick={addColumn}>
+						<Plus className='size-3.5 rotate-90' />
+					</Button>
+					<Button
+						type='button'
+						variant='ghost'
+						size='icon'
+						className='size-7'
+						title={t('document_create_table_remove_column')}
+						onClick={() => removeColumn()}
+						disabled={columnCount <= 1}>
+						<Minus className='size-3.5 rotate-90' />
+					</Button>
+					{tableSelection ? (
+						<>
+							<div className='mx-1 h-4 w-px bg-border/70' />
+							<Button
+								type='button'
+								variant='ghost'
+								size='icon'
+								className='size-7 text-destructive hover:text-destructive'
+								title={
+									tableSelection.type === 'row'
+										? t('document_create_table_delete_selected_row')
+										: t('document_create_table_delete_selected_column')
+								}
+								onClick={removeSelected}
+								disabled={!canRemoveSelected}>
+								<Trash2 className='size-3.5' />
+							</Button>
+						</>
+					) : null}
+				</div>
+			)}
+			<div className='overflow-hidden rounded-lg border border-border/70 bg-background'>
+				<div className='overflow-x-auto'>
+				<table className='my-0 w-full min-w-[520px] border-separate border-spacing-0 text-sm'>
 					<tbody>
-						{isEditable && (
-							<tr className='border-b border-border/60 bg-muted/15'>
-								<td
-									className={cn(
-										'w-12 min-w-12 border-r border-border/60 bg-muted/30',
-										isColumnDropPreview(0, 'before') &&
-											'shadow-[inset_3px_0_0_0_hsl(var(--primary))]',
-									)}
-								/>
-								{Array.from({ length: columnCount }, (_, columnIndex) => (
-									<td
-										key={`column-handle-${columnIndex}`}
-										className={cn(
-											'border-r border-border/60 px-2 py-1.5 last:border-r-0',
-											isColumnSelected(columnIndex) && 'bg-primary/12',
-											getCellChromeClassName(0, columnIndex),
-										)}
-										onDragOver={(event) => {
-											event.preventDefault();
-											if (draggedColumnIndex === null) {
-												return;
-											}
-											setColumnDropPreview({
-												index: columnIndex,
-												placement: getColumnDropPlacement(event),
-											});
-										}}
-										onDragLeave={() => {
-											setColumnDropPreview((current) =>
-												current?.index === columnIndex ? null : current,
-											);
-										}}
-										onDrop={() => {
-											if (draggedColumnIndex === null || !columnDropPreview) {
-												return;
-											}
-											moveColumn(
-												draggedColumnIndex,
-												columnDropPreview.index,
-												columnDropPreview.placement,
-											);
-											setDraggedColumnIndex(null);
-											setColumnDropPreview(null);
-										}}>
-										<button
-											type='button'
-											draggable
-											onClick={() => selectColumn(columnIndex)}
-											onDragStart={() => {
-												selectColumn(columnIndex);
-												setDraggedColumnIndex(columnIndex);
-											}}
-											onDragEnd={() => {
-												setDraggedColumnIndex(null);
-												setColumnDropPreview(null);
-											}}
-											className={cn(
-												'flex w-full items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground',
-												isColumnSelected(columnIndex) && 'bg-primary/14 text-foreground',
-											)}>
-											<GripVertical className='size-4 rotate-90' />
-										</button>
-									</td>
-								))}
-							</tr>
-						)}
 						{table.map((row, rowIndex) => (
 							<tr
 								key={rowIndex}
-								className={cn(
-									'border-b border-border/60 last:border-b-0',
-									isRowSelected(rowIndex) && 'bg-primary/6',
-								)}
-								onDragOver={(event) => {
-									if (!isEditable) {
-										return;
-									}
-									event.preventDefault();
-									if (draggedRowIndex === null) {
-										return;
-									}
-									setRowDropPreview({
-										index: rowIndex,
-										placement: getRowDropPlacement(event),
-									});
-								}}
-								onDragLeave={() => {
-									setRowDropPreview((current) =>
-										current?.index === rowIndex ? null : current,
-									);
-								}}
-								onDrop={() => {
-									if (draggedRowIndex === null || !rowDropPreview) {
-										return;
-									}
-									moveRow(
-										draggedRowIndex,
-										rowDropPreview.index,
-										rowDropPreview.placement,
-									);
-									setDraggedRowIndex(null);
-									setRowDropPreview(null);
-								}}>
+								className='last:[&>*]:border-b-0'>
 								{isEditable && (
 									<td
 										className={cn(
-											'w-12 min-w-12 border-r border-border/60 bg-muted/20 px-1.5 py-1 align-top',
-											isRowSelected(rowIndex) && 'bg-primary/12',
-											isRowDropPreview(rowIndex, 'before') &&
-												'shadow-[inset_0_3px_0_0_hsl(var(--primary))]',
-											isRowDropPreview(rowIndex, 'after') &&
-												'shadow-[inset_0_-3px_0_0_hsl(var(--primary))]',
+											'w-8 min-w-8 border-b border-r border-border/50 bg-muted/20 p-0 text-center align-middle',
+											rowIndex === 0 && 'first:rounded-tl-lg',
+											selectedRowIndex === rowIndex && 'bg-primary/10',
 										)}>
 										<button
 											type='button'
-											draggable
-											onClick={() => selectRow(rowIndex)}
-											onDragStart={() => {
-												selectRow(rowIndex);
-												setDraggedRowIndex(rowIndex);
-											}}
-											onDragEnd={() => {
-												setDraggedRowIndex(null);
-												setRowDropPreview(null);
-											}}
-											className={cn(
-												'flex w-full items-center justify-center rounded-md px-2 py-2 text-muted-foreground transition hover:bg-muted hover:text-foreground',
-												isRowSelected(rowIndex) && 'bg-primary/14 text-foreground',
-											)}>
-											<GripVertical className='size-4' />
+											className='flex h-full min-h-10 w-full items-center justify-center text-[11px] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground'
+											title={t('document_create_table_delete_selected_row')}
+											onMouseDown={(event) => event.preventDefault()}
+											onClick={() => toggleRowSelection(rowIndex)}>
+											{rowIndex + 1}
 										</button>
 									</td>
 								)}
 								{Array.from({ length: columnCount }, (_, cellIndex) => {
 									const cellValue = row[cellIndex] ?? '';
 									const sharedClassName =
-										'min-h-11 w-full border-0 bg-transparent px-3 py-2 text-sm outline-none';
-									const cellSelected =
-										isRowSelected(rowIndex) || isColumnSelected(cellIndex);
+										'block min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap break-words border-0 bg-transparent px-3 py-2.5 leading-5 outline-none transition-colors [overflow-wrap:anywhere] focus:bg-muted/40';
 
 									return rowIndex === 0 ? (
 										<th
 											key={`${rowIndex}-${cellIndex}`}
 											className={cn(
-												'border-r border-border/60 bg-muted/40 text-left last:border-r-0',
-												cellSelected && 'bg-primary/12',
-												getCellChromeClassName(rowIndex, cellIndex),
+												'border-b border-r border-border/50 bg-muted/30 text-left last:border-r-0',
+												!isEditable && 'first:rounded-tl-lg',
+												cellIndex === columnCount - 1 && 'rounded-tr-lg',
+												getCellSelectionClassName(rowIndex, cellIndex),
 											)}>
 											{isEditable ? (
-												<input
-													value={cellValue}
-													onFocus={() => {
-														setSelectedRowIndex(null);
-														setSelectedColumnIndex(null);
-													}}
-													onChange={(event) =>
-														updateCell(rowIndex, cellIndex, event.target.value)
-													}
-													className={cn(sharedClassName, 'font-semibold')}
-												/>
+												<div className='flex min-h-10 items-stretch'>
+													<button
+														type='button'
+														className={cn(
+															'flex w-7 shrink-0 items-center justify-center border-r border-border/40 text-[11px] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground',
+															selectedColumnIndex === cellIndex &&
+																'bg-primary/10 text-foreground',
+														)}
+														title={t('document_create_table_delete_selected_column')}
+														onMouseDown={(event) => event.preventDefault()}
+														onClick={() => toggleColumnSelection(cellIndex)}>
+														{cellIndex + 1}
+													</button>
+													<TableCellTextarea
+														value={cellValue}
+														onFocus={() => setTableSelection(null)}
+														onChange={(value) =>
+															updateCell(rowIndex, cellIndex, value)
+														}
+														className={cn(sharedClassName, 'font-semibold')}
+													/>
+												</div>
 											) : (
 												<div className={cn(sharedClassName, 'font-semibold')}>
 													{cellValue}
@@ -511,19 +409,15 @@ const TableNodeView = ({
 										<td
 											key={`${rowIndex}-${cellIndex}`}
 											className={cn(
-												'border-r border-border/60 align-top last:border-r-0',
-												cellSelected && 'bg-primary/8',
-												getCellChromeClassName(rowIndex, cellIndex),
+												'border-b border-r border-border/50 align-top last:border-r-0',
+												getCellSelectionClassName(rowIndex, cellIndex),
 											)}>
 											{isEditable ? (
-												<input
+												<TableCellTextarea
 													value={cellValue}
-													onFocus={() => {
-														setSelectedRowIndex(null);
-														setSelectedColumnIndex(null);
-													}}
-													onChange={(event) =>
-														updateCell(rowIndex, cellIndex, event.target.value)
+													onFocus={() => setTableSelection(null)}
+													onChange={(value) =>
+														updateCell(rowIndex, cellIndex, value)
 													}
 													className={sharedClassName}
 												/>
@@ -537,6 +431,7 @@ const TableNodeView = ({
 						))}
 					</tbody>
 				</table>
+				</div>
 			</div>
 			</BlockNodeShell>
 		</NodeViewWrapper>
