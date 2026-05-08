@@ -48,39 +48,54 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 						<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
 							{section.title ? section.title : t('section_title_empty')}
 						</h2>
-						{section.is_day_section ? (
-							<div className='flex flex-wrap gap-2'>
-								<div className='inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300'>
-									{t('section_day_badge')}
-								</div>
-							</div>
-						) : null}
-						<p className='line-clamp-3 text-sm leading-6 text-muted-foreground'>
+						<p className='line-clamp-2 text-sm leading-6 text-muted-foreground'>
 							{section.description
 								? section.description
 								: t('section_description_empty')}
 						</p>
 					</div>
 
-					{section.labels && section.labels.length > 0 ? (
-						<div className='flex flex-wrap gap-2'>
-							{section.labels.map((label) => (
-								<div
-									key={label.id}
-									className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-									{label.name}
-								</div>
-							))}
+					<div className='flex flex-wrap gap-2'>
+						{section.is_day_section ? (
+							<div className='inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300'>
+								{t('section_day_badge')}
+							</div>
+						) : null}
+						{section.labels?.slice(0, 3).map((label) => (
+							<div
+								key={label.id}
+								className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
+								{label.name}
+							</div>
+						))}
+						<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-[11px] text-muted-foreground/80'>
+							{t('section_card_documents_count', {
+								section_documents_count: section.documents_count ?? 0,
+							})}
 						</div>
-					) : null}
+						<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-[11px] text-muted-foreground/80'>
+							{t('section_card_subscribers_count', {
+								section_subscribers_count: section.subscribers_count ?? 0,
+							})}
+						</div>
+					</div>
 				</Link>
 
 				<SectionCardPodcast section={section} />
 
-				<div className='mt-auto flex flex-col gap-3 text-xs text-muted-foreground'>
+				<div className='mt-auto space-y-3 text-xs text-muted-foreground'>
+					<div className='flex justify-start'>
+						<SeoSectionSubscribeButton
+							sectionId={section.id}
+							creatorId={section.creator.id}
+							initialIsSubscribed={section.is_subscribed}
+							className='h-8 shrink-0 px-3 text-xs'
+						/>
+					</div>
+
 					<div className='flex items-center gap-2'>
 						<Avatar
-							className='size-7'
+							className='size-7 shrink-0'
 							title={section.creator.nickname ?? ''}
 							onClick={() => {
 								router.push(`/user/${section.creator.id}`);
@@ -109,27 +124,6 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 								)}
 							</div>
 						</div>
-					</div>
-
-					<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-						<div className='flex flex-wrap gap-2'>
-							<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-								{t('section_card_documents_count', {
-									section_documents_count: section.documents_count ?? 0,
-								})}
-							</div>
-							<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-								{t('section_card_subscribers_count', {
-									section_subscribers_count: section.subscribers_count ?? 0,
-								})}
-							</div>
-						</div>
-						<SeoSectionSubscribeButton
-							sectionId={section.id}
-							creatorId={section.creator.id}
-							initialIsSubscribed={section.is_subscribed}
-							className='h-8 px-3 text-xs'
-						/>
 					</div>
 				</div>
 			</div>

@@ -57,14 +57,6 @@ const PublicDocumentCard = ({
 			<div className='flex flex-1 flex-col gap-4 p-5'>
 				<Link href={`/document/${document.id}`} className='block space-y-4'>
 					<div className='space-y-2'>
-						<div className='flex flex-wrap gap-2'>
-							<div className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-								{getDocumentCategoryLabel(document.category, t)}
-							</div>
-							<div className='rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-700 dark:text-emerald-300'>
-								{t('section_publish_status_on')}
-							</div>
-						</div>
 						<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
 							{document.title}
 						</h2>
@@ -73,17 +65,18 @@ const PublicDocumentCard = ({
 						</p>
 					</div>
 
-					{document.labels && document.labels.length > 0 ? (
-						<div className='flex flex-wrap gap-2'>
-							{document.labels.slice(0, 4).map((label) => (
-								<div
-									key={label.id}
-									className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-									{label.name}
-								</div>
-							))}
+					<div className='flex flex-wrap gap-2'>
+						<div className='rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-medium text-sky-700 dark:text-sky-300'>
+							{getDocumentCategoryLabel(document.category, t)}
 						</div>
-					) : null}
+						{document.labels?.slice(0, 3).map((label) => (
+							<div
+								key={label.id}
+								className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
+								{label.name}
+							</div>
+						))}
+					</div>
 				</Link>
 
 				<div className='mt-auto flex flex-col gap-3 text-xs text-muted-foreground'>
@@ -118,22 +111,6 @@ const PublicDocumentCard = ({
 							</div>
 						</Link>
 					) : null}
-
-					<div className='flex flex-wrap gap-2'>
-						<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-							ID #{document.id}
-						</div>
-						{document.convert_task?.md_file_name ? (
-							<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-								Markdown
-							</div>
-						) : null}
-						{document.transcribe_task?.transcribed_text ? (
-							<div className='rounded-full border border-border/60 bg-background/55 px-3 py-1'>
-								Transcript
-							</div>
-						) : null}
-					</div>
 				</div>
 			</div>
 		</div>
