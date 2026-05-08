@@ -50,7 +50,14 @@ export type PublicDocumentDetail = Omit<DocumentDetailResponse, 'sections'> & {
 	sections?: PublicDocumentSectionInfo[];
 };
 
-export type PublicDocumentPagination = InifiniteScrollPagnitionDocumentInfo;
+export type PublicDocumentInfo = InifiniteScrollPagnitionDocumentInfo['elements'][number];
+
+export type PublicDocumentPagination = Omit<
+	InifiniteScrollPagnitionDocumentInfo,
+	'elements'
+> & {
+	elements: PublicDocumentInfo[];
+};
 export type PublicDocumentMarkdownContentRequest = {
 	document_id?: number;
 	url?: string;
@@ -78,6 +85,22 @@ export const fetchPublicUserDetail = async (
 	data: UserInfoRequest,
 ): Promise<UserPublicInfo> => {
 	return await serverRequest(userApi.userInfo, {
+		data,
+	});
+};
+
+export const fetchPublicUsers = async (data: {
+	start?: number;
+	limit: number;
+}): Promise<{
+	total: number;
+	start?: number | null;
+	limit: number;
+	has_more: boolean;
+	elements: UserPublicInfo[];
+	next_start?: number | null;
+}> => {
+	return await serverRequest(userApi.searchPublicUsers, {
 		data,
 	});
 };

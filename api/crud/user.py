@@ -375,7 +375,7 @@ def search_user_by_email(
     query = query.filter(models.user.EmailUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+        query = query.filter(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
@@ -399,7 +399,7 @@ async def search_user_by_email_async(
         .order_by(models.user.User.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.EmailUser.email.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     if limit is not None:
@@ -416,7 +416,7 @@ def search_next_user_by_email(
     query = query.filter(models.user.EmailUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+        query = query.filter(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < email_user.id)
     return query.first()
@@ -437,7 +437,7 @@ async def search_next_user_by_email_async(
         .order_by(models.user.User.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.EmailUser.email.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalars().first()
 
 def count_user_by_email(
@@ -449,7 +449,7 @@ def count_user_by_email(
     query = query.filter(models.user.EmailUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.EmailUser.email.like(f"%{keyword}%"))
+        query = query.filter(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     return query.count()
 
 async def count_user_by_email_async(
@@ -465,7 +465,7 @@ async def count_user_by_email_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.EmailUser.email.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.EmailUser.email.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def search_user_by_nickname(
@@ -477,7 +477,7 @@ def search_user_by_nickname(
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
@@ -495,7 +495,7 @@ async def search_user_by_nickname_async(
         models.user.User.delete_at.is_(None)
     ).order_by(models.user.User.id.desc())
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     if limit is not None:
@@ -510,7 +510,7 @@ def search_next_user_by_nickname(
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
@@ -529,7 +529,7 @@ async def search_next_user_by_nickname_async(
         .order_by(models.user.User.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalars().first()
 
 def count_user_by_nickname(
@@ -539,7 +539,7 @@ def count_user_by_nickname(
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     return query.count()
 
 async def count_user_by_nickname_async(
@@ -550,7 +550,7 @@ async def count_user_by_nickname_async(
         models.user.User.delete_at.is_(None)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def search_user_by_uuid(
@@ -564,7 +564,7 @@ def search_user_by_uuid(
         models.user.User.delete_at.is_(None),
     )
     if uuid is not None and len(uuid) > 0:
-        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
+        query = query.filter(models.user.User.uuid.ilike(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
@@ -584,7 +584,7 @@ async def search_user_by_uuid_async(
         .order_by(models.user.User.id.desc())
     )
     if uuid is not None and len(uuid) > 0:
-        stmt = stmt.where(models.user.User.uuid.like(f"%{uuid}%"))
+        stmt = stmt.where(models.user.User.uuid.ilike(f"%{uuid}%"))
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     if limit is not None:
@@ -599,7 +599,7 @@ def search_next_user_by_uuid(
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if uuid is not None and len(uuid) > 0:
-        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
+        query = query.filter(models.user.User.uuid.ilike(f"%{uuid}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
@@ -618,7 +618,7 @@ async def search_next_user_by_uuid_async(
         .order_by(models.user.User.id.desc())
     )
     if uuid is not None and len(uuid) > 0:
-        stmt = stmt.where(models.user.User.uuid.like(f"%{uuid}%"))
+        stmt = stmt.where(models.user.User.uuid.ilike(f"%{uuid}%"))
     return (await db.execute(stmt)).scalars().first()
 
 def count_user_by_uuid(
@@ -628,7 +628,7 @@ def count_user_by_uuid(
     query = db.query(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if uuid is not None and len(uuid) > 0:
-        query = query.filter(models.user.User.uuid.like(f"%{uuid}%"))
+        query = query.filter(models.user.User.uuid.ilike(f"%{uuid}%"))
     return query.count()
 
 async def count_user_by_uuid_async(
@@ -639,7 +639,59 @@ async def count_user_by_uuid_async(
         models.user.User.delete_at.is_(None)
     )
     if uuid is not None and len(uuid) > 0:
-        stmt = stmt.where(models.user.User.uuid.like(f"%{uuid}%"))
+        stmt = stmt.where(models.user.User.uuid.ilike(f"%{uuid}%"))
+    return (await db.execute(stmt)).scalar_one()
+
+async def search_public_users_async(
+    db: AsyncSession,
+    start: int | None = None,
+    limit: int = 10,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.user.User)
+        .where(
+            models.user.User.delete_at.is_(None),
+            models.user.User.is_forbidden.is_(False),
+        )
+        .order_by(models.user.User.id.desc())
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
+    if start is not None:
+        stmt = stmt.where(models.user.User.id <= start)
+    if limit is not None:
+        stmt = stmt.limit(limit)
+    return list((await db.execute(stmt)).scalars().all())
+
+async def search_next_public_user_async(
+    db: AsyncSession,
+    user: models.user.User,
+    keyword: str | None = None,
+):
+    stmt = (
+        select(models.user.User)
+        .where(
+            models.user.User.delete_at.is_(None),
+            models.user.User.is_forbidden.is_(False),
+            models.user.User.id < user.id,
+        )
+        .order_by(models.user.User.id.desc())
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
+    return (await db.execute(stmt)).scalars().first()
+
+async def count_public_users_async(
+    db: AsyncSession,
+    keyword: str | None = None,
+):
+    stmt = select(func.count(models.user.User.id)).where(
+        models.user.User.delete_at.is_(None),
+        models.user.User.is_forbidden.is_(False),
+    )
+    if keyword is not None and len(keyword) > 0:
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def search_user_fans(
@@ -655,7 +707,7 @@ def search_user_fans(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
@@ -681,7 +733,7 @@ async def search_user_fans_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     return list((await db.execute(stmt)).scalars().all())
@@ -697,7 +749,7 @@ def count_user_fans(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     return query.count()
 
 async def count_user_fans_async(
@@ -715,7 +767,7 @@ async def count_user_fans_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def count_user_fans_by_user_ids(
@@ -766,7 +818,7 @@ def search_next_user_fan(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
@@ -789,7 +841,7 @@ async def search_next_user_fan_async(
         .order_by(models.user.User.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalars().first()
 
 def search_user_follows(
@@ -805,7 +857,7 @@ def search_user_follows(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     if start is not None:
         query = query.filter(models.user.User.id <= start)
@@ -831,7 +883,7 @@ async def search_user_follows_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     return list((await db.execute(stmt)).scalars().all())
@@ -847,7 +899,7 @@ def count_user_follows(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     return query.count()
 
 async def count_user_follows_async(
@@ -865,7 +917,7 @@ async def count_user_follows_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def count_user_follows_by_user_ids(
@@ -945,7 +997,7 @@ def search_next_user_follow(
                          models.user.FollowUser.delete_at.is_(None),
                          models.user.User.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.user.User.id.desc())
     query = query.filter(models.user.User.id < user.id)
     return query.first()
@@ -968,7 +1020,7 @@ async def search_next_user_follow_async(
         .order_by(models.user.User.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalars().first()
 
 # 同一用户可能在不同平台登录过 比如Revornix小程序登录 比如Revornix Web端微信方式登录 所以会有多个微信openid

@@ -437,9 +437,9 @@ async def search_admin_users(
     if keyword:
         filters.append(
             or_(
-                models.user.User.nickname.like(f"%{keyword}%"),
-                models.user.User.uuid.like(f"%{keyword}%"),
-                models.user.EmailUser.email.like(f"%{keyword}%"),
+                models.user.User.nickname.ilike(f"%{keyword}%"),
+                models.user.User.uuid.ilike(f"%{keyword}%"),
+                models.user.EmailUser.email.ilike(f"%{keyword}%"),
             )
         )
     if search_request.role is not None:
@@ -1229,8 +1229,8 @@ async def search_admin_documents(
     if keyword:
         filters.append(
             or_(
-                models.document.Document.title.like(f"%{keyword}%"),
-                models.document.Document.description.like(f"%{keyword}%"),
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
             )
         )
 
@@ -1403,8 +1403,8 @@ async def search_admin_sections(
     if keyword:
         filters.append(
             or_(
-                models.section.Section.title.like(f"%{keyword}%"),
-                models.section.Section.description.like(f"%{keyword}%"),
+                models.section.Section.title.ilike(f"%{keyword}%"),
+                models.section.Section.description.ilike(f"%{keyword}%"),
             )
         )
     total = int(

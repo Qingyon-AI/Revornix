@@ -11,7 +11,13 @@ import { toast } from 'sonner';
 import type { DocumentDetailResponse } from '@/generated';
 import { getQueryClient } from '@/lib/get-query-client';
 import { cn, diffValues } from '@/lib/utils';
-import { createLabel, getDocumentDetail, getLabels, updateDocument } from '@/service/document';
+import {
+	createLabel,
+	getDocumentDetail,
+	getDocumentPublish,
+	getLabels,
+	updateDocument,
+} from '@/service/document';
 import { getAllMineSections } from '@/service/section';
 import { useUserContext } from '@/provider/user-provider';
 
@@ -108,6 +114,12 @@ const DocumentConfiguration = ({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: async () => {
 			return getDocumentDetail({ document_id: id });
+		},
+	});
+	const { data: publishInfo } = useQuery({
+		queryKey: ['getDocumentPublish', id],
+		queryFn: async () => {
+			return getDocumentPublish({ document_id: id });
 		},
 	});
 

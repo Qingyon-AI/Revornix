@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
 
 const whitelist = [
+    '/',
     '/login',
     '/register',
     '/manifest.webmanifest',
@@ -76,6 +77,17 @@ const auth = (request: NextRequest) => {
 }
 
 export function proxy(request: NextRequest) {
+    const normalizedPath = normalizePath(request.nextUrl.pathname)
+
+    if (normalizedPath === '/$') {
+        return new NextResponse('Not Found', {
+            status: 404,
+            headers: {
+                'X-Robots-Tag': 'noindex, nofollow',
+            },
+        })
+    }
+
     // If the user is authenticated, continue as normal
     if (auth(request)) {
         return NextResponse.next()

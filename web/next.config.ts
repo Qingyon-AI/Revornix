@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
       {
         source: "/.well-known/apple-app-site-association",
         headers: [{ key: "content-type", value: "application/json" }]
+      },
+      {
+        source: "/favicon.ico",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }]
+      },
+      {
+        source: "/login",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }]
+      },
+      {
+        source: "/register",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }]
       }
     ]
   },

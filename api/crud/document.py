@@ -470,32 +470,49 @@ async def search_published_documents_async(
             models.document.Document.delete_at.is_(None),
             models.document.PublishDocument.delete_at.is_(None),
         )
+        .distinct()
     )
+
     if creator_id is not None:
         stmt = stmt.where(models.document.Document.creator_id == creator_id)
+
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f"%{keyword}%"),
-                models.document.Document.description.like(f"%{keyword}%"),
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
             )
         )
-    if label_ids is not None:
+
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.join(models.document.DocumentLabel).where(
             models.document.DocumentLabel.label_id.in_(label_ids),
             models.document.DocumentLabel.delete_at.is_(None),
         )
-    if desc:
-        stmt = stmt.order_by(models.document.Document.id.desc())
-    else:
-        stmt = stmt.order_by(models.document.Document.id.asc())
+
     if start is not None:
-        if desc:
-            stmt = stmt.where(models.document.Document.id <= start)
-        else:
-            stmt = stmt.where(models.document.Document.id >= start)
-    stmt = stmt.distinct(models.document.Document.id).limit(limit)
-    return list((await db.execute(stmt)).scalars().all())
+        stmt = stmt.where(
+            (
+                models.document.Document.id <= start
+                if desc
+                else models.document.Document.id >= start
+            ),
+        )
+
+    stmt = (
+        stmt.order_by(
+            (
+                models.document.Document.id.desc()
+                if desc
+                else models.document.Document.id.asc()
+            ),
+        )
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt)
+
+    return list(result.scalars().all())
 
 async def count_published_documents_async(
     db: AsyncSession,
@@ -520,8 +537,8 @@ async def count_published_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f"%{keyword}%"),
-                models.document.Document.description.like(f"%{keyword}%"),
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
             )
         )
     if label_ids is not None:
@@ -530,6 +547,7 @@ async def count_published_documents_async(
             models.document.DocumentLabel.delete_at.is_(None),
         )
     return int((await db.execute(stmt)).scalar_one())
+
 
 async def search_next_published_document_async(
     db: AsyncSession,
@@ -555,19 +573,24 @@ async def search_next_published_document_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f"%{keyword}%"),
-                models.document.Document.description.like(f"%{keyword}%"),
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
             )
         )
-    if label_ids is not None:
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.join(models.document.DocumentLabel).where(
             models.document.DocumentLabel.label_id.in_(label_ids),
             models.document.DocumentLabel.delete_at.is_(None),
         )
     if desc:
-        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+        stmt = stmt.where(
+            models.document.Document.id < document.id,
+        )
     else:
-        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+        stmt = stmt.where(
+            models.document.Document.id > document.id,
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
     stmt = stmt.distinct(models.document.Document.id)
     return (await db.execute(stmt)).scalars().first()
 
@@ -663,7 +686,7 @@ def search_users_and_document_users_by_document_id(
         models.user.User.id != models.document.Document.creator_id,
     )
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.document.UserDocument.id.desc())
     if start is not None:
         query = query.filter(models.document.UserDocument.id <= start)
@@ -698,7 +721,7 @@ async def search_users_and_document_users_by_document_id_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(models.document.UserDocument.id <= start)
     return (await db.execute(stmt)).all()
@@ -727,7 +750,7 @@ def search_next_user_and_document_user_by_document_id(
         models.document.UserDocument.id < user_document.id,
     )
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     query = query.order_by(models.document.UserDocument.id.desc())
     return query.first()
 
@@ -758,7 +781,7 @@ async def search_next_user_and_document_user_by_document_id_async(
         .order_by(models.document.UserDocument.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).first()
 
 def count_users_and_document_users_by_document_id(
@@ -783,7 +806,7 @@ def count_users_and_document_users_by_document_id(
         models.user.User.id != models.document.Document.creator_id,
     )
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f"%{keyword}%"))
+        query = query.filter(models.user.User.nickname.ilike(f"%{keyword}%"))
     return query.count()
 
 async def count_users_and_document_users_by_document_id_async(
@@ -810,7 +833,7 @@ async def count_users_and_document_users_by_document_id_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f"%{keyword}%"))
+        stmt = stmt.where(models.user.User.nickname.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def get_document_summary_by_user_id(
@@ -879,16 +902,19 @@ def search_section_documents(
         )
         query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
-    if desc:
-        query = query.order_by(models.document.Document.id.desc())
-    else:
-        query = query.order_by(models.document.Document.id.asc())
+        query = query.filter(models.document.Document.title.ilike(f"%{keyword}%"))
     if start is not None:
         if desc:
-            query = query.filter(models.document.Document.id <= start)
+            query = query.filter(
+                models.document.Document.id <= start,
+            )
         else:
-            query = query.filter(models.document.Document.id >= start)
+            query = query.filter(
+                models.document.Document.id >= start,
+            )
+    query = query.order_by(
+        models.document.Document.id.desc() if desc else models.document.Document.id.asc(),
+    )
     query = query.options(selectinload(models.document.Document.creator))
     query = query.limit(limit)
     return query.all()
@@ -923,7 +949,7 @@ async def search_section_documents_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.Document.title.ilike(f"%{keyword}%"))
     if start is not None:
         stmt = stmt.where(
             models.document.Document.id <= start if desc else models.document.Document.id >= start
@@ -953,13 +979,16 @@ def search_next_section_document(
         )
         query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+        query = query.filter(models.document.Document.title.ilike(f"%{keyword}%"))
     if desc:
-        query = query.order_by(models.document.Document.id.desc())
-        query = query.filter(models.document.Document.id < document.id)
+        query = query.filter(
+            models.document.Document.id < document.id,
+        )
     else:
-        query = query.order_by(models.document.Document.id.asc())
-        query = query.filter(models.document.Document.id > document.id)
+        query = query.filter(
+            models.document.Document.id > document.id,
+        )
+    query = query.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
     return query.first()
 
 
@@ -989,7 +1018,7 @@ async def search_next_section_document_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.Document.title.ilike(f"%{keyword}%"))
     if desc:
         stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
     else:
@@ -1014,7 +1043,7 @@ def count_section_documents(
         )
         query = query.filter(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+        query = query.filter(models.document.Document.title.ilike(f"%{keyword}%"))
     return query.count()
 
 
@@ -1043,7 +1072,7 @@ async def count_section_documents_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(models.document.PublishDocument.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.Document.title.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def search_next_user_document(
@@ -1060,7 +1089,7 @@ def search_next_user_document(
                          models.document.UserDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+        query = query.filter(models.document.Document.title.ilike(f"%{keyword}%"))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1091,17 +1120,28 @@ async def search_next_user_document_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f"%{keyword}%"))
-    if label_ids is not None:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
+            )
+        )
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.where(
             models.document.DocumentLabel.delete_at.is_(None),
             models.document.DocumentLabel.label_id.in_(label_ids),
         )
     if desc:
-        stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
+        stmt = stmt.where(
+            models.document.Document.id < document.id,
+        )
     else:
-        stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
+        stmt = stmt.where(
+            models.document.Document.id > document.id,
+        )
+    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
     return (await db.execute(stmt)).scalars().first()
+
 
 def search_user_documents(
     db: Session,
@@ -1118,7 +1158,7 @@ def search_user_documents(
                          models.document.UserDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(models.document.Document.title.ilike(f'%{keyword}%'))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1143,7 +1183,7 @@ async def search_user_documents_async(
     limit: int = 10,
     keyword: str | None = None,
     label_ids: list[int] | None = None,
-    desc: bool = True
+    desc: bool = True,
 ):
     stmt = (
         select(models.document.Document)
@@ -1155,20 +1195,46 @@ async def search_user_documents_async(
             models.document.Document.delete_at.is_(None),
         )
         .options(selectinload(models.document.Document.creator))
-        .distinct(models.document.Document.id)
-        .limit(limit)
+        .distinct()
     )
+
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f'%{keyword}%'))
-    if label_ids is not None:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.ilike(f"%{keyword}%"),
+                models.document.Document.description.ilike(f"%{keyword}%"),
+            )
+        )
+
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.where(
             models.document.DocumentLabel.delete_at.is_(None),
             models.document.DocumentLabel.label_id.in_(label_ids),
         )
-    stmt = stmt.order_by(models.document.Document.id.desc() if desc else models.document.Document.id.asc())
+
     if start is not None:
-        stmt = stmt.where(models.document.Document.id <= start if desc else models.document.Document.id >= start)
-    return list((await db.execute(stmt)).scalars().all())
+        stmt = stmt.where(
+            (
+                models.document.Document.id <= start
+                if desc
+                else models.document.Document.id >= start
+            ),
+        )
+
+    stmt = (
+        stmt.order_by(
+            (
+                models.document.Document.id.desc()
+                if desc
+                else models.document.Document.id.asc()
+            ),
+        )
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt)
+
+    return list(result.scalars().all())
 
 def count_user_documents(
     db: Session,
@@ -1186,7 +1252,7 @@ def count_user_documents(
                          models.document.UserDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(models.document.Document.title.ilike(f'%{keyword}%'))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1232,8 +1298,13 @@ async def count_user_documents_async(
         )
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.Document.title.like(f'%{keyword}%'))
-    if label_ids is not None:
+        stmt = stmt.where(
+            or_(
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%'),
+            )
+        )
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.where(
             models.document.DocumentLabel.delete_at.is_(None),
             models.document.DocumentLabel.label_id.in_(label_ids),
@@ -1602,7 +1673,7 @@ def search_all_documents(
     query = query.filter(models.document.UserDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(models.document.Document.title.ilike(f'%{keyword}%'))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1624,7 +1695,7 @@ def count_all_documents(
     query = query.filter(models.document.UserDocument.delete_at.is_(None))
     query = query.filter(models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f'%{keyword}%'))
+        query = query.filter(models.document.Document.title.ilike(f'%{keyword}%'))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1642,7 +1713,7 @@ def search_next_all_document(
     query = query.filter(models.document.UserDocument.delete_at.is_(None),
                          models.document.Document.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.Document.title.like(f"%{keyword}%"))
+        query = query.filter(models.document.Document.title.ilike(f"%{keyword}%"))
     if label_ids is not None:
         query = query.filter(models.document.DocumentLabel.delete_at.is_(None),
                              models.document.DocumentLabel.label_id.in_(label_ids))
@@ -1661,7 +1732,7 @@ def search_all_document_notes_by_document_id(
     query = query.filter(models.document.DocumentNote.document_id == document_id,
                          models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.DocumentNote.content.like(f'%{keyword}%'))
+        query = query.filter(models.document.DocumentNote.content.ilike(f'%{keyword}%'))
     query = query.order_by(models.document.DocumentNote.id.desc())
     if start is not None:
         query = query.filter(models.document.DocumentNote.id <= start)
@@ -1689,7 +1760,7 @@ async def search_all_document_notes_by_document_id_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentNote.content.like(f'%{keyword}%'))
+        stmt = stmt.where(models.document.DocumentNote.content.ilike(f'%{keyword}%'))
     if start is not None:
         stmt = stmt.where(models.document.DocumentNote.id <= start)
     return list((await db.execute(stmt)).scalars().all())
@@ -1703,7 +1774,7 @@ def count_all_document_notes_by_document_id(
     query = query.filter(models.document.DocumentNote.document_id == document_id,
                          models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.DocumentNote.content.like(f'%{keyword}%'))
+        query = query.filter(models.document.DocumentNote.content.ilike(f'%{keyword}%'))
     query = query.distinct(models.document.DocumentNote.id)
     return query.count()
 
@@ -1717,7 +1788,7 @@ async def count_all_document_notes_by_document_id_async(
         models.document.DocumentNote.delete_at.is_(None),
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentNote.content.like(f'%{keyword}%'))
+        stmt = stmt.where(models.document.DocumentNote.content.ilike(f'%{keyword}%'))
     return (await db.execute(stmt)).scalar_one()
 
 def search_next_note_by_document_note(
@@ -1728,7 +1799,7 @@ def search_next_note_by_document_note(
     query = db.query(models.document.DocumentNote)
     query = query.filter(models.document.DocumentNote.delete_at.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.document.DocumentNote.content.like(f"%{keyword}%"))
+        query = query.filter(models.document.DocumentNote.content.ilike(f"%{keyword}%"))
     query = query.order_by(models.document.DocumentNote.id.desc())
     query = query.filter(models.document.DocumentNote.id < document_note.id)
     return query.first()
@@ -1747,7 +1818,7 @@ async def search_next_note_by_document_note_async(
         .order_by(models.document.DocumentNote.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentNote.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.DocumentNote.content.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one_or_none()
 
 def get_labels_summary(
@@ -1923,8 +1994,8 @@ def search_user_unread_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -1973,8 +2044,8 @@ async def search_user_unread_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%'),
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -2005,8 +2076,8 @@ def search_next_user_unread_document(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2045,8 +2116,8 @@ async def search_next_user_unread_document_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%'),
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -2076,8 +2147,8 @@ def count_user_unread_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2109,8 +2180,8 @@ async def count_user_unread_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%'),
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -2137,8 +2208,8 @@ def search_user_recent_read_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2183,8 +2254,8 @@ async def search_user_recent_read_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2213,8 +2284,8 @@ def search_next_user_recent_read_document(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2249,8 +2320,8 @@ async def search_next_user_recent_read_document_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2278,8 +2349,8 @@ def count_user_recent_read_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2307,8 +2378,8 @@ async def count_user_recent_read_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2335,8 +2406,8 @@ def search_user_stared_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2381,8 +2452,8 @@ async def search_user_stared_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2411,8 +2482,8 @@ def search_next_user_star_document(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2447,8 +2518,8 @@ async def search_next_user_star_document_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -2479,8 +2550,8 @@ def count_user_stared_documents(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     query = query.distinct(models.document.Document.id)
@@ -2510,8 +2581,8 @@ async def count_user_stared_documents_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.document.Document.title.like(f'%{keyword}%'),
-                models.document.Document.description.like(f'%{keyword}%')
+                models.document.Document.title.ilike(f'%{keyword}%'),
+                models.document.Document.description.ilike(f'%{keyword}%')
             )
         )
     return (await db.execute(stmt)).scalar_one()
@@ -3096,7 +3167,7 @@ async def search_parent_degree_document_comments_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.DocumentComment.content.ilike(f"%{keyword}%"))
     if sort == "hot":
         stmt = stmt.order_by(
             models.document.DocumentComment.like_count.desc(),
@@ -3122,7 +3193,7 @@ async def count_parent_degree_document_comments_async(
         models.document.DocumentComment.parent_id.is_(None),
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.DocumentComment.content.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 
@@ -3143,7 +3214,7 @@ async def search_next_parent_degree_document_comment_async(
         .order_by(models.document.DocumentComment.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.document.DocumentComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.document.DocumentComment.content.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one_or_none()
 
 

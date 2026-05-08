@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date as date_type
 from datetime import datetime
 
-from pydantic import Field, field_serializer, ConfigDict, model_validator
+from pydantic import Field, field_serializer, field_validator, ConfigDict, model_validator
 
 from .base import BaseModel
 from .ai import ChatItem
@@ -373,11 +373,24 @@ class StarRequest(BaseModel):
     document_id: int
     status: bool
 
+class DocumentPinRequest(BaseModel):
+    document_id: int
+    status: bool
+
 class VectorSearchRequest(BaseModel):
     query: str
+    mode: str = "vector"  # "vector" | "text"
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+
+    @field_validator("mode")
+    def _validate_mode(cls, v: str):
+        if v not in ("vector", "text"):
+            raise ValueError("mode must be 'vector' or 'text'")
+        return v
 
 class VectorSearchResponse(BaseModel):
     documents: list[DocumentInfo]
+    snippets: dict[int, str] = Field(default_factory=dict)
 
 class LabelSummaryItem(BaseModel):
     label_info: DocumentLabel

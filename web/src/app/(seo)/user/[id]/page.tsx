@@ -14,7 +14,7 @@ import { cn, replacePath } from '@/lib/utils';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { BookMarked, Users } from 'lucide-react';
+import { BookMarked, FileText, Users } from 'lucide-react';
 import {
 	buildMetadata,
 	createAbsoluteUrl,
@@ -249,11 +249,11 @@ const SeoUserDetailPage = async (props: {
 		];
 
 		return (
-			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-3 pb-10 pt-0 lg:px-0'>
+			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-10 sm:px-6 lg:px-8'>
 				<JsonLd data={structuredData} />
-				<div className='relative w-full overflow-hidden border-b border-border/50 bg-background/35'>
-					<div className='relative h-52 w-full overflow-hidden xl:h-62'>
-						<div className='mx-auto h-full w-full max-w-[1480px]'>
+				<section className='-mx-4 overflow-hidden border-b border-border/60 bg-background sm:-mx-6 lg:-mx-8'>
+					<div className='relative h-56 w-full overflow-hidden lg:h-64'>
+						<div className='h-full w-full'>
 							{coverSrc ? (
 								<img
 									src={coverSrc}
@@ -262,70 +262,82 @@ const SeoUserDetailPage = async (props: {
 								/>
 							) : null}
 						</div>
-						<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.18),transparent_22%),linear-gradient(180deg,rgba(15,23,42,0.04),rgba(15,23,42,0.72))]' />
-					</div>
-					<div className='mx-auto w-full max-w-[1160px] px-4 pb-5 sm:px-6 lg:px-8'>
-						<div className='-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-start sm:justify-between lg:-mt-16'>
-							<div className='flex min-w-0 items-start gap-4'>
-								<Avatar className='size-24 border-4 border-background shadow-lg sm:size-28 lg:size-32'>
-									<AvatarImage
-										className='object-cover'
-										src={avatarSrc}
-										alt='user avatar'
-									/>
-									<AvatarFallback className='text-3xl font-semibold'>
-										{user.nickname?.slice(0, 1) ?? '?'}
-									</AvatarFallback>
-								</Avatar>
-								<div className='min-w-0 space-y-3 pt-16 lg:pt-20'>
-									<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
-											<Users className='size-3.5' />
-											<span>
-												{t('user_fans')} {user.fans ?? 0}
-											</span>
+						<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_26%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.16),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.08),rgba(15,23,42,0.76))]' />
+						<div className='absolute inset-x-0 bottom-0'>
+							<div className='mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-8'>
+								<div className='flex min-w-0 items-end gap-4'>
+									<Avatar className='size-20 border-4 border-background/90 shadow-xl sm:size-24'>
+										<AvatarImage
+											className='object-cover'
+											src={avatarSrc}
+											alt='user avatar'
+										/>
+										<AvatarFallback className='text-2xl font-semibold'>
+											{user.nickname?.slice(0, 1) ?? '?'}
+										</AvatarFallback>
+									</Avatar>
+									<div className='min-w-0 space-y-2 pb-1'>
+										<div className='flex flex-wrap items-center gap-2'>
+											<h1 className='break-words text-2xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-3xl'>
+												{user.nickname}
+											</h1>
+											<Badge
+												variant='outline'
+												className={cn(
+													'rounded-full bg-background/82 px-3 py-1 text-xs font-medium backdrop-blur',
+													roleMeta.className,
+												)}>
+												{roleMeta.label}
+											</Badge>
 										</div>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
-											<Users className='size-3.5' />
-											<span>
-												{t('user_follows')} {user.follows ?? 0}
-											</span>
-										</div>
-										<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
-											<BookMarked className='size-3.5' />
-											<span>
-												{t('user_detail_section_total')} {totalSections}
-											</span>
-										</div>
-									</div>
-									<div className='space-y-2'>
-										<h1 className='break-words text-3xl font-semibold tracking-tight sm:text-4xl'>
-											{user.nickname}
-										</h1>
-										<p className='max-w-[760px] text-sm leading-7 text-muted-foreground sm:text-base'>
+										<p className='max-w-[760px] text-sm leading-6 text-white/86 drop-shadow-sm'>
 											{user.slogan ? user.slogan : t('user_slogan_empty')}
 										</p>
-										<Badge
-											variant='outline'
-											className={cn(
-												'rounded-full px-3 py-1 text-xs font-medium',
-												roleMeta.className,
-											)}>
-											{roleMeta.label}
-										</Badge>
 									</div>
 								</div>
-							</div>
-							<div className='flex shrink-0 items-center gap-3 z-10'>
-								<SeoUserFollowButton
-									userId={user.id}
-									initialIsFollowed={user.is_followed}
-									className='shrink-0'
-								/>
+								<div className='flex shrink-0 items-center gap-3 z-10'>
+									<SeoUserFollowButton
+										userId={user.id}
+										initialIsFollowed={user.is_followed}
+										className='shrink-0'
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+					<div className='border-t border-border/60 bg-background/96'>
+						<div className='mx-auto flex w-full max-w-[1160px] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8'>
+							<div className='flex flex-wrap items-center gap-4 text-sm text-muted-foreground'>
+								<div className='inline-flex items-center gap-1.5'>
+									<Users className='size-4' />
+									<span>
+										{t('user_fans')} {user.fans ?? 0}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<Users className='size-4' />
+									<span>
+										{t('user_follows')} {user.follows ?? 0}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<BookMarked className='size-4' />
+									<span>
+										{t('user_detail_section_total')} {totalSections}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<FileText className='size-4' />
+									<span>
+										{t('user_detail_documents_result', {
+											count: totalDocuments,
+										})}
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
 
 				<SeoUserContentBrowser
 					userId={user.id}

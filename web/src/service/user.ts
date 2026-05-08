@@ -2,6 +2,7 @@ import userApi from '@/api/user'
 import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
+import { publicRequest } from '@/lib/request-public';
 import { serverRequest } from '@/lib/request-server';
 
 export type ComputeLedgerItem = {
@@ -40,6 +41,18 @@ export const getUserComputeLedgerForPaySystem = async (data?: ComputeLedgerReque
 
 export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
     return await request(userApi.searchUser, {
+        data
+    })
+}
+
+export type SearchPublicUsersWithKeywordRequest = {
+    start?: number | null
+    limit?: number
+    keyword?: string | null
+}
+
+export const searchPublicUsers = async (data: SearchPublicUsersWithKeywordRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+    return await publicRequest(userApi.searchPublicUsers, {
         data
     })
 }

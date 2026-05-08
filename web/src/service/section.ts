@@ -34,6 +34,11 @@ export type CancelSectionTaskRequest = {
     section_id: number
 }
 
+export type SectionPinRequest = {
+    section_id: number
+    status: boolean
+}
+
 export type SectionPptSlide = {
     id: string
     title: string
@@ -152,6 +157,12 @@ export const searchUserSection = async (data: SearchUserSectionsRequest): Promis
 
 export const searchPublicSection = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
     return await request(sectionApi.searchPublicSection, {
+        data
+    })
+}
+
+export const searchPublicSectionAnonymous = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
+    return await publicRequest(sectionApi.searchPublicSection, {
         data
     })
 }

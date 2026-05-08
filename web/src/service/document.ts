@@ -16,6 +16,11 @@ export type DocumentPublishRequest = {
     status: boolean
 }
 
+export type DocumentPinRequest = {
+    document_id: number
+    status: boolean
+}
+
 export type DocumentPublishGetRequest = {
     document_id: number
 }
@@ -263,8 +268,25 @@ export const getLabels = async (): Promise<LabelListResponse> => {
     return await request(documentApi.listLabel)
 }
 
-export const searchDocumentVector = async (data: VectorSearchRequest): Promise<VectorSearchResponse> => {
+export type GlobalSearchMode = 'vector' | 'text'
+
+export type GlobalDocumentSearchRequest = VectorSearchRequest & {
+    mode?: GlobalSearchMode
+    limit?: number
+}
+
+export type GlobalDocumentSearchResponse = VectorSearchResponse & {
+    snippets?: Record<number, string>
+}
+
+export const searchDocumentVector = async (data: GlobalDocumentSearchRequest): Promise<GlobalDocumentSearchResponse> => {
     return await request(documentApi.searchDocumentVector, {
+        data
+    })
+}
+
+export const searchPublicDocumentVector = async (data: GlobalDocumentSearchRequest): Promise<GlobalDocumentSearchResponse> => {
+    return await publicRequest(documentApi.searchPublicDocumentVector, {
         data
     })
 }

@@ -9,12 +9,47 @@ import models
 import schemas
 from common.dependencies import get_async_db, get_current_user, get_current_user_without_throw
 from common.file import get_remote_file_signed_urls
-from data.milvus.search import naive_search
+from data.milvus.search import (
+    hybrid_search,
+    naive_search,
+    public_hybrid_search,
+    public_naive_search,
+)
 from enums.document import DocumentCategory
 from proxy.file_system_proxy import FileSystemProxy
 from router.logic_helpers import ensure_document_access, resolve_infinite_scroll_meta
 
 document_query_router = APIRouter()
+
+
+def _fuse_chunk_and_title_results(
+    *,
+    fused_chunks: list[dict[str, Any]],
+    title_matches: list[Any],
+    limit: int,
+    rrf_k: int = 60,
+) -> list[int]:
+    """Combine chunk-level hybrid results with title keyword matches via RRF.
+
+    Title matches are a strong precision signal — when a user's query appears
+    verbatim in a document title, that document should outrank semantic-only
+    hits. We treat the title-match list as a second retriever and fuse it with
+    the chunk-fused list using Reciprocal Rank Fusion. Returns deduplicated,
+    score-ordered doc_ids capped at `limit`.
+    """
+    scores: dict[int, float] = {}
+    for rank, chunk in enumerate(fused_chunks):
+        doc_id = chunk.get("doc_id")
+        if doc_id is None:
+            continue
+        scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (rrf_k + rank + 1)
+    for rank, document in enumerate(title_matches):
+        # Title matches get a slight boost to break ties in favor of titles —
+        # a verbatim title hit is strictly more meaningful than a body chunk
+        # match at the same RRF rank.
+        scores[document.id] = scores.get(document.id, 0.0) + 1.2 / (rrf_k + rank + 1)
+    ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+    return [doc_id for doc_id, _ in ordered[:limit]]
 
 
 async def _batch_sign_remote_fields(
@@ -756,19 +791,52 @@ async def search_public_documents(
         next_start=next_start,
     )
 
+
 @document_query_router.post('/vector/search', response_model=schemas.document.VectorSearchResponse)
 async def search_knowledge_vector(
     vector_search_request: schemas.document.VectorSearchRequest,
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    hybrid_results = await naive_search(
+    query = vector_search_request.query.strip()
+    if not query:
+        return schemas.document.VectorSearchResponse(documents=[])
+
+    if vector_search_request.mode == "text":
+        db_documents = await crud.document.search_user_documents_async(
+            db=db,
+            user_id=user.id,
+            keyword=query,
+            limit=vector_search_request.limit,
+        )
+        documents = [
+            schemas.document.DocumentInfo.model_validate(document)
+            for document in db_documents
+        ]
+        return schemas.document.VectorSearchResponse(documents=documents)
+
+    fused_chunks = await hybrid_search(
         user_id=user.id,
-        search_text=vector_search_request.query
+        search_text=query,
+        top_k=vector_search_request.limit * 2,
     )
-    document_ids: list[int] = list(
-        dict.fromkeys(cast(int, doc.get('doc_id')) for doc in hybrid_results)
+    title_matches = await crud.document.search_user_documents_async(
+        db=db,
+        user_id=user.id,
+        keyword=query,
+        limit=vector_search_request.limit,
     )
+    snippets_pool: dict[int, str] = {
+        cast(int, chunk['doc_id']): cast(str, chunk.get('text') or '')
+        for chunk in fused_chunks
+        if chunk.get('doc_id') is not None
+    }
+    document_ids = _fuse_chunk_and_title_results(
+        fused_chunks=fused_chunks,
+        title_matches=title_matches,
+        limit=vector_search_request.limit,
+    )
+    snippets = {doc_id: snippets_pool[doc_id] for doc_id in document_ids if doc_id in snippets_pool}
     db_documents = await crud.document.get_documents_by_document_ids_async(
         db=db,
         document_ids=document_ids
@@ -779,4 +847,79 @@ async def search_knowledge_vector(
         for document_id in document_ids
         if document_id in document_by_id
     ]
-    return schemas.document.VectorSearchResponse(documents=documents)
+    return schemas.document.VectorSearchResponse(documents=documents, snippets=snippets)
+
+
+@document_query_router.post('/public/vector/search', response_model=schemas.document.VectorSearchResponse)
+async def search_public_knowledge_vector(
+    vector_search_request: schemas.document.VectorSearchRequest,
+    db: AsyncSession = Depends(get_async_db),
+):
+    query = vector_search_request.query.strip()
+    if not query:
+        return schemas.document.VectorSearchResponse(documents=[])
+
+    if vector_search_request.mode == "text":
+        db_documents = await crud.document.search_published_documents_async(
+            db=db,
+            keyword=query,
+            limit=vector_search_request.limit,
+        )
+        documents = [
+            schemas.document.DocumentInfo.model_validate(document)
+            for document in db_documents
+        ]
+        return schemas.document.VectorSearchResponse(documents=documents)
+
+    # Vector mode: pull a wider candidate set from milvus, then keep only
+    # documents that are currently published. Without the post-filter, the
+    # public endpoint would leak private documents.
+    candidate_top_k = max(vector_search_request.limit * 4, 20)
+    fused_chunks = await public_hybrid_search(
+        search_text=query,
+        top_k=candidate_top_k,
+    )
+    title_matches = await crud.document.search_published_documents_async(
+        db=db,
+        keyword=query,
+        limit=vector_search_request.limit,
+    )
+    candidate_document_ids: list[int] = [
+        cast(int, chunk.get('doc_id')) for chunk in fused_chunks
+    ]
+    candidate_document_ids.extend(doc.id for doc in title_matches)
+    if not candidate_document_ids:
+        return schemas.document.VectorSearchResponse(documents=[])
+
+    publish_records = await crud.document.get_publish_documents_by_document_ids_async(
+        db=db,
+        document_ids=candidate_document_ids,
+    )
+    published_ids = {record.document_id for record in publish_records}
+    # Drop title matches that aren't actually published (the title-match query
+    # already filters by published, but keep this defensive in case schemas
+    # diverge).
+    title_matches = [doc for doc in title_matches if doc.id in published_ids]
+    fused_chunks = [chunk for chunk in fused_chunks if chunk.get('doc_id') in published_ids]
+    snippet_by_id: dict[int, str] = {
+        cast(int, chunk['doc_id']): cast(str, chunk.get('text') or '')
+        for chunk in fused_chunks
+        if chunk.get('doc_id') in published_ids
+    }
+    ordered_ids = _fuse_chunk_and_title_results(
+        fused_chunks=fused_chunks,
+        title_matches=title_matches,
+        limit=vector_search_request.limit,
+    )
+    snippets = {doc_id: snippet_by_id[doc_id] for doc_id in ordered_ids if doc_id in snippet_by_id}
+    db_documents = await crud.document.get_documents_by_document_ids_async(
+        db=db,
+        document_ids=ordered_ids,
+    )
+    document_by_id = {document.id: document for document in db_documents}
+    documents = [
+        schemas.document.DocumentInfo.model_validate(document_by_id[document_id])
+        for document_id in ordered_ids
+        if document_id in document_by_id
+    ]
+    return schemas.document.VectorSearchResponse(documents=documents, snippets=snippets)

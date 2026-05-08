@@ -352,31 +352,18 @@ const SeoUserContentBrowser = ({
 	]);
 
 	return (
-		<div className='mx-auto w-full max-w-[1160px] rounded-[28px] border border-border/60 bg-background/24'>
-			<div className='md:sticky top-14 z-10 rounded-t-[28px] border-b border-border/60 bg-background/92 px-5 py-5 backdrop-blur-xl'>
-				<div className='flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between'>
-					<div className='min-w-0 space-y-2'>
-						<h2 className='text-xl font-semibold tracking-tight sm:text-2xl'>
-							{tab === 'documents'
-								? t('user_detail_documents_title')
-								: t('user_detail_sections_title')}
-						</h2>
-						<p className='max-w-[40rem] text-sm leading-6 text-muted-foreground'>
-							{tab === 'documents'
-								? t('user_detail_documents_description')
-								: t('user_detail_sections_description')}
-						</p>
-					</div>
-					<div className='flex w-full min-w-0 flex-col gap-3 xl:max-w-[720px] xl:items-end'>
-						<div className='flex w-full min-w-0 flex-wrap items-center gap-3 xl:justify-end'>
-							<div className='inline-flex max-w-full rounded-2xl border border-border/60 bg-background/45 p-1'>
+		<div className='mx-auto w-full max-w-[1160px]'>
+			<div className='md:sticky top-14 z-10 border-b border-border/60 bg-background/94 py-3 backdrop-blur-xl'>
+				<div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
+					<div className='flex min-w-0 flex-wrap items-center gap-3'>
+						<div className='inline-flex max-w-full rounded-xl border border-border/60 bg-background/65 p-0.5'>
 								<Button
 									asChild
 									variant='ghost'
 									className={cn(
-										'h-9 rounded-xl px-3 shadow-none',
+										'h-9 rounded-lg px-3 shadow-none',
 										tab === 'sections'
-											? 'border border-border/70 bg-background text-foreground hover:bg-background'
+											? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
 											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
 									)}>
 									<Link
@@ -389,9 +376,9 @@ const SeoUserContentBrowser = ({
 									asChild
 									variant='ghost'
 									className={cn(
-										'h-9 rounded-xl px-3 shadow-none',
+										'h-9 rounded-lg px-3 shadow-none',
 										tab === 'documents'
-											? 'border border-border/70 bg-background text-foreground hover:bg-background'
+											? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
 											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
 									)}>
 									<Link
@@ -403,15 +390,24 @@ const SeoUserContentBrowser = ({
 									</Link>
 								</Button>
 							</div>
-							<CardViewToggle
-								value={viewMode}
-								onChange={setViewMode}
-								className='ml-auto h-11 shrink-0 rounded-2xl border-border/60 bg-background/45 sm:ml-0 [&_button]:h-full [&_button]:w-11'
-							/>
+						<div className='inline-flex items-center gap-2 text-sm text-muted-foreground'>
+							{tab === 'documents' ? (
+								<FileText className='size-4' />
+							) : (
+								<Compass className='size-4' />
+							)}
+							<span>
+								{tab === 'documents'
+									? t('user_detail_documents_result', { count: totalCount })
+									: t('user_detail_sections_result', { count: totalCount })}
+							</span>
+							{keyword ? <span>“{keyword}”</span> : null}
 						</div>
+					</div>
+					<div className='flex w-full min-w-0 flex-col gap-2 sm:flex-row xl:max-w-[560px] xl:items-center'>
 						<form
 							action={`/user/${userId}`}
-							className='w-full min-w-0 xl:max-w-[520px]'>
+							className='w-full min-w-0'>
 							<input type='hidden' name='tab' value={tab} />
 							<div className='relative'>
 								<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
@@ -423,27 +419,19 @@ const SeoUserContentBrowser = ({
 											? t('user_detail_documents_search_placeholder')
 											: t('user_detail_sections_search_placeholder')
 									}
-									className='h-11 rounded-2xl border-border/60 bg-background/45 pl-9'
+									className='h-10 rounded-xl border-border/60 bg-background/65 pl-9 shadow-sm'
 								/>
 							</div>
 						</form>
+							<CardViewToggle
+								value={viewMode}
+								onChange={setViewMode}
+								className='h-10 shrink-0 rounded-xl border-border/60 bg-background/65 [&_button]:h-full [&_button]:w-10'
+							/>
 					</div>
 				</div>
 			</div>
-			<div className='px-5 py-5'>
-				<div className='mb-5 flex items-center gap-2 text-sm text-muted-foreground'>
-					{tab === 'documents' ? (
-						<FileText className='size-4' />
-					) : (
-						<Compass className='size-4' />
-					)}
-					<span>
-						{tab === 'documents'
-							? t('user_detail_documents_result', { count: totalCount })
-							: t('user_detail_sections_result', { count: totalCount })}
-					</span>
-					{keyword ? <span>“{keyword}”</span> : null}
-				</div>
+			<div className='py-5'>
 				{tab === 'sections' && sectionItems.length === 0 ? (
 					<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 						<div className='max-w-md'>
@@ -484,7 +472,11 @@ const SeoUserContentBrowser = ({
 							<div
 								className='h-full'
 								key={section.id}
-								ref={index === sectionItems.length - 1 ? bottomRef : undefined}>
+								ref={
+									index === sectionItems.length - 1
+										? bottomRef
+										: undefined
+								}>
 								<PublicSectionCard section={section} />
 							</div>
 						))}
@@ -497,7 +489,11 @@ const SeoUserContentBrowser = ({
 						{sectionItems.map((section, index) => (
 							<div
 								key={section.id}
-								ref={index === sectionItems.length - 1 ? bottomRef : undefined}>
+								ref={
+									index === sectionItems.length - 1
+										? bottomRef
+										: undefined
+								}>
 								<SeoUserSectionListRow section={section} />
 							</div>
 						))}
@@ -509,7 +505,9 @@ const SeoUserContentBrowser = ({
 							<div
 								key={document.id}
 								ref={
-									index === documentItems.length - 1 ? bottomRef : undefined
+									index === documentItems.length - 1
+										? bottomRef
+										: undefined
 								}>
 								<PublicDocumentCard document={document} />
 							</div>
