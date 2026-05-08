@@ -24,6 +24,7 @@ export default {
     searchMyDocuments: API_PREFIX + '/document/search/mine',
     searchStarDocument: API_PREFIX + '/document/star/search',
     searchDocumentVector: API_PREFIX + '/document/vector/search',
+    searchPublicDocumentVector: API_PREFIX + '/document/public/vector/search',
     summaryMonthDocumentCount: API_PREFIX + '/document/month/summary',
     searchDocumentNotes: API_PREFIX + '/document/note/search',
     createDocumentNote: API_PREFIX + '/document/note/create',

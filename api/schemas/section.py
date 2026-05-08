@@ -82,6 +82,10 @@ class SectionPublishRequest(BaseModel):
     section_id: int
     status: bool
 
+class SectionPinRequest(BaseModel):
+    section_id: int
+    status: bool
+
 class SectionUserRequest(BaseModel):
     section_id: int
     start: int | None = None

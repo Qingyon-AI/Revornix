@@ -25,6 +25,11 @@ class SearchUserRequest(BaseModel):
             raise ValueError('filter_name must be name or email')
         return v
 
+class SearchPublicUsersRequest(BaseModel):
+    start: int | None = None
+    limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
+    keyword: str | None = None
+
 class WeChatInfo(BaseModel):
     wechat_open_id: str
     nickname: str | None

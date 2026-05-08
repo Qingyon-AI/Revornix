@@ -183,6 +183,42 @@ async def search_user(
         elements=users
     )
 
+@user_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+async def search_public_users(
+    search_public_users_request: schemas.user.SearchPublicUsersRequest,
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_users = await crud.user.search_public_users_async(
+        db=db,
+        start=search_public_users_request.start,
+        limit=search_public_users_request.limit,
+        keyword=search_public_users_request.keyword,
+    )
+    users = [schemas.user.UserPublicInfo.model_validate(db_user) for db_user in db_users]
+    await _batch_sign_user_media(users=users)
+
+    next_user = None
+    if search_public_users_request.limit > 0 and len(db_users) == search_public_users_request.limit:
+        next_user = await crud.user.search_next_public_user_async(
+            db=db,
+            user=db_users[-1],
+            keyword=search_public_users_request.keyword,
+        )
+
+    total = await crud.user.count_public_users_async(
+        db=db,
+        keyword=search_public_users_request.keyword,
+    )
+
+    return schemas.pagination.InifiniteScrollPagnition(
+        total=total,
+        start=search_public_users_request.start,
+        limit=search_public_users_request.limit,
+        has_more=next_user is not None,
+        next_start=next_user.id if next_user is not None else None,
+        elements=users,
+    )
+
 @user_router.post('/default-file-system/update', response_model=schemas.common.NormalResponse)
 async def update_default_file_system(
     default_file_system_update_request: schemas.user.DefaultFileSystemUpdateRequest,

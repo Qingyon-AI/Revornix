@@ -29,6 +29,7 @@ import { utils } from '@kinda/utils';
 import {
 	createLabel,
 	getMineLabels,
+	getSectionPublish,
 	getSectionDetail,
 	updateSection,
 } from '@/service/section';
@@ -140,6 +141,12 @@ const SectionOperateConfiguration = ({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
+		},
+	});
+	const { data: publishInfo } = useQuery({
+		queryKey: ['getSectionPublish', id],
+		queryFn: async () => {
+			return getSectionPublish({ section_id: id });
 		},
 	});
 

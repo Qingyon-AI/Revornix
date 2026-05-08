@@ -873,6 +873,7 @@ async def update_section(
 
     return schemas.common.SuccessResponse()
 
+
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
 async def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,

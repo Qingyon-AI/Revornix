@@ -4,6 +4,7 @@ import {
 	fetchPublicDocuments,
 	fetchPublicSectionDocuments,
 	fetchPublicSections,
+	fetchPublicUsers,
 	type PublicSectionInfo,
 } from '@/lib/seo';
 import { createAbsoluteUrl, toIsoDate } from '@/lib/seo-metadata';
@@ -15,6 +16,7 @@ export const SITEMAP_CONTENT_TYPE = 'application/xml; charset=utf-8';
 const SECTION_PAGE_SIZE = 20;
 const DOCUMENTS_PER_SECTION = 20;
 const SECTION_DOCUMENT_CONCURRENCY = 5;
+const USER_PAGE_SIZE = 20;
 
 const getLastModified = (value?: Date | string | null) => {
 	return value ? new Date(value) : new Date();
@@ -42,6 +44,21 @@ const addEntry = (
 		changeFrequency,
 		priority,
 	});
+};
+
+const addCreatorEntry = (
+	creatorLatestUpdate: Map<number, Date>,
+	creatorId: number | null | undefined,
+	lastModified: Date,
+) => {
+	if (!creatorId) {
+		return;
+	}
+
+	const currentLatest = creatorLatestUpdate.get(creatorId);
+	if (!currentLatest || lastModified > currentLatest) {
+		creatorLatestUpdate.set(creatorId, lastModified);
+	}
 };
 
 const fetchAllPublicSections = async () => {
@@ -186,10 +203,55 @@ const fetchAllPublicDocuments = async () => {
 	return documents;
 };
 
+const fetchAllPublicUsers = async () => {
+	const users: Awaited<ReturnType<typeof fetchPublicUsers>>['elements'] = [];
+	let start: number | undefined;
+	const seenStarts = new Set<number | undefined>();
+
+	while (true) {
+		if (seenStarts.has(start)) {
+			console.error(
+				'[SEO] Repeated public user pagination cursor detected while generating sitemap:',
+				start,
+			);
+			break;
+		}
+		seenStarts.add(start);
+
+		const response = await fetchPublicUsers({
+			start,
+			limit: USER_PAGE_SIZE,
+		});
+
+		users.push(...(response.elements ?? []));
+
+		if (
+			!response.has_more ||
+			response.next_start === undefined ||
+			response.next_start === null
+		) {
+			break;
+		}
+
+		if (response.next_start === start) {
+			console.error(
+				'[SEO] Public user pagination did not advance while generating sitemap:',
+				start,
+			);
+			break;
+		}
+
+		start = response.next_start;
+	}
+
+	return users;
+};
+
 const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 	const entries = new Map<string, MetadataRoute.Sitemap[number]>();
 
 	addEntry(entries, '/community', new Date(), 'daily', 1);
+	addEntry(entries, '/community?tab=documents', new Date(), 'daily', 0.9);
 
 	let publicSections: PublicSectionInfo[] = [];
 	try {
@@ -219,28 +281,43 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 			0.9,
 		);
 
-		if (section.creator?.id) {
-			const currentLatest = creatorLatestUpdate.get(section.creator.id);
-			if (!currentLatest || lastModified > currentLatest) {
-				creatorLatestUpdate.set(section.creator.id, lastModified);
-			}
-		}
+		addCreatorEntry(creatorLatestUpdate, section.creator?.id, lastModified);
 	}
 
-	for (const [creatorId, lastModified] of creatorLatestUpdate.entries()) {
-		addEntry(entries, `/user/${creatorId}`, lastModified, 'weekly', 0.7);
+	const creatorsWithPublicDocuments = new Set<number>();
+	let publicUsers: Awaited<ReturnType<typeof fetchAllPublicUsers>> = [];
+
+	try {
+		publicUsers = await fetchAllPublicUsers();
+	} catch (error) {
+		console.error(
+			'[SEO] Failed to fetch public users for sitemap:',
+			error,
+		);
+	}
+
+	for (const user of publicUsers) {
+		addEntry(entries, `/user/${user.id}`, new Date(), 'weekly', 0.5);
 	}
 
 	try {
 		const publicDocuments = await fetchAllPublicDocuments();
 		for (const document of publicDocuments) {
+			const lastModified = getLastModified(
+				document.update_time ?? document.create_time,
+			);
 			addEntry(
 				entries,
 				`/document/${document.id}`,
-				document.update_time ?? document.create_time,
+				lastModified,
 				'monthly',
 				0.6,
 			);
+			const creatorId = document.creator?.id ?? document.creator_id;
+			if (creatorId) {
+				creatorsWithPublicDocuments.add(creatorId);
+			}
+			addCreatorEntry(creatorLatestUpdate, creatorId, lastModified);
 		}
 	} catch (error) {
 		console.error(
@@ -287,6 +364,19 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 					0.6,
 				);
 			}
+		}
+	}
+
+	for (const [creatorId, lastModified] of creatorLatestUpdate.entries()) {
+		addEntry(entries, `/user/${creatorId}`, lastModified, 'weekly', 0.7);
+		if (creatorsWithPublicDocuments.has(creatorId)) {
+			addEntry(
+				entries,
+				`/user/${creatorId}?tab=documents`,
+				lastModified,
+				'weekly',
+				0.6,
+			);
 		}
 	}
 

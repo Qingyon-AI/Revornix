@@ -492,28 +492,31 @@ def search_user_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if only_published:
         query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
         query = query.filter(models.section.PublishSection.delete_at.is_(None))
-    if label_ids is not None:
+    if label_ids is not None and len(label_ids) > 0:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at.is_(None))
-    if desc:
-        query = query.order_by(models.section.Section.id.desc())
-    else:
-        query = query.order_by(models.section.Section.id.asc())
     if start is not None:
         if desc:
-            query = query.filter(models.section.Section.id <= start)
+            query = query.filter(
+                models.section.Section.id <= start,
+            )
         else:
-            query = query.filter(models.section.Section.id >= start)
+            query = query.filter(
+                models.section.Section.id >= start,
+            )
+    query = query.order_by(
+        models.section.Section.id.desc() if desc else models.section.Section.id.asc(),
+    )
     query = query.options(selectinload(models.section.Section.creator))
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     query = query.limit(limit)
     return query.all()
 
@@ -541,33 +544,40 @@ async def search_user_sections_async(
             ]),
         )
         .options(selectinload(models.section.Section.creator))
-        .distinct(models.section.Section.id)
-        .limit(limit)
+        .distinct()
     )
+
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
+
     if only_published:
         stmt = stmt.join(
             models.section.PublishSection,
             models.section.PublishSection.section_id == models.section.Section.id,
-        ).where(models.section.PublishSection.delete_at.is_(None))
-    if label_ids is not None:
+        ).where(
+            models.section.PublishSection.delete_at.is_(None)
+        )
+
+    if label_ids is not None and len(label_ids) > 0:
         stmt = stmt.join(models.section.SectionLabel).where(
             models.section.SectionLabel.label_id.in_(label_ids),
             models.section.SectionLabel.delete_at.is_(None),
         )
+
     if start is not None:
         stmt = stmt.where(
-            models.section.Section.id <= start if desc else models.section.Section.id >= start
+            models.section.Section.id <= start if desc else models.section.Section.id >= start,
         )
+
     stmt = stmt.order_by(
-        models.section.Section.id.desc() if desc else models.section.Section.id.asc()
-    )
+        models.section.Section.id.desc() if desc else models.section.Section.id.asc(),
+    ).limit(limit)
+
     return list((await db.execute(stmt)).scalars().all())
 
 def count_user_sections(
@@ -587,18 +597,18 @@ def count_user_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if only_published:
         query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
         query = query.filter(models.section.PublishSection.delete_at.is_(None))
-    if label_ids is not None:
+    if label_ids is not None and len(label_ids) > 0:
         query = query.join(models.section.SectionLabel)
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at.is_(None))
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     return query.count()
 
 
@@ -622,8 +632,8 @@ async def count_user_sections_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if only_published:
@@ -658,8 +668,8 @@ def search_next_user_section(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if only_published:
@@ -670,12 +680,17 @@ def search_next_user_section(
         query = query.filter(models.section.SectionLabel.label_id.in_(label_ids),
                              models.section.SectionLabel.delete_at.is_(None))
     if desc:
-        query = query.order_by(models.section.Section.id.desc())
-        query = query.filter(models.section.Section.id < section.id)
+        query = query.filter(
+            models.section.Section.id < section.id,
+        )
     else:
-        query = query.order_by(models.section.Section.id.asc())
-        query = query.filter(models.section.Section.id > section.id)
-    query = query.distinct(models.section.Section.id)
+        query = query.filter(
+            models.section.Section.id > section.id,
+        )
+    query = query.order_by(
+        models.section.Section.id.desc() if desc else models.section.Section.id.asc()
+    )
+    query = query.distinct()
     return query.first()
 
 
@@ -697,13 +712,13 @@ async def search_next_user_section_async(
             models.section.SectionUser.delete_at.is_(None),
             models.section.SectionUser.role.in_([UserSectionRole.CREATOR, UserSectionRole.MEMBER]),
         )
-        .distinct(models.section.Section.id)
+        .distinct()
     )
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if only_published:
@@ -717,12 +732,20 @@ async def search_next_user_section_async(
             models.section.SectionLabel.delete_at.is_(None),
         )
     if desc:
-        stmt = stmt.where(models.section.Section.id < section.id).order_by(models.section.Section.id.desc())
+        stmt = stmt.where(
+            models.section.Section.id < section.id,
+        )
     else:
-        stmt = stmt.where(models.section.Section.id > section.id).order_by(models.section.Section.id.asc())
-    stmt = stmt.distinct(models.section.Section.id)
+        stmt = stmt.where(
+            models.section.Section.id > section.id,
+        )
+    stmt = stmt.order_by(
+        models.section.Section.id.desc() if desc else models.section.Section.id.asc()
+    )
+    stmt = stmt.distinct()
     stmt = stmt.limit(1)
     return (await db.execute(stmt)).scalar_one_or_none()
+
 
 def search_user_subscribed_sections(
     db: Session,
@@ -739,8 +762,8 @@ def search_user_subscribed_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -762,7 +785,7 @@ def search_user_subscribed_sections(
             query = query.filter(models.section.Section.id <= start)
         else:
             query = query.filter(models.section.Section.id >= start)
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     query = query.limit(limit)
     return query.all()
 
@@ -790,15 +813,15 @@ async def search_user_subscribed_sections_async(
                 models.section.SectionUser.expire_time.is_(None),
             ),
         )
-        .distinct(models.section.Section.id)
+        .distinct()
         .limit(limit)
         .options(selectinload(models.section.Section.creator))
     )
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -827,8 +850,8 @@ def count_user_subscribed_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -841,7 +864,7 @@ def count_user_subscribed_sections(
                          models.section.SectionUser.role == UserSectionRole.SUBSCRIBER)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time.is_(None)))
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     return query.count()
 
 
@@ -870,8 +893,8 @@ async def count_user_subscribed_sections_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -901,8 +924,8 @@ def search_next_user_subscribed_section(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -944,8 +967,8 @@ async def search_next_user_subscribed_section_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -957,7 +980,7 @@ async def search_next_user_subscribed_section_async(
         stmt = stmt.where(models.section.Section.id < section.id).order_by(models.section.Section.id.desc())
     else:
         stmt = stmt.where(models.section.Section.id > section.id).order_by(models.section.Section.id.asc())
-    stmt = stmt.distinct(models.section.Section.id)
+    stmt = stmt.distinct()
     stmt = stmt.limit(1)
     return (await db.execute(stmt)).scalar_one_or_none()
 
@@ -973,7 +996,7 @@ def search_parent_degree_section_comments(
                          models.section.SectionComment.section_id == section_id,
                          models.section.SectionComment.parent_id.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
+        query = query.filter(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     query = query.order_by(models.section.SectionComment.id.desc())
     if start is not None:
         query = query.filter(models.section.SectionComment.id <= start)
@@ -1008,7 +1031,7 @@ async def search_parent_degree_section_comments_async(
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.section.SectionComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     if sort == "hot":
         stmt = stmt.order_by(
             models.section.SectionComment.like_count.desc(),
@@ -1032,7 +1055,7 @@ def count_parent_degree_section_comments(
                          models.section.SectionComment.section_id == section_id,
                          models.section.SectionComment.parent_id.is_(None))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
+        query = query.filter(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     query = query.distinct(models.section.SectionComment.id)
     return query.count()
 
@@ -1048,7 +1071,7 @@ async def count_parent_degree_section_comments_async(
         models.section.SectionComment.parent_id.is_(None),
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.section.SectionComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one()
 
 def search_next_parent_degree_section_comment(
@@ -1061,7 +1084,7 @@ def search_next_parent_degree_section_comment(
     query = query.filter(models.section.SectionComment.delete_at.is_(None),
                          models.section.SectionComment.section_id == section_id)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.section.SectionComment.content.like(f"%{keyword}%"))
+        query = query.filter(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     query = query.order_by(models.section.SectionComment.id.desc())
     query = query.filter(models.section.SectionComment.id < section_comment.id)
     return query.first()
@@ -1083,7 +1106,7 @@ async def search_next_parent_degree_section_comment_async(
         .order_by(models.section.SectionComment.id.desc())
     )
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.section.SectionComment.content.like(f"%{keyword}%"))
+        stmt = stmt.where(models.section.SectionComment.content.ilike(f"%{keyword}%"))
     return (await db.execute(stmt)).scalar_one_or_none()
 
 
@@ -1250,8 +1273,8 @@ def search_published_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -1271,7 +1294,7 @@ def search_published_sections(
         else:
             query = query.filter(models.section.Section.id >= start)
     query = query.options(selectinload(models.section.Section.creator))
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     query = query.limit(limit)
     return query.all()
 
@@ -1295,14 +1318,14 @@ async def search_published_sections_async(
             models.section.PublishSection.delete_at.is_(None),
         )
         .options(selectinload(models.section.Section.creator))
-        .distinct(models.section.Section.id)
+        .distinct()
         .limit(limit)
     )
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -1328,8 +1351,8 @@ def count_published_sections(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -1339,7 +1362,7 @@ def count_published_sections(
     query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
     query = query.filter(models.section.PublishSection.delete_at.is_(None))
-    query = query.distinct(models.section.Section.id)
+    query = query.distinct()
     return query.count()
 
 
@@ -1363,8 +1386,8 @@ async def count_published_sections_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -1373,6 +1396,7 @@ async def count_published_sections_async(
             models.section.SectionLabel.delete_at.is_(None),
         )
     return (await db.execute(stmt)).scalar_one()
+
 
 def search_next_published_section(
     db: Session,
@@ -1388,8 +1412,8 @@ def search_next_published_section(
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%')
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%')
             )
         )
     if label_ids is not None:
@@ -1426,8 +1450,8 @@ async def search_next_published_section_async(
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(
             or_(
-                models.section.Section.title.like(f'%{keyword}%'),
-                models.section.Section.description.like(f'%{keyword}%'),
+                models.section.Section.title.ilike(f'%{keyword}%'),
+                models.section.Section.description.ilike(f'%{keyword}%'),
             )
         )
     if label_ids is not None:
@@ -1439,7 +1463,7 @@ async def search_next_published_section_async(
         stmt = stmt.where(models.section.Section.id < section.id).order_by(models.section.Section.id.desc())
     else:
         stmt = stmt.where(models.section.Section.id > section.id).order_by(models.section.Section.id.asc())
-    stmt = stmt.distinct(models.section.Section.id)
+    stmt = stmt.distinct()
     stmt = stmt.limit(1)
     return (await db.execute(stmt)).scalar_one_or_none()
 
@@ -1541,7 +1565,7 @@ def search_users_and_section_users_by_section_id(
     if start is not None:
         query = query.filter(models.user.User.id <= start)
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+        query = query.filter(models.user.User.nickname.ilike(f'%{keyword}%'))
     query = query.limit(limit)
     return query.all()
 
@@ -1574,7 +1598,7 @@ async def search_users_and_section_users_by_section_id_async(
     if start is not None:
         stmt = stmt.where(models.user.User.id <= start)
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f'%{keyword}%'))
+        stmt = stmt.where(models.user.User.nickname.ilike(f'%{keyword}%'))
     return (await db.execute(stmt)).all()
 
 def search_next_user_and_section_user_by_section_id(
@@ -1596,7 +1620,7 @@ def search_next_user_and_section_user_by_section_id(
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     query = query.order_by(models.section.SectionUser.section_id.desc())
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+        query = query.filter(models.user.User.nickname.ilike(f'%{keyword}%'))
     query = query.filter(models.user.User.id > user.id)
     return query.first()
 
@@ -1626,7 +1650,7 @@ async def search_next_user_and_section_user_by_section_id_async(
     if filter_roles is not None:
         stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f'%{keyword}%'))
+        stmt = stmt.where(models.user.User.nickname.ilike(f'%{keyword}%'))
     return (await db.execute(stmt)).first()
 
 def count_users_and_section_users_by_section_id(
@@ -1646,7 +1670,7 @@ def count_users_and_section_users_by_section_id(
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
     if keyword is not None and len(keyword) > 0:
-        query = query.filter(models.user.User.nickname.like(f'%{keyword}%'))
+        query = query.filter(models.user.User.nickname.ilike(f'%{keyword}%'))
     return query.count()
 
 async def count_users_and_section_users_by_section_id_async(
@@ -1672,7 +1696,7 @@ async def count_users_and_section_users_by_section_id_async(
     if filter_roles is not None:
         stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
     if keyword is not None and len(keyword) > 0:
-        stmt = stmt.where(models.user.User.nickname.like(f'%{keyword}%'))
+        stmt = stmt.where(models.user.User.nickname.ilike(f'%{keyword}%'))
     return (await db.execute(stmt)).scalar_one()
 
 def get_users_for_section_by_section_id(

@@ -3,6 +3,7 @@ import { UNION_PAY_API_PREFIX } from '@/config/api'
 
 export default {
     searchUser: API_PREFIX + '/user/search',
+    searchPublicUsers: API_PREFIX + '/user/public/search',
     getUserFans: API_PREFIX + '/user/fans',
     getUserFollows: API_PREFIX + '/user/follows',
     createEmailUser: API_PREFIX + '/user/create/email',
