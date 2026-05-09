@@ -10,6 +10,7 @@ import {
 	Highlighter,
 	Bold,
 	Code2,
+	FilePenLine,
 	Expand,
 	Italic,
 	Heading1,
@@ -74,6 +75,7 @@ import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
+import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import { generateUUID } from '@/lib/uuid';
 
@@ -99,7 +101,10 @@ type ContinueSelectionSnapshot = {
 
 const AI_CONTINUATION_TIMEOUT_MS = 45_000;
 const AI_ILLUSTRATION_TIMEOUT_MS = 60_000;
+const AI_FULL_DOCUMENT_TIMEOUT_MS = 90_000;
 const AI_CONTINUATION_MAX_CHARS = 600;
+const AI_OPTIMIZED_MARKDOWN_MAX_CHARS = 60_000;
+const AI_IMAGE_PROMPT_MAX_CHARS = 1200;
 const FENCED_CODE_BLOCK_ONLY_PATTERN =
 	/^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
 
@@ -125,6 +130,32 @@ const CONTINUE_WRITING_SYSTEM_PROMPT = `你是一个专业的中文写作助手�
 3. 保持原有语气、语言和叙述视角自然衔接。
 4. 默认输出 1 到 3 个自然段。
 5. 不使用 Markdown 列表，除非上下文本身明显要求。`;
+
+const FULL_DOCUMENT_OPTIMIZE_PROMPT = `你是 Revornix 的资深 Markdown 内容编辑，擅长把一篇草稿优化成结构清晰、表达专业、可直接发布的知识文章。
+
+任务：基于用户提供的整篇 Markdown，输出优化后的完整 Markdown。
+
+必须严格遵守：
+1. 只输出完整 Markdown 正文，不要解释、不要包裹代码块、不要说“以下是”。
+2. 保留原文事实、数据、专有名词、链接、图片、代码块、表格、数学公式、引用和自定义块，不要编造新事实。
+3. 充分利用全文知识点：先理解主题、核心论点、概念关系和段落顺序，再重组表达。
+4. 可以优化标题层级、段落顺序、过渡句、列表结构和小标题，让文章更易读。
+5. 语言跟随原文；若中英混合，以正文主语言为准。
+6. 不删除重要知识点；重复、空泛或口语化内容可以合并精炼。
+7. Markdown 必须语法有效，标题层级连续，代码块围栏完整。`;
+
+const FULL_DOCUMENT_IMAGE_PROMPT_PROMPT = `你是 Revornix 的 AI 插图导演，需要为一篇 Markdown 文章设计一张最适合插入正文的配图。
+
+任务：阅读整篇 Markdown，提炼主题、关键知识点、概念关系、目标读者和文章语气，输出一个可直接发送给图片生成模型的中文提示词。
+
+必须严格遵守：
+1. 只输出图片生成提示词，不要解释，不要 Markdown。
+2. 插图必须服务文章内容，不做空泛装饰。
+3. 明确画面主体、关键元素、构图、风格、色彩、质感和避免事项。
+4. 如果文章是技术/知识类，优先选择信息图、概念图、流程图、架构图或编辑插画。
+5. 不要要求图片里生成大段可读文字；如需要文字，仅允许极少量短标签。
+6. 避免品牌商标、真实人物肖像、版权角色和误导性真实照片。
+7. 控制在 500 中文字符以内。`;
 
 const parseSSEPayloads = (buffer: string) =>
 	buffer
@@ -217,6 +248,10 @@ const TipTapEditor = ({
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
 	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] =
 		useState(false);
+	const [isFullOptimizeDialogOpen, setIsFullOptimizeDialogOpen] =
+		useState(false);
+	const [isFullIllustrationDialogOpen, setIsFullIllustrationDialogOpen] =
+		useState(false);
 	const [continuePreset, setContinuePreset] =
 		useState<ContinuePreset>('expand');
 	const [continueInstruction, setContinueInstruction] = useState('');
@@ -224,6 +259,9 @@ const TipTapEditor = ({
 	const [illustrationPrompt, setIllustrationPrompt] = useState('');
 	const [isContinuing, setIsContinuing] = useState(false);
 	const [isGeneratingIllustration, setIsGeneratingIllustration] =
+		useState(false);
+	const [isOptimizingDocument, setIsOptimizingDocument] = useState(false);
+	const [isGeneratingDocumentIllustration, setIsGeneratingDocumentIllustration] =
 		useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [isMounted, setIsMounted] = useState(false);
@@ -508,6 +546,13 @@ const TipTapEditor = ({
 				'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground',
 		);
 
+	const getToolbarActionButtonClassName = (isActive?: boolean) =>
+		cn(
+			'h-8 gap-1.5 rounded-md px-2 text-xs',
+			isActive &&
+				'bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground',
+		);
+
 	const getColorTriggerClassName = (isActive?: boolean) =>
 		cn(
 			'h-8 gap-2 rounded-md border border-border/60 px-2 text-xs',
@@ -631,6 +676,7 @@ const TipTapEditor = ({
 		response: Response,
 		options?: {
 			onStreamText?: (text: string) => void;
+			maxChars?: number;
 		},
 	) => {
 		const reader = response.body?.getReader();
@@ -665,9 +711,11 @@ const TipTapEditor = ({
 								output += `${event.payload.paragraph_break ? '\n\n' : ''}${event.payload.message}`;
 								options?.onStreamText?.(output);
 							}
-							if (output.length >= AI_CONTINUATION_MAX_CHARS) {
+							const maxChars =
+								options?.maxChars ?? AI_CONTINUATION_MAX_CHARS;
+							if (output.length >= maxChars) {
 								reader.cancel().catch(() => undefined);
-								return clampContinuationText(output, AI_CONTINUATION_MAX_CHARS);
+								return clampContinuationText(output, maxChars);
 							}
 						}
 						if (event.type === 'error') {
@@ -684,6 +732,89 @@ const TipTapEditor = ({
 		}
 
 		return output.trim();
+	};
+
+	const buildAiHeaders = () => {
+		const headers = new Headers();
+		headers.append('Content-Type', 'application/json');
+		const accessToken = Cookies.get('access_token');
+		if (accessToken) {
+			headers.append('Authorization', `Bearer ${accessToken}`);
+		}
+		const userTimeZone = getUserTimeZone();
+		if (userTimeZone) {
+			headers.append('X-User-Timezone', userTimeZone);
+		}
+		return headers;
+	};
+
+	const requestAiText = async ({
+		prompt,
+		modelId,
+		timeoutMs,
+		timeoutMessage,
+		maxChars,
+		onStreamText,
+	}: {
+		prompt: string;
+		modelId: number;
+		timeoutMs: number;
+		timeoutMessage: string;
+		maxChars: number;
+		onStreamText?: (text: string) => void;
+	}) => {
+		const controller = new AbortController();
+		const timeoutId = window.setTimeout(() => {
+			controller.abort();
+		}, timeoutMs);
+
+		try {
+			const response = await fetch(aiApi.askAi, {
+				headers: buildAiHeaders(),
+				method: 'POST',
+				mode: 'cors',
+				credentials: 'same-origin',
+				redirect: 'follow',
+				referrerPolicy: 'no-referrer',
+				signal: controller.signal,
+				body: JSON.stringify({
+					enable_mcp: false,
+					model_id: modelId,
+					messages: [
+						{
+							chat_id: generateUUID(),
+							role: 'user',
+							content: prompt,
+						},
+					],
+				}),
+			});
+
+			if (response.status !== 200) {
+				let errorMessage = t('something_wrong');
+				try {
+					errorMessage = (await response.json()).message || errorMessage;
+				} catch (error) {
+					console.error(error);
+				}
+				throw new Error(errorMessage);
+			}
+
+			return clampContinuationText(
+				await readAiTextResponse(response, {
+					maxChars,
+					onStreamText,
+				}),
+				maxChars,
+			);
+		} catch (error) {
+			if ((error as DOMException)?.name === 'AbortError') {
+				throw new Error(timeoutMessage);
+			}
+			throw error;
+		} finally {
+			window.clearTimeout(timeoutId);
+		}
 	};
 
 	const withTimeout = async <T,>(
@@ -736,6 +867,173 @@ const TipTapEditor = ({
 				'请把这段内容调整成更正式、更专业的表达，适合文档、方案或对外说明场景。',
 		},
 	];
+
+	const ensureFullDocumentAiReady = (emptyMessage: string) => {
+		const markdown = normalizeEditorMarkdown(editor?.getMarkdown() ?? '');
+		if (!markdown.trim()) {
+			toast.error(emptyMessage);
+			return null;
+		}
+		if (!selectedContinuationModelId) {
+			toast.error(t('editor_continue_select_model_first'));
+			return null;
+		}
+		if (
+			selectedContinuationModelId === mainUserInfo?.default_revornix_model_id &&
+			!revornixModel.accessible
+		) {
+			toast.error(
+				revornixModel.subscriptionLocked
+					? t('revornix_ai_access_hint')
+					: t('editor_default_chat_model_unavailable'),
+			);
+			return null;
+		}
+		return {
+			markdown,
+			modelId: selectedContinuationModelId,
+		};
+	};
+
+	const optimizeFullDocument = async () => {
+		const ready = ensureFullDocumentAiReady(t('editor_full_optimize_empty'));
+		if (!ready || !editor) {
+			return;
+		}
+
+		setIsOptimizingDocument(true);
+		try {
+			const optimizedMarkdown = normalizeEditorMarkdown(
+				await requestAiText({
+					prompt: [
+						FULL_DOCUMENT_OPTIMIZE_PROMPT,
+						'原始 Markdown：',
+						ready.markdown,
+					].join('\n\n'),
+					modelId: ready.modelId,
+					timeoutMs: AI_FULL_DOCUMENT_TIMEOUT_MS,
+					timeoutMessage: t('editor_full_optimize_timeout'),
+					maxChars: Math.max(
+						AI_OPTIMIZED_MARKDOWN_MAX_CHARS,
+						ready.markdown.length * 2,
+					),
+				}),
+			);
+			if (!optimizedMarkdown) {
+				throw new Error(t('editor_full_optimize_empty_result'));
+			}
+			editor.commands.setContent(optimizedMarkdown, {
+				contentType: 'markdown',
+			});
+			onChange?.(optimizedMarkdown);
+			setIsFullOptimizeDialogOpen(false);
+			toast.success(t('editor_full_optimize_success'));
+		} catch (error: any) {
+			console.error(error);
+			toast.error(error?.message || t('editor_full_optimize_failed'));
+		} finally {
+			setIsOptimizingDocument(false);
+		}
+	};
+
+	const insertDocumentIllustrationMarkdown = (prompt: string, filePath: string) => {
+		if (!editor) {
+			throw new Error(t('editor_continue_insert_failed'));
+		}
+		const imageMarkdown = `\n\n![${prompt.slice(0, 80).replace(/\n+/g, ' ')}](${filePath})\n\n`;
+		const markdown = normalizeEditorMarkdown(editor.getMarkdown());
+		const firstHeadingMatch = markdown.match(/^# .+(?:\n|$)/m);
+		const insertionIndex = firstHeadingMatch
+			? (firstHeadingMatch.index ?? 0) + firstHeadingMatch[0].length
+			: 0;
+		const nextMarkdown = normalizeEditorMarkdown(
+			`${markdown.slice(0, insertionIndex)}${imageMarkdown}${markdown.slice(insertionIndex)}`,
+		);
+
+		editor.commands.setContent(nextMarkdown, {
+			contentType: 'markdown',
+		});
+		onChange?.(nextMarkdown);
+	};
+
+	const generateFullDocumentIllustration = async () => {
+		const ready = ensureFullDocumentAiReady(
+			t('editor_full_illustration_empty'),
+		);
+		if (!ready) {
+			return;
+		}
+		if (!selectedIllustrationEngineId) {
+			toast.error(t('editor_illustration_select_engine_first'));
+			return;
+		}
+		if (
+			selectedIllustrationEngineId ===
+				mainUserInfo?.default_image_generate_engine_id &&
+			!imageGenerateEngine.accessible
+		) {
+			toast.error(
+				imageGenerateEngine.subscriptionLocked
+					? t('section_form_auto_illustration_engine_unset')
+					: t('editor_default_illustration_engine_unavailable'),
+			);
+			return;
+		}
+		if (
+			!mainUserInfo?.default_user_file_system ||
+			!userFileSystemDetail?.file_system_id
+		) {
+			toast.error(t('error_default_file_system_not_found'));
+			return;
+		}
+
+		setIsGeneratingDocumentIllustration(true);
+		try {
+			const prompt = await requestAiText({
+				prompt: [
+					FULL_DOCUMENT_IMAGE_PROMPT_PROMPT,
+					'文章 Markdown：',
+					ready.markdown,
+				].join('\n\n'),
+				modelId: ready.modelId,
+				timeoutMs: AI_CONTINUATION_TIMEOUT_MS,
+				timeoutMessage: t('editor_full_illustration_prompt_timeout'),
+				maxChars: AI_IMAGE_PROMPT_MAX_CHARS,
+			});
+			if (!prompt.trim()) {
+				throw new Error(t('editor_full_illustration_prompt_empty'));
+			}
+
+			const image = await withTimeout(
+				() =>
+					generateImageWithDefaultEngine({
+						prompt,
+						engine_id: selectedIllustrationEngineId,
+					}),
+				AI_ILLUSTRATION_TIMEOUT_MS,
+				t('editor_illustration_timeout'),
+			);
+			const extension =
+				image.data_url.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,/)?.[1] ??
+				'png';
+			const normalizedExtension = extension === 'svg+xml' ? 'svg' : extension;
+			const file = await decodeDataUrlToFile(
+				image.data_url,
+				`article-illustration-${generateUUID()}.${normalizedExtension}`,
+			);
+			const filePath = `images/quick-note/${generateUUID()}.${normalizedExtension}`;
+			const fileService = new FileService(userFileSystemDetail.file_system_id);
+			await fileService.uploadFile(filePath, file);
+			insertDocumentIllustrationMarkdown(prompt, filePath);
+			setIsFullIllustrationDialogOpen(false);
+			toast.success(t('editor_full_illustration_success'));
+		} catch (error: any) {
+			console.error(error);
+			toast.error(error?.message || t('editor_full_illustration_failed'));
+		} finally {
+			setIsGeneratingDocumentIllustration(false);
+		}
+	};
 
 	const requestAiContinuation = async () => {
 		const selectionContext =
@@ -1039,60 +1337,62 @@ const TipTapEditor = ({
 					'rounded-none border-0 bg-background shadow-none',
 				className,
 			)}>
-			<div className='flex items-center gap-1 overflow-x-auto border-b border-border/60 bg-muted/30 px-2 py-1.5 lg:overflow-visible'>
-				<Button
+			<div className='flex items-center gap-2 border-b border-border/60 bg-muted/30 px-2 py-1.5'>
+				<div className='min-w-0 flex-1 overflow-x-auto'>
+					<div className='flex w-max items-center gap-1 pr-2'>
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isBoldActive,
 					)}
-					title='加粗'
+					title={t('editor_toolbar_bold')}
 					aria-pressed={resolvedToolbarState.isBoldActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleBold().run()}>
 					<Bold className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isItalicActive,
 					)}
-					title='斜体'
+					title={t('editor_toolbar_italic')}
 					aria-pressed={resolvedToolbarState.isItalicActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleItalic().run()}>
 					<Italic className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isUnderlineActive,
 					)}
-					title='下划线'
+					title={t('editor_toolbar_underline')}
 					aria-pressed={resolvedToolbarState.isUnderlineActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleUnderline().run()}>
 					<Underline className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isStrikeActive,
 					)}
-					title='删除线'
+					title={t('editor_toolbar_strike')}
 					aria-pressed={resolvedToolbarState.isStrikeActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleStrike().run()}>
 					<Strikethrough className='size-4' />
 				</Button>
-				<Popover>
+						<Popover>
 					<PopoverTrigger asChild>
 						<Button
 							type='button'
@@ -1152,8 +1452,8 @@ const TipTapEditor = ({
 							{t('editor_clear_text_color')}
 						</Button>
 					</PopoverContent>
-				</Popover>
-				<Popover>
+						</Popover>
+						<Popover>
 					<PopoverTrigger asChild>
 						<Button
 							type='button'
@@ -1213,15 +1513,15 @@ const TipTapEditor = ({
 							{t('editor_clear_highlight_color')}
 						</Button>
 					</PopoverContent>
-				</Popover>
-				<Button
+						</Popover>
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isHeading1Active,
 					)}
-					title='一级标题'
+					title={t('editor_toolbar_heading_1')}
 					aria-pressed={resolvedToolbarState.isHeading1Active}
 					onMouseDown={preserveEditorSelection}
 					onClick={() =>
@@ -1229,14 +1529,14 @@ const TipTapEditor = ({
 					}>
 					<Heading1 className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isHeading2Active,
 					)}
-					title='二级标题'
+					title={t('editor_toolbar_heading_2')}
 					aria-pressed={resolvedToolbarState.isHeading2Active}
 					onMouseDown={preserveEditorSelection}
 					onClick={() =>
@@ -1244,54 +1544,54 @@ const TipTapEditor = ({
 					}>
 					<Heading2 className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isBulletListActive,
 					)}
-					title='无序列表'
+					title={t('editor_toolbar_bullet_list')}
 					aria-pressed={resolvedToolbarState.isBulletListActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleBulletList().run()}>
 					<List className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isOrderedListActive,
 					)}
-					title='有序列表'
+					title={t('editor_toolbar_ordered_list')}
 					aria-pressed={resolvedToolbarState.isOrderedListActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
 					<ListOrdered className='size-4' />
 				</Button>
-				<Button
+						<Button
 					type='button'
 					variant='ghost'
 					size='icon'
 					className={getToolbarButtonClassName(
 						resolvedToolbarState.isCodeBlockActive,
 					)}
-					title='代码块'
+					title={t('editor_toolbar_code_block')}
 					aria-pressed={resolvedToolbarState.isCodeBlockActive}
 					onMouseDown={preserveEditorSelection}
 					onClick={() => editor?.chain().focus().toggleCodeBlock().run()}>
 					<Code2 className='size-4' />
 				</Button>
-				{enableImageUpload && (
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
+						<div className='mx-1 h-4 w-px shrink-0 bg-border/60' />
+						{enableImageUpload && (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
 								type='button'
 								variant='ghost'
-								size='icon'
-								className={getToolbarButtonClassName()}
-								title='上传图片'
+								className={getToolbarActionButtonClassName()}
+								title={t('editor_toolbar_upload_image')}
 								onMouseDown={preserveEditorSelection}
 								onClick={openImagePicker}
 								disabled={isUploadingImage}>
@@ -1300,85 +1600,43 @@ const TipTapEditor = ({
 								) : (
 									<ImagePlus className='size-4' />
 								)}
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>
-							{t('upload_limit_hint', {
-								size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-							})}
-						</TooltipContent>
-					</Tooltip>
-				)}
-				{enableDrawing && (
-					<Button
+								<span>{t('editor_toolbar_label_image')}</span>
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t('upload_limit_hint', {
+										size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
+									})}
+								</TooltipContent>
+							</Tooltip>
+						)}
+						{enableDrawing && (
+							<Button
 						type='button'
 						variant='ghost'
-						size='icon'
-						className={getToolbarButtonClassName()}
-						title='插入手绘'
+						className={getToolbarActionButtonClassName()}
+						title={t('editor_toolbar_insert_drawing')}
 						onMouseDown={preserveEditorSelection}
 						onClick={insertDrawingNode}>
 						<PencilRuler className='size-4' />
-					</Button>
-				)}
-				<Button
+						<span>{t('editor_toolbar_label_drawing')}</span>
+							</Button>
+						)}
+						<Button
 					type='button'
 					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName()}
-					title={isContinuing ? t('editor_continue_generating') : 'AI 续写'}
-					onMouseDown={preserveEditorSelection}
-					onClick={openContinueDialog}
-					disabled={isContinuing}>
-					{isContinuing ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<MessageSquarePlus className='size-4' />
-					)}
-				</Button>
-				{isContinuing ? (
-					<Button
-						type='button'
-						variant='ghost'
-						size='icon'
-						className={getToolbarButtonClassName()}
-						title={t('editor_continue_stop')}
-						onMouseDown={preserveEditorSelection}
-						onClick={stopAiContinuation}>
-						<Square className='size-3.5 fill-current' />
-					</Button>
-				) : null}
-				<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName()}
-					title='AI 插图'
-					onMouseDown={preserveEditorSelection}
-					onClick={openIllustrationDialog}
-					disabled={isGeneratingIllustration}>
-					{isGeneratingIllustration ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<Sparkles className='size-4' />
-					)}
-				</Button>
-				<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName()}
-					title='插入表格'
+					className={getToolbarActionButtonClassName()}
+					title={t('editor_toolbar_insert_table')}
 					onMouseDown={preserveEditorSelection}
 					onClick={insertTableNode}>
 					<Table2 className='size-4' />
-				</Button>
-				<Button
+					<span>{t('editor_toolbar_label_table')}</span>
+						</Button>
+						<Button
 					type='button'
 					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName()}
-					title='插入块级公式'
+					className={getToolbarActionButtonClassName()}
+					title={t('editor_toolbar_insert_formula')}
 					onMouseDown={preserveEditorSelection}
 					onClick={() =>
 						editor
@@ -1391,12 +1649,99 @@ const TipTapEditor = ({
 							.run()
 					}>
 					<Sigma className='size-4 rotate-180' />
-				</Button>
-				<div className='ml-auto' />
-				{toolbarEnd}
-				<Tooltip>
-					<TooltipTrigger asChild>
+					<span>{t('editor_toolbar_label_formula')}</span>
+						</Button>
+						<div className='mx-1 h-4 w-px shrink-0 bg-border/60' />
 						<Button
+					type='button'
+					variant='ghost'
+					className={getToolbarActionButtonClassName()}
+					title={
+						isContinuing
+							? t('editor_continue_generating')
+							: t('editor_toolbar_continue')
+					}
+					onMouseDown={preserveEditorSelection}
+					onClick={openContinueDialog}
+					disabled={isContinuing}>
+					{isContinuing ? (
+						<Loader2 className='size-4 animate-spin' />
+					) : (
+						<MessageSquarePlus className='size-4' />
+					)}
+					<span>{t('editor_toolbar_continue')}</span>
+						</Button>
+						{isContinuing ? (
+							<Button
+						type='button'
+						variant='ghost'
+						className={getToolbarActionButtonClassName()}
+						title={t('editor_continue_stop')}
+						onMouseDown={preserveEditorSelection}
+						onClick={stopAiContinuation}>
+						<Square className='size-3.5 fill-current' />
+						<span>{t('editor_toolbar_stop')}</span>
+							</Button>
+						) : null}
+						<Button
+					type='button'
+					variant='ghost'
+					className={getToolbarActionButtonClassName()}
+					title={t('editor_full_optimize')}
+					onMouseDown={preserveEditorSelection}
+					onClick={() => {
+						setIsFullOptimizeDialogOpen(true);
+					}}
+					disabled={isOptimizingDocument || isGeneratingDocumentIllustration}>
+					{isOptimizingDocument ? (
+						<Loader2 className='size-4 animate-spin' />
+					) : (
+						<FilePenLine className='size-4' />
+					)}
+					<span>{t('editor_toolbar_optimize_full')}</span>
+						</Button>
+						<Button
+					type='button'
+					variant='ghost'
+					className={getToolbarActionButtonClassName()}
+					title={t('editor_illustration_title')}
+					onMouseDown={preserveEditorSelection}
+					onClick={openIllustrationDialog}
+					disabled={isGeneratingIllustration}>
+					{isGeneratingIllustration ? (
+						<Loader2 className='size-4 animate-spin' />
+					) : (
+						<Sparkles className='size-4' />
+					)}
+					<span>{t('editor_toolbar_selection_illustration')}</span>
+						</Button>
+						<Button
+					type='button'
+					variant='ghost'
+					className={getToolbarActionButtonClassName()}
+					title={t('editor_full_illustration')}
+					onMouseDown={preserveEditorSelection}
+					onClick={() => {
+						setIsFullIllustrationDialogOpen(true);
+					}}
+					disabled={
+						isGeneratingDocumentIllustration || isOptimizingDocument
+					}>
+					{isGeneratingDocumentIllustration ? (
+						<Loader2 className='size-4 animate-spin' />
+					) : (
+						<ImagePlus className='size-4' />
+					)}
+					<span>{t('editor_toolbar_full_illustration')}</span>
+						</Button>
+					</div>
+				</div>
+				<div className='shrink-0' />
+				<div className='flex shrink-0 items-center gap-1 border-l border-border/60 pl-2'>
+					{toolbarEnd}
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
 							type='button'
 							variant='ghost'
 							size='icon'
@@ -1412,10 +1757,11 @@ const TipTapEditor = ({
 								<Expand className='size-4' />
 							)}
 							<span className='sr-only'>{fullscreenLabel}</span>
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>{fullscreenLabel}</TooltipContent>
-				</Tooltip>
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{fullscreenLabel}</TooltipContent>
+					</Tooltip>
+				</div>
 				{enableImageUpload && (
 					<input
 						ref={imageInputRef}
@@ -1516,6 +1862,70 @@ const TipTapEditor = ({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+			<ResourceConfirmDialog
+				open={isFullOptimizeDialogOpen}
+				onOpenChange={setIsFullOptimizeDialogOpen}
+				title={t('editor_full_optimize')}
+				description={t('editor_full_optimize_description')}
+				confirmLabel={t('editor_full_optimize')}
+				confirmDisabled={!selectedContinuationModelId}
+				confirmLoading={isOptimizingDocument}
+				onConfirm={() => {
+					void optimizeFullDocument();
+				}}>
+				<div className='space-y-2'>
+					<p className='text-sm font-medium text-foreground'>
+						{t('use_model')}
+					</p>
+					<AIModelSelect
+						value={selectedContinuationModelId}
+						onChange={setSelectedContinuationModelId}
+						disabled={isOptimizingDocument}
+						className='w-full'
+						placeholder={t('setting_default_model_choose')}
+					/>
+				</div>
+			</ResourceConfirmDialog>
+			<ResourceConfirmDialog
+				open={isFullIllustrationDialogOpen}
+				onOpenChange={setIsFullIllustrationDialogOpen}
+				title={t('editor_full_illustration')}
+				description={t('editor_full_illustration_description')}
+				confirmLabel={t('editor_full_illustration')}
+				confirmDisabled={
+					!selectedContinuationModelId || !selectedIllustrationEngineId
+				}
+				confirmLoading={isGeneratingDocumentIllustration}
+				onConfirm={() => {
+					void generateFullDocumentIllustration();
+				}}>
+				<div className='space-y-4'>
+					<div className='space-y-2'>
+						<p className='text-sm font-medium text-foreground'>
+							{t('use_model')}
+						</p>
+						<AIModelSelect
+							value={selectedContinuationModelId}
+							onChange={setSelectedContinuationModelId}
+							disabled={isGeneratingDocumentIllustration}
+							className='w-full'
+							placeholder={t('setting_default_model_choose')}
+						/>
+					</div>
+					<div className='space-y-2'>
+						<p className='text-sm font-medium text-foreground'>
+							{t('use_engine')}
+						</p>
+						<ImageEngineSelect
+							value={selectedIllustrationEngineId}
+							onChange={setSelectedIllustrationEngineId}
+							disabled={isGeneratingDocumentIllustration}
+							className='w-full'
+							placeholder={t('choose_illustration_engine')}
+						/>
+					</div>
+				</div>
+			</ResourceConfirmDialog>
 			<Dialog
 				open={isIllustrationDialogOpen}
 				onOpenChange={(open) => {
