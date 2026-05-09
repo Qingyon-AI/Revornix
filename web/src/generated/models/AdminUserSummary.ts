@@ -87,6 +87,18 @@ export interface AdminUserSummary {
     follows?: number;
     /**
      * 
+     * @type {string}
+     * @memberof AdminUserSummary
+     */
+    last_login_ip?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminUserSummary
+     */
+    last_login_time?: Date | null;
+    /**
+     * 
      * @type {Date}
      * @memberof AdminUserSummary
      */
@@ -134,6 +146,8 @@ export function AdminUserSummaryFromJSONTyped(json: any, ignoreDiscriminator: bo
         'is_forbidden': json['is_forbidden'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
+        'last_login_ip': json['last_login_ip'] == null ? undefined : json['last_login_ip'],
+        'last_login_time': json['last_login_time'] == null ? undefined : (new Date(json['last_login_time'])),
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
     };
@@ -161,8 +175,9 @@ export function AdminUserSummaryToJSONTyped(value?: AdminUserSummary | null, ign
         'is_forbidden': value['is_forbidden'],
         'fans': value['fans'],
         'follows': value['follows'],
+        'last_login_ip': value['last_login_ip'],
+        'last_login_time': value['last_login_time'] == null ? value['last_login_time'] : value['last_login_time'].toISOString(),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

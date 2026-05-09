@@ -30,6 +30,8 @@ export type AdminUserSummary = {
 	is_forbidden: boolean;
 	fans: number;
 	follows: number;
+	last_login_ip?: string | null;
+	last_login_time?: string | null;
 	create_time: string;
 	update_time?: string | null;
 };

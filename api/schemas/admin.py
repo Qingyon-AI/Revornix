@@ -43,6 +43,8 @@ class AdminUserSummary(BaseModel):
     is_forbidden: bool
     fans: int = 0
     follows: int = 0
+    last_login_ip: str | None = None
+    last_login_time: datetime | None = None
     create_time: datetime
     update_time: datetime | None = None
 

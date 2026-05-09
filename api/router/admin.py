@@ -516,6 +516,8 @@ async def search_admin_users(
                 is_forbidden=db_user.is_forbidden,
                 fans=fans_by_user_id.get(db_user.id, 0),
                 follows=follows_by_user_id.get(db_user.id, 0),
+                last_login_ip=db_user.last_login_ip,
+                last_login_time=db_user.last_login_time,
                 create_time=db_user.create_time,
                 update_time=db_user.update_time,
             )
@@ -568,6 +570,8 @@ async def get_admin_user_detail(
         is_forbidden=db_user.is_forbidden,
         fans=fans_by_user_id.get(db_user.id, 0),
         follows=follows_by_user_id.get(db_user.id, 0),
+        last_login_ip=db_user.last_login_ip,
+        last_login_time=db_user.last_login_time,
         create_time=db_user.create_time,
         update_time=db_user.update_time,
         default_user_file_system=db_user.default_user_file_system,

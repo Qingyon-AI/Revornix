@@ -302,6 +302,22 @@ const resolveLedgerType = (
 	};
 };
 
+const formatAdminDateTime = (
+	value: string | Date | null | undefined,
+	fallback: string,
+) => {
+	if (!value) {
+		return fallback;
+	}
+
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return fallback;
+	}
+
+	return format(date, 'yyyy-MM-dd HH:mm');
+};
+
 const AdminUserComputeLedgerTable = ({ userId }: { userId: number }) => {
 	const t = useTranslations();
 	const [filter, setFilter] = useState<LedgerFilter>('all');
@@ -741,6 +757,10 @@ const AdminUsersPage = () => {
 
 	const users = usersQuery.data?.elements ?? [];
 	const canManagePrivilegedRoles = mainUserInfo?.role === UserRole.ROOT;
+	const formatTimeValue = (value: string | Date | null | undefined) =>
+		formatAdminDateTime(value, t('admin_users_unknown_time'));
+	const formatLastLoginValue = (value: string | Date | null | undefined) =>
+		formatAdminDateTime(value, t('admin_users_never_logged_in'));
 
 	const revokePreviewUrl = (url: string | null) => {
 		if (url?.startsWith('blob:')) {
@@ -1023,6 +1043,7 @@ const AdminUsersPage = () => {
 										<TableHead>{t('account_email')}</TableHead>
 										<TableHead>{t('user_detail_role')}</TableHead>
 										<TableHead>{t('admin_users_status_label')}</TableHead>
+										<TableHead>{t('admin_users_table_time')}</TableHead>
 										<TableHead>{t('admin_users_table_stats')}</TableHead>
 										<TableHead>{t('admin_action')}</TableHead>
 									</TableRow>
@@ -1075,6 +1096,18 @@ const AdminUsersPage = () => {
 															? t('admin_users_status_forbidden')
 															: t('admin_users_status_active')}
 													</Badge>
+												</TableCell>
+												<TableCell>
+													<div className='space-y-1 text-xs text-muted-foreground'>
+														<div>
+															{t('admin_users_created_time')}:{' '}
+															{formatTimeValue(user.create_time)}
+														</div>
+														<div>
+															{t('admin_users_last_login_time')}:{' '}
+															{formatLastLoginValue(user.last_login_time)}
+														</div>
+													</div>
 												</TableCell>
 												<TableCell>
 													<div className='text-xs text-muted-foreground'>
@@ -1282,6 +1315,38 @@ const AdminUsersPage = () => {
 										{viewUserQuery.data.is_forbidden
 											? t('admin_users_status_forbidden')
 											: t('admin_users_status_active')}
+									</div>
+								</div>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_users_created_time')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{formatTimeValue(viewUserQuery.data.create_time)}
+									</div>
+								</div>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_users_last_login_time')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{formatLastLoginValue(viewUserQuery.data.last_login_time)}
+									</div>
+								</div>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_users_updated_time')}
+									</div>
+									<div className='mt-2 text-sm font-medium'>
+										{formatTimeValue(viewUserQuery.data.update_time)}
+									</div>
+								</div>
+								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
+									<div className='text-xs text-muted-foreground'>
+										{t('admin_users_last_login_ip')}
+									</div>
+									<div className='mt-2 break-all text-sm font-medium'>
+										{viewUserQuery.data.last_login_ip || '-'}
 									</div>
 								</div>
 								<div className='rounded-[22px] border border-border/60 bg-background/60 p-4'>
