@@ -87,6 +87,18 @@ export interface AdminUserDetail {
     follows?: number;
     /**
      * 
+     * @type {string}
+     * @memberof AdminUserDetail
+     */
+    last_login_ip?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminUserDetail
+     */
+    last_login_time?: Date | null;
+    /**
+     * 
      * @type {Date}
      * @memberof AdminUserDetail
      */
@@ -194,6 +206,8 @@ export function AdminUserDetailFromJSONTyped(json: any, ignoreDiscriminator: boo
         'is_forbidden': json['is_forbidden'],
         'fans': json['fans'] == null ? undefined : json['fans'],
         'follows': json['follows'] == null ? undefined : json['follows'],
+        'last_login_ip': json['last_login_ip'] == null ? undefined : json['last_login_ip'],
+        'last_login_time': json['last_login_time'] == null ? undefined : (new Date(json['last_login_time'])),
         'create_time': (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
         'default_user_file_system': json['default_user_file_system'] == null ? undefined : json['default_user_file_system'],
@@ -231,6 +245,8 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         'is_forbidden': value['is_forbidden'],
         'fans': value['fans'],
         'follows': value['follows'],
+        'last_login_ip': value['last_login_ip'],
+        'last_login_time': value['last_login_time'] == null ? value['last_login_time'] : value['last_login_time'].toISOString(),
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'default_user_file_system': value['default_user_file_system'],
@@ -245,4 +261,3 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
-
