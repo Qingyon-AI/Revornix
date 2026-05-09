@@ -9,7 +9,6 @@ import { zhCN } from 'date-fns/locale/zh-CN';
 import { BookTextIcon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useRouter } from 'nextjs-toploader/app';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import SectionCardPodcast from '../section/section-card-podcast';
 import SeoSectionSubscribeButton from './seo-section-subscribe-button';
@@ -17,7 +16,6 @@ import SeoSectionSubscribeButton from './seo-section-subscribe-button';
 const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 	const locale = useLocale();
 	const t = useTranslations();
-	const router = useRouter();
 	const sectionHref = getPublicSectionHref(section);
 	const coverSrc = getSectionCoverSrc(section);
 
@@ -93,13 +91,12 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 						/>
 					</div>
 
-					<div className='flex items-center gap-2'>
+					<Link
+						href={`/user/${section.creator.id}`}
+						className='flex items-center gap-2 rounded-xl transition-colors hover:text-foreground'>
 						<Avatar
 							className='size-7 shrink-0'
-							title={section.creator.nickname ?? ''}
-							onClick={() => {
-								router.push(`/user/${section.creator.id}`);
-							}}>
+							title={section.creator.nickname ?? ''}>
 							<AvatarImage
 								src={replacePath(section.creator.avatar, section.creator.id)}
 								alt='avatar'
@@ -124,7 +121,7 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 								)}
 							</div>
 						</div>
-					</div>
+					</Link>
 				</div>
 			</div>
 		</div>

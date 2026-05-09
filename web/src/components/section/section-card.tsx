@@ -118,15 +118,10 @@ const SectionCard = ({
 						</div>
 					</Link>
 					<div className='flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground sm:grid sm:grid-cols-[minmax(0,1fr),auto] sm:gap-x-3 sm:gap-y-1 sm:text-xs'>
-						<div className='flex min-w-0 items-center gap-2'>
-							<Avatar
-								className='size-5'
-								title={section?.creator.nickname ?? ''}
-								onClick={(e) => {
-									router.push(`/user/detail/${section.creator.id}`);
-									e.preventDefault();
-									e.stopPropagation();
-								}}>
+						<Link
+							href={`/user/detail/${section.creator.id}`}
+							className='flex min-w-0 items-center gap-2 rounded-full transition-colors hover:text-foreground'>
+							<Avatar className='size-5' title={section?.creator.nickname ?? ''}>
 								<AvatarImage
 									src={replacePath(section?.creator.avatar, section.creator.id)}
 									alt='avatar'
@@ -137,7 +132,7 @@ const SectionCard = ({
 								</AvatarFallback>
 							</Avatar>
 							<span className='line-clamp-1'>{relativeTime}</span>
-						</div>
+						</Link>
 						<div className='justify-self-start rounded-full border border-border/50 bg-card/75 px-2.5 py-1 sm:justify-self-end'>
 							{t('section_card_documents_count', {
 								section_documents_count: section.documents_count
@@ -226,15 +221,10 @@ const SectionCard = ({
 				</Link>
 				<SectionCardPodcast section={section} />
 				<div className='mt-auto flex flex-col gap-2 text-xs text-muted-foreground'>
-					<div className='flex min-w-0 items-center gap-2'>
-						<Avatar
-							className='size-5'
-							title={section?.creator.nickname ?? ''}
-							onClick={(e) => {
-								router.push(`/user/detail/${section.creator.id}`);
-								e.preventDefault();
-								e.stopPropagation();
-							}}>
+					<Link
+						href={`/user/detail/${section.creator.id}`}
+						className='flex min-w-0 items-center gap-2 rounded-xl transition-colors hover:text-foreground'>
+						<Avatar className='size-5' title={section?.creator.nickname ?? ''}>
 							<AvatarImage
 								src={replacePath(section?.creator.avatar, section.creator.id)}
 								alt='avatar'
@@ -252,7 +242,7 @@ const SectionCard = ({
 								{relativeTime}
 							</div>
 						</div>
-					</div>
+					</Link>
 					<div className='flex flex-wrap gap-2'>
 						<SectionVisibilityHint
 							isPublished={Boolean(section.publish_uuid)}
