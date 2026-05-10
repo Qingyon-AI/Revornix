@@ -33,6 +33,8 @@
     "markdown_edit_title": "Markdown 编辑",
     "markdown_edit_view_hint": "可直接进入编辑模式修改正文内容。",
     "markdown_edit_editing_hint": "保存后，相关 AI 结果会被标记为已过期。",
+    "markdown_toc_label": "文档目录",
+    "markdown_toc_jump_to_heading": "跳转到 {heading}",
     "markdown_edit_stale_hint": "保存后，相关 embedding、总结、图谱、播客与演示结果都会标记为已过期，需按需重新生成。",
     "markdown_edit_placeholder": "开始编辑 Markdown 内容",
     "markdown_edit_source_placeholder": "直接编辑 Markdown 源码",

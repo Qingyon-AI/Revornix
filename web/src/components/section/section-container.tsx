@@ -147,8 +147,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 					cover={sectionCoverSrc ?? undefined}
 				/>
 			) : null}
-			<div className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'>
-				<div className='min-h-0 flex-1 overflow-hidden'>
+			<div
+				className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'
+				data-markdown-shell-anchor>
+				<div className='min-h-0 flex-1'>
 					<>
 						{sectionCoverSrc ? (
 							<div className='mx-auto w-full overflow-hidden'>

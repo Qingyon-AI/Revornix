@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import { cn } from '@/lib/utils';
 
+import MarkdownContentShell from './markdown-content-shell';
 import TipTapEditor from './tiptap-editor';
 import TipTapMarkdownViewer from './tiptap-markdown-viewer';
 import { Button } from '../ui/button';
@@ -26,6 +27,7 @@ type EditableMarkdownPanelProps = {
 	editable?: boolean;
 	enableImageUpload?: boolean;
 	enableDrawing?: boolean;
+	showFloatingToc?: boolean;
 };
 
 const viewerClassName = 'mx-auto max-w-[880px] overflow-x-hidden';
@@ -41,6 +43,7 @@ const EditableMarkdownPanel = ({
 	editable = true,
 	enableImageUpload = true,
 	enableDrawing = true,
+	showFloatingToc = false,
 }: EditableMarkdownPanelProps) => {
 	const t = useTranslations();
 	const normalizedContent = useMemo(
@@ -315,10 +318,14 @@ const EditableMarkdownPanel = ({
 					</div>
 				</div>
 			) : (
-				<div className={viewerClassName}>
-					<TipTapMarkdownViewer content={normalizedContent} ownerId={ownerId} />
-					{viewerFooter}
-				</div>
+				<MarkdownContentShell
+					enableFloatingToc={showFloatingToc}
+					contentClassName={viewerClassName}>
+					<div>
+						<TipTapMarkdownViewer content={normalizedContent} ownerId={ownerId} />
+						{viewerFooter}
+					</div>
+				</MarkdownContentShell>
 			)}
 		</div>
 	);
