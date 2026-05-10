@@ -1,4 +1,5 @@
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
+import MarkdownContentShell from '@/components/markdown/markdown-content-shell';
 import JsonLd from '@/components/seo/json-ld';
 import {
 	SeoDocumentAiSummaryPanel,
@@ -238,7 +239,9 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 								};
 
 		return (
-			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+			<div
+				className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'
+				data-markdown-shell-anchor>
 				<JsonLd data={documentSchema} />
 				{primaryAudioSrc ? (
 					<MobileAutoAudioTrack
@@ -524,7 +527,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					</div>
 				</div>
 
-				<div className='mx-auto w-full max-w-[920px] space-y-6'>
+				<div className='mx-auto w-full space-y-6'>
 					<div className='space-y-6'>
 						{coverSrc ? (
 							<ImageWithFallback
@@ -537,9 +540,12 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							/>
 						) : null}
 
-						<Separator />
+						<Separator className='max-w-[920px] mx-auto' />
 
-						<div className='mx-auto w-full max-w-[920px] overflow-x-hidden'>
+						<MarkdownContentShell
+							enableFloatingToc
+							className='mx-auto w-full'
+							contentClassName='overflow-x-hidden'>
 							<TipTapMarkdownViewer
 								content={
 									markdown || document.description || t('document_no_md')
@@ -553,7 +559,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 										{t('document_ai_tips')}
 									</div>
 								))}
-						</div>
+						</MarkdownContentShell>
 					</div>
 				</div>
 

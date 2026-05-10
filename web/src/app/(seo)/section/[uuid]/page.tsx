@@ -25,6 +25,7 @@ import {
 import SectionCommentsList from '@/components/section/section-comments-list';
 import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
+import MarkdownContentShell from '@/components/markdown/markdown-content-shell';
 import Link from 'next/link';
 import {
 	fetchPublicSectionComments,
@@ -277,7 +278,9 @@ const SEOSectionDetail = async (props: {
 								tone: 'warning' as const,
 							};
 	return (
-		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'>
+		<div
+			className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'
+			data-markdown-shell-anchor>
 			{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
 			{section && sectionPodcastSrc ? (
 				<MobileAutoAudioTrack
@@ -544,12 +547,15 @@ const SEOSectionDetail = async (props: {
 					) : null}
 				</div>
 
-				<div className='mx-auto w-full max-w-[920px] overflow-x-hidden'>
+				<MarkdownContentShell
+					enableFloatingToc
+					className='mx-auto w-full max-w-[920px]'
+					contentClassName='overflow-x-hidden'>
 					<TipTapMarkdownViewer
 						content={markdown ? markdown : t('section_no_md')}
 						ownerId={section?.creator?.id}
 					/>
-				</div>
+				</MarkdownContentShell>
 
 				{section?.id ? (
 					<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>

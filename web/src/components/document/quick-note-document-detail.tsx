@@ -109,6 +109,7 @@ const QuickDocumentDetail = ({
 						ownerId={document?.creator.id}
 						onSave={handleSaveMarkdown}
 						editable={canEditMarkdown}
+						showFloatingToc
 					/>
 					<div
 						ref={bottomRef}
