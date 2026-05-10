@@ -549,7 +549,7 @@ const SEOSectionDetail = async (props: {
 
 				<MarkdownContentShell
 					enableFloatingToc
-					className='mx-auto w-full max-w-[920px]'
+					className='mx-auto w-full'
 					contentClassName='overflow-x-hidden'>
 					<TipTapMarkdownViewer
 						content={markdown ? markdown : t('section_no_md')}
