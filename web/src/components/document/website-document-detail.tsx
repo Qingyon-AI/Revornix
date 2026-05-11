@@ -262,7 +262,7 @@ const WebsiteDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative pt-4', className)}>
+		<div className={cn('w-full relative pt-4', className)}>
 			{websiteSnapshots.length > 0 && (
 				<div className='mx-auto mb-4 w-full max-w-[880px]'>
 					<div className='flex flex-col gap-3 rounded-[24px] border border-border/60 bg-background/50 p-4 sm:flex-row sm:items-center sm:justify-between'>

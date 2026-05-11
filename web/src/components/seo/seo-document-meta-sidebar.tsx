@@ -86,7 +86,7 @@ const MetaBadge = ({ children }: { children: ReactNode }) => {
 	return (
 		<Badge
 			variant='outline'
-			className='rounded-full border border-border/40 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
+			className='rounded-full border border-border/60 bg-transparent px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
 			{children}
 		</Badge>
 	);
@@ -104,9 +104,9 @@ const SeoMetaItem = ({
 	hint?: string;
 }) => {
 	return (
-		<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+		<div className='px-1 py-3'>
 			<div className='flex items-start gap-3'>
-				<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+				<div className='flex size-6 shrink-0 items-center justify-center text-muted-foreground'>
 					<Icon className='size-3.5' />
 				</div>
 				<div className='min-w-0 space-y-0.5'>
@@ -170,41 +170,41 @@ export const SeoDocumentAiSummaryPanel = ({
 
 	return (
 		<section
-			className={cn(
-				'overflow-hidden rounded-[28px] border p-3 sm:p-5',
-				toneClassName,
-				className,
-			)}>
+			className={cn('space-y-3 p-4 rounded-2xl', toneClassName, className)}>
+			<div className='flex items-center gap-3'>
+				<div className='inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border/30 bg-background/35 text-muted-foreground/75'>
+					<Sparkles className='size-4' />
+				</div>
+
+				<div className='min-w-0 flex-1 space-y-1'>
+					<div className='flex flex-wrap items-center gap-1.5'>
+						<h3 className='text-[14px] font-semibold tracking-tight sm:text-base'>
+							{t('ai_summary_ready')}
+						</h3>
+						<Badge
+							variant='outline'
+							className={cn(
+								'rounded-full px-2.5 py-0.5 text-[11px] font-medium shadow-none',
+								badgeClassName,
+							)}>
+							{badgeText}
+						</Badge>
+					</div>
+					<p className='max-w-3xl text-[11px] leading-4 text-muted-foreground/55'>
+						{freshnessState.summaryStale
+							? t('document_summary_stale_hint')
+							: t('ai_summary_empty_description')}
+					</p>
+				</div>
+			</div>
+
 			<div className='space-y-3'>
-				<div className='flex items-center gap-3'>
-					<div className='inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border/30 bg-background/50 text-muted-foreground/75 shadow-sm'>
-						<Sparkles className='size-4' />
-					</div>
-
-					<div className='min-w-0 flex-1 space-y-1'>
-						<div className='flex flex-wrap items-center gap-1.5'>
-							<h3 className='text-[14px] font-semibold tracking-tight sm:text-base'>
-								{t('ai_summary_ready')}
-							</h3>
-						</div>
-						<p className='max-w-3xl text-[11px] leading-4 text-muted-foreground/55'>
-							{freshnessState.summaryStale
-								? t('document_summary_stale_hint')
-								: t('ai_summary_empty_description')}
-						</p>
-					</div>
-				</div>
-
-				<div className='rounded-[22px] border border-border/30 bg-background/80 px-4 py-3.5 sm:px-5 sm:py-4'>
-					<div className='space-y-3'>
-						<p className='text-sm leading-7 text-foreground/88'>{summary}</p>
-						{freshnessState.summaryStale ? (
-							<NoticeBox tone='warning' className='break-words'>
-								{t('document_summary_stale_hint')}
-							</NoticeBox>
-						) : null}
-					</div>
-				</div>
+				<p className='text-sm leading-7 text-foreground/88'>{summary}</p>
+				{freshnessState.summaryStale ? (
+					<NoticeBox tone='warning' className='break-words'>
+						{t('document_summary_stale_hint')}
+					</NoticeBox>
+				) : null}
 			</div>
 		</section>
 	);
@@ -228,7 +228,7 @@ export const SeoDocumentMetaSidebar = ({
 	const t = useTranslations();
 
 	return (
-		<div className={className ?? 'space-y-4 p-4 pb-8'}>
+		<div className={className ?? 'space-y-4 p-3 pb-6'}>
 			<div className='space-y-4 px-1'>
 				<div className='space-y-2'>
 					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight [overflow-wrap:anywhere]'>
@@ -237,11 +237,18 @@ export const SeoDocumentMetaSidebar = ({
 					<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere]'>
 						{document.description || t('document_no_description')}
 					</p>
+					{document.labels && document.labels.length > 0 ? (
+						<div className='flex flex-wrap gap-1.5'>
+							{document.labels.map((label) => (
+								<MetaBadge key={label.id}>{label.name}</MetaBadge>
+							))}
+						</div>
+					) : null}
 				</div>
 
 				<Link
 					href={`/user/${document.creator.id}`}
-					className='group flex items-center gap-3 rounded-[24px] border border-border/40 bg-background/40 px-3 py-3 transition-colors hover:bg-background/65'>
+					className='group flex items-center gap-3 border-b border-border/40 px-1 pb-4 transition-colors'>
 					<Avatar className='size-10'>
 						<AvatarImage
 							src={creatorAvatar}
@@ -262,7 +269,7 @@ export const SeoDocumentMetaSidebar = ({
 					</div>
 				</Link>
 
-				<div className='grid grid-cols-2 gap-3'>
+				<div className='grid grid-cols-2 gap-x-5 gap-y-1'>
 					<SeoMetaItem
 						icon={CalendarClock}
 						label={t('seo_document_updated_at')}
@@ -287,19 +294,6 @@ export const SeoDocumentMetaSidebar = ({
 						value={document.from_plat || '-'}
 					/>
 				</div>
-
-				{document.labels && document.labels.length > 0 ? (
-					<div className='flex flex-wrap gap-2'>
-						{document.labels.map((label) => (
-							<Badge
-								key={label.id}
-								variant='secondary'
-								className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
-								{label.name}
-							</Badge>
-						))}
-					</div>
-				) : null}
 			</div>
 
 			{primaryAudioSrc ? (
@@ -320,7 +314,7 @@ export const SeoDocumentMetaSidebar = ({
 								artist={document.creator.nickname}
 								cover={coverSrc ?? undefined}
 								variant='compact'
-								className='rounded-[20px] border border-border/35 bg-background/20'
+								className='rounded-xl border border-border/35'
 							/>
 						}
 					/>
@@ -337,7 +331,7 @@ export const SeoDocumentMetaSidebar = ({
 					hint={graphStale ? t('document_graph_stale_hint') : undefined}
 					result={
 						hasRenderableGraph ? (
-							<div className='relative aspect-square overflow-hidden rounded-[22px] border border-border/35 bg-background/22'>
+							<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 								<DocumentGraphSEO
 									document_id={document.id}
 									hideStatePanels
@@ -350,7 +344,7 @@ export const SeoDocumentMetaSidebar = ({
 										<Button
 											size='icon'
 											variant='outline'
-											className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-2xl border-border/50 bg-background/80 shadow-none hover:bg-background'>
+											className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-xl border-border/50 bg-background/80 shadow-none hover:bg-background'>
 											<Expand className='size-4 text-muted-foreground' />
 										</Button>
 									</DialogTrigger>
@@ -429,7 +423,7 @@ export const SeoDocumentMetaSidebar = ({
 							<Link
 								key={`${section.id}-${section.publish_uuid ?? 'private'}`}
 								href={getPublicSectionHref(section)}
-								className='flex items-center justify-between rounded-[22px] border border-border/35 bg-background/38 px-4 py-3 transition-colors hover:bg-background/62'>
+								className='flex items-center justify-between border-b border-border/35 px-1 py-3 transition-colors hover:text-foreground'>
 								<div className='min-w-0'>
 									<div className='line-clamp-1 font-medium'>
 										{section.title}
@@ -453,7 +447,7 @@ export const SeoDocumentMetaSidebar = ({
 					<Link href={`/user/${document.creator.id}`}>
 						<Button
 							variant='outline'
-							className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+							className='flex w-full items-center justify-between rounded-full border-border/60 bg-transparent shadow-none'>
 							{t('seo_document_related_creator')}
 							<Users />
 						</Button>
@@ -461,7 +455,7 @@ export const SeoDocumentMetaSidebar = ({
 					<Link href='/community'>
 						<Button
 							variant='outline'
-							className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+							className='flex w-full items-center justify-between rounded-full border-border/60 bg-transparent shadow-none'>
 							{t('seo_document_back_to_community')}
 							<BookText />
 						</Button>

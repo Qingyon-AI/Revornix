@@ -220,7 +220,7 @@ const FileDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative pt-4', className)}>
+		<div className={cn('w-full relative pt-4', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className={statusContainerClassName}>
 					{error?.message ?? <p>{markdownGetError}</p>}

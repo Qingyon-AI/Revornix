@@ -59,7 +59,7 @@ const SidebarSection = ({
 const SectionGraphCardSkeleton = () => (
 	<div className='space-y-5'>
 		<Separator className='bg-border/50' />
-		<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+		<div className='border border-border/50 p-4 rounded-xl'>
 			<div className='flex items-start gap-3'>
 				<Skeleton className='size-10 rounded-xl' />
 				<div className='min-w-0 flex-1 space-y-2'>
@@ -94,7 +94,7 @@ const SectionDetailSidebar = ({
 	const t = useTranslations();
 
 	return (
-		<div className='space-y-4 p-4'>
+		<div className='space-y-4 p-3 pb-6'>
 			<SidebarSection separated={false}>
 				<SectionInfo id={id} />
 			</SidebarSection>
@@ -115,12 +115,12 @@ const SectionDetailSidebar = ({
 							hint={graphStale ? t('section_graph_stale_hint') : undefined}
 							result={
 								hasRenderableGraph ? (
-								<div className='relative aspect-square overflow-hidden rounded-[20px] border border-border/35 bg-background/20'>
+								<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 									<SectionGraph section_id={id} showStaleHint={false} />
 									<Dialog>
 										<DialogTrigger asChild>
 											<Button
-												className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-2xl border-border/70 bg-background/80 shadow-none hover:bg-background'
+												className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-xl border-border/70 bg-background/80 shadow-none hover:bg-background'
 												size='icon'
 												variant='outline'>
 												<Expand size={4} className='text-muted-foreground' />

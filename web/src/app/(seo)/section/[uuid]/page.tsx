@@ -14,14 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { utils } from '@kinda/utils';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { Button } from '@/components/ui/button';
-import {
-	BookOpenText,
-	CalendarClock,
-	CalendarDays,
-	Sparkles,
-	Users,
-} from 'lucide-react';
+import { BookOpenText, CalendarClock, CalendarDays, Users } from 'lucide-react';
 import SectionCommentsList from '@/components/section/section-comments-list';
 import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
@@ -50,6 +43,8 @@ import { getSectionCoverSrc } from '@/lib/section-cover';
 import { replacePath } from '@/lib/utils';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
 import MobileAutoAudioTrack from '@/components/ui/mobile-auto-audio-track';
+import SectionSummaryCollapsible from '@/components/section/section-summary-collapsible';
+import { Separator } from '@/components/ui/separator';
 
 type Params = Promise<{ uuid: string }>;
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -246,7 +241,8 @@ const SEOSectionDetail = async (props: {
 				}
 			: null;
 	const freshnessState = getSectionFreshnessState(section);
-	const hasRenderableGraph = getRenderableGraphData(initialGraph).hasRenderableGraph;
+	const hasRenderableGraph =
+		getRenderableGraphData(initialGraph).hasRenderableGraph;
 	const structuredData: Array<Record<string, unknown>> = [];
 	if (sectionSchema) {
 		structuredData.push(sectionSchema);
@@ -279,19 +275,21 @@ const SEOSectionDetail = async (props: {
 							};
 	return (
 		<div
-			className='mx-auto flex w-full max-w-[1480px] flex-col gap-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8 lg:pt-8'
+			className='mx-auto flex w-full max-w-[1480px] flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-6'
 			data-markdown-shell-anchor>
 			{structuredData.length > 0 ? <JsonLd data={structuredData} /> : null}
 			{section && sectionPodcastSrc ? (
 				<MobileAutoAudioTrack
 					src={sectionPodcastSrc}
-					scriptUrl={section.podcast_task?.podcast_script_file_name ?? undefined}
+					scriptUrl={
+						section.podcast_task?.podcast_script_file_name ?? undefined
+					}
 					title={sectionTitle}
 					artist={section.creator?.nickname || 'AI Generated'}
 					cover={sectionCover ?? undefined}
 				/>
 			) : null}
-			<div className='mx-auto w-full max-w-[920px] space-y-5'>
+			<div className='mx-auto w-full space-y-5'>
 				<SeoSectionSidebarBridge
 					section={section!}
 					sectionTitle={sectionTitle}
@@ -483,87 +481,113 @@ const SEOSectionDetail = async (props: {
 						},
 					]}
 				/>
-				<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
-					{section?.creator ? (
-						<Link
-							href={`/user/${section.creator.id}`}
-							className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-2.5 py-1.5 transition-colors hover:bg-background/70'>
-							<Avatar className='size-6'>
-								<AvatarImage
-									src={creatorAvatar}
-									alt={section.creator.nickname}
-									className='object-cover'
+				<div className='space-y-5'>
+					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground max-w-[920px] mx-auto'>
+						{section?.creator ? (
+							<Link
+								href={`/user/${section.creator.id}`}
+								className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
+								<Avatar className='size-7'>
+									<AvatarImage
+										src={creatorAvatar}
+										alt={section.creator.nickname}
+										className='object-cover'
+									/>
+									<AvatarFallback className='text-[11px] font-semibold'>
+										{section.creator.nickname.slice(0, 1)}
+									</AvatarFallback>
+								</Avatar>
+								<span>{section.creator.nickname}</span>
+							</Link>
+						) : null}
+						<Badge
+							variant='outline'
+							className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
+							{t('section_overview_title')}
+						</Badge>
+						<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
+							<CalendarClock className='size-3.5' />
+							<span>{t('section_updated_at')}</span>
+							<span className='text-foreground/85'>{updatedAt}</span>
+						</div>
+					</div>
+
+					<div className='space-y-3'>
+						<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl max-w-[920px] mx-auto'>
+							{sectionTitle}
+						</h1>
+						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base max-w-[920px] mx-auto'>
+							{sectionDescription}
+						</p>
+
+						{section?.id ? (
+							<div className='max-w-[920px] mx-auto'>
+								<SeoSectionSubscribeButton
+									sectionId={section.id}
+									creatorId={section.creator?.id}
+									initialIsSubscribed={section.is_subscribed}
+									className='shrink-0'
 								/>
-								<AvatarFallback className='text-[11px] font-semibold'>
-									{section.creator.nickname.slice(0, 1)}
-								</AvatarFallback>
-							</Avatar>
-							<span>{section.creator.nickname}</span>
-						</Link>
-					) : null}
-					<div className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 py-1.5 text-xs sm:text-sm'>
-						<CalendarClock className='size-3.5' />
-						<span>{t('section_updated_at')}</span>
-						<span className='text-foreground/85'>{updatedAt}</span>
-					</div>
-					{section?.id ? (
-						<SeoSectionSubscribeButton
-							sectionId={section.id}
-							creatorId={section.creator?.id}
-							initialIsSubscribed={section.is_subscribed}
-							className='shrink-0'
-						/>
-					) : null}
-				</div>
+							</div>
+						) : null}
 
-				<div className='flex flex-wrap items-center gap-2'>
-					<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/55 px-3 py-1.5 text-xs text-muted-foreground'>
-						<Sparkles className='size-3.5 text-emerald-500' />
-						<span>{t('section_ai_tips')}</span>
-					</div>
-				</div>
+						{sectionCover ? (
+							<ImageWithFallback
+								src={sectionCover}
+								alt={sectionTitle}
+								preview
+								className='h-[220px] w-full rounded-xl object-cover object-center sm:h-[300px]'
+								fallbackClassName='h-[220px] w-full sm:h-[300px]'
+								fallbackSvgClassName='max-w-[220px] p-6'
+							/>
+						) : null}
 
-				<div className='space-y-3'>
-					<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
-						{sectionTitle}
-					</h1>
-					<p className='max-w-[820px] break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
-						{sectionDescription}
-					</p>
+						<div>
+							<SectionSummaryCollapsible
+								sectionId={section!.id}
+								hasMarkdown={Boolean(markdown)}
+								previewSource={markdown}>
+								<MarkdownContentShell
+									enableFloatingToc
+									className='mx-auto w-full'
+									contentClassName='overflow-x-hidden'>
+									<TipTapMarkdownViewer
+										content={markdown ? markdown : t('section_no_md')}
+										ownerId={section?.creator?.id}
+									/>
+								</MarkdownContentShell>
+							</SectionSummaryCollapsible>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			<div className='min-w-0 space-y-6'>
-				<div className='mx-auto w-full max-w-[920px]'>
-					{sectionCover ? (
-						<ImageWithFallback
-							src={sectionCover}
-							alt={sectionTitle}
-							preview
-							className='h-[220px] w-full rounded-xl object-cover object-center sm:h-[300px]'
-							fallbackClassName='h-[220px] w-full sm:h-[300px]'
-							fallbackSvgClassName='max-w-[220px] p-6'
+			<div className='min-w-0 space-y-5'>
+				<section className='mx-auto w-full max-w-[920px] space-y-4 border-t border-border/50 pt-5'>
+					<div className='space-y-1.5'>
+						<h2 className='text-2xl font-semibold tracking-tight'>
+							{t('section_documents')}
+						</h2>
+						<p className='text-sm leading-5 text-muted-foreground'>
+							{t('section_documents_description')}
+						</p>
+					</div>
+					<div className='space-y-3'>
+						<SectionDocumentsList
+							section_id={section!.id}
+							publicMode
+							initialData={initialDocuments}
 						/>
-					) : null}
-				</div>
-
-				<MarkdownContentShell
-					enableFloatingToc
-					className='mx-auto w-full'
-					contentClassName='overflow-x-hidden'>
-					<TipTapMarkdownViewer
-						content={markdown ? markdown : t('section_no_md')}
-						ownerId={section?.creator?.id}
-					/>
-				</MarkdownContentShell>
+					</div>
+				</section>
 
 				{section?.id ? (
-					<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
-						<div className='space-y-2'>
+					<section className='mx-auto w-full max-w-[920px] space-y-4 border-t border-border/50 pt-5'>
+						<div className='space-y-1.5'>
 							<h2 className='text-2xl font-semibold tracking-tight'>
 								{t('section_comments')}
 							</h2>
-							<p className='text-sm leading-6 text-muted-foreground'>
+							<p className='text-sm leading-5 text-muted-foreground'>
 								{t('section_comments_description')}
 							</p>
 						</div>

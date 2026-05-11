@@ -147,7 +147,7 @@ const AudioDocumentDetail = ({
 	}, [inView, markdownRendered, onFinishRead]);
 
 	return (
-		<div className={cn('h-full w-full relative pt-4', className)}>
+		<div className={cn('w-full relative pt-4', className)}>
 			{document &&
 				document.transcribe_task?.status ===
 					DocumentTranscribeStatus.TRANSCRIBING && (

@@ -43,6 +43,7 @@ import {
 import { cn } from '@/lib/utils';
 import { SectionDocumentIntegration } from '@/enums/document';
 import { toast } from 'sonner';
+import { Separator } from '../ui/separator';
 
 const SectionDocument = ({
 	section_id,
@@ -98,7 +99,7 @@ const SectionDocument = ({
 						section_id: section_id,
 						keyword: '',
 						desc: true,
-				  }
+					}
 				: undefined;
 		},
 	});
@@ -240,7 +241,11 @@ const SectionDocument = ({
 					className={cn('w-full flex-1 text-xs', className)}
 					onClick={onTriggerClick}>
 					<TableOfContentsIcon />
-					{iconOnly ? <span className='sr-only'>{t('section_documents')}</span> : t('section_documents')}
+					{iconOnly ? (
+						<span className='sr-only'>{t('section_documents')}</span>
+					) : (
+						t('section_documents')
+					)}
 				</Button>
 			</SheetTrigger>
 			<SheetContent className='flex h-full flex-col gap-0 overflow-hidden bg-card/95 pt-0 sm:max-w-xl'>
@@ -259,7 +264,9 @@ const SectionDocument = ({
 										<TableOfContentsIcon />
 									</EmptyMedia>
 									<EmptyDescription>
-										{error instanceof Error ? error.message : t('request_error')}
+										{error instanceof Error
+											? error.message
+											: t('request_error')}
 									</EmptyDescription>
 								</EmptyHeader>
 							</Empty>
@@ -278,58 +285,60 @@ const SectionDocument = ({
 							documents &&
 							documents.map((document, index) => {
 								return (
-									<div
-							key={document.id ?? index}
-							ref={
-								index === documents.length - 1 ? bottomRef : undefined
-							}>
-										<SectionDocumentCard
-											document={document}
-											action={
-												canAddDocument &&
-												(document.status === SectionDocumentIntegration.FAILED ||
-													(sectionProcessFailed &&
-														document.status ===
-															SectionDocumentIntegration.WAIT_TO)) ? (
-													<Button
-														variant='outline'
-														size='sm'
-														className='h-7 rounded-lg border-border/50 bg-card/75 px-2 text-[11px] text-muted-foreground shadow-none hover:bg-card'
-														disabled={retryMutation.isPending}
-														onClick={(event) => {
-															event.preventDefault();
-															event.stopPropagation();
-															retryMutation.mutate(document.id);
-														}}>
-														{retryMutation.isPending &&
-														retryMutation.variables === document.id ? (
-															<Loader2 className='size-3 animate-spin' />
-														) : (
-															<RotateCcw className='size-3' />
-														)}
-														{t('section_document_retry')}
-													</Button>
-												) : undefined
-											}
-										/>
-									</div>
+									<>
+										<div
+											key={document.id ?? index}
+											ref={
+												index === documents.length - 1 ? bottomRef : undefined
+											}>
+											<SectionDocumentCard
+												document={document}
+												action={
+													canAddDocument &&
+													(document.status ===
+														SectionDocumentIntegration.FAILED ||
+														(sectionProcessFailed &&
+															document.status ===
+																SectionDocumentIntegration.WAIT_TO)) ? (
+														<Button
+															variant='outline'
+															size='sm'
+															className='h-7 rounded-lg border-border/50 bg-card/75 px-2 text-[11px] text-muted-foreground shadow-none hover:bg-card'
+															disabled={retryMutation.isPending}
+															onClick={(event) => {
+																event.preventDefault();
+																event.stopPropagation();
+																retryMutation.mutate(document.id);
+															}}>
+															{retryMutation.isPending &&
+															retryMutation.variables === document.id ? (
+																<Loader2 className='size-3 animate-spin' />
+															) : (
+																<RotateCcw className='size-3' />
+															)}
+															{t('section_document_retry')}
+														</Button>
+													) : undefined
+												}
+											/>
+										</div>
+										{index !== documents.length - 1 ? (
+											<Separator className='bg-border/50' />
+										) : null}
+									</>
 								);
 							})}
 						{isFetching && !data && (
 							<>
 								{[...Array(10)].map((_, index) => {
-									return (
-										<ListItemSkeleton key={index} className='py-5' />
-									);
+									return <ListItemSkeleton key={index} className='py-5' />;
 								})}
 							</>
 						)}
 						{isFetchingNextPage && data && (
 							<>
 								{[...Array(10)].map((_, index) => {
-									return (
-										<ListItemSkeleton key={index} className='py-5' />
-									);
+									return <ListItemSkeleton key={index} className='py-5' />;
 								})}
 							</>
 						)}
