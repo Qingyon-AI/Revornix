@@ -2,13 +2,17 @@
 
 import type { InifiniteScrollPagnitionSectionDocumentInfo } from '@/generated';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { searchPublicSectionDocuments, searchSectionDocuments } from '@/service/section';
+import {
+	searchPublicSectionDocuments,
+	searchSectionDocuments,
+} from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { ListItemSkeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import NoticeBox from '../ui/notice-box';
+import { Separator } from '../ui/separator';
 
 const SectionDocumentsList = ({
 	section_id,
@@ -57,7 +61,7 @@ const SectionDocumentsList = ({
 						section_id: section_id,
 						keyword: '',
 						desc: true,
-				  }
+					}
 				: undefined;
 		},
 	});
@@ -73,14 +77,19 @@ const SectionDocumentsList = ({
 				documents &&
 				documents.map((document, index) => {
 					return (
-						<div
-							key={document.id ?? index}
-							ref={index === documents.length - 1 ? bottomRef : undefined}>
-							<SectionDocumentCard
-								document={document}
-								publicMode={publicMode}
-							/>
-						</div>
+						<>
+							<div
+								key={document.id ?? index}
+								ref={index === documents.length - 1 ? bottomRef : undefined}>
+								<SectionDocumentCard
+									document={document}
+									publicMode={publicMode}
+								/>
+							</div>
+							{index !== documents.length - 1 ? (
+								<Separator className='bg-border/50' />
+							) : null}
+						</>
 					);
 				})}
 			{isSuccess && documents && documents.length === 0 && (

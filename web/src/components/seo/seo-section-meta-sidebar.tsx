@@ -39,7 +39,6 @@ import {
 import { Slider } from '@/components/ui/slider';
 import AudioPlayer from '@/components/ui/audio-player';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
-import SectionDocumentsList from '@/components/section/section-documents-list';
 import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
 import { SectionPodcastStatus } from '@/enums/section';
 import type {
@@ -56,7 +55,7 @@ const MetaBadge = ({ children }: { children: ReactNode }) => {
 	return (
 		<Badge
 			variant='outline'
-			className='rounded-full border border-border/40 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
+			className='rounded-full border border-border/40 bg-transparent px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none'>
 			{children}
 		</Badge>
 	);
@@ -72,9 +71,9 @@ const MetaItem = ({
 	value: ReactNode;
 }) => {
 	return (
-		<div className='rounded-[22px] border border-border/40 bg-background/25 px-3 py-2.5'>
+		<div className='px-1 py-3'>
 			<div className='flex items-start gap-3'>
-				<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/65 text-muted-foreground'>
+				<div className='flex size-6 shrink-0 items-center justify-center text-muted-foreground'>
 					<Icon className='size-3.5' />
 				</div>
 				<div className='min-w-0 space-y-0.5'>
@@ -150,7 +149,7 @@ const PodcastPanel = ({
 				description={t('section_podcast_placeholder_description')}
 				tone='success'
 				result={
-					<div className='overflow-hidden rounded-[24px] border border-border/35 bg-background/22 p-4'>
+					<div className='overflow-hidden rounded-xl border border-border/35 p-4'>
 						<AudioPlayer
 							src={podcastFileName}
 							scriptUrl={podcastScriptFileName ?? undefined}
@@ -247,7 +246,7 @@ export const SeoSectionMetaSidebar = ({
 	const t = useTranslations();
 
 	return (
-		<div className='space-y-4 p-4 pb-8'>
+		<div className='space-y-4 p-3 pb-6'>
 			<div className='space-y-4 px-1'>
 				<div className='space-y-2'>
 					<h2 className='break-words text-2xl font-semibold leading-9 tracking-tight [overflow-wrap:anywhere]'>
@@ -261,7 +260,7 @@ export const SeoSectionMetaSidebar = ({
 				{section.creator ? (
 					<Link
 						href={`/user/${section.creator.id}`}
-						className='group flex items-center gap-3 rounded-[24px] border border-border/40 bg-background/40 px-3 py-3 transition-colors hover:bg-background/65'>
+						className='group flex items-center gap-3 border-b border-border/40 px-1 pb-4 transition-colors hover:text-foreground'>
 						<Avatar className='size-10'>
 							<AvatarImage
 								src={creatorAvatar}
@@ -284,7 +283,7 @@ export const SeoSectionMetaSidebar = ({
 					</Link>
 				) : null}
 
-				<div className='grid grid-cols-2 gap-3'>
+				<div className='grid grid-cols-2 gap-x-5 gap-y-1'>
 					<MetaItem
 						icon={BookOpenText}
 						label={t('section_documents')}
@@ -308,16 +307,18 @@ export const SeoSectionMetaSidebar = ({
 				</div>
 
 				<div className='space-y-3'>
-					<NoticeBox tone='success' className='flex items-start gap-2 leading-6'>
+					<NoticeBox
+						tone='success'
+						className='flex items-start gap-2 border-none bg-emerald-500/8 px-3 py-3 leading-6'>
 						<Sparkles className='mt-0.5 size-4 shrink-0 text-emerald-500' />
 						<span>{t('section_ai_tips')}</span>
 					</NoticeBox>
-					<div className='flex flex-wrap items-center gap-2'>
+					<div className='flex flex-wrap items-center gap-1.5'>
 					{section.labels?.map((label) => (
 						<Badge
 							key={label.id}
 							variant='secondary'
-							className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
+							className='rounded-full bg-muted/60 px-3 py-1 text-xs text-muted-foreground'>
 							{label.name}
 						</Badge>
 					))}
@@ -356,7 +357,7 @@ export const SeoSectionMetaSidebar = ({
 					hint={graphStale ? t('section_graph_stale_hint') : undefined}
 					result={
 						hasRenderableGraph ? (
-						<div className='relative aspect-square overflow-hidden rounded-[22px] border border-border/35 bg-background/22'>
+						<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 							<SectionGraphSEO
 								section_id={section.id}
 								showStaleHint={false}
@@ -369,7 +370,7 @@ export const SeoSectionMetaSidebar = ({
 									<Button
 										size='icon'
 										variant='outline'
-										className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-2xl border-border/50 bg-background/80 shadow-none hover:bg-background'>
+										className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-xl border-border/50 bg-background/80 shadow-none hover:bg-background'>
 										<Expand className='size-4 text-muted-foreground' />
 									</Button>
 								</DialogTrigger>
@@ -407,25 +408,13 @@ export const SeoSectionMetaSidebar = ({
 			</SidebarSection>
 
 			<SidebarSection
-				title={t('section_documents')}
-				description={t('section_documents_description')}>
-				<div className='flex flex-col gap-3 xl:max-h-[300] xl:overflow-auto'>
-					<SectionDocumentsList
-						section_id={section.id}
-						publicMode
-						initialData={initialDocuments}
-					/>
-				</div>
-			</SidebarSection>
-
-			<SidebarSection
 				title={t('seo_community_title')}
 				description={t('seo_community_description')}>
-				<div className='flex flex-col gap-3'>
+				<div className='flex flex-col gap-2'>
 					<Link href='/community'>
 						<Button
 							variant='outline'
-							className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+							className='flex w-full items-center justify-between rounded-full border-border/40 bg-transparent'>
 							{t('seo_user_back_to_community')}
 							<BookText />
 						</Button>
@@ -434,7 +423,7 @@ export const SeoSectionMetaSidebar = ({
 						<Link href={`/user/${section.creator.id}`}>
 							<Button
 								variant='outline'
-								className='flex w-full items-center justify-between rounded-full border-border/40 bg-background/50'>
+								className='flex w-full items-center justify-between rounded-full border-border/40 bg-transparent'>
 								{t('seo_document_related_creator')}
 								<Users />
 							</Button>

@@ -68,7 +68,7 @@ const DocumentSidebarSkeleton = () => {
 						<Skeleton className='h-4 w-full rounded-full' />
 						<Skeleton className='h-4 w-[84%] rounded-full' />
 					</div>
-					<div className='flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5'>
+					<div className='flex items-center gap-3 border-b border-border/40 px-1 pb-4'>
 						<Skeleton className='size-10 rounded-full' />
 						<div className='min-w-0 flex-1 space-y-2'>
 							<Skeleton className='h-4 w-28 rounded-full' />
@@ -88,11 +88,9 @@ const DocumentSidebarSkeleton = () => {
 					</div>
 				</div>
 
-				<div className='grid grid-cols-2 gap-3'>
+				<div className='grid grid-cols-2 gap-x-5 gap-y-1'>
 					{Array.from({ length: 4 }).map((_, index) => (
-						<div
-							key={index}
-							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+						<div key={index} className='px-1 py-3'>
 							<div className='flex items-start gap-2.5'>
 								<Skeleton className='size-6 shrink-0 rounded-lg' />
 								<div className='min-w-0 flex-1 space-y-1.5'>
@@ -117,7 +115,7 @@ const DocumentSidebarSkeleton = () => {
 				</div>
 
 				<div className='space-y-4 border-t border-border/50 pt-5'>
-					<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+					<div className='border-l-0 p-0'>
 						<div className='flex items-start gap-3'>
 							<Skeleton className='size-10 rounded-xl' />
 							<div className='min-w-0 flex-1 space-y-2'>
@@ -134,7 +132,7 @@ const DocumentSidebarSkeleton = () => {
 
 			<section className='space-y-4'>
 				<Separator className='bg-border/50' />
-				<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+				<div>
 					<div className='flex items-start gap-3'>
 						<Skeleton className='size-10 rounded-xl' />
 						<div className='min-w-0 flex-1 space-y-2'>
@@ -148,7 +146,7 @@ const DocumentSidebarSkeleton = () => {
 
 			<section className='space-y-4'>
 				<Separator className='bg-border/50' />
-				<div className='rounded-[22px] border border-border/60 bg-background/35 p-4'>
+				<div>
 					<div className='flex items-start gap-3'>
 						<Skeleton className='size-10 rounded-xl' />
 						<div className='min-w-0 flex-1 space-y-2'>
@@ -200,7 +198,7 @@ const DocumentDetailSidebar = ({
 	const t = useTranslations();
 
 	return (
-		<div className='space-y-4 p-4'>
+		<div className='space-y-4 p-3 pb-6'>
 			{isPending && !hasDocument ? (
 				<DocumentSidebarSkeleton />
 			) : (
@@ -257,12 +255,12 @@ const DocumentDetailSidebar = ({
 								}
 								result={
 									hasRenderableGraph ? (
-										<div className='relative aspect-square overflow-hidden rounded-[20px] border border-border/35 bg-background/20'>
+										<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 											<DocumentGraph document_id={id} hideStatePanels />
 											<Dialog>
 												<DialogTrigger asChild>
 													<Button
-														className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-2xl border-border/70 bg-background/80 shadow-none hover:bg-background'
+														className='pointer-events-auto absolute right-3 top-3 z-20 size-8 shrink-0 rounded-xl border-border/70 bg-background/80 shadow-none hover:bg-background'
 														size='icon'
 														variant='outline'>
 														<Expand size={4} className='text-muted-foreground' />

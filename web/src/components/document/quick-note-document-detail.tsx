@@ -82,7 +82,7 @@ const QuickDocumentDetail = ({
 	};
 
 	return (
-		<div className={cn('h-full w-full relative pt-4', className)}>
+		<div className={cn('w-full relative pt-4', className)}>
 			{isError && error && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
 					{error?.message ?? (

@@ -31,13 +31,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import NoticeBox from '../ui/notice-box';
 import { Skeleton } from '../ui/skeleton';
+import { Separator } from '../ui/separator';
 
 const InfoBadge = ({ children }: { children: ReactNode }) => {
 	return (
 		<Badge
 			variant='outline'
 			className={cn(
-				'rounded-full border-border/60 bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none',
+				'rounded-full border-border/60 bg-transparent px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-none',
 			)}>
 			{children}
 		</Badge>
@@ -56,9 +57,9 @@ const InfoMetric = ({
 	hint?: string;
 }) => {
 	return (
-		<div className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+		<div className='px-1 py-3'>
 			<div className='flex items-start gap-2.5'>
-				<div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-background/55 text-muted-foreground'>
+				<div className='flex size-6 shrink-0 items-center justify-center text-muted-foreground'>
 					<Icon className='size-3.5' />
 				</div>
 				<div className='min-w-0 space-y-0.5'>
@@ -102,7 +103,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 						<Skeleton className='h-4 w-[84%] rounded-full' />
 					</div>
 
-					<div className='flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5'>
+					<div className='flex items-center gap-3 border-b border-border/40 px-1 pb-4'>
 						<Skeleton className='size-10 rounded-full' />
 						<div className='min-w-0 flex-1 space-y-2'>
 							<Skeleton className='h-4 w-28 rounded-full' />
@@ -117,11 +118,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 					<Skeleton className='h-7 w-16 rounded-full' />
 				</div>
 
-				<div className='grid grid-cols-2 gap-3'>
+				<div className='grid grid-cols-2 gap-x-5 gap-y-1'>
 					{Array.from({ length: 4 }).map((_, index) => (
-						<div
-							key={index}
-							className='rounded-2xl border border-border/50 bg-background/20 px-3 py-2.5'>
+						<div key={index} className='px-1 py-3'>
 							<div className='flex items-start gap-2.5'>
 								<Skeleton className='size-6 shrink-0 rounded-lg' />
 								<div className='min-w-0 flex-1 space-y-1.5'>
@@ -134,7 +133,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 					))}
 				</div>
 
-				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+				<div className='flex flex-wrap gap-2 border-t border-border/50 pt-4'>
 					<Skeleton className='h-9 w-32 rounded-full' />
 					<Skeleton className='h-9 w-36 rounded-full' />
 					<Skeleton className='h-9 w-32 rounded-full' />
@@ -167,11 +166,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 				locale: locale === 'zh' ? zhCN : enUS,
 			})
 		: '--';
-	const creatorCardClassName =
-		'flex items-center gap-3 rounded-2xl border border-border/50 bg-background/45 px-3 py-2.5 transition-colors';
 	const renderStatusBadge = (label: string, value: string) => {
 		return (
-			<div className='inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border/60 bg-background/45 px-3 py-1.5 text-xs text-muted-foreground'>
+			<div className='inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-muted-foreground'>
 				<span>{label}</span>
 				<span className='font-medium text-foreground'>{value}</span>
 			</div>
@@ -267,7 +264,9 @@ const SectionInfo = ({ id }: { id: number }) => {
 			</div>
 
 			{section.is_day_section ? (
-				<NoticeBox tone='success' className='flex items-start gap-3 px-5 py-4'>
+				<NoticeBox
+					tone='success'
+					className='flex items-start gap-3 border-none bg-emerald-500/8 px-4 py-3'>
 					<div className='flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-current'>
 						<AlertTriangle className='size-4' />
 					</div>
@@ -285,7 +284,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 			{creatorId !== undefined ? (
 				<Link
 					href={`/user/detail/${creatorId}`}
-					className={`${creatorCardClassName} hover:bg-background/65`}>
+					className='flex items-center gap-3 px-1 transition-colors hover:bg-background/65'>
 					<Avatar className='size-10 ring-1 ring-border/60'>
 						<AvatarImage
 							src={
@@ -308,7 +307,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 					</div>
 				</Link>
 			) : (
-				<div className={creatorCardClassName}>
+				<div className='flex items-center gap-3 px-1 pb-4 transition-colors'>
 					<Avatar className='size-10 ring-1 ring-border/60'>
 						<AvatarImage
 							src={undefined}
@@ -328,6 +327,8 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</div>
 			)}
 
+			<Separator className='bg-border/60' />
+
 			{section.labels && section.labels.length > 0 ? (
 				<div className='flex flex-wrap gap-1.5'>
 					{section.labels.map((label) => {
@@ -336,7 +337,7 @@ const SectionInfo = ({ id }: { id: number }) => {
 				</div>
 			) : null}
 
-			<div className='grid grid-cols-2 gap-3'>
+			<div className='grid grid-cols-2 gap-x-5 gap-y-1'>
 				<InfoMetric
 					icon={BookOpenText}
 					label={t('section_documents')}
@@ -363,8 +364,10 @@ const SectionInfo = ({ id }: { id: number }) => {
 				/>
 			</div>
 
+			<Separator className='bg-border/60' />
+
 			{statusBadges.length > 0 ? (
-				<div className='flex flex-wrap gap-2 rounded-[24px] border border-border/60 bg-background/35 p-4'>
+				<div className='flex flex-wrap gap-2'>
 					{statusBadges.map((badge) => (
 						<div key={badge.key}>{badge.node}</div>
 					))}
