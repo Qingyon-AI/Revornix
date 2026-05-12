@@ -2,7 +2,7 @@ import './globals.css';
 import 'react-photo-view/dist/react-photo-view.css';
 import 'katex/dist/katex.min.css';
 import type { Metadata } from 'next';
-import JsonLd from '@/components/seo/json-ld';
+import JsonLd from '@/components/seo/shared/json-ld';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/provider/theme-provider';
 import { UserContextProvider } from '@/provider/user-provider';

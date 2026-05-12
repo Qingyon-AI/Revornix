@@ -272,11 +272,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 						<DocumentListTable
 							documents={documents}
 							lastRowRef={bottomRef}
-							footer={
-								isFetchingNextPage && data ? (
-									<ListLoadingIndicator />
-								) : undefined
-							}
+							loadingMore={isFetchingNextPage && Boolean(data)}
 						/>
 					</>
 				) : null}
@@ -290,7 +286,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 					) : (
 						<DocumentListTable
 							documents={[]}
-							footer={<ListLoadingIndicator centered />}
+							loadingCentered
 						/>
 					)
 				)}

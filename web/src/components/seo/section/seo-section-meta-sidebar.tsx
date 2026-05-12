@@ -39,7 +39,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import AudioPlayer from '@/components/ui/audio-player';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
-import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
 import { SectionPodcastStatus } from '@/enums/section';
 import type {
 	GraphResponse,

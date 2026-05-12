@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { Ref } from 'react';
 import { DocumentCategory } from '@/enums/document';
 import type { DocumentInfo } from '@/generated';
 import { formatInUserTimeZone } from '@/lib/time';
@@ -16,15 +16,18 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
 
 const DocumentListTable = ({
 	documents,
-	footer,
 	lastRowRef,
+	loadingMore = false,
+	loadingCentered = false,
 }: {
 	documents: DocumentInfo[];
-	footer?: ReactNode;
 	lastRowRef?: Ref<HTMLTableRowElement>;
+	loadingMore?: boolean;
+	loadingCentered?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -96,7 +99,11 @@ const DocumentListTable = ({
 					))}
 				</TableBody>
 			</Table>
-			{footer ? <div className='border-t border-border/60 px-2 pt-3'>{footer}</div> : null}
+			{loadingMore || loadingCentered ? (
+				<div className='border-t border-border/60 px-2 pt-3'>
+					<ListLoadingIndicator centered={loadingCentered} />
+				</div>
+			) : null}
 		</div>
 	);
 };

@@ -270,11 +270,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 						<SectionListTable
 							sections={sections}
 							lastRowRef={bottomRef}
-							footer={
-								isFetchingNextPage && data ? (
-									<ListLoadingIndicator />
-								) : undefined
-							}
+							loadingMore={isFetchingNextPage && Boolean(data)}
 						/>
 					</>
 				) : null}
@@ -288,7 +284,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 					) : (
 						<SectionListTable
 							sections={[]}
-							footer={<ListLoadingIndicator centered />}
+							loadingCentered
 						/>
 					)
 				)}

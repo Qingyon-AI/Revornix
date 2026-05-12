@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Footer from '@/components/seo/footer';
-import Nav from '@/components/seo/nav';
+import Footer from '@/components/seo/layout/footer';
+import Nav from '@/components/seo/layout/nav';
 import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
 
 export const metadata: Metadata = buildNoIndexAppMetadata(

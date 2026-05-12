@@ -1,11 +1,11 @@
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import MarkdownContentShell from '@/components/markdown/markdown-content-shell';
-import JsonLd from '@/components/seo/json-ld';
+import JsonLd from '@/components/seo/shared/json-ld';
 import {
 	SeoDocumentAiSummaryPanel,
 	SeoDocumentSidebarBridge,
-} from '@/components/seo/seo-document-meta-sidebar';
-import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
+} from '@/components/seo/document/seo-document-meta-sidebar';
+import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
 import DocumentGraphSEO from '@/components/document/document-graph-seo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +26,7 @@ import {
 } from '@/lib/seo';
 import DocumentCommentsList from '@/components/document/document-comments-list';
 import DocumentNotesPublicList from '@/components/document/document-notes-public-list';
-import SeoDocumentCommentGate from '@/components/seo/seo-document-comment-gate';
+import SeoDocumentCommentGate from '@/components/seo/document/seo-document-comment-gate';
 import { replacePath } from '@/lib/utils';
 import { ArrowRight, CalendarClock, FileDown, Globe2 } from 'lucide-react';
 import { Metadata } from 'next';

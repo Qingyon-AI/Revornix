@@ -1,10 +1,7 @@
-import SeoCommunityBrowser from '@/components/seo/seo-community-browser';
-import JsonLd from '@/components/seo/json-ld';
-import { Button } from '@/components/ui/button';
+import SeoCommunityBrowser from '@/components/seo/community/seo-community-browser';
+import JsonLd from '@/components/seo/shared/json-ld';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
-import Link from 'next/link';
-import { Compass, FileText, UserRound } from 'lucide-react';
 import {
 	fetchPublicDocuments,
 	fetchPublicDocumentLabels,
@@ -13,7 +10,6 @@ import {
 	getPublicSectionHref,
 } from '@/lib/seo';
 import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
-import { cn } from '@/lib/utils';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 type CommunityTab = 'sections' | 'documents';
@@ -96,86 +92,6 @@ const buildCommunityHref = ({
 	}
 	const query = params.toString();
 	return query ? `/community?${query}` : '/community';
-};
-
-const CommunityControls = ({
-	tab,
-	keyword,
-	labelId,
-	t,
-}: {
-	tab: CommunityTab;
-	keyword?: string;
-	labelId?: number;
-	t: Awaited<ReturnType<typeof getTranslations>>;
-}) => {
-	return (
-		<div className='flex flex-col gap-3'>
-			<div className='flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between'>
-				<div className='flex min-w-0 flex-wrap items-center gap-2'>
-					<Button
-						asChild
-						variant='outline'
-						className={cn(
-							'h-9 rounded-xl px-3 shadow-none transition-colors',
-							tab === 'sections'
-								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
-						)}>
-						<Link
-							href={buildCommunityHref({
-								tab: 'sections',
-								keyword,
-								labelId,
-							})}>
-							<Compass className='mr-2 size-4' />
-							{t('seo_community_sections_tab')}
-						</Link>
-					</Button>
-					<Button
-						asChild
-						variant='outline'
-						className={cn(
-							'h-9 rounded-xl px-3 shadow-none transition-colors',
-							tab === 'documents'
-								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
-						)}>
-						<Link
-							href={buildCommunityHref({
-								tab: 'documents',
-								keyword,
-								labelId,
-							})}>
-							<FileText className='mr-2 size-4' />
-							{t('seo_community_documents_tab')}
-						</Link>
-					</Button>
-				</div>
-
-				<div className='flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs leading-5 text-muted-foreground sm:text-sm'>
-					<span className='inline-flex items-center gap-1.5'>
-						<Compass className='size-3.5' />
-						{tab === 'documents'
-							? t('seo_community_channel_related_sections')
-							: t('seo_community_channel_section_overview')}
-					</span>
-					<span className='inline-flex items-center gap-1.5'>
-						<UserRound className='size-3.5' />
-						{tab === 'documents'
-							? t('seo_community_channel_source_materials')
-							: t('seo_community_channel_creators')}
-					</span>
-					<span className='inline-flex items-center gap-1.5'>
-						<FileText className='size-3.5' />
-						{tab === 'documents'
-							? t('seo_community_channel_readable_documents')
-							: t('seo_community_channel_linked_documents')}
-					</span>
-				</div>
-			</div>
-		</div>
-	);
 };
 
 export async function generateMetadata(props: {
@@ -336,29 +252,15 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 			})) ?? []),
 	};
 
-	const communityControls = (
-		<CommunityControls
-			tab={tab}
-			keyword={keyword}
-			labelId={labelId}
-			t={t}
-		/>
-	);
-
 	return (
 		<div className='mx-auto flex w-full max-w-[1480px] flex-col px-4 pb-10 sm:px-6 lg:px-8'>
 			<JsonLd data={communitySchema} />
-
-			<section className='sticky top-14 z-10 -mx-4 hidden border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:block lg:px-8'>
-				{communityControls}
-			</section>
 
 			<SeoCommunityBrowser
 				tab={tab}
 				keyword={keyword}
 				labelId={labelId}
 				labels={labels}
-				mobileControls={communityControls}
 				initialSections={sections}
 				initialDocuments={documents}
 			/>
