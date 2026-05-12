@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Footer from '@/components/seo/footer';
 import Nav from '@/components/seo/nav';
-import { NO_INDEX_METADATA } from '@/lib/seo-metadata';
+import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
 
-export const metadata: Metadata = NO_INDEX_METADATA;
+export const metadata: Metadata = buildNoIndexAppMetadata(
+	'Revornix Account Access',
+	'Sign in or create a Revornix account to manage documents, sections, AI workflows, and workspace settings.',
+);
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (

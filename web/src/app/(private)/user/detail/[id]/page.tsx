@@ -19,7 +19,8 @@ export async function generateMetadata({
 	if (!userId) {
 		return buildMetadata({
 			title: t('app_user_title_suffix'),
-			description: 'User detail page in Revornix.',
+			description:
+				'Private Revornix user profile page for reviewing account identity, follows, fans, and workspace relationships.',
 			noIndex: true,
 		});
 	}
@@ -43,7 +44,8 @@ export async function generateMetadata({
 	} catch {
 		return buildMetadata({
 			title: t('app_user_title_suffix'),
-			description: 'User detail page in Revornix.',
+			description:
+				'Private Revornix user profile page for reviewing account identity, follows, fans, and workspace relationships.',
 			noIndex: true,
 		});
 	}

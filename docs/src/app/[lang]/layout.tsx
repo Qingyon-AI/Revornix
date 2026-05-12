@@ -17,32 +17,47 @@ import NextTopLoader from 'nextjs-toploader';
 import { FixedNextraLayout } from '@/components/nextra-fixed-layout';
 
 export const metadata = {
-	// Define your metadata here
-	// For more information on metadata API, see: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
-	description: 'AI时代的资讯管理工具',
+	description:
+		'Revornix documentation for deploying, configuring, and extending the AI-native information workspace.',
 	metadataBase: new URL('https://revornix.com'),
-	keywords: ['Revornix', 'AI', 'Notes', 'Markdown'],
+	keywords: [
+		'Revornix',
+		'AI information workspace',
+		'document management',
+		'knowledge graph',
+		'self-hosted knowledge base',
+		'Markdown',
+	],
 	applicationName: 'Revornix',
 	appleWebApp: {
 		title: 'Revornix',
 	},
 	title: {
-		default: 'AI时代的资讯管理工具',
+		default: 'Revornix Docs',
 		template: '%s | Revornix',
 	},
 	openGraph: {
-		// https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632
 		url: './',
 		siteName: 'Revornix',
 		locale: 'zh_CN',
 		type: 'website',
+		title: 'Revornix Docs',
+		description:
+			'Guides for Revornix documents, sections, AI engines, integrations, deployment, and public knowledge sharing.',
 	},
 	twitter: {
+		card: 'summary_large_image',
 		site: 'https://revornix.com',
+		title: 'Revornix Docs',
+		description:
+			'Guides for deploying, configuring, and extending Revornix.',
 	},
 	alternates: {
-		// https://github.com/vercel/next.js/discussions/50189#discussioncomment-10826632
 		canonical: './',
+		languages: {
+			en: '/en',
+			zh: '/zh',
+		},
 	},
 };
 

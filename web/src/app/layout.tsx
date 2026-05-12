@@ -31,14 +31,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
 	return {
 		...buildMetadata({
-			title: formatMetaTitle(siteName, description),
+			title: formatMetaTitle(siteName, t('seo_home_title')),
 			description,
 			images: [getDefaultOgImage()],
 			socialCard: {
 				eyebrow: siteName,
+				title: t('seo_home_title'),
+				description,
 				theme: 'default',
 			},
-			keywords: ['AI workspace', 'public knowledge hub'],
+			keywords: [
+				'AI workspace',
+				'public knowledge hub',
+				'document knowledge graph',
+				'AI document management',
+			],
 		}),
 		metadataBase: getSiteUrl(),
 		manifest: '/manifest.webmanifest',

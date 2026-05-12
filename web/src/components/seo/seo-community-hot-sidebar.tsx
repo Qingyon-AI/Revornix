@@ -21,12 +21,29 @@ import { DAILY_HOT_API_PREFIX } from '@/config/api';
 const HOT_WEBSITES = [
 	'history',
 	'bilibili',
+	'acfun',
 	'weibo',
 	'zhihu-daily',
 	'baidu',
 	'douyin',
+	'douban-movie',
+	'douban-group',
+	'tieba',
+	'sspai',
 	'ithome',
+	'jianshu',
+	'guokr',
+	'thepaper',
+	'toutiao',
+	'36kr',
+	'51cto',
 	'juejin',
+	'qq-news',
+	'sina',
+	'sina-news',
+	'netease-news',
+	'weread',
+	'hellogithub',
 ] as const;
 
 const SeoCommunityHotSidebar = () => {
@@ -82,7 +99,7 @@ const SeoCommunityHotSidebar = () => {
 		<>
 			{loading ? (
 				<div>
-					{Array.from({ length: 8 }).map((_, index) => (
+					{Array.from({ length: 12 }).map((_, index) => (
 						<div key={index}>
 							<div className='flex items-center justify-between gap-3 py-5'>
 								<Skeleton className='h-5 flex-1 rounded-md' />
@@ -111,7 +128,7 @@ const SeoCommunityHotSidebar = () => {
 			{!loading && !error ? (
 				<div className='min-w-0 max-w-full overflow-x-hidden'>
 					<AutoScrollList
-						visibleCount={8}
+						visibleCount={12}
 						itemHeight={41}
 						gap={0}
 						className='w-full min-w-0 max-w-full'>

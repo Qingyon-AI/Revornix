@@ -368,7 +368,7 @@ const SeoCommunityBrowser = ({
 				) : null}
 			</div>
 
-			<div className='order-1 w-full max-w-full overflow-x-hidden lg:order-2 lg:h-fit lg:self-start lg:overflow-visible lg:sticky lg:top-32'>
+			<div className='order-1 w-full max-w-full overflow-x-hidden lg:order-2 lg:h-fit lg:self-start lg:overflow-visible lg:sticky lg:top-32 space-y-3'>
 				<SeoCommunityPoem />
 				<Separator />
 				<SeoCommunityHotSidebar />

@@ -19,6 +19,7 @@ import {
 	buildMetadata,
 	createAbsoluteUrl,
 	formatMetaTitle,
+	toMetaDescription,
 } from '@/lib/seo-metadata';
 
 type Params = Promise<{ id: string }>;
@@ -77,18 +78,20 @@ const buildUserMetaDescription = (
 ) => {
 	const slogan = user.slogan?.trim();
 	if (slogan) {
-		return slogan;
+		return toMetaDescription(slogan);
 	}
 
-	return [
+	const fallback = [
 		`${user.nickname} public creator profile`,
 		typeof totalSections === 'number'
 			? `${totalSections} public sections`
 			: null,
-		'Revornix community',
+		'Revornix community profile with published sections, public documents, and creator context.',
 	]
 		.filter(Boolean)
 		.join(' • ');
+
+	return toMetaDescription(fallback);
 };
 
 export async function generateMetadata(props: {

@@ -19,7 +19,8 @@ export async function generateMetadata(props: {
 	if (!documentId) {
 		return buildMetadata({
 			title: t('app_document_title_suffix'),
-			description: 'Document detail page in Revornix.',
+			description:
+				'Private Revornix document detail page for reading content, summaries, notes, graph results, and related sections.',
 			noIndex: true,
 		});
 	}
@@ -43,7 +44,8 @@ export async function generateMetadata(props: {
 	} catch {
 		return buildMetadata({
 			title: t('app_document_title_suffix'),
-			description: 'Document detail page in Revornix.',
+			description:
+				'Private Revornix document detail page for reading content, summaries, notes, graph results, and related sections.',
 			noIndex: true,
 		});
 	}
