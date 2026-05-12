@@ -12,15 +12,17 @@ import {
 	InifiniteScrollPagnitionSectionDocumentInfo,
 	InifiniteScrollPagnitionDocumentInfo,
 	SearchDocumentNoteRequest,
-	SearchPublicSectionsRequest,
 	SearchUserSectionsRequest,
 	SchemasDocumentBaseSectionInfo,
+	SearchPublicSectionsRequest,
 	SectionDocumentRequest,
 	SectionGraphRequest,
 	SectionInfo,
 	UserInfoRequest,
 	UserPublicInfo,
 } from '@/generated';
+import type { Label } from '@/generated/models/Label';
+import type { LabelListResponse } from '@/generated/models/LabelListResponse';
 import type {
 	InifiniteScrollPagnitionSectionCommentInfo,
 	SectionCommentSearchRequest,
@@ -63,6 +65,8 @@ export type PublicDocumentMarkdownContentRequest = {
 	url?: string;
 	snapshot_id?: number;
 };
+
+export type PublicLabel = Label;
 
 export const getPublicSectionHref = (section: {
 	publish_uuid?: string | null;
@@ -132,6 +136,16 @@ export const fetchPublicDocuments = async (data: {
 	return await serverRequest(documentApi.searchPublicDocument, {
 		data,
 	});
+};
+
+export const fetchPublicDocumentLabels = async (): Promise<PublicLabel[]> => {
+	const response = await serverRequest<LabelListResponse>(documentApi.listPublicLabel);
+	return response.data;
+};
+
+export const fetchPublicSectionLabels = async (): Promise<PublicLabel[]> => {
+	const response = await serverRequest<LabelListResponse>(sectionApi.getPublicLabels);
+	return response.data;
 };
 
 export const fetchPublicSectionDocuments = async (

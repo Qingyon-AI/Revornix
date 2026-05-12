@@ -1899,6 +1899,8 @@
     "seo_nav_docs": "Docs",
     "seo_nav_community": "Community",
     "seo_nav_dashboard": "Dashboard",
+    "seo_hot_search_title": "Public Hot Search Collection",
+    "seo_hot_search_description": "Browse trending topics from major platforms without signing in, then jump directly to the original source pages.",
     "seo_home_title": "Revornix Public Knowledge Hub",
     "seo_home_description": "Discover public sections, creator profiles, and linked documents published on Revornix. Start from the community feed and continue into topic-focused knowledge collections.",
     "seo_home_eyebrow": "Public knowledge network",

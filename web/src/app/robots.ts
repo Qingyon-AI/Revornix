@@ -7,7 +7,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 		rules: [
 			{
 				userAgent: '*',
-				allow: ['/', '/community', '/document/', '/section/', '/user/'],
+				allow: ['/', '/community', '/hot-search', '/document/', '/section/', '/user/'],
 				disallow: [
 					'/account',
 					'/callback',
@@ -19,7 +19,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 					'/document/star',
 					'/document/unread',
 					'/graph',
-					'/hot-search',
+					'/dashboard/hot-search',
 					'/integrations',
 					'/revornix-ai',
 					'/section/community',

@@ -2106,6 +2106,37 @@ async def get_labels_by_section_ids_async(
         res.setdefault(section_id, []).append(label)
     return res
 
+async def get_public_labels_async(
+    db: AsyncSession,
+):
+    stmt = (
+        select(models.section.Label)
+        .join(
+            models.section.SectionLabel,
+            models.section.SectionLabel.label_id == models.section.Label.id,
+        )
+        .join(
+            models.section.Section,
+            models.section.Section.id == models.section.SectionLabel.section_id,
+        )
+        .join(
+            models.section.PublishSection,
+            models.section.PublishSection.section_id == models.section.Section.id,
+        )
+        .where(
+            models.section.Label.delete_at.is_(None),
+            models.section.SectionLabel.delete_at.is_(None),
+            models.section.Section.delete_at.is_(None),
+            models.section.PublishSection.delete_at.is_(None),
+        )
+        .group_by(models.section.Label.id)
+        .order_by(
+            func.count(models.section.SectionLabel.id).desc(),
+            models.section.Label.name.asc(),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def get_section_documents_by_section_id_and_document_ids(
     db: Session,
     section_id: int,

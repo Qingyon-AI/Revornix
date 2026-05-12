@@ -268,6 +268,10 @@ export const getLabels = async (): Promise<LabelListResponse> => {
     return await request(documentApi.listLabel)
 }
 
+export const getPublicLabels = async (): Promise<LabelListResponse> => {
+    return await publicRequest(documentApi.listPublicLabel)
+}
+
 export type GlobalSearchMode = 'vector' | 'text'
 
 export type GlobalDocumentSearchRequest = VectorSearchRequest & {

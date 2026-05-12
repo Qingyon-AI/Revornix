@@ -1,31 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import HotSearchCard from '@/components/hot-search/hot-search-card';
 import HotSearchErrorCard from '@/components/hot-search/hot-search-error-card';
+import type { Website } from '@/components/hot-search/types';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
-
-export interface Website {
-	code: number;
-	name: string;
-	title: string;
-	type: string;
-	link: string;
-	total: number;
-	fromCache: boolean;
-	updateTime: string;
-	data: HotItem[];
-}
-
-export interface HotItem {
-	id: string;
-	title: string;
-	timestamp: number;
-	hot: number;
-	url: string;
-	mobileUrl: string;
-}
 
 const HotSearch = () => {
 	const baseUrl = DAILY_HOT_API_PREFIX;
@@ -58,31 +39,30 @@ const HotSearch = () => {
 	];
 
 	const [websites, setWebsites] = useState<Website[]>();
-	const [keyword, setKeyword] = useState('');
 	const [refreshStatus, setRefreshStatus] = useState(false);
 
 	const handleInitData = useCallback(async () => {
 		setRefreshStatus(true);
-		let data = [];
+		const data: Website[] = [];
 		const promises = websites_to_craw.map(async (website) => {
 			const response = await fetch(baseUrl + `/${website}`, {
 				cache: 'no-cache',
 			}).then((res) => {
 				if (res.status === 200) {
 					return res.json();
-				} else {
-					return {
-						code: res.status,
-						name: website,
-						title: '',
-						type: '',
-						link: '',
-						total: 0,
-						fromCache: false,
-						updateTime: '',
-						data: [],
-					};
 				}
+
+				return {
+					code: res.status,
+					name: website,
+					title: '',
+					type: '',
+					link: '',
+					total: 0,
+					fromCache: false,
+					updateTime: '',
+					data: [],
+				};
 			});
 			return response as Website;
 		});
@@ -97,29 +77,27 @@ const HotSearch = () => {
 	}, [baseUrl]);
 
 	useEffect(() => {
-		handleInitData();
-	}, []);
+		void handleInitData();
+	}, [handleInitData]);
 
 	return (
-		<div className='px-5 pb-5 h-full overflow-auto'>
-			{refreshStatus && (
+		<div className='h-full overflow-auto px-5 pb-5'>
+			{refreshStatus ? (
 				<div className='h-full'>
-					<Skeleton className='w-full h-full' />
+					<Skeleton className='h-full w-full' />
 				</div>
-			)}
-			{websites && websites.length > 0 && (
-				<>
-					<div className='grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-5'>
-						{websites.map((website, index) => {
-							if (website.code === 200) {
-								return <HotSearchCard key={index} website={website} />;
-							} else {
-								return <HotSearchErrorCard key={index} />;
-							}
-						})}
-					</div>
-				</>
-			)}
+			) : null}
+			{websites && websites.length > 0 ? (
+				<div className='grid grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-4'>
+					{websites.map((website, index) =>
+						website.code === 200 ? (
+							<HotSearchCard key={index} website={website} />
+						) : (
+							<HotSearchErrorCard key={index} />
+						),
+					)}
+				</div>
+			) : null}
 		</div>
 	);
 };

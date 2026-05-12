@@ -7,7 +7,9 @@ import Link from 'next/link';
 import { Compass, FileText, UserRound } from 'lucide-react';
 import {
 	fetchPublicDocuments,
+	fetchPublicDocumentLabels,
 	fetchPublicSections,
+	fetchPublicSectionLabels,
 	getPublicSectionHref,
 } from '@/lib/seo';
 import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
@@ -171,7 +173,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	const start = getStartValue(searchParams.start);
 	const tab = getTabValue(searchParams.tab);
 	const labelId = getLabelValue(searchParams.label);
-	const [sectionsResult, documentsResult] = await Promise.allSettled([
+	const [sectionsResult, documentsResult, labelsResult] = await Promise.allSettled([
 		tab === 'sections'
 			? fetchPublicSections({
 					keyword,
@@ -190,6 +192,9 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 					label_ids: labelId !== undefined ? [labelId] : undefined,
 				})
 			: Promise.resolve(null),
+		tab === 'documents'
+			? fetchPublicDocumentLabels()
+			: fetchPublicSectionLabels(),
 	]);
 
 	if (sectionsResult.status === 'rejected') {
@@ -210,9 +215,17 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 		});
 	}
 
+	if (labelsResult.status === 'rejected') {
+		console.error('[SEO community] failed to fetch public labels', {
+			tab,
+			...toLoggableError(labelsResult.reason),
+		});
+	}
+
 	const sections = sectionsResult.status === 'fulfilled' ? sectionsResult.value : null;
 	const documents =
 		documentsResult.status === 'fulfilled' ? documentsResult.value : null;
+	const labels = labelsResult.status === 'fulfilled' ? labelsResult.value : [];
 
 	const communitySchema = {
 		'@context': 'https://schema.org',
@@ -319,6 +332,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				tab={tab}
 				keyword={keyword}
 				labelId={labelId}
+				labels={labels}
 				initialSections={sections}
 				initialDocuments={documents}
 			/>

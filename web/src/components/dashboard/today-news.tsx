@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
-import { Website } from '@/app/(private)/hot-search/page';
+import type { Website } from '@/components/hot-search/types';
 import Link from 'next/link';
 import { AlertTriangle, ChevronRight, Newspaper, RefreshCcwIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -117,7 +117,7 @@ const TodayNews = () => {
 						{t('dashboard_today_hot_search_description')}
 					</CardDescription>
 				</div>
-				<Link href={'/hot-search'}>
+				<Link href={'/dashboard/hot-search'}>
 					<Button variant='ghost' className='text-sm text-muted-foreground'>
 						{t('dashboard_today_hot_search_full')}
 						<ChevronRight />

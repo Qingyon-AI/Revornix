@@ -115,6 +115,10 @@ export const getMineLabels = async (): Promise<LabelListResponse> => {
     return await request(sectionApi.getMineLabels)
 }
 
+export const getPublicLabels = async (): Promise<LabelListResponse> => {
+    return await publicRequest(sectionApi.getPublicLabels)
+}
+
 export const createLabel = async (data: LabelAddRequest): Promise<CreateLabelResponse> => {
     return await request(sectionApi.createLabel, {
         data

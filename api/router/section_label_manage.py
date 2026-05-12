@@ -36,6 +36,16 @@ async def list_label(
     ]
     return schemas.section.LabelListResponse(data=labels)
 
+@section_label_manage_router.post("/label/public/list", response_model=schemas.section.LabelListResponse)
+async def list_public_label(
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_labels = await crud.section.get_public_labels_async(db=db)
+    labels = [
+        schemas.section.SectionLabel(id=label.id, name=label.name) for label in db_labels
+    ]
+    return schemas.section.LabelListResponse(data=labels)
+
 @section_label_manage_router.post('/label/delete', response_model=schemas.common.NormalResponse)
 async def delete_label(
     label_delete_request: schemas.section.LabelDeleteRequest,

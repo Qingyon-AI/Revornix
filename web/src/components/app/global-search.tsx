@@ -128,7 +128,7 @@ const PRIVATE_NAV: NavEntry[] = [
 	{ href: '/section/subscribed', label: 'nav_subscribed_sections', keywords: ['subscribed', 'follow', '订阅'], icon: Library },
 	{ href: '/revornix-ai', label: 'nav_revornix_ai', keywords: ['ai', 'chat', 'assistant'], icon: Sparkles },
 	{ href: '/graph', label: 'nav_graph', keywords: ['graph', 'knowledge', '图谱'], icon: Network },
-	{ href: '/hot-search', label: 'nav_hot_search', keywords: ['hot', 'trending', '热搜'], icon: Flame },
+	{ href: '/dashboard/hot-search', label: 'nav_hot_search', keywords: ['hot', 'trending', '热搜'], icon: Flame },
 	{ href: '/account/notifications', label: 'nav_notifications', keywords: ['notification', 'inbox', '通知'], icon: Inbox },
 	{ href: '/setting', label: 'nav_settings', keywords: ['setting', 'preferences', '设置'], icon: Settings },
 	{ href: '/account', label: 'nav_account', keywords: ['account', 'profile', '账户'], icon: UserCircle },

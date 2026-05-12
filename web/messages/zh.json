@@ -1899,6 +1899,8 @@
     "seo_nav_docs": "文档",
     "seo_nav_community": "社区",
     "seo_nav_dashboard": "面板",
+    "seo_hot_search_title": "公开热搜集合",
+    "seo_hot_search_description": "浏览各大平台的热搜集合，无需登录即可查看，并可直接跳转到对应来源页面。",
     "seo_home_title": "Revornix 公开知识网络",
     "seo_home_description": "浏览 Revornix 上公开发布的专栏、创作者主页和关联文档。先从社区入口进入，再继续探索围绕具体主题组织的知识集合。",
     "seo_home_eyebrow": "公开知识网络",

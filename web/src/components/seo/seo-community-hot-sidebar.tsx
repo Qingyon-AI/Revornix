@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCcwIcon } from 'lucide-react';
+import { ChevronRight, RefreshCcwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Website } from '@/app/(private)/hot-search/page';
+import type { Website } from '@/components/hot-search/types';
 import { AutoScrollList } from '@/components/ui/auto-scroll-list';
 import {
 	Empty,
@@ -135,11 +135,12 @@ const SeoCommunityHotSidebar = () => {
 							</div>
 						))}
 					</AutoScrollList>
-					<div className='text-right'>
+					<div className='pt-3 text-right'>
 						<Link
 							href='/hot-search'
-							className='text-sm text-muted-foreground transition-colors hover:text-foreground'>
+							className='inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground'>
 							{t('dashboard_today_hot_search_full')}
+							<ChevronRight className='size-4' />
 						</Link>
 					</div>
 				</div>

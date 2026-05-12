@@ -1975,6 +1975,37 @@ async def get_user_labels_by_user_id_async(
     )
     return list((await db.execute(stmt)).scalars().all())
 
+async def get_public_labels_async(
+    db: AsyncSession,
+):
+    stmt = (
+        select(models.document.Label)
+        .join(
+            models.document.DocumentLabel,
+            models.document.DocumentLabel.label_id == models.document.Label.id,
+        )
+        .join(
+            models.document.Document,
+            models.document.Document.id == models.document.DocumentLabel.document_id,
+        )
+        .join(
+            models.document.PublishDocument,
+            models.document.PublishDocument.document_id == models.document.Document.id,
+        )
+        .where(
+            models.document.Label.delete_at.is_(None),
+            models.document.DocumentLabel.delete_at.is_(None),
+            models.document.Document.delete_at.is_(None),
+            models.document.PublishDocument.delete_at.is_(None),
+        )
+        .group_by(models.document.Label.id)
+        .order_by(
+            func.count(models.document.DocumentLabel.id).desc(),
+            models.document.Label.name.asc(),
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def search_user_unread_documents(
     db: Session,
     user_id: int,

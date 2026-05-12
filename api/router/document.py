@@ -137,6 +137,16 @@ async def list_label(
     ]
     return schemas.document.LabelListResponse(data=labels)
 
+@document_router.post("/label/public/list", response_model=schemas.document.LabelListResponse)
+async def list_public_label(
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_labels = await crud.document.get_public_labels_async(db=db)
+    labels = [
+        schemas.document.DocumentLabel(id=label.id, name=label.name) for label in db_labels
+    ]
+    return schemas.document.LabelListResponse(data=labels)
+
 @document_router.post('/label/create', response_model=schemas.document.CreateLabelResponse)
 async def add_label(
     label_add_request: schemas.document.LabelAddRequest,

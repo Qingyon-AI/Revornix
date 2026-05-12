@@ -63,6 +63,7 @@ const auth = (request: NextRequest) => {
         whitelist.includes(normalizedPath) ||
         isPublicMetadataPath(normalizedPath) ||
         normalizedPath === '/community' ||
+        normalizedPath === '/hot-search' ||
         normalizedPath.startsWith('/integrations') ||
         isSeoSectionPath(normalizedPath) ||
         isPublicSingleSegmentPath(normalizedPath, '/user/') ||
