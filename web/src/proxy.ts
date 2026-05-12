@@ -106,10 +106,11 @@ export const config = {
          * - api (API routes)
          * - _next/static (static files)
          * - _next/image (image optimization files)
+         * - images (public static images)
          * - favicon.ico, manifest.webmanifest, sitemap.xml, robots.txt (metadata files)
          * - sitemap/*, sitemaps/* (public sitemap routes)
          * - serviceWorker
          */
-        '/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|sitemap/|sitemaps/|serviceWorker).*)',
+        '/((?!api|_next/static|_next/image|images/|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|sitemap/|sitemaps/|serviceWorker).*)',
     ],
 }
