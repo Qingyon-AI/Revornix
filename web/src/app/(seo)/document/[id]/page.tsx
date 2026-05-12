@@ -39,6 +39,7 @@ import {
 	formatMetaTitle,
 	getSiteOrigin,
 	toIsoDate,
+	toMetaDescription,
 } from '@/lib/seo-metadata';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
 import { Separator } from '@/components/ui/separator';
@@ -107,7 +108,13 @@ export async function generateMetadata(props: {
 				document.title || t('document_no_title'),
 				t('seo_document_title_suffix'),
 			),
-			description: document.description || t('document_no_description'),
+			description: toMetaDescription(
+				document.description ||
+					`${document.title || t('document_no_title')} - ${getCategoryLabel(
+						document.category,
+						t,
+					)} published on Revornix with readable content, AI outputs, and related public sections.`,
+			),
 			path: `/document/${document.id}`,
 			type: 'article',
 			images: [coverSrc],

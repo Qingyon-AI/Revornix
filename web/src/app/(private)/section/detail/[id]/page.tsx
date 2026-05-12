@@ -22,7 +22,8 @@ export async function generateMetadata({
 	if (!sectionId) {
 		return buildMetadata({
 			title: t('app_section_title_suffix'),
-			description: 'Section detail page in Revornix.',
+			description:
+				'Private Revornix section detail page for managing summaries, markdown, documents, graph results, audio, and discussion.',
 			noIndex: true,
 		});
 	}
@@ -46,7 +47,8 @@ export async function generateMetadata({
 	} catch {
 		return buildMetadata({
 			title: t('app_section_title_suffix'),
-			description: 'Section detail page in Revornix.',
+			description:
+				'Private Revornix section detail page for managing summaries, markdown, documents, graph results, audio, and discussion.',
 			noIndex: true,
 		});
 	}

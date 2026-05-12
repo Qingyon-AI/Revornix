@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: 'Revornix',
 		short_name: 'Revornix',
-		description: 'An Information Management Tool for the AI Era',
+		description:
+			'AI-native information workspace for documents, knowledge graphs, sections, and public knowledge sharing.',
 		start_url: '/community',
 		scope: '/',
 		display: 'standalone',

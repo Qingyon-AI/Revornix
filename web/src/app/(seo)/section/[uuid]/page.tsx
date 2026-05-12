@@ -38,6 +38,7 @@ import {
 	createAbsoluteUrl,
 	formatMetaTitle,
 	toIsoDate,
+	toMetaDescription,
 } from '@/lib/seo-metadata';
 import { getSectionCoverSrc } from '@/lib/section-cover';
 import { replacePath } from '@/lib/utils';
@@ -73,7 +74,7 @@ const formatSectionDate = (
 const buildSectionMetaDescription = (section: SectionInfoType) => {
 	const rawDescription = section.description?.trim();
 	if (rawDescription) {
-		return rawDescription;
+		return toMetaDescription(rawDescription);
 	}
 
 	const labels = section.labels
@@ -81,13 +82,16 @@ const buildSectionMetaDescription = (section: SectionInfoType) => {
 		.filter(Boolean)
 		.slice(0, 3);
 
-	return [
+	const fallback = [
 		section.title?.trim(),
 		labels && labels.length > 0 ? `Topics: ${labels.join(', ')}` : null,
 		section.creator?.nickname ? `Creator: ${section.creator.nickname}` : null,
+		'Public Revornix section with markdown content, related documents, graph results, and discussion.',
 	]
 		.filter(Boolean)
 		.join(' • ');
+
+	return toMetaDescription(fallback);
 };
 
 export async function generateMetadata(props: {

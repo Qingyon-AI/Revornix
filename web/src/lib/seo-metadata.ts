@@ -2,16 +2,20 @@ import type { Metadata } from 'next';
 
 const FALLBACK_SITE_URL = 'https://app.revornix.com';
 const DEFAULT_SITE_NAME = 'Revornix';
-const DEFAULT_SITE_DESCRIPTION = 'An Information Management Tool for the AI Era';
+const DEFAULT_SITE_DESCRIPTION =
+	'Revornix is an AI-native information workspace for collecting documents, building knowledge context, and publishing public sections.';
 const DEFAULT_OG_IMAGE_PATH = '/images/cover.jpg';
 
 export const DEFAULT_SEO_KEYWORDS = [
 	'Revornix',
 	'AI',
-	'information management',
+	'AI information management',
+	'information workspace',
 	'knowledge base',
 	'document management',
+	'knowledge graph',
 	'content curation',
+	'public knowledge hub',
 ];
 
 const ensureProtocol = (value: string) => {

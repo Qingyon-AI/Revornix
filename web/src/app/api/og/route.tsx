@@ -47,7 +47,8 @@ export async function GET(request: Request) {
 		100,
 	);
 	const description = clampText(
-		searchParams.get('description') || 'An Information Management Tool for the AI Era',
+		searchParams.get('description') ||
+			'AI-native information workspace for documents, knowledge graphs, sections, and public knowledge sharing.',
 		180,
 	);
 	const eyebrow = clampText(searchParams.get('eyebrow') || 'Revornix', 42);
