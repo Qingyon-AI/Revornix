@@ -442,6 +442,12 @@ const SeoCommunityBrowser = ({
 					<SeoCommunityPoem />
 					<Separator />
 					<SeoCommunityHotSidebar />
+					<img
+						src='/images/dog.gif'
+						alt=''
+						aria-hidden='true'
+						className='mx-auto mt-6 size-24 object-contain opacity-90'
+					/>
 				</div>
 			</div>
 		</div>
