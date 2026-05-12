@@ -78,21 +78,21 @@ const SectionDocumentCard = ({
 								{!publicMode ? (
 									<DocumentVisibilityHint documentId={document.id} />
 								) : null}
-								<div className='w-fit rounded-full border border-sky-500/25 bg-sky-500/10 px-2.5 py-1 text-sky-200'>
+								<div className='w-fit rounded-full border border-sky-500/25 bg-sky-500/10 px-2.5 py-1 text-sky-700'>
 									{categoryLabel}
 								</div>
 								<div
 									className={cn(
 										'w-fit rounded-full border px-2.5 py-1',
 										document.status === SectionDocumentIntegration.SUCCESS &&
-											'border-emerald-500/25 bg-emerald-500/10 text-emerald-200',
+											'border-emerald-500/25 bg-emerald-500/10 text-emerald-700',
 										document.status ===
 											SectionDocumentIntegration.SUPPLEMENTING &&
-											'border-amber-500/25 bg-amber-500/10 text-amber-200',
+											'border-amber-500/25 bg-amber-500/10 text-amber-700',
 										document.status === SectionDocumentIntegration.WAIT_TO &&
-											'border-zinc-500/25 bg-zinc-500/10 text-zinc-300',
+											'border-zinc-500/25 bg-zinc-500/10 text-zinc-700',
 										document.status === SectionDocumentIntegration.FAILED &&
-											'border-rose-500/25 bg-rose-500/10 text-rose-200',
+											'border-rose-500/25 bg-rose-500/10 text-rose-700',
 										![
 											SectionDocumentIntegration.SUCCESS,
 											SectionDocumentIntegration.SUPPLEMENTING,
@@ -107,7 +107,7 @@ const SectionDocumentCard = ({
 									? document.labels.map((label, index) => (
 											<div
 												key={index}
-												className='max-w-full rounded-full border border-border/40 bg-background/45 px-2.5 py-1 text-muted-foreground/90'>
+												className='max-w-full rounded-full border border-border/40 bg-background/45 px-2.5 py-1 text-muted-foreground'>
 												{'# ' + label.name}
 											</div>
 										))
