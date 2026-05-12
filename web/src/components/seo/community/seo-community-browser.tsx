@@ -252,195 +252,197 @@ const SeoCommunityBrowser = ({
 			: (sections?.elements ?? []);
 
 	return (
-		<div className='grid max-w-full gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'>
-			<section className='order-2 sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
+		<div className='max-w-full'>
+			<section className='sticky top-14 z-10 -mx-4 hidden border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:block lg:px-8'>
 				<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
 			</section>
 
-			<div className='order-3 min-w-0 lg:order-1'>
-				<section className='sticky top-14 z-10 -mx-4 hidden border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:block lg:px-8'>
-					<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
-				</section>
+			<div className='flex max-w-full flex-col-reverse gap-6 lg:flex-row lg:items-start'>
+				<div className='min-w-0 lg:flex-1'>
+					<section className='sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
+						<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
+					</section>
 
-				<div className='flex flex-col gap-4 py-3'>
-					<div className='flex flex-wrap gap-2'>
-						<Link
-							href={buildCommunityHref({ tab, keyword })}
-							className={cn(
-								'rounded-full border px-2 py-1 text-sm transition-colors',
-								labelId === undefined
-									? 'border-foreground bg-foreground text-background'
-									: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
-							)}>
-							{t('admin_filter_all')}
-						</Link>
-						{labels.map((label) => (
+					<div className='flex flex-col gap-4 py-3'>
+						<div className='flex flex-wrap gap-2'>
 							<Link
-								key={label.id}
-								href={buildCommunityHref({
-									tab,
-									keyword,
-									labelId: label.id,
-								})}
+								href={buildCommunityHref({ tab, keyword })}
 								className={cn(
 									'rounded-full border px-2 py-1 text-sm transition-colors',
-									label.id === labelId
+									labelId === undefined
 										? 'border-foreground bg-foreground text-background'
 										: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
 								)}>
-								#{label.name}
+								{t('admin_filter_all')}
 							</Link>
-						))}
-					</div>
-				</div>
-
-				<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3'>
-					<div className='flex items-center gap-2 text-sm text-muted-foreground'>
-						{tab === 'documents' ? (
-							<FileText className='size-4' />
-						) : (
-							<Compass className='size-4' />
-						)}
-						<span>
-							{tab === 'documents'
-								? t('seo_community_documents_result', { count: total })
-								: t('seo_community_result', { count: total })}
-						</span>
-					</div>
-					<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
-						{keyword ? <span>“{keyword}”</span> : null}
-						{activeLabelName ? (
-							<span className='rounded-full border border-border/50 px-2.5 py-1 text-xs'>
-								# {activeLabelName}
-							</span>
-						) : null}
-					</div>
-				</div>
-
-				<Separator />
-
-				{currentElements.length > 0 ? (
-					<div>
-						{tab === 'sections'
-							? sections?.elements.map((section, index) => (
-									<>
-										<div
-											key={`${section.id}-${section.publish_uuid ?? 'private'}`}
-											ref={
-												index === sections.elements.length - 1
-													? bottomRef
-													: undefined
-											}>
-											<SeoCommunitySectionListItem section={section} />
-										</div>
-										{index !== sections.elements.length - 1 ? (
-											<Separator className='my-1' />
-										) : null}
-									</>
-								))
-							: documents?.elements.map((document, index) => (
-									<div key={document.id}>
-										<div
-											ref={
-												index === documents.elements.length - 1
-													? bottomRef
-													: undefined
-											}>
-											<SeoCommunityDocumentListItem document={document} />
-										</div>
-										{index !== documents.elements.length - 1 ? (
-											<Separator className='my-1' />
-										) : null}
-									</div>
-								))}
-					</div>
-				) : (
-					<Card className='border-none shadow-none'>
-						<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
-							<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
-								{tab === 'documents' ? (
-									<FileText className='size-6 text-muted-foreground' />
-								) : (
-									<Compass className='size-6 text-muted-foreground' />
-								)}
-							</div>
-							<div className='space-y-2'>
-								<h2 className='text-xl font-semibold'>
-									{tab === 'documents'
-										? t('seo_community_documents_empty')
-										: t('seo_community_empty')}
-								</h2>
-								<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
-									{tab === 'documents'
-										? t('seo_community_documents_empty_description')
-										: t('seo_community_empty_description')}
-								</p>
-							</div>
-							<Button asChild variant='outline' className='rounded-full px-5'>
-								<Link href='/community'>
-									{t('seo_community_reset')}
-									<ArrowRight className='ml-2 size-4' />
+							{labels.map((label) => (
+								<Link
+									key={label.id}
+									href={buildCommunityHref({
+										tab,
+										keyword,
+										labelId: label.id,
+									})}
+									className={cn(
+										'rounded-full border px-2 py-1 text-sm transition-colors',
+										label.id === labelId
+											? 'border-foreground bg-foreground text-background'
+											: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
+									)}>
+									#{label.name}
 								</Link>
-							</Button>
-						</CardContent>
-					</Card>
-				)}
+							))}
+						</div>
+					</div>
 
-				{isLoadingMore ? (
-					<div className='pt-1'>
-						{Array.from({ length: 2 }).map((_, index) => (
-							<div key={index}>
-								<div className='px-1 py-4'>
-									<div className='flex items-start gap-4'>
-										<div className='min-w-0 flex-1'>
-											<div className='space-y-1.5'>
-												<Skeleton className='h-10 w-[36%] rounded-xl' />
-												<Skeleton className='h-6 w-[58%] rounded-full' />
-											</div>
+					<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3'>
+						<div className='flex items-center gap-2 text-sm text-muted-foreground'>
+							{tab === 'documents' ? (
+								<FileText className='size-4' />
+							) : (
+								<Compass className='size-4' />
+							)}
+							<span>
+								{tab === 'documents'
+									? t('seo_community_documents_result', { count: total })
+									: t('seo_community_result', { count: total })}
+							</span>
+						</div>
+						<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+							{keyword ? <span>“{keyword}”</span> : null}
+							{activeLabelName ? (
+								<span className='rounded-full border border-border/50 px-2.5 py-1 text-xs'>
+									# {activeLabelName}
+								</span>
+							) : null}
+						</div>
+					</div>
 
-											<div className='mt-2.5 flex flex-wrap items-center gap-2'>
-												<Skeleton className='h-8 w-28 rounded-full' />
-												<Skeleton className='h-8 w-20 rounded-full' />
-												<Skeleton className='h-8 w-24 rounded-full' />
-											</div>
+					<Separator />
 
-											<div className='mt-3 flex items-center gap-2'>
-												<Skeleton className='size-5 rounded-full' />
-												<Skeleton className='h-4 w-28 rounded-full' />
-												<Skeleton className='h-4 w-20 rounded-full' />
+					{currentElements.length > 0 ? (
+						<div>
+							{tab === 'sections'
+								? sections?.elements.map((section, index) => (
+										<>
+											<div
+												key={`${section.id}-${section.publish_uuid ?? 'private'}`}
+												ref={
+													index === sections.elements.length - 1
+														? bottomRef
+														: undefined
+												}>
+												<SeoCommunitySectionListItem section={section} />
 											</div>
+											{index !== sections.elements.length - 1 ? (
+												<Separator className='my-1' />
+											) : null}
+										</>
+									))
+								: documents?.elements.map((document, index) => (
+										<div key={document.id}>
+											<div
+												ref={
+													index === documents.elements.length - 1
+														? bottomRef
+														: undefined
+												}>
+												<SeoCommunityDocumentListItem document={document} />
+											</div>
+											{index !== documents.elements.length - 1 ? (
+												<Separator className='my-1' />
+											) : null}
 										</div>
+									))}
+						</div>
+					) : (
+						<Card className='border-none shadow-none'>
+							<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
+								<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
+									{tab === 'documents' ? (
+										<FileText className='size-6 text-muted-foreground' />
+									) : (
+										<Compass className='size-6 text-muted-foreground' />
+									)}
+								</div>
+								<div className='space-y-2'>
+									<h2 className='text-xl font-semibold'>
+										{tab === 'documents'
+											? t('seo_community_documents_empty')
+											: t('seo_community_empty')}
+									</h2>
+									<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
+										{tab === 'documents'
+											? t('seo_community_documents_empty_description')
+											: t('seo_community_empty_description')}
+									</p>
+								</div>
+								<Button asChild variant='outline' className='rounded-full px-5'>
+									<Link href='/community'>
+										{t('seo_community_reset')}
+										<ArrowRight className='ml-2 size-4' />
+									</Link>
+								</Button>
+							</CardContent>
+						</Card>
+					)}
 
-										<div className='hidden shrink-0 md:flex items-start gap-4'>
-											<Skeleton className='mt-0.5 size-4 rounded-sm' />
-											<Skeleton className='h-20 w-20 rounded-xl' />
+					{isLoadingMore ? (
+						<div className='pt-1'>
+							{Array.from({ length: 2 }).map((_, index) => (
+								<div key={index}>
+									<div className='px-1 py-4'>
+										<div className='flex items-start gap-4'>
+											<div className='min-w-0 flex-1'>
+												<div className='space-y-1.5'>
+													<Skeleton className='h-10 w-[36%] rounded-xl' />
+													<Skeleton className='h-6 w-[58%] rounded-full' />
+												</div>
+
+												<div className='mt-2.5 flex flex-wrap items-center gap-2'>
+													<Skeleton className='h-8 w-28 rounded-full' />
+													<Skeleton className='h-8 w-20 rounded-full' />
+													<Skeleton className='h-8 w-24 rounded-full' />
+												</div>
+
+												<div className='mt-3 flex items-center gap-2'>
+													<Skeleton className='size-5 rounded-full' />
+													<Skeleton className='h-4 w-28 rounded-full' />
+													<Skeleton className='h-4 w-20 rounded-full' />
+												</div>
+											</div>
+
+											<div className='hidden shrink-0 md:flex items-start gap-4'>
+												<Skeleton className='mt-0.5 size-4 rounded-sm' />
+												<Skeleton className='h-20 w-20 rounded-xl' />
+											</div>
 										</div>
 									</div>
+									{index !== 1 ? <Separator className='my-1' /> : null}
 								</div>
-								{index !== 1 ? <Separator className='my-1' /> : null}
-							</div>
-						))}
-					</div>
-				) : null}
+							))}
+						</div>
+					) : null}
 
-				{hasMore && nextStart != null ? (
-					<div className='flex justify-center pt-2'>
-						<Button
-							variant='outline'
-							className='rounded-full px-5'
-							onClick={() => void loadMore({ source: 'button' })}
-							disabled={isLoadingMore}>
-							{t('seo_community_next')}
-							<ArrowRight className='ml-2 size-4' />
-						</Button>
-					</div>
-				) : null}
-			</div>
+					{hasMore && nextStart != null ? (
+						<div className='flex justify-center pt-2'>
+							<Button
+								variant='outline'
+								className='rounded-full px-5'
+								onClick={() => void loadMore({ source: 'button' })}
+								disabled={isLoadingMore}>
+								{t('seo_community_next')}
+								<ArrowRight className='ml-2 size-4' />
+							</Button>
+						</div>
+					) : null}
+				</div>
 
-			<div className='order-1 w-full max-w-full overflow-x-hidden lg:order-2 lg:h-fit lg:self-start lg:overflow-visible lg:sticky lg:top-32 space-y-3'>
-				<SeoCommunityPoem />
-				<Separator />
-				<SeoCommunityHotSidebar />
+				<div className='w-full max-w-full overflow-x-hidden lg:w-[360px] lg:shrink-0 lg:h-fit lg:self-start lg:overflow-visible lg:sticky lg:top-32 space-y-3'>
+					<SeoCommunityPoem />
+					<Separator />
+					<SeoCommunityHotSidebar />
+				</div>
 			</div>
 		</div>
 	);
