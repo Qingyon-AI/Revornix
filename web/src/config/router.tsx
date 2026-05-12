@@ -12,6 +12,13 @@ const routers: RouteItem[] = [
 		title: '管理面板',
 		title_en: 'Dashboard',
 		path: '/dashboard',
+		children: [
+			{
+				title: '热搜集合',
+				title_en: 'Hot Search',
+				path: '/dashboard/hot-search',
+			},
+		],
 	},
 	{
 		title: '回调',
@@ -98,11 +105,6 @@ const routers: RouteItem[] = [
 				path: '/engine',
 			},
 		],
-	},
-	{
-		title: '热搜集合',
-		title_en: 'Hot Search',
-		path: '/hot-search',
 	},
 	{
 		title: '知识图谱',
@@ -243,7 +245,7 @@ export default routers;
 export const findRouteByPath = (
 	routes: RouteItem[],
 	fullPath: string,
-	parentRoute = ''
+	parentRoute = '',
 ): RouteItem | null => {
 	for (const route of routes) {
 		// 拼接父路径和当前路径

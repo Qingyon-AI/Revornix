@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import { zhCN } from 'date-fns/locale/zh-CN';
 import { enUS } from 'date-fns/locale/en-US';
-import { Website } from '@/app/(private)/hot-search/page';
+import type { Website } from '@/components/hot-search/types';
 import {
 	Dialog,
 	DialogHeader,
@@ -78,7 +78,7 @@ const HotSearchCard = ({ website }: { website: Website }) => {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<Card className={cn('shrink-0', 'h-full', 'flex', 'flex-col')}>
+			<Card className={cn('shrink-0', 'h-full', 'flex', 'flex-col', 'shadow-none')}>
 				<CardHeader className='w-full flex flex-row items-center justify-between'>
 					<CardTitle className='flex min-w-0 items-center gap-3'>
 						<CardTitleIcon icon={Newspaper} tone='sky' />

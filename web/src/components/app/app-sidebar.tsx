@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								<SidebarMenuButton asChild>
 									<div className='w-full'>
 										<Flame />
-										<Link href={'/hot-search'} className='w-full'>
+										<Link href={'/dashboard/hot-search'} className='w-full'>
 											{t('sidebar_hot_search')}
 										</Link>
 									</div>

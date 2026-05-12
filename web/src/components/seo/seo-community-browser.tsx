@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Compass, FileText, Hash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
 import SeoCommunityHotSidebar from '@/components/seo/seo-community-hot-sidebar';
+import SeoCommunityPoem from '@/components/seo/seo-community-poem';
 import {
 	SeoCommunityDocumentListItem,
 	SeoCommunitySectionListItem,
@@ -18,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+	type PublicLabel,
 	type PublicDocumentPagination,
 	type PublicSectionPagination,
 } from '@/lib/seo';
@@ -25,12 +27,6 @@ import { publicRequest } from '@/lib/request-public';
 import { cn } from '@/lib/utils';
 
 type CommunityTab = 'sections' | 'documents';
-
-type CommunityLabel = {
-	id: number;
-	name: string;
-	count: number;
-};
 
 const buildCommunityHref = ({
 	tab,
@@ -64,12 +60,14 @@ const SeoCommunityBrowser = ({
 	tab,
 	keyword,
 	labelId,
+	labels,
 	initialSections,
 	initialDocuments,
 }: {
 	tab: CommunityTab;
 	keyword?: string;
 	labelId?: number;
+	labels: PublicLabel[];
 	initialSections: PublicSectionPagination | null;
 	initialDocuments: PublicDocumentPagination | null;
 }) => {
@@ -95,36 +93,6 @@ const SeoCommunityBrowser = ({
 			: (sections?.has_more ?? false);
 	const nextStart =
 		tab === 'documents' ? documents?.next_start : sections?.next_start;
-
-	const labels = useMemo<CommunityLabel[]>(() => {
-		const source =
-			tab === 'documents'
-				? (documents?.elements ?? [])
-				: (sections?.elements ?? []);
-		const labelMap = new Map<number, CommunityLabel>();
-
-		source.forEach((item) => {
-			item.labels?.forEach((label) => {
-				const current = labelMap.get(label.id);
-				if (current) {
-					current.count += 1;
-					return;
-				}
-				labelMap.set(label.id, {
-					id: label.id,
-					name: label.name,
-					count: 1,
-				});
-			});
-		});
-
-		return Array.from(labelMap.values()).sort((a, b) => {
-			if (b.count !== a.count) {
-				return b.count - a.count;
-			}
-			return a.name.localeCompare(b.name);
-		});
-	}, [documents?.elements, sections?.elements, tab]);
 
 	const activeLabelName = labels.find((item) => item.id === labelId)?.name;
 
@@ -309,7 +277,7 @@ const SeoCommunityBrowser = ({
 								))}
 					</div>
 				) : (
-					<Card className='rounded-[30px] border border-dashed border-border/70 bg-muted/20 shadow-none'>
+					<Card className='border-none shadow-none'>
 						<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
 							<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
 								{tab === 'documents' ? (
@@ -393,6 +361,7 @@ const SeoCommunityBrowser = ({
 
 			<div className='sticky top-32 w-full'>
 				<SeoCommunityHotSidebar />
+				<SeoCommunityPoem />
 			</div>
 		</div>
 	);

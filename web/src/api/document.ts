@@ -4,6 +4,7 @@ export default {
     createDocument: API_PREFIX + '/document/create',
     createLabel: API_PREFIX + '/document/label/create',
     listLabel: API_PREFIX + '/document/label/list',
+    listPublicLabel: API_PREFIX + '/document/label/public/list',
     searchUserUnreadDocument: API_PREFIX + '/document/unread/search',
     searchUserRecentReadDocument: API_PREFIX + '/document/recent/search',
     documentDetail: API_PREFIX + '/document/detail',

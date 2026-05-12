@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+
 import { buildNoIndexAppMetadata } from '@/lib/seo-metadata';
 
 export const metadata: Metadata = buildNoIndexAppMetadata(
