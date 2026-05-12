@@ -1,153 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'nextjs-toploader/app';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { formatDistance } from 'date-fns';
-import { enUS } from 'date-fns/locale/en-US';
-import { zhCN } from 'date-fns/locale/zh-CN';
 import { useInView } from 'react-intersection-observer';
-import {
-	BookMarked,
-	BookTextIcon,
-	Compass,
-	FileText,
-	Search,
-	Users,
-} from 'lucide-react';
+import { Compass, FileText, Search } from 'lucide-react';
 
 import PublicSectionCard from '@/components/seo/shared/public-section-card';
 import PublicDocumentCard from '@/components/seo/shared/public-document-card';
-import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+	SeoCommunityDocumentListItem,
+	SeoCommunitySectionListItem,
+} from '@/components/seo/community/seo-community-list-item';
 import { Button } from '@/components/ui/button';
 import CardViewToggle from '@/components/ui/card-view-toggle';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
-import { getSectionCoverSrc } from '@/lib/section-cover';
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
 import { publicRequest } from '@/lib/request-public';
 import {
-	getPublicSectionHref,
 	type PublicDocumentPagination,
 	type PublicSectionInfo,
 } from '@/lib/seo';
-import { cn, replacePath } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 type SeoUserBrowserTab = 'sections' | 'documents';
-
-const SeoUserSectionListRow = ({ section }: { section: PublicSectionInfo }) => {
-	const t = useTranslations();
-	const locale = useLocale();
-	const router = useRouter();
-	const href = getPublicSectionHref(section);
-	const coverSrc = getSectionCoverSrc(section);
-	const creatorAvatar = replacePath(section.creator.avatar, section.creator.id);
-
-	return (
-		<div className='rounded-[24px] border border-border/60 bg-background/28 px-4 py-4'>
-			<div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-				<div className='min-w-0 flex-1'>
-					<div className='flex flex-col gap-4 sm:flex-row sm:items-start'>
-						<Link
-							href={href}
-							className='block h-28 w-full shrink-0 overflow-hidden rounded-[20px] border border-border/50 bg-background/45 sm:w-44'>
-							{coverSrc ? (
-								<img
-									src={coverSrc}
-									alt={section.title}
-									className='h-full w-full object-cover'
-								/>
-							) : (
-								<div className='flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_28%),linear-gradient(135deg,rgba(70,33,42,0.82),rgba(30,41,59,0.78))] text-white/70'>
-									<BookTextIcon className='size-7' />
-								</div>
-							)}
-						</Link>
-
-						<div className='min-w-0 flex-1 space-y-3'>
-							<div className='space-y-2'>
-								<div className='flex flex-wrap items-center gap-2'>
-									{section.is_day_section ? (
-										<div className='inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300'>
-											{t('section_day_badge')}
-										</div>
-									) : null}
-								</div>
-								<Link href={href} className='block'>
-									<h3 className='line-clamp-2 text-lg font-semibold leading-7'>
-										{section.title || t('section_title_empty')}
-									</h3>
-								</Link>
-								<p className='line-clamp-2 text-sm leading-7 text-muted-foreground'>
-									{section.description || t('section_description_empty')}
-								</p>
-							</div>
-
-							<div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-								<button
-									type='button'
-									className='inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/45 px-2.5 py-1.5 text-left transition-colors hover:bg-background/70'
-									onClick={() => {
-										router.push(`/user/${section.creator.id}`);
-									}}>
-									<Avatar className='size-5'>
-										<AvatarImage
-											src={creatorAvatar}
-											alt={section.creator.nickname}
-											className='object-cover'
-										/>
-										<AvatarFallback className='text-[10px] font-semibold'>
-											{section.creator.nickname.slice(0, 1) ?? '?'}
-										</AvatarFallback>
-									</Avatar>
-									<span>{section.creator.nickname}</span>
-								</button>
-								<div className='rounded-full border border-border/50 bg-background/45 px-3 py-1.5'>
-									{formatDistance(
-										new Date(section.update_time ?? section.create_time),
-										new Date(),
-										{
-											addSuffix: true,
-											locale: locale === 'zh' ? zhCN : enUS,
-										},
-									)}
-								</div>
-								<div className='inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/45 px-3 py-1.5'>
-									<BookMarked className='size-3.5' />
-									<span>
-										{t('section_card_documents_count', {
-											section_documents_count: section.documents_count ?? 0,
-										})}
-									</span>
-								</div>
-								<div className='inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/45 px-3 py-1.5'>
-									<Users className='size-3.5' />
-									<span>
-										{t('section_card_subscribers_count', {
-											section_subscribers_count: section.subscribers_count ?? 0,
-										})}
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div className='flex shrink-0 items-center justify-end'>
-					<SeoSectionSubscribeButton
-						sectionId={section.id}
-						creatorId={section.creator.id}
-						initialIsSubscribed={section.is_subscribed}
-						className='h-9 px-4 text-xs'
-					/>
-				</div>
-			</div>
-		</div>
-	);
-};
 
 const SeoUserContentBrowser = ({
 	userId,
@@ -172,8 +51,9 @@ const SeoUserContentBrowser = ({
 	const { ref: bottomRef, inView } = useInView({
 		rootMargin: '320px 0px',
 	});
-	const { viewMode, setViewMode } = useCardViewMode(
+	const { viewMode, setViewMode, isReady: isViewModeReady } = useCardViewMode(
 		`seo-user-${tab}-view-mode`,
+		'list',
 	);
 	const [sectionItems, setSectionItems] = useState(sections);
 	const [documentItems, setDocumentItems] = useState(documents);
@@ -183,51 +63,17 @@ const SeoUserContentBrowser = ({
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
 
 	const loadMore = async (source: 'observer' | 'button') => {
-		console.log('[SEO user] loadMore check', {
-			source,
-			userId,
-			tab,
-			viewMode,
-			inView,
-			isLoadingMore,
-			hasMoreState,
-			nextStartState,
-		});
-
 		if (!inView && source === 'observer') {
-			console.log('[SEO user] loadMore skipped', {
-				reason: {
-					notInView: true,
-					alreadyLoading: isLoadingMore,
-					noMore: !hasMoreState,
-					missingNextStart: nextStartState == null,
-				},
-			});
 			return;
 		}
 
 		if (isLoadingMore || !hasMoreState || nextStartState == null) {
-			console.log('[SEO user] loadMore skipped', {
-				reason: {
-					notInView: false,
-					alreadyLoading: isLoadingMore,
-					noMore: !hasMoreState,
-					missingNextStart: nextStartState == null,
-				},
-			});
 			return;
 		}
 
 		setIsLoadingMore(true);
 		try {
 			if (tab === 'sections') {
-				console.log('[SEO user] loading next sections page', {
-					source,
-					userId,
-					keyword: keyword || undefined,
-					start: nextStartState,
-					limit: 12,
-				});
 				const response = await publicRequest<{
 					total: number;
 					has_more: boolean;
@@ -241,12 +87,6 @@ const SeoUserContentBrowser = ({
 						limit: 12,
 						desc: true,
 					},
-				});
-				console.log('[SEO user] sections page loaded', {
-					returned: response.elements.length,
-					hasMore: response.has_more,
-					nextStart: response.next_start,
-					total: response.total,
 				});
 
 				setSectionItems((current) => {
@@ -262,13 +102,6 @@ const SeoUserContentBrowser = ({
 				return;
 			}
 
-			console.log('[SEO user] loading next documents page', {
-				source,
-				userId,
-				keyword: keyword || undefined,
-				start: nextStartState,
-				limit: 12,
-			});
 			const response = await publicRequest<PublicDocumentPagination>(
 				documentApi.searchPublicDocument,
 				{
@@ -281,12 +114,6 @@ const SeoUserContentBrowser = ({
 					},
 				},
 			);
-			console.log('[SEO user] documents page loaded', {
-				returned: response.elements.length,
-				hasMore: response.has_more,
-				nextStart: response.next_start,
-				total: response.total,
-			});
 
 			setDocumentItems((current) => {
 				const merged = new Map(current.map((item) => [item.id, item]));
@@ -301,34 +128,9 @@ const SeoUserContentBrowser = ({
 		} catch (error) {
 			console.error('[SEO user] loadMore failed', error);
 		} finally {
-			console.log('[SEO user] loadMore finished');
 			setIsLoadingMore(false);
 		}
 	};
-
-	useEffect(() => {
-		console.log('[SEO user] observer state', {
-			userId,
-			tab,
-			viewMode,
-			inView,
-			hasMoreState,
-			nextStartState,
-			isLoadingMore,
-			sectionCount: sectionItems.length,
-			documentCount: documentItems.length,
-		});
-	}, [
-		documentItems.length,
-		hasMoreState,
-		inView,
-		isLoadingMore,
-		nextStartState,
-		sectionItems.length,
-		tab,
-		userId,
-		viewMode,
-	]);
 
 	useEffect(() => {
 		setSectionItems(sections);
@@ -357,39 +159,39 @@ const SeoUserContentBrowser = ({
 				<div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
 					<div className='flex min-w-0 flex-wrap items-center gap-3'>
 						<div className='inline-flex max-w-full rounded-xl border border-border/60 bg-background/65 p-0.5'>
-								<Button
-									asChild
-									variant='ghost'
-									className={cn(
-										'h-9 rounded-lg px-3 shadow-none',
-										tab === 'sections'
-											? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-									)}>
-									<Link
-										href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
-										<Compass className='mr-2 size-4' />
-										{t('seo_community_sections_tab')}
-									</Link>
-								</Button>
-								<Button
-									asChild
-									variant='ghost'
-									className={cn(
-										'h-9 rounded-lg px-3 shadow-none',
-										tab === 'documents'
-											? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-											: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-									)}>
-									<Link
-										href={`/user/${userId}?tab=documents${
-											keyword ? `&q=${encodeURIComponent(keyword)}` : ''
-										}`}>
-										<FileText className='mr-2 size-4' />
-										{t('seo_community_documents_tab')}
-									</Link>
-								</Button>
-							</div>
+							<Button
+								asChild
+								variant='ghost'
+								className={cn(
+									'h-9 rounded-lg px-3 shadow-none',
+									tab === 'sections'
+										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+								)}>
+								<Link
+									href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
+									<Compass className='mr-2 size-4' />
+									{t('seo_community_sections_tab')}
+								</Link>
+							</Button>
+							<Button
+								asChild
+								variant='ghost'
+								className={cn(
+									'h-9 rounded-lg px-3 shadow-none',
+									tab === 'documents'
+										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+								)}>
+								<Link
+									href={`/user/${userId}?tab=documents${
+										keyword ? `&q=${encodeURIComponent(keyword)}` : ''
+									}`}>
+									<FileText className='mr-2 size-4' />
+									{t('seo_community_documents_tab')}
+								</Link>
+							</Button>
+						</div>
 						<div className='inline-flex items-center gap-2 text-sm text-muted-foreground'>
 							{tab === 'documents' ? (
 								<FileText className='size-4' />
@@ -419,20 +221,20 @@ const SeoUserContentBrowser = ({
 											? t('user_detail_documents_search_placeholder')
 											: t('user_detail_sections_search_placeholder')
 									}
-									className='h-10 rounded-xl border-border/60 bg-background/65 pl-9 shadow-sm'
+									className='h-10 rounded-xl border-border/60 bg-background/65 pl-9 shadow-none'
 								/>
 							</div>
 						</form>
-							<CardViewToggle
-								value={viewMode}
-								onChange={setViewMode}
-								className='h-10 shrink-0 rounded-xl border-border/60 bg-background/65 [&_button]:h-full [&_button]:w-10'
-							/>
+						<CardViewToggle
+							value={viewMode}
+							onChange={setViewMode}
+							className='h-10 shrink-0 rounded-xl border-border/60 bg-background/65 [&_button]:h-full [&_button]:w-10'
+						/>
 					</div>
 				</div>
 			</div>
 			<div className='py-5'>
-				{tab === 'sections' && sectionItems.length === 0 ? (
+				{isViewModeReady && tab === 'sections' && sectionItems.length === 0 ? (
 					<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 						<div className='max-w-md'>
 							<h3 className='text-lg font-semibold tracking-tight'>
@@ -448,7 +250,7 @@ const SeoUserContentBrowser = ({
 						</div>
 					</div>
 				) : null}
-				{tab === 'documents' && documentItems.length === 0 ? (
+				{isViewModeReady && tab === 'documents' && documentItems.length === 0 ? (
 					<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 						<div className='max-w-md'>
 							<h3 className='text-lg font-semibold tracking-tight'>
@@ -464,7 +266,8 @@ const SeoUserContentBrowser = ({
 						</div>
 					</div>
 				) : null}
-				{tab === 'sections' &&
+				{isViewModeReady &&
+				tab === 'sections' &&
 				sectionItems.length > 0 &&
 				viewMode === 'grid' ? (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
@@ -482,10 +285,11 @@ const SeoUserContentBrowser = ({
 						))}
 					</div>
 				) : null}
-				{tab === 'sections' &&
+				{isViewModeReady &&
+				tab === 'sections' &&
 				sectionItems.length > 0 &&
 				viewMode !== 'grid' ? (
-					<div className='space-y-4'>
+					<div>
 						{sectionItems.map((section, index) => (
 							<div
 								key={section.id}
@@ -494,12 +298,18 @@ const SeoUserContentBrowser = ({
 										? bottomRef
 										: undefined
 								}>
-								<SeoUserSectionListRow section={section} />
+								<SeoCommunitySectionListItem section={section} />
+								{index !== sectionItems.length - 1 ? (
+									<Separator className='my-1' />
+								) : null}
 							</div>
 						))}
 					</div>
 				) : null}
-				{tab === 'documents' && documentItems.length > 0 ? (
+				{isViewModeReady &&
+				tab === 'documents' &&
+				documentItems.length > 0 &&
+				viewMode === 'grid' ? (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
 						{documentItems.map((document, index) => (
 							<div
@@ -514,12 +324,34 @@ const SeoUserContentBrowser = ({
 						))}
 					</div>
 				) : null}
-				{isLoadingMore ? (
+				{isViewModeReady &&
+				tab === 'documents' &&
+				documentItems.length > 0 &&
+				viewMode !== 'grid' ? (
+					<div>
+						{documentItems.map((document, index) => (
+							<div
+								key={document.id}
+								ref={
+									index === documentItems.length - 1
+										? bottomRef
+										: undefined
+								}>
+								<SeoCommunityDocumentListItem document={document} />
+								{index !== documentItems.length - 1 ? (
+									<Separator className='my-1' />
+								) : null}
+							</div>
+						))}
+					</div>
+				) : null}
+				{isViewModeReady && isLoadingMore ? (
 					<div className='mt-5 flex justify-center text-sm text-muted-foreground'>
 						Loading...
 					</div>
 				) : null}
-				{hasMoreState &&
+				{isViewModeReady &&
+				hasMoreState &&
 				nextStartState !== undefined &&
 				nextStartState !== null ? (
 					<div className='mt-5 flex justify-end'>
