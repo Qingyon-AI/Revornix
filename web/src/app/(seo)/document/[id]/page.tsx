@@ -6,6 +6,7 @@ import {
 	SeoDocumentSidebarBridge,
 } from '@/components/seo/document/seo-document-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
+import SeoAiAskEntry from '@/components/seo/shared/seo-ai-ask-entry';
 import DocumentGraphSEO from '@/components/document/document-graph-seo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -551,6 +552,14 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 
 						<MarkdownContentShell
 							enableFloatingToc
+							floatingTocFooter={
+								<SeoAiAskEntry
+									type='document'
+									documentId={document.id}
+									title={document.title}
+									loginHref={`/login?redirect_to=${encodeURIComponent(`/document/${document.id}`)}`}
+								/>
+							}
 							className='mx-auto w-full'
 							contentClassName='overflow-x-hidden'>
 							<TipTapMarkdownViewer

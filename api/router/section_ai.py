@@ -477,16 +477,28 @@ async def _stream_section_answer_with_agent(
     messages: list[schemas.ai.ChatItem],
     chunk_citations: list[dict[str, Any]],
     agent: MCPAgent,
+    chat_id: str | None = None,
 ):
     """Stream a section-scoped answer through the MCP agent event pipeline."""
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
-    chat_id = uuid4().hex
+    chat_id = chat_id or uuid4().hex
     query = ""
     stream_failed = False
     emitted_text_output = False
 
     try:
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="status",
+                payload={
+                    "phase": "thinking",
+                    "label": "section_ai_phase_answering",
+                    "detail": {},
+                },
+            )
+        )
         agent.clear_conversation_history()
         _apply_section_agent_system_prompt(
             agent=agent,
@@ -634,6 +646,95 @@ async def _stream_section_answer_with_agent(
     )
 
 
+async def _stream_section_answer_request(
+    *,
+    section_ask_request: schemas.section.SectionAskRequest,
+    user: models.user.User,
+    messages: list[schemas.ai.ChatItem],
+):
+    chat_id = section_ask_request.assistant_chat_id or uuid4().hex
+
+    yield _sse(
+        base_event(
+            chat_id=chat_id,
+            event_type="status",
+            payload={
+                "phase": "thinking",
+                "label": "section_ai_phase_context",
+                "detail": {},
+            },
+        )
+    )
+
+    try:
+        async with async_session_context() as db:
+            section_id, section_title, system_prompt, chunk_citations = await _build_section_context(
+                db=db,
+                section_id=section_ask_request.section_id,
+                viewer_user_id=user.id,
+                question=messages[-1].content,
+                response_language_instruction=_build_ai_language_instruction(
+                    user.default_ai_interaction_language,
+                ),
+            )
+
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="status",
+                payload={
+                    "phase": "thinking",
+                    "label": "revornix_ai_phase_model_prepare",
+                    "detail": {},
+                },
+            )
+        )
+
+        agent, model_id = await create_agent(
+            user_id=user.id,
+            enable_mcp=section_ask_request.enable_mcp,
+            model_id=section_ask_request.model_id,
+        )
+    except Exception as e:
+        exception_logger.error(
+            format_log_message(
+                "section_ai_prepare_failed",
+                user_id=user.id,
+                chat_id=chat_id,
+                section_id=section_ask_request.section_id,
+                error=e,
+            )
+        )
+        yield _sse(
+            {
+                "chat_id": chat_id,
+                "type": "error",
+                "timestamp": time.time(),
+                "trace": {},
+                "payload": {
+                    "code": "SERVER_ERROR",
+                    "message": _build_agent_error_message_key(
+                        is_recursion_limit=False,
+                    ),
+                },
+            }
+        )
+        return
+
+    async for event in _stream_section_answer_with_agent(
+        section_id=section_id,
+        section_title=section_title,
+        user=user,
+        model_id=model_id,
+        system_prompt=system_prompt,
+        messages=messages,
+        chunk_citations=chunk_citations,
+        agent=agent,
+        chat_id=chat_id,
+    ):
+        yield event
+
+
 @section_ai_router.post("/ask")
 async def ask_section_ai(
     section_ask_request: schemas.section.SectionAskRequest,
@@ -664,36 +765,11 @@ async def ask_section_ai(
             code=400,
         )
 
-    async with async_session_context() as db:
-        section_id, section_title, system_prompt, chunk_citations = await _build_section_context(
-            db=db,
-            section_id=section_ask_request.section_id,
-            viewer_user_id=user.id,
-            question=messages[-1].content,
-            response_language_instruction=_build_ai_language_instruction(
-                user.default_ai_interaction_language,
-            ),
-        )
-
-    try:
-        agent, model_id = await create_agent(
-            user_id=user.id,
-            enable_mcp=section_ask_request.enable_mcp,
-            model_id=section_ask_request.model_id,
-        )
-    except Exception as e:
-        raise schemas.error.CustomException(message=str(e), code=400) from e
-
     return StreamingResponse(
-        _stream_section_answer_with_agent(
-            section_id=section_id,
-            section_title=section_title,
+        _stream_section_answer_request(
+            section_ask_request=section_ask_request,
             user=user,
-            model_id=model_id,
-            system_prompt=system_prompt,
             messages=messages,
-            chunk_citations=chunk_citations,
-            agent=agent,
         ),
         media_type="text/event-stream; charset=utf-8",
         headers={

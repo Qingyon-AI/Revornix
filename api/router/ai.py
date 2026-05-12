@@ -18,6 +18,7 @@ from mcp_use import MCPAgent, MCPClient
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+from common.interpret_event import EventInterpreter, base_event
 
 import crud
 import models
@@ -33,6 +34,7 @@ from common.dependencies import (
 )
 from common.encrypt import encrypt_api_key
 from common.interpret_event import EventInterpreter
+from common.kimi_compat import build_kimi_tool_compatible_extra_body
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message, info_logger
 from common.subscription_access import (
@@ -883,13 +885,19 @@ async def create_agent(
                                 "headers": safe_json_loads(http_mcp_server.headers, {})
                             }
                         )
-        llm = ChatOpenAI(
-            model=model_configuration.model_name,
-            api_key=api_key,
-            base_url=base_url,
+        llm_kwargs: dict[str, Any] = {
+            "model": model_configuration.model_name,
+            "api_key": api_key,
+            "base_url": base_url,
             # Ensure token usage is included in streaming events when provider supports it.
-            stream_usage=True,
+            "stream_usage": True,
+        }
+        extra_body = build_kimi_tool_compatible_extra_body(
+            model_configuration.model_name,
         )
+        if extra_body is not None:
+            llm_kwargs["extra_body"] = extra_body
+        llm = ChatOpenAI(**llm_kwargs)
         agent = MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS)
         agent.adapter = StructuredLangChainAdapter(disallowed_tools=agent.disallowed_tools)
         agent.adapter._record_telemetry = False
@@ -931,15 +939,29 @@ async def stream_ops_with_agent(
     agent: MCPAgent,
     messages: list[ChatItem],
     system_prompt: str | None = None,
+    chat_id: str | None = None,
+    emit_initial_status: bool = True,
 ) -> AsyncGenerator[str, None]:
     """Stream a general Revornix AI response through the MCP agent pipeline."""
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
-    chat_id = uuid4().hex
+    chat_id = chat_id or uuid4().hex
     stream_failed = False
     emitted_text_output = False
 
     try:
+        if emit_initial_status:
+            yield _sse(
+                base_event(
+                    chat_id=chat_id,
+                    event_type="status",
+                    payload={
+                        "phase": "thinking",
+                        "label": "revornix_ai_phase_request_received",
+                        "detail": {},
+                    },
+                )
+            )
         # ==========================
         # 1️⃣ 初始化上下文
         # ==========================
@@ -1104,6 +1126,83 @@ async def stream_ops_with_agent(
         }
     )
 
+
+async def stream_ops_request(
+    *,
+    user: models.user.User,
+    model_id: int,
+    enable_mcp: bool,
+    messages: list[ChatItem],
+    system_prompt: str | None = None,
+    chat_id: str | None = None,
+) -> AsyncGenerator[str, None]:
+    chat_id = chat_id or uuid4().hex
+
+    yield _sse(
+        base_event(
+            chat_id=chat_id,
+            event_type="status",
+            payload={
+                "phase": "thinking",
+                "label": "revornix_ai_phase_request_received",
+                "detail": {},
+            },
+        )
+    )
+
+    try:
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="status",
+                payload={
+                    "phase": "thinking",
+                    "label": "revornix_ai_phase_model_prepare",
+                    "detail": {},
+                },
+            )
+        )
+        agent, resolved_model_id = await create_agent(
+            user_id=user.id,
+            enable_mcp=enable_mcp,
+            model_id=model_id,
+        )
+    except Exception as e:
+        exception_logger.error(
+            format_log_message(
+                "ai_prepare_failed",
+                user_id=user.id,
+                chat_id=chat_id,
+                error=e,
+            )
+        )
+        yield _sse(
+            {
+                "chat_id": chat_id,
+                "type": "error",
+                "timestamp": time.time(),
+                "trace": {},
+                "payload": {
+                    "code": "SERVER_ERROR",
+                    "message": _build_agent_error_message_key(
+                        is_recursion_limit=False,
+                    ),
+                },
+            }
+        )
+        return
+
+    async for event in stream_ops_with_agent(
+        user_id=user.id,
+        model_id=resolved_model_id,
+        agent=agent,
+        messages=messages,
+        system_prompt=system_prompt,
+        chat_id=chat_id,
+        emit_initial_status=False,
+    ):
+        yield event
+
 def _sse(event: dict) -> str:
     """
     SSE 格式统一出口
@@ -1145,26 +1244,16 @@ async def ask_ai(
             code=400,
         )
 
-    try:
-        agent, model_id = await create_agent(
-            user_id=user.id,
-            enable_mcp=chat_messages.enable_mcp,
-            model_id=selected_model_id,
-        )
-    except Exception as e:
-        raise schemas.error.CustomException(
-            message=str(e),
-            code=400
-        ) from e
     return StreamingResponse(
-        stream_ops_with_agent(
-            user_id=user.id,
-            model_id=model_id,
-            agent=agent,
+        stream_ops_request(
+            user=user,
+            model_id=selected_model_id,
+            enable_mcp=chat_messages.enable_mcp,
             messages=messages,
             system_prompt=_build_ai_language_instruction(
                 user.default_ai_interaction_language,
             ),
+            chat_id=chat_messages.assistant_chat_id,
         ),
         media_type="text/event-stream; charset=utf-8",
         headers={

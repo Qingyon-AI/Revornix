@@ -105,11 +105,13 @@ const scrollToHeading = (headingId: string) => {
 const MarkdownContentShell = ({
 	children,
 	enableFloatingToc = false,
+	floatingTocFooter,
 	className,
 	contentClassName,
 }: {
 	children: ReactNode;
 	enableFloatingToc?: boolean;
+	floatingTocFooter?: ReactNode;
 	className?: string;
 	contentClassName?: string;
 }) => {
@@ -225,14 +227,13 @@ const MarkdownContentShell = ({
 			})),
 		[headings],
 	);
-
 	return (
 		<div className={cn('relative w-full', className)}>
 			{enableFloatingToc && canShowFloatingToc && tocItems.length > 0 ? (
 				<div className="pointer-events-none sticky top-16 z-10 hidden h-0 w-full lg:block">
 					<nav
 						aria-label={t('markdown_toc_label')}
-						className='group pointer-events-auto absolute top-0 right-0 w-fit'
+						className='pointer-events-auto absolute top-0 right-0 w-fit'
 						onBlur={(event) => {
 							if (
 								!event.currentTarget.contains(event.relatedTarget as Node | null)
@@ -242,8 +243,8 @@ const MarkdownContentShell = ({
 						}}>
 						<div
 							className={cn(
-								'w-14 origin-right overflow-hidden rounded-lg bg-transparent px-3 py-3 opacity-100 backdrop-blur-3xl transition-[width,border-color,opacity] duration-300 ease-out',
-								'pointer-events-auto group-hover:w-64 group-hover:border-border/60 max-h-130',
+								'peer/toc group w-14 origin-right overflow-hidden rounded-lg bg-transparent px-3 py-3 opacity-100 backdrop-blur-3xl transition-[width,border-color,opacity] duration-300 ease-out',
+								'pointer-events-auto hover:w-64 hover:border-border/60 max-h-130',
 								tocPinnedByKeyboard && 'w-64 border-border/60',
 							)}>
 							<div className='flex max-h-full flex-col space-y-1 overflow-y-auto overflow-x-hidden'>
@@ -298,6 +299,23 @@ const MarkdownContentShell = ({
 								})}
 							</div>
 						</div>
+						{floatingTocFooter ? (
+							<div
+								className={cn(
+									'mt-2 flex w-14 justify-center transition-[width] duration-300 ease-out',
+									'peer-hover/toc:w-64 peer-focus-within/toc:w-64',
+									'peer-hover/toc:[&_[data-seo-ai-button]]:w-full peer-focus-within/toc:[&_[data-seo-ai-button]]:w-full',
+									'peer-hover/toc:[&_[data-seo-ai-button]]:justify-center peer-focus-within/toc:[&_[data-seo-ai-button]]:justify-center',
+									'peer-hover/toc:[&_[data-seo-ai-button]]:gap-2 peer-focus-within/toc:[&_[data-seo-ai-button]]:gap-2',
+									'peer-hover/toc:[&_[data-seo-ai-label]]:ml-2 peer-focus-within/toc:[&_[data-seo-ai-label]]:ml-2',
+									'peer-hover/toc:[&_[data-seo-ai-label]]:max-w-40 peer-hover/toc:[&_[data-seo-ai-label]]:opacity-100',
+									'peer-focus-within/toc:[&_[data-seo-ai-label]]:max-w-40 peer-focus-within/toc:[&_[data-seo-ai-label]]:opacity-100',
+									tocPinnedByKeyboard && 'w-64',
+									tocPinnedByKeyboard && '[&_[data-seo-ai-button]]:w-full [&_[data-seo-ai-button]]:justify-center [&_[data-seo-ai-button]]:gap-2 [&_[data-seo-ai-label]]:ml-2 [&_[data-seo-ai-label]]:max-w-40 [&_[data-seo-ai-label]]:opacity-100',
+								)}>
+								{floatingTocFooter}
+							</div>
+						) : null}
 					</nav>
 				</div>
 			) : null}

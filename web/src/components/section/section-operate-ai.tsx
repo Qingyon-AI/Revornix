@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { Bot, ImagePlus, Loader2, Send, X } from 'lucide-react';
@@ -11,12 +12,17 @@ import sectionApi from '@/api/section';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { settingAnchorHrefs } from '@/lib/setting-navigation';
-import { mergeChunkCitations, mergeDocumentSources } from '@/lib/ai-sources';
+import {
+	applyAIEventToMessages,
+	pushAIWorkflowStep,
+	updateAssistantMessage,
+} from '@/lib/ai-message-events';
+import { consumeAIEventStream } from '@/lib/ai-stream';
 import { cn, replacePath } from '@/lib/utils';
 import { getUserTimeZone } from '@/lib/time';
 import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
 import { useUserContext } from '@/provider/user-provider';
-import type { AIEvent, AIPhase, AIWorkflow, Message } from '@/types/ai';
+import type { AIEvent, AIPhase, Message } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import MessageCard from '../revornixai/message-card';
 import { Button } from '../ui/button';
@@ -42,65 +48,6 @@ const phaseLabelMap: Record<AIPhase, string> = {
 	error: 'revornix_ai_phase_error',
 };
 
-function pushWorkflowStep(
-	workflow: AIWorkflow | undefined,
-	phase: AIPhase,
-	label: string,
-	meta?: any,
-): AIWorkflow {
-	const steps = workflow ? [...workflow] : [];
-	const last = steps[steps.length - 1];
-
-	if (last && last.phase === phase && last.label === label) {
-		return steps;
-	}
-
-	steps.push({
-		phase,
-		label,
-		meta,
-	});
-	return steps;
-}
-
-function updateAssistantMessage(
-	messages: Message[],
-	chatId: string,
-	updater: (message: Message) => Message,
-): Message[] {
-	let found = false;
-	const nextMessages = messages.map((message) => {
-		if (message.chat_id !== chatId) {
-			return message;
-		}
-		found = true;
-		return updater(message);
-	});
-
-	if (found) {
-		return nextMessages;
-	}
-
-	return [
-		...nextMessages,
-		updater({
-			chat_id: chatId,
-			role: 'assistant',
-			content: '',
-		}),
-	];
-}
-
-function resolveSectionPhaseLabel(phase: AIPhase, label?: string) {
-	if (
-		typeof label === 'string' &&
-		(label.startsWith('section_ai_') || label.startsWith('revornix_ai_'))
-	) {
-		return label;
-	}
-	return phaseLabelMap[phase];
-}
-
 const SectionOperateAI = ({
 	section_id,
 	section_title,
@@ -121,6 +68,7 @@ const SectionOperateAI = ({
 	onOpenChange?: (open: boolean) => void;
 }) => {
 	const t = useTranslations();
+	const queryClient = useQueryClient();
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel } = useDefaultResourceAccess();
 	const {
@@ -158,276 +106,39 @@ const SectionOperateAI = ({
 	}, [messages.length, messages.at(-1)?.content]);
 
 	const handleEvent = (event: AIEvent) => {
-		switch (event.type) {
-			case 'status': {
-				const label = resolveSectionPhaseLabel(
-					event.payload.phase,
-					event.payload.label,
-				);
-				setMessages((currentMessages) =>
-					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-						...message,
-						role: 'assistant',
-						ai_state: {
-							phase: event.payload.phase,
-							label,
-						},
-						ai_workflow: pushWorkflowStep(
-							message.ai_workflow,
-							event.payload.phase,
-							label,
-							event.payload.detail,
-						),
-					})),
-				);
-				break;
-			}
-			case 'artifact': {
-				const artifact = event.payload;
+		setMessages((currentMessages) =>
+			applyAIEventToMessages({
+				messages: currentMessages,
+				event,
+				phaseLabelMap,
+				phaseLabelPrefixes: ['section_ai_', 'revornix_ai_'],
+				translate: (key) => (t.has(key as any) ? t(key as any) : key),
+			}),
+		);
 
-				if (artifact.kind === 'tool_result') {
-					const tool = artifact.tool;
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								ai_workflow: pushWorkflowStep(
-									message.ai_workflow,
-									'tool_result',
-									phaseLabelMap.tool_result,
-									{
-										tool,
-									},
-								),
-							}),
-						),
-					);
-					return;
-				}
-
-				if (artifact.kind === 'document_sources') {
-					const documentSources = artifact.items;
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								document_sources: mergeDocumentSources(
-									message.document_sources,
-									documentSources,
-								),
-							}),
-						),
-					);
-					return;
-				}
-
-				if (artifact.kind === 'chunk_citations') {
-					const chunkCitations = artifact.items;
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								chunk_citations: mergeChunkCitations(
-									message.chunk_citations,
-									chunkCitations,
-								),
-							}),
-						),
-					);
-				}
-				return;
-			}
-			case 'output': {
-				const payload = event.payload;
-
-				if (payload.kind === 'system_text') {
-					const translatedMessage = t.has(payload.message as any)
-						? t(payload.message as any)
-						: payload.message;
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								content: `${message.content}${payload.paragraph_break ? '\n\n' : ''}${translatedMessage}`,
-								ai_state: {
-									phase: 'writing',
-									label: phaseLabelMap.writing,
-								},
-								ai_workflow: pushWorkflowStep(
-									message.ai_workflow,
-									'writing',
-									phaseLabelMap.writing,
-								),
-							}),
-						),
-					);
-					break;
-				}
-
-				if (payload.kind === 'tool_result') {
-					if (
-						Array.isArray(payload.references) &&
-						payload.references.length > 0
-					) {
-						setMessages((currentMessages) =>
-							updateAssistantMessage(
-								currentMessages,
-								event.chat_id,
-								(message) => ({
-									...message,
-									role: 'assistant',
-									document_sources: mergeDocumentSources(
-										message.document_sources,
-										payload.references,
-									),
-								}),
-							),
-						);
-					}
-
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								ai_workflow: pushWorkflowStep(
-									message.ai_workflow,
-									'tool_result',
-									phaseLabelMap.tool_result,
-									{
-										tool: payload.tool,
-									},
-								),
-							}),
-						),
-					);
-					break;
-				}
-
-				if (payload.kind === 'token') {
-					setMessages((currentMessages) =>
-						updateAssistantMessage(
-							currentMessages,
-							event.chat_id,
-							(message) => ({
-								...message,
-								role: 'assistant',
-								content: message.content + payload.content,
-								ai_state: {
-									phase: 'writing',
-									label: phaseLabelMap.writing,
-								},
-								ai_workflow: pushWorkflowStep(
-									message.ai_workflow,
-									'writing',
-									phaseLabelMap.writing,
-								),
-							}),
-						),
-					);
-				}
-				break;
-			}
-			case 'done': {
-				setMessages((currentMessages) =>
-					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-						...message,
-						role: 'assistant',
-						ai_state: {
-							phase: 'done',
-							label: phaseLabelMap.done,
-						},
-						ai_workflow: pushWorkflowStep(
-							message.ai_workflow,
-							'done',
-							phaseLabelMap.done,
-						),
-						chunk_citations:
-							event.payload?.references && event.payload.references.length > 0
-								? mergeChunkCitations(
-										message.chunk_citations,
-										event.payload.references,
-									)
-								: message.chunk_citations,
-					})),
-				);
-				break;
-			}
-			case 'error': {
-				setMessages((currentMessages) =>
-					updateAssistantMessage(currentMessages, event.chat_id, (message) => ({
-						...message,
-						role: 'assistant',
-						ai_state: {
-							phase: 'error',
-							label: event.payload.message || phaseLabelMap.error,
-							error: event.payload.message,
-						},
-						ai_workflow: pushWorkflowStep(
-							message.ai_workflow,
-							'error',
-							event.payload.message || phaseLabelMap.error,
-							event.payload,
-						),
-					})),
-				);
-				break;
-			}
+		if (event.type === 'done') {
+			void queryClient.invalidateQueries({
+				queryKey: ['paySystemUserInfo'],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: ['paySystemUserComputeLedger'],
+			});
 		}
 	};
 
 	const consumeSSE = async (response: Response) => {
-		const reader = response.body?.getReader();
-		if (!reader) {
-			throw new Error(t('something_wrong'));
-		}
-		const decoder = new TextDecoder();
-		let buffer = '';
-
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) {
-				break;
-			}
-
-			buffer += decoder.decode(value, { stream: true });
-			const parts = buffer.split('\n\n');
-			buffer = parts.pop() || '';
-
-			for (let raw of parts) {
-				if (!raw.trim()) {
-					continue;
-				}
-				if (raw.startsWith('data:')) {
-					raw = raw.slice(5).trim();
-				}
-				try {
-					handleEvent(JSON.parse(raw));
-				} catch (error) {
-					console.error('Invalid SSE chunk', raw, error);
-				}
-			}
-		}
+		await consumeAIEventStream(response, handleEvent, {
+			missingBodyMessage: t('something_wrong'),
+			onInvalidChunk: (raw, error) => {
+				console.error('Invalid SSE chunk', raw, error);
+			},
+		});
 	};
-
 	const sendMessage = async (
 		payloadMessages: Message[],
 		enable_mcp: boolean,
 		model_id: number | null,
+		assistant_chat_id?: string,
 	) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -457,6 +168,7 @@ const SectionOperateAI = ({
 				})),
 				enable_mcp,
 				model_id,
+				assistant_chat_id,
 			}),
 		});
 
@@ -496,16 +208,59 @@ const SectionOperateAI = ({
 			content: trimmedInput,
 			images: imagePaths.length > 0 ? [...imagePaths] : undefined,
 		};
+		const optimisticAssistantChatId = generateUUID();
 		const nextMessages = [...messages, nextUserMessage];
 		setMessages(nextMessages);
+		setMessages((currentMessages) =>
+			updateAssistantMessage(currentMessages, optimisticAssistantChatId, (message) => ({
+				...message,
+				role: 'assistant',
+				ai_state: {
+					phase: 'thinking',
+					label: 'section_ai_phase_context',
+				},
+				ai_workflow: pushAIWorkflowStep(
+					message.ai_workflow,
+					'thinking',
+					'section_ai_phase_context',
+				),
+			})),
+		);
 		setInput('');
 		clearAttachments();
 		setIsSending(true);
 
 		try {
-			await sendMessage(nextMessages, enableMcp, selectedModelId);
+			await sendMessage(
+				nextMessages,
+				enableMcp,
+				selectedModelId,
+				optimisticAssistantChatId,
+			);
 		} catch (error: any) {
-			toast.error(error?.message || t('section_ai_send_failed'));
+			const errorMessage = error?.message || t('section_ai_send_failed');
+			setMessages((currentMessages) =>
+				updateAssistantMessage(
+					currentMessages,
+					optimisticAssistantChatId,
+					(message) => ({
+						...message,
+						role: 'assistant',
+						ai_state: {
+							phase: 'error',
+							label: errorMessage,
+							error: errorMessage,
+						},
+						ai_workflow: pushAIWorkflowStep(
+							message.ai_workflow,
+							'error',
+							errorMessage,
+							{ message: errorMessage },
+						),
+					}),
+				),
+			);
+			toast.error(errorMessage);
 			console.error(error);
 		} finally {
 			setIsSending(false);
@@ -517,13 +272,16 @@ const SectionOperateAI = ({
 			<SheetTrigger asChild>
 				<Button
 					title={t('section_ai_ask')}
+					data-seo-ai-button
 					variant={'ghost'}
 					className={cn('flex-1 text-xs w-full', className)}
 					disabled={disabled}
 					onClick={onTriggerClick}>
 					<Bot />
 					{iconOnly ? (
-						<span className='sr-only'>{t('section_ai_ask')}</span>
+						<span data-seo-ai-label aria-hidden='true'>
+							{t('section_ai_ask')}
+						</span>
 					) : (
 						t('section_ai_ask')
 					)}

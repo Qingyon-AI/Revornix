@@ -31,6 +31,7 @@ import {
 import { useRouter } from 'nextjs-toploader/app';
 import { useAiChatStore } from '@/store/ai-chat';
 import { createEmptySession } from '@/lib/ai-session';
+import { consumeAIEventStream } from '@/lib/ai-stream';
 import { cn, replacePath } from '@/lib/utils';
 import {
 	Drawer,
@@ -79,6 +80,9 @@ const MessageSendForm = () => {
 	const setCurrentSessionId = useAiChatStore((s) => s.setCurrentSessionId);
 	const updateSessionMeta = useAiChatStore((s) => s.updateSessionMeta);
 	const updateChatMessage = useAiChatStore((s) => s.updateChatMessage);
+	const advanceChatMessageWorkflow = useAiChatStore(
+		(s) => s.advanceChatMessageWorkflow,
+	);
 	const currentSession = useAiChatStore((s) => s.currentSession);
 	const {
 		attachments,
@@ -272,6 +276,7 @@ const MessageSendForm = () => {
 			images: imagePaths.length > 0 ? [...imagePaths] : undefined,
 			role: 'user',
 		};
+		const optimisticAssistantChatId = generateUUID();
 
 		let targetSessionId = currentSession()?.id ?? null;
 		const baseMessages = currentSession()?.messages ?? [];
@@ -298,6 +303,14 @@ const MessageSendForm = () => {
 				images: newMessage.images,
 			},
 		);
+		advanceChatMessageWorkflow(
+			targetSessionId,
+			optimisticAssistantChatId,
+			'thinking',
+			{
+				label: 'revornix_ai_phase_request_received',
+			},
+		);
 
 		const messagesToSend = [...baseMessages, newMessage];
 
@@ -305,7 +318,13 @@ const MessageSendForm = () => {
 			messages: messagesToSend,
 			enable_mcp: values.enable_mcp,
 			model_id: selectedModelId,
+			assistant_chat_id: optimisticAssistantChatId,
 			onEvent: createAIResponseEventHandler(targetSessionId),
+			onLocalError: (message) => {
+				advanceChatMessageWorkflow(targetSessionId, optimisticAssistantChatId, 'error', {
+					message,
+				});
+			},
 		});
 		clearAttachments();
 		form.resetField('message');
@@ -320,45 +339,28 @@ const MessageSendForm = () => {
 		response: Response,
 		onEvent: (evt: any) => void,
 	) => {
-		const reader = response.body!.getReader();
-		const decoder = new TextDecoder();
-		let buffer = '';
-
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-
-			buffer += decoder.decode(value, { stream: true });
-			const parts = buffer.split('\n\n');
-			buffer = parts.pop() || '';
-
-			for (let raw of parts) {
-				if (!raw.trim()) continue;
-
-				if (raw.startsWith('data:')) {
-					raw = raw.slice(5).trim();
-				}
-
-				try {
-					const evt = JSON.parse(raw);
-					onEvent(evt);
-				} catch (e) {
-					console.error('Invalid SSE chunk', raw);
-				}
-			}
-		}
+		await consumeAIEventStream(response, onEvent, {
+			missingBodyMessage: t('something_wrong'),
+			onInvalidChunk: (raw, error) => {
+				console.error('Invalid SSE chunk', raw, error);
+			},
+		});
 	};
 
 	const fetchStream = async ({
 		messages,
 		enable_mcp,
 		model_id,
+		assistant_chat_id,
 		onEvent,
+		onLocalError,
 	}: {
 		messages: Message[];
 		enable_mcp: boolean;
 		model_id: number | null;
+		assistant_chat_id?: string;
 		onEvent: (event: AIEvent) => void;
+		onLocalError?: (message: string) => void;
 	}) => {
 		const headers = new Headers();
 		headers.append('Content-Type', 'application/json');
@@ -374,6 +376,7 @@ const MessageSendForm = () => {
 				messages,
 				enable_mcp,
 				model_id,
+				assistant_chat_id,
 			}),
 		});
 		if (response.status !== 200) {
@@ -397,9 +400,17 @@ const MessageSendForm = () => {
 			) {
 				errorMessage = t('revornix_ai_quota_hint');
 			}
-			throw new Error(`Failed to send message, ${errorMessage}`);
+			const message = `Failed to send message, ${errorMessage}`;
+			onLocalError?.(message);
+			throw new Error(message);
 		}
-		await consumeSSE(response, onEvent);
+		try {
+			await consumeSSE(response, onEvent);
+		} catch (error: any) {
+			const message = error?.message || t('revornix_ai_message_send_failed');
+			onLocalError?.(message);
+			throw error;
+		}
 	};
 
 	const mutateSendMessage = useMutation({
