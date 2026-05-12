@@ -58,14 +58,26 @@ const getTabValue = (value: string | string[] | undefined): CommunityTab => {
 	return getSingleValue(value) === 'documents' ? 'documents' : 'sections';
 };
 
+const getLabelValue = (value: string | string[] | undefined) => {
+	const rawValue = getSingleValue(value);
+	if (!rawValue) {
+		return undefined;
+	}
+
+	const parsedValue = Number(rawValue);
+	return Number.isNaN(parsedValue) ? undefined : parsedValue;
+};
+
 const buildCommunityHref = ({
 	tab,
 	keyword,
 	start,
+	labelId,
 }: {
 	tab: CommunityTab;
 	keyword?: string;
 	start?: number;
+	labelId?: number;
 }) => {
 	const params = new URLSearchParams();
 	if (tab !== 'sections') {
@@ -76,6 +88,9 @@ const buildCommunityHref = ({
 	}
 	if (start !== undefined) {
 		params.set('start', String(start));
+	}
+	if (labelId !== undefined) {
+		params.set('label', String(labelId));
 	}
 	const query = params.toString();
 	return query ? `/community?${query}` : '/community';
@@ -91,6 +106,7 @@ export async function generateMetadata(props: {
 	const keyword = getSingleValue(searchParams.q)?.trim();
 	const start = getStartValue(searchParams.start);
 	const tab = getTabValue(searchParams.tab);
+	const labelId = getLabelValue(searchParams.label);
 	const noIndex = Boolean(keyword) || start !== undefined;
 
 	if (keyword) {
@@ -104,7 +120,7 @@ export async function generateMetadata(props: {
 				tab === 'documents'
 					? t('seo_community_documents_description')
 					: t('seo_community_description'),
-			path: buildCommunityHref({ tab }),
+			path: buildCommunityHref({ tab, labelId }),
 			noIndex,
 			socialCard: {
 				eyebrow:
@@ -129,7 +145,7 @@ export async function generateMetadata(props: {
 			tab === 'documents'
 				? t('seo_community_documents_description')
 				: t('seo_community_description'),
-		path: buildCommunityHref({ tab }),
+		path: buildCommunityHref({ tab, labelId }),
 		noIndex,
 		socialCard: {
 			eyebrow:
@@ -154,6 +170,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	const keyword = getSingleValue(searchParams.q)?.trim() || undefined;
 	const start = getStartValue(searchParams.start);
 	const tab = getTabValue(searchParams.tab);
+	const labelId = getLabelValue(searchParams.label);
 	const [sectionsResult, documentsResult] = await Promise.allSettled([
 		tab === 'sections'
 			? fetchPublicSections({
@@ -161,6 +178,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 					start,
 					limit: 12,
 					desc: true,
+					label_ids: labelId !== undefined ? [labelId] : undefined,
 				})
 			: Promise.resolve(null),
 		tab === 'documents'
@@ -169,6 +187,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 					start,
 					limit: 12,
 					desc: true,
+					label_ids: labelId !== undefined ? [labelId] : undefined,
 				})
 			: Promise.resolve(null),
 	]);
@@ -206,7 +225,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 			tab === 'documents'
 				? t('seo_community_documents_description')
 				: t('seo_community_description'),
-		url: createAbsoluteUrl(buildCommunityHref({ tab })),
+		url: createAbsoluteUrl(buildCommunityHref({ tab, labelId })),
 		inLanguage: locale,
 		mainEntity:
 			tab === 'documents'
@@ -225,7 +244,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	};
 
 	return (
-		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-10 sm:px-6 lg:px-8'>
+		<div className='mx-auto flex w-full max-w-[1480px] flex-col px-4 pb-10 sm:px-6 lg:px-8'>
 			<JsonLd data={communitySchema} />
 
 			<section className='md:sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'>
@@ -239,9 +258,14 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 									'h-9 rounded-xl px-3 shadow-none transition-colors',
 									tab === 'sections'
 										? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-										: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
 								)}>
-								<Link href={buildCommunityHref({ tab: 'sections', keyword })}>
+								<Link
+									href={buildCommunityHref({
+										tab: 'sections',
+										keyword,
+										labelId,
+									})}>
 									<Compass className='mr-2 size-4' />
 									{t('seo_community_sections_tab')}
 								</Link>
@@ -253,9 +277,14 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 									'h-9 rounded-xl px-3 shadow-none transition-colors',
 									tab === 'documents'
 										? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-										: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
 								)}>
-								<Link href={buildCommunityHref({ tab: 'documents', keyword })}>
+								<Link
+									href={buildCommunityHref({
+										tab: 'documents',
+										keyword,
+										labelId,
+									})}>
 									<FileText className='mr-2 size-4' />
 									{t('seo_community_documents_tab')}
 								</Link>
@@ -289,6 +318,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 			<SeoCommunityBrowser
 				tab={tab}
 				keyword={keyword}
+				labelId={labelId}
 				initialSections={sections}
 				initialDocuments={documents}
 			/>

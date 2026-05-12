@@ -1,33 +1,75 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRight, Compass, FileText } from 'lucide-react';
+import { ArrowRight, Compass, FileText, Hash } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
-import PublicDocumentCard from '@/components/seo/public-document-card';
-import PublicSectionCard from '@/components/seo/public-section-card';
+import SeoCommunityHotSidebar from '@/components/seo/seo-community-hot-sidebar';
+import {
+	SeoCommunityDocumentListItem,
+	SeoCommunitySectionListItem,
+} from '@/components/seo/seo-community-list-item';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-	getPublicSectionHref,
 	type PublicDocumentPagination,
 	type PublicSectionPagination,
 } from '@/lib/seo';
 import { publicRequest } from '@/lib/request-public';
+import { cn } from '@/lib/utils';
 
 type CommunityTab = 'sections' | 'documents';
+
+type CommunityLabel = {
+	id: number;
+	name: string;
+	count: number;
+};
+
+const buildCommunityHref = ({
+	tab,
+	keyword,
+	start,
+	labelId,
+}: {
+	tab: CommunityTab;
+	keyword?: string;
+	start?: number;
+	labelId?: number;
+}) => {
+	const params = new URLSearchParams();
+	if (tab !== 'sections') {
+		params.set('tab', tab);
+	}
+	if (keyword) {
+		params.set('q', keyword);
+	}
+	if (start !== undefined) {
+		params.set('start', String(start));
+	}
+	if (labelId !== undefined) {
+		params.set('label', String(labelId));
+	}
+	const query = params.toString();
+	return query ? `/community?${query}` : '/community';
+};
 
 const SeoCommunityBrowser = ({
 	tab,
 	keyword,
+	labelId,
 	initialSections,
 	initialDocuments,
 }: {
 	tab: CommunityTab;
 	keyword?: string;
+	labelId?: number;
 	initialSections: PublicSectionPagination | null;
 	initialDocuments: PublicDocumentPagination | null;
 }) => {
@@ -43,57 +85,65 @@ const SeoCommunityBrowser = ({
 		setSections(initialSections);
 		setDocuments(initialDocuments);
 		setIsLoadingMore(false);
-	}, [initialSections, initialDocuments, tab, keyword]);
+	}, [initialSections, initialDocuments, tab, keyword, labelId]);
 
-	const total = tab === 'documents' ? documents?.total ?? 0 : sections?.total ?? 0;
+	const total =
+		tab === 'documents' ? (documents?.total ?? 0) : (sections?.total ?? 0);
 	const hasMore =
-		tab === 'documents' ? documents?.has_more ?? false : sections?.has_more ?? false;
+		tab === 'documents'
+			? (documents?.has_more ?? false)
+			: (sections?.has_more ?? false);
 	const nextStart =
 		tab === 'documents' ? documents?.next_start : sections?.next_start;
 
-	const loadMore = async (source: 'observer' | 'button') => {
-		console.log('[SEO community] loadMore check', {
-			source,
-			tab,
-			inView,
-			isLoadingMore,
-			hasMore,
-			nextStart,
+	const labels = useMemo<CommunityLabel[]>(() => {
+		const source =
+			tab === 'documents'
+				? (documents?.elements ?? [])
+				: (sections?.elements ?? []);
+		const labelMap = new Map<number, CommunityLabel>();
+
+		source.forEach((item) => {
+			item.labels?.forEach((label) => {
+				const current = labelMap.get(label.id);
+				if (current) {
+					current.count += 1;
+					return;
+				}
+				labelMap.set(label.id, {
+					id: label.id,
+					name: label.name,
+					count: 1,
+				});
+			});
 		});
 
-		if (!inView && source === 'observer') {
-			console.log('[SEO community] loadMore skipped', {
-				reason: {
-					notInView: true,
-					alreadyLoading: isLoadingMore,
-					noMore: !hasMore,
-					missingNextStart: nextStart == null,
-				},
-			});
+		return Array.from(labelMap.values()).sort((a, b) => {
+			if (b.count !== a.count) {
+				return b.count - a.count;
+			}
+			return a.name.localeCompare(b.name);
+		});
+	}, [documents?.elements, sections?.elements, tab]);
+
+	const activeLabelName = labels.find((item) => item.id === labelId)?.name;
+
+	const loadMore = async ({
+		source = 'observer',
+	}: {
+		source?: 'observer' | 'button';
+	} = {}) => {
+		if (source === 'observer' && !inView) {
 			return;
 		}
 
 		if (isLoadingMore || !hasMore || nextStart == null) {
-			console.log('[SEO community] loadMore skipped', {
-				reason: {
-					notInView: false,
-					alreadyLoading: isLoadingMore,
-					noMore: !hasMore,
-					missingNextStart: nextStart == null,
-				},
-			});
 			return;
 		}
 
 		setIsLoadingMore(true);
 		try {
 			if (tab === 'sections') {
-				console.log('[SEO community] loading next sections page', {
-					source,
-					keyword,
-					start: nextStart,
-					limit: sections?.limit ?? 12,
-				});
 				const response = await publicRequest<PublicSectionPagination>(
 					sectionApi.searchPublicSection,
 					{
@@ -102,19 +152,16 @@ const SeoCommunityBrowser = ({
 							start: nextStart,
 							limit: sections?.limit ?? 12,
 							desc: true,
+							label_ids: labelId !== undefined ? [labelId] : undefined,
 						},
 					},
 				);
-				console.log('[SEO community] sections page loaded', {
-					returned: response.elements.length,
-					hasMore: response.has_more,
-					nextStart: response.next_start,
-					total: response.total,
-				});
 
 				setSections((current) => {
 					const currentElements = current?.elements ?? [];
-					const merged = new Map(currentElements.map((item) => [item.id, item]));
+					const merged = new Map(
+						currentElements.map((item) => [item.id, item]),
+					);
 					response.elements.forEach((item) => {
 						merged.set(item.id, item);
 					});
@@ -126,12 +173,6 @@ const SeoCommunityBrowser = ({
 				return;
 			}
 
-			console.log('[SEO community] loading next documents page', {
-				source,
-				keyword,
-				start: nextStart,
-				limit: documents?.limit ?? 12,
-			});
 			const response = await publicRequest<PublicDocumentPagination>(
 				documentApi.searchPublicDocument,
 				{
@@ -140,15 +181,10 @@ const SeoCommunityBrowser = ({
 						start: nextStart,
 						limit: documents?.limit ?? 12,
 						desc: true,
+						label_ids: labelId !== undefined ? [labelId] : undefined,
 					},
 				},
 			);
-			console.log('[SEO community] documents page loaded', {
-				returned: response.elements.length,
-				hasMore: response.has_more,
-				nextStart: response.next_start,
-				total: response.total,
-			});
 
 			setDocuments((current) => {
 				const currentElements = current?.elements ?? [];
@@ -164,128 +200,201 @@ const SeoCommunityBrowser = ({
 		} catch (error) {
 			console.error('[SEO community] loadMore failed', error);
 		} finally {
-			console.log('[SEO community] loadMore finished');
 			setIsLoadingMore(false);
 		}
 	};
 
 	useEffect(() => {
-		console.log('[SEO community] observer state', {
-			tab,
-			inView,
-			hasMore,
-			nextStart,
-			isLoadingMore,
-			sectionCount: sections?.elements?.length ?? 0,
-			documentCount: documents?.elements?.length ?? 0,
-		});
-	}, [
-		documents?.elements?.length,
-		hasMore,
-		inView,
-		isLoadingMore,
-		nextStart,
-		sections?.elements?.length,
-		tab,
-	]);
+		void loadMore({ source: 'observer' });
+	}, [inView, hasMore, isLoadingMore, nextStart, tab, keyword, labelId]);
 
-	useEffect(() => {
-		void loadMore('observer');
-	}, [documents?.limit, hasMore, inView, isLoadingMore, keyword, nextStart, sections?.limit, tab]);
+	const currentElements =
+		tab === 'documents'
+			? (documents?.elements ?? [])
+			: (sections?.elements ?? []);
 
 	return (
-		<>
-			<div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-				<div className='flex items-center gap-2 text-sm text-muted-foreground'>
-					{tab === 'documents' ? (
-						<FileText className='size-4' />
-					) : (
-						<Compass className='size-4' />
-					)}
-					<span>
-						{tab === 'documents'
-							? t('seo_community_documents_result', { count: total })
-							: t('seo_community_result', { count: total })}
-					</span>
+		<div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'>
+			<div className='min-w-0'>
+				<div className='flex flex-col gap-4 py-3'>
+					<div className='flex flex-wrap gap-2'>
+						<Link
+							href={buildCommunityHref({ tab, keyword })}
+							className={cn(
+								'rounded-full border px-2 py-1 text-sm transition-colors',
+								labelId === undefined
+									? 'border-foreground bg-foreground text-background'
+									: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
+							)}>
+							{t('admin_filter_all')}
+						</Link>
+						{labels.map((label) => (
+							<Link
+								key={label.id}
+								href={buildCommunityHref({
+									tab,
+									keyword,
+									labelId: label.id,
+								})}
+								className={cn(
+									'rounded-full border px-2 py-1 text-sm transition-colors',
+									label.id === labelId
+										? 'border-foreground bg-foreground text-background'
+										: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
+								)}>
+								#{label.name}
+							</Link>
+						))}
+					</div>
 				</div>
-				{keyword ? (
-					<div className='text-sm text-muted-foreground'>“{keyword}”</div>
+
+				<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3'>
+					<div className='flex items-center gap-2 text-sm text-muted-foreground'>
+						{tab === 'documents' ? (
+							<FileText className='size-4' />
+						) : (
+							<Compass className='size-4' />
+						)}
+						<span>
+							{tab === 'documents'
+								? t('seo_community_documents_result', { count: total })
+								: t('seo_community_result', { count: total })}
+						</span>
+					</div>
+					<div className='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+						{keyword ? <span>“{keyword}”</span> : null}
+						{activeLabelName ? (
+							<span className='rounded-full border border-border/50 px-2.5 py-1 text-xs'>
+								# {activeLabelName}
+							</span>
+						) : null}
+					</div>
+				</div>
+
+				<Separator />
+
+				{currentElements.length > 0 ? (
+					<div>
+						{tab === 'sections'
+							? sections?.elements.map((section, index) => (
+									<>
+										<div
+											key={`${section.id}-${section.publish_uuid ?? 'private'}`}
+											ref={
+												index === sections.elements.length - 1
+													? bottomRef
+													: undefined
+											}>
+											<SeoCommunitySectionListItem section={section} />
+										</div>
+										{index !== sections.elements.length - 1 ? (
+											<Separator className='my-1' />
+										) : null}
+									</>
+								))
+							: documents?.elements.map((document, index) => (
+									<div key={document.id}>
+										<div
+											ref={
+												index === documents.elements.length - 1
+													? bottomRef
+													: undefined
+											}>
+											<SeoCommunityDocumentListItem document={document} />
+										</div>
+										{index !== documents.elements.length - 1 ? (
+											<Separator className='my-1' />
+										) : null}
+									</div>
+								))}
+					</div>
+				) : (
+					<Card className='rounded-[30px] border border-dashed border-border/70 bg-muted/20 shadow-none'>
+						<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
+							<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
+								{tab === 'documents' ? (
+									<FileText className='size-6 text-muted-foreground' />
+								) : (
+									<Compass className='size-6 text-muted-foreground' />
+								)}
+							</div>
+							<div className='space-y-2'>
+								<h2 className='text-xl font-semibold'>
+									{tab === 'documents'
+										? t('seo_community_documents_empty')
+										: t('seo_community_empty')}
+								</h2>
+								<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
+									{tab === 'documents'
+										? t('seo_community_documents_empty_description')
+										: t('seo_community_empty_description')}
+								</p>
+							</div>
+							<Button asChild variant='outline' className='rounded-full px-5'>
+								<Link href='/community'>
+									{t('seo_community_reset')}
+									<ArrowRight className='ml-2 size-4' />
+								</Link>
+							</Button>
+						</CardContent>
+					</Card>
+				)}
+
+				{isLoadingMore ? (
+					<div className='pt-1'>
+						{Array.from({ length: 2 }).map((_, index) => (
+							<div key={index}>
+								<div className='px-1 py-4'>
+									<div className='flex items-start gap-4'>
+										<div className='min-w-0 flex-1'>
+											<div className='space-y-1.5'>
+												<Skeleton className='h-10 w-[36%] rounded-xl' />
+												<Skeleton className='h-6 w-[58%] rounded-full' />
+											</div>
+
+											<div className='mt-2.5 flex flex-wrap items-center gap-2'>
+												<Skeleton className='h-8 w-28 rounded-full' />
+												<Skeleton className='h-8 w-20 rounded-full' />
+												<Skeleton className='h-8 w-24 rounded-full' />
+											</div>
+
+											<div className='mt-3 flex items-center gap-2'>
+												<Skeleton className='size-5 rounded-full' />
+												<Skeleton className='h-4 w-28 rounded-full' />
+												<Skeleton className='h-4 w-20 rounded-full' />
+											</div>
+										</div>
+
+										<div className='hidden shrink-0 md:flex items-start gap-4'>
+											<Skeleton className='mt-0.5 size-4 rounded-sm' />
+											<Skeleton className='h-20 w-20 rounded-xl' />
+										</div>
+									</div>
+								</div>
+								{index !== 1 ? <Separator className='my-1' /> : null}
+							</div>
+						))}
+					</div>
+				) : null}
+
+				{hasMore && nextStart != null ? (
+					<div className='flex justify-center pt-2'>
+						<Button
+							variant='outline'
+							className='rounded-full px-5'
+							onClick={() => void loadMore({ source: 'button' })}
+							disabled={isLoadingMore}>
+							{t('seo_community_next')}
+							<ArrowRight className='ml-2 size-4' />
+						</Button>
+					</div>
 				) : null}
 			</div>
 
-			{tab === 'sections' && sections?.elements && sections.elements.length > 0 ? (
-				<div className='grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-					{sections.elements.map((section, index) => (
-						<div
-							key={`${section.id}-${section.publish_uuid ?? 'private'}`}
-							ref={index === sections.elements.length - 1 ? bottomRef : undefined}>
-							<PublicSectionCard section={section} />
-						</div>
-					))}
-				</div>
-			) : null}
-
-			{tab === 'documents' && documents?.elements && documents.elements.length > 0 ? (
-				<div className='grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-					{documents.elements.map((document, index) => (
-						<div
-							key={document.id}
-							ref={index === documents.elements.length - 1 ? bottomRef : undefined}>
-							<PublicDocumentCard document={document} />
-						</div>
-					))}
-				</div>
-			) : null}
-
-			{((tab === 'sections' && (!sections?.elements || sections.elements.length === 0)) ||
-				(tab === 'documents' &&
-					(!documents?.elements || documents.elements.length === 0))) && (
-				<Card className='rounded-[30px] border border-dashed border-border/70 bg-muted/20 shadow-none'>
-					<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
-						<div className='flex size-14 items-center justify-center rounded-full border border-border/60 bg-background/75'>
-							{tab === 'documents' ? (
-								<FileText className='size-6 text-muted-foreground' />
-							) : (
-								<Compass className='size-6 text-muted-foreground' />
-							)}
-						</div>
-						<div className='space-y-2'>
-							<h2 className='text-xl font-semibold'>
-								{tab === 'documents'
-									? t('seo_community_documents_empty')
-									: t('seo_community_empty')}
-							</h2>
-							<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
-								{tab === 'documents'
-									? t('seo_community_documents_empty_description')
-									: t('seo_community_empty_description')}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-			)}
-
-			{isLoadingMore ? (
-				<div className='flex justify-center text-sm text-muted-foreground'>
-					Loading...
-				</div>
-			) : null}
-
-			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-				{hasMore && nextStart ? (
-					<Button
-						type='button'
-						className='rounded-2xl'
-						onClick={() => {
-							void loadMore('button');
-						}}
-						disabled={isLoadingMore}>
-						{t('seo_community_next')}
-						<ArrowRight />
-					</Button>
-				) : null}
+			<div className='sticky top-32 w-full'>
+				<SeoCommunityHotSidebar />
 			</div>
-		</>
+		</div>
 	);
 };
 
