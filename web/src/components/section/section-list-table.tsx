@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { Ref } from 'react';
 import type { SectionInfo } from '@/generated';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
@@ -13,15 +13,18 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import SectionVisibilityHint from './section-visibility-hint';
+import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
 
 const SectionListTable = ({
 	sections,
-	footer,
 	lastRowRef,
+	loadingMore = false,
+	loadingCentered = false,
 }: {
 	sections: SectionInfo[];
-	footer?: ReactNode;
 	lastRowRef?: Ref<HTMLTableRowElement>;
+	loadingMore?: boolean;
+	loadingCentered?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -75,7 +78,11 @@ const SectionListTable = ({
 					))}
 				</TableBody>
 			</Table>
-			{footer ? <div className='border-t border-border/60 px-2 pt-3'>{footer}</div> : null}
+			{loadingMore || loadingCentered ? (
+				<div className='border-t border-border/60 px-2 pt-3'>
+					<ListLoadingIndicator centered={loadingCentered} />
+				</div>
+			) : null}
 		</div>
 	);
 };

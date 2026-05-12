@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import SeoHotSearchPage from '@/components/seo/seo-hot-search-page';
+import SeoHotSearchPage from '@/components/seo/community/seo-hot-search-page';
 import { buildMetadata } from '@/lib/seo-metadata';
 
 export async function generateMetadata(): Promise<Metadata> {

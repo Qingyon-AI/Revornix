@@ -1,6 +1,6 @@
-import JsonLd from '@/components/seo/json-ld';
-import SeoUserFollowButton from '@/components/seo/seo-user-follow-button';
-import SeoUserContentBrowser from '@/components/seo/seo-user-content-browser';
+import JsonLd from '@/components/seo/shared/json-ld';
+import SeoUserFollowButton from '@/components/seo/user/seo-user-follow-button';
+import SeoUserContentBrowser from '@/components/seo/user/seo-user-content-browser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { UserRole } from '@/enums/user';

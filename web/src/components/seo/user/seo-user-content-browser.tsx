@@ -17,9 +17,9 @@ import {
 	Users,
 } from 'lucide-react';
 
-import PublicSectionCard from '@/components/seo/public-section-card';
-import PublicDocumentCard from '@/components/seo/public-document-card';
-import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import PublicSectionCard from '@/components/seo/shared/public-section-card';
+import PublicDocumentCard from '@/components/seo/shared/public-document-card';
+import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import CardViewToggle from '@/components/ui/card-view-toggle';

@@ -9,9 +9,9 @@ import { zhCN } from 'date-fns/locale/zh-CN';
 import { BookTextIcon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import SectionCardPodcast from '../section/section-card-podcast';
-import SeoSectionSubscribeButton from './seo-section-subscribe-button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import SectionCardPodcast from '@/components/section/section-card-podcast';
+import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
 
 const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 	const locale = useLocale();

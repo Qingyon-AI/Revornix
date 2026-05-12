@@ -46,6 +46,12 @@ const MetaLine = ({
 }) => (
 	<Link
 		href={href}
+		onClick={(event) => {
+			event.stopPropagation();
+		}}
+		onKeyDown={(event) => {
+			event.stopPropagation();
+		}}
 		className='flex min-w-0 items-center gap-2 rounded-xl transition-colors hover:text-foreground'>
 		<Avatar className='size-5 shrink-0'>
 			<AvatarImage

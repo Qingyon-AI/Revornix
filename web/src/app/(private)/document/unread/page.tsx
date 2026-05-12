@@ -273,11 +273,7 @@ const UnReadDocumentPage = () => {
 						<DocumentListTable
 							documents={documents}
 							lastRowRef={bottomRef}
-							footer={
-								isFetchingNextPage && data ? (
-									<ListLoadingIndicator />
-								) : undefined
-							}
+							loadingMore={isFetchingNextPage && Boolean(data)}
 						/>
 					</>
 				) : null}
@@ -291,7 +287,7 @@ const UnReadDocumentPage = () => {
 					) : (
 						<DocumentListTable
 							documents={[]}
-							footer={<ListLoadingIndicator centered />}
+							loadingCentered
 						/>
 					)
 				)}

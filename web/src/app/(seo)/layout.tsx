@@ -1,9 +1,8 @@
-import Nav from '@/components/seo/nav';
-import SeoLayoutShell from '@/components/seo/seo-layout-shell';
+import SeoLayoutShell from '@/components/seo/layout/seo-layout-shell';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<SeoLayoutShell header={<Nav />}>
+		<SeoLayoutShell>
 			<main className='w-full'>{children}</main>
 		</SeoLayoutShell>
 	);

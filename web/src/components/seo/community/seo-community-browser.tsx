@@ -1,20 +1,19 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRight, Compass, FileText, Hash } from 'lucide-react';
+import { ArrowRight, Compass, FileText, UserRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
-import SeoCommunityHotSidebar from '@/components/seo/seo-community-hot-sidebar';
-import SeoCommunityPoem from '@/components/seo/seo-community-poem';
+import SeoCommunityHotSidebar from '@/components/seo/community/seo-community-hot-sidebar';
+import SeoCommunityPoem from '@/components/seo/community/seo-community-poem';
 import {
 	SeoCommunityDocumentListItem,
 	SeoCommunitySectionListItem,
-} from '@/components/seo/seo-community-list-item';
+} from '@/components/seo/community/seo-community-list-item';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -57,12 +56,81 @@ const buildCommunityHref = ({
 	return query ? `/community?${query}` : '/community';
 };
 
+const CommunityControls = ({
+	tab,
+	keyword,
+	labelId,
+}: {
+	tab: CommunityTab;
+	keyword?: string;
+	labelId?: number;
+}) => {
+	const t = useTranslations();
+
+	return (
+		<div className='flex flex-col gap-3'>
+			<div className='flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between'>
+				<div className='flex min-w-0 flex-wrap items-center gap-2'>
+					<Button
+						asChild
+						variant='outline'
+						className={cn(
+							'h-9 rounded-xl px-3 shadow-none transition-colors',
+							tab === 'sections'
+								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+						)}>
+						<Link href={buildCommunityHref({ tab: 'sections', keyword, labelId })}>
+							<Compass className='mr-2 size-4' />
+							{t('seo_community_sections_tab')}
+						</Link>
+					</Button>
+					<Button
+						asChild
+						variant='outline'
+						className={cn(
+							'h-9 rounded-xl px-3 shadow-none transition-colors',
+							tab === 'documents'
+								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+						)}>
+						<Link href={buildCommunityHref({ tab: 'documents', keyword, labelId })}>
+							<FileText className='mr-2 size-4' />
+							{t('seo_community_documents_tab')}
+						</Link>
+					</Button>
+				</div>
+
+				<div className='flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs leading-5 text-muted-foreground sm:text-sm'>
+					<span className='inline-flex items-center gap-1.5'>
+						<Compass className='size-3.5' />
+						{tab === 'documents'
+							? t('seo_community_channel_related_sections')
+							: t('seo_community_channel_section_overview')}
+					</span>
+					<span className='inline-flex items-center gap-1.5'>
+						<UserRound className='size-3.5' />
+						{tab === 'documents'
+							? t('seo_community_channel_source_materials')
+							: t('seo_community_channel_creators')}
+					</span>
+					<span className='inline-flex items-center gap-1.5'>
+						<FileText className='size-3.5' />
+						{tab === 'documents'
+							? t('seo_community_channel_readable_documents')
+							: t('seo_community_channel_linked_documents')}
+					</span>
+				</div>
+			</div>
+		</div>
+	);
+};
+
 const SeoCommunityBrowser = ({
 	tab,
 	keyword,
 	labelId,
 	labels,
-	mobileControls,
 	initialSections,
 	initialDocuments,
 }: {
@@ -70,7 +138,6 @@ const SeoCommunityBrowser = ({
 	keyword?: string;
 	labelId?: number;
 	labels: PublicLabel[];
-	mobileControls?: ReactNode;
 	initialSections: PublicSectionPagination | null;
 	initialDocuments: PublicDocumentPagination | null;
 }) => {
@@ -186,13 +253,15 @@ const SeoCommunityBrowser = ({
 
 	return (
 		<div className='grid max-w-full gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'>
-			{mobileControls ? (
-				<div className='order-2 sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
-					{mobileControls}
-				</div>
-			) : null}
+			<section className='order-2 sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
+				<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
+			</section>
 
 			<div className='order-3 min-w-0 lg:order-1'>
+				<section className='sticky top-14 z-10 -mx-4 hidden border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:block lg:px-8'>
+					<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
+				</section>
+
 				<div className='flex flex-col gap-4 py-3'>
 					<div className='flex flex-wrap gap-2'>
 						<Link

@@ -262,11 +262,7 @@ const CommunitySectionPage = () => {
 						<SectionListTable
 							sections={sections}
 							lastRowRef={bottomRef}
-							footer={
-								isFetchingNextPage && data ? (
-									<ListLoadingIndicator />
-								) : undefined
-							}
+							loadingMore={isFetchingNextPage && Boolean(data)}
 						/>
 					</>
 				) : null}
@@ -274,7 +270,7 @@ const CommunitySectionPage = () => {
 					viewMode === 'grid' ? null : (
 						<SectionListTable
 							sections={[]}
-							footer={<ListLoadingIndicator centered />}
+							loadingCentered
 						/>
 					)
 				)}

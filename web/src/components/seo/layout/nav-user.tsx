@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {
 	DropdownMenu,
@@ -16,7 +16,7 @@ import { BadgeCheck, Bell, LayoutDashboard, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'nextjs-toploader/app';
 import { useUserContext } from '@/provider/user-provider';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const NavUser = () => {
 	const t = useTranslations();

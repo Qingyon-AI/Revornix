@@ -275,11 +275,7 @@ const SubscribedSectionPage = () => {
 						<SectionListTable
 							sections={sections}
 							lastRowRef={bottomRef}
-							footer={
-								isFetchingNextPage && data ? (
-									<ListLoadingIndicator />
-								) : undefined
-							}
+							loadingMore={isFetchingNextPage && Boolean(data)}
 						/>
 					</>
 				) : null}
@@ -287,7 +283,7 @@ const SubscribedSectionPage = () => {
 					viewMode === 'grid' ? null : (
 						<SectionListTable
 							sections={[]}
-							footer={<ListLoadingIndicator centered />}
+							loadingCentered
 						/>
 					)
 				)}

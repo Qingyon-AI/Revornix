@@ -2,9 +2,9 @@ import {
 	SectionInfo as SectionInfoType,
 	SectionSeoDetailRequest,
 } from '@/generated';
-import JsonLd from '@/components/seo/json-ld';
-import { SeoSectionSidebarBridge } from '@/components/seo/seo-section-meta-sidebar';
-import SeoMobileSidebarMenu from '@/components/seo/seo-mobile-sidebar-menu';
+import JsonLd from '@/components/seo/shared/json-ld';
+import { SeoSectionSidebarBridge } from '@/components/seo/section/seo-section-meta-sidebar';
+import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { serverRequest } from '@/lib/request-server';
@@ -28,8 +28,8 @@ import {
 	isSeoNotFoundError,
 } from '@/lib/seo';
 import { notFound } from 'next/navigation';
-import SeoSectionCommentGate from '@/components/seo/seo-section-comment-gate';
-import SeoSectionSubscribeButton from '@/components/seo/seo-section-subscribe-button';
+import SeoSectionCommentGate from '@/components/seo/section/seo-section-comment-gate';
+import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
 import AudioPlayer from '@/components/ui/audio-player';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getRenderableGraphData } from '@/lib/graph-render';
