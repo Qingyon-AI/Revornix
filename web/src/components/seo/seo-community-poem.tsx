@@ -68,7 +68,9 @@ const clearStoredToken = () => {
 	window.localStorage.removeItem(JINRISHICI_TOKEN_STORAGE_KEY);
 };
 
-const fetchPoemByJsonApi = async (token?: string): Promise<ClassicalPoem | null> => {
+const fetchPoemByJsonApi = async (
+	token?: string,
+): Promise<ClassicalPoem | null> => {
 	const requestInit: RequestInit = {
 		cache: 'no-store',
 	};
@@ -129,42 +131,37 @@ const SeoCommunityPoem = () => {
 		.join(' · ');
 
 	return (
-		<div className='pt-6'>
-			<Separator />
-			<div className='flex items-start justify-between gap-3 py-4'>
-				<div className='min-w-0 flex-1'>
-					{isLoading ? (
-						<div className='space-y-2'>
-							<Skeleton className='h-5 w-full rounded-md' />
-							<Skeleton className='h-5 w-[72%] rounded-md' />
-							<Skeleton className='h-4 w-[48%] rounded-md' />
+		<div className='flex items-start justify-between gap-3 py-4'>
+			<div className='min-w-0 flex-1'>
+				{isLoading ? (
+					<div className='space-y-2'>
+						<Skeleton className='h-5 w-full rounded-md' />
+						<Skeleton className='h-5 w-[72%] rounded-md' />
+						<Skeleton className='h-4 w-[48%] rounded-md' />
+					</div>
+				) : (
+					<>
+						<div className='text-sm leading-7 text-foreground'>
+							{hasError || !poem
+								? t('dashboard_random_poem_error')
+								: poem.content}
 						</div>
-					) : (
-						<>
-							<div className='text-sm leading-7 text-foreground'>
-								{hasError || !poem
-									? t('dashboard_random_poem_error')
-									: poem.content}
-							</div>
-							{!hasError && meta ? (
-								<div className='pt-2 text-xs text-muted-foreground'>
-									{meta}
-								</div>
-							) : null}
-						</>
-					)}
-				</div>
-				<Button
-					type='button'
-					size='icon-sm'
-					variant='ghost'
-					className='shrink-0 rounded-full text-muted-foreground'
-					title={t('refresh')}
-					onClick={() => void loadPoem()}
-					disabled={isLoading}>
-					<RefreshCcw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-				</Button>
+						{!hasError && meta ? (
+							<div className='pt-2 text-xs text-muted-foreground'>{meta}</div>
+						) : null}
+					</>
+				)}
 			</div>
+			<Button
+				type='button'
+				size='icon-sm'
+				variant='ghost'
+				className='shrink-0 rounded-full text-muted-foreground'
+				title={t('refresh')}
+				onClick={() => void loadPoem()}
+				disabled={isLoading}>
+				<RefreshCcw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+			</Button>
 		</div>
 	);
 };

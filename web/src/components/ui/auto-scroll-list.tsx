@@ -56,7 +56,7 @@ export const AutoScrollList = ({
 
 	return (
 		<div
-			className={`relative overflow-hidden ${className}`}
+			className={`relative min-w-0 max-w-full overflow-hidden ${className}`}
 			style={{
 				height: `${visibleCount * (itemHeight + gap)}px`,
 			}}
@@ -64,7 +64,7 @@ export const AutoScrollList = ({
 			onMouseLeave={startScroll}
 		>
 			<div
-				className='transition-transform duration-700 ease-in-out'
+				className='min-w-0 w-full max-w-full transition-transform duration-700 ease-in-out'
 				style={{
 					transform: `translateY(-${currentIndex * (itemHeight + gap)}px)`,
 				}}
@@ -76,7 +76,7 @@ export const AutoScrollList = ({
 							height: itemHeight,
 							marginBottom: gap, // ✅ 添加间距而不是 border
 						}}
-						className='flex items-center'
+						className='flex min-w-0 w-full max-w-full items-center overflow-hidden'
 					>
 						{child}
 					</div>

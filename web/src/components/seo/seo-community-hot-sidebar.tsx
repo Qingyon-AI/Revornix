@@ -12,7 +12,6 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
 } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -110,22 +109,24 @@ const SeoCommunityHotSidebar = () => {
 			) : null}
 
 			{!loading && !error ? (
-				<div>
+				<div className='min-w-0 max-w-full overflow-x-hidden'>
 					<AutoScrollList
 						visibleCount={8}
 						itemHeight={41}
 						gap={0}
-						className='w-full'>
+						className='w-full min-w-0 max-w-full'>
 						{websites.map((website, index) => (
-							<div key={website.name} className='w-full'>
+							<div
+								key={website.name}
+								className='min-w-0 w-full max-w-full overflow-hidden'>
 								{index !== 0 ? <Separator /> : null}
 								<Link
 									href={
 										website.data[0]?.url ?? website.data[0]?.mobileUrl ?? '#'
 									}
 									target='_blank'
-									className='flex w-full items-center justify-between gap-3 py-3 text-sm transition-colors hover:text-primary'>
-									<div className='min-w-0 flex-1 truncate'>
+									className='flex min-w-0 w-full max-w-full items-center justify-between gap-3 overflow-hidden py-3 text-sm transition-colors hover:text-primary'>
+									<div className='min-w-0 flex-1 overflow-hidden break-all text-ellipsis line-clamp-1'>
 										{website.data[0]?.title}
 									</div>
 									<div className='shrink-0 text-xs text-muted-foreground'>
@@ -138,7 +139,7 @@ const SeoCommunityHotSidebar = () => {
 					<div className='pt-3 text-right'>
 						<Link
 							href='/hot-search'
-							className='inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground'>
+							className='inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground'>
 							{t('dashboard_today_hot_search_full')}
 							<ChevronRight className='size-4' />
 						</Link>
