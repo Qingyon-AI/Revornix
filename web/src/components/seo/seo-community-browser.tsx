@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Compass, FileText, Hash } from 'lucide-react';
@@ -61,6 +62,7 @@ const SeoCommunityBrowser = ({
 	keyword,
 	labelId,
 	labels,
+	mobileControls,
 	initialSections,
 	initialDocuments,
 }: {
@@ -68,6 +70,7 @@ const SeoCommunityBrowser = ({
 	keyword?: string;
 	labelId?: number;
 	labels: PublicLabel[];
+	mobileControls?: ReactNode;
 	initialSections: PublicSectionPagination | null;
 	initialDocuments: PublicDocumentPagination | null;
 }) => {
@@ -182,8 +185,14 @@ const SeoCommunityBrowser = ({
 			: (sections?.elements ?? []);
 
 	return (
-		<div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'>
-			<div className='min-w-0'>
+		<div className='grid max-w-full gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'>
+			{mobileControls ? (
+				<div className='order-2 sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
+					{mobileControls}
+				</div>
+			) : null}
+
+			<div className='order-3 min-w-0 lg:order-1'>
 				<div className='flex flex-col gap-4 py-3'>
 					<div className='flex flex-wrap gap-2'>
 						<Link
@@ -359,9 +368,10 @@ const SeoCommunityBrowser = ({
 				) : null}
 			</div>
 
-			<div className='sticky top-32 w-full'>
-				<SeoCommunityHotSidebar />
+			<div className='order-1 w-full max-w-full overflow-x-hidden lg:order-2 lg:h-fit lg:self-start lg:overflow-visible lg:sticky lg:top-32'>
 				<SeoCommunityPoem />
+				<Separator />
+				<SeoCommunityHotSidebar />
 			</div>
 		</div>
 	);
