@@ -127,6 +127,8 @@ After upload, the usual next step is to call `/tp/document/create` and pass the 
 | `POST /tp/section/label/list` | List section labels for the calling user |
 | `POST /tp/section/label/delete` | Delete section labels |
 
+The product API also exposes a public section-label list for the community pages. It returns labels that are actually attached to published sections, ordered by usage, and is used by the public `/community` label filter.
+
 ### `POST /tp/section/create`
 
 Create a new section. This follows the same section processing model as the app, including trigger strategy, auto publish, auto podcast, and auto illustration settings.
@@ -306,6 +308,17 @@ response = client.post(
 ### `POST /tp/document/vector/search`
 
 Search the user's knowledge vector store for the most relevant chunks to a question. This works well for retrieval augmentation and external question-answering orchestration.
+
+The app-level vector search request now supports a `mode` field:
+
+| Field | Value | Description |
+| --- | --- | --- |
+| `mode` | `vector` | Hybrid semantic retrieval with title-match fusion |
+| `mode` | `text` | Keyword/title-description search without vector retrieval |
+
+Vector responses can include a `snippets` map keyed by document ID. Those snippets come from the recalled chunks and are useful for search previews.
+
+Public document discovery uses the same idea through the app-level public vector-search endpoint. It post-filters vector candidates to published documents only, so private documents are not leaked into public search results.
 
 ### `POST /tp/document/note/search`
 

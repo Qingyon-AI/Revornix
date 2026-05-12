@@ -32,18 +32,21 @@ Revornix provides a refresh mechanism so users can regenerate the public URL unl
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260417163403320.png)
 
-Once a section is published, it becomes part of the public community surface, which is organized into three page layers:
+Once a section is published, it becomes part of the public community surface, which is organized into multiple page layers:
 
-- Community page: `/community`, used to browse and search published sections
+- Community page: `/community`, used to browse and search published sections and documents
 - Public section page: `/section/[publish_uuid]`, used to display the public detail view of a published section
+- Public document page: `/document/[id]`, used to display the public detail view of a published document
 - Public user page: `/user/[id]`, used to display a creator profile and that creator's published sections
+- Public hot-search page: `/hot-search`, used to browse normalized trend cards without entering the private workspace
 
 The community page shows:
 
-- The total number of published sections
-- Aggregate document and subscriber counts for the current result set
+- Tabs for public sections and public documents
+- Public label filters for narrowing the current tab
+- Result counts and context for the current result set
 - A keyword search entry
-- A list of public section cards
+- Public section or document cards
 
 The public section page shows:
 
@@ -59,7 +62,7 @@ The public section page uses the generated `publish_uuid` as its external identi
 
 ## Search and discovery
 
-The community page supports keyword search and pagination across public sections. Each public section card presents:
+The community page supports keyword search, public label filtering, and pagination across public sections and public documents. Each public section card presents:
 
 - The section cover and title
 - The description and labels
@@ -67,7 +70,7 @@ The community page supports keyword search and pagination across public sections
 - Document and subscriber counts
 - A subscribe button
 
-Clicking the creator avatar or nickname opens the corresponding public user page, where visitors can continue exploring that creator's public profile and published sections.
+Document results expose the title, description, labels, creator, and related public navigation. Clicking the creator avatar or nickname opens the corresponding public user page, where visitors can continue exploring that creator's public profile and published sections or documents.
 
 ## Subscription
 

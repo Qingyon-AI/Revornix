@@ -40,6 +40,8 @@ Most product pages follow the same main request path:
 
 This path covers most synchronous interactions, including authentication, settings, document lists, section detail pages, the dashboard, Revornix AI settings, and notification management.
 
+The private workspace also includes a command-panel/global-search path. It can search the current user's documents through either vector mode or text mode, and the API fuses semantic chunk results with title matches so exact-title hits are not buried by semantic-only candidates.
+
 ## 2. Document processing path
 
 Document capabilities usually follow a two-part model: synchronous creation plus asynchronous enrichment.
@@ -131,6 +133,14 @@ The public community surfaces share the same core data model as the private work
 
 This path allows public sections, public documents, and public creator pages to be accessed directly from outside the private workspace while keeping private data isolated.
 
+The public layer now also supports:
+
+- `/community` tabs for public sections and public documents
+- Public label filters for both sections and documents
+- Public creator search through the public user search endpoint
+- Public document search with vector or text mode
+- A floating table of contents for long public Markdown documents
+
 ## 7. Hot-search path
 
 The hot-search capability runs through a separate service rather than the main API.
@@ -140,6 +150,8 @@ The hot-search capability runs through a separate service rather than the main A
 3. A normalized result is returned to the dashboard and hot-search pages
 
 That means `hot-news` lives in the same monorepo but still runs as an independent process.
+
+The private dashboard route is `/dashboard/hot-search`. There is also a public SEO route at `/hot-search`, which reuses the same normalized hot-list cards for unauthenticated browsing.
 
 ## 8. Local runtime order
 
