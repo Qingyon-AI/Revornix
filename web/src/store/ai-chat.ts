@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
-import { AIDocumentSource, AIPhase, AIWorkflow, SessionItem } from '@/types/ai'
+import { AIDocumentSource, AIPhase, SessionItem } from '@/types/ai'
+import { pushAIWorkflowStep } from '@/lib/ai-message-events'
 import {
 	hydrateSessionItem,
 	sortSessionsByRecent,
@@ -62,37 +63,13 @@ const storage: StateStorage = {
 
 const phaseLabelMap: Record<AIPhase, (meta?: any) => string> = {
     idle: () => 'revornix_ai_phase_idle',
-    thinking: () => 'revornix_ai_phase_thinking',
-    writing: () => 'revornix_ai_phase_writing',
-    tool: () => 'revornix_ai_phase_tool',
-    tool_result: () => 'revornix_ai_phase_tool_result',
+    thinking: (meta) => meta?.label ?? 'revornix_ai_phase_thinking',
+    writing: (meta) => meta?.label ?? 'revornix_ai_phase_writing',
+    tool: (meta) => meta?.label ?? 'revornix_ai_phase_tool',
+    tool_result: (meta) => meta?.label ?? 'revornix_ai_phase_tool_result',
     done: () => 'revornix_ai_phase_done',
     error: (meta) => meta?.message ?? 'revornix_ai_phase_error',
 };
-
-function pushWorkflowStep(
-    workflow: AIWorkflow | undefined,
-    phase: AIPhase,
-    label: string,
-    meta?: any
-): AIWorkflow {
-    const steps = workflow ? [...workflow] : [];
-
-    const last = steps[steps.length - 1];
-
-    // ✅ 只有在 phase + label 都相同时才认为是重复
-    if (last && last.phase === phase && last.label === label) {
-        return steps;
-    }
-
-    steps.push({
-        phase,
-        label,
-        meta,
-    });
-
-    return steps;
-}
 
 export const useAiChatStore = create<AIChatState & AIChatAction>()(
     persist(
@@ -167,7 +144,7 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                         phase,
                                         label,
                                     },
-                                    ai_workflow: pushWorkflowStep(undefined, phase, label, meta),
+                                    ai_workflow: pushAIWorkflowStep(undefined, phase, label, meta),
                                 });
                             } else {
                                 const msg = messages[idx];
@@ -178,7 +155,7 @@ export const useAiChatStore = create<AIChatState & AIChatAction>()(
                                         phase,
                                         label,
                                     },
-                                    ai_workflow: pushWorkflowStep(
+                                    ai_workflow: pushAIWorkflowStep(
                                         msg.ai_workflow,
                                         phase,
                                         label,

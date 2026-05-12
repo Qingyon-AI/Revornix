@@ -188,6 +188,7 @@ class SectionAskRequest(BaseModel):
     messages: list[ChatItem]
     enable_mcp: bool = False
     model_id: int | None = None
+    assistant_chat_id: str | None = None
 
 
 class SectionAskChunkCitation(BaseModel):

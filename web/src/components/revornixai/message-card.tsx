@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/collapsible';
 import {
 	ChevronDownIcon,
+	AlertTriangleIcon,
 	CheckCircle2Icon,
 	CheckIcon,
 	CopyIcon,
@@ -107,6 +108,11 @@ const MessageCard = ({ message }: { message: Message }) => {
 		}
 		return label;
 	};
+
+	const resolvedErrorMessage =
+		ai_state?.phase === 'error'
+			? resolvePhaseLabel(ai_state.error || ai_state.label)
+			: '';
 
 	const copyMarkdownToClipboard = async (content: string) => {
 		if (navigator.clipboard?.writeText) {
@@ -382,6 +388,22 @@ const MessageCard = ({ message }: { message: Message }) => {
 							</AccordionContent>
 						</AccordionItem>
 					</Accordion>
+				)}
+
+				{ai_state?.phase === 'error' && (
+					<div className='mb-3 rounded-xl border border-destructive/25 bg-destructive/8 px-3.5 py-3 text-sm text-destructive'>
+						<div className='flex items-start gap-2'>
+							<AlertTriangleIcon className='mt-0.5 size-4 shrink-0' />
+							<div className='min-w-0 space-y-1'>
+								<div className='font-medium'>
+									{t('revornix_ai_error_title')}
+								</div>
+								<div className='break-words leading-6 text-destructive/85'>
+									{resolvedErrorMessage || t('revornix_ai_error_server_failed')}
+								</div>
+							</div>
+						</div>
+					</div>
 				)}
 
 				<div className='max-w-none break-words text-sm leading-relaxed'>

@@ -14,7 +14,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_current_user_short_lived
-from common.interpret_event import EventInterpreter
+from common.interpret_event import EventInterpreter, base_event
 from common.logger import exception_logger, format_log_message
 from common.markdown_helpers import get_markdown_content_by_document_id
 from common.usage_billing import persist_model_usage_from_snapshot
@@ -304,14 +304,26 @@ async def _stream_document_answer_with_agent(
     messages: list[schemas.ai.ChatItem],
     chunk_citations: list[dict[str, Any]],
     agent: MCPAgent,
+    chat_id: str | None = None,
 ):
     interpreter = EventInterpreter()
     usage_collector = UsageCollector()
-    chat_id = uuid4().hex
+    chat_id = chat_id or uuid4().hex
     stream_failed = False
     emitted_text_output = False
 
     try:
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="status",
+                payload={
+                    "phase": "thinking",
+                    "label": "document_ai_phase_answering",
+                    "detail": {},
+                },
+            )
+        )
         agent.clear_conversation_history()
         _apply_document_agent_system_prompt(
             agent=agent,
@@ -459,6 +471,95 @@ async def _stream_document_answer_with_agent(
     )
 
 
+async def _stream_document_answer_request(
+    *,
+    document_ask_request: schemas.document.DocumentAskRequest,
+    user: models.user.User,
+    messages: list[schemas.ai.ChatItem],
+):
+    chat_id = document_ask_request.assistant_chat_id or uuid4().hex
+
+    yield _sse(
+        base_event(
+            chat_id=chat_id,
+            event_type="status",
+            payload={
+                "phase": "thinking",
+                "label": "document_ai_phase_context",
+                "detail": {},
+            },
+        )
+    )
+
+    try:
+        async with async_session_context() as db:
+            document_id, document_title, system_prompt, chunk_citations = await _build_document_context(
+                db=db,
+                document_id=document_ask_request.document_id,
+                viewer_user_id=user.id,
+                question=messages[-1].content,
+                response_language_instruction=_build_ai_language_instruction(
+                    user.default_ai_interaction_language,
+                ),
+            )
+
+        yield _sse(
+            base_event(
+                chat_id=chat_id,
+                event_type="status",
+                payload={
+                    "phase": "thinking",
+                    "label": "revornix_ai_phase_model_prepare",
+                    "detail": {},
+                },
+            )
+        )
+
+        agent, model_id = await create_agent(
+            user_id=user.id,
+            enable_mcp=document_ask_request.enable_mcp,
+            model_id=document_ask_request.model_id,
+        )
+    except Exception as e:
+        exception_logger.error(
+            format_log_message(
+                "document_ai_prepare_failed",
+                user_id=user.id,
+                chat_id=chat_id,
+                document_id=document_ask_request.document_id,
+                error=e,
+            )
+        )
+        yield _sse(
+            {
+                "chat_id": chat_id,
+                "type": "error",
+                "timestamp": time.time(),
+                "trace": {},
+                "payload": {
+                    "code": "SERVER_ERROR",
+                    "message": _build_agent_error_message_key(
+                        is_recursion_limit=False,
+                    ),
+                },
+            }
+        )
+        return
+
+    async for event in _stream_document_answer_with_agent(
+        document_id=document_id,
+        document_title=document_title,
+        user=user,
+        model_id=model_id,
+        system_prompt=system_prompt,
+        messages=messages,
+        chunk_citations=chunk_citations,
+        agent=agent,
+        chat_id=chat_id,
+    ):
+        yield event
+
+
 @document_ai_router.post("/ask")
 async def ask_document_ai(
     document_ask_request: schemas.document.DocumentAskRequest,
@@ -488,36 +589,11 @@ async def ask_document_ai(
             code=400,
         )
 
-    async with async_session_context() as db:
-        document_id, document_title, system_prompt, chunk_citations = await _build_document_context(
-            db=db,
-            document_id=document_ask_request.document_id,
-            viewer_user_id=user.id,
-            question=messages[-1].content,
-            response_language_instruction=_build_ai_language_instruction(
-                user.default_ai_interaction_language,
-            ),
-        )
-
-    try:
-        agent, model_id = await create_agent(
-            user_id=user.id,
-            enable_mcp=document_ask_request.enable_mcp,
-            model_id=document_ask_request.model_id,
-        )
-    except Exception as e:
-        raise schemas.error.CustomException(message=str(e), code=400) from e
-
     return StreamingResponse(
-        _stream_document_answer_with_agent(
-            document_id=document_id,
-            document_title=document_title,
+        _stream_document_answer_request(
+            document_ask_request=document_ask_request,
             user=user,
-            model_id=model_id,
-            system_prompt=system_prompt,
             messages=messages,
-            chunk_citations=chunk_citations,
-            agent=agent,
         ),
         media_type="text/event-stream; charset=utf-8",
         headers={

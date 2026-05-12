@@ -5,6 +5,7 @@ import {
 import JsonLd from '@/components/seo/shared/json-ld';
 import { SeoSectionSidebarBridge } from '@/components/seo/section/seo-section-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
+import SeoAiAskEntry from '@/components/seo/shared/seo-ai-ask-entry';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { serverRequest } from '@/lib/request-server';
@@ -525,7 +526,7 @@ const SEOSectionDetail = async (props: {
 						</p>
 
 						{section?.id ? (
-							<div className='max-w-[920px] mx-auto'>
+							<div className='max-w-[920px] mx-auto space-y-3'>
 								<SeoSectionSubscribeButton
 									sectionId={section.id}
 									creatorId={section.creator?.id}
@@ -550,9 +551,25 @@ const SEOSectionDetail = async (props: {
 							<SectionSummaryCollapsible
 								sectionId={section!.id}
 								hasMarkdown={Boolean(markdown)}
-								previewSource={markdown}>
+								previewSource={markdown}
+								summaryAction={
+									<SeoAiAskEntry
+										type='section'
+										sectionId={section!.id}
+										title={sectionTitle}
+										loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
+									/>
+								}>
 								<MarkdownContentShell
 									enableFloatingToc
+									floatingTocFooter={
+										<SeoAiAskEntry
+											type='section'
+											sectionId={section!.id}
+											title={sectionTitle}
+											loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
+										/>
+									}
 									className='mx-auto w-full'
 									contentClassName='overflow-x-hidden'>
 									<TipTapMarkdownViewer

@@ -8,7 +8,7 @@ import {
 } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import { ListItemSkeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import NoticeBox from '../ui/notice-box';
@@ -77,9 +77,8 @@ const SectionDocumentsList = ({
 				documents &&
 				documents.map((document, index) => {
 					return (
-						<>
+						<Fragment key={document.id ?? index}>
 							<div
-								key={document.id ?? index}
 								ref={index === documents.length - 1 ? bottomRef : undefined}>
 								<SectionDocumentCard
 									document={document}
@@ -89,7 +88,7 @@ const SectionDocumentsList = ({
 							{index !== documents.length - 1 ? (
 								<Separator className='bg-border/50' />
 							) : null}
-						</>
+						</Fragment>
 					);
 				})}
 			{isSuccess && documents && documents.length === 0 && (
