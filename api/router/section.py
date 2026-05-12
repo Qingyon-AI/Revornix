@@ -744,6 +744,23 @@ async def update_section(
         db_section.description = section_update_request.description
     if section_update_request.cover is not None:
         db_section.cover = section_update_request.cover
+    if section_update_request.is_public is not None:
+        if db_section.creator_id != user.id:
+            raise schemas.error.CustomException("You are forbidden to publish this section", code=403)
+        db_publish_section = await crud.section.get_publish_section_by_section_id_async(
+            db=db,
+            section_id=section_update_request.section_id,
+        )
+        if section_update_request.is_public and db_publish_section is None:
+            await crud.section.create_publish_section_async(
+                db=db,
+                section_id=section_update_request.section_id,
+            )
+        elif not section_update_request.is_public and db_publish_section is not None:
+            await crud.section.delete_published_section_by_section_id_async(
+                db=db,
+                section_id=section_update_request.section_id,
+            )
     if section_update_request.labels is not None:
         exist_section_labels = await crud.section.get_section_labels_by_section_id_async(
             db=db,

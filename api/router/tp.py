@@ -39,6 +39,10 @@ from router.document import (
 )
 from router.document_ai import ask_document_ai as ask_document_ai_impl
 from router.document_interaction_manage import delete_document as delete_document_impl
+from router.document_publish_manage import (
+    document_publish_get_request as document_publish_get_request_impl,
+    document_publish_request as document_publish_request_impl,
+)
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
     recent_read_document as recent_read_document_impl,
@@ -831,6 +835,32 @@ async def update_document(
 ):
     return await update_document_impl(
         document_update_request=document_update_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/publish", response_model=schemas.common.NormalResponse)
+async def publish_document(
+    document_publish_request: schemas.document.DocumentPublishRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await document_publish_request_impl(
+        document_publish_request=document_publish_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/publish/get", response_model=schemas.document.DocumentPublishGetResponse)
+async def get_document_publish(
+    document_publish_get_request: schemas.document.DocumentPublishGetRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await document_publish_get_request_impl(
+        document_publish_get_request=document_publish_get_request,
         db=db,
         user=user,
     )

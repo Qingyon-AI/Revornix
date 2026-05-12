@@ -93,6 +93,7 @@ class DocumentUpdateRequest(BaseModel):
     labels: list[int] | None = None
     sections: list[int] | None = None
     content: str | None = None
+    is_public: bool | None = None
 
 class LabelDeleteRequest(BaseModel):
     label_ids: list[int]

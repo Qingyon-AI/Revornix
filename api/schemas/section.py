@@ -354,6 +354,7 @@ class SectionUpdateRequest(BaseModel):
     description: str | None = None
     cover: str | None = None
     labels: list[int] | None = None
+    is_public: bool | None = None
     auto_podcast: bool | None = None
     auto_illustration: bool | None = None
     process_task_trigger_type: int | None = None

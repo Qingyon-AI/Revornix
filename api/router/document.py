@@ -903,6 +903,22 @@ async def update_document(
         db_document.description = document_update_request.description
     if document_update_request.cover is not None:
         db_document.cover = document_update_request.cover
+    if document_update_request.is_public is not None:
+        ensure_document_manage_access(is_creator=is_creator)
+        db_publish_document = await crud.document.get_publish_document_by_document_id_async(
+            db=db,
+            document_id=document_update_request.document_id,
+        )
+        if document_update_request.is_public and db_publish_document is None:
+            await crud.document.create_publish_document_async(
+                db=db,
+                document_id=document_update_request.document_id,
+            )
+        elif not document_update_request.is_public and db_publish_document is not None:
+            await crud.document.delete_published_document_by_document_id_async(
+                db=db,
+                document_id=document_update_request.document_id,
+            )
     if document_update_request.content is not None:
         if db_document.category != DocumentCategory.QUICK_NOTE:
             raise schemas.error.CustomException(
