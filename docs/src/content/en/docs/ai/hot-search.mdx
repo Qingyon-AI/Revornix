@@ -8,6 +8,13 @@ Revornix keeps hot-search aggregation in the separate `hot-news/` service. That 
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
 
+## Where it appears
+
+- Private workspace: `/dashboard/hot-search`
+- Public page: `/hot-search`
+
+The public page is intended for lightweight discovery and SEO-friendly browsing. It loads the same normalized hot-list cards as the dashboard, but does not require the user to enter the private workspace first.
+
 ### Developer note
 
 If you want to improve this feature, look at the `hot-news/` folder. In the current architecture it is treated as an independent Node microservice rather than a route inside the main FastAPI app.

@@ -29,6 +29,7 @@ Revornix is an open-source, local-first AI information workspace. It helps you c
 - Open and controllable: self-host locally and keep your data under your own infra.
 - Model-flexible: any provider compatible with the OpenAI API can be wired in.
 - Collaboration-ready: share private/public knowledge sections and co-create with others.
+- Public discovery: published documents, sections, creators, labels, and trending topics are exposed through SEO-friendly community pages.
 
 ## How It Works
 
@@ -55,10 +56,13 @@ Revornix/
 - Advanced transformation: strong markdown/content conversion pipelines.
 - Vector retrieval: chunk-to-vector storage for semantic search and AI context.
 - Graph reasoning: personalized GraphRAG for better context precision.
+- Global search: search private knowledge with vector or text mode, plus public discovery for published documents, sections, creators, and labels.
 - Built-in MCP: both MCP client and MCP server are supported.
 - Auto podcast: generate and update podcast audio for documents/sections.
 - Illustration generation: generate and embed AI images into content.
 - Trending in one place: major platform hot lists via integrated DailyHotApi.
+- Public community surfaces: browse published sections/documents, filter by public labels, open creator pages, and view a public hot-search page.
+- Rich Markdown reading/editing: improved tables, Mermaid, images, content shell, and floating table of contents for long public documents.
 - Responsive and multilingual: available on mobile/desktop with multi-language support.
 - Layered request protection: gateway-level anti-scraping and API-side rate limiting for high-risk public endpoints.
 
