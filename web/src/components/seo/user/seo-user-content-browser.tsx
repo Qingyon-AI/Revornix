@@ -155,7 +155,7 @@ const SeoUserContentBrowser = ({
 
 	return (
 		<div className='mx-auto w-full max-w-[1160px]'>
-			<div className='md:sticky top-14 z-10 border-b border-border/60 bg-background/94 py-3 backdrop-blur-xl'>
+			<div className='sticky top-14 z-10 border-b border-border/60 bg-background/94 py-3 backdrop-blur-xl'>
 				<div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
 					<div className='flex min-w-0 flex-wrap items-center gap-3'>
 						<div className='inline-flex max-w-full rounded-xl border border-border/60 bg-background/65 p-0.5'>
@@ -206,7 +206,7 @@ const SeoUserContentBrowser = ({
 							{keyword ? <span>“{keyword}”</span> : null}
 						</div>
 					</div>
-					<div className='flex w-full min-w-0 flex-col gap-2 sm:flex-row xl:max-w-[560px] xl:items-center'>
+					<div className='flex w-full min-w-0 flex-col gap-2 flex-row xl:max-w-[560px] xl:items-center'>
 						<form
 							action={`/user/${userId}`}
 							className='w-full min-w-0'>

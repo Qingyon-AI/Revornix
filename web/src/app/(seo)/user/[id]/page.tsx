@@ -252,7 +252,7 @@ const SeoUserDetailPage = async (props: {
 		];
 
 		return (
-			<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-10 sm:px-6 lg:px-8'>
+			<div className='mx-auto flex w-full max-w-[1480px] flex-col px-4 pb-10 sm:px-6 lg:px-8'>
 				<JsonLd data={structuredData} />
 				<section className='-mx-4 overflow-hidden border-b border-border/60 bg-background sm:-mx-6 lg:-mx-8'>
 					<div className='relative h-56 w-full overflow-hidden lg:h-64'>
