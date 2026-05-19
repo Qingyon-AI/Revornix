@@ -2,6 +2,19 @@ import './globals.css';
 import 'react-photo-view/dist/react-photo-view.css';
 import 'katex/dist/katex.min.css';
 import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+
+const geistSans = Geist({
+	subsets: ['latin'],
+	variable: '--font-sans',
+	display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+	subsets: ['latin'],
+	variable: '--font-mono',
+	display: 'swap',
+});
 import JsonLd from '@/components/seo/shared/json-ld';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/provider/theme-provider';
@@ -88,7 +101,21 @@ export default async function RootLayout({
 		},
 	};
 	return (
-		<html lang={locale} suppressHydrationWarning>
+		<html
+			lang={locale}
+			suppressHydrationWarning
+			className={`${geistSans.variable} ${geistMono.variable}`}>
+			<head>
+				<link
+					rel='preconnect'
+					href='https://cdn.jsdelivr.net'
+					crossOrigin='anonymous'
+				/>
+				<link
+					rel='stylesheet'
+					href='https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css'
+				/>
+			</head>
 			<body>
 				<JsonLd data={[organizationSchema, webSiteSchema]} />
 				<NextIntlClientProvider messages={messages}>
