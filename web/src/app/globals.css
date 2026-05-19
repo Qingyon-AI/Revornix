@@ -50,11 +50,22 @@
 		display: none;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground font-sans antialiased;
+		font-feature-settings: 'cv11', 'ss01', 'ss03';
 	}
 }
 
 @theme inline {
+	--font-sans:
+		var(--font-sans), 'LXGW WenKai Screen', -apple-system, BlinkMacSystemFont,
+		'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+		'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+		'Segoe UI Emoji';
+	--font-mono:
+		var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace;
+	--font-serif: 'LXGW WenKai Screen', ui-serif, Georgia, serif;
+
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 
