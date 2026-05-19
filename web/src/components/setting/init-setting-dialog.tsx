@@ -416,12 +416,7 @@ const InitSettingDialog = ({
 					className='left-0 top-0 h-[100dvh] max-h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 border-0 bg-transparent p-0 shadow-none sm:left-1/2 sm:top-1/2 sm:h-[min(92vh,920px)] sm:max-h-[calc(100vh-1rem)] sm:w-[calc(100vw-1rem)] sm:max-w-[min(1360px,calc(100vw-2rem))] sm:-translate-x-1/2 sm:-translate-y-1/2'>
 					<div className='flex h-full min-h-0 overflow-hidden rounded-none border border-border/70 bg-background/95 text-foreground shadow-[0_40px_120px_-60px_rgba(15,23,42,0.7)] backdrop-blur-2xl sm:rounded-[32px]'>
 						<div className='grid h-full min-h-0 w-full grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)]'>
-							<aside className='relative hidden min-h-0 overflow-hidden border-b border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.14),transparent_38%)] p-6 sm:p-8 xl:p-9 lg:block lg:border-b-0 lg:border-r'>
-								<div className='pointer-events-none absolute inset-0'>
-									<div className='absolute inset-0 bg-background/78 backdrop-blur-xl' />
-									<div className='absolute left-[-3rem] top-[-4rem] size-40 rounded-full bg-emerald-500/10 blur-3xl' />
-									<div className='absolute right-[-3rem] bottom-[-5rem] size-48 rounded-full bg-sky-500/10 blur-3xl' />
-								</div>
+							<aside className='relative hidden min-h-0 overflow-hidden border-b border-border/60 bg-muted/30 p-6 sm:p-8 xl:p-9 lg:block lg:border-b-0 lg:border-r'>
 								<div className='relative flex h-full min-h-0 flex-col'>
 									<Badge className='mb-4 rounded-full bg-foreground text-background shadow-sm'>
 										<Sparkles className='size-3.5' />
@@ -458,7 +453,7 @@ const InitSettingDialog = ({
 										</div>
 										<div className='mt-4 h-2 overflow-hidden rounded-full bg-foreground/8'>
 											<div
-												className='h-full rounded-full bg-[linear-gradient(90deg,#10b981_0%,#38bdf8_65%,#0ea5e9_100%)] transition-all duration-500'
+												className='h-full rounded-full bg-primary transition-all duration-500'
 												style={{ width: `${progress}%` }}
 											/>
 										</div>
@@ -636,7 +631,7 @@ const InitSettingDialog = ({
 															</div>
 															<div className='mt-3 h-2 overflow-hidden rounded-full bg-foreground/8'>
 																<div
-																	className='h-full rounded-full bg-[linear-gradient(90deg,#10b981_0%,#38bdf8_65%,#0ea5e9_100%)] transition-all duration-500'
+																	className='h-full rounded-full bg-primary transition-all duration-500'
 																	style={{ width: `${progress}%` }}
 																/>
 															</div>

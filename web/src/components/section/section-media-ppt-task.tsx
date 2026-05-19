@@ -135,7 +135,7 @@ const SectionMediaPptTask = ({
 										imageClassName='aspect-video w-full object-cover'
 									/>
 								) : (
-									<div className='flex aspect-video items-center justify-center bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_40%),linear-gradient(135deg,rgba(15,23,42,0.05),rgba(15,23,42,0.12))] px-6 text-center text-sm leading-7 text-muted-foreground'>
+									<div className='flex aspect-video items-center justify-center bg-muted/40 px-6 text-center text-sm leading-7 text-muted-foreground'>
 										{t('section_ppt_slide_generating')}
 									</div>
 								)}

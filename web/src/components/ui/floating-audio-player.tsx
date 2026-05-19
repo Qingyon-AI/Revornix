@@ -685,9 +685,7 @@ const FloatingAudioPlayer = () => {
 							</div>
 						</div>
 					) : (
-					<div className='relative flex min-h-0 flex-1 overflow-hidden'>
-						<div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.05),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(132,204,22,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_65%)] dark:bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.04),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(34,197,94,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_65%)]' />
-						<div className='grid w-full min-h-0 gap-0 lg:grid-cols-[minmax(22rem,1.05fr)_minmax(24rem,0.95fr)]'>
+					<div className='relative flex min-h-0 flex-1 overflow-hidden'>						<div className='grid w-full min-h-0 gap-0 lg:grid-cols-[minmax(22rem,1.05fr)_minmax(24rem,0.95fr)]'>
 							<div className='flex min-h-0 items-center justify-center px-6 py-8 sm:px-10 lg:px-14'>
 								<div className='flex h-full w-full max-w-2xl flex-col gap-6 pt-8 lg:pt-14'>
 									<div className='mx-auto w-full max-w-[25rem] lg:max-w-[22rem]'>

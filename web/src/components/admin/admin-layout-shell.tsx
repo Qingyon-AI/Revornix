@@ -53,7 +53,7 @@ const AdminLayoutShell = ({ children }: { children: React.ReactNode }) => {
 	const { mainUserInfo } = useUserContext();
 
 	return (
-		<div className='min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_24%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.08),transparent_18%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_24%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.12),transparent_18%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.98))]'>
+		<div className='min-h-screen dark:'>
 			<div className='mx-auto flex min-h-screen w-full max-w-[1680px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6'>
 				<aside className='w-full rounded-[30px] border border-border/60 bg-card/90 p-5 shadow-[0_28px_80px_-54px_rgba(15,23,42,0.4)] backdrop-blur lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:w-[320px] lg:shrink-0'>
 					<div className='flex h-full flex-col gap-5'>

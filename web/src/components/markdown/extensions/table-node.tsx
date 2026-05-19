@@ -273,7 +273,7 @@ const TableNodeView = ({
 				<div
 					className='absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md border border-border/70 bg-background/95 p-1 opacity-0 shadow-sm backdrop-blur transition-opacity group-hover/table-node:opacity-100 focus-within:opacity-100'
 					contentEditable={false}>
-					<div className='mr-1 hidden items-center gap-1 px-1 text-[11px] font-medium text-muted-foreground sm:flex'>
+					<div className='mr-1 hidden items-center gap-1 px-1 text-[0.7rem] font-medium text-muted-foreground sm:flex'>
 						<Table2 className='size-3' />
 						<span>Table</span>
 					</div>
@@ -354,7 +354,7 @@ const TableNodeView = ({
 										)}>
 										<button
 											type='button'
-											className='flex h-full min-h-10 w-full items-center justify-center text-[11px] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground'
+											className='flex h-full min-h-10 w-full items-center justify-center text-[0.7rem] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground'
 											title={t('document_create_table_delete_selected_row')}
 											onMouseDown={(event) => event.preventDefault()}
 											onClick={() => toggleRowSelection(rowIndex)}>
@@ -381,7 +381,7 @@ const TableNodeView = ({
 													<button
 														type='button'
 														className={cn(
-															'flex w-7 shrink-0 items-center justify-center border-r border-border/40 text-[11px] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground',
+															'flex w-7 shrink-0 items-center justify-center border-r border-border/40 text-[0.7rem] font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground',
 															selectedColumnIndex === cellIndex &&
 																'bg-primary/10 text-foreground',
 														)}

@@ -169,7 +169,7 @@ const SeoMobileSidebarMenu = ({
 					</SheetHeader>
 					<div
 						className={cn(
-							'min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.06),transparent_28%),radial-gradient(circle_at_top_left,rgba(16,185,129,0.06),transparent_24%)] sm:px-5 sm:py-5',
+							'min-h-0 flex-1 overflow-y-auto sm:px-5 sm:py-5',
 							activePanel?.icon === 'audio' ? 'px-0 py-0' : 'px-4 py-4',
 						)}>
 						<div

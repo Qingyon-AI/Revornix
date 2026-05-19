@@ -35,7 +35,7 @@ const AdminOverview = async () => {
 
 	return (
 		<div className='p-6 sm:p-7'>
-			<div className='mb-6 rounded-[28px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_28%),radial-gradient(circle_at_85%_16%,rgba(56,189,248,0.14),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] p-6 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_85%_16%,rgba(56,189,248,0.18),transparent_24%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(15,23,42,0.86))]'>
+			<div className='mb-6 rounded-[28px] border border-border/60 p-6 dark:'>
 				<div className='inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300'>
 					<ShieldCheck className='size-3.5' />
 					{t('admin_console_badge')}

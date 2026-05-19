@@ -33,13 +33,10 @@ const PrivateLayoutShell = ({
 						{
 							'--private-top-header-height': '3.5rem',
 						} as React.CSSProperties
-					}
-					className='bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent_28%),radial-gradient(circle_at_left_top,rgba(59,130,246,0.08),transparent_24%)]'>
+					}>
 					<HashHighlighter />
 					<div className='pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]'>
 						<div className='absolute inset-0'>
-							<div className='absolute left-[-8rem] top-[-7rem] h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl' />
-							<div className='absolute right-[-6rem] top-12 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl' />
 							<div className='absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent' />
 						</div>
 					</div>

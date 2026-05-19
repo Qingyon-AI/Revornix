@@ -264,9 +264,7 @@ const SeoUserDetailPage = async (props: {
 									className='h-full w-full object-cover'
 								/>
 							) : null}
-						</div>
-						<div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_26%),radial-gradient(circle_at_84%_18%,rgba(56,189,248,0.16),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.08),rgba(15,23,42,0.76))]' />
-						<div className='absolute inset-x-0 bottom-0'>
+						</div>						<div className='absolute inset-x-0 bottom-0'>
 							<div className='mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-8'>
 								<div className='flex min-w-0 items-end gap-4'>
 									<Avatar className='size-20 border-4 border-background/90 shadow-xl sm:size-24'>
