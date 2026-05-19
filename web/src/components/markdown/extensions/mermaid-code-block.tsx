@@ -247,10 +247,10 @@ const MermaidCodeBlockView = ({
 					className='flex items-center justify-between border-b border-white/10 px-3 py-1.5'
 					contentEditable={false}>
 					<div className='flex items-center gap-2'>
-						<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400'>
+						<div className='text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-zinc-400'>
 							Source
 						</div>
-						<div className='text-[11px] text-zinc-500'>
+						<div className='text-[0.7rem] text-zinc-500'>
 							{isEditable
 								? 'Edit Mermaid syntax inline'
 								: 'View Mermaid source'}
@@ -259,14 +259,14 @@ const MermaidCodeBlockView = ({
 				</div>
 				<div className='flex min-h-[112px] flex-1 items-stretch overflow-auto'>
 					<div
-						className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
+						className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[0.65rem] leading-5 text-zinc-500'
 						contentEditable={false}>
 						{sourceLines.map((_, index) => (
 							<div key={index}>{index + 1}</div>
 						))}
 					</div>
 					<div className='flex flex-1 overflow-auto bg-white/[0.02]'>
-						<NodeViewContent className='block min-h-[112px] w-full flex-1 whitespace-pre px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-full [&_.ProseMirror]:outline-none' />
+						<NodeViewContent className='block min-h-[112px] w-full flex-1 whitespace-pre px-3 py-2.5 font-mono text-[0.78rem] leading-5 text-zinc-100 [&_.ProseMirror]:min-h-full [&_.ProseMirror]:outline-none' />
 					</div>
 				</div>
 			</div>
@@ -297,7 +297,7 @@ const MermaidCodeBlockView = ({
 							</div>
 						</div>
 						<div className='overflow-x-auto'>
-							<NodeViewContent className='whitespace-pre p-3 font-mono text-[13px] leading-5 [&_.ProseMirror-trailingBreak]:hidden' />
+							<NodeViewContent className='whitespace-pre p-3 font-mono text-[0.8125rem] leading-5 [&_.ProseMirror-trailingBreak]:hidden' />
 						</div>
 					</div>
 				</BlockNodeShell>
@@ -321,12 +321,12 @@ const MermaidCodeBlockView = ({
 						}}>
 						<div className='min-w-0'>
 							<div className='flex items-center gap-2'>
-								<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400'>
+								<div className='text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400'>
 									Live
 								</div>
 								<div className='truncate text-sm font-medium text-foreground'>Mermaid Preview</div>
 							</div>
-							<div className='mt-0.5 truncate text-[11px] text-muted-foreground'>
+							<div className='mt-0.5 truncate text-[0.7rem] text-muted-foreground'>
 								Inline preview synced with the source panel.
 							</div>
 						</div>
@@ -334,7 +334,7 @@ const MermaidCodeBlockView = ({
 							{renderCopyButton()}
 							<button
 								type='button'
-								className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+								className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-[0.7rem] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
 								contentEditable={false}
 								onMouseDown={(event) => {
 									event.preventDefault();
@@ -352,15 +352,15 @@ const MermaidCodeBlockView = ({
 					<div
 						className={`grid gap-2.5 p-2.5 ${isCodeBlockHidden ? '' : 'md:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.9fr)]'} md:items-stretch`}>
 						<div
-							className='overflow-hidden rounded-[0.8rem] border border-emerald-200/70 bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(248,250,252,0.96))] bg-[size:18px_18px,18px_18px,auto,auto] shadow-inner dark:border-emerald-500/20 dark:bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_24%),linear-gradient(180deg,_rgba(9,14,24,0.98),_rgba(15,23,42,0.95))] dark:bg-[size:18px_18px,18px_18px,auto,auto]'
+							className='overflow-hidden rounded-[0.8rem] border border-border/60 bg-card bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:18px_18px,18px_18px] shadow-inner dark:bg-[linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] dark:bg-[size:18px_18px,18px_18px]'
 							style={{ maxHeight: `${DIAGRAM_PANEL_MAX_HEIGHT}px` }}
 							contentEditable={false}>
 							<div className='flex items-center justify-between border-b border-border/50 p-1.5'>
-								<div className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300'>
+								<div className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-medium text-emerald-700 dark:text-emerald-300'>
 									<Grid3X3 className='size-3.5' />
 									Canvas
 								</div>
-								<div className='text-[10px] text-muted-foreground'>
+								<div className='text-[0.65rem] text-muted-foreground'>
 									{diagramError
 										? 'Fix the source below to recover the preview'
 										: hasDiagramContent
@@ -377,7 +377,7 @@ const MermaidCodeBlockView = ({
 										<div className='mt-2.5 text-sm font-semibold text-foreground'>
 											Preview appears here
 										</div>
-										<div className='mt-1 max-w-sm text-[11px] leading-4.5 text-muted-foreground'>
+										<div className='mt-1 max-w-sm text-[0.7rem] leading-4.5 text-muted-foreground'>
 											Try starting with <code className='rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-300'>flowchart TD</code> and define a few connected nodes below.
 										</div>
 									</div>
@@ -389,7 +389,7 @@ const MermaidCodeBlockView = ({
 										<div className='mt-2.5 text-sm font-semibold text-rose-700 dark:text-rose-300'>
 											Syntax needs attention
 										</div>
-										<div className='mt-1 max-w-md text-[11px] leading-4.5 text-rose-700/80 dark:text-rose-200/80'>
+										<div className='mt-1 max-w-md text-[0.7rem] leading-4.5 text-rose-700/80 dark:text-rose-200/80'>
 											{diagramError}
 										</div>
 									</div>

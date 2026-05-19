@@ -118,7 +118,7 @@ const CoverUpdate = ({
 					</Button>
 				) : (
 					<div className='flex flex-col items-end gap-3'>
-						<div className='h-20 w-36 overflow-hidden rounded-2xl border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_26%),radial-gradient(circle_at_85%_18%,rgba(56,189,248,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,189,248,0.2),transparent_24%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(15,23,42,0.84))]'>
+						<div className='h-20 w-36 overflow-hidden rounded-2xl border border-border/60 dark:'>
 							{coverSrc ? (
 								<img
 									src={coverSrc}

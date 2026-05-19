@@ -194,7 +194,7 @@ const EditableMarkdownPanel = ({
 						placeholder={t('markdown_edit_source_placeholder')}
 						fieldSizing='fixed'
 						spellCheck={false}
-						className='min-h-[32rem] h-full resize-none rounded-none border-0 bg-transparent! p-0 font-mono text-[13px] leading-6 shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0'
+						className='min-h-[32rem] h-full resize-none rounded-none border-0 bg-transparent! p-0 font-mono text-[0.8125rem] leading-6 shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0'
 					/>
 				</div>
 			</div>

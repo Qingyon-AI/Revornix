@@ -639,7 +639,7 @@ const AudioRecord = forwardRef<AudioRecordHandle, AudioRecordProps>(function Aud
 				</div>
 			</div>
 			<div className='flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4'>
-				<div className='relative min-h-[220px] flex-1 overflow-hidden rounded-lg border border-emerald-500/15 bg-background/90 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(26,189,178,0.16),transparent_30%),linear-gradient(180deg,rgba(20,23,42,0.02),rgba(18,23,32,0.12))]'>
+				<div className='relative min-h-[220px] flex-1 overflow-hidden rounded-lg border border-emerald-500/15 bg-background/90 dark:'>
 					<div className='pointer-events-none absolute inset-0 hidden dark:block'>
 						<div className='absolute left-8 top-8 h-20 w-20 rounded-full bg-emerald-400/10 blur-2xl animate-pulse' />
 						<div className='absolute right-10 bottom-10 h-24 w-24 rounded-full bg-sky-400/10 blur-3xl animate-pulse [animation-delay:-1.2s]' />

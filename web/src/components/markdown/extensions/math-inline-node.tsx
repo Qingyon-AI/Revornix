@@ -85,12 +85,12 @@ const MathInlineView = ({
 						className='w-[22rem] rounded-2xl border border-border/70 bg-background/95 p-3 shadow-xl backdrop-blur'
 						onOpenAutoFocus={(event) => event.preventDefault()}>
 						<div className='space-y-3' onMouseDown={(event) => event.stopPropagation()}>
-							<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+							<div className='text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
 								Inline Equation
 							</div>
 							<div className='rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-3 text-slate-900 dark:border-sky-500/20 dark:bg-sky-950/20 dark:text-slate-50'>
 								<div
-									className='overflow-x-auto text-[15px]'
+									className='overflow-x-auto text-[0.95rem]'
 									contentEditable={false}
 									dangerouslySetInnerHTML={{
 										__html:
@@ -101,7 +101,7 @@ const MathInlineView = ({
 								/>
 							</div>
 							<div className='space-y-1.5'>
-								<div className='text-[11px] font-medium text-muted-foreground'>LaTeX</div>
+								<div className='text-[0.7rem] font-medium text-muted-foreground'>LaTeX</div>
 								<input
 									ref={inputRef}
 									value={formula}

@@ -24,9 +24,7 @@ const AuthShell = ({ children }: { children: ReactNode }) => {
 	const t = useTranslations();
 
 	return (
-		<div className='relative flex h-full min-h-0 items-center justify-center overflow-hidden px-4 py-4 md:px-6 md:py-8'>
-			<div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_32%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_34%)]' />
-			<div className='pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.03] blur-3xl dark:bg-white/[0.03]' />
+		<div className='relative flex h-full min-h-0 items-center justify-center overflow-hidden px-4 py-4 md:px-6 md:py-8'>			<div className='pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.03] blur-3xl dark:bg-white/[0.03]' />
 			<div className='relative w-full max-w-5xl'>
 				<div className='overflow-hidden rounded-[30px] border border-border/60 bg-background/92 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.35)] backdrop-blur-sm dark:bg-card/88 dark:shadow-[0_28px_80px_-40px_rgba(0,0,0,0.6)]'>
 					<div className='grid lg:min-h-[580px] lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.82fr)]'>

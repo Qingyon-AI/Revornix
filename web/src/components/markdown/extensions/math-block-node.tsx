@@ -48,12 +48,12 @@ const MathBlockView = ({
 				contentEditable={false}>
 				<div className='min-w-0'>
 					<div className='flex items-center gap-2'>
-						<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-600'>
+						<div className='text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-sky-600'>
 							Live
 						</div>
 						<div className='truncate text-sm font-medium text-foreground'>Math Preview</div>
 					</div>
-					<div className='mt-0.5 truncate text-[11px] text-muted-foreground'>
+					<div className='mt-0.5 truncate text-[0.7rem] text-muted-foreground'>
 						Inline preview synced with the source panel.
 					</div>
 				</div>
@@ -61,7 +61,7 @@ const MathBlockView = ({
 					{isEditable ? (
 						<button
 							type='button'
-							className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+							className='inline-flex items-center gap-1 rounded-md px-2 py-1 text-[0.7rem] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
 							contentEditable={false}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => setIsCodeHidden((value) => !value)}>
@@ -81,15 +81,15 @@ const MathBlockView = ({
 			<div
 				className={`grid gap-2.5 p-2.5 ${isCodeHidden ? '' : 'md:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.9fr)]'} md:items-stretch`}>
 				<div
-					className='overflow-hidden rounded-[0.8rem] border border-sky-200/70 bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px),radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(248,250,252,0.96))] bg-[size:18px_18px,18px_18px,auto,auto] shadow-inner'
+					className='overflow-hidden rounded-[0.8rem] border border-border/60 bg-card bg-[linear-gradient(rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:18px_18px,18px_18px] shadow-inner'
 					style={{ maxHeight: `${MATH_PANEL_MAX_HEIGHT}px` }}
 					contentEditable={false}>
 					<div className='flex items-center justify-between border-b border-border/50 p-1.5'>
-						<div className='inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700'>
+						<div className='inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[0.65rem] font-medium text-sky-700'>
 							<Grid3X3 className='size-3.5' />
 							Canvas
 						</div>
-						<div className='text-[10px] text-muted-foreground'>
+						<div className='text-[0.65rem] text-muted-foreground'>
 							{renderError
 								? 'Fix the source below to recover the preview'
 								: formula.trim()
@@ -106,7 +106,7 @@ const MathBlockView = ({
 								<div className='mt-2.5 text-sm font-semibold text-foreground'>
 									Preview appears here
 								</div>
-								<div className='mt-1 max-w-sm text-[11px] leading-4.5 text-muted-foreground'>
+								<div className='mt-1 max-w-sm text-[0.7rem] leading-4.5 text-muted-foreground'>
 									Try entering <code className='rounded bg-sky-500/10 px-1.5 py-0.5 text-sky-700'>\int_0^1 x^2 \\, dx</code> in the source panel.
 								</div>
 							</div>
@@ -118,7 +118,7 @@ const MathBlockView = ({
 								<div className='mt-2.5 text-sm font-semibold text-rose-700'>
 									Syntax needs attention
 								</div>
-								<div className='mt-1 max-w-md text-[11px] leading-4.5 text-rose-700/80'>
+								<div className='mt-1 max-w-md text-[0.7rem] leading-4.5 text-rose-700/80'>
 									{renderError}
 								</div>
 							</div>
@@ -141,20 +141,20 @@ const MathBlockView = ({
 							className='flex items-center justify-between border-b border-white/10 px-3 py-1.5'
 							contentEditable={false}>
 							<div className='flex items-center gap-2'>
-								<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400'>
+								<div className='text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-zinc-400'>
 									Source
 								</div>
-								<div className='text-[11px] text-zinc-500'>
+								<div className='text-[0.7rem] text-zinc-500'>
 									Edit LaTeX syntax inline
 								</div>
 							</div>
-							<div className='rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-300'>
+							<div className='rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[0.65rem] text-zinc-300'>
 								$$
 							</div>
 						</div>
 						<div className='flex min-h-[112px] flex-1 items-stretch overflow-hidden'>
 							<div
-								className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[10px] leading-5 text-zinc-500'
+								className='flex h-full w-9 shrink-0 flex-col border-r border-white/10 bg-white/[0.03] px-1.5 py-2 text-right font-mono text-[0.65rem] leading-5 text-zinc-500'
 								contentEditable={false}>
 								{sourceLines.map((_, index) => (
 									<div key={index}>{index + 1}</div>
@@ -167,7 +167,7 @@ const MathBlockView = ({
 										updateAttributes({ formula: event.target.value })
 									}
 									onMouseDown={(event) => event.stopPropagation()}
-									className='block h-full min-h-[112px] w-full flex-1 resize-none overflow-auto bg-transparent px-3 py-2.5 font-mono text-[12.5px] leading-5 text-zinc-100 outline-none placeholder:text-zinc-500'
+									className='block h-full min-h-[112px] w-full flex-1 resize-none overflow-auto bg-transparent px-3 py-2.5 font-mono text-[0.78rem] leading-5 text-zinc-100 outline-none placeholder:text-zinc-500'
 									placeholder={'\\int_0^1 x^2 \\, dx'}
 								/>
 							</div>
