@@ -193,71 +193,69 @@ export const SeoCommunitySectionListItem = ({
 					router.push(href);
 				}
 			}}
-			className='group block cursor-pointer py-4 transition-colors'>
-			<div className='flex items-start gap-4'>
-				<div className='min-w-0 flex-1'>
-					<div className='flex items-start justify-between gap-3'>
-						<div className='min-w-0 space-y-1.5'>
-							<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
-								{section.title || t('section_title_empty')}
-							</h2>
-							<p className='line-clamp-2 text-sm leading-6 text-muted-foreground'>
-								{section.description || t('section_description_empty')}
-							</p>
-						</div>
-						<ArrowUpRight className='mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground' />
+			className='group cursor-pointer transition-colors flex items-start gap-4'>
+			<div className='min-w-0 flex-1'>
+				<div className='flex items-start justify-between gap-3'>
+					<div className='min-w-0 space-y-1.5'>
+						<h2 className='line-clamp-2 text-lg font-semibold leading-7'>
+							{section.title || t('section_title_empty')}
+						</h2>
+						<p className='line-clamp-2 text-sm leading-6 text-muted-foreground'>
+							{section.description || t('section_description_empty')}
+						</p>
 					</div>
+					<ArrowUpRight className='mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground' />
+				</div>
 
-					<div className='mt-2.5 flex flex-wrap items-center gap-2 text-[11px]'>
-						{section.is_day_section ? (
-							<div className='rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300'>
-								{t('section_day_badge')}
-							</div>
-						) : null}
-						{section.labels?.map((label) => (
-							<div
-								key={label.id}
-								className='rounded-full border border-border/45 bg-background/70 px-2.5 py-1 text-muted-foreground'>
-								# {label.name}
-							</div>
-						))}
-						<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-muted-foreground/80'>
-							{t('section_card_documents_count', {
-								section_documents_count: section.documents_count ?? 0,
-							})}
+				<div className='mt-2.5 flex flex-wrap items-center gap-2 text-[11px]'>
+					{section.is_day_section ? (
+						<div className='rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300'>
+							{t('section_day_badge')}
 						</div>
-						<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-muted-foreground/80'>
-							{t('section_card_subscribers_count', {
-								section_subscribers_count: section.subscribers_count ?? 0,
-							})}
+					) : null}
+					{section.labels?.map((label) => (
+						<div
+							key={label.id}
+							className='rounded-full border border-border/45 bg-background/70 px-2.5 py-1 text-muted-foreground'>
+							# {label.name}
 						</div>
+					))}
+					<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-muted-foreground/80'>
+						{t('section_card_documents_count', {
+							section_documents_count: section.documents_count ?? 0,
+						})}
 					</div>
-
-					<div className='mt-3'>
-						<MetaLine
-							href={`/user/${section.creator.id}`}
-							avatar={replacePath(section.creator.avatar, section.creator.id)}
-							fallback={section.creator.nickname.slice(0, 1) ?? '?'}
-							name={section.creator.nickname}
-							time={updateText}
-						/>
+					<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-muted-foreground/80'>
+						{t('section_card_subscribers_count', {
+							section_subscribers_count: section.subscribers_count ?? 0,
+						})}
 					</div>
 				</div>
 
-				<div className='hidden shrink-0 md:block'>
-					<div className='relative h-20 w-20 overflow-hidden rounded-xl bg-muted/30'>
-						{coverSrc ? (
-							<img
-								src={coverSrc}
-								alt={section.title}
-								className='h-full w-full object-cover'
-							/>
-						) : (
-							<div className='flex h-full w-full items-center justify-center text-muted-foreground'>
-								<BookTextIcon className='size-5' />
-							</div>
-						)}
-					</div>
+				<div className='mt-3'>
+					<MetaLine
+						href={`/user/${section.creator.id}`}
+						avatar={replacePath(section.creator.avatar, section.creator.id)}
+						fallback={section.creator.nickname.slice(0, 1) ?? '?'}
+						name={section.creator.nickname}
+						time={updateText}
+					/>
+				</div>
+			</div>
+
+			<div className='hidden shrink-0 md:block'>
+				<div className='relative h-20 w-20 overflow-hidden rounded-xl bg-muted/30'>
+					{coverSrc ? (
+						<img
+							src={coverSrc}
+							alt={section.title}
+							className='h-full w-full object-cover'
+						/>
+					) : (
+						<div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+							<BookTextIcon className='size-5' />
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

@@ -335,7 +335,7 @@ const SeoCommunityBrowser = ({
 												<SeoCommunitySectionListItem section={section} />
 											</div>
 											{index !== sections.elements.length - 1 ? (
-												<Separator className='my-1' />
+												<Separator className='my-3' />
 											) : null}
 										</>
 									))
@@ -350,7 +350,7 @@ const SeoCommunityBrowser = ({
 												<SeoCommunityDocumentListItem document={document} />
 											</div>
 											{index !== documents.elements.length - 1 ? (
-												<Separator className='my-1' />
+												<Separator className='my-3' />
 											) : null}
 										</div>
 									))}
@@ -418,7 +418,7 @@ const SeoCommunityBrowser = ({
 											</div>
 										</div>
 									</div>
-									{index !== 1 ? <Separator className='my-1' /> : null}
+									{index !== 1 ? <Separator className='my-3' /> : null}
 								</div>
 							))}
 						</div>

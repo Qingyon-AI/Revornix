@@ -136,13 +136,12 @@ const SeoCommunityHotSidebar = () => {
 							<div
 								key={website.name}
 								className='min-w-0 w-full max-w-full overflow-hidden'>
-								{index !== 0 ? <Separator /> : null}
 								<Link
 									href={
 										website.data[0]?.url ?? website.data[0]?.mobileUrl ?? '#'
 									}
 									target='_blank'
-									className='flex min-w-0 w-full max-w-full items-center justify-between gap-3 overflow-hidden py-3 text-sm transition-colors hover:text-primary'>
+									className='flex min-w-0 w-full max-w-full items-center justify-between gap-3 overflow-hidden border-b border-border/60 py-3 text-sm transition-colors hover:text-primary'>
 									<div className='min-w-0 flex-1 overflow-hidden break-all text-ellipsis line-clamp-1'>
 										{website.data[0]?.title}
 									</div>
