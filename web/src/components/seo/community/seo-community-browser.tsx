@@ -258,12 +258,12 @@ const SeoCommunityBrowser = ({
 			</section>
 
 			<div className='flex max-w-full flex-col-reverse gap-6 lg:flex-row lg:items-start'>
-				<div className='min-w-0 lg:flex-1'>
+				<div className='min-w-0 lg:flex-1 space-y-3'>
 					<section className='sticky top-14 z-10 -mx-4 border-b border-border/70 bg-background/76 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:hidden'>
 						<CommunityControls tab={tab} keyword={keyword} labelId={labelId} />
 					</section>
 
-					<div className='flex flex-col gap-4 py-3'>
+					<div className='flex flex-col gap-4 pt-3'>
 						<div className='flex flex-wrap gap-2'>
 							<Link
 								href={buildCommunityHref({ tab, keyword })}
@@ -295,7 +295,7 @@ const SeoCommunityBrowser = ({
 						</div>
 					</div>
 
-					<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3'>
+					<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
 						<div className='flex items-center gap-2 text-sm text-muted-foreground'>
 							{tab === 'documents' ? (
 								<FileText className='size-4' />
