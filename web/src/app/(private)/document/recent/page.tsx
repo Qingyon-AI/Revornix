@@ -101,7 +101,7 @@ const RecentReadDocumentPage = () => {
 
 	return (
 		<>
-			<div className='sticky top-0 z-20 flex flex-row gap-3 px-5 py-4 backdrop-blur border-t border-border/75'>
+			<div className='sticky top-[var(--private-top-header-height,3.5rem)] z-20 flex flex-row gap-3 px-5 py-4 backdrop-blur border-t border-border/75'>
 				<Input
 					placeholder={t('document_search_placeholder')}
 					value={keyword}

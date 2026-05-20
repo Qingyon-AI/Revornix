@@ -10,12 +10,13 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { searchUserSection } from '@/service/section';
+import { SeoCommunitySectionListItem } from '@/components/seo/community/seo-community-list-item';
 import SectionCard from '../section/section-card';
 import SectionCardSkeleton from '../section/section-card-skeleton';
-import SectionListTable from '../section/section-list-table';
-import { ResourceCardSkeleton, Skeleton, UserCardSkeleton } from '../ui/skeleton';
+import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import CardViewToggle from '../ui/card-view-toggle';
+import { Separator } from '../ui/separator';
 import { toast } from 'sonner';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useUserContext } from '@/provider/user-provider';
@@ -32,22 +33,7 @@ import {
 } from '@/lib/infinite-query-cache';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '../ui/card';
-import {
-	BookMarked,
-	Search,
-	Shield,
-	Sparkles,
-	UserCheck,
-	UserPlus,
-	Users,
-} from 'lucide-react';
+import { BookMarked, Search, UserCheck, UserPlus, Users } from 'lucide-react';
 import { cn, replacePath } from '@/lib/utils';
 import { UserRole } from '@/enums/user';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
@@ -55,7 +41,10 @@ import { useCardViewMode } from '@/hooks/use-card-view-mode';
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
-	const { viewMode, setViewMode } = useCardViewMode('section-list-view-mode');
+	const { viewMode, setViewMode } = useCardViewMode(
+		'user-profile-section-view-mode-v2',
+		'list',
+	);
 	const [keyword, setKeyword] = useState('');
 	const { ref: bottomRef, inView } = useInView();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
@@ -82,14 +71,14 @@ const UserContainer = ({ id }: { id: number }) => {
 		initialPageParam: {
 			user_id: id,
 			limit: 10,
-			keyword: keyword,
+			keyword,
 		},
 		getNextPageParam: (lastPage) => {
 			return lastPage.has_more
 				? {
 						start: lastPage.next_start,
 						limit: lastPage.limit,
-						keyword: keyword,
+						keyword,
 						user_id: id,
 					}
 				: undefined;
@@ -101,7 +90,7 @@ const UserContainer = ({ id }: { id: number }) => {
 			if (!userInfo) return;
 			return followUser({
 				to_user_id: id,
-				status: userInfo.is_followed ? false : true,
+				status: !userInfo.is_followed,
 			});
 		},
 		onMutate() {
@@ -122,8 +111,7 @@ const UserContainer = ({ id }: { id: number }) => {
 				queryKey: userFansQueryKey,
 			});
 
-			const isFollowed = !!userInfo.is_followed;
-			const nextFollowStatus = !isFollowed;
+			const nextFollowStatus = !userInfo.is_followed;
 
 			queryClient.setQueryData<UserPublicInfo>(['userInfo', id], (old) => {
 				if (!old) return old;
@@ -165,7 +153,7 @@ const UserContainer = ({ id }: { id: number }) => {
 
 			return { previousUserInfo, previousUserFollows, previousUserFans };
 		},
-		onError(error, variables, context) {
+		onError(error, _variables, context) {
 			toast.error(`${error.message}`);
 			if (context?.previousUserInfo) {
 				queryClient.setQueryData(['userInfo', id], context.previousUserInfo);
@@ -201,7 +189,7 @@ const UserContainer = ({ id }: { id: number }) => {
 				return {
 					label: t('user_detail_role_root'),
 					className:
-						'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+						'border-emerald-500/20 bg-emerald-500/10 text-emerald-500 dark:text-emerald-300',
 				};
 			case UserRole.ADMIN:
 				return {
@@ -232,253 +220,209 @@ const UserContainer = ({ id }: { id: number }) => {
 			? replacePath(userInfo.cover, userInfo.id)
 			: undefined;
 
-	return (
-		<div className='mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 pb-6 pt-1 sm:px-5 lg:px-6'>
-			{isFetchingUserInfo && !userInfo ? (
-				<>
-					<div className='rounded-xl border border-border/60 bg-card p-5 shadow-sm'>
-						<Skeleton className='h-36 w-full rounded-lg sm:h-44' />
-						<div className='mt-5 flex flex-col gap-4 sm:flex-row sm:items-end'>
-							<Skeleton className='size-24 rounded-full' />
-							<div className='flex-1 space-y-2'>
-								<Skeleton className='h-7 w-52 rounded-full' />
-								<Skeleton className='h-4 w-full max-w-xl rounded-full' />
-							</div>
+	const renderFollowAction = () => {
+		if (isOwnProfile) {
+			return <CoverUpdate compact />;
+		}
+
+		if (userInfo?.is_followed) {
+			return (
+				<Button
+					disabled={mutateFollow.isPending}
+					variant='outline'
+					className='rounded-xl bg-background/88 px-4 shadow-none backdrop-blur'
+					onClick={() => mutateFollow.mutate()}>
+					<UserCheck className='size-4' />
+					{t('user_cancel_follow')}
+				</Button>
+			);
+		}
+
+		return (
+			<Button
+				disabled={mutateFollow.isPending}
+				className='rounded-xl px-4 shadow-none'
+				onClick={() => mutateFollow.mutate()}>
+				<UserPlus className='size-4' />
+				{t('user_follow')}
+			</Button>
+		);
+	};
+
+	const renderListSkeleton = (count: number) => {
+		return [...Array(count)].map((_, index) => (
+			<div key={index}>
+				<div className='flex items-start gap-4 py-4'>
+					<div className='min-w-0 flex-1 space-y-3'>
+						<Skeleton className='h-5 w-64 max-w-full rounded-full' />
+						<Skeleton className='h-4 w-full max-w-2xl rounded-full' />
+						<Skeleton className='h-4 w-2/3 rounded-full' />
+						<div className='flex gap-2'>
+							<Skeleton className='h-6 w-20 rounded-full' />
+							<Skeleton className='h-6 w-24 rounded-full' />
 						</div>
 					</div>
-					<div className='grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]'>
-						<ResourceCardSkeleton />
-						<UserCardSkeleton />
-					</div>
-					<div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
-						{[...Array(6)].map((_, index) => {
-							return <SectionCardSkeleton key={index} />;
-						})}
+					<Skeleton className='hidden size-20 rounded-xl md:block' />
+				</div>
+				{index !== count - 1 ? <Separator className='my-3' /> : null}
+			</div>
+		));
+	};
+
+	return (
+		<div className='flex w-full flex-col gap-5 pb-6 pt-4'>
+			{isFetchingUserInfo && !userInfo ? (
+				<>
+					<section className='mx-5 overflow-hidden rounded-xl border border-border/60 bg-background'>
+						<Skeleton className='h-44 w-full rounded-none lg:h-52' />
+						<div className='flex w-full gap-4 px-5 py-4'>
+							<Skeleton className='size-20 rounded-full sm:size-24' />
+							<div className='flex-1 space-y-3 py-2'>
+								<Skeleton className='h-7 w-48 rounded-full' />
+								<Skeleton className='h-4 w-full max-w-2xl rounded-full' />
+								<Skeleton className='h-4 w-80 max-w-full rounded-full' />
+							</div>
+						</div>
+					</section>
+					<div className='w-full px-5'>
+						{renderListSkeleton(4)}
 					</div>
 				</>
 			) : userInfo ? (
 				<>
-					<div className='relative overflow-hidden rounded-[30px] border border-border/60 bg-background/30 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.38)]'>
-						<div className='relative h-52 w-full overflow-hidden sm:h-60'>
+					<section className='mx-5 overflow-hidden rounded-xl border border-border/60 bg-background'>
+						<div
+							className={cn(
+								'relative h-44 w-full overflow-hidden lg:h-52',
+								!coverSrc && 'bg-muted',
+							)}>
 							{coverSrc ? (
-								<img
-									src={coverSrc}
-									alt={`${userInfo.nickname} cover`}
-									className='h-full w-full object-cover'
-								/>
-							) : null}						</div>
-						<div className='relative px-6 pb-6'>
-							<div className='-mt-12 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between'>
-								<div className='flex min-w-0 flex-col gap-5 md:flex-row'>
-									<Avatar
-										className='size-22 border-4 border-background shadow-lg md:size-26'
-										title={userInfo.nickname || 'Unknown User'}>
-										<AvatarImage
-											className='object-cover'
-											src={avatarSrc}
-											alt='user avatar'
-										/>
-										<AvatarFallback className='text-2xl font-semibold'>
-											{userInfo.nickname?.slice(0, 1) ?? '?'}
-										</AvatarFallback>
-									</Avatar>
-									<div className='min-w-0 space-y-4 md:pt-14'>
-										<div className='space-y-2'>
-											<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground'>
-												<Sparkles className='size-3' />
-												<span>{t('website_title')}</span>
-											</div>
+								<>
+									<img
+										src={coverSrc}
+										alt={`${userInfo.nickname} cover`}
+										className='h-full w-full object-cover'
+									/>
+									<div className='absolute inset-0 bg-gradient-to-t from-black/72 via-black/24 to-black/8 dark:from-black/64 dark:via-black/18 dark:to-black/4' />
+									<div className='absolute inset-y-0 left-0 w-[72%] bg-gradient-to-r from-black/56 via-black/28 to-transparent dark:from-black/48 dark:via-black/20' />
+									<div className='absolute inset-y-0 right-0 w-[38%] bg-gradient-to-l from-black/34 via-black/14 to-transparent dark:from-black/28 dark:via-black/10' />
+								</>
+							) : null}
+							<div className='absolute inset-x-0 bottom-0'>
+								<div className='flex w-full flex-col gap-4 px-5 pb-4 sm:flex-row sm:items-end sm:justify-between'>
+									<div className='flex min-w-0 items-end gap-4'>
+										<Avatar
+											className='size-18 border-4 border-background/90 shadow-xl sm:size-22'
+											title={userInfo.nickname || 'Unknown User'}>
+											<AvatarImage
+												className='object-cover'
+												src={avatarSrc}
+												alt='user avatar'
+											/>
+											<AvatarFallback className='text-2xl font-semibold'>
+												{userInfo.nickname?.slice(0, 1) ?? '?'}
+											</AvatarFallback>
+										</Avatar>
+										<div className='min-w-0 space-y-2 pb-1'>
 											<div className='flex flex-wrap items-center gap-2'>
-												<h1 className='truncate text-3xl font-semibold tracking-tight'>
+												<h1
+													className={cn(
+														'break-words text-2xl font-semibold tracking-tight',
+														coverSrc
+															? 'text-white drop-shadow-sm'
+															: 'text-foreground',
+													)}>
 													{userInfo.nickname}
 												</h1>
 												<Badge
+													variant='outline'
 													className={cn(
-														'rounded-full border px-3 py-1 text-xs font-medium',
+														'rounded-full bg-background/82 px-3 py-1 text-xs font-medium backdrop-blur',
 														roleMeta.className,
 													)}>
 													{roleMeta.label}
 												</Badge>
 												<Badge
 													variant='outline'
-													className='rounded-full bg-background/75 px-3 py-1 text-xs text-muted-foreground'>
+													className='rounded-full bg-background/82 px-3 py-1 text-xs text-muted-foreground backdrop-blur'>
 													{relationshipLabel}
 												</Badge>
 											</div>
-											<p className='max-w-3xl text-base leading-7 text-muted-foreground'>
+											<p
+												className={cn(
+													'max-w-[760px] text-sm leading-6',
+													coverSrc
+														? 'text-white/86 drop-shadow-sm'
+														: 'text-muted-foreground',
+												)}>
 												{userInfo.slogan
 													? userInfo.slogan
 													: t('user_slogan_empty')}
 											</p>
 										</div>
-										<div className='flex flex-wrap gap-2.5'>
-											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-												<Users className='size-4' />
-												<span>
-													{t('user_fans')} {userInfo.fans ?? 0}
-												</span>
-											</div>
-											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-												<UserCheck className='size-4' />
-												<span>
-													{t('user_follows')} {userInfo.follows ?? 0}
-												</span>
-											</div>
-											<div className='inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/75 px-3 py-1.5 text-sm text-muted-foreground'>
-												<BookMarked className='size-4' />
-												<span>
-													{t('user_detail_section_total')} {totalSections}
-												</span>
-											</div>
-										</div>
 									</div>
-								</div>
-								<div className='flex shrink-0 items-center gap-3'>
-									{isOwnProfile ? (
-										<CoverUpdate compact />
-									) : userInfo.is_followed ? (
-										<Button
-											disabled={mutateFollow.isPending}
-											variant='outline'
-											className='rounded-2xl bg-background/80 px-5 shadow-sm'
-											onClick={() => mutateFollow.mutate()}>
-											<UserCheck className='size-4' />
-											{t('user_cancel_follow')}
-										</Button>
-									) : (
-										<Button
-											disabled={mutateFollow.isPending}
-											className='rounded-2xl px-5 shadow-[0_18px_36px_-26px_rgba(15,23,42,0.55)]'
-											onClick={() => mutateFollow.mutate()}>
-											<UserPlus className='size-4' />
-											{t('user_follow')}
-										</Button>
-									)}
+									<div className='z-10 flex shrink-0 items-center gap-3'>
+										{renderFollowAction()}
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
+						<div className='border-t border-border/60 bg-background/96'>
+							<div className='flex w-full flex-wrap items-center gap-4 px-5 py-3 text-sm text-muted-foreground'>
+								<div className='inline-flex items-center gap-1.5'>
+									<Users className='size-4' />
+									<span>
+										{t('user_fans')} {userInfo.fans ?? 0}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<UserCheck className='size-4' />
+									<span>
+										{t('user_follows')} {userInfo.follows ?? 0}
+									</span>
+								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<BookMarked className='size-4' />
+									<span>
+										{t('user_detail_section_total')} {totalSections}
+									</span>
+								</div>
+							</div>
+						</div>
+					</section>
 
-					<div className='grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]'>
-						<Card className='rounded-[28px] border border-border/60 bg-card/85 py-0 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.34)] backdrop-blur'>
-							<CardHeader className='px-6 pt-6'>
-								<CardTitle className='text-xl tracking-tight'>
-									{t('user_detail_public_profile')}
-								</CardTitle>
-								<CardDescription className='leading-6'>
-									{t('user_detail_public_profile_description')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='px-6 pb-6'>
-								<div className='grid gap-3 sm:grid-cols-4'>
-									<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-											{t('user_detail_role')}
-										</div>
-										<div className='mt-3 flex items-center gap-2 text-base font-semibold'>
-											<Shield className='size-4 text-muted-foreground' />
-											<span>{roleMeta.label}</span>
-										</div>
-									</div>
-									<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-											{t('user_detail_relationship')}
-										</div>
-										<div className='mt-3 text-base font-semibold'>
-											{relationshipLabel}
-										</div>
-									</div>
-									<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-											{t('user_fans')}
-										</div>
-										<div className='mt-3 text-base font-semibold'>
-											{userInfo.fans ?? 0}
-										</div>
-									</div>
-									<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-										<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-											{t('user_follows')}
-										</div>
-										<div className='mt-3 text-base font-semibold'>
-											{userInfo.follows ?? 0}
-										</div>
-									</div>
-								</div>
-								<div className='mt-4 rounded-[24px] border border-dashed border-border/70 bg-background/60 p-5'>
-									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-										{t('account_slogan')}
-									</div>
-									<p className='mt-3 text-lg leading-8'>
-										{userInfo.slogan ? userInfo.slogan : t('user_slogan_empty')}
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-
-						<Card className='rounded-[28px] border border-border/60 bg-card/85 py-0 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.3)] backdrop-blur'>
-							<CardHeader className='px-6 pt-6'>
-								<CardTitle className='text-xl tracking-tight'>
-									{t('user_detail_overview')}
-								</CardTitle>
-								<CardDescription className='leading-6'>
-									{t('user_detail_overview_description')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className='space-y-3 px-6 pb-6'>
-								<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-										{t('user_detail_section_total')}
-									</div>
-									<div className='mt-2 text-3xl font-semibold'>
-										{totalSections}
-									</div>
-								</div>
-								<div className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-									<div className='text-[11px] uppercase tracking-[0.18em] text-muted-foreground'>
-										{keyword
-											? t('user_detail_sections_result', {
-													count: totalSections,
-												})
-											: t('user_detail_sections_total', {
-													count: totalSections,
-												})}
-									</div>
-									<div className='mt-2 text-base leading-7 text-muted-foreground'>
-										{keyword
-											? `"${keyword}"`
-											: t('user_detail_sections_description')}
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-
-					<div className='rounded-[30px] border border-border/60 bg-card/86 shadow-[0_24px_64px_-44px_rgba(15,23,42,0.32)] backdrop-blur'>
-						<div className='border-b border-border/60 px-5 py-5'>
-							<div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
-								<div className='space-y-2'>
-									<div className='text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>
-										{t('user_detail_sections_title')}
-									</div>
-									<h2 className='text-2xl font-semibold tracking-tight'>
+					<div className='w-full'>
+						<div className='sticky top-[var(--private-top-header-height,3.5rem)] z-20 border-b border-border/60 px-5 py-3 backdrop-blur'>
+							<div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
+								<div className='flex min-w-0 flex-wrap items-center gap-3'>
+									<h2 className='text-lg font-semibold tracking-tight'>
 										{t('user_detail_sections_title')}
 									</h2>
-									<p className='text-sm leading-6 text-muted-foreground'>
-										{t('user_detail_sections_description')}
-									</p>
+									<div className='inline-flex items-center gap-2 text-sm text-muted-foreground'>
+										<BookMarked className='size-4' />
+										<span>
+											{t('user_detail_sections_result', {
+												count: totalSections,
+											})}
+										</span>
+										{keyword ? <span>"{keyword}"</span> : null}
+									</div>
 								</div>
-								<div className='flex w-full max-w-md items-center gap-3'>
+								<div className='flex w-full min-w-0 gap-2 xl:max-w-[560px] xl:items-center'>
 									<div className='relative flex-1'>
 										<Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
 										<Input
 											value={keyword}
 											onChange={(e) => setKeyword(e.target.value)}
 											placeholder={t('user_detail_sections_search_placeholder')}
-											className='h-11 rounded-2xl border-border/60 bg-background/70 pl-9'
+											className='h-10 rounded-xl border-border/60 bg-background/65 pl-9 shadow-none'
 										/>
 									</div>
-									<CardViewToggle value={viewMode} onChange={setViewMode} />
+									<CardViewToggle
+										value={viewMode}
+										onChange={setViewMode}
+										className='h-10 shrink-0 rounded-xl border-border/60 bg-background/65 [&_button]:h-full [&_button]:w-10'
+									/>
 								</div>
 							</div>
 						</div>
@@ -521,21 +465,35 @@ const UserContainer = ({ id }: { id: number }) => {
 											);
 										})
 									) : (
-										<>
-											<SectionListTable
-												sections={sections}
-												lastRowRef={bottomRef}
-											/>
-										</>
+										<div>
+											{sections.map((section, index) => (
+												<div
+													key={section.id}
+													ref={
+														index === sections.length - 1
+															? bottomRef
+															: undefined
+													}>
+													<SeoCommunitySectionListItem section={section} />
+													{index !== sections.length - 1 ? (
+														<Separator className='my-3' />
+													) : null}
+												</div>
+											))}
+											{isFetchingSections && !data ? renderListSkeleton(4) : null}
+											{isFetchingNextPage && data ? (
+												<div className='mt-3'>{renderListSkeleton(2)}</div>
+											) : null}
+										</div>
 									)}
-									{isFetchingSections && !data
+									{viewMode === 'grid' && isFetchingSections && !data
 										? [...Array(6)].map((_, index) => {
 												return (
 													<SectionCardSkeleton key={index} layout={viewMode} />
 												);
 											})
 										: null}
-									{isFetchingNextPage && data
+									{viewMode === 'grid' && isFetchingNextPage && data
 										? [...Array(3)].map((_, index) => {
 												return (
 													<SectionCardSkeleton

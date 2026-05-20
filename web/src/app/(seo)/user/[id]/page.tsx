@@ -44,7 +44,7 @@ const getStartValue = (value: string | string[] | undefined) => {
 };
 
 const getTabValue = (value: string | string[] | undefined): UserSeoTab => {
-	return getSingleValue(value) === 'documents' ? 'documents' : 'sections';
+	return getSingleValue(value) === 'sections' ? 'sections' : 'documents';
 };
 
 const getRoleMeta = (
@@ -129,8 +129,8 @@ export async function generateMetadata(props: {
 			),
 			description: metaDescription,
 			path:
-				tab === 'documents'
-					? `/user/${user.id}?tab=documents`
+				tab === 'sections'
+					? `/user/${user.id}?tab=sections`
 					: `/user/${user.id}`,
 			noIndex,
 			images: [coverSrc ?? avatarSrc],
