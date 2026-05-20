@@ -104,7 +104,8 @@ const AI_ILLUSTRATION_TIMEOUT_MS = 60_000;
 const AI_FULL_DOCUMENT_TIMEOUT_MS = 90_000;
 const AI_CONTINUATION_MAX_CHARS = 600;
 const AI_OPTIMIZED_MARKDOWN_MAX_CHARS = 60_000;
-const AI_IMAGE_PROMPT_MAX_CHARS = 1200;
+const AI_IMAGE_PLAN_MAX_CHARS = 80_000;
+const AI_FULL_DOCUMENT_MAX_IMAGES = 4;
 const FENCED_CODE_BLOCK_ONLY_PATTERN =
 	/^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
 
@@ -144,18 +145,35 @@ const FULL_DOCUMENT_OPTIMIZE_PROMPT = `你是 Revornix 的资深 Markdown 内容
 6. 不删除重要知识点；重复、空泛或口语化内容可以合并精炼。
 7. Markdown 必须语法有效，标题层级连续，代码块围栏完整。`;
 
-const FULL_DOCUMENT_IMAGE_PROMPT_PROMPT = `你是 Revornix 的 AI 插图导演，需要为一篇 Markdown 文章设计一张最适合插入正文的配图。
+const FULL_DOCUMENT_IMAGE_PLANNER_PROMPT = `你是 Revornix 的知识文章插图编辑，需要像专栏自动插图流程一样，为一篇 Markdown 文章规划多张真正有价值的正文插图。
 
-任务：阅读整篇 Markdown，提炼主题、关键知识点、概念关系、目标读者和文章语气，输出一个可直接发送给图片生成模型的中文提示词。
+你必须只输出合法 JSON，不要解释，不要 Markdown 代码块。JSON schema：
+{
+  "markdown_with_markers": "<插入图片标记后的完整 Markdown>",
+  "plans": [
+    {"id": "<唯一 id>", "prompt": "<可直接发送给图片生成模型的自包含提示词>"}
+  ]
+}
 
-必须严格遵守：
-1. 只输出图片生成提示词，不要解释，不要 Markdown。
-2. 插图必须服务文章内容，不做空泛装饰。
-3. 明确画面主体、关键元素、构图、风格、色彩、质感和避免事项。
-4. 如果文章是技术/知识类，优先选择信息图、概念图、流程图、架构图或编辑插画。
-5. 不要要求图片里生成大段可读文字；如需要文字，仅允许极少量短标签。
-6. 避免品牌商标、真实人物肖像、版权角色和误导性真实照片。
-7. 控制在 500 中文字符以内。`;
+规则：
+1. 标记格式必须严格为：[image-id: <id>]。
+2. 标记必须单独占一行，放在对应段落、章节或概念解释附近。
+3. 除了插入标记，不要改写、删减或重排原 Markdown。
+4. 最多插入 ${AI_FULL_DOCUMENT_MAX_IMAGES} 张图；只有在插图能解释复杂机制、架构、流程、时间线、关系、对比或核心概念时才插入。
+5. 避免纯装饰、无关人物、照片感摆拍、文字海报和大量可读文字。
+6. 技术/知识类内容优先使用信息图、概念图、流程图、架构图、关系图或编辑插画。
+7. 每个 prompt 必须自包含，说明画面主体、关键元素、构图、风格、色彩和避免事项。
+8. 如果文章不适合配图，返回原 Markdown 且 plans 为空数组。`;
+
+type FullDocumentImagePlan = {
+	id: string;
+	prompt: string;
+};
+
+type FullDocumentImagePlanResult = {
+	markdown_with_markers: string;
+	plans: FullDocumentImagePlan[];
+};
 
 const parseSSEPayloads = (buffer: string) =>
 	buffer
@@ -203,6 +221,58 @@ const decodeDataUrlToFile = async (dataUrl: string, fileName: string) => {
 	return new File([blob], fileName, {
 		type: blob.type || 'image/png',
 	});
+};
+
+const extractJsonObjectText = (text: string) => {
+	const trimmed = text.trim();
+	const fencedMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+	const candidate = fencedMatch?.[1]?.trim() ?? trimmed;
+	const start = candidate.indexOf('{');
+	const end = candidate.lastIndexOf('}');
+	if (start === -1 || end === -1 || end <= start) {
+		return candidate;
+	}
+	return candidate.slice(start, end + 1);
+};
+
+const normalizeImagePlanResult = (
+	rawText: string,
+	fallbackMarkdown: string,
+): FullDocumentImagePlanResult => {
+	const data = JSON.parse(extractJsonObjectText(rawText));
+	if (!data || typeof data !== 'object') {
+		throw new Error('Invalid image plan');
+	}
+
+	const markdownWithMarkers =
+		typeof data.markdown_with_markers === 'string' &&
+		data.markdown_with_markers.trim()
+			? data.markdown_with_markers
+			: fallbackMarkdown;
+	const rawPlans = Array.isArray(data.plans)
+		? data.plans
+		: Array.isArray(data.image_plans)
+			? data.image_plans
+			: [];
+	const seenIds = new Set<string>();
+	const plans = rawPlans
+		.map((plan: any) => ({
+			id: String(plan?.id ?? '').trim(),
+			prompt: String(plan?.prompt ?? '').trim(),
+		}))
+		.filter((plan: FullDocumentImagePlan) => {
+			if (!plan.id || !plan.prompt || seenIds.has(plan.id)) {
+				return false;
+			}
+			seenIds.add(plan.id);
+			return true;
+		})
+		.slice(0, AI_FULL_DOCUMENT_MAX_IMAGES);
+
+	return {
+		markdown_with_markers: markdownWithMarkers,
+		plans,
+	};
 };
 
 const TipTapEditor = ({
@@ -936,18 +1006,34 @@ const TipTapEditor = ({
 		}
 	};
 
-	const insertDocumentIllustrationMarkdown = (prompt: string, filePath: string) => {
+	const buildGeneratedImageMarkdown = (prompt: string, filePath: string) => {
+		return `![${prompt.slice(0, 80).replace(/\n+/g, ' ')}](${filePath})`;
+	};
+
+	const buildFailedImageMarkdown = (id: string) => {
+		return `> ${t('editor_full_illustration_image_failed', { id })}`;
+	};
+
+	const applyDocumentIllustrationPlan = ({
+		markdownWithMarkers,
+		imageMarkdownById,
+	}: {
+		markdownWithMarkers: string;
+		imageMarkdownById: Map<string, string>;
+	}) => {
 		if (!editor) {
 			throw new Error(t('editor_continue_insert_failed'));
 		}
-		const imageMarkdown = `\n\n![${prompt.slice(0, 80).replace(/\n+/g, ' ')}](${filePath})\n\n`;
-		const markdown = normalizeEditorMarkdown(editor.getMarkdown());
-		const firstHeadingMatch = markdown.match(/^# .+(?:\n|$)/m);
-		const insertionIndex = firstHeadingMatch
-			? (firstHeadingMatch.index ?? 0) + firstHeadingMatch[0].length
-			: 0;
+		const usedIds = new Set<string>();
 		const nextMarkdown = normalizeEditorMarkdown(
-			`${markdown.slice(0, insertionIndex)}${imageMarkdown}${markdown.slice(insertionIndex)}`,
+			markdownWithMarkers.replace(/\[image-id:\s*([^\]]+)\]/g, (_, rawId) => {
+				const id = String(rawId).trim();
+				if (usedIds.has(id)) {
+					return '';
+				}
+				usedIds.add(id);
+				return `\n\n${imageMarkdownById.get(id) ?? buildFailedImageMarkdown(id)}\n\n`;
+			}),
 		);
 
 		editor.commands.setContent(nextMarkdown, {
@@ -989,42 +1075,87 @@ const TipTapEditor = ({
 
 		setIsGeneratingDocumentIllustration(true);
 		try {
-			const prompt = await requestAiText({
+			const planText = await requestAiText({
 				prompt: [
-					FULL_DOCUMENT_IMAGE_PROMPT_PROMPT,
-					'文章 Markdown：',
-					ready.markdown,
+					FULL_DOCUMENT_IMAGE_PLANNER_PROMPT,
+					'INPUT_JSON:',
+					JSON.stringify(
+						{
+							markdown: ready.markdown,
+							entities: [],
+							relations: [],
+							constraints: {
+								max_images: AI_FULL_DOCUMENT_MAX_IMAGES,
+								prefer: [
+									'diagram',
+									'infographic',
+									'conceptual illustration',
+								],
+								avoid: [
+									'pure decoration',
+									'irrelevant portraits',
+									'text-heavy posters',
+								],
+							},
+						},
+						null,
+						2,
+					),
 				].join('\n\n'),
 				modelId: ready.modelId,
 				timeoutMs: AI_CONTINUATION_TIMEOUT_MS,
 				timeoutMessage: t('editor_full_illustration_prompt_timeout'),
-				maxChars: AI_IMAGE_PROMPT_MAX_CHARS,
+				maxChars: Math.max(
+					AI_IMAGE_PLAN_MAX_CHARS,
+					ready.markdown.length + 8000,
+				),
 			});
-			if (!prompt.trim()) {
-				throw new Error(t('editor_full_illustration_prompt_empty'));
+			const imagePlan = normalizeImagePlanResult(planText, ready.markdown);
+			if (imagePlan.plans.length === 0) {
+				toast.info(t('editor_full_illustration_no_plan'));
+				setIsFullIllustrationDialogOpen(false);
+				return;
 			}
 
-			const image = await withTimeout(
-				() =>
-					generateImageWithDefaultEngine({
-						prompt,
-						engine_id: selectedIllustrationEngineId,
-					}),
-				AI_ILLUSTRATION_TIMEOUT_MS,
-				t('editor_illustration_timeout'),
-			);
-			const extension =
-				image.data_url.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,/)?.[1] ??
-				'png';
-			const normalizedExtension = extension === 'svg+xml' ? 'svg' : extension;
-			const file = await decodeDataUrlToFile(
-				image.data_url,
-				`article-illustration-${generateUUID()}.${normalizedExtension}`,
-			);
-			const filePath = `images/quick-note/${generateUUID()}.${normalizedExtension}`;
+			const imageMarkdownById = new Map<string, string>();
 			const fileService = new FileService(userFileSystemDetail.file_system_id);
-			await fileService.uploadFile(filePath, file);
-			insertDocumentIllustrationMarkdown(prompt, filePath);
+			for (const plan of imagePlan.plans) {
+				try {
+					const image = await withTimeout(
+						() =>
+							generateImageWithDefaultEngine({
+								prompt: plan.prompt,
+								engine_id: selectedIllustrationEngineId,
+							}),
+						AI_ILLUSTRATION_TIMEOUT_MS,
+						t('editor_illustration_timeout'),
+					);
+					const extension =
+						image.data_url.match(
+							/^data:image\/([a-zA-Z0-9+.-]+);base64,/,
+						)?.[1] ?? 'png';
+					const normalizedExtension =
+						extension === 'svg+xml' ? 'svg' : extension;
+					const file = await decodeDataUrlToFile(
+						image.data_url,
+						`article-illustration-${plan.id}.${normalizedExtension}`,
+					);
+					const filePath = `images/quick-note/${generateUUID()}.${normalizedExtension}`;
+					await fileService.uploadFile(filePath, file);
+					imageMarkdownById.set(
+						plan.id,
+						buildGeneratedImageMarkdown(plan.prompt, filePath),
+					);
+				} catch (imageError) {
+					console.error(imageError);
+					imageMarkdownById.set(plan.id, buildFailedImageMarkdown(plan.id));
+				}
+			}
+
+			applyDocumentIllustrationPlan({
+				markdownWithMarkers: imagePlan.markdown_with_markers,
+				imageMarkdownById,
+			});
 			setIsFullIllustrationDialogOpen(false);
 			toast.success(t('editor_full_illustration_success'));
 		} catch (error: any) {
@@ -1774,7 +1905,7 @@ const TipTapEditor = ({
 			</div>
 			<EditorContent
 				editor={editor}
-				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
+				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
 			/>
 			<Dialog
 				open={isContinueDialogOpen}
