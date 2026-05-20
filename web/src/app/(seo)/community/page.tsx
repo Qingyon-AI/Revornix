@@ -53,7 +53,7 @@ const getStartValue = (value: string | string[] | undefined) => {
 };
 
 const getTabValue = (value: string | string[] | undefined): CommunityTab => {
-	return getSingleValue(value) === 'documents' ? 'documents' : 'sections';
+	return getSingleValue(value) === 'sections' ? 'sections' : 'documents';
 };
 
 const getLabelValue = (value: string | string[] | undefined) => {
@@ -78,7 +78,7 @@ const buildCommunityHref = ({
 	labelId?: number;
 }) => {
 	const params = new URLSearchParams();
-	if (tab !== 'sections') {
+	if (tab !== 'documents') {
 		params.set('tab', tab);
 	}
 	if (keyword) {

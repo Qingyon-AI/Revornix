@@ -7,6 +7,7 @@ import {
 } from '@/components/seo/document/seo-document-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
 import SeoAiAskEntry from '@/components/seo/shared/seo-ai-ask-entry';
+import SeoEditEntry from '@/components/seo/shared/seo-edit-entry';
 import DocumentGraphSEO from '@/components/document/document-graph-seo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -553,12 +554,19 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						<MarkdownContentShell
 							enableFloatingToc
 							floatingTocFooter={
-								<SeoAiAskEntry
-									type='document'
-									documentId={document.id}
-									title={document.title}
-									loginHref={`/login?redirect_to=${encodeURIComponent(`/document/${document.id}`)}`}
-								/>
+								<div className='flex w-full flex-col items-center gap-2'>
+									<SeoAiAskEntry
+										type='document'
+										documentId={document.id}
+										title={document.title}
+										loginHref={`/login?redirect_to=${encodeURIComponent(`/document/${document.id}`)}`}
+									/>
+									<SeoEditEntry
+										type='document'
+										documentId={document.id}
+										ownerId={document.creator.id}
+									/>
+								</div>
 							}
 							className='mx-auto w-full'
 							contentClassName='overflow-x-hidden'>

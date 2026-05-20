@@ -69,12 +69,16 @@ export type PublicDocumentMarkdownContentRequest = {
 export type PublicLabel = Label;
 
 export const getPublicSectionHref = (section: {
+	id?: number;
 	publish_uuid?: string | null;
 }) => {
-	if (!section.publish_uuid) {
-		return '/community';
+	if (section.publish_uuid) {
+		return `/section/${section.publish_uuid}`;
 	}
-	return `/section/${section.publish_uuid}`;
+	if (section.id !== undefined) {
+		return `/section/detail/${section.id}`;
+	}
+	return '/community';
 };
 
 export const fetchPublicSections = async (

@@ -6,6 +6,7 @@ import JsonLd from '@/components/seo/shared/json-ld';
 import { SeoSectionSidebarBridge } from '@/components/seo/section/seo-section-meta-sidebar';
 import SeoMobileSidebarMenu from '@/components/seo/shared/seo-mobile-sidebar-menu';
 import SeoAiAskEntry from '@/components/seo/shared/seo-ai-ask-entry';
+import SeoEditEntry from '@/components/seo/shared/seo-edit-entry';
 import SectionGraphSEO from '@/components/section/section-graph-seo';
 import SectionDocumentsList from '@/components/section/section-documents-list';
 import { serverRequest } from '@/lib/request-server';
@@ -553,22 +554,36 @@ const SEOSectionDetail = async (props: {
 								hasMarkdown={Boolean(markdown)}
 								previewSource={markdown}
 								summaryAction={
-									<SeoAiAskEntry
-										type='section'
-										sectionId={section!.id}
-										title={sectionTitle}
-										loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
-									/>
-								}>
-								<MarkdownContentShell
-									enableFloatingToc
-									floatingTocFooter={
+									<div className='flex flex-col items-center gap-2'>
 										<SeoAiAskEntry
 											type='section'
 											sectionId={section!.id}
 											title={sectionTitle}
 											loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
 										/>
+										<SeoEditEntry
+											type='section'
+											sectionId={section!.id}
+											ownerId={section?.creator?.id}
+										/>
+									</div>
+								}>
+								<MarkdownContentShell
+									enableFloatingToc
+									floatingTocFooter={
+										<div className='flex w-full flex-col items-center gap-2'>
+											<SeoAiAskEntry
+												type='section'
+												sectionId={section!.id}
+												title={sectionTitle}
+												loginHref={`/login?redirect_to=${encodeURIComponent(`/section/${uuid}`)}`}
+											/>
+											<SeoEditEntry
+												type='section'
+												sectionId={section!.id}
+												ownerId={section?.creator?.id}
+											/>
+										</div>
 									}
 									className='mx-auto w-full'
 									contentClassName='overflow-x-hidden'>

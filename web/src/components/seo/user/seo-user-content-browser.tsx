@@ -164,14 +164,14 @@ const SeoUserContentBrowser = ({
 								variant='ghost'
 								className={cn(
 									'h-9 rounded-lg px-3 shadow-none',
-									tab === 'sections'
+									tab === 'documents'
 										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
 										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
 								)}>
 								<Link
 									href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
-									<Compass className='mr-2 size-4' />
-									{t('seo_community_sections_tab')}
+									<FileText className='mr-2 size-4' />
+									{t('seo_community_documents_tab')}
 								</Link>
 							</Button>
 							<Button
@@ -179,16 +179,16 @@ const SeoUserContentBrowser = ({
 								variant='ghost'
 								className={cn(
 									'h-9 rounded-lg px-3 shadow-none',
-									tab === 'documents'
+									tab === 'sections'
 										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
 										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
 								)}>
 								<Link
-									href={`/user/${userId}?tab=documents${
+									href={`/user/${userId}?tab=sections${
 										keyword ? `&q=${encodeURIComponent(keyword)}` : ''
 									}`}>
-									<FileText className='mr-2 size-4' />
-									{t('seo_community_documents_tab')}
+									<Compass className='mr-2 size-4' />
+									{t('seo_community_sections_tab')}
 								</Link>
 							</Button>
 						</div>

@@ -40,7 +40,7 @@ const buildCommunityHref = ({
 	labelId?: number;
 }) => {
 	const params = new URLSearchParams();
-	if (tab !== 'sections') {
+	if (tab !== 'documents') {
 		params.set('tab', tab);
 	}
 	if (keyword) {
@@ -76,20 +76,6 @@ const CommunityControls = ({
 						variant='outline'
 						className={cn(
 							'h-9 rounded-xl px-3 shadow-none transition-colors',
-							tab === 'sections'
-								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
-						)}>
-						<Link href={buildCommunityHref({ tab: 'sections', keyword, labelId })}>
-							<Compass className='mr-2 size-4' />
-							{t('seo_community_sections_tab')}
-						</Link>
-					</Button>
-					<Button
-						asChild
-						variant='outline'
-						className={cn(
-							'h-9 rounded-xl px-3 shadow-none transition-colors',
 							tab === 'documents'
 								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
 								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
@@ -97,6 +83,20 @@ const CommunityControls = ({
 						<Link href={buildCommunityHref({ tab: 'documents', keyword, labelId })}>
 							<FileText className='mr-2 size-4' />
 							{t('seo_community_documents_tab')}
+						</Link>
+					</Button>
+					<Button
+						asChild
+						variant='outline'
+						className={cn(
+							'h-9 rounded-xl px-3 shadow-none transition-colors',
+							tab === 'sections'
+								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+						)}>
+						<Link href={buildCommunityHref({ tab: 'sections', keyword, labelId })}>
+							<Compass className='mr-2 size-4' />
+							{t('seo_community_sections_tab')}
 						</Link>
 					</Button>
 				</div>

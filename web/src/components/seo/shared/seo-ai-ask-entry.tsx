@@ -48,14 +48,16 @@ const SeoAiAskEntry = (props: SeoAiAskEntryProps) => {
 						document_id={props.documentId}
 						document_title={title}
 						iconOnly
-						className='h-10 w-10 flex-none justify-center gap-0 overflow-hidden rounded-full border border-border/60 bg-background/85 px-0 text-foreground shadow-sm transition-[width,background-color,color,border-color,gap] duration-300 ease-out hover:bg-accent hover:text-accent-foreground [&_svg]:shrink-0 [&_span]:ml-0 [&_span]:max-w-0 [&_span]:overflow-hidden [&_span]:whitespace-nowrap [&_span]:text-sm [&_span]:font-medium [&_span]:opacity-0 [&_span]:transition-[margin,max-width,opacity] [&_span]:duration-300'
+						data-seo-action-button
+						className='h-10 w-10 flex-none justify-center gap-0 overflow-hidden rounded-full border border-border/60 bg-background/85 px-0 text-foreground shadow-none dark:shadow-sm transition-[width,background-color,color,border-color,gap] duration-300 ease-out hover:bg-accent hover:text-accent-foreground [&_svg]:shrink-0 [&_span]:ml-0 [&_span]:max-w-0 [&_span]:overflow-hidden [&_span]:whitespace-nowrap [&_span]:text-sm [&_span]:font-medium [&_span]:opacity-0 [&_span]:transition-[margin,max-width,opacity] [&_span]:duration-300'
 					/>
 				) : (
 					<SectionOperateAI
 						section_id={props.sectionId}
 						section_title={title}
 						iconOnly
-						className='h-10 w-10 flex-none justify-center gap-0 overflow-hidden rounded-full border border-border/60 bg-background/85 px-0 text-foreground shadow-sm transition-[width,background-color,color,border-color,gap] duration-300 ease-out hover:bg-accent hover:text-accent-foreground [&_svg]:shrink-0 [&_span]:ml-0 [&_span]:max-w-0 [&_span]:overflow-hidden [&_span]:whitespace-nowrap [&_span]:text-sm [&_span]:font-medium [&_span]:opacity-0 [&_span]:transition-[margin,max-width,opacity] [&_span]:duration-300'
+						data-seo-action-button
+						className='h-10 w-10 flex-none justify-center gap-0 overflow-hidden rounded-full border border-border/60 bg-background/85 px-0 text-foreground shadow-none dark:shadow-sm transition-[width,background-color,color,border-color,gap] duration-300 ease-out hover:bg-accent hover:text-accent-foreground [&_svg]:shrink-0 [&_span]:ml-0 [&_span]:max-w-0 [&_span]:overflow-hidden [&_span]:whitespace-nowrap [&_span]:text-sm [&_span]:font-medium [&_span]:opacity-0 [&_span]:transition-[margin,max-width,opacity] [&_span]:duration-300'
 					/>
 				)
 			) : (
@@ -63,12 +65,14 @@ const SeoAiAskEntry = (props: SeoAiAskEntryProps) => {
 					asChild
 					variant='ghost'
 					data-seo-ai-button
+					data-seo-action-button
 					className='h-10 w-10 justify-center gap-0 overflow-hidden rounded-full border border-border/60 bg-background/85 px-0 text-foreground shadow-sm transition-[width,background-color,color,border-color,gap] duration-300 ease-out hover:bg-accent hover:text-accent-foreground'
 					title={t('seo_ai_ask_login_action')}>
 					<Link href={props.loginHref}>
 						<LogIn className='size-4 shrink-0' />
 						<span
 							data-seo-ai-label
+							data-seo-action-label
 							className='ml-2 max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium opacity-0 transition-[max-width,opacity] duration-300 peer-hover/toc:max-w-40 peer-hover/toc:opacity-100 peer-focus-within/toc:max-w-40 peer-focus-within/toc:opacity-100'>
 							{t('seo_ai_ask_login_action')}
 						</span>
