@@ -1,6 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
@@ -23,6 +25,10 @@ const TipTapMarkdownViewer = ({
 	className?: string;
 	ownerId?: number;
 }) => {
+	const normalizedContent = useMemo(
+		() => normalizeEditorMarkdown(content),
+		[content],
+	);
 	const editor = useEditor(
 		{
 			immediatelyRender: false,
@@ -41,10 +47,10 @@ const TipTapMarkdownViewer = ({
 				MermaidCodeBlock,
 				Markdown,
 			],
-			content,
+			content: normalizedContent,
 			contentType: 'markdown',
 		},
-		[content, ownerId],
+		[normalizedContent, ownerId],
 	);
 
 	return (
