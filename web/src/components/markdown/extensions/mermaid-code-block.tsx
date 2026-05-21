@@ -297,7 +297,7 @@ const MermaidCodeBlockView = ({
 							</div>
 						</div>
 						<div className='overflow-x-auto'>
-							<NodeViewContent className='whitespace-pre p-3 font-mono text-[0.8125rem] leading-5 [&_.ProseMirror-trailingBreak]:hidden' />
+							<NodeViewContent className='whitespace-pre p-3 font-mono text-[0.8125rem] leading-5' />
 						</div>
 					</div>
 				</BlockNodeShell>
@@ -452,7 +452,7 @@ const MermaidCodeBlock = CodeBlockLowlight.configure({
 	renderMarkdown(node) {
 		const language = String(node.attrs?.language ?? '').trim();
 		const fence = '```';
-		const content = String(node.content?.[0]?.text ?? '').replace(/\n+$/g, '');
+		const content = String(node.textContent ?? '').replace(/\n+$/g, '');
 		return `${fence}${language && language !== 'plaintext' ? language : ''}\n${content}\n${fence}`;
 	},
 });
