@@ -57,6 +57,7 @@ import Cookies from 'js-cookie';
 
 import MermaidCodeBlock from './extensions/mermaid-code-block';
 import AiContinuationPlaceholderNode from './extensions/ai-continuation-placeholder-node';
+import AiIllustrationPlaceholderNode from './extensions/ai-illustration-placeholder-node';
 import ImageNode from './extensions/image-node';
 import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
@@ -100,7 +101,8 @@ type ContinueSelectionSnapshot = {
 };
 
 const AI_CONTINUATION_TIMEOUT_MS = 45_000;
-const AI_ILLUSTRATION_TIMEOUT_MS = 60_000;
+const AI_ILLUSTRATION_TIMEOUT_MS = 90_000;
+const AI_IMAGE_PLAN_TIMEOUT_MS = 90_000;
 const AI_FULL_DOCUMENT_TIMEOUT_MS = 90_000;
 const AI_CONTINUATION_MAX_CHARS = 600;
 const AI_OPTIMIZED_MARKDOWN_MAX_CHARS = 60_000;
@@ -310,9 +312,7 @@ const TipTapEditor = ({
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
 	const continueAbortControllerRef = useRef<AbortController | null>(null);
 	const continueAbortReasonRef = useRef<'user' | 'timeout' | null>(null);
-	const streamingInsertRangeRef = useRef<{ from: number; to: number } | null>(
-		null,
-	);
+	const activeContinuationPlaceholderIdRef = useRef<string | null>(null);
 	const hasStreamedContinuationRef = useRef(false);
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
@@ -418,6 +418,7 @@ const TipTapEditor = ({
 					ownerId: resolvedOwnerId,
 				}),
 				AiContinuationPlaceholderNode,
+				AiIllustrationPlaceholderNode,
 				DrawingNode,
 				TableNode,
 				VideoEmbedNode,
@@ -431,6 +432,19 @@ const TipTapEditor = ({
 			contentType: 'markdown',
 			editorProps: {
 				transformPastedText: (text) => normalizeEditorMarkdown(text),
+				handleClick: (_view, _pos, event) => {
+					if (!(event.target instanceof Element)) {
+						return false;
+					}
+
+					const anchor = event.target.closest('a[href]');
+					if (!anchor) {
+						return false;
+					}
+
+					event.preventDefault();
+					return true;
+				},
 				handlePaste: (view, event) => {
 					const text = event.clipboardData?.getData('text/plain');
 					if (!text) {
@@ -669,12 +683,88 @@ const TipTapEditor = ({
 		return resolvedPosition.after(resolvedPosition.depth);
 	};
 
-	const replaceStreamingContinuation = (text: string) => {
-		if (!editor || !streamingInsertRangeRef.current) {
-			return;
+	const findContinuationPlaceholder = (placeholderId: string) => {
+		if (!editor) {
+			return null;
 		}
 
-		const { from, to } = streamingInsertRangeRef.current;
+		let result: { from: number; to: number } | null = null;
+		editor.state.doc.descendants((node, pos) => {
+			if (
+				node.type.name === 'aiContinuationPlaceholder' &&
+				node.attrs.id === placeholderId
+			) {
+				result = {
+					from: pos,
+					to: pos + node.nodeSize,
+				};
+				return false;
+			}
+			return true;
+		});
+		return result;
+	};
+
+	const insertContinuationPlaceholder = ({
+		placeholderId,
+		position,
+		message,
+	}: {
+		placeholderId: string;
+		position: number;
+		message: string;
+	}) => {
+		if (!editor) {
+			return false;
+		}
+
+		editor.commands.insertContentAt(position, {
+			type: 'aiContinuationPlaceholder',
+			attrs: {
+				id: placeholderId,
+				message,
+			},
+		});
+		return true;
+	};
+
+	const updateContinuationPlaceholder = ({
+		placeholderId,
+		message,
+		preview = '',
+		status = 'loading',
+	}: {
+		placeholderId: string;
+		message: string;
+		preview?: string;
+		status?: 'loading' | 'error';
+	}) => {
+		const range = findContinuationPlaceholder(placeholderId);
+		if (!editor || !range) {
+			return false;
+		}
+
+		editor.commands.insertContentAt(range, {
+			type: 'aiContinuationPlaceholder',
+			attrs: {
+				id: placeholderId,
+				message,
+				preview,
+				status,
+			},
+		});
+		return true;
+	};
+
+	const replaceContinuationPlaceholder = (
+		placeholderId: string,
+		text: string,
+	) => {
+		const range = findContinuationPlaceholder(placeholderId);
+		if (!editor || !range) {
+			return false;
+		}
+
 		const clampedText = clampContinuationText(text, AI_CONTINUATION_MAX_CHARS);
 		const paragraphNodes = buildParagraphNodesFromText(clampedText);
 		const replacementContent =
@@ -682,59 +772,79 @@ const TipTapEditor = ({
 				? paragraphNodes
 				: [{ type: 'paragraph' as const }];
 
-		editor.commands.insertContentAt({ from, to }, replacementContent);
-
-		const replacementLength = replacementContent.reduce((size, node) => {
-			if (node.type !== 'paragraph') {
-				return size;
-			}
-			const paragraphContent =
-				'content' in node && Array.isArray(node.content) ? node.content : [];
-			const textLength = paragraphContent.reduce(
-				(total: number, child: { type: string; text?: string }) =>
-					total + (child.type === 'text' ? (child.text?.length ?? 0) : 0),
-				0,
-			);
-			return size + textLength + 2;
-		}, 0);
-
-		streamingInsertRangeRef.current = {
-			from,
-			to: from + replacementLength,
-		};
+		editor.chain().focus().insertContentAt(range, replacementContent).run();
+		return true;
 	};
 
-	const insertContinuationPlaceholder = (message: string) => {
-		if (!editor || !streamingInsertRangeRef.current) {
-			return;
+	const findIllustrationPlaceholder = (placeholderId: string) => {
+		if (!editor) {
+			return null;
 		}
 
-		const { from, to } = streamingInsertRangeRef.current;
+		let result: { from: number; to: number } | null = null;
+		editor.state.doc.descendants((node, pos) => {
+			if (
+				node.type.name === 'aiIllustrationPlaceholder' &&
+				node.attrs.id === placeholderId
+			) {
+				result = {
+					from: pos,
+					to: pos + node.nodeSize,
+				};
+				return false;
+			}
+			return true;
+		});
+		return result;
+	};
+
+	const updateIllustrationPlaceholder = (
+		placeholderId: string,
+		message: string,
+		status: 'loading' | 'error' = 'loading',
+	) => {
+		const range = findIllustrationPlaceholder(placeholderId);
+		if (!editor || !range) {
+			return false;
+		}
+
 		editor.commands.insertContentAt(
-			{ from, to },
+			range,
 			{
-				type: 'aiContinuationPlaceholder',
-				attrs: { message },
+				type: 'aiIllustrationPlaceholder',
+				attrs: {
+					id: placeholderId,
+					message,
+					status,
+				},
 			},
 		);
-		const placeholderNode = editor.state.doc.nodeAt(from);
-		const placeholderSize =
-			placeholderNode?.type.name === 'aiContinuationPlaceholder'
-				? placeholderNode.nodeSize
-				: 1;
-		streamingInsertRangeRef.current = {
-			from,
-			to: from + placeholderSize,
-		};
+		return true;
+	};
+
+	const replaceIllustrationPlaceholder = (
+		placeholderId: string,
+		content: Record<string, any>,
+	) => {
+		const range = findIllustrationPlaceholder(placeholderId);
+		if (!editor || !range) {
+			return false;
+		}
+
+		editor.chain().focus().insertContentAt(range, content).run();
+		return true;
 	};
 
 	const clearStreamingContinuation = () => {
-		if (!editor || !streamingInsertRangeRef.current) {
+		const placeholderId = activeContinuationPlaceholderIdRef.current;
+		if (!editor || !placeholderId) {
 			return;
 		}
 
-		const { from, to } = streamingInsertRangeRef.current;
-		editor.commands.deleteRange({ from, to });
+		const range = findContinuationPlaceholder(placeholderId);
+		if (range) {
+			editor.commands.deleteRange(range);
+		}
 	};
 
 	const stopAiContinuation = () => {
@@ -1009,40 +1119,61 @@ const TipTapEditor = ({
 		}
 	};
 
-	const buildGeneratedImageMarkdown = (prompt: string, filePath: string) => {
-		return `![${prompt.slice(0, 80).replace(/\n+/g, ' ')}](${filePath})`;
+	const findImageMarkerRange = (id: string) => {
+		if (!editor) {
+			return null;
+		}
+
+		const marker = `[image-id: ${id}]`;
+		let result: { from: number; to: number } | null = null;
+		editor.state.doc.descendants((node, pos) => {
+			if (node.isBlock && node.textContent.trim() === marker) {
+				result = {
+					from: pos,
+					to: pos + node.nodeSize,
+				};
+				return false;
+			}
+			return true;
+		});
+		return result;
 	};
 
-	const buildFailedImageMarkdown = (id: string) => {
-		return `> ${t('editor_full_illustration_image_failed', { id })}`;
-	};
-
-	const applyDocumentIllustrationPlan = ({
+	const insertDocumentIllustrationPlaceholders = ({
 		markdownWithMarkers,
-		imageMarkdownById,
+		plans,
 	}: {
 		markdownWithMarkers: string;
-		imageMarkdownById: Map<string, string>;
+		plans: FullDocumentImagePlan[];
 	}) => {
 		if (!editor) {
 			throw new Error(t('editor_continue_insert_failed'));
 		}
-		const usedIds = new Set<string>();
-		const nextMarkdown = normalizeEditorMarkdown(
-			markdownWithMarkers.replace(/\[image-id:\s*([^\]]+)\]/g, (_, rawId) => {
-				const id = String(rawId).trim();
-				if (usedIds.has(id)) {
-					return '';
-				}
-				usedIds.add(id);
-				return `\n\n${imageMarkdownById.get(id) ?? buildFailedImageMarkdown(id)}\n\n`;
-			}),
-		);
 
+		const placeholderIdByPlanId = new Map<string, string>();
+		const nextMarkdown = normalizeEditorMarkdown(markdownWithMarkers);
 		editor.commands.setContent(nextMarkdown, {
 			contentType: 'markdown',
 		});
-		onChange?.(nextMarkdown);
+
+		for (const plan of plans) {
+			const range = findImageMarkerRange(plan.id);
+			if (!range) {
+				continue;
+			}
+
+			const placeholderId = generateUUID();
+			editor.commands.insertContentAt(range, {
+				type: 'aiIllustrationPlaceholder',
+				attrs: {
+					id: placeholderId,
+					message: t('editor_illustration_waiting_inline'),
+				},
+			});
+			placeholderIdByPlanId.set(plan.id, placeholderId);
+		}
+
+		return placeholderIdByPlanId;
 	};
 
 	const generateFullDocumentIllustration = async () => {
@@ -1106,7 +1237,7 @@ const TipTapEditor = ({
 					),
 				].join('\n\n'),
 				modelId: ready.modelId,
-				timeoutMs: AI_CONTINUATION_TIMEOUT_MS,
+				timeoutMs: AI_IMAGE_PLAN_TIMEOUT_MS,
 				timeoutMessage: t('editor_full_illustration_prompt_timeout'),
 				maxChars: Math.max(
 					AI_IMAGE_PLAN_MAX_CHARS,
@@ -1120,16 +1251,34 @@ const TipTapEditor = ({
 				return;
 			}
 
-			const imageMarkdownById = new Map<string, string>();
+			const currentMarkdown = normalizeEditorMarkdown(editor?.getMarkdown() ?? '');
+			if (currentMarkdown !== ready.markdown) {
+				throw new Error(t('editor_full_illustration_document_changed'));
+			}
+
+			const placeholderIdByPlanId = insertDocumentIllustrationPlaceholders({
+				markdownWithMarkers: imagePlan.markdown_with_markers,
+				plans: imagePlan.plans,
+			});
+			setIsFullIllustrationDialogOpen(false);
+
 			const fileService = new FileService(userFileSystemDetail.file_system_id);
 			for (const plan of imagePlan.plans) {
+				const placeholderId = placeholderIdByPlanId.get(plan.id);
+				if (!placeholderId) {
+					continue;
+				}
+
 				try {
 					const image = await withTimeout(
 						(signal) =>
-							generateImageWithDefaultEngine({
-								prompt: plan.prompt,
-								engine_id: selectedIllustrationEngineId,
-							}, signal),
+							generateImageWithDefaultEngine(
+								{
+									prompt: plan.prompt,
+									engine_id: selectedIllustrationEngineId,
+								},
+								signal,
+							),
 						AI_ILLUSTRATION_TIMEOUT_MS,
 						t('editor_illustration_timeout'),
 					);
@@ -1145,21 +1294,26 @@ const TipTapEditor = ({
 					);
 					const filePath = `images/quick-note/${generateUUID()}.${normalizedExtension}`;
 					await fileService.uploadFile(filePath, file);
-					imageMarkdownById.set(
-						plan.id,
-						buildGeneratedImageMarkdown(plan.prompt, filePath),
-					);
+					const replaced = replaceIllustrationPlaceholder(placeholderId, {
+						type: 'image',
+						attrs: {
+							src: filePath,
+							alt: plan.prompt.slice(0, 80),
+						},
+					});
+					if (!replaced) {
+						toast.info(t('editor_illustration_placeholder_removed'));
+					}
 				} catch (imageError) {
 					console.error(imageError);
-					imageMarkdownById.set(plan.id, buildFailedImageMarkdown(plan.id));
+					updateIllustrationPlaceholder(
+						placeholderId,
+						t('editor_full_illustration_image_failed', { id: plan.id }),
+						'error',
+					);
 				}
 			}
 
-			applyDocumentIllustrationPlan({
-				markdownWithMarkers: imagePlan.markdown_with_markers,
-				imageMarkdownById,
-			});
-			setIsFullIllustrationDialogOpen(false);
 			toast.success(t('editor_full_illustration_success'));
 		} catch (error: any) {
 			console.error(error);
@@ -1195,18 +1349,21 @@ const TipTapEditor = ({
 		setIsContinuing(true);
 		setContinuePreview('');
 		setIsContinueDialogOpen(false);
+		let latestContinuationPreview = '';
 		try {
 			const insertionTarget = getContinuationInsertionTarget();
 			if (!editor || insertionTarget === null) {
 				throw new Error(t('editor_continue_insert_failed'));
 			}
 
-			streamingInsertRangeRef.current = {
-				from: insertionTarget,
-				to: insertionTarget,
-			};
+			const placeholderId = generateUUID();
+			activeContinuationPlaceholderIdRef.current = placeholderId;
 			hasStreamedContinuationRef.current = false;
-			insertContinuationPlaceholder(t('editor_continue_waiting_inline'));
+			insertContinuationPlaceholder({
+				placeholderId,
+				position: insertionTarget,
+				message: t('editor_continue_waiting_inline'),
+			});
 
 			const headers = new Headers();
 			headers.append('Content-Type', 'application/json');
@@ -1281,8 +1438,16 @@ const TipTapEditor = ({
 				await readAiTextResponse(response, {
 					onStreamText: (text) => {
 						hasStreamedContinuationRef.current = true;
+						latestContinuationPreview = clampContinuationText(
+							text,
+							AI_CONTINUATION_MAX_CHARS,
+						);
 						setContinuePreview(text);
-						replaceStreamingContinuation(text);
+						updateContinuationPlaceholder({
+							placeholderId,
+							message: t('editor_continue_waiting_inline'),
+							preview: latestContinuationPreview,
+						});
 					},
 				}),
 				AI_CONTINUATION_MAX_CHARS,
@@ -1291,7 +1456,13 @@ const TipTapEditor = ({
 				throw new Error(t('editor_continue_empty_result'));
 			}
 
-			replaceStreamingContinuation(continuation);
+			const replaced = replaceContinuationPlaceholder(
+				placeholderId,
+				continuation,
+			);
+			if (!replaced) {
+				toast.info(t('editor_continue_placeholder_removed'));
+			}
 			setContinueInstruction('');
 			setContinuePreview('');
 		} catch (error: any) {
@@ -1306,6 +1477,13 @@ const TipTapEditor = ({
 			}
 			if (!hasStreamedContinuationRef.current) {
 				clearStreamingContinuation();
+			} else if (activeContinuationPlaceholderIdRef.current) {
+				updateContinuationPlaceholder({
+					placeholderId: activeContinuationPlaceholderIdRef.current,
+					message: error?.message || t('editor_continue_failed'),
+					preview: latestContinuationPreview,
+					status: 'error',
+				});
 			}
 			console.error(error);
 			toast.error(error?.message || t('editor_continue_failed'));
@@ -1313,7 +1491,7 @@ const TipTapEditor = ({
 			hasStreamedContinuationRef.current = false;
 			continueAbortControllerRef.current = null;
 			continueAbortReasonRef.current = null;
-			streamingInsertRangeRef.current = null;
+			activeContinuationPlaceholderIdRef.current = null;
 			setIsContinuing(false);
 		}
 	};
@@ -1349,13 +1527,34 @@ const TipTapEditor = ({
 		}
 
 		setIsGeneratingIllustration(true);
+		const placeholderId = generateUUID();
 		try {
+			const insertionTarget = getContinuationInsertionTarget();
+			if (!editor || insertionTarget === null) {
+				throw new Error('无法插入生成图片');
+			}
+			editor
+				.chain()
+				.focus()
+				.insertContentAt(insertionTarget, {
+					type: 'aiIllustrationPlaceholder',
+					attrs: {
+						id: placeholderId,
+						message: t('editor_illustration_waiting_inline'),
+					},
+				})
+				.run();
+			setIsIllustrationDialogOpen(false);
+
 			const image = await withTimeout(
 				(signal) =>
-					generateImageWithDefaultEngine({
-						prompt,
-						engine_id: selectedIllustrationEngineId,
-					}, signal),
+					generateImageWithDefaultEngine(
+						{
+							prompt,
+							engine_id: selectedIllustrationEngineId,
+						},
+						signal,
+					),
 				AI_ILLUSTRATION_TIMEOUT_MS,
 				t('editor_illustration_timeout'),
 			);
@@ -1371,27 +1570,23 @@ const TipTapEditor = ({
 			const fileService = new FileService(userFileSystemDetail.file_system_id);
 			await fileService.uploadFile(filePath, file);
 
-			const insertionTarget =
-				aiSelectionRef.current?.to ?? editor?.state.selection.to ?? null;
-			if (!editor || insertionTarget === null) {
-				throw new Error('无法插入生成图片');
+			const replaced = replaceIllustrationPlaceholder(placeholderId, {
+				type: 'image',
+				attrs: {
+					src: filePath,
+					alt: prompt.slice(0, 80),
+				},
+			});
+			if (!replaced) {
+				toast.info(t('editor_illustration_placeholder_removed'));
 			}
-
-			editor
-				.chain()
-				.focus()
-				.insertContentAt(insertionTarget, {
-					type: 'image',
-					attrs: {
-						src: filePath,
-						alt: prompt.slice(0, 80),
-					},
-				})
-				.run();
-
-			setIsIllustrationDialogOpen(false);
 		} catch (error: any) {
 			console.error(error);
+			updateIllustrationPlaceholder(
+				placeholderId,
+				error?.message || t('editor_full_illustration_failed'),
+				'error',
+			);
 			toast.error(error?.message || '插图生成失败');
 		} finally {
 			setIsGeneratingIllustration(false);
@@ -1908,7 +2103,7 @@ const TipTapEditor = ({
 			</div>
 			<EditorContent
 				editor={editor}
-				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
+				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-[880px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_>_:first-child]:mt-0 [&_.ProseMirror_>_:last-child]:mb-0 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror.is-empty_p:first-child::before]:pointer-events-none [&_.ProseMirror.is-empty_p:first-child::before]:float-left [&_.ProseMirror.is-empty_p:first-child::before]:h-0 [&_.ProseMirror.is-empty_p:first-child::before]:text-muted-foreground [&_.ProseMirror.is-empty_p:first-child::before]:content-[attr(data-placeholder)]'
 			/>
 			<Dialog
 				open={isContinueDialogOpen}
