@@ -81,8 +81,10 @@ export const getEngineBillingAudit = async (): Promise<{ items: BillingAuditIssu
 
 export const generateImageWithDefaultEngine = async (
     data: GenerateImageWithDefaultEngineRequest,
+    signal?: AbortSignal,
 ): Promise<GenerateImageWithDefaultEngineResponse> => {
     return await request(engineApi.generateImageWithDefaultEngine, {
         data,
+        signal,
     })
 }
