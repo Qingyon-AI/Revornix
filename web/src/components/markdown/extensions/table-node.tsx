@@ -339,7 +339,7 @@ const TableNodeView = ({
 			)}
 			<div className='overflow-hidden rounded-lg border border-border/70 bg-background'>
 				<div className='overflow-x-auto'>
-				<table className='my-0 w-full min-w-[520px] border-separate border-spacing-0 text-sm'>
+				<table className='my-0 w-full min-w-[520px] table-fixed border-separate border-spacing-0 text-sm'>
 					<tbody>
 						{table.map((row, rowIndex) => (
 							<tr
@@ -365,7 +365,7 @@ const TableNodeView = ({
 								{Array.from({ length: columnCount }, (_, cellIndex) => {
 									const cellValue = row[cellIndex] ?? '';
 									const sharedClassName =
-										'block min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap break-words border-0 bg-transparent px-3 py-2.5 leading-5 outline-none transition-colors [overflow-wrap:anywhere] focus:bg-muted/40';
+										'block min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap break-words border-0 bg-transparent px-3 py-2.5 leading-5 outline-none transition-colors [overflow-wrap:anywhere] [word-break:break-word] focus:bg-muted/40';
 
 									return rowIndex === 0 ? (
 										<th
