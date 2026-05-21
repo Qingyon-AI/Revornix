@@ -2,6 +2,7 @@ from .embedding.qwen_cloud import CloudQwen3EmbeddingEngine
 from .embedding.qwen_local import LocalQwen3EmbeddingEngine
 from .image_generate.bailian import BailianImageGenerateEngine
 from .image_generate.banana import BananaImageGenerateEngine
+from .image_generate.openai_image import OpenAIImageGenerateEngine
 from .image_generate.volc import VolcImageGenerateEngine
 from .image_understand.kimi import KimiImageUnderstandEngine
 from .markdown.mineru_api import MineruApiEngine
@@ -22,6 +23,7 @@ __all__ = [
     "MineruApiEngine",
     "MarkitdownEngine",
     "OpenAIAudioEngine",
+    "OpenAIImageGenerateEngine",
     "VolcImageGenerateEngine",
     "VolcTTSEngine",
     "VolcSTTFastEngine",

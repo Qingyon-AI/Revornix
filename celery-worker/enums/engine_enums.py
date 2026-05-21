@@ -66,6 +66,11 @@ class EngineProvided(Enum):
         name='Banana_Image',
         category=EngineCategory.IMAGE_GENERATE
     )
+    OpenAI_Image = EngineProvidedMeta(
+        uuid='eb40c4b4c5414a53b73ebdc0640ff641',
+        name='OpenAI_Image',
+        category=EngineCategory.IMAGE_GENERATE
+    )
     Bailian_Image = EngineProvidedMeta(
         uuid='d5daed7e73144af3b2ad7410976f9424',
         name='Bailian_Image',
@@ -113,6 +118,12 @@ class Engine(Enum):
         name='Official_Banana_Image',
         description='Official Nana Banana Pro image generation configuration item, only available for subscribed users (limited amount)',
         engine_provided=EngineProvided.Banana_Image
+    )
+    Official_OpenAI_Image = EngineMeta(
+        uuid='897ed51f119f4185a54a5619b15be488',
+        name='Official_OpenAI_Image',
+        description='Official OpenAI GPT Image 2 generation configuration item, only available for subscribed users (limited amount)',
+        engine_provided=EngineProvided.OpenAI_Image
     )
     Official_Bailian_Image = EngineMeta(
         uuid='c6ef0f4c98524002b0f5a278f4f55f1b',

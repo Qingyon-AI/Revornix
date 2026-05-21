@@ -52,6 +52,29 @@ type FieldOption = {
 	fallbackLabel: string;
 };
 
+const IMAGE_QUALITY_OPTIONS: FieldOption[] = [
+	{ value: 'auto', fallbackLabel: 'auto' },
+	{ value: 'low', fallbackLabel: 'low' },
+	{ value: 'medium', fallbackLabel: 'medium' },
+	{ value: 'high', fallbackLabel: 'high' },
+];
+
+const IMAGE_BACKGROUND_OPTIONS: FieldOption[] = [
+	{ value: 'auto', fallbackLabel: 'auto' },
+	{ value: 'opaque', fallbackLabel: 'opaque' },
+];
+
+const IMAGE_OUTPUT_FORMAT_OPTIONS: FieldOption[] = [
+	{ value: 'png', fallbackLabel: 'png' },
+	{ value: 'webp', fallbackLabel: 'webp' },
+	{ value: 'jpeg', fallbackLabel: 'jpeg' },
+];
+
+const IMAGE_MODERATION_OPTIONS: FieldOption[] = [
+	{ value: 'auto', fallbackLabel: 'auto' },
+	{ value: 'low', fallbackLabel: 'low' },
+];
+
 type FieldCatalogEntry = {
 	labelKey?: string;
 	placeholderKey?: string;
@@ -65,6 +88,7 @@ type FieldCatalogEntry = {
 
 type FieldSpec = {
 	key: string;
+	catalogKey?: string;
 	descriptionKey?: string;
 };
 
@@ -116,6 +140,15 @@ const FIELD_CATALOG: Record<string, FieldCatalogEntry> = {
 		fallbackPlaceholder: 'gpt-4.1-mini',
 		fallbackTooltip:
 			'The exact upstream model identifier. This decides which provider model Revornix actually uses.',
+	},
+	openai_image_model_name: {
+		labelKey: 'setting_engine_field_model_name_label',
+		placeholderKey: 'setting_engine_field_openai_image_model_name_placeholder',
+		tooltipKey: 'setting_engine_field_openai_image_model_name_tooltip',
+		fallbackLabel: 'Model Name',
+		fallbackPlaceholder: 'gpt-image-2',
+		fallbackTooltip:
+			'The OpenAI image model identifier, such as `gpt-image-2` or a pinned snapshot.',
 	},
 	token: {
 		labelKey: 'setting_engine_field_token_label',
@@ -226,6 +259,79 @@ const FIELD_CATALOG: Record<string, FieldCatalogEntry> = {
 		fallbackPlaceholder: '2048x2048',
 		fallbackTooltip:
 			'The target image size. Follow the provider format, such as `1024x1024` or `2048*2048`.',
+	},
+	openai_image_size: {
+		labelKey: 'setting_engine_field_size_label',
+		placeholderKey: 'setting_engine_field_openai_image_size_placeholder',
+		tooltipKey: 'setting_engine_field_openai_image_size_tooltip',
+		fallbackLabel: 'Size',
+		fallbackPlaceholder: 'auto',
+		fallbackTooltip:
+			'GPT Image 2 size. Use `auto` or dimensions such as `1024x1024`, `1536x1024`, or `2048x2048`.',
+	},
+	quality: {
+		labelKey: 'setting_engine_field_quality_label',
+		placeholderKey: 'setting_engine_field_quality_placeholder',
+		tooltipKey: 'setting_engine_field_quality_tooltip',
+		fallbackLabel: 'Quality',
+		fallbackPlaceholder: 'auto',
+		fallbackTooltip:
+			'The rendering quality for OpenAI image generation. Use `auto` unless you need an explicit cost/quality tradeoff.',
+		type: 'select',
+		options: IMAGE_QUALITY_OPTIONS,
+	},
+	background: {
+		labelKey: 'setting_engine_field_background_label',
+		placeholderKey: 'setting_engine_field_background_placeholder',
+		tooltipKey: 'setting_engine_field_background_tooltip',
+		fallbackLabel: 'Background',
+		fallbackPlaceholder: 'auto',
+		fallbackTooltip:
+			'Controls whether GPT Image 2 should use an opaque or automatically selected background.',
+		type: 'select',
+		options: IMAGE_BACKGROUND_OPTIONS,
+	},
+	output_format: {
+		labelKey: 'setting_engine_field_output_format_label',
+		placeholderKey: 'setting_engine_field_output_format_placeholder',
+		tooltipKey: 'setting_engine_field_output_format_tooltip',
+		fallbackLabel: 'Output Format',
+		fallbackPlaceholder: 'png',
+		fallbackTooltip:
+			'The image file format returned by the provider.',
+		type: 'select',
+		options: IMAGE_OUTPUT_FORMAT_OPTIONS,
+	},
+	output_compression: {
+		labelKey: 'setting_engine_field_output_compression_label',
+		placeholderKey: 'setting_engine_field_output_compression_placeholder',
+		tooltipKey: 'setting_engine_field_output_compression_tooltip',
+		fallbackLabel: 'Output Compression',
+		fallbackPlaceholder: '80',
+		fallbackTooltip:
+			'Optional compression level from 0 to 100 for JPEG or WebP output.',
+		type: 'number',
+	},
+	moderation: {
+		labelKey: 'setting_engine_field_moderation_label',
+		placeholderKey: 'setting_engine_field_moderation_placeholder',
+		tooltipKey: 'setting_engine_field_moderation_tooltip',
+		fallbackLabel: 'Moderation',
+		fallbackPlaceholder: 'auto',
+		fallbackTooltip:
+			'Controls GPT Image moderation strictness. Use auto by default, or low for less restrictive filtering.',
+		type: 'select',
+		options: IMAGE_MODERATION_OPTIONS,
+	},
+	n: {
+		labelKey: 'setting_engine_field_n_label',
+		placeholderKey: 'setting_engine_field_n_placeholder',
+		tooltipKey: 'setting_engine_field_n_tooltip',
+		fallbackLabel: 'Image Count',
+		fallbackPlaceholder: '1',
+		fallbackTooltip:
+		'How many images to request. Revornix uses the first returned image in the markdown result.',
+		type: 'number',
 	},
 	negative_prompt: {
 		labelKey: 'setting_engine_field_negative_prompt_label',
@@ -445,6 +551,7 @@ const ENGINE_UUID_SCHEMAS: Record<string, string> = {
 	'86a7083d4e994b86819a960bd51e9a1c': 'volc_stt_fast',
 	'7f09db37f3f04b23832a518f5f25fa9b': 'volc_image',
 	'9f1fb0005a99483da191a38af6dc7a23': 'banana_image',
+	'eb40c4b4c5414a53b73ebdc0640ff641': 'openai_image',
 	'd5daed7e73144af3b2ad7410976f9424': 'bailian_image',
 	'c5f2670915994b1f80bc9cf2517343a4': 'kimi_image_understand',
 };
@@ -476,6 +583,21 @@ const ENGINE_SCHEMAS: Record<string, FieldSpec[]> = {
 		{ key: 'api_key' },
 		{ key: 'base_url' },
 		{ key: 'model_name' },
+	],
+	openai_image: [
+		{ key: 'api_key' },
+		{ key: 'base_url' },
+		{ key: 'model_name', catalogKey: 'openai_image_model_name' },
+		{
+			key: 'size',
+			catalogKey: 'openai_image_size',
+			descriptionKey: 'setting_engine_config_desc_openai_image_size',
+		},
+		{ key: 'quality' },
+		{ key: 'background' },
+		{ key: 'output_format' },
+		{ key: 'output_compression' },
+		{ key: 'moderation' },
 	],
 	bailian_image: [
 		{ key: 'api_key' },
@@ -588,7 +710,6 @@ const normalizeVolcTtsConfig = (value: Record<string, unknown>) => {
 		'input_info',
 		'aigc_metadata',
 		'speaker_additions',
-		'extra_body',
 	] as const) {
 		const parsed = parseRecordLike(normalized[key]);
 		if (parsed) {
@@ -720,7 +841,7 @@ const createFieldDefinition = ({
 	spec: FieldSpec;
 	currentValues: Record<string, unknown>;
 }): FieldDefinition => {
-	const catalogEntry = FIELD_CATALOG[spec.key];
+	const catalogEntry = FIELD_CATALOG[spec.catalogKey ?? spec.key];
 	const exampleValue = currentValues[spec.key];
 
 	return {
@@ -869,6 +990,9 @@ const isFieldVisible = (field: FieldDefinition, values: ConfigRecord) => {
 			Boolean(values.aigc_watermark) &&
 			supportedFormats.has(resolveAudioFormat(values))
 		);
+	}
+	if (field.key === 'output_compression') {
+		return values.output_format === 'jpeg' || values.output_format === 'webp';
 	}
 	return true;
 };
