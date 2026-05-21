@@ -19,6 +19,7 @@ deployed_by_official = check_deployed_by_official_in_fuc()
 # ---------------- Engines ----------------
 from engine.image_generate.bailian import BailianImageGenerateEngine
 from engine.image_generate.banana import BananaImageGenerateEngine
+from engine.image_generate.openai_image import OpenAIImageGenerateEngine
 from engine.image_generate.volc import VolcImageGenerateEngine
 from engine.image_understand.kimi import KimiImageUnderstandEngine
 from engine.markdown.jina import JinaEngine
@@ -222,6 +223,7 @@ async def seed_database(db: AsyncSession):
         VolcImageGenerateEngine(),
         BailianImageGenerateEngine(),
         BananaImageGenerateEngine(),
+        OpenAIImageGenerateEngine(),
         KimiImageUnderstandEngine(),
         OpenAIAudioEngine(),
         VolcSTTFastEngine(),
@@ -337,6 +339,7 @@ async def seed_database(db: AsyncSession):
         # Engines（注意：这里要从 engine_provided 表取 id，别查 engine 表）
         engines: list[Engine] = [
             Engine.Official_Banana_Image,
+            Engine.Official_OpenAI_Image,
             Engine.Official_Bailian_Image,
             Engine.Official_Volc_Image,
             Engine.Official_Volc_TTS,
