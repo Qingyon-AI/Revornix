@@ -898,7 +898,10 @@ const TipTapEditor = ({
 		try {
 			return await task(controller.signal);
 		} catch (error) {
-			if ((error as DOMException)?.name === 'AbortError') {
+			if (
+				controller.signal.aborted ||
+				(error as DOMException)?.name === 'AbortError'
+			) {
 				throw new Error(timeoutMessage);
 			}
 			throw error;
@@ -1122,11 +1125,11 @@ const TipTapEditor = ({
 			for (const plan of imagePlan.plans) {
 				try {
 					const image = await withTimeout(
-						() =>
+						(signal) =>
 							generateImageWithDefaultEngine({
 								prompt: plan.prompt,
 								engine_id: selectedIllustrationEngineId,
-							}),
+							}, signal),
 						AI_ILLUSTRATION_TIMEOUT_MS,
 						t('editor_illustration_timeout'),
 					);
@@ -1348,11 +1351,11 @@ const TipTapEditor = ({
 		setIsGeneratingIllustration(true);
 		try {
 			const image = await withTimeout(
-				() =>
+				(signal) =>
 					generateImageWithDefaultEngine({
 						prompt,
 						engine_id: selectedIllustrationEngineId,
-					}),
+					}, signal),
 				AI_ILLUSTRATION_TIMEOUT_MS,
 				t('editor_illustration_timeout'),
 			);

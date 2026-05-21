@@ -17,6 +17,7 @@ interface RequestOptions {
     data?: any;
     headers?: Headers;
     formData?: FormData;
+    signal?: AbortSignal;
 }
 
 type ErrorResponse = {
