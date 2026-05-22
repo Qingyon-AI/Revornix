@@ -88,12 +88,12 @@ async def section_user_request(
         keyword=section_user_request.keyword
     )
     if section_user_request.limit > 0 and len(db_section_users) == section_user_request.limit:
-        last_user = db_section_users[-1][0]
+        last_section_user = db_section_users[-1][1]
         db_next_section_user = await crud.section.search_next_user_and_section_user_by_section_id_async(
             db=db,
             section_id=section_user_request.section_id,
             filter_roles=section_user_request.filter_roles,
-            user=last_user,
+            section_user=last_section_user,
             keyword=section_user_request.keyword
         )
         has_more = db_next_section_user is not None
