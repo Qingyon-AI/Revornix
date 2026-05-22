@@ -103,7 +103,14 @@ const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions
     const retryOriginalRequest = new Promise<T>((resolve, reject) => {
         addSubscriber({
             resolve: () => {
-                resolve(request<T>(url, initialOptions));
+                // Re-issue the original request with `_retriedAfterRefresh=true`
+                // so that if it 401s *again* we fail loudly instead of looping
+                // through another refresh. Guards against pathological cases:
+                // - server clock skew immediately invalidates the new token
+                // - updateToken bug returns a wrong-typed token
+                // - user banned/deleted in the narrow refresh window
+                // - replication lag (refresh hits primary, business call hits replica)
+                resolve(request<T>(url, initialOptions, true));
             },
             reject,
         });
@@ -117,7 +124,7 @@ const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions
     return retryOriginalRequest;
 }
 
-export const request = <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
+export const request = <T>(url: string, initialOptions?: RequestOptions, _retriedAfterRefresh: boolean = false): Promise<T> => {
     const headers = new Headers(initialOptions?.headers || undefined);
     if (!initialOptions?.formData && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
@@ -180,13 +187,13 @@ export const request = <T>(url: string, initialOptions?: RequestOptions): Promis
 
         // 🟦 Response 不是 OK 的情况
         if (!response.ok) {
-            // Token 过期：尝试刷新
-            if (response.status === 401) {
+            // Token 过期：尝试刷新（每个原始请求最多刷新-重试一次,避免死循环）
+            if (response.status === 401 && !_retriedAfterRefresh) {
                 const retryPromise = checkTokenRefreshStatus<T>(url, initialOptions);
                 return retryPromise && retryPromise.then(resolve).catch(reject);
             }
 
-            // 其他错误：返回规范化错误对象
+            // 其他错误（含"刷新后仍然 401"）：返回规范化错误对象
             reject(await parseError(response));
             return;
         }
