@@ -47,6 +47,7 @@ async def _ensure_document_note_read_access(
         has_collaborator = db_user_document is not None
 
     ensure_document_access(
+        user_id=user_id,
         is_creator=False,
         has_public_document=False,
         has_document_collaborator=has_collaborator,
