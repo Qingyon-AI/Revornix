@@ -26,6 +26,7 @@ from mcp_router.common import common_mcp_router
 from mcp_router.document import document_mcp_router
 from mcp_router.graph import graph_mcp_router
 from mcp_router.section import section_mcp_router
+from router.access_request_manage import access_request_manage_router
 from router.ai import ai_router
 from router.admin import admin_router
 from router.api_key import api_key_router
@@ -150,6 +151,7 @@ app.include_router(engine_router, prefix="/engine", tags=["engine"])
 app.include_router(file_system_router, prefix="/file-system", tags=["file-system"])
 app.include_router(graph_router, prefix="/graph", tags=["graph"])
 app.include_router(wechat_official_router, prefix="/wechat", tags=["wechat"])
+app.include_router(access_request_manage_router, prefix="/access-request", tags=["access-request"])
 
 # 挂载 MCP 应用：挂载路径 + MCP 内部路径组成最终调用地址，例如 /mcp-server/common/mcp/
 app.mount("/mcp-server/common", common_mcp_app)

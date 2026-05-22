@@ -1,9 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { Expand, GitBranch, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { DocumentCategory, DocumentGraphStatus } from '@/enums/document';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,8 @@ import DocumentGraph from './document-graph';
 import DocumentInfo from './document-info';
 import DocumentPodcast from './document-podcast';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
+import JoinRequestsCard from '@/components/permission/join-requests-card';
+import { AccessRequestTargetType } from '@/service/access-request';
 
 const SidebarSection = ({
 	title,
@@ -175,6 +179,7 @@ type DocumentDetailSidebarProps = {
 	graphCancelling: boolean;
 	documentCategory?: DocumentCategory;
 	graphStatus?: DocumentGraphStatus;
+	isCreator?: boolean;
 	onGraphGenerate: () => void;
 	onGraphCancel: () => void;
 };
@@ -192,10 +197,30 @@ const DocumentDetailSidebar = ({
 	graphCancelling,
 	documentCategory,
 	graphStatus,
+	isCreator = false,
 	onGraphGenerate,
 	onGraphCancel,
 }: DocumentDetailSidebarProps) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const accessRequestIdParam = searchParams.get('access_request_id');
+	const accessRequestId = accessRequestIdParam
+		? Number(accessRequestIdParam)
+		: null;
+	const autoOpenRequestId =
+		accessRequestId && Number.isFinite(accessRequestId) && accessRequestId > 0
+			? accessRequestId
+			: null;
+	const clearAccessRequestParam = useCallback(() => {
+		const nextParams = new URLSearchParams(searchParams.toString());
+		nextParams.delete('access_request_id');
+		const nextQuery = nextParams.toString();
+		router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+			scroll: false,
+		});
+	}, [pathname, router, searchParams]);
 
 	return (
 		<div className='space-y-4 p-3 pb-6'>
@@ -204,7 +229,20 @@ const DocumentDetailSidebar = ({
 			) : (
 				<>
 					<SidebarSection separated={false}>
-						<DocumentInfo id={id} />
+						<DocumentInfo
+							id={id}
+							afterCreator={
+								isCreator ? (
+									<JoinRequestsCard
+										targetType={AccessRequestTargetType.DOCUMENT}
+										targetId={id}
+										canManage
+										autoOpenRequestId={autoOpenRequestId}
+										onAutoOpenConsumed={clearAccessRequestParam}
+									/>
+								) : undefined
+							}
+						/>
 					</SidebarSection>
 
 					<SidebarSection>
@@ -215,47 +253,46 @@ const DocumentDetailSidebar = ({
 						)}
 					</SidebarSection>
 
-					<SidebarSection
-						>
-							<SidebarTaskNode
-								icon={GitBranch}
-								status={graphBadge}
-								title={t('document_graph')}
-								description={t('document_graph_description')}
-								tone={graphTone}
-								hint={graphStale ? t('document_graph_stale_hint') : undefined}
-								action={
-									<div className='flex items-center gap-2'>
-										<Button
-											variant='outline'
-											className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-											onClick={
-												graphStatus === DocumentGraphStatus.BUILDING ||
-												graphStatus === DocumentGraphStatus.WAIT_TO
-													? onGraphCancel
-													: onGraphGenerate
-											}
-											disabled={
-												graphStatus === DocumentGraphStatus.BUILDING ||
-												graphStatus === DocumentGraphStatus.WAIT_TO
-													? graphCancelling
-													: graphGenerating
-											}>
-											{graphStatus === DocumentGraphStatus.BUILDING ||
-											graphGenerating ||
-											graphCancelling ? (
-												<Loader2 className='size-4 animate-spin' />
-											) : null}
-											{graphStatus === DocumentGraphStatus.BUILDING ||
+					<SidebarSection>
+						<SidebarTaskNode
+							icon={GitBranch}
+							status={graphBadge}
+							title={t('document_graph')}
+							description={t('document_graph_description')}
+							tone={graphTone}
+							hint={graphStale ? t('document_graph_stale_hint') : undefined}
+							action={
+								<div className='flex items-center gap-2'>
+									<Button
+										variant='outline'
+										className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+										onClick={
+											graphStatus === DocumentGraphStatus.BUILDING ||
 											graphStatus === DocumentGraphStatus.WAIT_TO
-												? t('cancel')
-												: graphActionLabel}
-										</Button>
-									</div>
-								}
-								result={
-									hasRenderableGraph ? (
-										<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
+												? onGraphCancel
+												: onGraphGenerate
+										}
+										disabled={
+											graphStatus === DocumentGraphStatus.BUILDING ||
+											graphStatus === DocumentGraphStatus.WAIT_TO
+												? graphCancelling
+												: graphGenerating
+										}>
+										{graphStatus === DocumentGraphStatus.BUILDING ||
+										graphGenerating ||
+										graphCancelling ? (
+											<Loader2 className='size-4 animate-spin' />
+										) : null}
+										{graphStatus === DocumentGraphStatus.BUILDING ||
+										graphStatus === DocumentGraphStatus.WAIT_TO
+											? t('cancel')
+											: graphActionLabel}
+									</Button>
+								</div>
+							}
+							result={
+								hasRenderableGraph ? (
+									<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 											<DocumentGraph document_id={id} hideStatePanels />
 											<Dialog>
 												<DialogTrigger asChild>
@@ -280,10 +317,10 @@ const DocumentDetailSidebar = ({
 													</div>
 												</DialogContent>
 											</Dialog>
-										</div>
-									) : null
-								}
-							/>
+									</div>
+								) : null
+							}
+						/>
 					</SidebarSection>
 				</>
 			)}

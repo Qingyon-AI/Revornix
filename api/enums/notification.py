@@ -28,6 +28,10 @@ class NotificationTriggerEventUUID(Enum):
     DOCUMENT_PROCESS_COMPLETED = '3e6b9a1c5d2847f0a8c4b7e9f2d3a4b5'
     DOCUMENT_PODCAST_READY = '8f1c4e6a9b3d4f7eb2a5c8d1e3f6a9b4'
     DOCUMENT_COMMENTED = 'bc665a75ead04dd9b12ce2f0bb6d5763'
+    SECTION_JOIN_REQUESTED = 'a1c4f5e8b2d9472d8e6a3b9c7d1f4e0a'
+    SECTION_JOIN_REQUEST_HANDLED = 'd7e2b8a4f1c3489abe5d6c8a9f0e3b21'
+    DOCUMENT_JOIN_REQUESTED = 'f3b9d1c5a4e2476d92e8b1c7d3a5f6b4'
+    DOCUMENT_JOIN_REQUEST_HANDLED = '6c1d8f3b9a4e472f8b5c2e7d9a1f3b6e'
 
 
 class NotificationTemplateMeta(NamedTuple):
@@ -74,6 +78,22 @@ class NotificationTemplate(Enum):
     DOCUMENT_COMMENTED = NotificationTemplateMeta(
         uuid='04d4219387d24a559f2f2a01382a99a5',
         name='Document Commented',
+    )
+    SECTION_JOIN_REQUESTED = NotificationTemplateMeta(
+        uuid='5e7a8d2b4f1c468dbb3c9e2a8f7d1b6c',
+        name='Section Join Requested',
+    )
+    SECTION_JOIN_REQUEST_HANDLED = NotificationTemplateMeta(
+        uuid='b4c2d8f1a3e549fdb7c9e2a6d8f1b3c5',
+        name='Section Join Request Handled',
+    )
+    DOCUMENT_JOIN_REQUESTED = NotificationTemplateMeta(
+        uuid='a8f3b1c5d2e4476ab9c8e2d7f1a4b6c9',
+        name='Document Join Requested',
+    )
+    DOCUMENT_JOIN_REQUEST_HANDLED = NotificationTemplateMeta(
+        uuid='c2d8e4f1a3b549b7ace1d6f2a8c4b9e7',
+        name='Document Join Request Handled',
     )
 
     @property

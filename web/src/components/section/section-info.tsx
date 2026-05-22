@@ -76,7 +76,13 @@ const InfoMetric = ({
 	);
 };
 
-const SectionInfo = ({ id }: { id: number }) => {
+const SectionInfo = ({
+	id,
+	afterCreator,
+}: {
+	id: number;
+	afterCreator?: ReactNode;
+}) => {
 	const locale = useLocale();
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -326,6 +332,13 @@ const SectionInfo = ({ id }: { id: number }) => {
 					</div>
 				</div>
 			)}
+
+			{afterCreator ? (
+				<>
+					<Separator className='bg-border/60' />
+					<div>{afterCreator}</div>
+				</>
+			) : null}
 
 			<Separator className='bg-border/60' />
 

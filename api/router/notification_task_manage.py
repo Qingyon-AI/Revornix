@@ -25,6 +25,11 @@ TRIGGER_EVENT_TEMPLATE_UUID_MAP = {
     NotificationTriggerEventUUID.SECTION_PPT_READY.value: NotificationTemplate.SECTION_PPT_READY.meta.uuid,
     NotificationTriggerEventUUID.DOCUMENT_PROCESS_COMPLETED.value: NotificationTemplate.DOCUMENT_PROCESS_COMPLETED.meta.uuid,
     NotificationTriggerEventUUID.DOCUMENT_PODCAST_READY.value: NotificationTemplate.DOCUMENT_PODCAST_READY.meta.uuid,
+    NotificationTriggerEventUUID.DOCUMENT_COMMENTED.value: NotificationTemplate.DOCUMENT_COMMENTED.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_JOIN_REQUESTED.value: NotificationTemplate.SECTION_JOIN_REQUESTED.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_JOIN_REQUEST_HANDLED.value: NotificationTemplate.SECTION_JOIN_REQUEST_HANDLED.meta.uuid,
+    NotificationTriggerEventUUID.DOCUMENT_JOIN_REQUESTED.value: NotificationTemplate.DOCUMENT_JOIN_REQUESTED.meta.uuid,
+    NotificationTriggerEventUUID.DOCUMENT_JOIN_REQUEST_HANDLED.value: NotificationTemplate.DOCUMENT_JOIN_REQUEST_HANDLED.meta.uuid,
 }
 
 
