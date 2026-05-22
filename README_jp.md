@@ -13,78 +13,101 @@
 
 > Reject FOMO! When facing the information stream, be lazy, leave the rest to AI!
 
-Revornix は、オープンソースかつローカルファーストな AI 情報ワークスペースです。散らばった情報源を構造化ナレッジへ変換し、画像付きレポートやポッドキャスト音声を自動生成して、必要な情報を通知で届けます。
+Revornix は、オープンソースかつローカルファーストな AI 情報ワークスペースです。「気になっているけど読みきれない」リンク・PDF・音声・スクリーンショットをまとめて渡しておけば、構造化されたナレッジに整理し、読める/聴ける図文記事やポッドキャストとして再構成し、必要なタイミングで通知として届けてくれます。
+
+Web クライアント・ゲートウェイ・API・非同期ワーカー・トレンドフィード・ドキュメントサイトまで、すべてがオープンで自前のインフラ上で動かせます。
 
 ## リンク
 
-- 公式サイト: [https://revornix.com](https://revornix.com)
-- 環境変数ドキュメント: [https://revornix.com/docs/environment](https://revornix.com/docs/environment)
-- 開発ロードマップ: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
-- コミュニティ: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+- 公式サイト: <https://revornix.com>
+- 体験版: <https://app.revornix.com>
+- ドキュメント: <https://revornix.com/docs>
+- 環境変数: <https://revornix.com/docs/environment>
+- ロードマップ: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+- コミュニティ: [Discord](https://discord.com/invite/3XZfz84aPN) · [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) · [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
 ## なぜ Revornix か
 
-- 情報処理を一本化: 収集から要約、グラフ、ポッドキャスト、通知まで自動化。
-- AI 検索品質を最適化: チャンク化 + ベクトル化 + パーソナライズ GraphRAG。
-- データを自分で管理: ローカルデプロイで主要データを自社インフラに保持。
-- モデル選択が自由: OpenAI API 互換モデルを柔軟に接続可能。
-- 共同編集に対応: ナレッジ共有や共同構築、公開運用にも対応。
-- 公開ディスカバリー: 公開済みドキュメント、セクション、クリエイター、ラベル、トレンドを SEO 向けのコミュニティページで表示。
+- **情報処理を一本化** —— 収集から要約、グラフ、ポッドキャスト、通知まで、すべての工程をひとつの製品で完結。
+- **AI 検索品質を最適化** —— Milvus 上のチャンク化ベクトル検索と、Neo4j 上のパーソナライズ GraphRAG を組み合わせ、回答精度を高めます。
+- **データを自分で管理** —— 完全に自分のインフラ上で動作。ドキュメントもデータベースも鍵も、すべて手元に残ります。
+- **モデル選択が自由** —— OpenAI API 互換モデルを柔軟に接続でき、解析・ベクトル化・要約・ポッドキャスト・挿絵などのエンジンを個別に切り替え可能。
+- **共同編集に対応** —— 知識セクションをチーム内で共有することも、コミュニティに公開することもできます。
+- **公開ディスカバリー** —— 公開済みドキュメント、セクション、クリエイター、ラベル、トレンドが、SEO に配慮したコミュニティページとして自動的に表示されます。
 
 ## 情報ストリームから成果まで
 
-1. 収集: Web、PDF、Word、Excel、PPT、テキスト、API、ライブラリ資料など。
-2. 解析: MinerU、Jina などで正規化。カスタム変換エンジンにも対応。
-3. 整理: チャンク化、ベクトル保存、知識グラフ構築で検索・推論可能に。
-4. 配信: 図文生成、挿絵、ポッドキャスト化、通知配信まで自動実行。
+1. **収集** —— Web、PDF、Word、Excel、PPT、テキスト、音声、加えて公開 API、Python SDK / CLI、OpenClaw Skill から自動取り込み。
+2. **解析** —— プラガブルな変換エンジン（MinerU、Jina、カスタム）で整形・正規化し、統一された Markdown に。
+3. **整理** —— チャンク化して Milvus にベクトル投入、ユーザー専用の Neo4j グラフにエンティティ/関係を抽出、タグを自動付与。
+4. **配信** —— AI 要約、挿絵付き長文、二人対話ポッドキャスト、通知を、あなたのペースで届けます。
 
 ## プロジェクト構成
 
 ```text
 Revornix/
-├── web/                  # Next.js フロントエンド（UI / ダッシュボード）
-├── api/                  # FastAPI コアバックエンド（認証、ドキュメント、AI API）
-├── celery-worker/        # 非同期ワークフロー（embedding、要約、グラフ、通知）
-├── hot-news/             # トレンド集約サービス（DailyHotApi ベース）
-└── docker-compose-local.yaml # ローカル依存サービス起動
+├── web/                       # Next.js クライアント（ワークスペース + 公開ページ）— web/README.md
+├── api/                       # FastAPI コアバックエンド（認証、ドキュメント、AI API）— api/README.md
+├── celery-worker/             # 非同期ワークフロー（embedding、要約、グラフ、ポッドキャスト、通知）— celery-worker/README.md
+├── gateway/                   # Go 製の公開エントリゲートウェイ（ルーティング、アンチスクレイピング、上流フェイルオーバー）
+├── hot-news/                  # トレンド集約サービス（DailyHotApi ベース）
+├── docs/                      # 公開ドキュメントサイト（revornix.com/docs）— 独立した Next.js + Nextra
+├── desktop/                   # デスクトップアプリ（Tauri/Electron）の予定地 — 現状はプレースホルダ
+├── assets/                    # リポジトリ全体で使用する画像/ブランド素材
+└── docker-compose-local.yaml  # ローカル依存（Postgres、Redis、Neo4j、MinIO、Milvus）の起動
 ```
+
+各サブディレクトリには、それぞれのサービスの詳細をまとめた README があります。
 
 ## 主な機能
 
-- 柔軟な入力: 複数フォーマットを統一パイプラインで解析。
-- 高品質な変換: Markdown/構造化変換を強力にサポート。
-- ベクトル検索: セマンティック検索と AI コンテキスト強化に対応。
-- グラフ推論: GraphRAG により文脈精度を向上。
-- グローバル検索: プライベート知識のベクトル/全文検索に加え、公開ドキュメント、セクション、クリエイター、ラベルの発見をサポート。
-- MCP 内蔵: MCP Client と MCP Server の両方を提供。
-- 自動ポッドキャスト: ドキュメント/セクションの音声化を自動更新。
-- AI 挿絵生成: 画像を生成してコンテンツに埋め込み可能。
-- トレンド一元化: DailyHotApi 連携で主要プラットフォームを横断表示。
-- 公開コミュニティ: 公開セクション/ドキュメントの閲覧、公開ラベルでの絞り込み、クリエイターページ、公開ホットサーチページを提供。
-- Markdown 表示/編集の改善: テーブル、Mermaid、画像、本文シェル、長文向けフローティング目次を強化。
-- 多言語/レスポンシブ: モバイルとデスクトップの両方で快適に利用可能。
-- 多層防御: gateway 側のアンチスクレイピングと API 側のレート制限で、公開高リスクエンドポイントを保護。
+現在実装されている機能の概要です。各機能のスクリーンショット付き解説は [ドキュメントサイト](https://revornix.com/docs) を参照してください。
+
+- **マルチフォーマット取り込み** —— Web、PDF、Word、Excel、PPT、テキスト、音声、公開 API 経由のデータ。
+- **プラガブルな解析エンジン** —— ワークスペース単位でデフォルトエンジン（MinerU、Jina、カスタム）を選択。文書タイプごとに使い分けることも可能。
+- **ベクトル検索 + GraphRAG** —— 全ドキュメントを Milvus に投入し、ユーザー専用の Neo4j グラフに射影。AI 回答により多くの文脈を与えます。
+- **グローバル検索** —— プライベートライブラリにはベクトル/全文検索、公開層には公開ドキュメント・セクション・クリエイター・ラベルの発見機能。
+- **セクション** —— トピックごとにまとめたドキュメント集。プライベート、共同編集、コミュニティ公開のいずれも可能。
+- **デイリーセクション** —— 当日に集めた内容を自動的にひとつの読みやすいセクションにまとめます。
+- **AI アシスタント（Revornix AI）** —— あなたのドキュメントとパーソナルグラフをもとに対話します。
+- **MCP** —— MCP クライアント（外部 MCP サーバーを呼び出す）と MCP サーバー（自分のライブラリを MCP 対応ツールに公開）の両方をサポート。
+- **自動ポッドキャスト** —— ドキュメント／セクションを二人対話のオーディオに変換。コンテンツ更新時に再生成可能。
+- **AI 挿絵** —— 長文の章ごとに挿絵を生成し、本文に埋め込みます。
+- **トレンド集約** —— 内蔵の `hot-news/` で複数プラットフォームのホットランキングを集約。
+- **強化された Markdown 閲覧／編集** —— Tiptap ベースのエディタで、表・Mermaid・数式・画像に対応。長文の公開ページにはフローティング目次。
+- **通知システム** —— メール／アプリ内／プッシュなど複数チャネルから、タスク完了や定期サマリーを配信。
+- **多言語・レスポンシブ** —— 製品 UI は英語/中国語に対応し、リポジトリ README は英語/中国語/日本語を用意。デスクトップとモバイルの両方に最適化。
+- **多層防御** —— `gateway/` がエッジで明らかなクローラを遮断、`api/` が公開エンドポイントへのレート制限を補完。
 
 ## UI プレビュー
 
+ワークスペースと公開サーフェスの一部です。フルウォークスルーは [ドキュメント](https://revornix.com/docs) を参照してください。
+
+**ダッシュボード** —— 日次概要、AI からの提案、データ鮮度シグナル。
 ![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
 
+**Revornix AI** —— あなたのドキュメントとパーソナルグラフに基づくチャット。
 ![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
 
+**ドキュメント詳細** —— Markdown 閲覧、AI 要約、ポッドキャスト、ナレッジグラフ、操作を 1 画面に集約。
 ![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
 
+**パーソナル知識グラフ** —— 保存したコンテンツから抽出したエンティティと関係。
 ![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
 
+**セクション** —— テーマごとにドキュメントを整理したコレクション。
 ![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
 
+**ポッドキャスト** —— ドキュメントやセクションを二人対話の音声に変換。
 ![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
 
+**クリエイター公開ページ** —— SEO 対応のクリエイタープロフィール。
 ![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 
+**コミュニティ** —— 他のユーザーが公開したコンテンツを閲覧。
 ![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
 
-注: トレンドヘッドライン機能は [DailyHotApi](https://github.com/imsyy/DailyHotApi) をベースにしています。
-
+**トレンドヘッドライン** —— 内蔵の `hot-news/` で複数プラットフォームのホットランキングを集約（[DailyHotApi](https://github.com/imsyy/DailyHotApi) ベース）。
 ![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
 
 ## クイックスタート
@@ -116,6 +139,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 
 ```shell
 cp ./web/.env.example ./web/.env
+cp ./gateway/.env.example ./gateway/.env
 cp ./api/.env.example ./api/.env
 cp ./celery-worker/.env.example ./celery-worker/.env
 ```
@@ -142,7 +166,16 @@ pip install -r ./requirements.txt
 fastapi run --port 8001
 ```
 
-### 6) トレンド集約サービスを起動
+### 6) ゲートウェイサービスを起動（任意）
+
+```shell
+cd gateway
+go run ./cmd/gateway
+```
+
+ローカル開発では必須ではありませんが、本番環境では推奨します。公開トラフィックの入口、上流フェイルオーバー、`api/` に到達する前のアンチスクレイピング/レート制限を担当します。
+
+### 7) トレンド集約サービスを起動
 
 ```shell
 cd hot-news
@@ -150,7 +183,7 @@ pnpm build
 pnpm start
 ```
 
-### 7) Celery ワーカーを起動
+### 8) Celery ワーカーを起動
 
 ```shell
 cd celery-worker
@@ -160,7 +193,7 @@ playwright install
 ./start-worker.sh
 ```
 
-### 8) フロントエンドを起動
+### 9) フロントエンドを起動
 
 ```shell
 cd web
@@ -168,7 +201,15 @@ pnpm build
 pnpm start
 ```
 
-すべて起動後、http://localhost:3000 にアクセスしてください。
+すべて起動後、<http://localhost:3000> にアクセスしてください。
+
+## 次に読むもの
+
+- **製品を使いたい?** <https://revornix.com/docs/start> から始め、<https://app.revornix.com> にアクセスしてください。
+- **拡張したい?** 各サービスに個別の README があります: [`web/`](./web/README.md)、[`api/`](./api/README.md)、[`celery-worker/`](./celery-worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
+- **ドキュメントに貢献したい?** [`docs/src/content/`](./docs/README.md) に MDX を追加してください。
+- **デスクトップ版が気になる?** まだ計画段階です。[`desktop/`](./desktop/README.md) を参照。
+- **アーキテクチャを深く知りたい?** <https://revornix.com/docs/developer/structure>。
 
 ## コントリビューター
 

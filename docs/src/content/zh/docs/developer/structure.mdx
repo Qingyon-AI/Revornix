@@ -1,6 +1,6 @@
 # Revornix 项目架构概览
 
-最后按仓库代码核对时间：2026-04-06
+最后按仓库代码核对时间：2026-05-22
 
 本页基于当前 monorepo 目录、`docker-compose-local.yaml` 以及实际仍在使用的运行入口整理。
 
@@ -14,6 +14,7 @@ Revornix/
 ├── celery-worker/   # 后台工作流与异步重任务
 ├── hot-news/        # 热搜聚合微服务
 ├── docs/            # 当前这套 Nextra 文档站
+├── desktop/         # 规划中的桌面端外壳占位目录
 ├── assets/          # 仓库内共享静态资源
 ├── volumes/         # docker-compose-local 的本地持久化目录
 └── docker-compose-local.yaml
@@ -57,7 +58,27 @@ Revornix/
 - 不属于最终用户产品运行链路的一部分。
 - 主要用于说明仓库结构、功能、部署方式和开发指南。
 
-## 3. 数据存储与共享基础设施
+### `desktop`
+
+- 规划中的桌面端外壳，用于未来承载 Web 产品。
+- 当前还没有可构建的应用源码。
+- 后续方向可能是 Tauri 或 Electron，具体取决于打包、离线能力和系统集成需求。
+
+## 3. 产品页面结构
+
+主产品界面位于 `web/src/app`，通过 route group 把公开页面、私有工作台和管理后台分开组织。
+
+| 页面层 | 路由 | 职责 |
+| --- | --- | --- |
+| 公开 SEO 页面 | `/`、`/community`、`/hot-search`、`/document/[id]`、`/section/[uuid]`、`/user/[id]` | 官网入口、社区发现、公开文档、公开专栏、创作者主页、公开热搜 |
+| 公开认证页面 | `/login`、`/register` | 未登录用户的登录与注册 |
+| 私有工作台 | `/dashboard`、`/document/*`、`/section/*`、`/revornix-ai`、`/graph`、`/account/*`、`/setting/*`、`/user/*` | 登录后的采集、阅读、AI、图谱、设置、社交、API Key、套餐与通知 |
+| 管理后台 | `/admin`、`/admin/users`、`/admin/documents`、`/admin/sections`、`/admin/security` | 用户、内容、安全与通知相关的运营管理视图 |
+| 集成回调 | `/integrations/{github,google,wechat}/.../callback` | GitHub、Google、微信的创建账号与绑定账号回调 |
+
+读代码时可以按这条边界理解：公开 SEO 页面只请求允许公开的数据；私有工作台要求用户会话；管理后台在普通登录态之上额外要求管理员角色。
+
+## 4. 数据存储与共享基础设施
 
 - PostgreSQL：主业务关系数据。
 - Redis：缓存，以及 Celery broker/backend。
@@ -68,7 +89,7 @@ Revornix/
 
 本地开发下，这些基础设施通过 `docker-compose-local.yaml` 启动；应用服务本身仍然是手动启动。
 
-## 4. 核心请求与处理流
+## 5. 核心请求与处理流
 
 ### 用户请求主链路
 
@@ -90,7 +111,7 @@ Revornix/
 1. `web` 直接请求 `hot-news`
 2. `hot-news` 聚合上游榜单并返回统一格式数据
 
-## 5. 当前本地部署模型
+## 6. 当前本地部署模型
 
 当前仓库**不是**“整套应用服务都通过一个 Compose 文件拉起”的模式。
 
@@ -110,7 +131,7 @@ Revornix/
 2. 在 `api` 中做基础数据初始化
 3. 手动启动 `api`、`celery-worker`、`hot-news`、`web`
 
-## 6. 关键实现边界
+## 7. 关键实现边界
 
 ### AI 与官方托管资源
 
@@ -131,7 +152,7 @@ Revornix/
 - 代码同时支持 Aliyun OSS、AWS S3、Generic S3
 - 文件系统抽象在 `api/file/*` 与 `celery-worker/file/*` 两边都存在
 
-## 7. 与旧文档相比的变化
+## 8. 与旧文档相比的变化
 
 和更早的说明相比，当前仓库已经不适合再用“整套应用服务都走 full compose”的心智模型来理解。
 
