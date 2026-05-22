@@ -177,6 +177,7 @@ async def _build_document_context(
                 document_id=document_id,
             )
             ensure_document_access(
+                user_id=viewer_user_id,
                 is_creator=False,
                 has_public_document=False,
                 has_document_collaborator=db_user_document is not None,
