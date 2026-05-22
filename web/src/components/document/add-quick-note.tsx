@@ -578,7 +578,7 @@ const AddQuickNote = () => {
 																</div>
 															</div>
 															<div className='flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5'>
-																<div className='mx-auto h-full w-full max-w-[880px]'>
+																<div className='mx-auto h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px]'>
 																	<Textarea
 																		value={field.value}
 																		onChange={field.onChange}

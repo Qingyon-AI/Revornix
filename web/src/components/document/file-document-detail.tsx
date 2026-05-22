@@ -43,7 +43,7 @@ const FileDocumentDetail = ({
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const statusContainerClassName = cn(
-		'mx-auto flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
+		'mx-auto flex h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] flex-col items-center justify-center gap-2 px-4 text-center text-xs text-muted-foreground sm:px-6',
 	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {

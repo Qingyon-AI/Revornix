@@ -130,7 +130,7 @@ const MarkdownContentShell = ({
 			return;
 		}
 
-		const mediaQuery = window.matchMedia('(min-width: 1024px)');
+		const mediaQuery = window.matchMedia('(min-width: 1280px)');
 		const syncCanShowFloatingToc = () => {
 			setCanShowFloatingToc(mediaQuery.matches);
 		};
@@ -230,7 +230,7 @@ const MarkdownContentShell = ({
 	return (
 		<div className={cn('relative w-full', className)}>
 			{enableFloatingToc && canShowFloatingToc && tocItems.length > 0 ? (
-				<div className="pointer-events-none sticky top-16 z-10 hidden h-0 w-full lg:block">
+				<div className="pointer-events-none sticky top-16 z-10 hidden h-0 w-full xl:block">
 					<nav
 						aria-label={t('markdown_toc_label')}
 						className='pointer-events-auto absolute top-0 right-0 w-fit'

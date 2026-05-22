@@ -55,7 +55,7 @@ const WebsiteDocumentDetail = ({
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const statusContainerClassName = cn(
-		'mx-auto flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
+		'mx-auto flex h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] flex-col items-center justify-center gap-2 px-4 text-center text-xs text-muted-foreground sm:px-6',
 	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const [markdownTransforming, setMarkdowningTransform] = useState(false);
@@ -264,7 +264,7 @@ const WebsiteDocumentDetail = ({
 	return (
 		<div className={cn('w-full relative pt-4', className)}>
 			{websiteSnapshots.length > 0 && (
-				<div className='mx-auto mb-4 w-full max-w-[880px]'>
+				<div className='mx-auto mb-4 w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
 					<div className='flex flex-col gap-3 rounded-[24px] border border-border/60 bg-background/50 p-4 sm:flex-row sm:items-center sm:justify-between'>
 						<div className='space-y-1'>
 							<p className='flex items-center gap-2 text-sm font-medium text-foreground'>
