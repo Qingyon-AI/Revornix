@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { AudioLines, Loader2, Pause, Play } from 'lucide-react';
+import { AudioLines, Hourglass, Loader2, Pause, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { SectionPodcastStatus } from '@/enums/section';
@@ -119,6 +119,7 @@ const SectionPodcastSeoCard = ({
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
+				icon={Hourglass}
 				tone='warning'
 				className={className}
 			/>

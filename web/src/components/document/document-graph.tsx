@@ -14,7 +14,7 @@ import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { getDocumentDetail } from '@/service/document';
 import { searchDocumentGraph } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, Hourglass, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const DocumentGraph = ({
@@ -120,7 +120,7 @@ const DocumentGraph = ({
 					!hasIncompleteGraphPayload &&
 					document.graph_task?.status === DocumentGraphStatus.WAIT_TO ? (
 						<GraphStatePanel
-							icon={Sparkles}
+							icon={Hourglass}
 							badge={t('document_graph_status_todo')}
 							title={t('document_graph_wait_to')}
 							description={t('document_graph_description')}

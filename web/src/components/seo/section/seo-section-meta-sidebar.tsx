@@ -15,6 +15,8 @@ import {
 	ChevronRight,
 	Expand,
 	GitBranch,
+	Hourglass,
+	Loader2,
 	Pause,
 	Play,
 	Sparkles,
@@ -169,7 +171,8 @@ const PodcastPanel = ({
 	if (status === SectionPodcastStatus.GENERATING) {
 		return (
 			<SidebarTaskNode
-				icon={AudioLines}
+				icon={Loader2}
+				iconClassName='animate-spin'
 				status={t('document_podcast_status_doing')}
 				title={t('section_podcast_processing')}
 				description={t('section_podcast_processing_description')}
@@ -181,7 +184,7 @@ const PodcastPanel = ({
 	if (status === SectionPodcastStatus.WAIT_TO) {
 		return (
 			<SidebarTaskNode
-				icon={AudioLines}
+				icon={Hourglass}
 				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}

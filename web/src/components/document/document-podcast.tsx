@@ -15,7 +15,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { useEffect, useState } from 'react';
 import AudioStatusCard from '../ui/audio-status-card';
 import { Button } from '../ui/button';
-import { AudioLines, Loader2 } from 'lucide-react';
+import { AudioLines, Hourglass, Loader2 } from 'lucide-react';
 import EngineSelect from '@/components/ai/engine-select';
 import { EngineCategory } from '@/enums/engine';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
@@ -125,6 +125,7 @@ const DocumentPodcast = ({
 								badge={t('document_podcast_status_todo')}
 								title={t('document_podcast_wait_to')}
 								description={t('document_podcast_wait_to_description')}
+								icon={Hourglass}
 								actionLabel={t('cancel')}
 								onAction={() => mutateCancelPodcast.mutate()}
 								actionDisabled={false}
