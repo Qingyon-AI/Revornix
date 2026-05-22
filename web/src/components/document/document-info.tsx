@@ -13,6 +13,7 @@ import {
 	CalendarClock,
 	CalendarDays,
 	Globe2,
+	Hourglass,
 	Layers3,
 	Loader2,
 	Sparkles,
@@ -487,7 +488,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 		if (data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO) {
 			return (
 				<SidebarTaskNode
-					icon={Sparkles}
+					icon={Hourglass}
 					status={t('document_summarize_status_todo')}
 					title={t('ai_summary_wait_to')}
 					description={t('ai_summary_wait_to_description')}
@@ -501,6 +502,7 @@ const DocumentInfo = ({ id }: { id: number }) => {
 			return (
 				<SidebarTaskNode
 					icon={Loader2}
+					iconClassName='animate-spin'
 					status={t('document_summarize_status_doing')}
 					title={t('ai_summarizing')}
 					description={t('ai_summary_processing_description')}

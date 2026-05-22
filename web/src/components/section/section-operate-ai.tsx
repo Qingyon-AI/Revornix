@@ -279,7 +279,10 @@ const SectionOperateAI = ({
 					onClick={onTriggerClick}>
 					<Bot />
 					{iconOnly ? (
-						<span data-seo-ai-label aria-hidden='true'>
+						<span
+							data-seo-ai-label
+							aria-hidden='true'
+							className='ml-0 max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[margin,max-width,opacity] duration-300'>
 							{t('section_ai_ask')}
 						</span>
 					) : (

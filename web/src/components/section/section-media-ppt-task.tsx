@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, Presentation } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hourglass, Loader2, Presentation } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { SectionDetailWithPpt } from '@/service/section';
@@ -93,26 +93,27 @@ const SectionMediaPptTask = ({
 	}
 
 	if (pptPreview?.status === 'processing' || pptPreview?.status === 'wait_to') {
+		const isWaiting = pptPreview.status === 'wait_to';
 		return (
 			<SidebarTaskNode
-				icon={Loader2}
-				iconClassName='animate-spin'
+				icon={isWaiting ? Hourglass : Loader2}
+				iconClassName={isWaiting ? undefined : 'animate-spin'}
 				status={
-					pptPreview.status === 'wait_to'
+					isWaiting
 						? t('section_ppt_status_idle')
 						: t('section_ppt_status_processing')
 				}
 				title={
-					pptPreview.status === 'wait_to'
+					isWaiting
 						? t('section_ppt_waiting')
 						: t('section_ppt_processing')
 				}
 				description={
-					pptPreview.status === 'wait_to'
+					isWaiting
 						? t('section_ppt_waiting_description')
 						: t('section_ppt_processing_description')
 				}
-				tone='default'
+				tone={isWaiting ? 'warning' : 'default'}
 				hint={pptHint}
 				action={
 					<Button

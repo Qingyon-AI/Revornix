@@ -16,7 +16,7 @@ import type { PublicDocumentDetail } from '@/lib/seo';
 import { searchDocumentGraph, searchPublicDocumentGraph } from '@/service/graph';
 import { getDocumentDetail, getPublicDocumentDetail } from '@/service/document';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, Hourglass, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const DocumentGraphSEO = ({
@@ -136,7 +136,7 @@ const DocumentGraphSEO = ({
 					!hasIncompleteGraphPayload &&
 					document.graph_task?.status === DocumentGraphStatus.WAIT_TO ? (
 						<GraphStatePanel
-							icon={Sparkles}
+							icon={Hourglass}
 							badge={t('document_graph_status_todo')}
 							title={t('document_graph_wait_to')}
 							description={t('document_graph_description')}
