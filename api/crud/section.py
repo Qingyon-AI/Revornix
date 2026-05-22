@@ -1553,17 +1553,20 @@ def search_users_and_section_users_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
+    query = query.join(
+        models.section.SectionUser,
+        models.section.SectionUser.user_id == models.user.User.id,
+    )
     query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time.is_(None)))
-    query = query.join(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
-    query = query.order_by(models.section.SectionUser.section_id.desc())
+    query = query.order_by(models.section.SectionUser.id.desc())
     if start is not None:
-        query = query.filter(models.user.User.id <= start)
+        query = query.filter(models.section.SectionUser.id <= start)
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.ilike(f'%{keyword}%'))
     query = query.limit(limit)
@@ -1580,7 +1583,10 @@ async def search_users_and_section_users_by_section_id_async(
     now = datetime.now(timezone.utc)
     stmt = (
         select(models.user.User, models.section.SectionUser)
-        .join(models.user.User)
+        .join(
+            models.section.SectionUser,
+            models.section.SectionUser.user_id == models.user.User.id,
+        )
         .where(
             models.section.SectionUser.delete_at.is_(None),
             models.section.SectionUser.section_id == section_id,
@@ -1590,13 +1596,13 @@ async def search_users_and_section_users_by_section_id_async(
             ),
             models.user.User.delete_at.is_(None),
         )
-        .order_by(models.section.SectionUser.section_id.desc())
+        .order_by(models.section.SectionUser.id.desc())
         .limit(limit)
     )
     if filter_roles is not None:
         stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
     if start is not None:
-        stmt = stmt.where(models.user.User.id <= start)
+        stmt = stmt.where(models.section.SectionUser.id <= start)
     if keyword is not None and len(keyword) > 0:
         stmt = stmt.where(models.user.User.nickname.ilike(f'%{keyword}%'))
     return (await db.execute(stmt)).all()
@@ -1604,37 +1610,43 @@ async def search_users_and_section_users_by_section_id_async(
 def search_next_user_and_section_user_by_section_id(
     db: Session,
     section_id: int,
-    user: models.user.User,
+    section_user: models.section.SectionUser,
     filter_roles: list[UserSectionRole] | None = None,
     keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User, models.section.SectionUser)
+    query = query.join(
+        models.section.SectionUser,
+        models.section.SectionUser.user_id == models.user.User.id,
+    )
     query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time.is_(None)))
-    query = query.join(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
-    query = query.order_by(models.section.SectionUser.section_id.desc())
+    query = query.order_by(models.section.SectionUser.id.desc())
     if keyword is not None and len(keyword) > 0:
         query = query.filter(models.user.User.nickname.ilike(f'%{keyword}%'))
-    query = query.filter(models.user.User.id > user.id)
+    query = query.filter(models.section.SectionUser.id < section_user.id)
     return query.first()
 
 async def search_next_user_and_section_user_by_section_id_async(
     db: AsyncSession,
     section_id: int,
-    user: models.user.User,
+    section_user: models.section.SectionUser,
     filter_roles: list[UserSectionRole] | None = None,
     keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
     stmt = (
         select(models.user.User, models.section.SectionUser)
-        .join(models.user.User)
+        .join(
+            models.section.SectionUser,
+            models.section.SectionUser.user_id == models.user.User.id,
+        )
         .where(
             models.section.SectionUser.delete_at.is_(None),
             models.section.SectionUser.section_id == section_id,
@@ -1643,9 +1655,9 @@ async def search_next_user_and_section_user_by_section_id_async(
                 models.section.SectionUser.expire_time.is_(None),
             ),
             models.user.User.delete_at.is_(None),
-            models.user.User.id > user.id,
+            models.section.SectionUser.id < section_user.id,
         )
-        .order_by(models.section.SectionUser.section_id.desc())
+        .order_by(models.section.SectionUser.id.desc())
     )
     if filter_roles is not None:
         stmt = stmt.where(models.section.SectionUser.role.in_(filter_roles))
@@ -1660,12 +1672,15 @@ def count_users_and_section_users_by_section_id(
     keyword: str | None = None
 ):
     now = datetime.now(timezone.utc)
-    query = db.query(models.user.User, models.section.SectionUser)
+    query = db.query(models.section.SectionUser.id)
+    query = query.join(
+        models.user.User,
+        models.section.SectionUser.user_id == models.user.User.id,
+    )
     query = query.filter(models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
     query = query.filter(or_(models.section.SectionUser.expire_time > now,
                              models.section.SectionUser.expire_time.is_(None)))
-    query = query.join(models.user.User)
     query = query.filter(models.user.User.delete_at.is_(None))
     if filter_roles is not None:
         query = query.filter(models.section.SectionUser.role.in_(filter_roles))
@@ -1681,8 +1696,11 @@ async def count_users_and_section_users_by_section_id_async(
 ):
     now = datetime.now(timezone.utc)
     stmt = (
-        select(func.count(models.user.User.id))
-        .join(models.user.User)
+        select(func.count(models.section.SectionUser.id))
+        .join(
+            models.user.User,
+            models.section.SectionUser.user_id == models.user.User.id,
+        )
         .where(
             models.section.SectionUser.delete_at.is_(None),
             models.section.SectionUser.section_id == section_id,
