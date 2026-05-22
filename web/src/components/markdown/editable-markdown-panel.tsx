@@ -30,7 +30,8 @@ type EditableMarkdownPanelProps = {
 	showFloatingToc?: boolean;
 };
 
-const viewerClassName = 'mx-auto max-w-[880px] overflow-x-hidden';
+const viewerClassName =
+	'mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] overflow-x-hidden px-4 sm:px-6';
 
 type EditorMode = 'visual' | 'visual-loading' | 'source';
 
@@ -187,7 +188,7 @@ const EditableMarkdownPanel = ({
 				</div>
 			</div>
 			<div className='flex-1 overflow-auto p-4 lg:p-5'>
-				<div className='mx-auto h-full w-full max-w-[880px]'>
+				<div className='mx-auto h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px]'>
 					<Textarea
 						value={draft}
 						onChange={(event) => setDraft(event.target.value)}
@@ -202,9 +203,10 @@ const EditableMarkdownPanel = ({
 	);
 
 	return (
-		<div className={cn('relative w-full', className)}>
+		<div className={cn('relative w-full space-y-3', className)}>
 			{editable ? (
-				<div className='mx-auto flex w-full max-w-[880px] items-center justify-between gap-3 rounded-[22px] border border-border/50 bg-background/35 px-4 py-3 shadow-none'>
+				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
+				<div className='flex items-center justify-between gap-3 rounded-[22px] border border-border/50 bg-background/35 px-4 py-3 shadow-none'>
 					<div className='min-w-0'>
 						<p className='text-sm font-medium text-foreground'>
 							{t('markdown_edit_title')}
@@ -254,10 +256,11 @@ const EditableMarkdownPanel = ({
 						)}
 					</div>
 				</div>
+				</div>
 			) : null}
 
 			{isEditing ? (
-				<div className='mx-auto w-full max-w-[880px] space-y-4 mt-5'>
+				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] space-y-4 mt-5 px-4 sm:px-6'>
 					<NoticeBox tone='warning'>{t('markdown_edit_stale_hint')}</NoticeBox>
 					<div className='mb-5 overflow-hidden bg-background/65 shadow-none'>
 						{editorMode === 'visual' ? (

@@ -257,16 +257,18 @@ const SectionMarkdown = ({
 	return (
 		<div className={cn('pt-4', className)}>
 			{showEmpty ? (
-				<div
-					className={cn(
-						'mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground my-6',
-						contentFallbackMinHeightClassName,
-					)}>
-					<div className='max-w-md space-y-2'>
-						<p className='text-base font-medium text-foreground'>
-							{emptyTitle}
-						</p>
-						{emptyDescription ? <p>{emptyDescription}</p> : null}
+				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
+					<div
+						className={cn(
+							'flex w-full items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground my-6',
+							contentFallbackMinHeightClassName,
+						)}>
+						<div className='max-w-md space-y-2'>
+							<p className='text-base font-medium text-foreground'>
+								{emptyTitle}
+							</p>
+							{emptyDescription ? <p>{emptyDescription}</p> : null}
+						</div>
 					</div>
 				</div>
 			) : null}
@@ -289,13 +291,15 @@ const SectionMarkdown = ({
 			) : null}
 
 			{showError ? (
-				<div
-					className={cn(
-						'relative mx-auto flex w-full max-w-[880px] items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground',
-						contentFallbackMinHeightClassName,
-					)}>
-					<div className='max-w-md'>
-						{error?.message ?? <p>{markdownGetError}</p>}
+				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
+					<div
+						className={cn(
+							'relative flex w-full items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground',
+							contentFallbackMinHeightClassName,
+						)}>
+						<div className='max-w-md'>
+							{error?.message ?? <p>{markdownGetError}</p>}
+						</div>
 					</div>
 				</div>
 			) : null}
@@ -303,7 +307,7 @@ const SectionMarkdown = ({
 			{markdown !== undefined ? (
 				<>
 					{freshnessState.markdownStale ? (
-						<div className='mx-auto mb-4 w-full max-w-[880px]'>
+						<div className='mx-auto mb-4 w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
 							<NoticeBox tone='warning'>
 								{t('section_markdown_stale_hint')}
 							</NoticeBox>

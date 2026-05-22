@@ -29,7 +29,12 @@ const SectionContainer = ({ id }: { id: number }) => {
 	const { setContent, clearContent } = useRightSidebar();
 	const isCompactViewport = useIsMobile(1280);
 
-	const { data: section, isPending } = useQuery({
+	const {
+		data: section,
+		isPending,
+		isError,
+		error,
+	} = useQuery({
 		queryKey: ['getSectionDetail', id],
 		queryFn: async () => {
 			return getSectionDetail({ section_id: id });
@@ -104,23 +109,25 @@ const SectionContainer = ({ id }: { id: number }) => {
 	]);
 
 	const sidebarContent = useMemo(
-		() => (
-			<SectionDetailSidebar
-				id={id}
-				isPending={isPending}
-				hasSection={Boolean(section)}
-				hasRenderableGraph={hasRenderableGraph}
-				graphBadge={graphCardState.badge}
-				graphTone={graphCardState.tone}
-				graphStale={freshnessState.graphStale}
-			/>
-		),
+		() =>
+			isError ? null : (
+				<SectionDetailSidebar
+					id={id}
+					isPending={isPending}
+					hasSection={Boolean(section)}
+					hasRenderableGraph={hasRenderableGraph}
+					graphBadge={graphCardState.badge}
+					graphTone={graphCardState.tone}
+					graphStale={freshnessState.graphStale}
+				/>
+			),
 		[
 			freshnessState.graphStale,
 			graphCardState.badge,
 			graphCardState.tone,
 			hasRenderableGraph,
 			id,
+			isError,
 			isPending,
 			section?.id,
 		],
@@ -148,27 +155,33 @@ const SectionContainer = ({ id }: { id: number }) => {
 				/>
 			) : null}
 			<div
-				className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'
+				className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col'
 				data-markdown-shell-anchor>
 				<div className='min-h-0 flex-1'>
-					<>
-						{sectionCoverSrc ? (
-							<div className='mx-auto w-full overflow-hidden'>
-								<div className='relative'>
-									<ImageWithFallback
-										src={sectionCoverSrc}
-										alt={section?.title || t('section_title_empty')}
-										preview
-										className='max-h-[300px] w-full object-cover sm:max-h-[360px]'
-										fallbackClassName='max-h-[300px] w-full sm:max-h-[360px]'
-										fallbackSvgClassName='max-w-[240px] p-6'
-									/>
-									<div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+					{isError ? (
+						<div className='flex min-h-[60vh] w-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>
+							{error.message}
+						</div>
+					) : (
+						<>
+							{sectionCoverSrc ? (
+								<div className='mx-auto w-full overflow-hidden'>
+									<div className='relative'>
+										<ImageWithFallback
+											src={sectionCoverSrc}
+											alt={section?.title || t('section_title_empty')}
+											preview
+											className='max-h-[300px] w-full object-cover sm:max-h-[360px]'
+											fallbackClassName='max-h-[300px] w-full sm:max-h-[360px]'
+											fallbackSvgClassName='max-w-[240px] p-6'
+										/>
+										<div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-background/28 via-transparent to-transparent' />
+									</div>
 								</div>
-							</div>
-						) : null}
-						<SectionMarkdown id={id} />
-					</>
+							) : null}
+							<SectionMarkdown id={id} />
+						</>
+					)}
 				</div>
 
 				{section && !isCompactViewport ? (

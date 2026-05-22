@@ -42,7 +42,7 @@ const AudioDocumentDetail = ({
 	const [isTranscribeDialogOpen, setIsTranscribeDialogOpen] = useState(false);
 	const queryClient = getQueryClient();
 	const statusContainerClassName = cn(
-		'mx-auto flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground',
+		'mx-auto flex h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] flex-col items-center justify-center gap-2 px-4 text-center text-xs text-muted-foreground sm:px-6',
 	);
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {
@@ -228,7 +228,7 @@ const AudioDocumentDetail = ({
 					<MarkdownContentSkeleton className='min-h-[calc(100dvh-14rem)]' />
 				)}
 			{markdown && !isError && (
-				<>
+				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] overflow-x-hidden px-4 sm:px-6'>
 					<TipTapMarkdownViewer content={markdown} />
 					<div className='my-4 w-full rounded-[24px] border border-border/60 bg-background/45 px-4 py-3 text-center text-sm text-muted-foreground sm:mt-6'>
 						{t('document_ai_tips')}
@@ -237,7 +237,7 @@ const AudioDocumentDetail = ({
 						ref={bottomRef}
 						className='pointer-events-none absolute inset-x-0 bottom-0 h-px'
 					/>
-				</>
+				</div>
 			)}
 			<ResourceConfirmDialog
 				open={isTranscribeDialogOpen}

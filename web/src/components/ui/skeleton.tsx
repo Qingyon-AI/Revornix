@@ -119,7 +119,7 @@ const MarkdownContentSkeleton = ({
 	return (
 		<div
 			className={cn(
-				'mx-auto w-full max-w-[880px] space-y-5 pt-5',
+				'mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] space-y-5 px-4 pt-5 sm:px-6',
 				className,
 			)}>
 			{showToolbar ? (

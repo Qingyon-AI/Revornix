@@ -241,24 +241,25 @@ const DocumentContainer = ({ id }: { id: number }) => {
 	};
 
 	const sidebarContent = useMemo(
-		() => (
-			<DocumentDetailSidebar
-				id={id}
-				isPending={isPending && !isError}
-				hasDocument={Boolean(document)}
-				hasRenderableGraph={hasRenderableGraph}
-				graphBadge={graphCardState.badge}
-				graphTone={graphCardState.tone}
-				graphStale={freshnessState.graphStale}
-				graphActionLabel={graphActionLabel}
-				graphGenerating={mutateGenerateDocumentGraph.isPending}
-				graphCancelling={mutateCancelDocumentGraph.isPending}
-				documentCategory={document?.category}
-				graphStatus={document?.graph_task?.status}
-				onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
-				onGraphCancel={() => mutateCancelDocumentGraph.mutate()}
-			/>
-		),
+		() =>
+			isError ? null : (
+				<DocumentDetailSidebar
+					id={id}
+					isPending={isPending}
+					hasDocument={Boolean(document)}
+					hasRenderableGraph={hasRenderableGraph}
+					graphBadge={graphCardState.badge}
+					graphTone={graphCardState.tone}
+					graphStale={freshnessState.graphStale}
+					graphActionLabel={graphActionLabel}
+					graphGenerating={mutateGenerateDocumentGraph.isPending}
+					graphCancelling={mutateCancelDocumentGraph.isPending}
+					documentCategory={document?.category}
+					graphStatus={document?.graph_task?.status}
+					onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
+					onGraphCancel={() => mutateCancelDocumentGraph.mutate()}
+				/>
+			),
 		[
 			document?.category,
 			document?.graph_task?.status,
@@ -300,16 +301,18 @@ const DocumentContainer = ({ id }: { id: number }) => {
 				/>
 			) : null}
 			<div
-				className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col px-5 md:px-0'
+				className='mx-auto flex w-full max-w-[1600px] min-h-full flex-1 flex-col'
 				data-markdown-shell-anchor>
 				<div className='min-h-0 flex-1'>
-					<div className='hidden'>
-						<DocumentGraph
-							document_id={id}
-							hideStatePanels
-							onHasRenderableGraphChange={setHasRenderableGraph}
-						/>
-					</div>
+					{document ? (
+						<div className='hidden'>
+							<DocumentGraph
+								document_id={id}
+								hideStatePanels
+								onHasRenderableGraphChange={setHasRenderableGraph}
+							/>
+						</div>
+					) : null}
 					{isPending && !document && !isError && <DocumentDetailSkeleton />}
 					{isError && (
 						<div className='flex min-h-[60vh] w-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>

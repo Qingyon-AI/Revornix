@@ -93,7 +93,7 @@ const SectionMember = ({ section_id }: { section_id: number }) => {
 					{users.map((user, index) => {
 						const isLast = index === users.length - 1;
 						return (
-							<div ref={isLast ? loadMoreRef : null} key={index}>
+							<div ref={isLast ? loadMoreRef : null} key={user.id}>
 								<SectionMemberItem section_id={section_id} user={user} />
 							</div>
 						);
