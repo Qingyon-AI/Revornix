@@ -297,31 +297,66 @@ async def get_current_user_without_throw(
     authorization: str | None = Header(default=None),
     x_user_timezone: str | None = Header(default=None),
 ):
-    authenticate_value = "Bearer"
-    if authorization is None or not authorization.startswith(authenticate_value):
+    """Optional-auth dependency.
+
+    Semantics:
+    - No Authorization header        -> return None (genuine anonymous request).
+    - Authorization header present
+      and valid                      -> return the resolved user.
+    - Authorization header present
+      but malformed / expired /
+      decode-fails / refresh-token / -> raise 401.
+      points at missing user
+    - User exists but is forbidden   -> raise 403.
+
+    Rationale: when the caller *claims* to be authenticated by sending a Bearer
+    token, we must not silently demote them to anonymous on token failure.
+    Doing so causes the request to fall through to downstream permission checks
+    that then return 403 ("no permission") instead of 401 ("refresh your
+    token"), which prevents the client from triggering its refresh-and-retry
+    flow and leaves users staring at false permission errors. See
+    `web/src/lib/request.ts` — only 401 triggers refresh.
+    """
+    if authorization is None:
         return None
+
+    authenticate_value = "Bearer"
+    invalid_credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+
+    if not authorization.startswith(authenticate_value):
+        raise invalid_credentials_exception
+
     try:
         token = authorization.replace('Bearer ', '')
         payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
         uuid: str | None = payload.get("sub")
         if uuid is None:
-            return None
+            raise invalid_credentials_exception
         if payload.get("type") == REFRESH_TOKEN_TYPE:
-            return None
+            raise invalid_credentials_exception
+    except HTTPException:
+        raise
     except Exception as e:
         exception_logger.warning(
             format_log_message("token_decode_failed", source="optional_auth", error=e)
         )
-        return None
+        raise invalid_credentials_exception
+
     async with async_session_context() as db:
         user = await crud.user.get_user_by_uuid_async(
             db=db,
             uuid=uuid,
         )
         if user is None:
-            return None
+            raise invalid_credentials_exception
         if user.is_forbidden:
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden",
+            )
         await _cache_user_timezone(
             request=request,
             user_id=user.id,
