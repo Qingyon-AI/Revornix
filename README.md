@@ -13,79 +13,101 @@
 
 > Reject FOMO! When facing the information stream, be lazy, leave the rest to AI!
 
-Revornix is an open-source, local-first AI information workspace. It helps you collect fragmented inputs, turn them into structured knowledge, generate reports with images and podcast audio, and deliver the output through automated notifications.
+Revornix is an open-source, local-first AI information workspace. Save the noisy stream of links, papers, audio and screenshots you can't keep up with, and let the platform turn them into structured knowledge, generate reports and podcasts you can actually consume, and deliver the result through notifications when you're ready.
+
+The whole stack — web client, gateway, API, async workers, trending feed, docs site — is open and self-hostable.
 
 ## Links
 
-- Official site: [https://revornix.com](https://revornix.com)
-- Environment docs: [https://revornix.com/docs/environment](https://revornix.com/docs/environment)
-- Roadmap: [RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
-- Community: [Discord](https://discord.com/invite/3XZfz84aPN) | [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) | [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
+- Official site: <https://revornix.com>
+- Live workspace: <https://app.revornix.com>
+- Documentation: <https://revornix.com/docs>
+- Environment variables: <https://revornix.com/docs/environment>
+- Roadmap: [Notion roadmap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)
+- Community: [Discord](https://discord.com/invite/3XZfz84aPN) · [WeChat](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435) · [QQ](https://github.com/Qingyon-AI/Revornix/discussions/1#discussioncomment-13638435)
 
 ## Why Revornix
 
-- One pipeline for noisy information: from ingestion to summary, graph, podcast, and notification.
-- Built for AI retrieval quality: chunking + vector storage + personalized GraphRAG.
-- Open and controllable: self-host locally and keep your data under your own infra.
-- Model-flexible: any provider compatible with the OpenAI API can be wired in.
-- Collaboration-ready: share private/public knowledge sections and co-create with others.
-- Public discovery: published documents, sections, creators, labels, and trending topics are exposed through SEO-friendly community pages.
+- **One pipeline for noisy information** — ingestion → conversion → summary → graph → podcast → notification, all in one place.
+- **Built for AI retrieval quality** — chunked vector storage in Milvus paired with a personalized GraphRAG layer on Neo4j.
+- **Open and controllable** — runs entirely on your own infrastructure. Your documents, your database, your keys.
+- **Model-flexible** — any OpenAI-compatible provider can be wired in, and engines for parsing, embedding, summarising, podcasting and illustration can be swapped independently.
+- **Collaboration-ready** — share knowledge sections privately with a team or publish them to the open web.
+- **Public discovery** — published documents, sections, creators, labels and trending topics get SEO-friendly pages out of the box.
 
-## How It Works
+## How it works
 
-1. Collect: web pages, PDF, Word, Excel, PPT, text, APIs, library docs, and more.
-2. Understand: parse and normalize with pluggable converters (MinerU, Jina, custom engines).
-3. Organize: store vectors, build graph context, and keep content query-ready.
-4. Deliver: generate rich documents, add illustrations/podcasts, and push notifications.
+1. **Collect** — drop in web pages, PDFs, Word, Excel, PPT, plain text, audio, or automate ingestion through the public API, Python SDK / CLI, or OpenClaw skill.
+2. **Understand** — pluggable converters (MinerU, Jina, custom engines) clean and normalise the content into Markdown.
+3. **Organise** — chunks are embedded into Milvus; entities and relations are written to a per-user Neo4j graph; tags are auto-assigned.
+4. **Deliver** — AI-generated summaries, illustrated reports, two-voice podcasts and notifications reach you on your schedule.
 
-## Project Structure
+## Project structure
 
 ```text
 Revornix/
-├── web/                  # Next.js frontend (user interaction + dashboard)
-├── gateway/              # Go public-entry gateway (routing, anti-scraping, upstream failover)
-├── api/                  # FastAPI core backend (auth, documents, sections, AI APIs)
-├── celery-worker/        # Async workflows (embedding, summary, graph, podcast, notifications)
-├── hot-news/             # Trending aggregation service (based on DailyHotApi)
-└── docker-compose-local.yaml # Local dependency bootstrap
+├── web/                       # Next.js client (workspace + SEO pages) — see web/README.md
+├── api/                       # FastAPI core backend (auth, documents, sections, AI) — see api/README.md
+├── celery-worker/             # Async workflows (embedding, summary, graph, podcast, notifications)
+├── gateway/                   # Go public-entry gateway (routing, anti-scraping, upstream failover)
+├── hot-news/                  # Trending aggregation service (based on DailyHotApi)
+├── docs/                      # Public docs site (revornix.com/docs) — separate Next.js + Nextra
+├── desktop/                   # Planned desktop app (Tauri/Electron) — placeholder for now
+├── assets/                    # Repo-level images and brand assets
+└── docker-compose-local.yaml  # Local dependency bootstrap (Postgres, Redis, Neo4j, MinIO, Milvus)
 ```
 
-## Core Capabilities
+Each subdirectory has its own README with the details specific to that service.
 
-- Flexible ingestion: multi-format parsing with customizable engines.
-- Advanced transformation: strong markdown/content conversion pipelines.
-- Vector retrieval: chunk-to-vector storage for semantic search and AI context.
-- Graph reasoning: personalized GraphRAG for better context precision.
-- Global search: search private knowledge with vector or text mode, plus public discovery for published documents, sections, creators, and labels.
-- Built-in MCP: both MCP client and MCP server are supported.
-- Auto podcast: generate and update podcast audio for documents/sections.
-- Illustration generation: generate and embed AI images into content.
-- Trending in one place: major platform hot lists via integrated DailyHotApi.
-- Public community surfaces: browse published sections/documents, filter by public labels, open creator pages, and view a public hot-search page.
-- Rich Markdown reading/editing: improved tables, Mermaid, images, content shell, and floating table of contents for long public documents.
-- Responsive and multilingual: available on mobile/desktop with multi-language support.
-- Layered request protection: gateway-level anti-scraping and API-side rate limiting for high-risk public endpoints.
+## Core capabilities
 
-## Some UI
+A short tour of what the platform actually does today. For step-by-step walkthroughs and screenshots, see the [docs site](https://revornix.com/docs).
 
+- **Multi-format ingestion** — web pages, PDF, Word, Excel, PPT, plain text, audio, and structured data through the public API.
+- **Pluggable converters** — pick a default engine (MinerU, Jina, custom) per workspace; mix engines per document type if needed.
+- **Vector retrieval + GraphRAG** — every document is chunked into Milvus and projected onto a personal knowledge graph in Neo4j for context-aware AI answers.
+- **Global search** — vector or text mode over your private library, plus a separate public surface for published documents, sections, creators and labels.
+- **Sections** — curated collections that can stay private, be shared with collaborators, or be published to the community feed.
+- **Day sections** — automatic daily digests that gather what you saved into a single readable section.
+- **AI assistant (Revornix AI)** — chat that grounds on your documents and the personal graph.
+- **MCP** — both MCP client (the workspace can drive external MCP servers) and MCP server (your library is exposed to MCP-aware tools).
+- **Auto podcast** — two-voice podcast versions of documents and sections, regeneratable when content changes.
+- **AI illustrations** — inline figures generated and embedded into long-form content.
+- **Trending feed** — aggregated hot-search across mainstream platforms via the bundled `hot-news/`.
+- **Rich Markdown reading & editing** — Tiptap-based editor with tables, Mermaid, math, images, and a floating table of contents on long public pages.
+- **Notifications** — pick channels (email, in-app, push) and let the system surface task completion or scheduled digests.
+- **Multilingual & responsive** — English / Chinese product UI, plus English / Chinese / Japanese repository docs; mobile and desktop layouts.
+- **Layered protection** — `gateway/` blocks obvious scraping at the edge, `api/` rate-limits sensitive public endpoints.
+
+## A few screens
+
+A glimpse of the workspace and the public surfaces. The full walkthrough lives in the [docs](https://revornix.com/docs).
+
+**Dashboard** — daily overview, AI suggestions, freshness signals.
 ![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
 
+**Revornix AI** — chat grounded on your documents and personal graph.
 ![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
 
+**Document detail** — Markdown reader, AI summary, podcast, knowledge graph and actions on one page.
 ![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
 
+**Personal knowledge graph** — entities and relations extracted from everything you've saved.
 ![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
 
+**Section** — curate a private or public collection of documents around a topic.
 ![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
 
+**Podcast** — turn a document or section into a two-voice audio episode.
 ![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
 
+**Public creator page** — SEO-friendly profile for your published work.
 ![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
 
+**Community** — browse what others have published.
 ![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
 
-Note: The trending headlines feature is based on [DailyHotApi](https://github.com/imsyy/DailyHotApi).
-
+**Trending headlines** — aggregated from major platforms via the bundled `hot-news/` service (based on [DailyHotApi](https://github.com/imsyy/DailyHotApi)).
 ![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
 
 ## Quick Start
@@ -179,7 +201,15 @@ pnpm build
 pnpm start
 ```
 
-After all services are running, open http://localhost:3000.
+After all services are running, open <http://localhost:3000>.
+
+## Where to look next
+
+- **Want to use the product?** Start at <https://revornix.com/docs/start>, then jump into the workspace at <https://app.revornix.com>.
+- **Want to extend it?** Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`celery-worker/`](./celery-worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
+- **Want to contribute docs?** Add an MDX file under [`docs/src/content/`](./docs/README.md).
+- **Curious about the desktop app?** It's planned but not built yet — see [`desktop/`](./desktop/README.md).
+- **Architecture deep dive?** <https://revornix.com/docs/developer/structure>.
 
 ## Contributors
 

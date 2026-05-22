@@ -1,6 +1,6 @@
 # Revornix Architecture Overview
 
-Last verified against the repository: 2026-04-06
+Last verified against the repository: 2026-05-22
 
 This page is based on the current monorepo layout, `docker-compose-local.yaml`, and the runtime entrypoints that are actually used today.
 
@@ -14,6 +14,7 @@ Revornix/
 ├── celery-worker/   # Background workflows and heavy async jobs
 ├── hot-news/        # Trending aggregation microservice
 ├── docs/            # This Nextra documentation site
+├── desktop/         # Planned desktop shell placeholder
 ├── assets/          # Shared static assets used by repository docs/branding
 ├── volumes/         # Local persisted data for docker-compose-local
 └── docker-compose-local.yaml
@@ -58,7 +59,27 @@ Revornix/
 - It is not part of the end-user product runtime path.
 - Its job is to describe the repo, features, deployment, and developer guidance.
 
-## 3. Data stores and shared infrastructure
+### `desktop`
+
+- Placeholder for a future desktop wrapper around the web product.
+- No buildable application source currently ships here.
+- The likely direction is either Tauri or Electron, depending on packaging and offline requirements.
+
+## 3. Product page structure
+
+The main product UI lives under `web/src/app` and uses route groups to keep public, private, and admin surfaces separate.
+
+| Surface | Routes | Purpose |
+| --- | --- | --- |
+| Public SEO | `/`, `/community`, `/hot-search`, `/document/[id]`, `/section/[uuid]`, `/user/[id]` | Indexable public entry, community discovery, public documents, public sections, creator pages, and public hot-search |
+| Public auth | `/login`, `/register` | Anonymous login and registration screens |
+| Private workspace | `/dashboard`, `/document/*`, `/section/*`, `/revornix-ai`, `/graph`, `/account/*`, `/setting/*`, `/user/*` | Logged-in workspace for collection, reading, AI, graph, settings, social, API keys, plans, and notifications |
+| Admin console | `/admin`, `/admin/users`, `/admin/documents`, `/admin/sections`, `/admin/security` | Operational views for users, content, security, and notification inspection |
+| Integrations | `/integrations/{github,google,wechat}/.../callback` | OAuth callback shells for account creation and account binding |
+
+This split matters when reading the code: public SEO pages fetch only public-safe data, private workspace pages require a user session, and admin pages add role-level gating on top of the normal session.
+
+## 4. Data stores and shared infrastructure
 
 - PostgreSQL: primary relational business data.
 - Redis: cache plus Celery broker/backend.
@@ -69,7 +90,7 @@ Revornix/
 
 In local development, these infrastructure services are started through `docker-compose-local.yaml`. The application services themselves are still started manually.
 
-## 4. Core request and processing flow
+## 5. Core request and processing flow
 
 ### User-facing request path
 
@@ -91,7 +112,7 @@ In local development, these infrastructure services are started through `docker-
 1. `web` calls the `hot-news` service directly through the configured public prefix.
 2. `hot-news` aggregates upstream ranking data and returns a normalized list.
 
-## 5. Current local deployment model
+## 6. Current local deployment model
 
 The current repo does **not** use a single full-stack Docker Compose path for all app services.
 
@@ -111,7 +132,7 @@ That means the most common local loop is:
 2. Initialize baseline data from `api`
 3. Start `api`, `celery-worker`, `hot-news`, and `web`
 
-## 6. Important implementation boundaries
+## 7. Important implementation boundaries
 
 ### AI and official hosted resources
 
@@ -131,7 +152,7 @@ That means the most common local loop is:
 - The codebase also supports Aliyun OSS, AWS S3, and generic S3 adapters.
 - File-system abstractions exist in both `api/file/*` and `celery-worker/file/*`.
 
-## 7. What changed from older documentation
+## 8. What changed from older documentation
 
 Compared with earlier docs versions, the current repo no longer matches an "all services in one application compose file" mental model.
 

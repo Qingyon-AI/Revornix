@@ -104,13 +104,13 @@ const Hero = () => {
 			</ul>
 
 			<img
-				src='https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260312200944018.png'
+				src='https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164249535.png'
 				alt={t('hero_preview_alt')}
 				className='inset-0 h-full w-full object-cover rounded-xl dark:hidden shadow'
 			/>
 
 			<img
-				src='https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260312200910826.png'
+				src='https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164320841.png'
 				alt={t('hero_preview_alt')}
 				className='inset-0 h-full w-full object-cover rounded-xl hidden dark:block shadow'
 			/>
