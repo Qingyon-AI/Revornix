@@ -109,8 +109,7 @@ const AI_CONTINUATION_MAX_CHARS = 600;
 const AI_OPTIMIZED_MARKDOWN_MAX_CHARS = 60_000;
 const AI_IMAGE_PLAN_MAX_CHARS = 80_000;
 const AI_FULL_DOCUMENT_MAX_IMAGES = 4;
-const FENCED_CODE_BLOCK_ONLY_PATTERN =
-	/^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
+const FENCED_CODE_BLOCK_ONLY_PATTERN = /^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
 
 const parseFencedCodeBlock = (text: string) => {
 	const match = text.match(/^(```|~~~)([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/);
@@ -332,8 +331,10 @@ const TipTapEditor = ({
 	const [isGeneratingIllustration, setIsGeneratingIllustration] =
 		useState(false);
 	const [isOptimizingDocument, setIsOptimizingDocument] = useState(false);
-	const [isGeneratingDocumentIllustration, setIsGeneratingDocumentIllustration] =
-		useState(false);
+	const [
+		isGeneratingDocumentIllustration,
+		setIsGeneratingDocumentIllustration,
+	] = useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [isMounted, setIsMounted] = useState(false);
 	const [selectedContinuationModelId, setSelectedContinuationModelId] =
@@ -468,11 +469,11 @@ const TipTapEditor = ({
 						{
 							language: parsed.language,
 						},
-						parsed.content
-							? view.state.schema.text(parsed.content)
-							: undefined,
+						parsed.content ? view.state.schema.text(parsed.content) : undefined,
 					);
-					view.dispatch(view.state.tr.replaceSelectionWith(node).scrollIntoView());
+					view.dispatch(
+						view.state.tr.replaceSelectionWith(node).scrollIntoView(),
+					);
 					return true;
 				},
 			},
@@ -817,17 +818,14 @@ const TipTapEditor = ({
 			return false;
 		}
 
-		editor.commands.insertContentAt(
-			range,
-			{
-				type: 'aiIllustrationPlaceholder',
-				attrs: {
-					id: placeholderId,
-					message,
-					status,
-				},
+		editor.commands.insertContentAt(range, {
+			type: 'aiIllustrationPlaceholder',
+			attrs: {
+				id: placeholderId,
+				message,
+				status,
 			},
-		);
+		});
 		return true;
 	};
 
@@ -900,8 +898,7 @@ const TipTapEditor = ({
 								output += `${event.payload.paragraph_break ? '\n\n' : ''}${event.payload.message}`;
 								options?.onStreamText?.(output);
 							}
-							const maxChars =
-								options?.maxChars ?? AI_CONTINUATION_MAX_CHARS;
+							const maxChars = options?.maxChars ?? AI_CONTINUATION_MAX_CHARS;
 							if (output.length >= maxChars) {
 								reader.cancel().catch(() => undefined);
 								return clampContinuationText(output, maxChars);
@@ -1229,11 +1226,7 @@ const TipTapEditor = ({
 							relations: [],
 							constraints: {
 								max_images: AI_FULL_DOCUMENT_MAX_IMAGES,
-								prefer: [
-									'diagram',
-									'infographic',
-									'conceptual illustration',
-								],
+								prefer: ['diagram', 'infographic', 'conceptual illustration'],
 								avoid: [
 									'pure decoration',
 									'irrelevant portraits',
@@ -1260,7 +1253,9 @@ const TipTapEditor = ({
 				return;
 			}
 
-			const currentMarkdown = normalizeEditorMarkdown(editor?.getMarkdown() ?? '');
+			const currentMarkdown = normalizeEditorMarkdown(
+				editor?.getMarkdown() ?? '',
+			);
 			if (currentMarkdown !== ready.markdown) {
 				throw new Error(t('editor_full_illustration_document_changed'));
 			}
@@ -1671,274 +1666,274 @@ const TipTapEditor = ({
 		<div
 			className={cn(
 				'relative flex h-full min-h-[360px] w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-background lg:min-h-0',
-				showFullscreen &&
-					'rounded-none border-0 bg-background shadow-none',
+				showFullscreen && 'rounded-none border-0 bg-background shadow-none',
 				className,
 			)}>
 			<div className='flex items-center gap-2 border-b border-border/60 bg-muted/30 px-2 py-1.5'>
 				<div className='min-w-0 flex-1 overflow-x-auto'>
 					<div className='flex w-max items-center gap-1 pr-2'>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isBoldActive,
-					)}
-					title={t('editor_toolbar_bold')}
-					aria-pressed={resolvedToolbarState.isBoldActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleBold().run()}>
-					<Bold className='size-4' />
-				</Button>
-						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isItalicActive,
-					)}
-					title={t('editor_toolbar_italic')}
-					aria-pressed={resolvedToolbarState.isItalicActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleItalic().run()}>
-					<Italic className='size-4' />
-				</Button>
-						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isUnderlineActive,
-					)}
-					title={t('editor_toolbar_underline')}
-					aria-pressed={resolvedToolbarState.isUnderlineActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleUnderline().run()}>
-					<Underline className='size-4' />
-				</Button>
-						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isStrikeActive,
-					)}
-					title={t('editor_toolbar_strike')}
-					aria-pressed={resolvedToolbarState.isStrikeActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleStrike().run()}>
-					<Strikethrough className='size-4' />
-				</Button>
-						<Popover>
-					<PopoverTrigger asChild>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isBoldActive,
+							)}
+							title={t('editor_toolbar_bold')}
+							aria-pressed={resolvedToolbarState.isBoldActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleBold().run()}>
+							<Bold className='size-4' />
+						</Button>
 						<Button
 							type='button'
 							variant='ghost'
-							className={getColorTriggerClassName(
-								Boolean(resolvedToolbarState.activeTextColor),
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isItalicActive,
 							)}
-							title={t('editor_text_color')}
-							onMouseDown={preserveEditorSelection}>
-							<Type className='size-3.5' />
-							<span>{t('editor_text_color')}</span>
-							<span
-								className='size-3 rounded-full border border-border/70'
-								style={{
-									backgroundColor:
-										resolvedToolbarState.activeTextColor ?? 'transparent',
-								}}
-							/>
+							title={t('editor_toolbar_italic')}
+							aria-pressed={resolvedToolbarState.isItalicActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleItalic().run()}>
+							<Italic className='size-4' />
 						</Button>
-					</PopoverTrigger>
-					<PopoverContent
-						align='start'
-						className='w-56 space-y-3 p-3'
-						onOpenAutoFocus={(event) => event.preventDefault()}>
-						<div className='space-y-2'>
-							<p className='text-xs font-medium text-muted-foreground'>
-								{t('editor_text_color')}
-							</p>
-							<div className='flex flex-wrap gap-2'>
-								{TEXT_COLORS.map((color) => (
-									<button
-										key={color}
-										type='button'
-										className={cn(
-											'size-6 rounded-full border transition-transform hover:scale-110',
-											resolvedToolbarState.activeTextColor === color
-												? 'border-foreground ring-2 ring-ring/40'
-												: 'border-border/60',
-										)}
-										style={{ backgroundColor: color }}
-										title={`${t('editor_text_color')} ${color}`}
-										aria-label={`Set text color ${color}`}
-										onMouseDown={(event) => event.preventDefault()}
-										onClick={() => applyTextColor(color)}
-									/>
-								))}
-							</div>
-						</div>
-						<Button
-							type='button'
-							variant='outline'
-							size='sm'
-							className='w-full'
-							title={t('editor_clear_text_color')}
-							onMouseDown={(event) => event.preventDefault()}
-							onClick={clearTextColor}>
-							{t('editor_clear_text_color')}
-						</Button>
-					</PopoverContent>
-						</Popover>
-						<Popover>
-					<PopoverTrigger asChild>
 						<Button
 							type='button'
 							variant='ghost'
-							className={getColorTriggerClassName(
-								Boolean(resolvedToolbarState.activeHighlightColor),
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isUnderlineActive,
 							)}
-							title={t('editor_highlight')}
-							onMouseDown={preserveEditorSelection}>
-							<Highlighter className='size-3.5' />
-							<span>{t('editor_highlight')}</span>
-							<span
-								className='size-3 rounded-sm border border-border/70'
-								style={{
-									backgroundColor:
-										resolvedToolbarState.activeHighlightColor ?? 'transparent',
-								}}
-							/>
+							title={t('editor_toolbar_underline')}
+							aria-pressed={resolvedToolbarState.isUnderlineActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleUnderline().run()}>
+							<Underline className='size-4' />
 						</Button>
-					</PopoverTrigger>
-					<PopoverContent
-						align='start'
-						className='w-56 space-y-3 p-3'
-						onOpenAutoFocus={(event) => event.preventDefault()}>
-						<div className='space-y-2'>
-							<p className='text-xs font-medium text-muted-foreground'>
-								{t('editor_highlight_color')}
-							</p>
-							<div className='flex flex-wrap gap-2'>
-								{HIGHLIGHT_COLORS.map((color) => (
-									<button
-										key={color}
-										type='button'
-										className={cn(
-											'size-6 rounded-md border transition-transform hover:scale-110',
-											resolvedToolbarState.activeHighlightColor === color
-												? 'border-foreground ring-2 ring-ring/40'
-												: 'border-border/60',
-										)}
-										style={{ backgroundColor: color }}
-										title={`${t('editor_highlight_color')} ${color}`}
-										aria-label={`Set highlight color ${color}`}
-										onMouseDown={(event) => event.preventDefault()}
-										onClick={() => applyHighlightColor(color)}
-									/>
-								))}
-							</div>
-						</div>
 						<Button
 							type='button'
-							variant='outline'
-							size='sm'
-							className='w-full'
-							title={t('editor_clear_highlight_color')}
-							onMouseDown={(event) => event.preventDefault()}
-							onClick={clearHighlightColor}>
-							{t('editor_clear_highlight_color')}
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isStrikeActive,
+							)}
+							title={t('editor_toolbar_strike')}
+							aria-pressed={resolvedToolbarState.isStrikeActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleStrike().run()}>
+							<Strikethrough className='size-4' />
 						</Button>
-					</PopoverContent>
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									type='button'
+									variant='ghost'
+									className={getColorTriggerClassName(
+										Boolean(resolvedToolbarState.activeTextColor),
+									)}
+									title={t('editor_text_color')}
+									onMouseDown={preserveEditorSelection}>
+									<Type className='size-3.5' />
+									<span>{t('editor_text_color')}</span>
+									<span
+										className='size-3 rounded-full border border-border/70'
+										style={{
+											backgroundColor:
+												resolvedToolbarState.activeTextColor ?? 'transparent',
+										}}
+									/>
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent
+								align='start'
+								className='w-56 space-y-3 p-3'
+								onOpenAutoFocus={(event) => event.preventDefault()}>
+								<div className='space-y-2'>
+									<p className='text-xs font-medium text-muted-foreground'>
+										{t('editor_text_color')}
+									</p>
+									<div className='flex flex-wrap gap-2'>
+										{TEXT_COLORS.map((color) => (
+											<button
+												key={color}
+												type='button'
+												className={cn(
+													'size-6 rounded-full border transition-transform hover:scale-110',
+													resolvedToolbarState.activeTextColor === color
+														? 'border-foreground ring-2 ring-ring/40'
+														: 'border-border/60',
+												)}
+												style={{ backgroundColor: color }}
+												title={`${t('editor_text_color')} ${color}`}
+												aria-label={`Set text color ${color}`}
+												onMouseDown={(event) => event.preventDefault()}
+												onClick={() => applyTextColor(color)}
+											/>
+										))}
+									</div>
+								</div>
+								<Button
+									type='button'
+									variant='outline'
+									size='sm'
+									className='w-full'
+									title={t('editor_clear_text_color')}
+									onMouseDown={(event) => event.preventDefault()}
+									onClick={clearTextColor}>
+									{t('editor_clear_text_color')}
+								</Button>
+							</PopoverContent>
+						</Popover>
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									type='button'
+									variant='ghost'
+									className={getColorTriggerClassName(
+										Boolean(resolvedToolbarState.activeHighlightColor),
+									)}
+									title={t('editor_highlight')}
+									onMouseDown={preserveEditorSelection}>
+									<Highlighter className='size-3.5' />
+									<span>{t('editor_highlight')}</span>
+									<span
+										className='size-3 rounded-sm border border-border/70'
+										style={{
+											backgroundColor:
+												resolvedToolbarState.activeHighlightColor ??
+												'transparent',
+										}}
+									/>
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent
+								align='start'
+								className='w-56 space-y-3 p-3'
+								onOpenAutoFocus={(event) => event.preventDefault()}>
+								<div className='space-y-2'>
+									<p className='text-xs font-medium text-muted-foreground'>
+										{t('editor_highlight_color')}
+									</p>
+									<div className='flex flex-wrap gap-2'>
+										{HIGHLIGHT_COLORS.map((color) => (
+											<button
+												key={color}
+												type='button'
+												className={cn(
+													'size-6 rounded-md border transition-transform hover:scale-110',
+													resolvedToolbarState.activeHighlightColor === color
+														? 'border-foreground ring-2 ring-ring/40'
+														: 'border-border/60',
+												)}
+												style={{ backgroundColor: color }}
+												title={`${t('editor_highlight_color')} ${color}`}
+												aria-label={`Set highlight color ${color}`}
+												onMouseDown={(event) => event.preventDefault()}
+												onClick={() => applyHighlightColor(color)}
+											/>
+										))}
+									</div>
+								</div>
+								<Button
+									type='button'
+									variant='outline'
+									size='sm'
+									className='w-full'
+									title={t('editor_clear_highlight_color')}
+									onMouseDown={(event) => event.preventDefault()}
+									onClick={clearHighlightColor}>
+									{t('editor_clear_highlight_color')}
+								</Button>
+							</PopoverContent>
 						</Popover>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isHeading1Active,
-					)}
-					title={t('editor_toolbar_heading_1')}
-					aria-pressed={resolvedToolbarState.isHeading1Active}
-					onMouseDown={preserveEditorSelection}
-					onClick={() =>
-						editor?.chain().focus().toggleHeading({ level: 1 }).run()
-					}>
-					<Heading1 className='size-4' />
-				</Button>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isHeading1Active,
+							)}
+							title={t('editor_toolbar_heading_1')}
+							aria-pressed={resolvedToolbarState.isHeading1Active}
+							onMouseDown={preserveEditorSelection}
+							onClick={() =>
+								editor?.chain().focus().toggleHeading({ level: 1 }).run()
+							}>
+							<Heading1 className='size-4' />
+						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isHeading2Active,
-					)}
-					title={t('editor_toolbar_heading_2')}
-					aria-pressed={resolvedToolbarState.isHeading2Active}
-					onMouseDown={preserveEditorSelection}
-					onClick={() =>
-						editor?.chain().focus().toggleHeading({ level: 2 }).run()
-					}>
-					<Heading2 className='size-4' />
-				</Button>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isHeading2Active,
+							)}
+							title={t('editor_toolbar_heading_2')}
+							aria-pressed={resolvedToolbarState.isHeading2Active}
+							onMouseDown={preserveEditorSelection}
+							onClick={() =>
+								editor?.chain().focus().toggleHeading({ level: 2 }).run()
+							}>
+							<Heading2 className='size-4' />
+						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isBulletListActive,
-					)}
-					title={t('editor_toolbar_bullet_list')}
-					aria-pressed={resolvedToolbarState.isBulletListActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleBulletList().run()}>
-					<List className='size-4' />
-				</Button>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isBulletListActive,
+							)}
+							title={t('editor_toolbar_bullet_list')}
+							aria-pressed={resolvedToolbarState.isBulletListActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleBulletList().run()}>
+							<List className='size-4' />
+						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isOrderedListActive,
-					)}
-					title={t('editor_toolbar_ordered_list')}
-					aria-pressed={resolvedToolbarState.isOrderedListActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
-					<ListOrdered className='size-4' />
-				</Button>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isOrderedListActive,
+							)}
+							title={t('editor_toolbar_ordered_list')}
+							aria-pressed={resolvedToolbarState.isOrderedListActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
+							<ListOrdered className='size-4' />
+						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					size='icon'
-					className={getToolbarButtonClassName(
-						resolvedToolbarState.isCodeBlockActive,
-					)}
-					title={t('editor_toolbar_code_block')}
-					aria-pressed={resolvedToolbarState.isCodeBlockActive}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => editor?.chain().focus().toggleCodeBlock().run()}>
-					<Code2 className='size-4' />
-				</Button>
+							type='button'
+							variant='ghost'
+							size='icon'
+							className={getToolbarButtonClassName(
+								resolvedToolbarState.isCodeBlockActive,
+							)}
+							title={t('editor_toolbar_code_block')}
+							aria-pressed={resolvedToolbarState.isCodeBlockActive}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => editor?.chain().focus().toggleCodeBlock().run()}>
+							<Code2 className='size-4' />
+						</Button>
 						<div className='mx-1 h-4 w-px shrink-0 bg-border/60' />
 						{enableImageUpload && (
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<Button
-								type='button'
-								variant='ghost'
-								className={getToolbarActionButtonClassName()}
-								title={t('editor_toolbar_upload_image')}
-								onMouseDown={preserveEditorSelection}
-								onClick={openImagePicker}
-								disabled={isUploadingImage}>
-								{isUploadingImage ? (
-									<Loader2 className='size-4 animate-spin' />
-								) : (
-									<ImagePlus className='size-4' />
-								)}
-								<span>{t('editor_toolbar_label_image')}</span>
+										type='button'
+										variant='ghost'
+										className={getToolbarActionButtonClassName()}
+										title={t('editor_toolbar_upload_image')}
+										onMouseDown={preserveEditorSelection}
+										onClick={openImagePicker}
+										disabled={isUploadingImage}>
+										{isUploadingImage ? (
+											<Loader2 className='size-4 animate-spin' />
+										) : (
+											<ImagePlus className='size-4' />
+										)}
+										<span>{t('editor_toolbar_label_image')}</span>
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>
@@ -1950,127 +1945,129 @@ const TipTapEditor = ({
 						)}
 						{enableDrawing && (
 							<Button
-						type='button'
-						variant='ghost'
-						className={getToolbarActionButtonClassName()}
-						title={t('editor_toolbar_insert_drawing')}
-						onMouseDown={preserveEditorSelection}
-						onClick={insertDrawingNode}>
-						<PencilRuler className='size-4' />
-						<span>{t('editor_toolbar_label_drawing')}</span>
+								type='button'
+								variant='ghost'
+								className={getToolbarActionButtonClassName()}
+								title={t('editor_toolbar_insert_drawing')}
+								onMouseDown={preserveEditorSelection}
+								onClick={insertDrawingNode}>
+								<PencilRuler className='size-4' />
+								<span>{t('editor_toolbar_label_drawing')}</span>
 							</Button>
 						)}
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={t('editor_toolbar_insert_table')}
-					onMouseDown={preserveEditorSelection}
-					onClick={insertTableNode}>
-					<Table2 className='size-4' />
-					<span>{t('editor_toolbar_label_table')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_toolbar_insert_table')}
+							onMouseDown={preserveEditorSelection}
+							onClick={insertTableNode}>
+							<Table2 className='size-4' />
+							<span>{t('editor_toolbar_label_table')}</span>
 						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={t('editor_toolbar_insert_formula')}
-					onMouseDown={preserveEditorSelection}
-					onClick={() =>
-						editor
-							?.chain()
-							.focus()
-							.insertContent({
-								type: 'mathBlock',
-								attrs: { formula: '\\int_0^1 x^2 \\\\, dx' },
-							})
-							.run()
-					}>
-					<Sigma className='size-4 rotate-180' />
-					<span>{t('editor_toolbar_label_formula')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_toolbar_insert_formula')}
+							onMouseDown={preserveEditorSelection}
+							onClick={() =>
+								editor
+									?.chain()
+									.focus()
+									.insertContent({
+										type: 'mathBlock',
+										attrs: { formula: '\\int_0^1 x^2 \\\\, dx' },
+									})
+									.run()
+							}>
+							<Sigma className='size-4 rotate-180' />
+							<span>{t('editor_toolbar_label_formula')}</span>
 						</Button>
 						<div className='mx-1 h-4 w-px shrink-0 bg-border/60' />
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={
-						isContinuing
-							? t('editor_continue_generating')
-							: t('editor_toolbar_continue')
-					}
-					onMouseDown={preserveEditorSelection}
-					onClick={openContinueDialog}
-					disabled={isContinuing}>
-					{isContinuing ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<MessageSquarePlus className='size-4' />
-					)}
-					<span>{t('editor_toolbar_continue')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={
+								isContinuing
+									? t('editor_continue_generating')
+									: t('editor_toolbar_continue')
+							}
+							onMouseDown={preserveEditorSelection}
+							onClick={openContinueDialog}
+							disabled={isContinuing}>
+							{isContinuing ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : (
+								<MessageSquarePlus className='size-4' />
+							)}
+							<span>{t('editor_toolbar_continue')}</span>
 						</Button>
 						{isContinuing ? (
 							<Button
-						type='button'
-						variant='ghost'
-						className={getToolbarActionButtonClassName()}
-						title={t('editor_continue_stop')}
-						onMouseDown={preserveEditorSelection}
-						onClick={stopAiContinuation}>
-						<Square className='size-3.5 fill-current' />
-						<span>{t('editor_toolbar_stop')}</span>
+								type='button'
+								variant='ghost'
+								className={getToolbarActionButtonClassName()}
+								title={t('editor_continue_stop')}
+								onMouseDown={preserveEditorSelection}
+								onClick={stopAiContinuation}>
+								<Square className='size-3.5 fill-current' />
+								<span>{t('editor_toolbar_stop')}</span>
 							</Button>
 						) : null}
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={t('editor_full_optimize')}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => {
-						setIsFullOptimizeDialogOpen(true);
-					}}
-					disabled={isOptimizingDocument || isGeneratingDocumentIllustration}>
-					{isOptimizingDocument ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<FilePenLine className='size-4' />
-					)}
-					<span>{t('editor_toolbar_optimize_full')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_full_optimize')}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => {
+								setIsFullOptimizeDialogOpen(true);
+							}}
+							disabled={
+								isOptimizingDocument || isGeneratingDocumentIllustration
+							}>
+							{isOptimizingDocument ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : (
+								<FilePenLine className='size-4' />
+							)}
+							<span>{t('editor_toolbar_optimize_full')}</span>
 						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={t('editor_illustration_title')}
-					onMouseDown={preserveEditorSelection}
-					onClick={openIllustrationDialog}
-					disabled={isGeneratingIllustration}>
-					{isGeneratingIllustration ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<Sparkles className='size-4' />
-					)}
-					<span>{t('editor_toolbar_selection_illustration')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_illustration_title')}
+							onMouseDown={preserveEditorSelection}
+							onClick={openIllustrationDialog}
+							disabled={isGeneratingIllustration}>
+							{isGeneratingIllustration ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : (
+								<Sparkles className='size-4' />
+							)}
+							<span>{t('editor_toolbar_selection_illustration')}</span>
 						</Button>
 						<Button
-					type='button'
-					variant='ghost'
-					className={getToolbarActionButtonClassName()}
-					title={t('editor_full_illustration')}
-					onMouseDown={preserveEditorSelection}
-					onClick={() => {
-						setIsFullIllustrationDialogOpen(true);
-					}}
-					disabled={
-						isGeneratingDocumentIllustration || isOptimizingDocument
-					}>
-					{isGeneratingDocumentIllustration ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						<ImagePlus className='size-4' />
-					)}
-					<span>{t('editor_toolbar_full_illustration')}</span>
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_full_illustration')}
+							onMouseDown={preserveEditorSelection}
+							onClick={() => {
+								setIsFullIllustrationDialogOpen(true);
+							}}
+							disabled={
+								isGeneratingDocumentIllustration || isOptimizingDocument
+							}>
+							{isGeneratingDocumentIllustration ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : (
+								<ImagePlus className='size-4' />
+							)}
+							<span>{t('editor_toolbar_full_illustration')}</span>
 						</Button>
 					</div>
 				</div>
@@ -2080,21 +2077,21 @@ const TipTapEditor = ({
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Button
-							type='button'
-							variant='ghost'
-							size='icon'
-							className={getToolbarButtonClassName()}
-							title={fullscreenLabel}
-							onMouseDown={preserveEditorSelection}
-							onClick={() => {
-								void handleToggleFullscreen();
-							}}>
-							{showFullscreen ? (
-								<Shrink className='size-4' />
-							) : (
-								<Expand className='size-4' />
-							)}
-							<span className='sr-only'>{fullscreenLabel}</span>
+								type='button'
+								variant='ghost'
+								size='icon'
+								className={getToolbarButtonClassName()}
+								title={fullscreenLabel}
+								onMouseDown={preserveEditorSelection}
+								onClick={() => {
+									void handleToggleFullscreen();
+								}}>
+								{showFullscreen ? (
+									<Shrink className='size-4' />
+								) : (
+									<Expand className='size-4' />
+								)}
+								<span className='sr-only'>{fullscreenLabel}</span>
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>{fullscreenLabel}</TooltipContent>
@@ -2112,7 +2109,7 @@ const TipTapEditor = ({
 			</div>
 			<EditorContent
 				editor={editor}
-				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_>_:first-child]:mt-0 [&_.ProseMirror_>_:last-child]:mb-0 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror_p.is-editor-empty:first-child]:before:pointer-events-none [&_.ProseMirror_p.is-editor-empty:first-child]:before:float-left [&_.ProseMirror_p.is-editor-empty:first-child]:before:h-0 [&_.ProseMirror_p.is-editor-empty:first-child]:before:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]'
+				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-full md:[&_.ProseMirror]:max-w-[640px] lg:[&_.ProseMirror]:max-w-[800px] xl:[&_.ProseMirror]:max-w-[720px] 2xl:[&_.ProseMirror]:max-w-[960px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_>_:first-child]:mt-0 [&_.ProseMirror_>_:last-child]:mb-0 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror_p.is-editor-empty:first-child]:before:pointer-events-none [&_.ProseMirror_p.is-editor-empty:first-child]:before:float-left [&_.ProseMirror_p.is-editor-empty:first-child]:before:h-0 [&_.ProseMirror_p.is-editor-empty:first-child]:before:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]'
 			/>
 			<Dialog
 				open={isContinueDialogOpen}
@@ -2329,9 +2326,7 @@ const TipTapEditor = ({
 	if (showFullscreen && isMounted) {
 		return createPortal(
 			<div className='fixed inset-0 z-50 bg-background'>
-				<div className='flex h-full w-full min-h-0'>
-					{editorShell}
-				</div>
+				<div className='flex h-full w-full min-h-0'>{editorShell}</div>
 			</div>,
 			document.body,
 		);
