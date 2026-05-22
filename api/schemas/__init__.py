@@ -1,4 +1,5 @@
 from . import (
+    access_request,
     admin,
     ai,
     api_key,
@@ -18,6 +19,7 @@ from . import (
 )
 
 __all__ = [
+    "access_request",
     "ai",
     "admin",
     "api_key",

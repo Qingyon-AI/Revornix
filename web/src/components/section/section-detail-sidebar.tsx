@@ -1,9 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { AlertCircle, Expand, GitBranch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +23,11 @@ import SectionGraph from './section-graph';
 import SectionInfo from './section-info';
 import SectionMedia from './section-media';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
+import JoinRequestsCard from '@/components/permission/join-requests-card';
+import { AccessRequestTargetType } from '@/service/access-request';
+import { useQuery } from '@tanstack/react-query';
+import { getMineUserRoleAndAuthority } from '@/service/section';
+import { UserSectionRole } from '@/enums/section';
 
 const SidebarSection = ({
 	title,
@@ -92,12 +99,54 @@ const SectionDetailSidebar = ({
 	graphStale,
 }: SectionDetailSidebarProps) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const accessRequestIdParam = searchParams.get('access_request_id');
+	const accessRequestId = accessRequestIdParam
+		? Number(accessRequestIdParam)
+		: null;
+	const autoOpenRequestId =
+		accessRequestId && Number.isFinite(accessRequestId) && accessRequestId > 0
+			? accessRequestId
+			: null;
+	const clearAccessRequestParam = useCallback(() => {
+		const nextParams = new URLSearchParams(searchParams.toString());
+		nextParams.delete('access_request_id');
+		const nextQuery = nextParams.toString();
+		router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+			scroll: false,
+		});
+	}, [pathname, router, searchParams]);
+
+	const { data: myRoleAndAuthority } = useQuery({
+		queryKey: ['getMineUserRoleAndAuthority', id],
+		queryFn: () => getMineUserRoleAndAuthority({ section_id: id }),
+		enabled: hasSection,
+	});
+	const canManageJoinRequests =
+		myRoleAndAuthority?.role === UserSectionRole.CREATOR ||
+		myRoleAndAuthority?.role === UserSectionRole.MEMBER;
 
 	return (
 		<div className='space-y-4 p-3 pb-6'>
 			<SidebarSection separated={false}>
-				<SectionInfo id={id} />
+				<SectionInfo
+					id={id}
+					afterCreator={
+						canManageJoinRequests ? (
+							<JoinRequestsCard
+								targetType={AccessRequestTargetType.SECTION}
+								targetId={id}
+								canManage
+								autoOpenRequestId={autoOpenRequestId}
+								onAutoOpenConsumed={clearAccessRequestParam}
+							/>
+						) : undefined
+					}
+				/>
 			</SidebarSection>
+
 			<SidebarSection>
 				<SectionMedia section_id={id} />
 			</SidebarSection>
@@ -106,15 +155,15 @@ const SectionDetailSidebar = ({
 				<SectionGraphCardSkeleton />
 			) : (
 				<SidebarSection>
-						<SidebarTaskNode
-							icon={GitBranch}
-							status={graphBadge}
-							title={t('section_graph')}
-							description={t('section_graph_description')}
-							tone={graphTone}
-							hint={graphStale ? t('section_graph_stale_hint') : undefined}
-							result={
-								hasRenderableGraph ? (
+					<SidebarTaskNode
+						icon={GitBranch}
+						status={graphBadge}
+						title={t('section_graph')}
+						description={t('section_graph_description')}
+						tone={graphTone}
+						hint={graphStale ? t('section_graph_stale_hint') : undefined}
+						result={
+							hasRenderableGraph ? (
 								<div className='relative aspect-square overflow-hidden rounded-xl border border-border/35'>
 									<SectionGraph section_id={id} showStaleHint={false} />
 									<Dialog>
@@ -149,11 +198,11 @@ const SectionDetailSidebar = ({
 												</div>
 											</div>
 										</DialogContent>
-									</Dialog>
+										</Dialog>
 								</div>
-								) : null
-							}
-						/>
+							) : null
+						}
+					/>
 				</SidebarSection>
 			)}
 		</div>

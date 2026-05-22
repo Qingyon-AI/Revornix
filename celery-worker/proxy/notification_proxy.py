@@ -20,6 +20,10 @@ from notification.template.section_podcast_ready import SectionPodcastReadyNotif
 from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
+from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
+from notification.template.section_join_request_handled import SectionJoinRequestHandledNotificationTemplate
+from notification.template.document_join_requested import DocumentJoinRequestedNotificationTemplate
+from notification.template.document_join_request_handled import DocumentJoinRequestHandledNotificationTemplate
 from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
 
 class NotificationProxy:
@@ -152,6 +156,14 @@ class NotificationProxy:
             notification_template = DocumentProcessCompletedNotificationTemplate()
         elif template_uuid == NotificationTemplate.DOCUMENT_PODCAST_READY.meta.uuid:
             notification_template = DocumentPodcastReadyNotificationTemplate()
+        elif template_uuid == NotificationTemplate.SECTION_JOIN_REQUESTED.meta.uuid:
+            notification_template = SectionJoinRequestedNotificationTemplate()
+        elif template_uuid == NotificationTemplate.SECTION_JOIN_REQUEST_HANDLED.meta.uuid:
+            notification_template = SectionJoinRequestHandledNotificationTemplate()
+        elif template_uuid == NotificationTemplate.DOCUMENT_JOIN_REQUESTED.meta.uuid:
+            notification_template = DocumentJoinRequestedNotificationTemplate()
+        elif template_uuid == NotificationTemplate.DOCUMENT_JOIN_REQUEST_HANDLED.meta.uuid:
+            notification_template = DocumentJoinRequestHandledNotificationTemplate()
         else:
             raise Exception('Unsupported notification template')
 

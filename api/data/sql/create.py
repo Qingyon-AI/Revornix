@@ -59,6 +59,10 @@ from notification.template.section_podcast_ready import SectionPodcastReadyNotif
 from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
+from notification.template.section_join_request_handled import SectionJoinRequestHandledNotificationTemplate
+from notification.template.document_join_requested import DocumentJoinRequestedNotificationTemplate
+from notification.template.document_join_request_handled import DocumentJoinRequestHandledNotificationTemplate
 from notification.trigger_event.document_commented import DocumentCommentedNotificationTriggerEvent
 from notification.trigger_event.document_podcast_ready import DocumentPodcastReadyNotificationTriggerEvent
 from notification.trigger_event.document_process_completed import DocumentProcessCompletedNotificationTriggerEvent
@@ -69,6 +73,10 @@ from notification.trigger_event.section_podcast_ready import SectionPodcastReady
 from notification.trigger_event.section_ppt_ready import SectionPptReadyNotificationTriggerEvent
 from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
 from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
+from notification.trigger_event.section_join_requested import SectionJoinRequestedNotificationTriggerEvent
+from notification.trigger_event.section_join_request_handled import SectionJoinRequestHandledNotificationTriggerEvent
+from notification.trigger_event.document_join_requested import DocumentJoinRequestedNotificationTriggerEvent
+from notification.trigger_event.document_join_request_handled import DocumentJoinRequestHandledNotificationTriggerEvent
 
 from protocol.engine import EngineProtocol
 from protocol.notification_source import NotificationSourceProvidedProtocol
@@ -178,6 +186,10 @@ async def seed_database(db: AsyncSession):
         DocumentProcessCompletedNotificationTemplate(),
         DocumentPodcastReadyNotificationTemplate(),
         DocumentCommentedNotificationTemplate(),
+        SectionJoinRequestedNotificationTemplate(),
+        SectionJoinRequestHandledNotificationTemplate(),
+        DocumentJoinRequestedNotificationTemplate(),
+        DocumentJoinRequestHandledNotificationTemplate(),
     ]
     for tpl in templates:
         if await crud.notification.get_notification_template_by_uuid_async(db, tpl.uuid) is None:
@@ -202,6 +214,10 @@ async def seed_database(db: AsyncSession):
         DocumentProcessCompletedNotificationTriggerEvent(),
         DocumentPodcastReadyNotificationTriggerEvent(),
         DocumentCommentedNotificationTriggerEvent(),
+        SectionJoinRequestedNotificationTriggerEvent(),
+        SectionJoinRequestHandledNotificationTriggerEvent(),
+        DocumentJoinRequestedNotificationTriggerEvent(),
+        DocumentJoinRequestHandledNotificationTriggerEvent(),
     ]
     for trigger in triggers:
         if await crud.notification.get_trigger_event_by_uuid_async(db, trigger.uuid) is None:
