@@ -22,6 +22,9 @@ import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 import SectionMarkdown from './section-markdown';
 import SectionOperate from './section-operate';
 import SectionDetailSidebar from './section-detail-sidebar';
+import NoAccessState from '@/components/permission/no-access-state';
+import { AccessRequestTargetType } from '@/service/access-request';
+import { Loader2 } from 'lucide-react';
 
 const SectionContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
@@ -110,7 +113,7 @@ const SectionContainer = ({ id }: { id: number }) => {
 
 	const sidebarContent = useMemo(
 		() =>
-			isError ? null : (
+			isError || (isPending && !section) ? null : (
 				<SectionDetailSidebar
 					id={id}
 					isPending={isPending}
@@ -159,8 +162,20 @@ const SectionContainer = ({ id }: { id: number }) => {
 				data-markdown-shell-anchor>
 				<div className='min-h-0 flex-1'>
 					{isError ? (
-						<div className='flex min-h-[60vh] w-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>
-							{error.message}
+						<NoAccessState
+							targetType={AccessRequestTargetType.SECTION}
+							targetId={id}
+							code={(error as any)?.code}
+							message={error?.message}
+							onRetry={() =>
+								queryClient.invalidateQueries({
+									queryKey: ['getSectionDetail', id],
+								})
+							}
+						/>
+					) : isPending && !section ? (
+						<div className='flex h-[calc(100dvh-var(--private-top-header-height,3.5rem))] w-full items-center justify-center'>
+							<Loader2 className='size-6 animate-spin text-muted-foreground' />
 						</div>
 					) : (
 						<>
