@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import UserContainer from '@/components/user/user-container';
 import { buildMetadata, toMetaDescription } from '@/lib/seo-metadata';
-import { getUserInfoInServer } from '@/service/user';
+import { getUserInfoServer } from '@/service/user';
 
 type Params = Promise<{ id: string }>;
 
@@ -27,7 +27,7 @@ export async function generateMetadata({
 
 	try {
 		const requestHeaders = await headers();
-		const user = await getUserInfoInServer(
+		const user = await getUserInfoServer(
 			{ user_id: userId },
 			new Headers(requestHeaders),
 		);

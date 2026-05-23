@@ -4,12 +4,10 @@ import SeoUserContentBrowser from '@/components/seo/user/seo-user-content-browse
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { UserRole } from '@/enums/user';
-import {
-	fetchPublicDocuments,
-	fetchPublicUserDetail,
-	fetchPublicUserSections,
-	isSeoNotFoundError,
-} from '@/lib/seo';
+import { isSeoNotFoundError } from '@/lib/seo';
+import { searchPublicDocumentServer } from '@/service/document';
+import { searchUserSectionServer } from '@/service/section';
+import { getUserInfoServer } from '@/service/user';
 import { cn, replacePath } from '@/lib/utils';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -73,7 +71,7 @@ const getRoleMeta = (
 };
 
 const buildUserMetaDescription = (
-	user: Awaited<ReturnType<typeof fetchPublicUserDetail>>,
+	user: Awaited<ReturnType<typeof getUserInfoServer>>,
 	totalSections?: number,
 ) => {
 	const slogan = user.slogan?.trim();
@@ -109,7 +107,7 @@ export async function generateMetadata(props: {
 	const noIndex = Boolean(keyword) || start !== undefined;
 
 	try {
-		const user = await fetchPublicUserDetail({ user_id: Number(id) });
+		const user = await getUserInfoServer({ user_id: Number(id) });
 		const coverSrc =
 			user.cover && user.cover.length > 0
 				? replacePath(user.cover, user.id)
@@ -180,9 +178,9 @@ const SeoUserDetailPage = async (props: {
 
 	try {
 		const [user, sectionsResponse, documentsResponse] = await Promise.all([
-			fetchPublicUserDetail({ user_id: userId }),
+			getUserInfoServer({ user_id: userId }),
 			tab === 'sections'
-				? fetchPublicUserSections({
+				? searchUserSectionServer({
 						user_id: userId,
 						keyword: keyword || undefined,
 						start,
@@ -191,7 +189,7 @@ const SeoUserDetailPage = async (props: {
 					})
 				: null,
 			tab === 'documents'
-				? fetchPublicDocuments({
+				? searchPublicDocumentServer({
 						creator_id: userId,
 						keyword: keyword || undefined,
 						start,

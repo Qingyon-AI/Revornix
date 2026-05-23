@@ -2,10 +2,7 @@
 
 import type { InifiniteScrollPagnitionSectionDocumentInfo } from '@/generated';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import {
-	searchPublicSectionDocuments,
-	searchSectionDocuments,
-} from '@/service/section';
+import { searchSectionDocuments } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
 import { useInView } from 'react-intersection-observer';
 import { Fragment, useEffect } from 'react';
@@ -41,9 +38,7 @@ const SectionDocumentsList = ({
 	} = useInfiniteQuery({
 		queryKey: ['searchSectionDocument', section_id, ''],
 		queryFn: (pageParam) =>
-			publicMode
-				? searchPublicSectionDocuments({ ...pageParam.pageParam })
-				: searchSectionDocuments({ ...pageParam.pageParam }),
+			searchSectionDocuments({ ...pageParam.pageParam }),
 		initialPageParam,
 		initialData: initialData
 			? {

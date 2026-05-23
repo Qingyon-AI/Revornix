@@ -13,8 +13,8 @@ import type { GraphResponse } from '@/generated';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import type { PublicDocumentDetail } from '@/lib/seo';
-import { searchDocumentGraph, searchPublicDocumentGraph } from '@/service/graph';
-import { getDocumentDetail, getPublicDocumentDetail } from '@/service/document';
+import { searchDocumentGraph } from '@/service/graph';
+import { getDocumentDetail } from '@/service/document';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Hourglass, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -44,10 +44,7 @@ const DocumentGraphSEO = ({
 		queryKey: publicMode
 			? ['getPublicDocumentDetail', document_id]
 			: ['getDocumentDetail', document_id],
-		queryFn: () =>
-			publicMode
-				? getPublicDocumentDetail({ document_id })
-				: getDocumentDetail({ document_id }),
+		queryFn: () => getDocumentDetail({ document_id }),
 		initialData: initialDocument ?? undefined,
 		retry: publicMode ? false : undefined,
 		refetchOnWindowFocus: publicMode ? false : undefined,
@@ -62,10 +59,7 @@ const DocumentGraphSEO = ({
 		queryKey: publicMode
 			? ['searchPublicDocumentGraphData', document_id, graphStatus]
 			: ['searchDocumentGraphData', document_id, graphStatus],
-		queryFn: async () =>
-			publicMode
-				? searchPublicDocumentGraph({ document_id })
-				: searchDocumentGraph({ document_id }),
+		queryFn: async () => searchDocumentGraph({ document_id }),
 		initialData: initialGraph ?? undefined,
 		retry: publicMode ? false : undefined,
 		refetchOnWindowFocus: publicMode ? false : undefined,

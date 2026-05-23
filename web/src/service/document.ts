@@ -3,7 +3,6 @@ import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalRes
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
-import { publicRequest } from '@/lib/request-public'
 import { serverRequest } from '@/lib/request-server'
 
 export type DocumentAiSummaryRequest = {
@@ -182,12 +181,6 @@ export const getDocumentMarkdownContent = async (data: DocumentMarkdownContentRe
     })
 }
 
-export const getDocumentMarkdownContentInServer = async (data: DocumentMarkdownContentRequest): Promise<string> => {
-    return await serverRequest(documentApi.getDocumentMarkdownContent, {
-        data
-    })
-}
-
 export const getMineDocumentAuthority = async (data: MineDocumentAuthorityRequest): Promise<DocumentUserAuthorityResponse> => {
     return await request(documentApi.getMineDocumentAuthority, {
         data
@@ -249,13 +242,7 @@ export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Prom
 }
 
 export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
-    return await publicRequest(documentApi.searchPublicDocumentNotes, {
-        data
-    })
-}
-
-export const fetchPublicDocumentNotesInServer = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
-    return await serverRequest(documentApi.searchPublicDocumentNotes, {
+    return await request(documentApi.searchPublicDocumentNotes, {
         data
     })
 }
@@ -269,7 +256,7 @@ export const getLabels = async (): Promise<LabelListResponse> => {
 }
 
 export const getPublicLabels = async (): Promise<LabelListResponse> => {
-    return await publicRequest(documentApi.listPublicLabel)
+    return await request(documentApi.listPublicLabel)
 }
 
 export type GlobalSearchMode = 'vector' | 'text'
@@ -290,7 +277,7 @@ export const searchDocumentVector = async (data: GlobalDocumentSearchRequest): P
 }
 
 export const searchPublicDocumentVector = async (data: GlobalDocumentSearchRequest): Promise<GlobalDocumentSearchResponse> => {
-    return await publicRequest(documentApi.searchPublicDocumentVector, {
+    return await request(documentApi.searchPublicDocumentVector, {
         data
     })
 }
@@ -338,13 +325,6 @@ export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest
     })
 }
 
-export const searchUserRecentReadDocumentInServer = async (data: SearchRecentReadRequest, headers: Headers): Promise<InifiniteScrollPagnitionDocumentInfo> => {
-    return await serverRequest(documentApi.searchUserRecentReadDocument, {
-        data,
-        headers
-    })
-}
-
 export const searchUserStarDocument = async (data: SearchMyStarDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
     return await request(documentApi.searchStarDocument, { data })
 }
@@ -357,17 +337,9 @@ export const getDocumentDetail = async ({ document_id }: { document_id: number }
     })
 }
 
-export const getPublicDocumentDetail = async ({ document_id }: { document_id: number }): Promise<DocumentDetailResponse> => {
-    return await publicRequest(documentApi.documentDetail, {
-        data: {
-            document_id
-        }
-    })
-}
-
-export const getDocumentDetailInServer = async (
+export const getDocumentDetailServer = async (
     { document_id }: { document_id: number },
-    headers: Headers,
+    headers?: Headers,
 ): Promise<DocumentDetailResponse> => {
     return await serverRequest(documentApi.documentDetail, {
         data: {
@@ -482,16 +454,8 @@ export const searchDocumentComment = async (data: DocumentCommentSearchRequest):
     return await request(documentApi.searchComment, { data })
 }
 
-export const searchPublicDocumentComment = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
-    return await publicRequest(documentApi.searchComment, { data })
-}
-
 export const searchDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
     return await request(documentApi.searchCommentReplies, { data })
-}
-
-export const searchPublicDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
-    return await publicRequest(documentApi.searchCommentReplies, { data })
 }
 
 export const likeDocumentComment = async (data: DocumentCommentLikeRequest): Promise<NormalResponse> => {
@@ -506,6 +470,56 @@ export const getDocumentCommentDetail = async (data: { document_comment_id: numb
     return await request(documentApi.getCommentDetail, { data })
 }
 
-export const fetchPublicDocumentCommentsInServer = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+// --- SSR helpers ----------------------------------------------------------
+// These run inside RSC / route handlers (via serverRequest) and bypass the
+// browser-only refresh flow. Use them from app/(seo)/* pages and other server
+// contexts.
+
+type ServerFetchOptions = {
+    retries?: number
+    timeoutMs?: number
+    anonymousFallback?: boolean
+}
+
+export const searchPublicDocumentServer = async (
+    data: SearchPublicDocumentsRequest,
+    options?: ServerFetchOptions,
+): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+    return await serverRequest(documentApi.searchPublicDocument, {
+        data,
+        retries: options?.retries,
+        timeoutMs: options?.timeoutMs,
+        anonymousFallback: options?.anonymousFallback,
+    })
+}
+
+export const getPublicLabelsServer = async (
+    options?: ServerFetchOptions,
+): Promise<LabelListResponse['data']> => {
+    const response = await serverRequest<LabelListResponse>(documentApi.listPublicLabel, {
+        retries: options?.retries,
+        timeoutMs: options?.timeoutMs,
+        anonymousFallback: options?.anonymousFallback,
+    })
+    return response.data
+}
+
+export const searchDocumentCommentServer = async (
+    data: DocumentCommentSearchRequest,
+): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
     return await serverRequest(documentApi.searchComment, { data })
+}
+
+export const searchPublicDocumentNotesServer = async (
+    data: SearchDocumentNoteRequest,
+): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+    return await serverRequest(documentApi.searchPublicDocumentNotes, { data })
+}
+
+export const getDocumentMarkdownContentServer = async (data: {
+    document_id?: number
+    url?: string
+    snapshot_id?: number
+}): Promise<string> => {
+    return await serverRequest(documentApi.getDocumentMarkdownContent, { data })
 }

@@ -40,7 +40,7 @@ import {
 } from '@/service/document';
 import {
 	searchMineSection,
-	searchPublicSectionAnonymous,
+	searchPublicSection,
 } from '@/service/section';
 import { searchPublicUsers, searchUser } from '@/service/user';
 import { cn } from '@/lib/utils';
@@ -199,7 +199,7 @@ const GlobalSearch = ({
 		queryKey: ['global-search', 'sections', scope, query],
 		queryFn: () => {
 			const fn =
-				scope === 'public' ? searchPublicSectionAnonymous : searchMineSection;
+				scope === 'public' ? searchPublicSection : searchMineSection;
 			return fn({ keyword: query, limit: 6, desc: true });
 		},
 		enabled,

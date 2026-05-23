@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRight, Compass, FileText, UserRound } from 'lucide-react';
+import {
+	ArrowRight,
+	Compass,
+	FileText,
+	Loader2,
+	RefreshCw,
+	UserRound,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
@@ -23,7 +31,7 @@ import {
 	type PublicDocumentPagination,
 	type PublicSectionPagination,
 } from '@/lib/seo';
-import { publicRequest } from '@/lib/request-public';
+import { request } from '@/lib/request';
 import { cn } from '@/lib/utils';
 
 type CommunityTab = 'sections' | 'documents';
@@ -133,6 +141,7 @@ const SeoCommunityBrowser = ({
 	labels,
 	initialSections,
 	initialDocuments,
+	loadFailed = false,
 }: {
 	tab: CommunityTab;
 	keyword?: string;
@@ -140,8 +149,11 @@ const SeoCommunityBrowser = ({
 	labels: PublicLabel[];
 	initialSections: PublicSectionPagination | null;
 	initialDocuments: PublicDocumentPagination | null;
+	loadFailed?: boolean;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const [isRetrying, startRetry] = useTransition();
 	const { ref: bottomRef, inView } = useInView({
 		rootMargin: '320px 0px',
 	});
@@ -182,7 +194,7 @@ const SeoCommunityBrowser = ({
 		setIsLoadingMore(true);
 		try {
 			if (tab === 'sections') {
-				const response = await publicRequest<PublicSectionPagination>(
+				const response = await request<PublicSectionPagination>(
 					sectionApi.searchPublicSection,
 					{
 						data: {
@@ -211,7 +223,7 @@ const SeoCommunityBrowser = ({
 				return;
 			}
 
-			const response = await publicRequest<PublicDocumentPagination>(
+			const response = await request<PublicDocumentPagination>(
 				documentApi.searchPublicDocument,
 				{
 					data: {
@@ -320,7 +332,35 @@ const SeoCommunityBrowser = ({
 
 					<Separator />
 
-					{currentElements.length > 0 ? (
+					{currentElements.length === 0 && loadFailed ? (
+						<Card className='border-none shadow-none'>
+							<CardContent className='flex min-h-[260px] flex-col items-center justify-center gap-4 px-6 py-10 text-center'>
+								<div className='flex size-14 items-center justify-center rounded-full border border-destructive/40 bg-destructive/5'>
+									<RefreshCw className='size-6 text-destructive' />
+								</div>
+								<div className='space-y-2'>
+									<h2 className='text-xl font-semibold'>
+										{t('seo_community_load_failed_title')}
+									</h2>
+									<p className='max-w-lg text-sm leading-6 text-muted-foreground'>
+										{t('seo_community_load_failed_description')}
+									</p>
+								</div>
+								<Button
+									variant='outline'
+									className='rounded-full px-5'
+									disabled={isRetrying}
+									onClick={() => startRetry(() => router.refresh())}>
+									{isRetrying ? (
+										<Loader2 className='mr-2 size-4 animate-spin' />
+									) : (
+										<RefreshCw className='mr-2 size-4' />
+									)}
+									{t('seo_community_load_failed_retry')}
+								</Button>
+							</CardContent>
+						</Card>
+					) : currentElements.length > 0 ? (
 						<div>
 							{tab === 'sections'
 								? sections?.elements.map((section, index) => (

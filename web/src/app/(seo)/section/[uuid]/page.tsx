@@ -22,13 +22,13 @@ import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import MarkdownContentShell from '@/components/markdown/markdown-content-shell';
 import Link from 'next/link';
+import { isSeoNotFoundError } from '@/lib/seo';
 import {
-	fetchPublicSectionComments,
-	fetchPublicSectionDocuments,
-	fetchPublicSectionGraph,
-	fetchPublicSectionMarkdownContent,
-	isSeoNotFoundError,
-} from '@/lib/seo';
+	getSEOSectionMarkdownContentServer,
+	searchSectionCommentServer,
+	searchSectionDocumentsServer,
+} from '@/service/section';
+import { searchSectionGraphServer } from '@/service/graph';
 import { notFound } from 'next/navigation';
 import SeoSectionCommentGate from '@/components/seo/section/seo-section-comment-gate';
 import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subscribe-button';
@@ -173,7 +173,7 @@ const SEOSectionDetail = async (props: {
 
 	if (section_res && section_res.md_file_name) {
 		const [markdown_res] = await utils.to(
-			fetchPublicSectionMarkdownContent({ uuid }),
+			getSEOSectionMarkdownContentServer({ uuid }),
 		);
 		markdown = markdown_res ?? null;
 	}
@@ -182,14 +182,14 @@ const SEOSectionDetail = async (props: {
 		section_res?.id
 			? await Promise.all([
 					utils.to(
-						fetchPublicSectionComments({
+						searchSectionCommentServer({
 							section_id: section_res.id,
 							keyword: '',
 							limit: 10,
 						}),
 					),
 					utils.to(
-						fetchPublicSectionDocuments({
+						searchSectionDocumentsServer({
 							section_id: section_res.id,
 							keyword: '',
 							desc: true,
@@ -197,7 +197,7 @@ const SEOSectionDetail = async (props: {
 						}),
 					),
 					utils.to(
-						fetchPublicSectionGraph({
+						searchSectionGraphServer({
 							section_id: section_res.id,
 						}),
 					),

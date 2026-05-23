@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 
 import {
 	searchDocumentCommentReplies,
-	searchPublicDocumentCommentReplies,
 	type DocumentCommentInfo,
 } from '@/service/document';
 
@@ -44,9 +43,7 @@ const DocumentCommentReplies = ({
 		useInfiniteQuery({
 			queryKey: ['searchDocumentCommentReplies', rootComment.id],
 			queryFn: (pageParam) =>
-				publicMode
-					? searchPublicDocumentCommentReplies({ ...pageParam.pageParam })
-					: searchDocumentCommentReplies({ ...pageParam.pageParam }),
+				searchDocumentCommentReplies({ ...pageParam.pageParam }),
 			initialPageParam,
 			enabled: expanded,
 			retry: publicMode ? false : undefined,

@@ -1,20 +1,42 @@
 'use server'
 
 import { v4 as uuidv4 } from 'uuid';
-import qs from 'qs';
 import { cookies, headers as nextHeaders } from 'next/headers';
+import {
+    appendQueryString,
+    BASE_FETCH_INIT,
+    parseError,
+    parseResponse,
+    RETRYABLE_STATUS,
+    sleep,
+    type ErrorResponse,
+} from '@/lib/request-core';
 
 interface RequestOptions {
     method?: 'POST' | 'GET';
     data?: any;
     headers?: Headers;
+    /**
+     * Number of *additional* attempts on top of the first one (default 0 = no retry).
+     * Retries fire on network errors and HTTP 5xx / 408 / 429 responses with a
+     * small exponential backoff.
+     */
+    retries?: number;
+    /** Per-attempt timeout in milliseconds. 0 / undefined disables the timeout. */
+    timeoutMs?: number;
+    /**
+     * When the backend returns 401 (typically because the access_token cookie
+     * has expired), retry the request once without attaching the Authorization
+     * header. Public/optional-auth endpoints (those using
+     * `get_current_user_without_throw`) will then succeed as anonymous instead
+     * of returning a fake "empty" page.
+     *
+     * Only set this on endpoints whose semantics are safe to demote to
+     * anonymous — i.e. they expose a public read view and only enrich it for
+     * authenticated callers.
+     */
+    anonymousFallback?: boolean;
 }
-
-type ErrorResponse = {
-    success: boolean;
-    message: string;
-    code: number;
-};
 
 export const serverRequest = async <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
     const headers = new Headers(initialOptions?.headers || undefined);
@@ -44,79 +66,110 @@ export const serverRequest = async <T>(url: string, initialOptions?: RequestOpti
     }
 
     const method = initialOptions?.method || 'POST';
+    const retries = Math.max(0, initialOptions?.retries ?? 0);
+    const timeoutMs = Math.max(0, initialOptions?.timeoutMs ?? 0);
+    const anonymousFallback = Boolean(initialOptions?.anonymousFallback);
+    const hadAuthHeader = headers.has('Authorization');
+    let triedAnonymousFallback = false;
 
-    const { headers: _omitHeaders, ...restInitialOptions } = initialOptions ?? {};
-
-    const options: any = {
-        method: method,
-        mode: 'cors',
-        credentials: 'same-origin',
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        ...restInitialOptions,
+    const baseOptions: RequestInit = {
+        ...BASE_FETCH_INIT,
+        method,
         headers,
     };
 
     if (method === 'POST' && initialOptions?.data) {
-        options.body = JSON.stringify({ ...initialOptions.data });
+        baseOptions.body = JSON.stringify({ ...initialOptions.data });
     }
 
-    let finalUrl = url;
-    if (method === 'GET' && initialOptions?.data) {
-        finalUrl = finalUrl + '?' + qs.stringify(initialOptions.data, { skipNulls: true });
-    }
+    const finalUrl =
+        method === 'GET' && initialOptions?.data
+            ? appendQueryString(url, initialOptions.data)
+            : url;
 
-    try {
-        // 🟦 捕获 Node fetch 可能抛出的所有异常
-        const response = await fetch(finalUrl, options);
+    let lastErr: any = null;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+        const controller = timeoutMs > 0 ? new AbortController() : null;
+        const timeoutId = controller
+            ? setTimeout(() => controller.abort(), timeoutMs)
+            : null;
+        const options = controller
+            ? { ...baseOptions, signal: controller.signal }
+            : baseOptions;
 
-        if (!response.ok) {
-            throw await parseError(response);
+        try {
+            const response = await fetch(finalUrl, options);
+
+            if (!response.ok) {
+                const parsed = await parseError(response);
+                if (
+                    response.status === 401 &&
+                    anonymousFallback &&
+                    hadAuthHeader &&
+                    !triedAnonymousFallback
+                ) {
+                    // Drop the (likely expired) Authorization header and retry
+                    // once as anonymous. Does not count against `retries`, and
+                    // is only ever attempted a single time per call.
+                    triedAnonymousFallback = true;
+                    headers.delete('Authorization');
+                    lastErr = parsed;
+                    attempt -= 1; // don't consume a retry slot
+                    continue;
+                }
+                if (
+                    attempt < retries &&
+                    RETRYABLE_STATUS.has(response.status)
+                ) {
+                    lastErr = parsed;
+                    await sleep(150 * Math.pow(2, attempt));
+                    continue;
+                }
+                throw parsed;
+            }
+
+            return await parseResponse<T>(response);
+        } catch (err: any) {
+            const isAbort = err?.name === 'AbortError';
+            const isStructured =
+                err?.success === false && typeof err.code === 'number';
+            const isNetwork = !isStructured;
+
+            if (attempt < retries && (isAbort || isNetwork)) {
+                lastErr = err;
+                await sleep(150 * Math.pow(2, attempt));
+                continue;
+            }
+
+            console.error('[ServerRequest Error]', {
+                url,
+                attempt,
+                retries,
+                err,
+            });
+
+            if (isStructured) {
+                throw err;
+            }
+
+            throw {
+                success: false,
+                message: isAbort
+                    ? `Request timed out after ${timeoutMs}ms`
+                    : err?.message ?? 'Network error: request failed',
+                code: 0,
+            } satisfies ErrorResponse;
+        } finally {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
         }
-
-        return await parseResponse<T>(response);
-
-    } catch (err: any) {
-        // 🟥 fetch 失败没有 response，例如 DNS 错误 / 连接拒绝 / 证书错误
-        console.error('[ServerRequest Error]', err);
-
-        // 如果已经是我们自定义的 ErrorResponse，则直接抛出
-        if (err?.success === false && typeof err.code === 'number') {
-            throw err;
-        }
-
-        // 统一规范化
-        throw {
-            success: false,
-            message: err?.message ?? 'Network error: request failed',
-            code: 0, // 0 表示未到达服务端
-        } satisfies ErrorResponse;
-    }
-};
-
-
-async function parseResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get('Content-Type');
-    return contentType?.includes('application/json')
-        ? response.json()
-        : response.text() as Promise<T>;
-}
-
-async function parseError(response: Response): Promise<ErrorResponse> {
-    const contentType = response.headers.get('Content-Type');
-
-    let errorData: any = {};
-    try {
-        errorData = contentType?.includes('application/json')
-            ? await response.json()
-            : await response.text();
-    } catch (e) {
-        errorData = {};
     }
 
-    return {
+    // Should be unreachable — loop either returns or throws.
+    throw (lastErr ?? {
         success: false,
-        message: errorData?.message || "Unknown error occurred",
-        code: response.status,
-    };
-}
+        message: 'Request failed',
+        code: 0,
+    }) satisfies ErrorResponse;
+};

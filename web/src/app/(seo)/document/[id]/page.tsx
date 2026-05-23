@@ -17,15 +17,14 @@ import AudioPlayer from '@/components/ui/audio-player';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import { getDocumentCoverSrc } from '@/lib/document-cover';
 import { getRenderableGraphData } from '@/lib/graph-render';
+import { getPublicSectionHref, isSeoNotFoundError } from '@/lib/seo';
 import {
-	fetchPublicDocumentGraph,
-	fetchPublicDocumentDetail,
-	fetchPublicDocumentMarkdownContent,
-	fetchPublicDocumentComments,
-	fetchPublicDocumentNotes,
-	getPublicSectionHref,
-	isSeoNotFoundError,
-} from '@/lib/seo';
+	getDocumentDetailServer,
+	getDocumentMarkdownContentServer,
+	searchDocumentCommentServer,
+	searchPublicDocumentNotesServer,
+} from '@/service/document';
+import { searchDocumentGraphServer } from '@/service/graph';
 import DocumentCommentsList from '@/components/document/document-comments-list';
 import DocumentNotesPublicList from '@/components/document/document-notes-public-list';
 import SeoDocumentCommentGate from '@/components/seo/document/seo-document-comment-gate';
@@ -71,7 +70,7 @@ const getCategoryLabel = (
 };
 
 const getDocumentMarkdown = async (
-	document: Awaited<ReturnType<typeof fetchPublicDocumentDetail>>,
+	document: Awaited<ReturnType<typeof getDocumentDetailServer>>,
 ) => {
 	if (
 		document.category === DocumentCategory.WEBSITE ||
@@ -80,7 +79,7 @@ const getDocumentMarkdown = async (
 		if (!document.convert_task?.md_file_name) {
 			return null;
 		}
-		return await fetchPublicDocumentMarkdownContent({
+		return await getDocumentMarkdownContentServer({
 			document_id: document.id,
 		});
 	}
@@ -100,7 +99,7 @@ export async function generateMetadata(props: {
 	const t = await getTranslations();
 
 	try {
-		const document = await fetchPublicDocumentDetail({
+		const document = await getDocumentDetailServer({
 			document_id: Number(id),
 		});
 		const coverSrc = getDocumentCoverSrc(document) ?? undefined;
@@ -165,18 +164,18 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 	}
 
 	try {
-		const document = await fetchPublicDocumentDetail({
+		const document = await getDocumentDetailServer({
 			document_id: documentId,
 		});
-		const initialGraph = await fetchPublicDocumentGraph({
+		const initialGraph = await searchDocumentGraphServer({
 			document_id: documentId,
 		}).catch(() => null);
-		const initialComments = await fetchPublicDocumentComments({
+		const initialComments = await searchDocumentCommentServer({
 			document_id: documentId,
 			keyword: '',
 			limit: 10,
 		}).catch(() => undefined);
-		const initialNotes = await fetchPublicDocumentNotes({
+		const initialNotes = await searchPublicDocumentNotesServer({
 			document_id: documentId,
 			keyword: '',
 			limit: 10,

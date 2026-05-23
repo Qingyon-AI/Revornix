@@ -1,11 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 import { updateToken } from '@/service/user';
-import qs from 'qs';
 import Cookies from 'js-cookie'
 import { setAuthCookies, clearAuthCookies } from '@/lib/auth-cookies';
 import { toast } from 'sonner';
 import { utils } from '@kinda/utils';
 import { getUserTimeZone } from '@/lib/time';
+import {
+    appendQueryString,
+    BASE_FETCH_INIT,
+    parseError,
+    parseResponse,
+    type ErrorResponse,
+} from '@/lib/request-core';
 
 type Subscriber = {
     resolve: () => void;
@@ -18,12 +24,6 @@ interface RequestOptions {
     headers?: Headers;
     formData?: FormData;
     signal?: AbortSignal;
-}
-
-type ErrorResponse = {
-    success: boolean
-    message: string
-    code: number
 }
 
 // 防止多次请求token获取接口（限制三次，三次以后直接显示账号信息错误）
@@ -145,13 +145,10 @@ export const request = <T>(url: string, initialOptions?: RequestOptions, _retrie
 
     return new Promise(async (resolve, reject) => {
         const method = initialOptions?.method || 'POST';
-        const options: any = {
-            method: method,
-            mode: 'cors',
-            credentials: 'same-origin',
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
+        const options: RequestInit = {
+            ...BASE_FETCH_INIT,
             ...initialOptions,
+            method,
             headers,
         }
 
@@ -162,13 +159,10 @@ export const request = <T>(url: string, initialOptions?: RequestOptions, _retrie
             options.body = initialOptions.formData;
         }
 
-        let finalUrl = url;
-        if (method === 'GET' && initialOptions?.data) {
-            const query = qs.stringify(initialOptions.data, { skipNulls: true });
-            if (query) {
-                finalUrl += finalUrl.includes('?') ? `&${query}` : `?${query}`;
-            }
-        }
+        const finalUrl =
+            method === 'GET' && initialOptions?.data
+                ? appendQueryString(url, initialOptions.data)
+                : url;
 
         // 🟦【关键补充】捕获 fetch 网络层错误（Failed to fetch、CORS 错误、DNS 错误、证书错误等）
         let response: Response;
@@ -202,26 +196,3 @@ export const request = <T>(url: string, initialOptions?: RequestOptions, _retrie
         resolve(await parseResponse<T>(response));
     });
 };
-
-async function parseResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get('Content-Type');
-    return contentType?.includes('application/json')
-        ? response.json()
-        : response.text() as Promise<T>;
-}
-
-async function parseError(response: Response): Promise<ErrorResponse> {
-    const contentType = response.headers.get('Content-Type');
-    const errorData = contentType?.includes('application/json')
-        ? await response.json()
-        : await response.text();
-    // 返回规范化的 ErrorResponse 对象
-    return {
-        success: false,
-        message:
-            typeof errorData === 'string'
-                ? errorData
-                : errorData.message || "Unknown error occurred",
-        code: response.status
-    };
-}

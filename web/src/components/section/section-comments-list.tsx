@@ -2,7 +2,6 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
-	searchPublicSectionComment,
 	searchSectionComment,
 	type InifiniteScrollPagnitionSectionCommentInfo,
 	type SectionCommentSortType,
@@ -63,9 +62,7 @@ const SectionCommentsList = ({
 	} = useInfiniteQuery({
 			queryKey: ['searchSectionComment', keyword, sort, section_id],
 			queryFn: (pageParam) =>
-				publicMode
-					? searchPublicSectionComment({ ...pageParam.pageParam })
-					: searchSectionComment({ ...pageParam.pageParam }),
+				searchSectionComment({ ...pageParam.pageParam }),
 			initialPageParam,
 			initialData:
 				sort === 'time' && initialData
