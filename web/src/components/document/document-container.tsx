@@ -39,10 +39,15 @@ import { useRightSidebar } from '@/provider/right-sidebar-provider';
 import DocumentDetailSidebar from './document-detail-sidebar';
 import MobileAutoAudioTrack from '../ui/mobile-auto-audio-track';
 import { useAudioPlayer } from '@/provider/audio-player-provider';
+import NoAccessState from '@/components/permission/no-access-state';
+import { AccessRequestTargetType } from '@/service/access-request';
+import { Loader2 } from 'lucide-react';
 
 const DocumentDetailSkeleton = () => {
 	return (
-		<MarkdownContentSkeleton className='min-h-[calc(100dvh-14rem)] pt-2' />
+		<div className='flex h-[calc(100dvh-var(--private-top-header-height,3.5rem))] w-full items-center justify-center'>
+			<Loader2 className='size-6 animate-spin text-muted-foreground' />
+		</div>
 	);
 };
 
@@ -242,7 +247,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 
 	const sidebarContent = useMemo(
 		() =>
-			isError ? null : (
+			isError || (isPending && !document) ? null : (
 				<DocumentDetailSidebar
 					id={id}
 					isPending={isPending}
@@ -256,12 +261,14 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					graphCancelling={mutateCancelDocumentGraph.isPending}
 					documentCategory={document?.category}
 					graphStatus={document?.graph_task?.status}
+					isCreator={Boolean(document && mainUserInfo && document.creator?.id === mainUserInfo.id)}
 					onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
 					onGraphCancel={() => mutateCancelDocumentGraph.mutate()}
 				/>
 			),
 		[
 			document?.category,
+			document?.creator?.id,
 			document?.graph_task?.status,
 			document?.id,
 			freshnessState.graphStale,
@@ -272,6 +279,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			id,
 			isError,
 			isPending,
+			mainUserInfo?.id,
 			mutateGenerateDocumentGraph.isPending,
 			mutateCancelDocumentGraph.isPending,
 		],
@@ -315,9 +323,17 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					) : null}
 					{isPending && !document && !isError && <DocumentDetailSkeleton />}
 					{isError && (
-						<div className='flex min-h-[60vh] w-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>
-							{error.message}
-						</div>
+						<NoAccessState
+							targetType={AccessRequestTargetType.DOCUMENT}
+							targetId={id}
+							code={(error as any)?.code}
+							message={error?.message}
+							onRetry={() =>
+								queryClient.invalidateQueries({
+									queryKey: ['getDocumentDetail', id],
+								})
+							}
+						/>
 					)}
 					{documentCoverSrc ? (
 						<div className='mx-auto w-full overflow-hidden'>
