@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import UnderlineExtension from '@tiptap/extension-underline';
 import { Markdown } from '@tiptap/markdown';
 import {
 	Highlighter,
@@ -64,6 +65,7 @@ import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
 import VideoEmbedNode from './extensions/video-embed-node';
 import MathBlockNode from './extensions/math-block-node';
+import MathInlineNode from './extensions/math-inline-node';
 import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
 import aiApi from '@/api/ai';
@@ -92,6 +94,7 @@ type TipTapEditorProps = {
 	toolbarEnd?: ReactNode;
 	fullscreen?: boolean;
 	onFullscreenChange?: (fullscreen: boolean) => void;
+	onInitialParse?: (info: { isEmpty: boolean; sourceLength: number }) => void;
 };
 
 type ContinuePreset = 'rewrite' | 'expand' | 'summarize' | 'formalize';
@@ -288,6 +291,7 @@ const TipTapEditor = ({
 	toolbarEnd,
 	fullscreen,
 	onFullscreenChange,
+	onInitialParse,
 }: TipTapEditorProps) => {
 	const TEXT_COLORS = [
 		'#ef4444',
@@ -310,6 +314,7 @@ const TipTapEditor = ({
 	const { revornixModel, imageGenerateEngine } = useDefaultResourceAccess();
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
+	const hasNotifiedInitialParseRef = useRef(false);
 	const continueAbortControllerRef = useRef<AbortController | null>(null);
 	const continueAbortReasonRef = useRef<'user' | 'timeout' | null>(null);
 	const activeContinuationPlaceholderIdRef = useRef<string | null>(null);
@@ -425,6 +430,8 @@ const TipTapEditor = ({
 				TableNode,
 				VideoEmbedNode,
 				MathBlockNode,
+				MathInlineNode,
+				UnderlineExtension,
 				TextColorMark,
 				TextHighlightMark,
 				MermaidCodeBlock,
@@ -496,7 +503,15 @@ const TipTapEditor = ({
 			return;
 		}
 		editor.view.dispatch(editor.state.tr);
-	}, [editor]);
+
+		if (!hasNotifiedInitialParseRef.current) {
+			hasNotifiedInitialParseRef.current = true;
+			onInitialParse?.({
+				isEmpty: editor.isEmpty,
+				sourceLength: (value ?? '').trim().length,
+			});
+		}
+	}, [editor, onInitialParse, value]);
 
 	useEffect(() => {
 		if (!editor) {
