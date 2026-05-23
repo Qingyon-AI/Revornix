@@ -45,14 +45,16 @@ export const serverRequest = async <T>(url: string, initialOptions?: RequestOpti
 
     const method = initialOptions?.method || 'POST';
 
+    const { headers: _omitHeaders, ...restInitialOptions } = initialOptions ?? {};
+
     const options: any = {
         method: method,
         mode: 'cors',
         credentials: 'same-origin',
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
+        ...restInitialOptions,
         headers,
-        ...initialOptions
     };
 
     if (method === 'POST' && initialOptions?.data) {
