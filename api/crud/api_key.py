@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -116,6 +116,48 @@ async def search_api_key_async(
     stmt = stmt.offset((page_num - 1) * page_size)
     stmt = stmt.limit(page_size)
     return (await db.execute(stmt)).scalars().all()
+
+async def touch_api_key_last_used_async(
+    db: AsyncSession,
+    api_key_id: int,
+    throttle_seconds: int = 60,
+):
+    now = datetime.now(timezone.utc)
+    stmt = (
+        update(models.api_key.ApiKey)
+        .where(
+            models.api_key.ApiKey.id == api_key_id,
+            models.api_key.ApiKey.delete_at.is_(None),
+            (
+                models.api_key.ApiKey.last_used_time.is_(None)
+                | (
+                    models.api_key.ApiKey.last_used_time
+                    < now - timedelta(seconds=throttle_seconds)
+                )
+            ),
+        )
+        .values(last_used_time=now)
+    )
+    await db.execute(stmt)
+    await db.flush()
+
+async def update_api_key_description_async(
+    db: AsyncSession,
+    user_id: int,
+    api_key_id: int,
+    description: str
+):
+    result = await db.execute(
+        update(models.api_key.ApiKey)
+        .where(
+            models.api_key.ApiKey.user_id == user_id,
+            models.api_key.ApiKey.delete_at.is_(None),
+            models.api_key.ApiKey.id == api_key_id,
+        )
+        .values(description=description)
+    )
+    await db.flush()
+    return result.rowcount
 
 def delete_api_keys_by_api_key_ids(db: Session,
                                    user_id: int,

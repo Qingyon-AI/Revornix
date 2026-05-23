@@ -1,6 +1,6 @@
 import secrets
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
@@ -16,14 +16,35 @@ async def create_api_key(
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
+    api_key_value = secrets.token_hex(32)
     db_api_key = await crud.api_key.create_api_key_async(
         db=db,
         user_id=user.id,
-        api_key=secrets.token_hex(32),
+        api_key=api_key_value,
         description=api_key_create_request.description
     )
     await db.commit()
-    return schemas.api_key.ApiKeyCreateResponse(api_key_id=db_api_key.id)
+    return schemas.api_key.ApiKeyCreateResponse(
+        api_key_id=db_api_key.id,
+        api_key=api_key_value,
+    )
+
+@api_key_router.post("/update", response_model=schemas.common.NormalResponse)
+async def update_api_key(
+    api_key_update_request: schemas.api_key.ApiKeyUpdateRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user)
+):
+    affected = await crud.api_key.update_api_key_description_async(
+        db=db,
+        user_id=user.id,
+        api_key_id=api_key_update_request.api_key_id,
+        description=api_key_update_request.description,
+    )
+    if not affected:
+        raise HTTPException(status_code=404, detail="api_key_not_found")
+    await db.commit()
+    return schemas.common.SuccessResponse()
 
 @api_key_router.post("/search", response_model=schemas.pagination.Pagination[schemas.api_key.ApiKeyInfo])
 async def search_api_key(

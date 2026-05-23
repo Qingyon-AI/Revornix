@@ -40,6 +40,7 @@ export * from './ApiDocumentCreateRequest';
 export * from './ApiKeyCreateRequest';
 export * from './ApiKeyCreateResponse';
 export * from './ApiKeyInfo';
+export * from './ApiKeyUpdateRequest';
 export * from './ApiKeysDeleteRequest';
 export * from './AudioDocumentInfo';
 export * from './BillingAuditIssue';
