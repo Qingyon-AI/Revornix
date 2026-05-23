@@ -77,8 +77,8 @@ const CommunityControls = ({
 						className={cn(
 							'h-9 rounded-xl px-3 shadow-none transition-colors',
 							tab === 'documents'
-								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:border-foreground dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background'
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted dark:hover:text-foreground',
 						)}>
 						<Link href={buildCommunityHref({ tab: 'documents', keyword, labelId })}>
 							<FileText className='mr-2 size-4' />
@@ -91,8 +91,8 @@ const CommunityControls = ({
 						className={cn(
 							'h-9 rounded-xl px-3 shadow-none transition-colors',
 							tab === 'sections'
-								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:bg-foreground dark:hover:bg-foreground'
-								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted',
+								? 'border-foreground bg-foreground text-background hover:bg-foreground hover:text-background dark:border-foreground dark:bg-foreground dark:text-background dark:hover:bg-foreground dark:hover:text-background'
+								: 'border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:bg-background dark:hover:bg-muted dark:hover:text-foreground',
 						)}>
 						<Link href={buildCommunityHref({ tab: 'sections', keyword, labelId })}>
 							<Compass className='mr-2 size-4' />

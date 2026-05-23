@@ -258,13 +258,19 @@ const SeoUserDetailPage = async (props: {
 					<div className='relative h-56 w-full overflow-hidden lg:h-64'>
 						<div className='h-full w-full'>
 							{coverSrc ? (
-								<img
-									src={coverSrc}
-									alt={`${user.nickname} cover`}
-									className='h-full w-full object-cover'
-								/>
+								<>
+									<img
+										src={coverSrc}
+										alt={`${user.nickname} cover`}
+										className='h-full w-full object-cover'
+									/>
+									<div className='absolute inset-0 bg-gradient-to-t from-black/72 via-black/24 to-black/8 dark:from-black/64 dark:via-black/18 dark:to-black/4' />
+									<div className='absolute inset-y-0 left-0 w-[72%] bg-gradient-to-r from-black/56 via-black/28 to-transparent dark:from-black/48 dark:via-black/20' />
+									<div className='absolute inset-y-0 right-0 w-[38%] bg-gradient-to-l from-black/34 via-black/14 to-transparent dark:from-black/28 dark:via-black/10' />
+								</>
 							) : null}
-						</div>						<div className='absolute inset-x-0 bottom-0'>
+						</div>
+						<div className='absolute inset-x-0 bottom-0'>
 							<div className='mx-auto flex w-full max-w-[1160px] flex-col gap-4 px-4 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-8'>
 								<div className='flex min-w-0 items-end gap-4'>
 									<Avatar className='size-20 border-4 border-background/90 shadow-xl sm:size-24'>
