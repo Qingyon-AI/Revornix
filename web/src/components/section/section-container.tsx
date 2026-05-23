@@ -48,7 +48,10 @@ const SectionContainer = ({ id }: { id: number }) => {
 		queryFn: () => searchSectionGraph({ section_id: id }),
 		enabled: Boolean(section?.id),
 	});
-	const sectionCoverSrc = getSectionCoverSrc(section);
+	const hasGeneratedMarkdown = Boolean(section?.md_file_name);
+	const sectionCoverSrc = hasGeneratedMarkdown
+		? getSectionCoverSrc(section)
+		: null;
 	const sectionPodcastSrc = section?.podcast_task?.podcast_file_name ?? null;
 	const mobileOperateOffsetClassName = sectionPodcastSrc
 		? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))]'

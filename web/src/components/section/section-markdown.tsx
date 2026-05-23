@@ -21,6 +21,8 @@ import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import NoticeBox from '../ui/notice-box';
 import { MarkdownContentSkeleton } from '../ui/skeleton';
+import { NotFoundView } from '../not-found/not-found-view';
+import { Clock, FileText, AlertTriangle } from 'lucide-react';
 
 const SectionMarkdown = ({
 	id,
@@ -217,7 +219,7 @@ const SectionMarkdown = ({
 		: t('section_markdown_empty');
 	const emptyDescription = isScheduledWaitingForTrigger
 		? t('section_markdown_scheduled_waiting_description')
-		: undefined;
+		: t('section_markdown_empty_description');
 	const contentFallbackMinHeightClassName =
 		'min-h-[calc(100dvh-14rem)] sm:min-h-[calc(100dvh-14.25rem)]';
 
@@ -258,18 +260,13 @@ const SectionMarkdown = ({
 		<div className={cn('pt-4', className)}>
 			{showEmpty ? (
 				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
-					<div
-						className={cn(
-							'flex w-full items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground my-6',
-							contentFallbackMinHeightClassName,
-						)}>
-						<div className='max-w-md space-y-2'>
-							<p className='text-base font-medium text-foreground'>
-								{emptyTitle}
-							</p>
-							{emptyDescription ? <p>{emptyDescription}</p> : null}
-						</div>
-					</div>
+					<NotFoundView
+						code={null}
+						icon={isScheduledWaitingForTrigger ? Clock : FileText}
+						title={emptyTitle}
+						description={emptyDescription}
+						className={cn('py-12 px-4', contentFallbackMinHeightClassName)}
+					/>
 				</div>
 			) : null}
 
@@ -292,15 +289,13 @@ const SectionMarkdown = ({
 
 			{showError ? (
 				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
-					<div
-						className={cn(
-							'relative flex w-full items-center justify-center rounded-[28px] border border-dashed border-border/70 bg-background/25 px-6 text-center text-sm leading-7 text-muted-foreground',
-							contentFallbackMinHeightClassName,
-						)}>
-						<div className='max-w-md'>
-							{error?.message ?? <p>{markdownGetError}</p>}
-						</div>
-					</div>
+					<NotFoundView
+						code={null}
+						icon={AlertTriangle}
+						title={t('section_markdown_load_failed')}
+						description={error?.message ?? markdownGetError}
+						className={cn('py-12 px-4', contentFallbackMinHeightClassName)}
+					/>
 				</div>
 			) : null}
 
