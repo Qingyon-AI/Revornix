@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Code2, Expand, Eye, Loader2, Shrink, SquarePen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -57,6 +57,8 @@ const EditableMarkdownPanel = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
 	const [isMounted, setIsMounted] = useState(false);
+	const expectVisualParseCheckRef = useRef(false);
+	const lastVisualSourceRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -127,8 +129,33 @@ const EditableMarkdownPanel = ({
 	};
 
 	const queueVisualMode = () => {
-		setDraft((current) => normalizeEditorMarkdown(current));
+		setDraft((current) => {
+			const normalized = normalizeEditorMarkdown(current);
+			lastVisualSourceRef.current = normalized;
+			return normalized;
+		});
+		expectVisualParseCheckRef.current = true;
 		setEditorMode('visual-loading');
+	};
+
+	const handleInitialVisualParse = ({
+		isEmpty,
+		sourceLength,
+	}: {
+		isEmpty: boolean;
+		sourceLength: number;
+	}) => {
+		if (!expectVisualParseCheckRef.current) {
+			return;
+		}
+		expectVisualParseCheckRef.current = false;
+		if (isEmpty && sourceLength > 0) {
+			const recoveredSource =
+				lastVisualSourceRef.current ?? normalizedDraft;
+			setDraft(recoveredSource);
+			setEditorMode('source');
+			toast.error(t('markdown_edit_visual_parse_failed'));
+		}
 	};
 
 	const visualLoading = (
@@ -274,6 +301,7 @@ const EditableMarkdownPanel = ({
 								className='min-h-[32rem]'
 								fullscreen={isEditorFullscreen}
 								onFullscreenChange={setIsEditorFullscreen}
+								onInitialParse={handleInitialVisualParse}
 								toolbarEnd={
 									<Button
 										type='button'

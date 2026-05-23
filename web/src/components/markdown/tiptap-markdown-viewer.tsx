@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import UnderlineExtension from '@tiptap/extension-underline';
 import { Markdown } from '@tiptap/markdown';
 import MermaidCodeBlock from './extensions/mermaid-code-block';
 import ImageNode from './extensions/image-node';
@@ -12,6 +13,7 @@ import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
 import VideoEmbedNode from './extensions/video-embed-node';
 import MathBlockNode from './extensions/math-block-node';
+import MathInlineNode from './extensions/math-inline-node';
 import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
 import { ImagePreviewGroup } from '../ui/image-with-fallback';
@@ -42,6 +44,8 @@ const TipTapMarkdownViewer = ({
 				TableNode,
 				VideoEmbedNode,
 				MathBlockNode,
+				MathInlineNode,
+				UnderlineExtension,
 				TextColorMark,
 				TextHighlightMark,
 				MermaidCodeBlock,
