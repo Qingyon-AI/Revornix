@@ -92,6 +92,7 @@ async def _ensure_document_access(
 
     if user_id is None:
         ensure_document_access(
+            user_id=user_id,
             is_creator=False,
             has_public_document=False,
             has_document_collaborator=False,
@@ -104,6 +105,7 @@ async def _ensure_document_access(
         document_id=document_id,
     )
     ensure_document_access(
+        user_id=user_id,
         is_creator=False,
         has_public_document=False,
         has_document_collaborator=db_user_document is not None,
@@ -746,7 +748,14 @@ async def search_my_star_documents(
 async def search_public_documents(
     search_public_documents_request: schemas.document.SearchPublicDocumentsRequest,
     db: AsyncSession = Depends(get_async_db),
+    user: models.user.User | None = Depends(get_current_user_without_throw),
 ):
+    # 仅在用户查看自己的文档时返回所有文档，否则仅返回公开文档
+    only_published = (
+        user is None
+        or search_public_documents_request.creator_id is None
+        or search_public_documents_request.creator_id != user.id
+    )
     db_documents = await crud.document.search_published_documents_async(
         db=db,
         start=search_public_documents_request.start,
@@ -755,6 +764,7 @@ async def search_public_documents(
         creator_id=search_public_documents_request.creator_id,
         label_ids=search_public_documents_request.label_ids,
         desc=search_public_documents_request.desc,
+        only_published=only_published,
     )
     documents = await get_document_infos(db=db, documents=db_documents)
 
@@ -770,6 +780,7 @@ async def search_public_documents(
             creator_id=search_public_documents_request.creator_id,
             label_ids=search_public_documents_request.label_ids,
             desc=search_public_documents_request.desc,
+            only_published=only_published,
         )
     has_more, next_start = resolve_infinite_scroll_meta(
         page_item_count=len(documents),
@@ -781,6 +792,7 @@ async def search_public_documents(
         keyword=search_public_documents_request.keyword,
         creator_id=search_public_documents_request.creator_id,
         label_ids=search_public_documents_request.label_ids,
+        only_published=only_published,
     )
     return schemas.pagination.InifiniteScrollPagnition(
         total=total,

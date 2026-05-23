@@ -10,9 +10,15 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { searchUserSection } from '@/service/section';
-import { SeoCommunitySectionListItem } from '@/components/seo/community/seo-community-list-item';
+import { searchPublicDocument } from '@/service/document';
+import {
+	SeoCommunityDocumentListItem,
+	SeoCommunitySectionListItem,
+} from '@/components/seo/community/seo-community-list-item';
 import SectionCard from '../section/section-card';
 import SectionCardSkeleton from '../section/section-card-skeleton';
+import DocumentCard from '../document/document-card';
+import DocumentCardSkeleton from '../document/document-card-skeleton';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
 import CardViewToggle from '../ui/card-view-toggle';
@@ -33,16 +39,27 @@ import {
 } from '@/lib/infinite-query-cache';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import { BookMarked, Search, UserCheck, UserPlus, Users } from 'lucide-react';
+import {
+	BookMarked,
+	Compass,
+	FileText,
+	Search,
+	UserCheck,
+	UserPlus,
+	Users,
+} from 'lucide-react';
 import { cn, replacePath } from '@/lib/utils';
 import { UserRole } from '@/enums/user';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
 
+type UserContentTab = 'documents' | 'sections';
+
 const UserContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
+	const [tab, setTab] = useState<UserContentTab>('documents');
 	const { viewMode, setViewMode } = useCardViewMode(
-		'user-profile-section-view-mode-v2',
+		`user-profile-${tab}-view-mode-v2`,
 		'list',
 	);
 	const [keyword, setKeyword] = useState('');
@@ -83,6 +100,37 @@ const UserContainer = ({ id }: { id: number }) => {
 					}
 				: undefined;
 		},
+		enabled: tab === 'sections',
+	});
+
+	const {
+		data: documentData,
+		isFetchingNextPage: isFetchingNextDocumentPage,
+		isFetching: isFetchingDocuments,
+		isSuccess: isDocumentSuccess,
+		fetchNextPage: fetchNextDocumentPage,
+		hasNextPage: hasNextDocumentPage,
+	} = useInfiniteQuery({
+		queryKey: ['searchPublicDocument', keyword, id],
+		queryFn: (pageParam) => searchPublicDocument({ ...pageParam.pageParam }),
+		initialPageParam: {
+			creator_id: id,
+			limit: 12,
+			keyword,
+			desc: true,
+		},
+		getNextPageParam: (lastPage) => {
+			return lastPage.has_more
+				? {
+						start: lastPage.next_start ?? undefined,
+						limit: lastPage.limit,
+						keyword,
+						creator_id: id,
+						desc: true,
+					}
+				: undefined;
+		},
+		enabled: tab === 'documents',
 	});
 
 	const mutateFollow = useMutation({
@@ -175,13 +223,29 @@ const UserContainer = ({ id }: { id: number }) => {
 
 	const sections = data?.pages.flatMap((page) => page.elements) || [];
 	const totalSections = data?.pages[0]?.total ?? 0;
+	const documents = documentData?.pages.flatMap((page) => page.elements) || [];
+	const totalDocuments = documentData?.pages[0]?.total ?? 0;
 	const isOwnProfile = mainUserInfo?.id === id;
 
 	useEffect(() => {
+		if (tab !== 'sections') return;
 		if (inView && !isFetchingSections && hasNextPage) {
 			fetchNextPage();
 		}
-	}, [inView, isFetchingSections, hasNextPage, fetchNextPage]);
+	}, [tab, inView, isFetchingSections, hasNextPage, fetchNextPage]);
+
+	useEffect(() => {
+		if (tab !== 'documents') return;
+		if (inView && !isFetchingDocuments && hasNextDocumentPage) {
+			fetchNextDocumentPage();
+		}
+	}, [
+		tab,
+		inView,
+		isFetchingDocuments,
+		hasNextDocumentPage,
+		fetchNextDocumentPage,
+	]);
 
 	const roleMeta = useMemo(() => {
 		switch (userInfo?.role) {
@@ -270,7 +334,7 @@ const UserContainer = ({ id }: { id: number }) => {
 	};
 
 	return (
-		<div className='flex w-full flex-col gap-5 pb-6 pt-4'>
+		<div className='flex w-full flex-col pb-6 pt-4'>
 			{isFetchingUserInfo && !userInfo ? (
 				<>
 					<section className='mx-5 overflow-hidden rounded-xl border border-border/60 bg-background'>
@@ -387,6 +451,14 @@ const UserContainer = ({ id }: { id: number }) => {
 										{t('user_detail_section_total')} {totalSections}
 									</span>
 								</div>
+								<div className='inline-flex items-center gap-1.5'>
+									<FileText className='size-4' />
+									<span>
+										{t('user_detail_documents_result', {
+											count: totalDocuments,
+										})}
+									</span>
+								</div>
 							</div>
 						</div>
 					</section>
@@ -395,15 +467,54 @@ const UserContainer = ({ id }: { id: number }) => {
 						<div className='sticky top-[var(--private-top-header-height,3.5rem)] z-20 border-b border-border/60 px-5 py-3 backdrop-blur'>
 							<div className='flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between'>
 								<div className='flex min-w-0 flex-wrap items-center gap-3'>
-									<h2 className='text-lg font-semibold tracking-tight'>
-										{t('user_detail_sections_title')}
-									</h2>
+									<div className='inline-flex max-w-full rounded-xl border border-border/60 bg-background/65 p-0.5'>
+										<Button
+											type='button'
+											variant='ghost'
+											className={cn(
+												'h-9 rounded-lg px-3 shadow-none',
+												tab === 'documents'
+													? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+													: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+											)}
+											onClick={() => {
+												setTab('documents');
+												setKeyword('');
+											}}>
+											<FileText className='mr-2 size-4' />
+											{t('seo_community_documents_tab')}
+										</Button>
+										<Button
+											type='button'
+											variant='ghost'
+											className={cn(
+												'h-9 rounded-lg px-3 shadow-none',
+												tab === 'sections'
+													? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+													: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+											)}
+											onClick={() => {
+												setTab('sections');
+												setKeyword('');
+											}}>
+											<Compass className='mr-2 size-4' />
+											{t('seo_community_sections_tab')}
+										</Button>
+									</div>
 									<div className='inline-flex items-center gap-2 text-sm text-muted-foreground'>
-										<BookMarked className='size-4' />
+										{tab === 'documents' ? (
+											<FileText className='size-4' />
+										) : (
+											<BookMarked className='size-4' />
+										)}
 										<span>
-											{t('user_detail_sections_result', {
-												count: totalSections,
-											})}
+											{tab === 'documents'
+												? t('user_detail_documents_result', {
+														count: totalDocuments,
+													})
+												: t('user_detail_sections_result', {
+														count: totalSections,
+													})}
 										</span>
 										{keyword ? <span>"{keyword}"</span> : null}
 									</div>
@@ -414,7 +525,11 @@ const UserContainer = ({ id }: { id: number }) => {
 										<Input
 											value={keyword}
 											onChange={(e) => setKeyword(e.target.value)}
-											placeholder={t('user_detail_sections_search_placeholder')}
+											placeholder={
+												tab === 'documents'
+													? t('user_detail_documents_search_placeholder')
+													: t('user_detail_sections_search_placeholder')
+											}
 											className='h-10 rounded-xl border-border/60 bg-background/65 pl-9 shadow-none'
 										/>
 									</div>
@@ -427,18 +542,104 @@ const UserContainer = ({ id }: { id: number }) => {
 							</div>
 						</div>
 						<div className='px-5 py-5'>
-							{isSuccess && sections.length === 0 && !isFetchingSections ? (
+							{tab === 'sections' ? (
+								isSuccess && sections.length === 0 && !isFetchingSections ? (
+									<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
+										<div className='max-w-md'>
+											<h3 className='text-lg font-semibold tracking-tight'>
+												{keyword
+													? t('user_detail_sections_search_empty')
+													: t('user_sections_empty')}
+											</h3>
+											<p className='mt-2 text-sm leading-7 text-muted-foreground'>
+												{keyword
+													? `"${keyword}"`
+													: t('user_detail_sections_description')}
+											</p>
+										</div>
+									</div>
+								) : (
+									<div
+										className={
+											viewMode === 'grid'
+												? 'grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-4'
+												: 'flex flex-col gap-4'
+										}>
+										{viewMode === 'grid' ? (
+											sections.map((section, index) => {
+												return (
+													<div
+														className='h-full'
+														key={section.id}
+														ref={
+															index === sections.length - 1
+																? bottomRef
+																: undefined
+														}>
+														<SectionCard section={section} />
+													</div>
+												);
+											})
+										) : (
+											<div>
+												{sections.map((section, index) => (
+													<div
+														key={section.id}
+														ref={
+															index === sections.length - 1
+																? bottomRef
+																: undefined
+														}>
+														<SeoCommunitySectionListItem section={section} />
+														{index !== sections.length - 1 ? (
+															<Separator className='my-3' />
+														) : null}
+													</div>
+												))}
+												{isFetchingSections && !data
+													? renderListSkeleton(4)
+													: null}
+												{isFetchingNextPage && data ? (
+													<div className='mt-3'>{renderListSkeleton(2)}</div>
+												) : null}
+											</div>
+										)}
+										{viewMode === 'grid' && isFetchingSections && !data
+											? [...Array(6)].map((_, index) => {
+													return (
+														<SectionCardSkeleton
+															key={index}
+															layout={viewMode}
+														/>
+													);
+												})
+											: null}
+										{viewMode === 'grid' && isFetchingNextPage && data
+											? [...Array(3)].map((_, index) => {
+													return (
+														<SectionCardSkeleton
+															key={`next-${index}`}
+															layout={viewMode}
+														/>
+													);
+												})
+											: null}
+									</div>
+								)
+							) : isDocumentSuccess &&
+								documents.length === 0 &&
+								!isFetchingDocuments ? (
 								<div className='flex min-h-[240px] items-center justify-center rounded-[24px] border border-dashed border-border/70 bg-background/50 px-6 text-center'>
 									<div className='max-w-md'>
 										<h3 className='text-lg font-semibold tracking-tight'>
 											{keyword
-												? t('user_detail_sections_search_empty')
-												: t('user_sections_empty')}
+												? t('user_detail_documents_search_empty')
+												: t('user_documents_empty')}
 										</h3>
 										<p className='mt-2 text-sm leading-7 text-muted-foreground'>
 											{keyword
 												? `"${keyword}"`
-												: t('user_detail_sections_description')}
+												: t('user_detail_documents_description')}
 										</p>
 									</div>
 								</div>
@@ -450,53 +651,62 @@ const UserContainer = ({ id }: { id: number }) => {
 											: 'flex flex-col gap-4'
 									}>
 									{viewMode === 'grid' ? (
-										sections.map((section, index) => {
+										documents.map((document, index) => {
 											return (
 												<div
 													className='h-full'
-													key={section.id}
+													key={document.id}
 													ref={
-														index === sections.length - 1
+														index === documents.length - 1
 															? bottomRef
 															: undefined
 													}>
-													<SectionCard section={section} />
+													<DocumentCard document={document} layout='grid' />
 												</div>
 											);
 										})
 									) : (
 										<div>
-											{sections.map((section, index) => (
+											{documents.map((document, index) => (
 												<div
-													key={section.id}
+													key={document.id}
 													ref={
-														index === sections.length - 1
+														index === documents.length - 1
 															? bottomRef
 															: undefined
 													}>
-													<SeoCommunitySectionListItem section={section} />
-													{index !== sections.length - 1 ? (
+													<SeoCommunityDocumentListItem document={document} />
+													{index !== documents.length - 1 ? (
 														<Separator className='my-3' />
 													) : null}
 												</div>
 											))}
-											{isFetchingSections && !data ? renderListSkeleton(4) : null}
-											{isFetchingNextPage && data ? (
+											{isFetchingDocuments && !documentData
+												? renderListSkeleton(4)
+												: null}
+											{isFetchingNextDocumentPage && documentData ? (
 												<div className='mt-3'>{renderListSkeleton(2)}</div>
 											) : null}
 										</div>
 									)}
-									{viewMode === 'grid' && isFetchingSections && !data
+									{viewMode === 'grid' &&
+									isFetchingDocuments &&
+									!documentData
 										? [...Array(6)].map((_, index) => {
 												return (
-													<SectionCardSkeleton key={index} layout={viewMode} />
+													<DocumentCardSkeleton
+														key={index}
+														layout={viewMode}
+													/>
 												);
 											})
 										: null}
-									{viewMode === 'grid' && isFetchingNextPage && data
+									{viewMode === 'grid' &&
+									isFetchingNextDocumentPage &&
+									documentData
 										? [...Array(3)].map((_, index) => {
 												return (
-													<SectionCardSkeleton
+													<DocumentCardSkeleton
 														key={`next-${index}`}
 														layout={viewMode}
 													/>
