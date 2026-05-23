@@ -459,19 +459,19 @@ async def search_published_documents_async(
     keyword: str | None = None,
     creator_id: int | None = None,
     desc: bool = True,
+    only_published: bool = True,
 ):
-    stmt = (
-        select(models.document.Document)
-        .join(
+    stmt = select(models.document.Document)
+    if only_published:
+        stmt = stmt.join(
             models.document.PublishDocument,
             models.document.PublishDocument.document_id == models.document.Document.id,
-        )
-        .where(
-            models.document.Document.delete_at.is_(None),
+        ).where(
             models.document.PublishDocument.delete_at.is_(None),
         )
-        .distinct()
-    )
+    stmt = stmt.where(
+        models.document.Document.delete_at.is_(None),
+    ).distinct()
 
     if creator_id is not None:
         stmt = stmt.where(models.document.Document.creator_id == creator_id)
@@ -519,18 +519,21 @@ async def count_published_documents_async(
     keyword: str | None = None,
     label_ids: list[int] | None = None,
     creator_id: int | None = None,
+    only_published: bool = True,
 ):
     stmt = (
         select(func.count(func.distinct(models.document.Document.id)))
         .select_from(models.document.Document)
-        .join(
+    )
+    if only_published:
+        stmt = stmt.join(
             models.document.PublishDocument,
             models.document.PublishDocument.document_id == models.document.Document.id,
-        )
-        .where(
-            models.document.Document.delete_at.is_(None),
+        ).where(
             models.document.PublishDocument.delete_at.is_(None),
         )
+    stmt = stmt.where(
+        models.document.Document.delete_at.is_(None),
     )
     if creator_id is not None:
         stmt = stmt.where(models.document.Document.creator_id == creator_id)
@@ -556,17 +559,18 @@ async def search_next_published_document_async(
     label_ids: list[int] | None = None,
     creator_id: int | None = None,
     desc: bool = True,
+    only_published: bool = True,
 ):
-    stmt = (
-        select(models.document.Document)
-        .join(
+    stmt = select(models.document.Document)
+    if only_published:
+        stmt = stmt.join(
             models.document.PublishDocument,
             models.document.PublishDocument.document_id == models.document.Document.id,
-        )
-        .where(
-            models.document.Document.delete_at.is_(None),
+        ).where(
             models.document.PublishDocument.delete_at.is_(None),
         )
+    stmt = stmt.where(
+        models.document.Document.delete_at.is_(None),
     )
     if creator_id is not None:
         stmt = stmt.where(models.document.Document.creator_id == creator_id)

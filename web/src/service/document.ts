@@ -319,6 +319,19 @@ export const searchAllMyDocument = async (data: SearchAllMyDocumentsRequest): Pr
     return await request(documentApi.searchMyDocuments, { data })
 }
 
+export type SearchPublicDocumentsRequest = {
+    start?: number
+    limit: number
+    keyword?: string
+    creator_id?: number
+    label_ids?: number[]
+    desc?: boolean
+}
+
+export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+    return await request(documentApi.searchPublicDocument, { data })
+}
+
 export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
     return await request(documentApi.searchUserRecentReadDocument, {
         data
