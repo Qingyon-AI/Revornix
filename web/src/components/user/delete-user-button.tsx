@@ -17,24 +17,27 @@ import { toast } from 'sonner';
 import { clearAuthCookies } from '@/lib/auth-cookies';
 import { deleteUser } from '@/service/user';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 const DeleteUserButton = ({ className }: { className?: string }) => {
 	const t = useTranslations();
+	const router = useRouter();
 	const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
 	const [deleteUserSubmitStatus, setDeleteUserSubmitStatus] = useState(false);
 
 	const onDeleteUser = async () => {
 		setDeleteUserSubmitStatus(true);
-		const [res, err] = await utils.to(deleteUser());
+		const [, err] = await utils.to(deleteUser());
 		if (err) {
 			toast.error(err.message);
+			setDeleteUserSubmitStatus(false);
 			return;
 		}
 		await utils.sleep(500);
 		toast.success(t('account_delete_success'));
 		clearAuthCookies();
 		setDeleteUserSubmitStatus(false);
-		window.location.reload();
+		router.replace('/login');
 	};
 	return (
 		<>

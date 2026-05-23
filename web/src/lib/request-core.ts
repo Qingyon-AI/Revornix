@@ -11,6 +11,26 @@ export type ErrorResponse = {
     code: number;
 };
 
+export interface ServerRequestOptions {
+    method?: 'POST' | 'GET';
+    data?: any;
+    headers?: Headers;
+    /**
+     * Number of *additional* attempts on top of the first one (default 0 = no retry).
+     * Retries fire on network errors and HTTP 5xx / 408 / 429 responses with a
+     * small exponential backoff.
+     */
+    retries?: number;
+    /** Per-attempt timeout in milliseconds. 0 / undefined disables the timeout. */
+    timeoutMs?: number;
+    /**
+     * Explicit opt-in for public optional-auth endpoints.
+     * A stale access token is refreshed first; anonymous retry is the last
+     * resort when refresh fails so public pages still render readable data.
+     */
+    anonymousFallback?: boolean;
+}
+
 /**
  * Statuses where a retry has a reasonable chance of succeeding without any
  * caller-side change. 4xx (other than the few listed) signal "do not retry —

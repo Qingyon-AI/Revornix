@@ -3,6 +3,7 @@ import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalRes
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
+import type { ServerRequestOptions } from '@/lib/request-core'
 import { serverRequest } from '@/lib/request-server'
 
 export type DocumentAiSummaryRequest = {
@@ -243,7 +244,8 @@ export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Prom
 
 export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
     return await request(documentApi.searchPublicDocumentNotes, {
-        data
+        data,
+        anonymousFallback: true,
     })
 }
 
@@ -316,7 +318,10 @@ export type SearchPublicDocumentsRequest = {
 }
 
 export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
-    return await request(documentApi.searchPublicDocument, { data })
+    return await request(documentApi.searchPublicDocument, {
+        data,
+        anonymousFallback: true,
+    })
 }
 
 export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
@@ -475,11 +480,7 @@ export const getDocumentCommentDetail = async (data: { document_comment_id: numb
 // browser-only refresh flow. Use them from app/(seo)/* pages and other server
 // contexts.
 
-type ServerFetchOptions = {
-    retries?: number
-    timeoutMs?: number
-    anonymousFallback?: boolean
-}
+type ServerFetchOptions = Pick<ServerRequestOptions, 'retries' | 'timeoutMs' | 'anonymousFallback'>
 
 export const searchPublicDocumentServer = async (
     data: SearchPublicDocumentsRequest,
