@@ -4,6 +4,7 @@ import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
 import { request } from '@/lib/request';
+import type { ServerRequestOptions } from '@/lib/request-core';
 import { serverRequest } from '@/lib/request-server';
 
 export type RetrySectionDocumentRequest = {
@@ -160,7 +161,8 @@ export const searchUserSection = async (data: SearchUserSectionsRequest): Promis
 
 export const searchPublicSection = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
     return await request(sectionApi.searchPublicSection, {
-        data
+        data,
+        anonymousFallback: true,
     })
 }
 
@@ -362,11 +364,7 @@ export const retrySectionDocumentIntegration = async (data: RetrySectionDocument
 // browser-only refresh flow. Use them from app/(seo)/* pages and other server
 // contexts.
 
-type ServerFetchOptions = {
-    retries?: number
-    timeoutMs?: number
-    anonymousFallback?: boolean
-}
+type ServerFetchOptions = Pick<ServerRequestOptions, 'retries' | 'timeoutMs' | 'anonymousFallback'>
 
 export const searchPublicSectionServer = async (
     data: SearchMineSectionsRequest,

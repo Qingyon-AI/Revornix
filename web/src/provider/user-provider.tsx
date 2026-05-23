@@ -102,7 +102,6 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 
 	const logOut = useCallback(() => {
 		clearAuthCookies();
-		window.location.reload();
 	}, []);
 
 	// 5. 临时更新用户信息
