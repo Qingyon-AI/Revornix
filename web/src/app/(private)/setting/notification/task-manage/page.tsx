@@ -30,6 +30,7 @@ import DeleteNotificationTask from '@/components/notification/delete-notificatio
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { PaginationNotificationTask } from '@/generated';
+import { format } from 'date-fns';
 
 interface NotificationTarget {
 	id: number;
@@ -51,7 +52,7 @@ const NotificationTaskManagePage = () => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 	const [pageNum, setPageNum] = useState(1);
-	const [pageSize, setPageSize] = useState(5);
+	const [pageSize, setPageSize] = useState(10);
 
 	let { data, isLoading } = useQuery({
 		queryKey: ['notification-task', pageNum, pageSize],
@@ -161,6 +162,28 @@ const NotificationTaskManagePage = () => {
 				return (
 					<div className='flex flex-row gap-2 items-center'>
 						{notification_target ? notification_target.title : 'N/A'}
+					</div>
+				);
+			},
+		},
+		{
+			accessorKey: 'create_time',
+			header: () => {
+				return (
+					<div className='w-full'>
+						{t('setting_notification_task_manage_form_create_time')}
+					</div>
+				);
+			},
+			cell: ({ row }) => {
+				const value = row.getValue('create_time') as
+					| string
+					| Date
+					| null
+					| undefined;
+				return (
+					<div className='text-muted-foreground tabular-nums whitespace-nowrap'>
+						{value ? format(new Date(value), 'yyyy-MM-dd HH:mm') : '-'}
 					</div>
 				);
 			},

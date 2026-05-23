@@ -9,6 +9,11 @@ class ApiKeyCreateRequest(BaseModel):
 
 class ApiKeyCreateResponse(BaseModel):
     api_key_id: int
+    api_key: str
+
+class ApiKeyUpdateRequest(BaseModel):
+    api_key_id: int
+    description: str
 
 class ApiKeysDeleteRequest(BaseModel):
     api_key_ids: list[int]

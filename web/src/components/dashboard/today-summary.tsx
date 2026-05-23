@@ -84,8 +84,7 @@ const TodaySummary = () => {
 		if (section.process_task.status === SectionProcessStatus.FAILED) {
 			return {
 				label: t('dashboard_today_summary_process_failed'),
-				className:
-					'border-destructive/20 bg-destructive/10 text-destructive',
+				className: 'border-destructive/20 bg-destructive/10 text-destructive',
 			};
 		}
 
@@ -135,8 +134,7 @@ const TodaySummary = () => {
 	const hasPodcastEngine =
 		podcastEngine.configured && !podcastEngine.subscriptionLocked;
 	const hasImageEngine =
-		imageGenerateEngine.configured &&
-		!imageGenerateEngine.subscriptionLocked;
+		imageGenerateEngine.configured && !imageGenerateEngine.subscriptionLocked;
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section?.auto_podcast ?? true,
 		autoIllustration: section?.auto_illustration ?? true,
@@ -144,17 +142,21 @@ const TodaySummary = () => {
 		hasImageEngine,
 	});
 	const warningItems = [
-		(sectionCreated
-			? automationWarnings.missingPodcastEngine
-			: !hasPodcastEngine)
+		(
+			sectionCreated
+				? automationWarnings.missingPodcastEngine
+				: !hasPodcastEngine
+		)
 			? {
 					label: t('section_card_warning_missing_podcast_engine'),
 					href: '/setting#default_user_podcast_engine_choose',
 				}
 			: null,
-		(sectionCreated
-			? automationWarnings.missingIllustrationEngine
-			: !hasImageEngine)
+		(
+			sectionCreated
+				? automationWarnings.missingIllustrationEngine
+				: !hasImageEngine
+		)
 			? {
 					label: t('section_card_warning_missing_illustration_engine'),
 					href: '/setting#default_document_summary_model_choose',
@@ -194,36 +196,40 @@ const TodaySummary = () => {
 		) : null;
 	return (
 		<Card className='rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm'>
-			<CardHeader className='flex flex-row items-start justify-between gap-4'>
-				<div className='flex flex-col gap-1.5'>
-					<CardTitle className='flex items-center gap-3'>
-						<CardTitleIcon icon={FileText} tone='emerald' />
-						<span>{t('dashboard_today_summary')}</span>
-					</CardTitle>
-					<CardDescription>
-						{t('dashboard_today_summary_description')}
-					</CardDescription>
-					{automationNotice}
-				</div>
-				{summaryHref ? (
-					<Link href={summaryHref}>
-						<Button variant='ghost' className='text-sm text-muted-foreground'>
+			<CardHeader>
+				<div className='flex flex-row items-start justify-between gap-4'>
+					<div className='flex flex-col gap-1.5'>
+						<CardTitle className='flex items-center gap-3'>
+							<CardTitleIcon icon={FileText} tone='emerald' />
+							<span>{t('dashboard_today_summary')}</span>
+						</CardTitle>
+						<CardDescription>
+							{t('dashboard_today_summary_description')}
+						</CardDescription>
+					</div>
+					{summaryHref ? (
+						<Link href={summaryHref}>
+							<Button variant='ghost' className='text-sm text-muted-foreground'>
+								{t('dashboard_today_summary_full')}
+								<ChevronRight />
+							</Button>
+						</Link>
+					) : (
+						<Button
+							variant='ghost'
+							className='text-sm text-muted-foreground'
+							disabled>
 							{t('dashboard_today_summary_full')}
 							<ChevronRight />
 						</Button>
-					</Link>
-				) : (
-					<Button
-						variant='ghost'
-						className='text-sm text-muted-foreground'
-						disabled>
-						{t('dashboard_today_summary_full')}
-						<ChevronRight />
-					</Button>
-				)}
+					)}
+				</div>
+				{automationNotice}
 			</CardHeader>
 			<CardContent className='flex-1'>
-				{isFetching && !section && <Skeleton className='h-48 w-full rounded-2xl' />}
+				{isFetching && !section && (
+					<Skeleton className='h-48 w-full rounded-2xl' />
+				)}
 				{isError && (
 					<Empty>
 						<EmptyHeader>
@@ -316,7 +322,9 @@ const TodaySummary = () => {
 										<Activity className='size-3.5' />
 										<span>{t('dashboard_today_summary_field_process')}</span>
 									</div>
-									<div className='text-sm font-medium'>{processState.label}</div>
+									<div className='text-sm font-medium'>
+										{processState.label}
+									</div>
 								</div>
 
 								<div className='rounded-xl border border-border/50 bg-background/60 p-3'>
@@ -333,7 +341,9 @@ const TodaySummary = () => {
 						section.podcast_task.podcast_file_name ? (
 							<AudioPlayer
 								src={section.podcast_task.podcast_file_name}
-								scriptUrl={section.podcast_task.podcast_script_file_name ?? undefined}
+								scriptUrl={
+									section.podcast_task.podcast_script_file_name ?? undefined
+								}
 								title={section.title || t('dashboard_today_summary')}
 								artist='AI Generated'
 								variant='compact'

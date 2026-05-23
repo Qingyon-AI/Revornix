@@ -209,7 +209,7 @@ def get_request_timezone(
     return normalize_timezone_name(x_user_timezone)
 
 async def get_api_key(
-    api_key: str | None = Header(default=None), 
+    api_key: str | None = Header(default=None),
     db: AsyncSession = Depends(get_async_db)
 ):
     if api_key is None:
@@ -220,6 +220,17 @@ async def get_api_key(
     )
     if db_api_key is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
+    try:
+        async with async_session_context() as touch_db:
+            await crud.api_key.touch_api_key_last_used_async(
+                db=touch_db,
+                api_key_id=db_api_key.id,
+            )
+            await touch_db.commit()
+    except Exception as e:
+        exception_logger.error(
+            format_log_message("api_key_touch_last_used_failed", error=e)
+        )
     return db_api_key
 
 async def get_current_user_with_api_key(
