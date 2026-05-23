@@ -165,8 +165,8 @@ const SeoUserContentBrowser = ({
 								className={cn(
 									'h-9 rounded-lg px-3 shadow-none',
 									tab === 'documents'
-										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background dark:bg-foreground dark:text-background dark:hover:bg-foreground/90 dark:hover:text-background'
+										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground dark:hover:bg-background/60 dark:hover:text-foreground',
 								)}>
 								<Link
 									href={`/user/${userId}${keyword ? `?q=${encodeURIComponent(keyword)}` : ''}`}>
@@ -180,8 +180,8 @@ const SeoUserContentBrowser = ({
 								className={cn(
 									'h-9 rounded-lg px-3 shadow-none',
 									tab === 'sections'
-										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background'
-										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+										? 'bg-foreground text-background hover:bg-foreground/90 hover:text-background dark:bg-foreground dark:text-background dark:hover:bg-foreground/90 dark:hover:text-background'
+										: 'text-muted-foreground hover:bg-background/60 hover:text-foreground dark:hover:bg-background/60 dark:hover:text-foreground',
 								)}>
 								<Link
 									href={`/user/${userId}?tab=sections${

@@ -121,7 +121,9 @@ const SeoUserFollowButton = ({
 			variant={isFollowed ? 'outline' : 'default'}
 			className={cn(
 				'rounded-2xl px-5 shadow-sm',
-				isFollowed ? 'bg-background/80' : '',
+				isFollowed
+					? 'bg-background/85 text-foreground backdrop-blur-md hover:bg-background hover:text-foreground dark:bg-background/85 dark:text-foreground dark:hover:bg-background dark:hover:text-foreground'
+					: '',
 				className,
 			)}
 			disabled={mutateFollow.isPending || relationPending}
