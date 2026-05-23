@@ -4,7 +4,7 @@ import SectionContainer from '@/components/section/section-container';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { buildMetadata, toMetaDescription } from '@/lib/seo-metadata';
-import { getSectionDetailInServer } from '@/service/section';
+import { getSectionDetailServer } from '@/service/section';
 
 type Params = Promise<{
 	id: string;
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
 	try {
 		const requestHeaders = await headers();
-		const section = await getSectionDetailInServer(
+		const section = await getSectionDetailServer(
 			{ section_id: sectionId },
 			new Headers(requestHeaders),
 		);

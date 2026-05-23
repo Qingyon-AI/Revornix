@@ -4,7 +4,6 @@ import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
 import { request } from '@/lib/request';
-import { publicRequest } from '@/lib/request-public';
 import { serverRequest } from '@/lib/request-server';
 
 export type RetrySectionDocumentRequest = {
@@ -116,7 +115,7 @@ export const getMineLabels = async (): Promise<LabelListResponse> => {
 }
 
 export const getPublicLabels = async (): Promise<LabelListResponse> => {
-    return await publicRequest(sectionApi.getPublicLabels)
+    return await request(sectionApi.getPublicLabels)
 }
 
 export const createLabel = async (data: LabelAddRequest): Promise<CreateLabelResponse> => {
@@ -165,12 +164,6 @@ export const searchPublicSection = async (data: SearchMineSectionsRequest): Prom
     })
 }
 
-export const searchPublicSectionAnonymous = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
-    return await publicRequest(sectionApi.searchPublicSection, {
-        data
-    })
-}
-
 export const createSection = async (data: SectionCreateRequest): Promise<SectionCreateResponse> => {
     return await request(sectionApi.createSection, {
         data
@@ -195,25 +188,13 @@ export const getSectionMarkdownContent = async (data: SectionDetailRequest): Pro
     })
 }
 
-export const getSEOSectionMarkdownContentInServer = async (data: SectionSeoDetailRequest): Promise<string> => {
-    return await serverRequest(sectionApi.getSEOSectionMarkdownContent, {
-        data
-    })
-}
-
-export const getSectionDetailInServer = async (
+export const getSectionDetailServer = async (
     data: SectionDetailRequest,
     headers: Headers,
 ): Promise<SectionDetailWithPpt> => {
     return await serverRequest(sectionApi.getSectionDetail, {
         data,
         headers,
-    })
-}
-
-export const getPublicSectionDetail = async (data: SectionDetailRequest): Promise<SectionDetailWithPpt> => {
-    return await publicRequest(sectionApi.getSectionDetail, {
-        data
     })
 }
 
@@ -292,20 +273,8 @@ export const searchSectionComment = async (data: SectionCommentSearchRequest): P
     })
 }
 
-export const searchPublicSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
-    return await publicRequest(sectionApi.searchComment, {
-        data
-    })
-}
-
 export const searchSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
     return await request(sectionApi.searchCommentReplies, {
-        data
-    })
-}
-
-export const searchPublicSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
-    return await publicRequest(sectionApi.searchCommentReplies, {
         data
     })
 }
@@ -382,14 +351,66 @@ export const searchSectionDocuments = async (data: SectionDocumentRequest): Prom
     })
 }
 
-export const searchPublicSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
-    return await publicRequest(sectionApi.searchSectionDocuments, {
-        data
-    })
-}
-
 export const retrySectionDocumentIntegration = async (data: RetrySectionDocumentRequest): Promise<NormalResponse> => {
     return await request(sectionApi.retrySectionDocumentIntegration, {
         data
     })
+}
+
+// --- SSR helpers ----------------------------------------------------------
+// These run inside RSC / route handlers (via serverRequest) and bypass the
+// browser-only refresh flow. Use them from app/(seo)/* pages and other server
+// contexts.
+
+type ServerFetchOptions = {
+    retries?: number
+    timeoutMs?: number
+    anonymousFallback?: boolean
+}
+
+export const searchPublicSectionServer = async (
+    data: SearchMineSectionsRequest,
+    options?: ServerFetchOptions,
+): Promise<InifiniteScrollPagnitionSectionInfo> => {
+    return await serverRequest(sectionApi.searchPublicSection, {
+        data,
+        retries: options?.retries,
+        timeoutMs: options?.timeoutMs,
+        anonymousFallback: options?.anonymousFallback,
+    })
+}
+
+export const searchUserSectionServer = async (
+    data: SearchUserSectionsRequest,
+): Promise<InifiniteScrollPagnitionSectionInfo> => {
+    return await serverRequest(sectionApi.searchUserSection, { data })
+}
+
+export const getPublicLabelsServer = async (
+    options?: ServerFetchOptions,
+): Promise<LabelListResponse['data']> => {
+    const response = await serverRequest<LabelListResponse>(sectionApi.getPublicLabels, {
+        retries: options?.retries,
+        timeoutMs: options?.timeoutMs,
+        anonymousFallback: options?.anonymousFallback,
+    })
+    return response.data
+}
+
+export const searchSectionDocumentsServer = async (
+    data: SectionDocumentRequest,
+): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
+    return await serverRequest(sectionApi.searchSectionDocuments, { data })
+}
+
+export const searchSectionCommentServer = async (
+    data: SectionCommentSearchRequest,
+): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+    return await serverRequest(sectionApi.searchComment, { data })
+}
+
+export const getSEOSectionMarkdownContentServer = async (data: {
+    uuid: string
+}): Promise<string> => {
+    return await serverRequest(sectionApi.getSEOSectionMarkdownContent, { data })
 }

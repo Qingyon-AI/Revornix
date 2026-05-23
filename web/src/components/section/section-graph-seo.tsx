@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SectionProcessStatus } from '@/enums/section';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
-import { searchPublicSectionGraph, searchSectionGraph } from '@/service/graph';
-import { getPublicSectionDetail, getSectionDetail } from '@/service/section';
+import { searchSectionGraph } from '@/service/graph';
+import { getSectionDetail } from '@/service/section';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -42,10 +42,7 @@ const SectionGraphSEO = ({
 		queryKey: publicMode
 			? ['getPublicSectionDetail', section_id]
 			: ['getSectionDetail', section_id],
-		queryFn: () =>
-			publicMode
-				? getPublicSectionDetail({ section_id })
-				: getSectionDetail({ section_id }),
+		queryFn: () => getSectionDetail({ section_id }),
 		initialData: initialSection ?? undefined,
 		retry: publicMode ? false : undefined,
 		refetchOnWindowFocus: publicMode ? false : undefined,
@@ -66,14 +63,7 @@ const SectionGraphSEO = ({
 		queryKey: publicMode
 			? ['searchPublicSectionGraph', section_id, processStatus]
 			: ['searchDocumentGraph', section_id, processStatus],
-		queryFn: async () =>
-			publicMode
-				? searchPublicSectionGraph({
-						section_id,
-					})
-				: searchSectionGraph({
-						section_id,
-					}),
+		queryFn: async () => searchSectionGraph({ section_id }),
 		initialData: initialGraph ?? undefined,
 		retry: publicMode ? false : undefined,
 		refetchOnWindowFocus: publicMode ? false : undefined,

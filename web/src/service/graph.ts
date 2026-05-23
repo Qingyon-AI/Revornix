@@ -1,7 +1,7 @@
 import graphApi from '@/api/graph'
 import { DocumentGraphRequest, SectionGraphRequest, GraphResponse } from '@/generated'
 import { request } from '@/lib/request'
-import { publicRequest } from '@/lib/request-public'
+import { serverRequest } from '@/lib/request-server'
 
 export const searchGraph = async (): Promise<GraphResponse> => {
     return await request(graphApi.searchGraph)
@@ -19,14 +19,16 @@ export const searchSectionGraph = async (data: SectionGraphRequest): Promise<Gra
     })
 }
 
-export const searchPublicSectionGraph = async (data: SectionGraphRequest): Promise<GraphResponse> => {
-    return await publicRequest(graphApi.searchSectionGraph, {
-        data
-    })
+// --- SSR helpers ---
+
+export const searchSectionGraphServer = async (
+    data: SectionGraphRequest,
+): Promise<GraphResponse> => {
+    return await serverRequest(graphApi.searchSectionGraph, { data })
 }
 
-export const searchPublicDocumentGraph = async (data: DocumentGraphRequest): Promise<GraphResponse> => {
-    return await publicRequest(graphApi.searchDocumentGraph, {
-        data
-    })
+export const searchDocumentGraphServer = async (
+    data: DocumentGraphRequest,
+): Promise<GraphResponse> => {
+    return await serverRequest(graphApi.searchDocumentGraph, { data })
 }

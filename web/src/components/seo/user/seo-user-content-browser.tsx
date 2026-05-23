@@ -19,7 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
 import documentApi from '@/api/document';
 import sectionApi from '@/api/section';
-import { publicRequest } from '@/lib/request-public';
+import { request } from '@/lib/request';
 import {
 	type PublicDocumentPagination,
 	type PublicSectionInfo,
@@ -74,7 +74,7 @@ const SeoUserContentBrowser = ({
 		setIsLoadingMore(true);
 		try {
 			if (tab === 'sections') {
-				const response = await publicRequest<{
+				const response = await request<{
 					total: number;
 					has_more: boolean;
 					next_start?: number | null;
@@ -102,7 +102,7 @@ const SeoUserContentBrowser = ({
 				return;
 			}
 
-			const response = await publicRequest<PublicDocumentPagination>(
+			const response = await request<PublicDocumentPagination>(
 				documentApi.searchPublicDocument,
 				{
 					data: {

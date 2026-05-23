@@ -2,13 +2,15 @@ import SeoCommunityBrowser from '@/components/seo/community/seo-community-browse
 import JsonLd from '@/components/seo/shared/json-ld';
 import { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { getPublicSectionHref } from '@/lib/seo';
 import {
-	fetchPublicDocuments,
-	fetchPublicDocumentLabels,
-	fetchPublicSections,
-	fetchPublicSectionLabels,
-	getPublicSectionHref,
-} from '@/lib/seo';
+	searchPublicDocumentServer,
+	getPublicLabelsServer as getPublicDocumentLabelsServer,
+} from '@/service/document';
+import {
+	searchPublicSectionServer,
+	getPublicLabelsServer as getPublicSectionLabelsServer,
+} from '@/service/section';
 import { buildMetadata, createAbsoluteUrl } from '@/lib/seo-metadata';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -169,28 +171,39 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	const start = getStartValue(searchParams.start);
 	const tab = getTabValue(searchParams.tab);
 	const labelId = getLabelValue(searchParams.label);
+	const resilientOptions = {
+		retries: 1,
+		timeoutMs: 8000,
+		anonymousFallback: true,
+	};
 	const [sectionsResult, documentsResult, labelsResult] = await Promise.allSettled([
 		tab === 'sections'
-			? fetchPublicSections({
-					keyword,
-					start,
-					limit: 12,
-					desc: true,
-					label_ids: labelId !== undefined ? [labelId] : undefined,
-				})
+			? searchPublicSectionServer(
+					{
+						keyword,
+						start,
+						limit: 12,
+						desc: true,
+						label_ids: labelId !== undefined ? [labelId] : undefined,
+					},
+					resilientOptions,
+				)
 			: Promise.resolve(null),
 		tab === 'documents'
-			? fetchPublicDocuments({
-					keyword,
-					start,
-					limit: 12,
-					desc: true,
-					label_ids: labelId !== undefined ? [labelId] : undefined,
-				})
+			? searchPublicDocumentServer(
+					{
+						keyword,
+						start,
+						limit: 12,
+						desc: true,
+						label_ids: labelId !== undefined ? [labelId] : undefined,
+					},
+					resilientOptions,
+				)
 			: Promise.resolve(null),
 		tab === 'documents'
-			? fetchPublicDocumentLabels()
-			: fetchPublicSectionLabels(),
+			? getPublicDocumentLabelsServer(resilientOptions)
+			: getPublicSectionLabelsServer(resilientOptions),
 	]);
 
 	if (sectionsResult.status === 'rejected') {
@@ -222,6 +235,9 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 	const documents =
 		documentsResult.status === 'fulfilled' ? documentsResult.value : null;
 	const labels = labelsResult.status === 'fulfilled' ? labelsResult.value : [];
+	const loadFailed =
+		(tab === 'sections' && sectionsResult.status === 'rejected') ||
+		(tab === 'documents' && documentsResult.status === 'rejected');
 
 	const communitySchema = {
 		'@context': 'https://schema.org',
@@ -263,6 +279,7 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 				labels={labels}
 				initialSections={sections}
 				initialDocuments={documents}
+				loadFailed={loadFailed}
 			/>
 		</div>
 	);

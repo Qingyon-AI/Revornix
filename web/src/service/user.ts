@@ -2,7 +2,6 @@ import userApi from '@/api/user'
 import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
-import { publicRequest } from '@/lib/request-public';
 import { serverRequest } from '@/lib/request-server';
 
 export type ComputeLedgerItem = {
@@ -52,7 +51,7 @@ export type SearchPublicUsersWithKeywordRequest = {
 }
 
 export const searchPublicUsers = async (data: SearchPublicUsersWithKeywordRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
-    return await publicRequest(userApi.searchPublicUsers, {
+    return await request(userApi.searchPublicUsers, {
         data
     })
 }
@@ -81,14 +80,21 @@ export const getUserInfo = async (data: UserInfoRequest): Promise<UserPublicInfo
     })
 }
 
-export const getUserInfoInServer = async (
+export const getUserInfoServer = async (
     data: UserInfoRequest,
-    headers: Headers,
+    headers?: Headers,
 ): Promise<UserPublicInfo> => {
     return await serverRequest(userApi.userInfo, {
         data,
         headers,
     })
+}
+
+export const searchPublicUsersServer = async (data: {
+    start?: number
+    limit: number
+}): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+    return await serverRequest(userApi.searchPublicUsers, { data })
 }
 
 export const updateToken = async (refresh_token: string): Promise<TokenResponse> => {

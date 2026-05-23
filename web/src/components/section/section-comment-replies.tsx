@@ -6,7 +6,6 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
 import {
-	searchPublicSectionCommentReplies,
 	searchSectionCommentReplies,
 	type SectionCommentInfo,
 } from '@/service/section';
@@ -44,9 +43,7 @@ const SectionCommentReplies = ({
 		useInfiniteQuery({
 			queryKey: ['searchSectionCommentReplies', rootComment.id],
 			queryFn: (pageParam) =>
-				publicMode
-					? searchPublicSectionCommentReplies({ ...pageParam.pageParam })
-					: searchSectionCommentReplies({ ...pageParam.pageParam }),
+				searchSectionCommentReplies({ ...pageParam.pageParam }),
 			initialPageParam,
 			enabled: expanded,
 			retry: publicMode ? false : undefined,

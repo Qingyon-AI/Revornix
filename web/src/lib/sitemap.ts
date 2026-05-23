@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next';
 import { unstable_cache } from 'next/cache';
+import { type PublicSectionInfo } from '@/lib/seo';
+import { searchPublicDocumentServer } from '@/service/document';
 import {
-	fetchPublicDocuments,
-	fetchPublicSectionDocuments,
-	fetchPublicSections,
-	fetchPublicUsers,
-	type PublicSectionInfo,
-} from '@/lib/seo';
+	searchPublicSectionServer,
+	searchSectionDocumentsServer,
+} from '@/service/section';
+import { searchPublicUsersServer } from '@/service/user';
 import { createAbsoluteUrl, toIsoDate } from '@/lib/seo-metadata';
 
 export const SITEMAP_REVALIDATE_SECONDS = 3600;
@@ -76,7 +76,7 @@ const fetchAllPublicSections = async () => {
 		}
 		seenStarts.add(start);
 
-		const response = await fetchPublicSections({
+		const response = await searchPublicSectionServer({
 			start,
 			limit: SECTION_PAGE_SIZE,
 			desc: true,
@@ -108,7 +108,7 @@ const fetchAllPublicSections = async () => {
 
 const fetchAllPublicSectionDocuments = async (sectionId: number) => {
 	const documents: Awaited<
-		ReturnType<typeof fetchPublicSectionDocuments>
+		ReturnType<typeof searchSectionDocumentsServer>
 	>['elements'] = [];
 	let start: number | undefined;
 	const seenStarts = new Set<number | undefined>();
@@ -124,7 +124,7 @@ const fetchAllPublicSectionDocuments = async (sectionId: number) => {
 		}
 		seenStarts.add(start);
 
-		const response = await fetchPublicSectionDocuments({
+		const response = await searchSectionDocumentsServer({
 			section_id: sectionId,
 			start,
 			limit: DOCUMENTS_PER_SECTION,
@@ -158,7 +158,7 @@ const fetchAllPublicSectionDocuments = async (sectionId: number) => {
 };
 
 const fetchAllPublicDocuments = async () => {
-	const documents: Awaited<ReturnType<typeof fetchPublicDocuments>>['elements'] =
+	const documents: Awaited<ReturnType<typeof searchPublicDocumentServer>>['elements'] =
 		[];
 	let start: number | undefined;
 	const seenStarts = new Set<number | undefined>();
@@ -173,7 +173,7 @@ const fetchAllPublicDocuments = async () => {
 		}
 		seenStarts.add(start);
 
-		const response = await fetchPublicDocuments({
+		const response = await searchPublicDocumentServer({
 			start,
 			limit: SECTION_PAGE_SIZE,
 			desc: true,
@@ -204,7 +204,7 @@ const fetchAllPublicDocuments = async () => {
 };
 
 const fetchAllPublicUsers = async () => {
-	const users: Awaited<ReturnType<typeof fetchPublicUsers>>['elements'] = [];
+	const users: Awaited<ReturnType<typeof searchPublicUsersServer>>['elements'] = [];
 	let start: number | undefined;
 	const seenStarts = new Set<number | undefined>();
 
@@ -218,7 +218,7 @@ const fetchAllPublicUsers = async () => {
 		}
 		seenStarts.add(start);
 
-		const response = await fetchPublicUsers({
+		const response = await searchPublicUsersServer({
 			start,
 			limit: USER_PAGE_SIZE,
 		});

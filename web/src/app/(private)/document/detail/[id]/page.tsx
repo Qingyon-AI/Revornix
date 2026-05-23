@@ -7,7 +7,7 @@ import { getTranslations } from 'next-intl/server';
 import { getQueryClient } from '@/lib/get-query-client';
 import DocumentContainer from '@/components/document/document-container';
 import { buildMetadata, toMetaDescription } from '@/lib/seo-metadata';
-import { getDocumentDetailInServer } from '@/service/document';
+import { getDocumentDetailServer } from '@/service/document';
 
 export async function generateMetadata(props: {
 	params: Promise<{ id: string }>;
@@ -27,7 +27,7 @@ export async function generateMetadata(props: {
 
 	try {
 		const requestHeaders = await headers();
-		const document = await getDocumentDetailInServer(
+		const document = await getDocumentDetailServer(
 			{ document_id: documentId },
 			new Headers(requestHeaders),
 		);

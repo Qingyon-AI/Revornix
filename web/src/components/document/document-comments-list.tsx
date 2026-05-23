@@ -3,7 +3,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
 	searchDocumentComment,
-	searchPublicDocumentComment,
 	type DocumentCommentSortType,
 	type InifiniteScrollPagnitionDocumentCommentInfo,
 } from '@/service/document';
@@ -58,10 +57,7 @@ const DocumentCommentsList = ({
 		refetch,
 	} = useInfiniteQuery({
 		queryKey: ['searchDocumentComment', keyword, sort, document_id],
-		queryFn: (pageParam) =>
-			publicMode
-				? searchPublicDocumentComment({ ...pageParam.pageParam })
-				: searchDocumentComment({ ...pageParam.pageParam }),
+		queryFn: (pageParam) => searchDocumentComment({ ...pageParam.pageParam }),
 		initialPageParam,
 		initialData:
 			sort === 'time' && initialData
