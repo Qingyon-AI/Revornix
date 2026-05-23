@@ -12,7 +12,7 @@ type NotFoundAction = {
 };
 
 type NotFoundViewProps = {
-	code?: string;
+	code?: string | null;
 	eyebrow?: ReactNode;
 	title: ReactNode;
 	description?: ReactNode;
@@ -30,6 +30,7 @@ const NotFoundView = ({
 	actions,
 	className,
 }: NotFoundViewProps) => {
+	const showCode = code !== null && code !== '';
 	return (
 		<div
 			className={cn(
@@ -46,11 +47,15 @@ const NotFoundView = ({
 					</p>
 				) : null}
 				<div className='flex items-center justify-center gap-3'>
-					<span className='text-5xl font-semibold tracking-tight text-foreground sm:text-6xl'>
-						{code}
-					</span>
-					<span className='h-10 w-px bg-border' aria-hidden />
-					<h1 className='text-left text-lg font-semibold tracking-tight text-foreground sm:text-xl'>
+					{showCode ? (
+						<>
+							<span className='text-5xl font-semibold tracking-tight text-foreground sm:text-6xl'>
+								{code}
+							</span>
+							<span className='h-10 w-px bg-border' aria-hidden />
+						</>
+					) : null}
+					<h1 className='text-lg font-semibold tracking-tight text-foreground sm:text-xl'>
 						{title}
 					</h1>
 				</div>
