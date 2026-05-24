@@ -1,6 +1,17 @@
 'use client';
 
-import { ChevronDown, Minimize2, Pause, Play, Volume2, X } from 'lucide-react';
+import {
+	ChevronDown,
+	FileText,
+	Loader2,
+	Minimize2,
+	Pause,
+	Play,
+	RotateCcw,
+	RotateCw,
+	Volume2,
+	X,
+} from 'lucide-react';
 import {
 	useEffect,
 	useMemo,
@@ -25,6 +36,11 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Slider } from '@/components/ui/slider';
 import type { AudioTranscriptPayload } from '@/lib/audio';
@@ -451,146 +467,215 @@ const FloatingAudioPlayer = () => {
 			</div>
 
 			<Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-				<DialogContent className='[&>button]:hidden flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none border-0 bg-background/98 p-0 shadow-none sm:h-[100dvh] sm:max-w-none'>
-					<div className='flex items-center justify-between border-b border-border/50 px-5 py-4 sm:px-8'>
-						<div className='min-w-0'>
-							<DialogTitle className='truncate text-lg font-semibold'>
-								{track.title}
-							</DialogTitle>
-							<DialogDescription className='truncate text-sm text-muted-foreground'>
-								{track.artist}
-							</DialogDescription>
-						</div>
-						<div className='flex items-center gap-2'>
-							<Button
-								type='button'
-								size='icon'
-								variant='outline'
-								className='rounded-full'
-								onClick={() => {
-									setIsExpanded(false);
-								}}>
-								<Minimize2 className='size-4' />
-								<span className='sr-only'>Minimize</span>
-							</Button>
-						</div>
-					</div>
-
+				<DialogContent
+					className={cn(
+						'[&>button]:hidden flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 shadow-none sm:h-[100dvh] sm:max-w-none',
+						isMobile ? 'bg-background' : 'bg-background/98',
+					)}>
 					{isMobile ? (
-						<div className='relative flex min-h-0 flex-1 flex-col overflow-hidden'>
-							<div className='flex items-center justify-center gap-2 border-b border-border/40 px-5 py-3'>
-								<button
+						<>
+							<div
+								aria-hidden
+								className='pointer-events-none absolute inset-0 -z-10 overflow-hidden'>
+								<img
+									src={track.cover}
+									alt=''
+									className='h-full w-full scale-125 object-cover opacity-60 blur-3xl saturate-150'
+								/>
+								<div className='absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background/90' />
+							</div>
+							<div
+								className='flex items-center justify-between px-4 pb-2'
+								style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
+								<Button
 									type='button'
-									className={cn(
-										'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-										mobilePanel === 'player'
-											? 'bg-foreground text-background'
-											: 'text-muted-foreground',
-									)}
-									onClick={() => goToMobilePanel('player')}>
-									Player
-								</button>
-								<button
-									type='button'
-									className={cn(
-										'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-										mobilePanel === 'transcript'
-											? 'bg-foreground text-background'
-											: 'text-muted-foreground',
-									)}
-									onClick={() => goToMobilePanel('transcript')}>
-									Transcript
-								</button>
+									size='icon'
+									variant='ghost'
+									className='size-9 rounded-full text-muted-foreground hover:text-foreground'
+									onClick={() => setIsExpanded(false)}>
+									<ChevronDown className='size-5' />
+									<span className='sr-only'>{t('audio_player_minimize')}</span>
+								</Button>
+								<div className='min-w-0 px-3 text-center'>
+									<DialogTitle className='truncate text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground'>
+										{t('audio_player_now_playing')}
+									</DialogTitle>
+									<DialogDescription className='sr-only'>
+										{track.title} — {track.artist}
+									</DialogDescription>
+								</div>
+								<div className='size-9' aria-hidden />
 							</div>
 
-							<div
-								ref={mobilePanelsRef}
-								className='flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-								onScroll={handleMobilePanelsScroll}>
-								<section className='flex min-h-0 w-full shrink-0 snap-center flex-col overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6'>
-									<div className='mx-auto w-full max-w-sm space-y-8'>
-										<div className='overflow-hidden rounded-[2rem] bg-background/55 shadow-[0_28px_80px_-42px_rgba(15,23,42,0.55)] ring-1 ring-border/50'>
-											<img
-												src={track.cover}
-												alt={track.title}
-												className='aspect-square w-full object-cover'
-											/>
-										</div>
-
-										<div className='space-y-2 text-center'>
-											<h2 className='text-3xl font-semibold tracking-tight'>
-												{track.title}
-											</h2>
-											<p className='text-base text-muted-foreground'>
-												{track.artist}
-											</p>
-										</div>
-
-										<div className='space-y-3'>
-											{duration > 0 ? (
-												<Slider
-													value={[currentTime]}
-													max={duration}
-													step={0.1}
-													className='cursor-pointer'
-													onValueChange={(value) => seek(value[0])}
-												/>
-											) : (
-												<div className='h-2 rounded-full bg-muted/80' />
+							<div className='relative flex min-h-0 flex-1 flex-col overflow-hidden'>
+								<div className='flex justify-center px-5 pb-3 pt-1'>
+									<div className='relative inline-flex rounded-full bg-muted/70 p-1 shadow-inner'>
+										<span
+											className={cn(
+												'absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-background shadow-sm transition-transform duration-300 ease-out',
+												mobilePanel === 'transcript'
+													? 'translate-x-[calc(100%+0.25rem)]'
+													: 'translate-x-0',
 											)}
-											<div className='flex items-center justify-between text-sm text-muted-foreground tabular-nums'>
-												<span>{formatAudioTime(currentTime)}</span>
-												<span>{formatAudioTime(duration)}</span>
-											</div>
-										</div>
+										/>
+										<button
+											type='button'
+											className={cn(
+												'relative z-10 min-w-[4.5rem] rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-colors',
+												mobilePanel === 'player'
+													? 'text-foreground'
+													: 'text-muted-foreground',
+											)}
+											onClick={() => goToMobilePanel('player')}>
+											{t('audio_player_tab_player')}
+										</button>
+										<button
+											type='button'
+											className={cn(
+												'relative z-10 min-w-[4.5rem] rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-colors',
+												mobilePanel === 'transcript'
+													? 'text-foreground'
+													: 'text-muted-foreground',
+											)}
+											onClick={() => goToMobilePanel('transcript')}>
+											{t('audio_player_tab_transcript')}
+										</button>
+									</div>
+								</div>
 
-										<div className='flex items-center justify-center pb-1'>
-											<Button
-												type='button'
-												size='icon'
-												variant='outline'
-												className='size-16 rounded-full border-border/70 bg-background/80 shadow-none'
-												onClick={togglePlayback}>
-												{isPlaying ? (
-													<Pause className='size-7' />
-												) : (
-													<Play className='size-7 fill-current' />
-												)}
-												<span className='sr-only'>
-													{isPlaying
-														? t('audio_player_pause')
-														: t('audio_player_play')}
-												</span>
-											</Button>
-										</div>
-
-										<div className='space-y-4'>
-											<div className='flex items-center gap-3 rounded-full border border-border/55 bg-background/45 px-4 py-3'>
-												<Volume2 className='size-4 shrink-0 text-muted-foreground' />
-												<Slider
-													value={[volume]}
-													max={1}
-													step={0.01}
-													className='cursor-pointer'
-													onValueChange={(value) => setVolume(value[0])}
-												/>
-											</div>
-
+								<div
+									ref={mobilePanelsRef}
+									className='flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+									onScroll={handleMobilePanelsScroll}>
+									<section
+										className='flex w-full shrink-0 snap-center flex-col justify-center overflow-y-auto px-6 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+										style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
+										<div className='mx-auto flex w-full max-w-sm flex-col gap-6'>
 											<div className='flex justify-center'>
+												<div className='relative aspect-square w-full max-w-[20rem]'>
+													<div
+														aria-hidden
+														className='absolute inset-x-8 -bottom-3 h-10 rounded-full bg-black/40 blur-2xl'
+													/>
+													<div className='relative h-full w-full overflow-hidden rounded-[1.75rem] ring-1 ring-white/10 shadow-[0_30px_80px_-32px_rgba(0,0,0,0.6)]'>
+														<img
+															src={track.cover}
+															alt={track.title}
+															className={cn(
+																'h-full w-full object-cover transition-transform duration-700',
+																isPlaying ? 'scale-100' : 'scale-[0.97]',
+															)}
+														/>
+													</div>
+												</div>
+											</div>
+
+											<div className='space-y-1 text-center'>
+												<h2 className='line-clamp-2 text-xl font-semibold leading-tight tracking-tight'>
+													{track.title}
+												</h2>
+												<p className='truncate text-xs text-muted-foreground'>
+													{track.artist}
+												</p>
+											</div>
+
+											<div className='space-y-1.5'>
+												{duration > 0 ? (
+													<Slider
+														value={[currentTime]}
+														max={duration}
+														step={0.1}
+														className='cursor-pointer'
+														onValueChange={(value) => seek(value[0])}
+													/>
+												) : (
+													<div className='h-1.5 rounded-full bg-muted/80' />
+												)}
+												<div className='flex items-center justify-between text-[11px] font-medium tabular-nums text-muted-foreground'>
+													<span>{formatAudioTime(currentTime)}</span>
+													<span>-{formatAudioTime(Math.max(0, duration - currentTime))}</span>
+												</div>
+											</div>
+
+											<div className='flex items-center justify-between gap-2'>
+												<Popover>
+													<PopoverTrigger asChild>
+														<Button
+															type='button'
+															size='icon'
+															variant='ghost'
+															className='size-10 shrink-0 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground'>
+															<Volume2 className='size-5' />
+															<span className='sr-only'>{t('audio_player_volume')}</span>
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent
+														align='start'
+														side='top'
+														className='w-56 rounded-2xl p-3'>
+														<div className='flex items-center gap-2'>
+															<Volume2 className='size-4 shrink-0 text-muted-foreground' />
+															<Slider
+																value={[volume]}
+																max={1}
+																step={0.01}
+																onValueChange={(value) => setVolume(value[0])}
+															/>
+														</div>
+													</PopoverContent>
+												</Popover>
+
+												<Button
+													type='button'
+													size='icon'
+													variant='ghost'
+													className='size-11 shrink-0 rounded-full text-foreground hover:bg-muted/60'
+													onClick={() => seek(Math.max(0, currentTime - 15))}>
+													<RotateCcw className='size-5' />
+													<span className='sr-only'>{t('audio_player_skip_back')}</span>
+												</Button>
+
+												<Button
+													type='button'
+													size='icon'
+													className='size-14 shrink-0 rounded-full bg-foreground text-background shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] hover:bg-foreground/90'
+													onClick={togglePlayback}>
+													{isPlaying ? (
+														<Pause className='size-6 fill-current' />
+													) : (
+														<Play className='size-6 fill-current translate-x-0.5' />
+													)}
+													<span className='sr-only'>
+														{isPlaying
+															? t('audio_player_pause')
+															: t('audio_player_play')}
+													</span>
+												</Button>
+
+												<Button
+													type='button'
+													size='icon'
+													variant='ghost'
+													className='size-11 shrink-0 rounded-full text-foreground hover:bg-muted/60'
+													onClick={() => seek(Math.min(duration || 0, currentTime + 15))}>
+													<RotateCw className='size-5' />
+													<span className='sr-only'>{t('audio_player_skip_forward')}</span>
+												</Button>
+
 												<DropdownMenu>
 													<DropdownMenuTrigger asChild>
 														<Button
 															type='button'
-															variant='outline'
+															variant='ghost'
 															size='sm'
-															className='h-11 min-w-[5rem] rounded-full border-border/70 bg-background/80 px-4 text-sm shadow-none'>
-															{playbackRate}x
-															<ChevronDown className='size-3.5 opacity-70' />
+															className='h-10 shrink-0 gap-0.5 rounded-full px-2.5 text-xs font-semibold tabular-nums text-muted-foreground hover:bg-muted/60 hover:text-foreground'>
+															{playbackRate}×
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent
-														align='center'
-														className='min-w-[8rem] rounded-2xl'>
+														align='end'
+														side='top'
+														className='min-w-[7rem] rounded-2xl'>
 														<DropdownMenuRadioGroup
 															value={String(playbackRate)}
 															onValueChange={(value) =>
@@ -601,7 +686,7 @@ const FloatingAudioPlayer = () => {
 																	key={rate}
 																	value={String(rate)}
 																	className='rounded-xl'>
-																	{rate}x
+																	{rate}×
 																</DropdownMenuRadioItem>
 															))}
 														</DropdownMenuRadioGroup>
@@ -609,82 +694,125 @@ const FloatingAudioPlayer = () => {
 												</DropdownMenu>
 											</div>
 										</div>
-									</div>
-								</section>
+									</section>
 
-								<section className='flex min-h-0 w-full shrink-0 snap-center flex-col overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6'>
-									<div className='mx-auto w-full max-w-2xl space-y-4 text-sm leading-7 text-muted-foreground'>
+									<section className='flex min-h-0 w-full shrink-0 snap-center flex-col overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
 										{isTranscriptLoading ? (
-											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
-												Loading transcript...
+											<div className='flex flex-1 flex-col items-center justify-center gap-3 py-16 text-muted-foreground'>
+												<Loader2 className='size-8 animate-spin opacity-70' />
+												<p className='text-sm'>{t('audio_player_transcript_loading')}</p>
 											</div>
 										) : transcriptError ? (
-											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
-												{transcriptError}
+											<div className='mx-auto flex flex-1 max-w-sm flex-col items-center justify-center gap-3 py-16 text-center text-destructive'>
+												<div className='flex size-14 items-center justify-center rounded-full bg-destructive/10'>
+													<X className='size-6' />
+												</div>
+												<p className='text-sm leading-relaxed'>{transcriptError}</p>
 											</div>
-										) : transcriptSegments.length > 0 ? (
-											<div className='space-y-4'>
-												{transcriptSegments.map((segment, index) => (
-													<div
-														key={`${segment.speaker ?? 'speaker'}-${index}`}
-														role={
-															typeof segment.start === 'number'
-																? 'button'
-																: undefined
-														}
-														tabIndex={
-															typeof segment.start === 'number' ? 0 : undefined
-														}
-														className={cn(
-															'rounded-[1.75rem] border px-5 py-4 transition-colors',
-															index === activeTranscriptSegmentIndex
-																? 'border-foreground/20 bg-foreground/[0.06] text-foreground'
-																: 'border-border/40 bg-background/50',
-															typeof segment.start === 'number'
-																? 'cursor-pointer hover:border-foreground/20 hover:bg-foreground/[0.04]'
-																: '',
-														)}
-														onClick={() => {
-															if (typeof segment.start === 'number') {
-																seek(segment.start);
-															}
-														}}>
-														<div className='mb-2 flex flex-wrap items-center gap-2'>
-															{resolveTranscriptSpeakerLabel(segment.speaker) ? (
-																<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80'>
-																	{resolveTranscriptSpeakerLabel(segment.speaker)}
-																</div>
-															) : null}
-															{typeof segment.start === 'number' ? (
-																<div className='rounded-full border border-border/50 bg-background/50 px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground'>
-																	{formatAudioTime(segment.start)}
-																</div>
-															) : null}
-															{hasTimedTranscript &&
-															typeof segment.end === 'number' ? (
-																<div className='rounded-full border border-border/50 bg-background/50 px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground'>
-																	{formatAudioTime(segment.end)}
-																</div>
-															) : null}
-														</div>
-														<div>{segment.text}</div>
-													</div>
-												))}
-											</div>
-										) : transcriptText ? (
-											<div className='whitespace-pre-wrap rounded-[1.75rem] border border-border/40 bg-background/50 px-5 py-4'>
-												{transcriptText}
+										) : transcriptSegments.length === 0 && !transcriptText ? (
+											<div className='mx-auto flex flex-1 max-w-sm flex-col items-center justify-center gap-4 py-16 text-center'>
+												<div className='flex size-16 items-center justify-center rounded-2xl bg-muted/50 ring-1 ring-border/40 backdrop-blur'>
+													<FileText className='size-7 text-muted-foreground/70' strokeWidth={1.5} />
+												</div>
+												<div className='space-y-1'>
+													<p className='text-sm font-medium text-foreground/80'>
+														{t('audio_player_transcript_empty')}
+													</p>
+													<p className='text-xs text-muted-foreground/70'>
+														{track.title}
+													</p>
+												</div>
 											</div>
 										) : (
-											<div className='rounded-3xl border border-border/40 bg-background/50 px-5 py-4'>
-												No transcript available.
-											</div>
+										<div className='mx-auto w-full max-w-2xl space-y-3 text-sm leading-relaxed'>
+											{transcriptSegments.length > 0 ? (
+												<div className='space-y-2'>
+													{transcriptSegments.map((segment, index) => {
+														const isActive = index === activeTranscriptSegmentIndex;
+														const seekable = typeof segment.start === 'number';
+														return (
+															<div
+																key={`${segment.speaker ?? 'speaker'}-${index}`}
+																role={seekable ? 'button' : undefined}
+																tabIndex={seekable ? 0 : undefined}
+																className={cn(
+																	'relative rounded-2xl px-4 py-3 pl-5 transition-all',
+																	isActive
+																		? 'bg-foreground/[0.07] text-foreground shadow-sm'
+																		: 'bg-muted/40 text-muted-foreground',
+																	seekable && 'cursor-pointer active:scale-[0.99]',
+																)}
+																onClick={() => {
+																	if (seekable) seek(segment.start as number);
+																}}>
+																<span
+																	aria-hidden
+																	className={cn(
+																		'absolute inset-y-2.5 left-1.5 w-0.5 rounded-full transition-colors',
+																		isActive ? 'bg-foreground' : 'bg-transparent',
+																	)}
+																/>
+																{(resolveTranscriptSpeakerLabel(segment.speaker) ||
+																	seekable) && (
+																	<div className='mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]'>
+																		{resolveTranscriptSpeakerLabel(segment.speaker) && (
+																			<span
+																				className={cn(
+																					isActive
+																						? 'text-foreground/80'
+																						: 'text-muted-foreground/80',
+																				)}>
+																				{resolveTranscriptSpeakerLabel(segment.speaker)}
+																			</span>
+																		)}
+																		{seekable && (
+																			<span className='tabular-nums text-muted-foreground/70'>
+																				{formatAudioTime(segment.start as number)}
+																			</span>
+																		)}
+																	</div>
+																)}
+																<div className='text-[0.9rem] leading-6'>{segment.text}</div>
+															</div>
+														);
+													})}
+												</div>
+											) : (
+												<div className='whitespace-pre-wrap rounded-2xl bg-muted/40 px-4 py-3 text-muted-foreground'>
+													{transcriptText}
+												</div>
+											)}
+										</div>
 										)}
-									</div>
-								</section>
+									</section>
+								</div>
 							</div>
-						</div>
+						</>
 					) : (
+						<>
+							<div className='flex items-center justify-between border-b border-border/50 px-5 py-4 sm:px-8'>
+								<div className='min-w-0'>
+									<DialogTitle className='truncate text-lg font-semibold'>
+										{track.title}
+									</DialogTitle>
+									<DialogDescription className='truncate text-sm text-muted-foreground'>
+										{track.artist}
+									</DialogDescription>
+								</div>
+								<div className='flex items-center gap-2'>
+									<Button
+										type='button'
+										size='icon'
+										variant='outline'
+										className='rounded-full'
+										onClick={() => {
+											setIsExpanded(false);
+										}}>
+										<Minimize2 className='size-4' />
+										<span className='sr-only'>Minimize</span>
+									</Button>
+								</div>
+							</div>
 					<div className='relative flex min-h-0 flex-1 overflow-hidden'>						<div className='grid w-full min-h-0 gap-0 lg:grid-cols-[minmax(22rem,1.05fr)_minmax(24rem,0.95fr)]'>
 							<div className='flex min-h-0 items-center justify-center px-6 py-8 sm:px-10 lg:px-14'>
 								<div className='flex h-full w-full max-w-2xl flex-col gap-6 pt-8 lg:pt-14'>
@@ -894,6 +1022,7 @@ const FloatingAudioPlayer = () => {
 							</div>
 						</div>
 					</div>
+						</>
 					)}
 				</DialogContent>
 			</Dialog>
