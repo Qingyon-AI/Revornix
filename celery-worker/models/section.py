@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, date as date_type
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean, Date
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Boolean, Date, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -26,7 +26,10 @@ class SectionUser(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id"), index=True, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     role: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: creator 1: member 2: subscriber')
-    # full access相比于w&r多了一个邀请的权限，注意 除了所有者 任何人都不具备删除的权限，同时，除了所有者 任何人都不能修改他人的权限
+    # managed_by records the FULL_ACCESS member who invited/approved this user.
+    # Creator-managed or self-subscribed rows keep it null.
+    managed_by: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True)
+    # full access can invite/approve and manage users it brought in; creator retains final control.
     authority: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: full access 1: w&r 2: r')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -45,6 +48,16 @@ class SectionDocument(Base):
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     status: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: waiting to be supplemented, 1: supplementing 2: supplemented successfully 3: supplemented error')
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_section_document_active",
+            "section_id",
+            "document_id",
+            unique=True,
+            postgresql_where=text("delete_at IS NULL"),
+        ),
+    )
 
 
 class Section(Base):

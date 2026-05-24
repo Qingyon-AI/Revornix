@@ -2,7 +2,8 @@ from collections.abc import Hashable
 
 import models
 import schemas
-from enums.section import UserSectionRole
+from enums.document import UserDocumentAuthority
+from enums.section import UserSectionAuthority, UserSectionRole
 
 
 def group_document_ids_by_category(documents: list[models.document.Document]) -> dict[Hashable, list[int]]:
@@ -61,6 +62,59 @@ def ensure_private_section_access(
         raise schemas.error.CustomException("This section is private and requires login", code=401)
     if user_id not in member_user_ids:
         raise schemas.error.CustomException("You don't have permission to access this section", code=403)
+
+
+def has_section_member_identity(section_user: models.section.SectionUser | None) -> bool:
+    if section_user is None:
+        return False
+    return UserSectionRole(section_user.role) in (
+        UserSectionRole.CREATOR,
+        UserSectionRole.MEMBER,
+    )
+
+
+def has_section_full_access(section_user: models.section.SectionUser | None) -> bool:
+    return (
+        has_section_member_identity(section_user)
+        and UserSectionAuthority(section_user.authority) == UserSectionAuthority.FULL_ACCESS
+    )
+
+
+def has_section_write_access(section_user: models.section.SectionUser | None) -> bool:
+    return (
+        has_section_member_identity(section_user)
+        and UserSectionAuthority(section_user.authority)
+        in (UserSectionAuthority.FULL_ACCESS, UserSectionAuthority.READ_AND_WRITE)
+    )
+
+
+def has_document_full_access(
+    *,
+    document: models.document.Document,
+    user_id: int,
+    user_document: models.document.UserDocument | None,
+) -> bool:
+    if document.creator_id == user_id:
+        return True
+    return (
+        user_document is not None
+        and UserDocumentAuthority(user_document.authority) == UserDocumentAuthority.FULL_ACCESS
+    )
+
+
+def has_document_write_access(
+    *,
+    document: models.document.Document,
+    user_id: int,
+    user_document: models.document.UserDocument | None,
+) -> bool:
+    if document.creator_id == user_id:
+        return True
+    return (
+        user_document is not None
+        and UserDocumentAuthority(user_document.authority)
+        in (UserDocumentAuthority.FULL_ACCESS, UserDocumentAuthority.READ_AND_WRITE)
+    )
 
 
 def ensure_document_access(

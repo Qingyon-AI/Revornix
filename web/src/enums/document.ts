@@ -7,7 +7,6 @@ export enum DocumentCategory {
 
 export enum UserDocumentAuthority {
     FULL_ACCESS = 0,
-    OWNER = 0,
     READ_AND_WRITE = 1,
     READ_ONLY = 2,
 }

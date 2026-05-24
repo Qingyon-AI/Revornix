@@ -266,6 +266,10 @@ const JoinRequestRow = ({
 					},
 				]
 			: [
+					{
+						value: UserDocumentAuthority.FULL_ACCESS,
+						label: t('authority_full_access'),
+					},
 					{ value: UserDocumentAuthority.READ_ONLY, label: t('authority_read_only') },
 					{
 						value: UserDocumentAuthority.READ_AND_WRITE,

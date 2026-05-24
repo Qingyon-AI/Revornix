@@ -71,7 +71,7 @@ const WebsiteDocumentDetail = ({
 	});
 	const { canEditMarkdown } = useDocumentMarkdownEditable({
 		documentId: id,
-		ownerId: document?.creator.id,
+		creatorId: document?.creator.id,
 	});
 
 	const { data: userFileSystemDetail } = useQuery({
@@ -388,7 +388,7 @@ const WebsiteDocumentDetail = ({
 					<>
 						<EditableMarkdownPanel
 							content={markdown}
-							ownerId={document?.creator.id}
+							creatorId={document?.creator.id}
 							onSave={handleSaveMarkdown}
 							editable={canEditMarkdown}
 							showFloatingToc

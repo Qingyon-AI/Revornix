@@ -21,11 +21,11 @@ import { ImagePreviewGroup } from '../ui/image-with-fallback';
 const TipTapMarkdownViewer = ({
 	content,
 	className,
-	ownerId,
+	creatorId,
 }: {
 	content: string;
 	className?: string;
-	ownerId?: number;
+	creatorId?: number;
 }) => {
 	const normalizedContent = useMemo(
 		() => normalizeEditorMarkdown(content),
@@ -38,7 +38,7 @@ const TipTapMarkdownViewer = ({
 			extensions: [
 				StarterKit.configure({ codeBlock: false }),
 				ImageNode.configure({
-					ownerId,
+					ownerId: creatorId,
 				}),
 				DrawingNode,
 				TableNode,
@@ -54,7 +54,7 @@ const TipTapMarkdownViewer = ({
 			content: normalizedContent,
 			contentType: 'markdown',
 		},
-		[normalizedContent, ownerId],
+		[normalizedContent, creatorId],
 	);
 
 	return (

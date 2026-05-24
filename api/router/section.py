@@ -45,6 +45,7 @@ from router.section_search_query import section_search_query_router
 from router.section_subscription_manage import section_subscription_manage_router
 from router.section_user_manage import section_user_manage_router
 from router.section_user_query import section_user_query_router
+from router.logic_helpers import has_section_write_access
 
 section_router = APIRouter()
 section_router.include_router(section_comment_manage_router)
@@ -541,10 +542,7 @@ async def retry_section_document_integration(
         section_id=retry_request.section_id,
         user_id=user.id
     )
-    if db_section_user is None or db_section_user.authority not in [
-        UserSectionAuthority.READ_AND_WRITE,
-        UserSectionAuthority.FULL_ACCESS,
-    ]:
+    if not has_section_write_access(db_section_user):
         raise schemas.error.CustomException("You don't have permission to retry this section document", code=403)
 
     db_section_document = await crud.section.get_section_document_by_section_id_and_document_id_async(
@@ -712,7 +710,7 @@ async def update_section(
         user_id=user.id,
         section_id=section_update_request.section_id
     )
-    if section_user is None or section_user.authority not in [UserSectionAuthority.READ_AND_WRITE, UserSectionAuthority.FULL_ACCESS]:
+    if not has_section_write_access(section_user):
         raise schemas.error.CustomException("You don't have permission to modify this section", code=403)
 
     if section_update_request.auto_podcast is True:

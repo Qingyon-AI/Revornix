@@ -563,7 +563,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									<SeoEditEntry
 										type='document'
 										documentId={document.id}
-										ownerId={document.creator.id}
+										creatorId={document.creator.id}
 									/>
 								</div>
 							}
@@ -573,7 +573,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 								content={
 									markdown || document.description || t('document_no_md')
 								}
-								ownerId={document.creator.id}
+								creatorId={document.creator.id}
 							/>
 							{document.category === DocumentCategory.FILE ||
 								document.category === DocumentCategory.AUDIO ||

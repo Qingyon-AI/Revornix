@@ -37,7 +37,7 @@ const QuickDocumentDetail = ({
 	});
 	const { canEditMarkdown } = useDocumentMarkdownEditable({
 		documentId: id,
-		ownerId: document?.creator.id,
+		creatorId: document?.creator.id,
 	});
 
 	const [delay, setDelay] = useState<number>();
@@ -106,7 +106,7 @@ const QuickDocumentDetail = ({
 								? document.quick_note_info.content
 								: t('document_no_md')
 						}
-						ownerId={document?.creator.id}
+						creatorId={document?.creator.id}
 						onSave={handleSaveMarkdown}
 						editable={canEditMarkdown}
 						showFloatingToc

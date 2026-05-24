@@ -7,7 +7,15 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from '../ui/input';
 import SectionSubscriberItem from './section-user-subscriber-item';
 
-const SectionSubscriber = ({ section_id }: { section_id: number }) => {
+const SectionSubscriber = ({
+	section_id,
+	canManageAllSubscribers = true,
+	currentUserId,
+}: {
+	section_id: number;
+	canManageAllSubscribers?: boolean;
+	currentUserId?: number;
+}) => {
 	const t = useTranslations();
 
 	const [keyword, setKeyword] = useState('');
@@ -91,9 +99,19 @@ const SectionSubscriber = ({ section_id }: { section_id: number }) => {
 				<div className='bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground gap-3 flex flex-col max-h-40 overflow-auto'>
 					{users.map((user, index) => {
 						const isLast = index === users.length - 1;
+						const managedBy = (
+							user as typeof user & { managed_by?: number | null }
+						).managed_by;
+						const canManageUser =
+							user.id !== currentUserId &&
+							(canManageAllSubscribers || managedBy === currentUserId);
 						return (
 							<div ref={isLast ? loadMoreRef : null} key={index}>
-								<SectionSubscriberItem section_id={section_id} user={user} />
+								<SectionSubscriberItem
+									section_id={section_id}
+									user={user}
+									canManage={canManageUser}
+								/>
 							</div>
 						);
 					})}

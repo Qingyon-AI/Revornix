@@ -242,11 +242,13 @@ def create_user_document(
     db: Session,
     user_id: int,
     document_id: int,
-    authority: UserDocumentAuthority
+    authority: UserDocumentAuthority,
+    managed_by: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_user_document = models.document.UserDocument(user_id=user_id,
                                                     document_id=document_id,
+                                                    managed_by=managed_by,
                                                     authority=authority,
                                                     create_time=now)
     db.add(db_user_document)
@@ -257,11 +259,13 @@ async def create_user_document_async(
     db: AsyncSession,
     user_id: int,
     document_id: int,
-    authority: UserDocumentAuthority
+    authority: UserDocumentAuthority,
+    managed_by: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_user_document = models.document.UserDocument(user_id=user_id,
                                                     document_id=document_id,
+                                                    managed_by=managed_by,
                                                     authority=authority,
                                                     create_time=now)
     db.add(db_user_document)
@@ -1027,7 +1031,8 @@ async def search_next_section_document_async(
         stmt = stmt.where(models.document.Document.id < document.id).order_by(models.document.Document.id.desc())
     else:
         stmt = stmt.where(models.document.Document.id > document.id).order_by(models.document.Document.id.asc())
-    return (await db.execute(stmt)).scalar_one_or_none()
+    stmt = stmt.limit(1)
+    return (await db.execute(stmt)).scalars().first()
 
 def count_section_documents(
     db: Session,
@@ -2946,7 +2951,7 @@ def delete_user_documents_by_document_ids(
         .filter(models.document.Document.id.in_(document_ids),
                 models.document.UserDocument.user_id == user_id,
                 models.document.UserDocument.delete_at.is_(None),
-                models.document.UserDocument.authority == UserDocumentAuthority.OWNER) \
+                models.document.UserDocument.authority == UserDocumentAuthority.FULL_ACCESS) \
         .all()
 
     ids_to_update = [document_id[0] for document_id in db_document_ids]
@@ -3018,7 +3023,7 @@ async def delete_user_documents_by_document_ids_async(
             models.document.Document.id.in_(document_ids),
             models.document.UserDocument.user_id == user_id,
             models.document.UserDocument.delete_at.is_(None),
-            models.document.UserDocument.authority == UserDocumentAuthority.OWNER,
+            models.document.UserDocument.authority == UserDocumentAuthority.FULL_ACCESS,
         )
     )
     ids_to_update = [row[0] for row in (await db.execute(stmt)).all()]
@@ -3123,7 +3128,7 @@ def delete_website_document_by_website_document_ids(
         .filter(models.document.WebsiteDocument.id.in_(website_document_ids),
                 models.document.WebsiteDocument.delete_at.is_(None),
                 models.document.UserDocument.user_id == user_id,
-                models.document.UserDocument.authority == UserDocumentAuthority.OWNER)\
+                models.document.UserDocument.authority == UserDocumentAuthority.FULL_ACCESS)\
         .all()
 
     db_website_document_ids = [website_document.id for website_document in db_website_documents]

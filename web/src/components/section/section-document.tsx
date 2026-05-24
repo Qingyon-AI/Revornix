@@ -33,7 +33,11 @@ import { useRouter } from 'nextjs-toploader/app';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { ListItemSkeleton } from '../ui/skeleton';
-import { SectionProcessStatus, UserSectionRole } from '@/enums/section';
+import {
+	SectionProcessStatus,
+	UserSectionAuthority,
+	UserSectionRole,
+} from '@/enums/section';
 import {
 	Empty,
 	EmptyDescription,
@@ -112,8 +116,14 @@ const SectionDocument = ({
 	});
 
 	const canAddDocument =
-		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR ||
-		sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER;
+		(sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR ||
+			sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER) &&
+		(sectionUserRoleAndAuthority?.authority ===
+			UserSectionAuthority.FULL_ACCESS ||
+			sectionUserRoleAndAuthority?.authority ===
+				UserSectionAuthority.READ_AND_WRITE);
+	const canPublishSectionDocuments =
+		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR;
 	const sectionProcessFailed =
 		sectionDetail?.process_task?.status === SectionProcessStatus.FAILED;
 
@@ -347,7 +357,7 @@ const SectionDocument = ({
 				{canAddDocument && (
 					<div className='shrink-0 border-t border-border/60 bg-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-5 sm:pb-5'>
 						<div className='flex flex-col gap-2'>
-							{documents.length > 0 ? (
+							{canPublishSectionDocuments && documents.length > 0 ? (
 								<Button
 									variant='outline'
 									className='w-full rounded-2xl'

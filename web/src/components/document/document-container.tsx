@@ -6,6 +6,7 @@ import {
 	cancelDocumentGraph,
 	generateDocumentGraph,
 	getDocumentDetail,
+	getMineDocumentAuthority,
 	readDocument,
 } from '@/service/document';
 import FileDocumentDetail from './file-document-detail';
@@ -18,7 +19,7 @@ import {
 	InifiniteScrollPagnitionDocumentInfo,
 } from '@/generated';
 import { useEffect, useMemo, useState } from 'react';
-import { DocumentCategory } from '@/enums/document';
+import { DocumentCategory, UserDocumentAuthority } from '@/enums/document';
 import DocumentGraph from './document-graph';
 import { Button } from '../ui/button';
 import { useTranslations } from 'next-intl';
@@ -82,6 +83,22 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+	const isDocumentCreator = Boolean(
+		document && mainUserInfo && document.creator?.id === mainUserInfo.id,
+	);
+	const { data: documentAuthority } = useQuery({
+		queryKey: ['getMineDocumentAuthority', id, mainUserInfo?.id],
+		queryFn: () => getMineDocumentAuthority({ document_id: id }),
+		enabled: Boolean(document?.id && mainUserInfo?.id && !isDocumentCreator),
+		retry: false,
+	});
+	const canManageDocumentAccessRequests =
+		isDocumentCreator ||
+		documentAuthority?.authority === UserDocumentAuthority.FULL_ACCESS;
+	const canWriteDocument =
+		isDocumentCreator ||
+		documentAuthority?.authority === UserDocumentAuthority.FULL_ACCESS ||
+		documentAuthority?.authority === UserDocumentAuthority.READ_AND_WRITE;
 	const documentCoverSrc =
 		document?.cover && document.creator
 			? replacePath(document.cover, document.creator.id)
@@ -261,7 +278,8 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					graphCancelling={mutateCancelDocumentGraph.isPending}
 					documentCategory={document?.category}
 					graphStatus={document?.graph_task?.status}
-					isCreator={Boolean(document && mainUserInfo && document.creator?.id === mainUserInfo.id)}
+					canManageAccessRequests={canManageDocumentAccessRequests}
+					canWriteDocument={canWriteDocument}
 					onGraphGenerate={() => setIsGraphGenerateDialogOpen(true)}
 					onGraphCancel={() => mutateCancelDocumentGraph.mutate()}
 				/>
@@ -269,6 +287,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		[
 			document?.category,
 			document?.creator?.id,
+			documentAuthority?.authority,
 			document?.graph_task?.status,
 			document?.id,
 			freshnessState.graphStale,

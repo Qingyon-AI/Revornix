@@ -13,8 +13,11 @@ def create_or_update_section_document(
     status: SectionDocumentIntegration = SectionDocumentIntegration.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
-    db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
-                                                                             document_id=document_id).one_or_none()
+    db_section_document = db.query(models.section.SectionDocument).filter(
+        models.section.SectionDocument.section_id == section_id,
+        models.section.SectionDocument.document_id == document_id,
+        models.section.SectionDocument.delete_at.is_(None),
+    ).one_or_none()
     if db_section_document is None:
         db_section_document = models.section.SectionDocument(section_id=section_id,
                                                              document_id=document_id,

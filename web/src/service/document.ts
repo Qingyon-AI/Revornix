@@ -72,6 +72,7 @@ export type DocumentCollaboratorPublicInfo = {
     nickname: string
     slogan?: string | null
     authority?: 0 | 1 | 2 | null
+    managed_by?: number | null
     create_time: string
     update_time?: string | null
 }

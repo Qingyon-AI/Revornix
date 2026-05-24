@@ -47,7 +47,7 @@ async def _ensure_document_interaction_access(
     )
 
 
-async def _load_owned_documents_or_raise(
+async def _load_created_documents_or_raise(
     *,
     db: AsyncSession,
     document_ids: list[int],
@@ -62,7 +62,7 @@ async def _load_owned_documents_or_raise(
         if db_document is None:
             raise schemas.error.CustomException("The document is not found", code=404)
         if db_document.creator_id != user_id:
-            raise schemas.error.CustomException("You are not the owner of the document", code=403)
+            raise schemas.error.CustomException("You are not the creator of the document", code=403)
         documents.append(db_document)
     return documents
 
@@ -141,7 +141,7 @@ async def delete_document(
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    documents = await _load_owned_documents_or_raise(
+    documents = await _load_created_documents_or_raise(
         db=db,
         document_ids=documents_delete_request.document_ids,
         user_id=user.id,

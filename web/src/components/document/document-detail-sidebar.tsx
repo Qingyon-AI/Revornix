@@ -179,7 +179,8 @@ type DocumentDetailSidebarProps = {
 	graphCancelling: boolean;
 	documentCategory?: DocumentCategory;
 	graphStatus?: DocumentGraphStatus;
-	isCreator?: boolean;
+	canManageAccessRequests?: boolean;
+	canWriteDocument?: boolean;
 	onGraphGenerate: () => void;
 	onGraphCancel: () => void;
 };
@@ -197,7 +198,8 @@ const DocumentDetailSidebar = ({
 	graphCancelling,
 	documentCategory,
 	graphStatus,
-	isCreator = false,
+	canManageAccessRequests = false,
+	canWriteDocument = false,
 	onGraphGenerate,
 	onGraphCancel,
 }: DocumentDetailSidebarProps) => {
@@ -232,7 +234,7 @@ const DocumentDetailSidebar = ({
 						<DocumentInfo
 							id={id}
 							afterCreator={
-								isCreator ? (
+								canManageAccessRequests ? (
 									<JoinRequestsCard
 										targetType={AccessRequestTargetType.DOCUMENT}
 										targetId={id}
@@ -262,6 +264,7 @@ const DocumentDetailSidebar = ({
 							tone={graphTone}
 							hint={graphStale ? t('document_graph_stale_hint') : undefined}
 							action={
+								canWriteDocument ? (
 								<div className='flex items-center gap-2'>
 									<Button
 										variant='outline'
@@ -289,6 +292,7 @@ const DocumentDetailSidebar = ({
 											: graphActionLabel}
 									</Button>
 								</div>
+								) : undefined
 							}
 							result={
 								hasRenderableGraph ? (

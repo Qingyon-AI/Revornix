@@ -37,6 +37,7 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import {
 	getDocumentDetail,
+	getMineDocumentAuthority,
 	deleteDocument,
 	readDocument,
 	starDocument,
@@ -89,6 +90,7 @@ import DocumentOperateShare from './document-operate-share';
 import {
 	DocumentMdConvertStatus,
 	DocumentTranscribeStatus,
+	UserDocumentAuthority,
 } from '@/enums/document';
 
 const DocumentOperate = ({
@@ -296,6 +298,16 @@ const DocumentOperate = ({
 		queryKey: ['getDocumentDetail', id],
 		queryFn: () => getDocumentDetail({ document_id: id }),
 	});
+	const isCreator = data?.creator.id === mainUserInfo?.id;
+	const { data: documentAuthority } = useQuery({
+		queryKey: ['getMineDocumentAuthority', id, mainUserInfo?.id],
+		queryFn: () => getMineDocumentAuthority({ document_id: id }),
+		enabled: Boolean(data?.id && mainUserInfo?.id && !isCreator),
+		retry: false,
+	});
+	const hasFullAccess =
+		isCreator ||
+		documentAuthority?.authority === UserDocumentAuthority.FULL_ACCESS;
 
 	const mutateRead = useMutation({
 		mutationFn: (nextReadStatus: boolean) =>
@@ -640,7 +652,7 @@ const DocumentOperate = ({
 		onTriggerClick?: () => void,
 		iconOnly = false,
 	) => {
-		if (data?.creator.id !== mainUserInfo?.id) {
+		if (!hasFullAccess) {
 			return null;
 		}
 
@@ -649,6 +661,10 @@ const DocumentOperate = ({
 				document_id={id}
 				className={buttonClassName}
 				onTriggerClick={onTriggerClick}
+				canPublish={Boolean(isCreator)}
+				canInviteCollaborators={hasFullAccess}
+				canManageAllCollaborators={Boolean(isCreator)}
+				currentUserId={mainUserInfo?.id}
 				iconOnly={iconOnly}
 			/>
 		);
@@ -761,10 +777,6 @@ const DocumentOperate = ({
 			node: renderOriginAction(desktopIconButtonClassName, undefined, true),
 		},
 		{
-			key: 'share',
-			node: renderShareAction(desktopIconButtonClassName, undefined, true),
-		},
-		{
 			key: 'ai',
 			node: renderAiAction(desktopIconButtonClassName, undefined, true),
 		},
@@ -785,8 +797,8 @@ const DocumentOperate = ({
 			node: renderCommentAction(desktopIconButtonClassName, undefined, true),
 		},
 		{
-			key: 'delete',
-			node: renderDeleteAction(desktopIconButtonClassName, undefined, true),
+			key: 'share',
+			node: renderShareAction(desktopIconButtonClassName, undefined, true),
 		},
 		{
 			key: 'configuration',
@@ -795,6 +807,10 @@ const DocumentOperate = ({
 				undefined,
 				true,
 			),
+		},
+		{
+			key: 'delete',
+			node: renderDeleteAction(desktopIconButtonClassName, undefined, true),
 		},
 	]
 		.filter((action) => Boolean(action.node))
@@ -864,13 +880,6 @@ const DocumentOperate = ({
 														mobileActionButtonClassName,
 														closeMobileMenu,
 													)}
-													{data.creator.id === mainUserInfo?.id
-														? renderMobilePanelAction({
-																icon: ShareIcon,
-																label: t('document_share'),
-																onClick: openMobileShareDialog,
-															})
-														: null}
 													{renderAiAction(
 														mobileActionButtonClassName,
 														closeMobileMenu,
@@ -889,10 +898,17 @@ const DocumentOperate = ({
 													{renderCommentAction(
 														mobileActionButtonClassName,
 													)}
-													{renderDeleteAction(
+													{hasFullAccess
+														? renderMobilePanelAction({
+																icon: ShareIcon,
+																label: t('document_share'),
+																onClick: openMobileShareDialog,
+															})
+														: null}
+													{renderConfigurationAction(
 														mobileActionButtonClassName,
 													)}
-													{renderConfigurationAction(
+													{renderDeleteAction(
 														mobileActionButtonClassName,
 													)}
 												</div>
@@ -935,12 +951,16 @@ const DocumentOperate = ({
 									</div>
 								</SheetContent>
 							</Sheet>
-							{data.creator.id === mainUserInfo?.id ? (
+							{hasFullAccess ? (
 								<DocumentOperateShare
 									document_id={id}
 									open={showMobileShare}
 									onOpenChange={setShowMobileShare}
 									className='hidden'
+									canPublish={Boolean(isCreator)}
+									canInviteCollaborators={hasFullAccess}
+									canManageAllCollaborators={Boolean(isCreator)}
+									currentUserId={mainUserInfo?.id}
 									iconOnly
 								/>
 							) : null}

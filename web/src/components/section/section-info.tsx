@@ -157,7 +157,6 @@ const SectionInfo = ({
 			? mainUserInfo
 			: undefined;
 	const creatorId = section.creator?.id ?? fallbackCreator?.id;
-	const isOwner = creatorId !== undefined && creatorId === mainUserInfo?.id;
 	const creatorNickname =
 		section.creator?.nickname ?? fallbackCreator?.nickname ?? '--';
 	const creatorAvatar = section.creator?.avatar ?? fallbackCreator?.avatar;

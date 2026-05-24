@@ -20,7 +20,7 @@ import { Textarea } from '../ui/textarea';
 
 type EditableMarkdownPanelProps = {
 	content: string;
-	ownerId?: number;
+	creatorId?: number;
 	onSave: (content: string) => Promise<void>;
 	className?: string;
 	viewerFooter?: ReactNode;
@@ -37,7 +37,7 @@ type EditorMode = 'visual' | 'visual-loading' | 'source';
 
 const EditableMarkdownPanel = ({
 	content,
-	ownerId,
+	creatorId,
 	onSave,
 	className,
 	viewerFooter,
@@ -294,7 +294,7 @@ const EditableMarkdownPanel = ({
 							<TipTapEditor
 								value={draft}
 								onChange={setDraft}
-								ownerId={ownerId}
+								creatorId={creatorId}
 								enableImageUpload={enableImageUpload}
 								enableDrawing={enableDrawing}
 								placeholder={t('markdown_edit_placeholder')}
@@ -353,7 +353,7 @@ const EditableMarkdownPanel = ({
 					enableFloatingToc={showFloatingToc}
 					contentClassName={viewerClassName}>
 					<div>
-						<TipTapMarkdownViewer content={normalizedContent} ownerId={ownerId} />
+						<TipTapMarkdownViewer content={normalizedContent} creatorId={creatorId} />
 						{viewerFooter}
 					</div>
 				</MarkdownContentShell>

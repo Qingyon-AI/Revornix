@@ -28,9 +28,11 @@ import { filterInfiniteQueryElements } from '@/lib/infinite-query-cache';
 const SectionSubscriberItem = ({
 	user,
 	section_id,
+	canManage = true,
 }: {
 	user: SectionUserPublicInfo;
 	section_id: number;
+	canManage?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -93,6 +95,7 @@ const SectionSubscriberItem = ({
 				</Avatar>
 				<p>{user.nickname}</p>
 			</div>
+			{canManage ? (
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogTrigger asChild>
 					<Button size={'icon'} variant={'secondary'}>
@@ -120,6 +123,7 @@ const SectionSubscriberItem = ({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			) : null}
 		</div>
 	);
 };

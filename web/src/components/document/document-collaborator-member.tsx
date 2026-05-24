@@ -13,8 +13,12 @@ import { Skeleton } from '../ui/skeleton';
 
 const DocumentCollaboratorMember = ({
 	document_id,
+	canManageAllCollaborators = true,
+	currentUserId,
 }: {
 	document_id: number;
+	canManageAllCollaborators?: boolean;
+	currentUserId?: number;
 }) => {
 	const t = useTranslations();
 	const [keyword, setKeyword] = useState('');
@@ -97,11 +101,16 @@ const DocumentCollaboratorMember = ({
 				<div className='flex max-h-56 flex-col gap-3 overflow-auto rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground'>
 					{users.map((member, index) => {
 						const isLast = index === users.length - 1;
+						const canManageUser =
+							member.id !== currentUserId &&
+							(canManageAllCollaborators ||
+								member.managed_by === currentUserId);
 						return (
 							<div key={member.id} ref={isLast ? loadMoreRef : null}>
 								<DocumentCollaboratorMemberItem
 									document_id={document_id}
 									user={member}
+									canManage={canManageUser}
 								/>
 							</div>
 						);

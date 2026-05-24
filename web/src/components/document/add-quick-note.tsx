@@ -457,7 +457,7 @@ const AddQuickNote = () => {
 													className='min-h-[400px] flex-1 rounded-none border-0 bg-muted/10 shadow-none lg:min-h-0'
 													enableImageUpload
 													enableDrawing
-													ownerId={mainUserInfo?.id}
+													creatorId={mainUserInfo?.id}
 													fullscreen={isEditorFullscreen}
 													onFullscreenChange={setIsEditorFullscreen}
 													toolbarEnd={

@@ -40,9 +40,11 @@ import {
 const SectionMemberItem = ({
 	user,
 	section_id,
+	canManage = true,
 }: {
 	user: SectionUserPublicInfo;
 	section_id: number;
+	canManage?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -136,6 +138,7 @@ const SectionMemberItem = ({
 				</Avatar>
 				<p>{user.nickname}</p>
 			</div>
+			{canManage ? (
 			<div className='flex flex-row gap-2 items-center'>
 				<Select
 					value={user.authority?.toString()}
@@ -194,6 +197,7 @@ const SectionMemberItem = ({
 					</AlertDialogContent>
 				</AlertDialog>
 			</div>
+			) : null}
 		</div>
 	);
 };

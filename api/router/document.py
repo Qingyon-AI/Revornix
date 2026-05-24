@@ -50,7 +50,11 @@ from router.document_user_query import document_user_query_router
 from router.document_query import document_query_router
 from router.document_comment_manage import document_comment_manage_router
 from router.document_note_public_query import document_note_public_query_router
-from router.logic_helpers import ensure_document_manage_access, ensure_document_write_access
+from router.logic_helpers import (
+    ensure_document_access,
+    ensure_document_manage_access,
+    ensure_document_write_access,
+)
 
 document_router = APIRouter()
 document_router.include_router(document_query_router)
@@ -78,10 +82,45 @@ async def _get_document_collaborator(
 
 def _has_document_write_access(authority: int | None) -> bool:
     return authority in [
-        UserDocumentAuthority.OWNER,
         UserDocumentAuthority.FULL_ACCESS,
         UserDocumentAuthority.READ_AND_WRITE,
     ]
+
+
+async def _ensure_document_read_access(
+    *,
+    db: AsyncSession,
+    document_id: int,
+    user_id: int | None,
+) -> models.document.Document:
+    db_document = await crud.document.get_document_by_document_id_async(
+        db=db,
+        document_id=document_id,
+    )
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    if user_id is not None and db_document.creator_id == user_id:
+        return db_document
+    db_publish_document = await crud.document.get_publish_document_by_document_id_async(
+        db=db,
+        document_id=document_id,
+    )
+    if db_publish_document is not None:
+        return db_document
+    db_user_document = None
+    if user_id is not None:
+        db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
+            db=db,
+            user_id=user_id,
+            document_id=document_id,
+        )
+    ensure_document_access(
+        user_id=user_id,
+        is_creator=False,
+        has_public_document=False,
+        has_document_collaborator=db_user_document is not None,
+    )
+    return db_document
 
 
 @document_router.post('/label/summary', response_model=schemas.document.LabelSummaryResponse)
@@ -167,6 +206,11 @@ async def create_note(
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db)
 ):
+    await _ensure_document_read_access(
+        db=db,
+        document_id=note_create_request.document_id,
+        user_id=user.id,
+    )
     await crud.document.create_document_note_async(
         db=db,
         user_id=user.id,
@@ -196,6 +240,11 @@ async def search_note(
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db)
 ):
+    await _ensure_document_read_access(
+        db=db,
+        document_id=search_note_request.document_id,
+        user_id=user.id,
+    )
     has_more = True
     next_start = None
     next_note = None

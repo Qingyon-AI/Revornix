@@ -77,6 +77,7 @@ class DocumentCollaboratorPublicInfo(BaseModel):
     nickname: str
     slogan: str | None = None
     authority: UserDocumentAuthority | None = None
+    managed_by: int | None = None
     create_time: datetime
     update_time: datetime | None
 
