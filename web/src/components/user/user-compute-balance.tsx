@@ -15,7 +15,7 @@ const UserComputeBalance = () => {
 	return (
 		<div className='flex items-center justify-between'>
 			<div className='flex flex-row items-center gap-2'>
-				<span className='text-xs font-medium text-muted-foreground'>
+				<span className='text-xs font-medium text-muted-foreground whitespace-nowrap'>
 					{t('account_compute_points_remaining')}
 				</span>
 				<span className='font-semibold leading-none text-lg'>
