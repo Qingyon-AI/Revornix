@@ -130,9 +130,9 @@ const DashboardHero = () => {
 	const AvatarIcon = holiday ? holiday.Icon : Dog;
 
 	return (
-		<div className='relative w-full overflow-hidden'>
+		<div className='relative w-full'>
 			{holiday ? <HolidayParticles holiday={holiday} /> : <PawDecor />}
-			<div className='relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
+			<div className='relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
 				<div className='flex min-w-0 items-center gap-3'>
 					<div
 						className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${avatarAccent}`}>

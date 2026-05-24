@@ -81,7 +81,7 @@ const HotSearch = () => {
 	}, [handleInitData]);
 
 	return (
-		<div className='h-full overflow-auto px-5 pb-5'>
+		<div className='h-full overflow-auto px-5 pb-5 pt-5'>
 			{refreshStatus ? (
 				<div className='h-full'>
 					<Skeleton className='h-full w-full' />

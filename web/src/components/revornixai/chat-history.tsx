@@ -54,7 +54,7 @@ const ChatHistory = ({
 	const sessions = useAiChatStore((state) => state.sessions);
 	const deleteSession = useAiChatStore((state) => state.deleteSession);
 	const setCurrentSessionId = useAiChatStore(
-		(state) => state.setCurrentSessionId
+		(state) => state.setCurrentSessionId,
 	);
 	const addSession = useAiChatStore((state) => state.addSession);
 	const currentSessionId = useAiChatStore((state) => state.currentSessionId);
@@ -135,22 +135,23 @@ const ChatHistory = ({
 			setSearchQuery('');
 		}
 	};
-	const trigger = compactTrigger && isMobile ? (
-		<Button
-			variant='outline'
-			size='icon'
-			className='size-10 rounded-2xl border-border/60 bg-card shadow-none'
-			aria-label={t('revornix_ai_mobile_menu')}>
-			<Menu className='size-4.5' />
-		</Button>
-	) : (
-		<Button
-			variant='outline'
-			className='h-10 gap-2.5 rounded-2xl border-border/60 bg-card px-5 shadow-none [&_svg]:size-4'>
-			{t('revornix_ai_history_sessions')}
-			<History />
-		</Button>
-	);
+	const trigger =
+		compactTrigger && isMobile ? (
+			<Button
+				variant='outline'
+				size='icon'
+				className='size-10 rounded-2xl border-border/60 bg-card shadow-none'
+				aria-label={t('revornix_ai_mobile_menu')}>
+				<Menu className='size-4.5' />
+			</Button>
+		) : (
+			<Button
+				variant='outline'
+				className='h-10 gap-2.5 rounded-2xl border-border/60 bg-card px-5 shadow-none [&_svg]:size-4'>
+				{t('revornix_ai_history_sessions')}
+				<History />
+			</Button>
+		);
 
 	const content = (
 		<>
@@ -305,15 +306,9 @@ const ChatHistory = ({
 				<DrawerTrigger asChild>{trigger}</DrawerTrigger>
 				<DrawerContent className='flex max-h-[85vh] flex-col gap-0 rounded-t-[28px] border-t border-border/70 bg-card p-0 shadow-sm'>
 					<DrawerHeader className='border-b border-border/60 px-5 pb-4 pt-5 text-left'>
-						<div className='space-y-2'>
-							<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>
-								<Sparkles className='size-3' />
-								<span>{t('website_title')}</span>
-							</div>
-							<DrawerTitle className='text-xl tracking-tight'>
-								{t('revornix_ai_history_sessions')}
-							</DrawerTitle>
-						</div>
+						<DrawerTitle className='text-xl tracking-tight'>
+							{t('revornix_ai_history_sessions')}
+						</DrawerTitle>
 						<DrawerDescription className='text-sm leading-6'>
 							{t('revornix_ai_history_sessions_description')}
 						</DrawerDescription>
@@ -330,10 +325,6 @@ const ChatHistory = ({
 			<SheetContent className='flex w-[min(520px,100vw)] max-w-[min(520px,100vw)] flex-col gap-0 border-l border-border/70 bg-card p-0 shadow-sm'>
 				<SheetHeader className='border-b border-border/60 px-5 pb-4 pt-6 text-left'>
 					<div className='space-y-2'>
-						<div className='flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground'>
-							<Sparkles className='size-3' />
-							<span>{t('website_title')}</span>
-						</div>
 						<SheetTitle className='text-xl tracking-tight'>
 							{t('revornix_ai_history_sessions')}
 						</SheetTitle>

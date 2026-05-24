@@ -512,9 +512,9 @@ const FloatingAudioPlayer = () => {
 									<div className='relative inline-flex rounded-full bg-muted/70 p-1 shadow-inner'>
 										<span
 											className={cn(
-												'absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full bg-background shadow-sm transition-transform duration-300 ease-out',
+												'absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-background shadow-sm transition-transform duration-300 ease-out',
 												mobilePanel === 'transcript'
-													? 'translate-x-[calc(100%+0.25rem)]'
+													? 'translate-x-[100%]'
 													: 'translate-x-0',
 											)}
 										/>
