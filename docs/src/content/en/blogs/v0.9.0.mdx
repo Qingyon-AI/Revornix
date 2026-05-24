@@ -1,0 +1,88 @@
+---
+title: v0.9.0
+description: New collaboration permission model, Markdown editor upgrade, community & hot-search revamp, gpt-image-2 engine.
+---
+
+# Revornix-v0.9.0
+
+Over 70 commits have landed since v0.8.1. This is a sizable release covering collaboration permissions, the editor, the community surface, AI engines, SEO, and the underlying request layer.
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164957080.png)
+
+## Highlights
+
+### Collaboration & Permissions
+
+- **New collaboration permission matrix**: introduced the `managed_by` concept to formalize access / read-write / configure / delete granularity on documents and sections. See the refreshed docs at [Document collaboration](/docs/documents/document-manage) and [Section sharing](/docs/sections/section-share).
+- **R&W collaborators can now open the configuration panel**, no longer needing the owner to tweak settings on their behalf.
+- **End-to-end join-request notifications**: eight new notification templates (document/section × request / handled) keep both the applicant and the manager in the loop.
+- **Unified resource access checks**: backend helpers such as `ensure_document_access` were consolidated into `logic_helpers`, so permission checks behave identically across AI, comments, interactions and notes.
+
+### Markdown Editor
+
+- TipTap-based editor was reworked, with much better behavior for tables, Mermaid code blocks, and inline / block math nodes.
+- New **AI continuation placeholder** and **AI illustration placeholder** nodes — invoke AI directly inside the editor for paragraph continuation or image generation, with a clear error signal when generation fails.
+- New **Table of Contents (TOC)**: document and section detail pages now auto-generate a navigable TOC.
+- Numerous fixes to the read-only viewer to keep typography consistent with the editor.
+
+### Community & SEO
+
+- Rebuilt the community page (`/community`) with a hot-search sidebar, a random classical-poem widget, and an auto-scrolling list.
+- New **hot-search page** (`/hot-search`) and a dashboard entry that aggregates multiple trending sources.
+- Polished SEO metadata, `manifest`, `robots.txt`, `sitemap`, and OG image generation for better off-site indexing.
+- Document cards, section cards, and the user content browser were redesigned, with full mobile parity.
+- New homepage hero layout and refreshed typography.
+
+### AI Engines & Chat
+
+- Added the **gpt-image-2** image generation engine, ready to enable from engine settings.
+- Added a Kimi compatibility layer (`kimi_compat`) for more reliable chat behavior.
+- Rebuilt AI streaming (`ai-message-events` / `ai-stream`) to unify message handling across Revornix AI, document AI, and section AI.
+
+### Global Search
+
+- Rebuilt the global command palette with result highlighting and mixed cross-entity search (documents / sections / users).
+- Backend retrieval improved as well — Milvus vector recall now blends more cleanly with keyword recall.
+
+### Admin & API
+
+- Admin user page surfaces richer per-user details (`AdminUserDetail`).
+- API key creation, update, and permission validation reworked end-to-end (frontend + schema).
+- The public API gained several capabilities to support third-party publishing and document management integrations.
+
+### Infrastructure & Performance
+
+- Frontend request layer was rewritten and split into `request-core` / `request` / `request-server` / `request-public`, unifying auth, error handling, and redirects across CSR and SSR.
+- Detail pages (document / section / user) now favor SSR for faster first paint.
+- Bumped dependencies for `web` and `docs` (including a Next upgrade) and refreshed Python packages for `api` and `celery-worker`.
+
+### UI Polish & Easter Eggs
+
+- Unified task card styles (audio podcast, PPT, AI tasks) across documents and sections.
+- Rebuilt 404 / not-found views for both private and public routes.
+- Redesigned the dashboard hero, the holiday Easter egg, the classical-poem widget, and added a little dog gif 🐶.
+- Fixed column overlap on several mobile tables.
+
+### Bug Fixes
+
+- Fixed `section_user` CRUD edge cases in multi-user scenarios.
+- Fixed several missing `await`s in AI and document processing flows.
+- Fixed admin routing, Markdown view-mode, code-block rendering, and SEO TOC issues.
+
+## Documentation
+
+A large batch of docs was refreshed alongside this release:
+
+- New / rewritten [collaboration permission matrix](/docs/documents/document-manage) and [section sharing](/docs/sections/section-share)
+- New [hot search](/docs/ai/hot-search)
+- Refreshed [engine](/docs/ai/engine), [Revornix AI](/docs/ai/revornix-ai), [MCP](/docs/ai/mcp), [document collection](/docs/documents/document-collect), and more
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share ideas and collaborate!
+
+You can open new issues in this project's Issues section.
+
+## Contributing
+
+Please see our [contributor guide](https://revornix.com/docs/developer/contribute) for more information.

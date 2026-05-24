@@ -1,0 +1,88 @@
+---
+title: v0.9.0
+description: 全新协作权限体系、Markdown 编辑器升级、社区与热搜重构、gpt-image-2 引擎接入。
+---
+
+# Revornix-v0.9.0
+
+距离 v0.8.1 已积累 70+ 次提交，本次发布是一次比较大的版本更新，涉及协作权限、编辑器、社区生态、AI 引擎、SEO 与底层请求层的大量改造。
+
+![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164957080.png)
+
+## 更新亮点
+
+### 协作与权限
+
+- **全新协作权限矩阵**：引入 `managed_by` 概念，重新梳理了文档与专栏的访问、读写、配置、删除等粒度，相关文档同步更新到 [文档协作](/docs/documents/document-manage) 与 [专栏协作](/docs/sections/section-share)。
+- **读写协作者可进入配置页**：拥有 R&W 权限的协作者现在可以打开文档/专栏的配置入口，无需让所有者帮忙调整设置。
+- **加入申请全流程通知**：新增 8 套通知模板（文档/专栏 × 申请发起/审批结果），申请方和管理方都能在通知中心实时跟进协作请求状态。
+- **资源访问校验统一化**：后端将 `ensure_document_access` 等访问控制逻辑收敛到 `logic_helpers`，权限判断在 AI、评论、互动、笔记等入口保持一致。
+
+### Markdown 编辑器
+
+- 重写 TipTap 编辑器交互，强化表格、Mermaid 代码块、行内/块级数学公式等扩展节点的渲染与编辑体验。
+- 新增 **AI 续写占位节点** 与 **AI 配图占位节点**，写作过程中可直接调用 AI 完成段落续写或插图生成，并在生成失败时给出明确的错误信号。
+- 新增 **目录 (TOC)**：文档详情页与专栏详情页现已自动生成可跳转的目录。
+- 修复多种视图模式下的展示问题，统一只读与编辑两种模式的排版。
+
+### 社区与 SEO
+
+- 重构社区主页 (`/community`)，新增热搜侧栏、古诗词随机展示、自动滚动榜单等模块。
+- 新增 **热搜页面** (`/hot-search`) 与 dashboard 内的热搜入口，整合多源热点资讯。
+- 优化 SEO 元数据、`manifest`、`robots.txt`、`sitemap` 与 OG Image 生成逻辑，提升站外抓取质量。
+- 文档卡片、专栏卡片、用户主页内容浏览器整体改版，移动端体验全面对齐。
+- 新增首页 hero 区域排版与字体优化。
+
+### AI 引擎与对话
+
+- 新增 **gpt-image-2** 图像生成引擎，可在引擎配置中直接启用。
+- 适配 Kimi 的对话兼容层 (`kimi_compat`)，提升对话稳定性。
+- 重构 AI 流式消息事件 (`ai-message-events` / `ai-stream`)，统一 Revornix AI、文档 AI、专栏 AI 三个入口的消息处理。
+
+### 全局搜索
+
+- 重写全局搜索命令面板，新增结果高亮、跨实体（文档 / 专栏 / 用户）混合搜索能力。
+- 后端检索同步优化，Milvus 向量召回与关键字召回结果合并更顺畅。
+
+### 管理后台与 API
+
+- 管理员用户页支持更详尽的用户画像 (`AdminUserDetail`)。
+- 优化 API Key 的创建、更新与权限校验逻辑，前端展示与服务端 schema 同步重构。
+- 对外 API 新增若干能力，便于第三方平台对接发布与文档管理。
+
+### 底层与性能
+
+- 重写前端请求层：拆分 `request-core` / `request` / `request-server` / `request-public`，统一 CSR 与 SSR 的鉴权、错误处理与重定向。
+- 详情页（文档、专栏、用户）改造为 SSR 优先，首屏更快。
+- 升级 `web` 与 `docs` 服务的依赖（含 Next 升级）以及 `api` / `celery-worker` 的 Python 包。
+
+### UI 细节与彩蛋
+
+- 统一文档/专栏的任务卡（音频播客、PPT、AI 任务）样式。
+- 重写 404 / Not Found 视图，公私域路径下都有更友好的提示。
+- 重新设计 dashboard hero、节假日彩蛋、古诗词组件，新增了一只小狗 GIF 🐶。
+- 修复移动端多个表格的列宽重叠问题。
+
+### Bug 修复
+
+- 修复 `section_user` 相关 CRUD 在多用户场景下的数据问题。
+- 修复 AI 与文档处理流程中若干缺失 `await` 导致的并发异常。
+- 修复 admin 路由、markdown 视图模式、代码块渲染、SEO TOC 等多个细节问题。
+
+## 文档更新
+
+本次发布同步刷新了大量 docs 内容：
+
+- 新增/重写 [协作权限矩阵](/docs/documents/document-manage)、[专栏分享](/docs/sections/section-share)
+- 新增 [热搜](/docs/ai/hot-search)
+- 全面更新 [引擎](/docs/ai/engine)、[Revornix AI](/docs/ai/revornix-ai)、[MCP](/docs/ai/mcp)、[文档采集](/docs/documents/document-collect) 等章节
+
+## 联系我们
+
+欢迎加入我们的 [Discord](https://discord.com/invite/3XZfz84aPN) 社区分享想法和协作！
+
+你可以在本项目的 Issues 区域提出新的问题。
+
+## 贡献
+
+欢迎查看我们的[贡献者指南](https://revornix.com/docs/developer/contribute)获取更多信息。
