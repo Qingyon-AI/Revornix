@@ -16,7 +16,7 @@ const routers: RouteItem[] = [
 			{
 				title: '热搜集合',
 				title_en: 'Hot Search',
-				path: '/dashboard/hot-search',
+				path: '/hot-search',
 			},
 		],
 	},
@@ -122,6 +122,7 @@ const routers: RouteItem[] = [
 		path: '/document',
 		unclickable: true,
 		children: [
+			{ title: '社区文档', title_en: 'Community Document', path: '/community' },
 			{ title: '未读文档', title_en: 'Unread Document', path: '/unread' },
 			{ title: '最近阅读', title_en: 'Recently Read', path: '/recent' },
 			{ title: '星标文档', title_en: 'Starred Document', path: '/star' },

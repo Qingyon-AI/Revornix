@@ -14,9 +14,11 @@ import DocumentCardPodcast from './document-card-podcast';
 const DocumentCard = ({
 	document,
 	layout = 'grid',
+	onLabelClick,
 }: {
 	document: DocumentInfo;
 	layout?: CardViewMode;
+	onLabelClick?: (labelId: number) => void;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -94,6 +96,10 @@ const DocumentCard = ({
 											onClick={(e) => {
 												e.preventDefault();
 												e.stopPropagation();
+												if (onLabelClick) {
+													onLabelClick(label.id);
+													return;
+												}
 												router.push(`/document/mine?label_id=${label.id}`);
 											}}
 											key={index}
@@ -143,6 +149,10 @@ const DocumentCard = ({
 									onClick={(e) => {
 										e.preventDefault();
 										e.stopPropagation();
+										if (onLabelClick) {
+											onLabelClick(label.id);
+											return;
+										}
 										router.push(`/document/mine?label_id=${label.id}`);
 									}}
 									key={index}
