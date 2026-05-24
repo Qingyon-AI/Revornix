@@ -12,13 +12,28 @@ Section sharing typically includes the following methods:
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260417163242591.png)
 
-You can click the share button at the bottom of a section, search for users on the same platform, select shared documents, and grant permissions. There are three default permission levels:
+You can click the share button at the bottom of a section, search for users on the same platform, select shared documents, and grant permissions. There are three permission levels:
 
-- **Full access**: users can view, edit, and modify the section, and can re-share the section (invite others to co-create).
-- **Read-write**: users can view, edit, and modify the section.
-- **Read-only**: users can view the section but cannot edit or modify it.
+- **Full access (FULL_ACCESS)**: on top of read-write capabilities, can invite new members, approve join requests, and manage members the user has personally invited or approved.
+- **Read-write (READ_AND_WRITE)**: can view the section, edit section metadata (title, description, cover, labels, auto podcast / illustration toggles), edit Markdown bodies of documents in the section, add documents to the section, and retry failed document processing.
+- **Read-only (READ_ONLY)**: can view, take notes, star, comment, and use AI Q&A; cannot edit the section or its contents.
 
-<Callout type='warning'>Only the section creator can remove shared users or modify their permissions. Non-creators cannot modify or remove a user's shared access after inviting them.</Callout>
+### Identity and capability matrix
+
+Identity expresses only the relationship (creator / collaborator / subscriber); permission expresses only the collaboration capability (FULL_ACCESS / READ_AND_WRITE / READ_ONLY). Concrete capabilities are split as follows:
+
+| Action | Creator | FULL_ACCESS | READ_AND_WRITE | READ_ONLY |
+| --- | :---: | :---: | :---: | :---: |
+| Read, comment, note, star, AI Q&A | ✓ | ✓ | ✓ | ✓ |
+| Edit section metadata (title / description / cover / labels / auto toggles) | ✓ | ✓ | ✓ | ✗ |
+| Add documents to section, retry failed document processing | ✓ | ✓ | ✓ | ✗ |
+| Invite new members / approve join requests | ✓ | ✓ | ✗ | ✗ |
+| Modify or remove members | All members | Only members they invited / approved | ✗ | ✗ |
+| Trigger whole-section processing / generate PPT / generate podcast | ✓ | ✗ | ✗ | ✗ |
+| Publish / unpublish | ✓ | ✗ | ✗ | ✗ |
+| Delete the section | ✓ | ✗ | ✗ | ✗ |
+
+<Callout type='info'>FULL_ACCESS is not "a smaller creator". It can bring people in, but can only manage the people it personally brought in. Actions that affect every reader or the whole section (publish, delete, whole-section processing) remain creator-only. The rule is enforced both at the API layer and by hiding controls in the UI, so calling the API directly cannot bypass it.</Callout>
 
 2. **Publish to the public network**: users can publish their section content publicly. This helps promote content and provides more learning resources. Once published, other users can find the section in the community list via search. High-quality sections may also be indexed by search engines based on user traffic, increasing exposure.
 
