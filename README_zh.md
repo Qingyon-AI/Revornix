@@ -84,31 +84,31 @@ Revornix/
 下面是工作台和公开页面的一些截图。完整图文走读见 [文档站](https://revornix.com/docs)。
 
 **仪表盘** —— 日常概览、AI 建议、数据新鲜度信号。
-![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
+![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164249535.png)
 
 **Revornix AI** —— 基于你的文档和个性化图谱进行对话。
-![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
+![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172943460.png)
 
 **文档详情** —— Markdown 阅读、AI 总结、播客、图谱、操作集中在一页。
-![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
+![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165240787.png)
 
 **个性化知识图谱** —— 从你收藏的内容中提取的实体和关系。
-![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
+![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522170319488.png)
 
 **专栏** —— 围绕主题整理的私密或公开文档合集。
-![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
+![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172433090.png)
 
 **播客** —— 把文档或专栏转成双人对话音频。
-![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
+![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165744549.png)
 
 **创作者公开页** —— SEO 友好的创作者主页。
-![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
+![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522173343696.png)
 
 **社区** —— 浏览其他人发布的内容。
-![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
+![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172513510.png)
 
 **热搜头条** —— 通过内置的 `hot-news/` 聚合多平台热榜（基于 [DailyHotApi](https://github.com/imsyy/DailyHotApi)）。
-![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
+![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522174104765.png)
 
 ## 快速开始
 

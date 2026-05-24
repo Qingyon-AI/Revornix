@@ -84,31 +84,31 @@ A short tour of what the platform actually does today. For step-by-step walkthro
 A glimpse of the workspace and the public surfaces. The full walkthrough lives in the [docs](https://revornix.com/docs).
 
 **Dashboard** — daily overview, AI suggestions, freshness signals.
-![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
+![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164249535.png)
 
 **Revornix AI** — chat grounded on your documents and personal graph.
-![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
+![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172943460.png)
 
 **Document detail** — Markdown reader, AI summary, podcast, knowledge graph and actions on one page.
-![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
+![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165240787.png)
 
 **Personal knowledge graph** — entities and relations extracted from everything you've saved.
-![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
+![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522170319488.png)
 
 **Section** — curate a private or public collection of documents around a topic.
-![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
+![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172433090.png)
 
 **Podcast** — turn a document or section into a two-voice audio episode.
-![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
+![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165744549.png)
 
 **Public creator page** — SEO-friendly profile for your published work.
-![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
+![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522173343696.png)
 
 **Community** — browse what others have published.
-![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
+![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172513510.png)
 
 **Trending headlines** — aggregated from major platforms via the bundled `hot-news/` service (based on [DailyHotApi](https://github.com/imsyy/DailyHotApi)).
-![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
+![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522174104765.png)
 
 ## Quick Start
 
