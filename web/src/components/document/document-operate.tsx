@@ -308,6 +308,9 @@ const DocumentOperate = ({
 	const hasFullAccess =
 		isCreator ||
 		documentAuthority?.authority === UserDocumentAuthority.FULL_ACCESS;
+	const hasWriteAccess =
+		hasFullAccess ||
+		documentAuthority?.authority === UserDocumentAuthority.READ_AND_WRITE;
 
 	const mutateRead = useMutation({
 		mutationFn: (nextReadStatus: boolean) =>
@@ -722,7 +725,7 @@ const DocumentOperate = ({
 		onTriggerClick?: () => void,
 		iconOnly = false,
 	) => {
-		if (data?.creator.id !== mainUserInfo?.id) {
+		if (!hasWriteAccess) {
 			return null;
 		}
 
@@ -732,6 +735,7 @@ const DocumentOperate = ({
 				className={buttonClassName}
 				onTriggerClick={onTriggerClick}
 				iconOnly={iconOnly}
+				canEditSections={Boolean(isCreator)}
 			/>
 		);
 	};
