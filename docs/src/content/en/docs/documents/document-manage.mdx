@@ -99,6 +99,24 @@ If auto podcast was not enabled at creation time, you can still trigger it manua
 
 The document detail page shows which sections this document belongs to, and the configuration panel lets you rebind those relationships later.
 
+### Document collaboration
+
+Documents can be shared with collaborators using the same model as sections: identity expresses only the relationship (creator / collaborator), permission expresses only the collaboration capability (FULL_ACCESS / READ_AND_WRITE / READ_ONLY). Capabilities are split as follows:
+
+| Action | Creator | FULL_ACCESS | READ_AND_WRITE | READ_ONLY |
+| --- | :---: | :---: | :---: | :---: |
+| Read, comment, note, star, AI Q&A | ✓ | ✓ | ✓ | ✓ |
+| Edit Markdown body | ✓ | ✓ | ✓ | ✗ |
+| Edit document metadata (title / description / cover / labels) | ✓ | ✓ | ✓ | ✗ |
+| Trigger tasks (AI summary, embedding, transcription, podcast, graph, Markdown conversion) | ✓ | ✓ | ✓ | ✗ |
+| Invite new collaborators / approve access requests | ✓ | ✓ | ✗ | ✗ |
+| Modify or remove collaborators | All collaborators | Only collaborators they invited / approved | ✗ | ✗ |
+| Change which sections the document belongs to | ✓ | ✗ | ✗ | ✗ |
+| Publish / unpublish | ✓ | ✗ | ✗ | ✗ |
+| Delete the document | ✓ | ✗ | ✗ | ✗ |
+
+<Callout type='info'>FULL_ACCESS can bring people in, but can only manage the collaborators it personally brought in. Changing section membership, publishing, and deletion stay creator-only. The rule is enforced at the API layer and by hiding controls in the UI.</Callout>
+
 ## 5. Search, filtering, and organization
 
 The document pages support:
