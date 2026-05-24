@@ -1732,7 +1732,10 @@ def get_users_for_section_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
-    query = query.join(models.section.SectionUser)
+    query = query.join(
+        models.section.SectionUser,
+        models.section.SectionUser.user_id == models.user.User.id,
+    )
     query = query.filter(models.user.User.delete_at.is_(None),
                          models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
@@ -1751,7 +1754,10 @@ async def get_users_for_section_by_section_id_async(
     now = datetime.now(timezone.utc)
     stmt = (
         select(models.user.User)
-        .join(models.section.SectionUser)
+        .join(
+            models.section.SectionUser,
+            models.section.SectionUser.user_id == models.user.User.id,
+        )
         .where(
             models.user.User.delete_at.is_(None),
             models.section.SectionUser.delete_at.is_(None),
@@ -1773,7 +1779,10 @@ def count_users_for_section_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.user.User)
-    query = query.join(models.section.SectionUser)
+    query = query.join(
+        models.section.SectionUser,
+        models.section.SectionUser.user_id == models.user.User.id,
+    )
     query = query.filter(models.user.User.delete_at.is_(None),
                          models.section.SectionUser.delete_at.is_(None),
                          models.section.SectionUser.section_id == section_id)
@@ -1793,7 +1802,10 @@ async def count_users_for_section_by_section_id_async(
     stmt = (
         select(func.count(models.user.User.id))
         .select_from(models.user.User)
-        .join(models.section.SectionUser)
+        .join(
+            models.section.SectionUser,
+            models.section.SectionUser.user_id == models.user.User.id,
+        )
         .where(
             models.user.User.delete_at.is_(None),
             models.section.SectionUser.delete_at.is_(None),
