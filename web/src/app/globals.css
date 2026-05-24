@@ -351,3 +351,71 @@
 .dark .hljs-link {
 	color: #a5d6ff;
 }
+
+/* Dashboard hero holiday animations */
+@keyframes holiday-fall {
+	0% {
+		transform: translateY(-20%) rotate(0deg);
+		opacity: 0;
+	}
+	10% {
+		opacity: 1;
+	}
+	90% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(140%) rotate(360deg);
+		opacity: 0;
+	}
+}
+
+@keyframes holiday-rise {
+	0% {
+		transform: translateY(40%) scale(0.9);
+		opacity: 0;
+	}
+	15% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-120%) scale(1.05);
+		opacity: 0;
+	}
+}
+
+@keyframes holiday-sway {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-6deg);
+	}
+	50% {
+		transform: translateY(-4px) rotate(6deg);
+	}
+}
+
+@keyframes holiday-pulse {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.7;
+	}
+	50% {
+		transform: scale(1.15);
+		opacity: 1;
+	}
+}
+
+.holiday-fall {
+	animation: holiday-fall linear infinite;
+}
+.holiday-rise {
+	animation: holiday-rise ease-out infinite;
+}
+.holiday-sway {
+	animation: holiday-sway 3.5s ease-in-out infinite;
+	transform-origin: center;
+}
+.holiday-pulse {
+	animation: holiday-pulse 2.4s ease-in-out infinite;
+}
