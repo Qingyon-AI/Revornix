@@ -84,31 +84,31 @@ Revornix/
 ワークスペースと公開サーフェスの一部です。フルウォークスルーは [ドキュメント](https://revornix.com/docs) を参照してください。
 
 **ダッシュボード** —— 日次概要、AI からの提案、データ鮮度シグナル。
-![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161335093.png)
+![Dashboard](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522164249535.png)
 
 **Revornix AI** —— あなたのドキュメントとパーソナルグラフに基づくチャット。
-![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161439547.png)
+![Revornix-AI](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172943460.png)
 
 **ドキュメント詳細** —— Markdown 閲覧、AI 要約、ポッドキャスト、ナレッジグラフ、操作を 1 画面に集約。
-![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161532457.png)
+![Document](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165240787.png)
 
 **パーソナル知識グラフ** —— 保存したコンテンツから抽出したエンティティと関係。
-![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318192919663.png)
+![Knowledge Graph](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522170319488.png)
 
 **セクション** —— テーマごとにドキュメントを整理したコレクション。
-![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418161641269.png)
+![Section](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172433090.png)
 
 **ポッドキャスト** —— ドキュメントやセクションを二人対話の音声に変換。
-![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260421222904288.png)
+![Podcast](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522165744549.png)
 
 **クリエイター公開ページ** —— SEO 対応のクリエイタープロフィール。
-![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162540367.png)
+![User SEO](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522173343696.png)
 
 **コミュニティ** —— 他のユーザーが公開したコンテンツを閲覧。
-![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260418162732909.png)
+![Community](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522172513510.png)
 
 **トレンドヘッドライン** —— 内蔵の `hot-news/` で複数プラットフォームのホットランキングを集約（[DailyHotApi](https://github.com/imsyy/DailyHotApi) ベース）。
-![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260318193532765.png)
+![Hot-News](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522174104765.png)
 
 ## クイックスタート
 
