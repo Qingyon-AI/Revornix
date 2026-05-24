@@ -24,7 +24,7 @@ export const metadata: Metadata = buildNoIndexAppMetadata(
 const DashboardPage = () => {
 	const t = useTranslations();
 	return (
-		<div className='flex w-full flex-col gap-5 px-5 pb-5'>
+		<div className='flex w-full flex-col gap-4 px-5 pb-5 pt-5'>
 			<DashboardHero />
 			<InitSettingDialog showAlert />
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
