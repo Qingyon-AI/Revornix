@@ -95,6 +95,10 @@ const SectionOperate = ({
 	const hasFullAccess =
 		hasMemberIdentity &&
 		sectionUserRoleAndAuthority?.authority === UserSectionAuthority.FULL_ACCESS;
+	const hasWriteAccess =
+		hasMemberIdentity &&
+		(sectionUserRoleAndAuthority?.authority === UserSectionAuthority.FULL_ACCESS ||
+			sectionUserRoleAndAuthority?.authority === UserSectionAuthority.READ_AND_WRITE);
 	const creatorStatusResolved =
 		mainUserInfo !== undefined &&
 		(isCreatorById || isRoleFetched || isRoleError);
@@ -221,12 +225,20 @@ const SectionOperate = ({
 									className={desktopIconButtonClassName}
 									iconOnly
 								/>,
+							]
+						: []),
+					...(hasWriteAccess
+						? [
 								<SectionOperateConfiguration
 									key='config'
 									section_id={id}
 									className={desktopIconButtonClassName}
 									iconOnly
 								/>,
+							]
+						: []),
+					...(isCreator
+						? [
 								<SectionOperateDelete
 									key='delete'
 									section_id={id}
@@ -324,21 +336,23 @@ const SectionOperate = ({
 													})
 													: null}
 												{isCreator ? (
-													<>
-														<SectionOperateProcess
-															section_id={id}
-															className={mobileActionButtonClassName}
-															onTriggerClick={closeMobileMenu}
-														/>
-														<SectionOperateConfiguration
-															section_id={id}
-															className={mobileActionButtonClassName}
-														/>
-														<SectionOperateDelete
-															section_id={id}
-															className={mobileActionButtonClassName}
-														/>
-													</>
+													<SectionOperateProcess
+														section_id={id}
+														className={mobileActionButtonClassName}
+														onTriggerClick={closeMobileMenu}
+													/>
+												) : null}
+												{hasWriteAccess ? (
+													<SectionOperateConfiguration
+														section_id={id}
+														className={mobileActionButtonClassName}
+													/>
+												) : null}
+												{isCreator ? (
+													<SectionOperateDelete
+														section_id={id}
+														className={mobileActionButtonClassName}
+													/>
 												) : null}
 											</>
 										) : null}

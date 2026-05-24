@@ -85,11 +85,13 @@ const DocumentConfiguration = ({
 	className,
 	onTriggerClick,
 	iconOnly = false,
+	canEditSections = true,
 }: {
 	document_id: number;
 	className?: string;
 	onTriggerClick?: () => void;
 	iconOnly?: boolean;
+	canEditSections?: boolean;
 }) => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
@@ -369,41 +371,43 @@ const DocumentConfiguration = ({
 								}}
 							/>
 
-							<FormField
-								control={form.control}
-								name='sections'
-								render={({ field }) => {
-									return (
-										<FormItem className={formBlockClassName}>
-											<FormLabel>
-												{t('document_configuration_form_sections')}
-											</FormLabel>
-											{sections ? (
-												<MultipleSelector
-													options={sections.data.map((section) => {
-														return {
-															label: section.title,
-															value: section.id.toString(),
-														};
-													})}
-													onChange={(value) => {
-														field.onChange(
-															value.map(({ value }) => Number(value)),
-														);
-													}}
-													value={field.value.map((item) => item.toString())}
-													placeholder={t(
-														'document_configuration_form_sections_placeholder',
-													)}
-												/>
-											) : (
-												<Skeleton className='h-10' />
-											)}
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
+							{canEditSections ? (
+								<FormField
+									control={form.control}
+									name='sections'
+									render={({ field }) => {
+										return (
+											<FormItem className={formBlockClassName}>
+												<FormLabel>
+													{t('document_configuration_form_sections')}
+												</FormLabel>
+												{sections ? (
+													<MultipleSelector
+														options={sections.data.map((section) => {
+															return {
+																label: section.title,
+																value: section.id.toString(),
+															};
+														})}
+														onChange={(value) => {
+															field.onChange(
+																value.map(({ value }) => Number(value)),
+															);
+														}}
+														value={field.value.map((item) => item.toString())}
+														placeholder={t(
+															'document_configuration_form_sections_placeholder',
+														)}
+													/>
+												) : (
+													<Skeleton className='h-10' />
+												)}
+												<FormMessage />
+											</FormItem>
+										);
+									}}
+								/>
+							) : null}
 						</form>
 					</Form>
 				</div>
