@@ -230,10 +230,10 @@ const AdminDocumentsPage = () => {
 						</Empty>
 					) : (
 						<>
-							<Table className='table-fixed'>
+							<Table className='table-fixed min-w-[860px]'>
 								<TableHeader>
 									<TableRow>
-										<TableHead className='w-[46%]'>
+										<TableHead className='w-[46%] min-w-[260px]'>
 											{t('admin_documents_table_title')}
 										</TableHead>
 										<TableHead>{t('admin_documents_table_category')}</TableHead>

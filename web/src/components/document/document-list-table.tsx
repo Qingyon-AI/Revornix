@@ -49,10 +49,10 @@ const DocumentListTable = ({
 
 	return (
 		<div className='rounded-[24px] border border-border/60 bg-card/50 px-3 py-3 backdrop-blur-sm'>
-			<Table className='table-fixed'>
+			<Table className='table-fixed min-w-[900px]'>
 				<TableHeader>
 					<TableRow>
-						<TableHead className='w-[42%]'>
+						<TableHead className='w-[42%] min-w-[260px]'>
 							{t('admin_documents_table_title')}
 						</TableHead>
 						<TableHead>{t('admin_documents_table_category')}</TableHead>
