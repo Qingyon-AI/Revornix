@@ -161,8 +161,7 @@ export const searchUserSection = async (data: SearchUserSectionsRequest): Promis
 
 export const searchPublicSection = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
     return await request(sectionApi.searchPublicSection, {
-        data,
-        anonymousFallback: true,
+        data
     })
 }
 

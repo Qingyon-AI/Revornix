@@ -52,8 +52,7 @@ export type SearchPublicUsersWithKeywordRequest = {
 
 export const searchPublicUsers = async (data: SearchPublicUsersWithKeywordRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
     return await request(userApi.searchPublicUsers, {
-        data,
-        anonymousFallback: true,
+        data
     })
 }
 
