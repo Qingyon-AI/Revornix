@@ -14,8 +14,8 @@ import SidebarTaskNode from '../ui/sidebar-task-node';
 
 type SectionMediaPptTaskProps = {
 	section: SectionDetailWithPpt;
-	isOwner: boolean;
-	ownershipResolved: boolean;
+	isCreator: boolean;
+	creatorStatusResolved: boolean;
 	canGeneratePpt: boolean;
 	pptHint?: ReactNode;
 	pptStale: boolean;
@@ -26,8 +26,8 @@ type SectionMediaPptTaskProps = {
 
 const SectionMediaPptTask = ({
 	section,
-	isOwner,
-	ownershipResolved,
+	isCreator,
+	creatorStatusResolved,
 	canGeneratePpt,
 	pptHint,
 	pptStale,
@@ -58,7 +58,7 @@ const SectionMediaPptTask = ({
 		}
 	}, [displayPptSlides.length, pptSlideIndex]);
 
-	if (ownershipResolved && !isOwner && !pptPreview) {
+	if (creatorStatusResolved && !isCreator && !pptPreview) {
 		return (
 			<SidebarTaskNode
 				icon={Presentation}
@@ -70,7 +70,7 @@ const SectionMediaPptTask = ({
 		);
 	}
 
-	if (isOwner && !pptPreview) {
+	if (isCreator && !pptPreview) {
 		return (
 			<SidebarTaskNode
 				icon={Presentation}
@@ -185,7 +185,7 @@ const SectionMediaPptTask = ({
 								</a>
 							</Button>
 						) : null}
-						{isOwner ? (
+						{isCreator ? (
 							<Button
 								variant='outline'
 								className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
@@ -284,7 +284,7 @@ const SectionMediaPptTask = ({
 				tone='danger'
 				hint={pptHint}
 				action={
-					isOwner ? (
+					isCreator ? (
 						<Button
 							variant='outline'
 							className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
@@ -308,7 +308,7 @@ const SectionMediaPptTask = ({
 				tone='warning'
 				hint={pptHint}
 				action={
-					isOwner ? (
+					isCreator ? (
 						<Button
 							variant='outline'
 							className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'

@@ -7,7 +7,7 @@ import { FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import ImageWithFallback from '../ui/image-with-fallback';
 import ImageUpload from '../ui/image-upload';
 
-const DocumentCoverUpdate = ({ ownerId }: { ownerId?: number }) => {
+const DocumentCoverUpdate = ({ creatorId }: { creatorId?: number }) => {
 	const t = useTranslations();
 	const form = useFormContext();
 
@@ -21,8 +21,8 @@ const DocumentCoverUpdate = ({ ownerId }: { ownerId?: number }) => {
 						? field.value
 						: null;
 				const currentCoverSrc = currentCover
-					? ownerId
-						? replacePath(currentCover, ownerId)
+					? creatorId
+						? replacePath(currentCover, creatorId)
 						: currentCover
 					: null;
 

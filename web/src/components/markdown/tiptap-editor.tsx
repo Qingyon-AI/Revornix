@@ -90,7 +90,7 @@ type TipTapEditorProps = {
 	className?: string;
 	enableImageUpload?: boolean;
 	enableDrawing?: boolean;
-	ownerId?: number;
+	creatorId?: number;
 	toolbarEnd?: ReactNode;
 	fullscreen?: boolean;
 	onFullscreenChange?: (fullscreen: boolean) => void;
@@ -287,7 +287,7 @@ const TipTapEditor = ({
 	className,
 	enableImageUpload = false,
 	enableDrawing = false,
-	ownerId,
+	creatorId,
 	toolbarEnd,
 	fullscreen,
 	onFullscreenChange,
@@ -348,7 +348,7 @@ const TipTapEditor = ({
 		useState<number | null>(
 			mainUserInfo?.default_image_generate_engine_id ?? null,
 		);
-	const resolvedOwnerId = ownerId ?? mainUserInfo?.id;
+	const imageFileOwnerId = creatorId ?? mainUserInfo?.id;
 
 	useEffect(() => {
 		setSelectedContinuationModelId(
@@ -422,7 +422,7 @@ const TipTapEditor = ({
 					showOnlyCurrent: false,
 				}),
 				ImageNode.configure({
-					ownerId: resolvedOwnerId,
+					ownerId: imageFileOwnerId,
 				}),
 				AiContinuationPlaceholderNode,
 				AiIllustrationPlaceholderNode,
@@ -488,7 +488,7 @@ const TipTapEditor = ({
 				onChange?.(normalizeEditorMarkdown(editor.getMarkdown()));
 			},
 		},
-		[resolvedOwnerId],
+		[imageFileOwnerId],
 	);
 
 	// Force the Placeholder plugin to recompute its decoration once the view is

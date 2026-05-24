@@ -11,8 +11,26 @@ from common.dependencies import get_async_db, get_current_user, plan_ability_che
 from enums.ability import Ability
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
+from router.logic_helpers import has_section_full_access
 
 section_user_manage_router = APIRouter()
+
+
+def _can_manage_section_user(
+    *,
+    actor: models.section.SectionUser | None,
+    target: models.section.SectionUser | None,
+    actor_user_id: int,
+) -> bool:
+    if actor is None or target is None:
+        return False
+    if actor.user_id == target.user_id:
+        return False
+    if actor.role == UserSectionRole.CREATOR.value and has_section_full_access(actor):
+        return True
+    if not has_section_full_access(actor):
+        return False
+    return target.managed_by == actor_user_id
 
 @section_user_manage_router.post('/user/add', response_model=schemas.common.NormalResponse)
 async def section_user_add_request(
@@ -27,7 +45,7 @@ async def section_user_add_request(
         user_id=user.id,
         section_id=section_share_request.section_id
     )
-    if section_user is None or section_user.role not in [UserSectionRole.CREATOR, UserSectionRole.MEMBER]:
+    if not has_section_full_access(section_user):
         raise schemas.error.CustomException("You don't have permission to share this section", code=403)
 
     db_exist_user_section = await crud.section.get_section_user_by_section_id_and_user_id_async(
@@ -44,7 +62,8 @@ async def section_user_add_request(
         section_id=section_share_request.section_id,
         user_id=section_share_request.user_id,
         role=UserSectionRole.MEMBER,
-        authority=section_share_request.authority
+        authority=section_share_request.authority,
+        managed_by=user.id,
     )
     await db.commit()
 
@@ -65,8 +84,6 @@ async def section_user_modify_request(
         user_id=user.id,
         section_id=section_user_modify_request.section_id
     )
-    if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You don't have permission to modify member authority", code=403)
 
     origin_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
         db=db,
@@ -75,6 +92,12 @@ async def section_user_modify_request(
     )
     if origin_section_user is None:
         raise schemas.error.CustomException("The user is not a member of this section", code=404)
+    if not _can_manage_section_user(
+        actor=section_user,
+        target=origin_section_user,
+        actor_user_id=user.id,
+    ):
+        raise schemas.error.CustomException("You don't have permission to modify member authority", code=403)
 
     # 如果用户是订阅者，那么就不能修改权限，仅支持对专栏的参与者修改权限
     if origin_section_user.role == UserSectionRole.SUBSCRIBER:
@@ -100,11 +123,23 @@ async def delete_section_user(
         user_id=user.id,
         section_id=section_user_delete_request.section_id
     )
-    if section_user is None or section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You don't have permission to remove users from this section", code=403)
 
     if user.id == section_user_delete_request.user_id:
         raise schemas.error.CustomException("As the creator of the section, you can't delete yourself", code=400)
+
+    target_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+        db=db,
+        user_id=section_user_delete_request.user_id,
+        section_id=section_user_delete_request.section_id,
+    )
+    if target_section_user is None:
+        raise schemas.error.CustomException("The user is not a member of this section", code=404)
+    if not _can_manage_section_user(
+        actor=section_user,
+        target=target_section_user,
+        actor_user_id=user.id,
+    ):
+        raise schemas.error.CustomException("You don't have permission to remove users from this section", code=403)
 
     await crud.section.delete_section_user_by_section_id_and_user_id_async(
         db=db,

@@ -8,13 +8,13 @@ import { getMineDocumentAuthority } from '@/service/document';
 
 const useDocumentMarkdownEditable = ({
 	documentId,
-	ownerId,
+	creatorId,
 }: {
 	documentId: number;
-	ownerId?: number;
+	creatorId?: number;
 }) => {
 	const { mainUserInfo } = useUserContext();
-	const isCreator = ownerId != null && ownerId === mainUserInfo?.id;
+	const isCreator = creatorId != null && creatorId === mainUserInfo?.id;
 
 	const { data } = useQuery({
 		queryKey: ['getMineDocumentAuthority', documentId, mainUserInfo?.id],

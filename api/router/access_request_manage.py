@@ -14,6 +14,7 @@ from enums.access_request import AccessRequestStatus, AccessRequestTargetType
 from enums.document import UserDocumentAuthority
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionAuthority, UserSectionRole
+from router.logic_helpers import has_document_full_access, has_section_full_access
 
 access_request_manage_router = APIRouter()
 
@@ -44,7 +45,7 @@ async def _ensure_document_target(
     return db_document
 
 
-async def _is_section_admin(
+async def _has_section_access_management(
     db: AsyncSession,
     section_id: int,
     user_id: int,
@@ -54,16 +55,24 @@ async def _is_section_admin(
         section_id=section_id,
         user_id=user_id,
     )
-    if db_user_section is None:
-        return False
-    return UserSectionRole(db_user_section.role) in (UserSectionRole.CREATOR, UserSectionRole.MEMBER)
+    return has_section_full_access(db_user_section)
 
 
-async def _is_document_admin(
+async def _has_document_access_management(
+    db: AsyncSession,
     db_document: models.document.Document,
     user_id: int,
 ) -> bool:
-    return db_document.creator_id == user_id
+    db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
+        db=db,
+        user_id=user_id,
+        document_id=db_document.id,
+    )
+    return has_document_full_access(
+        document=db_document,
+        user_id=user_id,
+        user_document=db_user_document,
+    )
 
 
 def _build_user_public_info(db_user: models.user.User | None) -> schemas.user.UserPublicInfo | None:
@@ -138,7 +147,7 @@ async def create_access_request(
     else:
         db_document = await _ensure_document_target(db, request.target_id)
         if db_document.creator_id == user.id:
-            raise schemas.error.CustomException("You are the owner of this document", code=400)
+            raise schemas.error.CustomException("You are the creator of this document", code=400)
         db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
             db=db,
             user_id=user.id,
@@ -207,14 +216,14 @@ async def list_access_requests(
     target_type = AccessRequestTargetType(request.target_type)
     if target_type == AccessRequestTargetType.SECTION:
         await _ensure_section_target(db, request.target_id)
-        if not await _is_section_admin(db, request.target_id, user.id):
+        if not await _has_section_access_management(db, request.target_id, user.id):
             raise schemas.error.CustomException(
                 "You don't have permission to view join requests for this section",
                 code=403,
             )
     else:
         db_document = await _ensure_document_target(db, request.target_id)
-        if not await _is_document_admin(db_document, user.id):
+        if not await _has_document_access_management(db, db_document, user.id):
             raise schemas.error.CustomException(
                 "You don't have permission to view join requests for this document",
                 code=403,
@@ -269,14 +278,14 @@ async def handle_access_request(
 
     if target_type == AccessRequestTargetType.SECTION:
         await _ensure_section_target(db, target_id)
-        if not await _is_section_admin(db, target_id, user.id):
+        if not await _has_section_access_management(db, target_id, user.id):
             raise schemas.error.CustomException(
                 "You don't have permission to handle join requests for this section",
                 code=403,
             )
     else:
         db_document = await _ensure_document_target(db, target_id)
-        if not await _is_document_admin(db_document, user.id):
+        if not await _has_document_access_management(db, db_document, user.id):
             raise schemas.error.CustomException(
                 "You don't have permission to handle join requests for this document",
                 code=403,
@@ -305,10 +314,12 @@ async def handle_access_request(
                     user_id=applicant_id,
                     role=UserSectionRole.MEMBER,
                     authority=authority_enum,
+                    managed_by=user.id,
                 )
             else:
                 db_existing.role = UserSectionRole.MEMBER.value
                 db_existing.authority = authority_enum.value
+                db_existing.managed_by = user.id
                 db_existing.update_time = datetime.now(timezone.utc)
         else:
             try:
@@ -326,7 +337,12 @@ async def handle_access_request(
                     user_id=applicant_id,
                     document_id=target_id,
                     authority=authority_enum,
+                    managed_by=user.id,
                 )
+            else:
+                db_existing.authority = authority_enum.value
+                db_existing.managed_by = user.id
+                db_existing.update_time = datetime.now(timezone.utc)
 
     now = datetime.now(timezone.utc)
     db_request.status = (

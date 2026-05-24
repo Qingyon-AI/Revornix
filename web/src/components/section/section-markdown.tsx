@@ -310,7 +310,7 @@ const SectionMarkdown = ({
 					) : null}
 					<EditableMarkdownPanel
 						content={markdown}
-						ownerId={section?.creator?.id}
+						creatorId={section?.creator?.id}
 						editable={canEditMarkdown}
 						onSave={handleSaveMarkdown}
 						showFloatingToc

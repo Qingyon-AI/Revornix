@@ -7,7 +7,7 @@ import schemas
 from common.dependencies import get_async_db, get_current_user
 from common.file import get_remote_file_signed_urls
 from enums.document import UserDocumentAuthority
-from router.logic_helpers import resolve_infinite_scroll_meta
+from router.logic_helpers import has_document_full_access, resolve_infinite_scroll_meta
 
 document_user_query_router = APIRouter()
 
@@ -28,7 +28,7 @@ async def get_mine_document_authority(
         return schemas.document.DocumentUserAuthorityResponse(
             document_id=document_authority_request.document_id,
             user_id=user.id,
-            authority=UserDocumentAuthority.OWNER,
+            authority=UserDocumentAuthority.FULL_ACCESS,
             is_creator=True,
         )
 
@@ -59,7 +59,16 @@ async def document_user_request(
     )
     if db_document is None:
         raise schemas.error.CustomException("Document not found", code=404)
-    if db_document.creator_id != user.id:
+    db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
+        db=db,
+        user_id=user.id,
+        document_id=document_user_request.document_id,
+    )
+    if not has_document_full_access(
+        document=db_document,
+        user_id=user.id,
+        user_document=db_user_document,
+    ):
         raise schemas.error.CustomException("You are forbidden to get the collaborators of this document", code=403)
 
     db_document_users = await crud.document.search_users_and_document_users_by_document_id_async(
@@ -92,6 +101,7 @@ async def document_user_request(
     for db_user, db_user_document in db_document_users:
         collaborator = schemas.document.DocumentCollaboratorPublicInfo.model_validate(db_user)
         collaborator.authority = db_user_document.authority
+        collaborator.managed_by = db_user_document.managed_by
         collaborators.append(collaborator)
 
     collaborators_need_avatar_sign = [item for item in collaborators if item.avatar is not None]

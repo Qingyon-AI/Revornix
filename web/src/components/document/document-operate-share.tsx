@@ -67,6 +67,10 @@ const DocumentOperateShare = ({
 	iconOnly = false,
 	open,
 	onOpenChange,
+	canPublish = true,
+	canInviteCollaborators = true,
+	canManageAllCollaborators = true,
+	currentUserId,
 }: {
 	document_id: number;
 	className?: string;
@@ -74,6 +78,10 @@ const DocumentOperateShare = ({
 	iconOnly?: boolean;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
+	canPublish?: boolean;
+	canInviteCollaborators?: boolean;
+	canManageAllCollaborators?: boolean;
+	currentUserId?: number;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -91,6 +99,7 @@ const DocumentOperateShare = ({
 	const { data: publishInfo } = useQuery({
 		queryKey: ['getDocumentPublish', document_id],
 		queryFn: () => getDocumentPublish({ document_id }),
+		enabled: canPublish,
 	});
 	const {
 		data: userPages,
@@ -267,6 +276,7 @@ const DocumentOperateShare = ({
 							</AlertDescription>
 						</Alert>
 
+						{canPublish ? (
 						<div className='rounded-[24px] border border-border/60 bg-background/45 p-4'>
 							<div className='flex flex-wrap items-center justify-between gap-3'>
 								<div className='space-y-1'>
@@ -305,6 +315,7 @@ const DocumentOperateShare = ({
 								</p>
 							) : null}
 						</div>
+						) : null}
 
 						<div className='rounded-[24px] border border-border/60 bg-background/45 p-4'>
 							<div className='space-y-1'>
@@ -317,6 +328,7 @@ const DocumentOperateShare = ({
 							</div>
 
 							<div className='mt-4 flex flex-col gap-3'>
+								{canInviteCollaborators ? (
 								<div className='flex flex-col gap-2 lg:flex-row lg:items-center'>
 									<Popover
 										open={userSelectOpen}
@@ -432,6 +444,7 @@ const DocumentOperateShare = ({
 										{t('document_collaborator_invite')}
 									</Button>
 								</div>
+								) : null}
 
 								<Alert className='border-border/60 bg-background/40 text-muted-foreground'>
 									<InfoIcon />
@@ -442,7 +455,11 @@ const DocumentOperateShare = ({
 
 								<Separator />
 
-								<DocumentCollaboratorMember document_id={document_id} />
+								<DocumentCollaboratorMember
+									document_id={document_id}
+									canManageAllCollaborators={canManageAllCollaborators}
+									currentUserId={currentUserId}
+								/>
 							</div>
 						</div>
 

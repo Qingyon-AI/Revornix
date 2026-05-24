@@ -112,7 +112,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 				) : (
 					<div className='flex flex-col gap-3'>
 						{notes.map((note, index) => {
-							const isOwner = mainUserInfo?.id === note.user.id;
+							const isNoteAuthor = mainUserInfo?.id === note.user.id;
 							return (
 								<div
 									key={note.id}
@@ -152,7 +152,7 @@ const DocumentNotes = ({ id }: { id: number }) => {
 											</div>
 										</div>
 
-										{isOwner && (
+										{isNoteAuthor && (
 											<AlertDialog
 												open={openDeleteId === note.id}
 												onOpenChange={(o) =>

@@ -124,12 +124,14 @@ def create_section_user(
     user_id: int,
     role: int,
     authority: UserSectionAuthority,
-    expire_time: datetime | None = None
+    expire_time: datetime | None = None,
+    managed_by: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_section_user = models.section.SectionUser(section_id=section_id,
                                                  user_id=user_id,
                                                  role=role,
+                                                 managed_by=managed_by,
                                                  authority=authority,
                                                  create_time=now,
                                                  expire_time=expire_time)
@@ -143,12 +145,14 @@ async def create_section_user_async(
     user_id: int,
     role: int,
     authority: UserSectionAuthority,
-    expire_time: datetime | None = None
+    expire_time: datetime | None = None,
+    managed_by: int | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_section_user = models.section.SectionUser(section_id=section_id,
                                                  user_id=user_id,
                                                  role=role,
+                                                 managed_by=managed_by,
                                                  authority=authority,
                                                  create_time=now,
                                                  expire_time=expire_time)
@@ -235,8 +239,11 @@ def create_or_update_section_document(
     status: SectionDocumentIntegration = SectionDocumentIntegration.WAIT_TO
 ):
     now = datetime.now(timezone.utc)
-    db_section_document = db.query(models.section.SectionDocument).filter_by(section_id=section_id,
-                                                                             document_id=document_id).one_or_none()
+    db_section_document = db.query(models.section.SectionDocument).filter(
+        models.section.SectionDocument.section_id == section_id,
+        models.section.SectionDocument.document_id == document_id,
+        models.section.SectionDocument.delete_at.is_(None),
+    ).one_or_none()
     if db_section_document is None:
         db_section_document = models.section.SectionDocument(section_id=section_id,
                                                              document_id=document_id,
@@ -259,6 +266,7 @@ async def create_or_update_section_document_async(
     stmt = select(models.section.SectionDocument).where(
         models.section.SectionDocument.section_id == section_id,
         models.section.SectionDocument.document_id == document_id,
+        models.section.SectionDocument.delete_at.is_(None),
     )
     db_section_document = (await db.execute(stmt)).scalar_one_or_none()
     if db_section_document is None:
@@ -2528,7 +2536,7 @@ async def delete_section_comments_by_section_comment_ids_async(
     if not section_comment_ids:
         return
     now = datetime.now(timezone.utc)
-    # Owner-check: only soft-delete comments the user owns
+    # Author-check: only soft-delete comments created by the current user
     owned_stmt = select(models.section.SectionComment.id).where(
         models.section.SectionComment.id.in_(section_comment_ids),
         models.section.SectionComment.delete_at.is_(None),

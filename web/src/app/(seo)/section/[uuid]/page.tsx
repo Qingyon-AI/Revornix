@@ -564,7 +564,7 @@ const SEOSectionDetail = async (props: {
 										<SeoEditEntry
 											type='section'
 											sectionId={section!.id}
-											ownerId={section?.creator?.id}
+											creatorId={section?.creator?.id}
 										/>
 									</div>
 								}>
@@ -581,7 +581,7 @@ const SEOSectionDetail = async (props: {
 											<SeoEditEntry
 												type='section'
 												sectionId={section!.id}
-												ownerId={section?.creator?.id}
+												creatorId={section?.creator?.id}
 											/>
 										</div>
 									}
@@ -589,7 +589,7 @@ const SEOSectionDetail = async (props: {
 									contentClassName='overflow-x-hidden'>
 									<TipTapMarkdownViewer
 										content={markdown ? markdown : t('section_no_md')}
-										ownerId={section?.creator?.id}
+										creatorId={section?.creator?.id}
 									/>
 								</MarkdownContentShell>
 							</SectionSummaryCollapsible>

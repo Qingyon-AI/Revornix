@@ -29,7 +29,7 @@ const SectionCard = ({
 	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
 	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
-	const isOwner = mainUserInfo?.id === section.creator.id;
+	const isCreator = mainUserInfo?.id === section.creator.id;
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section.auto_podcast,
 		autoIllustration: section.auto_illustration,
@@ -39,7 +39,7 @@ const SectionCard = ({
 			imageGenerateEngine.configured &&
 			!imageGenerateEngine.subscriptionLocked,
 	});
-	const warningBadges = isOwner
+	const warningBadges = isCreator
 		? [
 				automationWarnings.missingPodcastEngine
 					? t('section_card_warning_missing_podcast_engine')

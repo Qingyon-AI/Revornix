@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AudioLines, Bot, GitBranch, Info, Menu, ShareIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { UserSectionRole } from '@/enums/section';
+import { UserSectionAuthority, UserSectionRole } from '@/enums/section';
 import {
 	getMineUserRoleAndAuthority,
 	getSectionDetail,
@@ -86,12 +86,19 @@ const SectionOperate = ({
 	const isCreatorById =
 		Boolean(section?.creator?.id !== undefined) &&
 		mainUserInfo?.id === section?.creator?.id;
-	const isOwner =
+	const isCreator =
 		isCreatorById ||
 		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR;
-	const ownershipResolved =
+	const hasMemberIdentity =
+		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR ||
+		sectionUserRoleAndAuthority?.role === UserSectionRole.MEMBER;
+	const hasFullAccess =
+		hasMemberIdentity &&
+		sectionUserRoleAndAuthority?.authority === UserSectionAuthority.FULL_ACCESS;
+	const creatorStatusResolved =
 		mainUserInfo !== undefined &&
 		(isCreatorById || isRoleFetched || isRoleError);
+	const shouldShowSubscribe = creatorStatusResolved && !hasMemberIdentity;
 
 	const closeMobileMenu = () => {
 		setShowMobileMenu(false);
@@ -159,12 +166,6 @@ const SectionOperate = ({
 	}
 
 	const desktopActions = [
-		<SectionOperateComment
-			key='comment'
-			section_id={id}
-			className={desktopIconButtonClassName}
-			iconOnly
-		/>,
 		<SectionOperateAI
 			key='ai'
 			section_id={id}
@@ -179,43 +180,62 @@ const SectionOperate = ({
 			className={desktopIconButtonClassName}
 			iconOnly
 		/>,
-		...(ownershipResolved
-			? isOwner
-				? [
-						<SectionOperateProcess
-							key='process'
-							section_id={id}
-							className={desktopIconButtonClassName}
-							iconOnly
-						/>,
-						<SectionOperateShare
-							key='share'
-							section_id={id}
-							className={desktopIconButtonClassName}
-							showPublishBadge={false}
-							iconOnly
-						/>,
-						<SectionOperateDelete
-							key='delete'
-							section_id={id}
-							className={desktopIconButtonClassName}
-							iconOnly
-						/>,
-						<SectionOperateConfiguration
-							key='config'
-							section_id={id}
-							className={desktopIconButtonClassName}
-							iconOnly
-						/>,
-					]
-				: [
-						<SectionOperateSubscribe
-							key='subscribe'
-							section_id={id}
-							className={desktopIconButtonClassName}
-							iconOnly
-						/>,
-					]
+		<SectionOperateComment
+			key='comment'
+			section_id={id}
+			className={desktopIconButtonClassName}
+			iconOnly
+		/>,
+		...(creatorStatusResolved
+			? [
+					...(shouldShowSubscribe
+						? [
+								<SectionOperateSubscribe
+									key='subscribe'
+									section_id={id}
+									className={desktopIconButtonClassName}
+									iconOnly
+								/>,
+							]
+						: []),
+					...(hasFullAccess
+						? [
+								<SectionOperateShare
+									key='share'
+									section_id={id}
+									className={desktopIconButtonClassName}
+									showPublishBadge={false}
+									canPublish={isCreator}
+									canInviteMembers={hasFullAccess}
+									canManageAllMembers={isCreator}
+									currentUserId={mainUserInfo?.id}
+									iconOnly
+								/>,
+							]
+						: []),
+					...(isCreator
+						? [
+								<SectionOperateProcess
+									key='process'
+									section_id={id}
+									className={desktopIconButtonClassName}
+									iconOnly
+								/>,
+								<SectionOperateConfiguration
+									key='config'
+									section_id={id}
+									className={desktopIconButtonClassName}
+									iconOnly
+								/>,
+								<SectionOperateDelete
+									key='delete'
+									section_id={id}
+									className={desktopIconButtonClassName}
+									iconOnly
+								/>,
+							]
+						: []),
+				]
 			: []),
 	];
 
@@ -274,10 +294,6 @@ const SectionOperate = ({
 										{t('section_mobile_menu_section_actions')}
 									</p>
 									<div className='grid grid-cols-2 gap-2.5'>
-										<SectionOperateComment
-											section_id={id}
-											className={mobileActionButtonClassName}
-										/>
 										{renderMobilePanelAction({
 											icon: Bot,
 											label: t('section_ai_ask'),
@@ -287,35 +303,44 @@ const SectionOperate = ({
 											section_id={id}
 											className={mobileActionButtonClassName}
 										/>
-										{ownershipResolved ? (
-											isOwner ? (
-												<>
-													<SectionOperateProcess
+										<SectionOperateComment
+											section_id={id}
+											className={mobileActionButtonClassName}
+										/>
+										{creatorStatusResolved ? (
+											<>
+												{shouldShowSubscribe ? (
+													<SectionOperateSubscribe
 														section_id={id}
 														className={mobileActionButtonClassName}
 														onTriggerClick={closeMobileMenu}
 													/>
-													{renderMobilePanelAction({
+												) : null}
+												{hasFullAccess
+													? renderMobilePanelAction({
 														icon: ShareIcon,
 														label: t('section_share'),
 														onClick: openMobileShareDialog,
-													})}
-													<SectionOperateConfiguration
-														section_id={id}
-														className={mobileActionButtonClassName}
-													/>
-													<SectionOperateDelete
-														section_id={id}
-														className={mobileActionButtonClassName}
-													/>
-												</>
-											) : (
-												<SectionOperateSubscribe
-													section_id={id}
-													className={mobileActionButtonClassName}
-													onTriggerClick={closeMobileMenu}
-												/>
-											)
+													})
+													: null}
+												{isCreator ? (
+													<>
+														<SectionOperateProcess
+															section_id={id}
+															className={mobileActionButtonClassName}
+															onTriggerClick={closeMobileMenu}
+														/>
+														<SectionOperateConfiguration
+															section_id={id}
+															className={mobileActionButtonClassName}
+														/>
+														<SectionOperateDelete
+															section_id={id}
+															className={mobileActionButtonClassName}
+														/>
+													</>
+												) : null}
+											</>
 										) : null}
 									</div>
 								</div>
@@ -364,14 +389,20 @@ const SectionOperate = ({
 					className='hidden'
 					iconOnly
 				/>
-				<SectionOperateShare
-					section_id={id}
-					open={showMobileShare}
-					onOpenChange={setShowMobileShare}
-					className='hidden'
-					showPublishBadge={false}
-					iconOnly
-				/>
+				{hasFullAccess ? (
+					<SectionOperateShare
+						section_id={id}
+						open={showMobileShare}
+						onOpenChange={setShowMobileShare}
+						className='hidden'
+						showPublishBadge={false}
+						canPublish={isCreator}
+						canInviteMembers={hasFullAccess}
+						canManageAllMembers={isCreator}
+						currentUserId={mainUserInfo?.id}
+						iconOnly
+					/>
+				) : null}
 			</>
 		);
 	}

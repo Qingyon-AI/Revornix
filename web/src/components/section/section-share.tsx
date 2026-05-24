@@ -40,7 +40,17 @@ import { toast } from 'sonner';
 import SectionMember from './section-member';
 import SectionSubscriber from './section-subscriber';
 
-const SectionShare = ({ section_id }: { section_id: number }) => {
+const SectionShare = ({
+	section_id,
+	canInviteMembers = true,
+	canManageAllMembers = true,
+	currentUserId,
+}: {
+	section_id: number;
+	canInviteMembers?: boolean;
+	canManageAllMembers?: boolean;
+	currentUserId?: number;
+}) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
 
@@ -166,10 +176,11 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 	return (
 		<div className='flex flex-1 flex-col gap-5'>
 			<Form {...form}>
-				<form
-					onSubmit={onSubmitForm}
-					id='add-form'
-					className='flex w-full flex-col gap-2 lg:flex-row lg:items-center'>
+				{canInviteMembers ? (
+					<form
+						onSubmit={onSubmitForm}
+						id='add-form'
+						className='flex w-full flex-col gap-2 lg:flex-row lg:items-center'>
 					<FormField
 						name='user_id'
 						control={form.control}
@@ -305,15 +316,24 @@ const SectionShare = ({ section_id }: { section_id: number }) => {
 						className='rounded-full lg:px-5'>
 						{t('section_share_user_invite')}
 					</Button>
-				</form>
+					</form>
+				) : null}
 			</Form>
 			<div>
 				<Separator className='mb-5' />
-				<SectionMember section_id={section_id} />
+				<SectionMember
+					section_id={section_id}
+					canManageAllMembers={canManageAllMembers}
+					currentUserId={currentUserId}
+				/>
 			</div>
 			<div>
 				<Separator className='mb-5' />
-				<SectionSubscriber section_id={section_id} />
+				<SectionSubscriber
+					section_id={section_id}
+					canManageAllSubscribers={canManageAllMembers}
+					currentUserId={currentUserId}
+				/>
 			</div>
 		</div>
 	);

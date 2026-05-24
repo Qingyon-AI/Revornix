@@ -27,7 +27,7 @@ import JoinRequestsCard from '@/components/permission/join-requests-card';
 import { AccessRequestTargetType } from '@/service/access-request';
 import { useQuery } from '@tanstack/react-query';
 import { getMineUserRoleAndAuthority } from '@/service/section';
-import { UserSectionRole } from '@/enums/section';
+import { UserSectionAuthority, UserSectionRole } from '@/enums/section';
 
 const SidebarSection = ({
 	title,
@@ -125,8 +125,9 @@ const SectionDetailSidebar = ({
 		enabled: hasSection,
 	});
 	const canManageJoinRequests =
-		myRoleAndAuthority?.role === UserSectionRole.CREATOR ||
-		myRoleAndAuthority?.role === UserSectionRole.MEMBER;
+		(myRoleAndAuthority?.role === UserSectionRole.CREATOR ||
+			myRoleAndAuthority?.role === UserSectionRole.MEMBER) &&
+		myRoleAndAuthority?.authority === UserSectionAuthority.FULL_ACCESS;
 
 	return (
 		<div className='space-y-4 p-3 pb-6'>

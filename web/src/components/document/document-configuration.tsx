@@ -266,7 +266,7 @@ const DocumentConfiguration = ({
 							onSubmit={onSubmitUpdateForm}
 							id='update-form'
 							className='space-y-4'>
-							<DocumentCoverUpdate ownerId={document?.creator.id} />
+							<DocumentCoverUpdate creatorId={document?.creator.id} />
 
 							<FormField
 								name='title'

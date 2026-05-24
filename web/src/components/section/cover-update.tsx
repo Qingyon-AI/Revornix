@@ -7,10 +7,10 @@ import type { SectionInfo } from '@/generated';
 import ImageWithFallback from '../ui/image-with-fallback';
 
 const CoverUpdate = ({
-	ownerId,
+	creatorId,
 	section,
 }: {
-	ownerId?: number;
+	creatorId?: number;
 	section?: SectionInfo;
 }) => {
 	const t = useTranslations();
@@ -28,7 +28,7 @@ const CoverUpdate = ({
 				const coverPreviewSrc = currentCoverValue
 					? getSectionCoverSrc({
 							cover: currentCoverValue,
-							creator: ownerId !== undefined ? { id: ownerId } : undefined,
+							creator: creatorId !== undefined ? { id: creatorId } : undefined,
 					  })
 					: getSectionCoverSrc(section);
 

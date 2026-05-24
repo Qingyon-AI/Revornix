@@ -109,6 +109,7 @@ async def section_user_request(
         user_item = schemas.section.SectionUserPublicInfo.model_validate(db_user)
         user_item.authority = db_user_section.authority
         user_item.role = db_user_section.role
+        user_item.managed_by = db_user_section.managed_by
         if user_item.avatar is not None:
             users_need_avatar_sign.append(user_item)
         users.append(

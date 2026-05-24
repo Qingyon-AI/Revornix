@@ -40,9 +40,11 @@ import {
 const DocumentCollaboratorMemberItem = ({
 	user,
 	document_id,
+	canManage = true,
 }: {
 	user: DocumentCollaboratorPublicInfo;
 	document_id: number;
+	canManage?: boolean;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -106,6 +108,7 @@ const DocumentCollaboratorMemberItem = ({
 				</Avatar>
 				<p className='truncate text-sm'>{user.nickname}</p>
 			</div>
+			{canManage ? (
 			<div className='flex flex-row items-center gap-2'>
 				<Select
 					value={String(user.authority ?? UserDocumentAuthority.READ_ONLY)}
@@ -168,6 +171,7 @@ const DocumentCollaboratorMemberItem = ({
 					</AlertDialogContent>
 				</AlertDialog>
 			</div>
+			) : null}
 		</div>
 	);
 };

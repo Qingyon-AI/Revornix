@@ -29,6 +29,10 @@ const SectionOperateShare = ({
 	iconOnly = false,
 	open,
 	onOpenChange,
+	canPublish = true,
+	canInviteMembers = true,
+	canManageAllMembers = true,
+	currentUserId,
 }: {
 	section_id: number;
 	className?: string;
@@ -37,6 +41,10 @@ const SectionOperateShare = ({
 	iconOnly?: boolean;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
+	canPublish?: boolean;
+	canInviteMembers?: boolean;
+	canManageAllMembers?: boolean;
+	currentUserId?: number;
 }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -49,6 +57,7 @@ const SectionOperateShare = ({
 		queryFn: async () => {
 			return getSectionPublish({ section_id: section_id });
 		},
+		enabled: canPublish,
 	});
 	const isPublished = Boolean(sectionPublish?.status);
 	const publicSectionUrl =
@@ -145,6 +154,7 @@ const SectionOperateShare = ({
 								</AlertDescription>
 							</Alert>
 
+							{canPublish ? (
 							<div className='rounded-[24px] border border-border/60 bg-background/45 p-4'>
 								<div className='flex flex-wrap items-center justify-between gap-3'>
 									<div className='space-y-1'>
@@ -195,6 +205,7 @@ const SectionOperateShare = ({
 									</p>
 								) : null}
 							</div>
+							) : null}
 
 							<div className='rounded-[24px] border border-border/60 bg-background/45 p-4'>
 								<div className='space-y-1'>
@@ -207,7 +218,12 @@ const SectionOperateShare = ({
 								</div>
 
 								<div className='mt-4'>
-									<SectionShare section_id={section_id} />
+									<SectionShare
+										section_id={section_id}
+										canInviteMembers={canInviteMembers}
+										canManageAllMembers={canManageAllMembers}
+										currentUserId={currentUserId}
+									/>
 								</div>
 							</div>
 						</div>

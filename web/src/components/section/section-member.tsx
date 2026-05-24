@@ -8,7 +8,15 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from '../ui/input';
 import { SearchIcon } from 'lucide-react';
 
-const SectionMember = ({ section_id }: { section_id: number }) => {
+const SectionMember = ({
+	section_id,
+	canManageAllMembers = true,
+	currentUserId,
+}: {
+	section_id: number;
+	canManageAllMembers?: boolean;
+	currentUserId?: number;
+}) => {
 	const t = useTranslations();
 
 	const [keyword, setKeyword] = useState('');
@@ -92,9 +100,19 @@ const SectionMember = ({ section_id }: { section_id: number }) => {
 				<div className='bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground gap-3 flex flex-col max-h-40 overflow-auto'>
 					{users.map((user, index) => {
 						const isLast = index === users.length - 1;
+						const managedBy = (
+							user as typeof user & { managed_by?: number | null }
+						).managed_by;
+						const canManageUser =
+							user.id !== currentUserId &&
+							(canManageAllMembers || managedBy === currentUserId);
 						return (
 							<div ref={isLast ? loadMoreRef : null} key={user.id}>
-								<SectionMemberItem section_id={section_id} user={user} />
+								<SectionMemberItem
+									section_id={section_id}
+									user={user}
+									canManage={canManageUser}
+								/>
 							</div>
 						);
 					})}

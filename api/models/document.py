@@ -15,6 +15,7 @@ class UserDocument(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    managed_by: Mapped[int | None] = mapped_column(ForeignKey("user.id"), index=True)
     authority: Mapped[int] = mapped_column(Integer, index=True, nullable=False, comment='0: full access/owner, 1: read and write, 2: read only')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -205,10 +205,10 @@ const SectionMedia = ({
 	const creatorId = section.creator?.id;
 	const isCreatorById =
 		creatorId !== undefined && creatorId === mainUserInfo?.id;
-	const isOwner =
+	const isCreator =
 		isCreatorById ||
 		sectionUserRoleAndAuthority?.role === UserSectionRole.CREATOR;
-	const ownershipResolved =
+	const creatorStatusResolved =
 		mainUserInfo !== undefined &&
 		(isCreatorById || isRoleFetched || isRoleError);
 	const canGeneratePodcast = Boolean(selectedPodcastEngineId);
@@ -225,7 +225,7 @@ const SectionMedia = ({
 
 	const podcastHintMessages = [
 		freshnessState.podcastStale ? t('section_podcast_stale_hint') : null,
-		isOwner && !canGeneratePodcast ? t('section_form_auto_podcast_engine_unset') : null,
+		isCreator && !canGeneratePodcast ? t('section_form_auto_podcast_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
 	const podcastHint =
 		podcastHintMessages.length > 0 ? (
@@ -238,8 +238,8 @@ const SectionMedia = ({
 
 	const pptHintMessages = [
 		freshnessState.pptStale ? t('section_ppt_stale_hint') : null,
-		isOwner && !selectedPptModelId ? t('section_ppt_reader_model_unset') : null,
-		isOwner && !selectedPptImageEngineId ? t('section_ppt_image_engine_unset') : null,
+		isCreator && !selectedPptModelId ? t('section_ppt_reader_model_unset') : null,
+		isCreator && !selectedPptImageEngineId ? t('section_ppt_image_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
 	const pptHint =
 		pptHintMessages.length > 0 ? (
@@ -253,8 +253,8 @@ const SectionMedia = ({
 	const showPodcastTask =
 		hasPendingAutoPodcastFlow ||
 		Boolean(section.podcast_task) ||
-		ownershipResolved;
-	const showPptTask = Boolean(section.ppt_preview) || ownershipResolved;
+		creatorStatusResolved;
+	const showPptTask = Boolean(section.ppt_preview) || creatorStatusResolved;
 	const taskItems: ReactElement[] = [];
 
 	if (showPodcastTask) {
@@ -262,8 +262,8 @@ const SectionMedia = ({
 			<SectionMediaPodcastTask
 				key='podcast'
 				section={section}
-				isOwner={isOwner}
-				ownershipResolved={ownershipResolved}
+				isCreator={isCreator}
+				creatorStatusResolved={creatorStatusResolved}
 				canGeneratePodcast={canGeneratePodcast}
 				hasPendingAutoPodcastFlow={hasPendingAutoPodcastFlow}
 				podcastHint={podcastHint}
@@ -282,8 +282,8 @@ const SectionMedia = ({
 			<SectionMediaPptTask
 				key='ppt'
 				section={section}
-				isOwner={isOwner}
-				ownershipResolved={ownershipResolved}
+				isCreator={isCreator}
+				creatorStatusResolved={creatorStatusResolved}
 				canGeneratePpt={canGeneratePpt}
 				pptHint={pptHint}
 				pptStale={freshnessState.pptStale}

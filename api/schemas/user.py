@@ -199,6 +199,7 @@ class SectionUserPublicInfo(BaseModel):
     slogan: str | None = None
     authority: UserSectionAuthority | None = None
     role: int | None = None
+    managed_by: int | None = None
     create_time: datetime
     update_time: datetime | None
 

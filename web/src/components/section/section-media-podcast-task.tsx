@@ -15,8 +15,8 @@ import SidebarTaskNode from '../ui/sidebar-task-node';
 
 type SectionMediaPodcastTaskProps = {
 	section: SectionDetailWithPpt;
-	isOwner: boolean;
-	ownershipResolved: boolean;
+	isCreator: boolean;
+	creatorStatusResolved: boolean;
 	canGeneratePodcast: boolean;
 	hasPendingAutoPodcastFlow: boolean;
 	podcastHint?: ReactNode;
@@ -30,8 +30,8 @@ type SectionMediaPodcastTaskProps = {
 
 const SectionMediaPodcastTask = ({
 	section,
-	isOwner,
-	ownershipResolved,
+	isCreator,
+	creatorStatusResolved,
 	canGeneratePodcast,
 	hasPendingAutoPodcastFlow,
 	podcastHint,
@@ -57,7 +57,7 @@ const SectionMediaPodcastTask = ({
 		);
 	}
 
-	if (ownershipResolved && !isOwner && !section.podcast_task) {
+	if (creatorStatusResolved && !isCreator && !section.podcast_task) {
 		return (
 			<AudioStatusCard
 				badge={t('document_podcast_status_todo')}
@@ -69,7 +69,7 @@ const SectionMediaPodcastTask = ({
 		);
 	}
 
-	if (isOwner && !section.podcast_task) {
+	if (isCreator && !section.podcast_task) {
 		return (
 			<AudioStatusCard
 				badge={t('document_podcast_status_todo')}
@@ -127,8 +127,8 @@ const SectionMediaPodcastTask = ({
 				badge={t('cancel')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
-				actionLabel={isOwner ? t('section_podcast_generate') : undefined}
-				onAction={isOwner ? onOpenDialog : undefined}
+				actionLabel={isCreator ? t('section_podcast_generate') : undefined}
+				onAction={isCreator ? onOpenDialog : undefined}
 				actionDisabled={false}
 				actionLoading={isGeneratePending}
 				tone='warning'
@@ -155,7 +155,7 @@ const SectionMediaPodcastTask = ({
 				tone={podcastStale ? 'warning' : 'success'}
 				hint={podcastHint}
 				action={
-					isOwner ? (
+					isCreator ? (
 						<Button
 							variant='outline'
 							className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
@@ -184,8 +184,8 @@ const SectionMediaPodcastTask = ({
 				badge={t('document_podcast_status_failed')}
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}
-				actionLabel={isOwner ? t('section_podcast_regenerate') : undefined}
-				onAction={isOwner ? onOpenDialog : undefined}
+				actionLabel={isCreator ? t('section_podcast_regenerate') : undefined}
+				onAction={isCreator ? onOpenDialog : undefined}
 				actionDisabled={false}
 				actionLoading={isGeneratePending}
 				tone='danger'

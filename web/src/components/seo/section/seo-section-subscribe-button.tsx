@@ -107,8 +107,8 @@ const SeoSectionSubscribeButton = ({
 		},
 	});
 
-	const isOwner = mainUserInfo?.id === creatorId;
-	if (isOwner) {
+	const isCreator = mainUserInfo?.id === creatorId;
+	if (isCreator) {
 		return null;
 	}
 

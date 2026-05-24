@@ -19,13 +19,13 @@ type SeoEditEntryProps =
 	| {
 			type: 'document';
 			documentId: number;
-			ownerId?: number | null;
+			creatorId?: number | null;
 			className?: string;
 	  }
 	| {
 			type: 'section';
 			sectionId: number;
-			ownerId?: number | null;
+			creatorId?: number | null;
 			className?: string;
 	  };
 
@@ -40,9 +40,9 @@ const SeoEditEntry = (props: SeoEditEntryProps) => {
 	const { mainUserInfo } = useUserContext();
 	const [mounted, setMounted] = useState(false);
 	const hasAccessToken = mounted && Boolean(Cookies.get('access_token'));
-	const isOwner = props.ownerId != null && props.ownerId === mainUserInfo?.id;
+	const isCreator = props.creatorId != null && props.creatorId === mainUserInfo?.id;
 	const canCheckAuthority =
-		mounted && Boolean(mainUserInfo?.id || hasAccessToken) && !isOwner;
+		mounted && Boolean(mainUserInfo?.id || hasAccessToken) && !isCreator;
 
 	useEffect(() => {
 		setMounted(true);
@@ -83,7 +83,7 @@ const SeoEditEntry = (props: SeoEditEntryProps) => {
 	});
 
 	const canEdit =
-		isOwner ||
+		isCreator ||
 		(props.type === 'document'
 			? documentAuthorityQuery.data?.authority ===
 					UserDocumentAuthority.FULL_ACCESS ||

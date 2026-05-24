@@ -413,7 +413,7 @@ async def create_document_for_user(
             db=db,
             user_id=user.id,
             document_id=db_document.id,
-            authority=UserDocumentAuthority.OWNER,
+            authority=UserDocumentAuthority.FULL_ACCESS,
         )
     await _ensure_document_process_task(
         db=db,

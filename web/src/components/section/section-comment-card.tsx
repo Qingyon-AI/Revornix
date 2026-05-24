@@ -67,7 +67,7 @@ const SectionCommentCard = ({
 		setOptimisticLikeCount(comment.like_count ?? 0);
 	}, [comment.liked, comment.like_count]);
 
-	const isOwner =
+	const isCommentAuthor =
 		currentUserId !== undefined && comment.creator.id === currentUserId;
 	const canInteract = currentUserId !== undefined;
 
@@ -316,7 +316,7 @@ const SectionCommentCard = ({
 					{t('section_comment_reply')}
 				</Button>
 
-				{isOwner && (
+				{isCommentAuthor && (
 					<AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
 						<AlertDialogTrigger asChild>
 							<Button
