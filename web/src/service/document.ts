@@ -244,8 +244,7 @@ export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Prom
 
 export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
     return await request(documentApi.searchPublicDocumentNotes, {
-        data,
-        anonymousFallback: true,
+        data
     })
 }
 
@@ -318,10 +317,7 @@ export type SearchPublicDocumentsRequest = {
 }
 
 export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
-    return await request(documentApi.searchPublicDocument, {
-        data,
-        anonymousFallback: true,
-    })
+    return await request(documentApi.searchPublicDocument, { data })
 }
 
 export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {

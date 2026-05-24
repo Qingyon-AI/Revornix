@@ -16,6 +16,7 @@ import {
 type Subscriber = {
     resolve: () => void;
     reject: (error: ErrorResponse) => void;
+    redirectOnRefreshFailure: boolean;
 };
 
 interface RequestOptions {
@@ -24,6 +25,8 @@ interface RequestOptions {
     headers?: Headers;
     formData?: FormData;
     signal?: AbortSignal;
+    /** Defaults to true. Set false only when the caller handles 401 locally. */
+    redirectOnAuthFailure?: boolean;
 }
 
 // 防止多次请求token获取接口（限制三次，三次以后直接显示账号信息错误）
@@ -33,6 +36,7 @@ let refreshTokenTimes = 0;
 let subscribers: Subscriber[] = [];
 // 刷新状态锁
 let isRefreshing = false;
+let isRedirectingToLogin = false;
 
 const createAuthExpiredError = (message: string): ErrorResponse => ({
     success: false,
@@ -40,15 +44,31 @@ const createAuthExpiredError = (message: string): ErrorResponse => ({
     code: 401,
 });
 
+const shouldRedirectOnAuthFailure = (initialOptions?: RequestOptions) =>
+    initialOptions?.redirectOnAuthFailure ?? true;
+
 const handleAuthExpired = (
     message: string = '用户登陆状态已过期，请重新登陆',
 ) => {
     isRefreshing = false;
     toast.error(message);
     clearAuthCookies();
-    setTimeout(() => {
-        window.location.reload()
-    }, 500);
+    if (typeof window === 'undefined' || isRedirectingToLogin) {
+        return;
+    }
+
+    isRedirectingToLogin = true;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const isAuthPage =
+        window.location.pathname === '/login' ||
+        window.location.pathname === '/register';
+    const loginUrl = isAuthPage
+        ? '/login'
+        : `/login?redirect_to=${encodeURIComponent(currentPath)}`;
+
+    window.setTimeout(() => {
+        window.location.replace(loginUrl);
+    }, 300);
 }
 
 // 处理被缓存的请求
@@ -68,6 +88,18 @@ function onAccessTokenRefreshFailed(error: ErrorResponse) {
     refreshTokenTimes = 0;
 }
 
+function failAccessTokenRefresh(error: ErrorResponse) {
+    const shouldRedirect = subscribers.some(
+        ({ redirectOnRefreshFailure }) => redirectOnRefreshFailure,
+    );
+    onAccessTokenRefreshFailed(error);
+    if (shouldRedirect) {
+        handleAuthExpired(error.message);
+    } else {
+        isRefreshing = false;
+    }
+}
+
 async function refreshToken() {
     while (refreshTokenTimes < MAX_REFRESH_TOKEN_RETRY_TIMES) {
         refreshTokenTimes++;
@@ -75,8 +107,7 @@ async function refreshToken() {
         if (!refresh_token) {
             console.error('Cannot find refresh_token in local cookie')
             const authExpiredError = createAuthExpiredError('用户登陆状态已过期，请重新登陆');
-            onAccessTokenRefreshFailed(authExpiredError);
-            handleAuthExpired(authExpiredError.message);
+            failAccessTokenRefresh(authExpiredError);
             return;
         };
         const [res] = await utils.to(updateToken(refresh_token));
@@ -90,8 +121,7 @@ async function refreshToken() {
     }
 
     const authExpiredError = createAuthExpiredError('用户登陆状态已过期，请重新登陆');
-    onAccessTokenRefreshFailed(authExpiredError);
-    handleAuthExpired(authExpiredError.message);
+    failAccessTokenRefresh(authExpiredError);
 }
 
 // 将请求缓存到请求数组中
@@ -113,6 +143,7 @@ const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions
                 resolve(request<T>(url, initialOptions, true));
             },
             reject,
+            redirectOnRefreshFailure: shouldRedirectOnAuthFailure(initialOptions),
         });
     });
 
@@ -124,7 +155,11 @@ const checkTokenRefreshStatus = <T>(url: string, initialOptions?: RequestOptions
     return retryOriginalRequest;
 }
 
-export const request = <T>(url: string, initialOptions?: RequestOptions, _retriedAfterRefresh: boolean = false): Promise<T> => {
+export const request = <T>(
+    url: string,
+    initialOptions?: RequestOptions,
+    _retriedAfterRefresh: boolean = false,
+): Promise<T> => {
     const headers = new Headers(initialOptions?.headers || undefined);
     if (!initialOptions?.formData && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
@@ -184,11 +219,21 @@ export const request = <T>(url: string, initialOptions?: RequestOptions, _retrie
             // Token 过期：尝试刷新（每个原始请求最多刷新-重试一次,避免死循环）
             if (response.status === 401 && !_retriedAfterRefresh) {
                 const retryPromise = checkTokenRefreshStatus<T>(url, initialOptions);
-                return retryPromise && retryPromise.then(resolve).catch(reject);
+                return retryPromise
+                    .then(resolve)
+                    .catch(reject);
+            }
+
+            const parsedError = await parseError(response);
+            if (
+                response.status === 401 &&
+                shouldRedirectOnAuthFailure(initialOptions)
+            ) {
+                handleAuthExpired(parsedError.message);
             }
 
             // 其他错误（含"刷新后仍然 401"）：返回规范化错误对象
-            reject(await parseError(response));
+            reject(parsedError);
             return;
         }
 

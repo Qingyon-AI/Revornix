@@ -10,44 +10,92 @@ import {
     RETRYABLE_STATUS,
     sleep,
     type ErrorResponse,
+    type ServerRequestOptions,
 } from '@/lib/request-core';
 
-interface RequestOptions {
-    method?: 'POST' | 'GET';
-    data?: any;
-    headers?: Headers;
-    /**
-     * Number of *additional* attempts on top of the first one (default 0 = no retry).
-     * Retries fire on network errors and HTTP 5xx / 408 / 429 responses with a
-     * small exponential backoff.
-     */
-    retries?: number;
-    /** Per-attempt timeout in milliseconds. 0 / undefined disables the timeout. */
-    timeoutMs?: number;
-    /**
-     * When the backend returns 401 (typically because the access_token cookie
-     * has expired), retry the request once without attaching the Authorization
-     * header. Public/optional-auth endpoints (those using
-     * `get_current_user_without_throw`) will then succeed as anonymous instead
-     * of returning a fake "empty" page.
-     *
-     * Only set this on endpoints whose semantics are safe to demote to
-     * anonymous — i.e. they expose a public read view and only enrich it for
-     * authenticated callers.
-     */
-    anonymousFallback?: boolean;
-}
+const ACCESS_TOKEN_EXPIRES_DAYS = 7;
+const REFRESH_TOKEN_EXPIRES_DAYS = 30;
+const REFRESH_PATH = '/user/token/update';
 
-export const serverRequest = async <T>(url: string, initialOptions?: RequestOptions): Promise<T> => {
+type TokenResponse = {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+};
+
+const resolveRefreshUrl = (requestUrl: string) => {
+    const parsedUrl = new URL(requestUrl);
+    const usesGatewayApiPrefix =
+        parsedUrl.pathname === '/api' ||
+        parsedUrl.pathname.startsWith('/api/');
+    const apiPrefix = usesGatewayApiPrefix ? '/api' : '';
+    return `${parsedUrl.origin}${apiPrefix}${REFRESH_PATH}`;
+};
+
+const trySetServerAuthCookies = async (tokens: TokenResponse) => {
+    try {
+        const cookieStore = await cookies();
+        const isSecure = process.env.NEXT_PUBLIC_HOST?.startsWith('https://') ?? false;
+        const options = {
+            path: '/',
+            sameSite: 'lax' as const,
+            secure: isSecure,
+        };
+
+        // Cookie mutation is only allowed in Server Actions / Route Handlers.
+        // In Server Components this throws, but the refreshed access token is
+        // still used for the current SSR request.
+        const mutableCookieStore = cookieStore as any;
+        mutableCookieStore.set('access_token', tokens.access_token, {
+            ...options,
+            expires: new Date(Date.now() + ACCESS_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000),
+        });
+        mutableCookieStore.set('refresh_token', tokens.refresh_token, {
+            ...options,
+            expires: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000),
+        });
+    } catch {
+        // Ignore: current request can still use the refreshed token in memory.
+    }
+};
+
+const refreshServerToken = async (
+    requestUrl: string,
+    refreshToken: string,
+): Promise<TokenResponse | null> => {
+    try {
+        const response = await fetch(resolveRefreshUrl(requestUrl), {
+            ...BASE_FETCH_INIT,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Trace-Id': uuidv4(),
+            },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return await parseResponse<TokenResponse>(response);
+    } catch {
+        return null;
+    }
+};
+
+export const serverRequest = async <T>(url: string, initialOptions?: ServerRequestOptions): Promise<T> => {
     const headers = new Headers(initialOptions?.headers || undefined);
     if (!headers.has('Content-Type')) {
         headers.append('Content-Type', 'application/json');
     }
     headers.append('Trace-Id', uuidv4());
 
+    let refreshToken: string | undefined;
     try {
         const cookieStore = await cookies();
         const accessToken = cookieStore.get('access_token')?.value;
+        refreshToken = cookieStore.get('refresh_token')?.value;
         if (accessToken && !headers.has('Authorization')) {
             headers.set('Authorization', `Bearer ${accessToken}`);
         }
@@ -69,8 +117,8 @@ export const serverRequest = async <T>(url: string, initialOptions?: RequestOpti
     const retries = Math.max(0, initialOptions?.retries ?? 0);
     const timeoutMs = Math.max(0, initialOptions?.timeoutMs ?? 0);
     const anonymousFallback = Boolean(initialOptions?.anonymousFallback);
-    const hadAuthHeader = headers.has('Authorization');
     let triedAnonymousFallback = false;
+    let triedRefreshToken = false;
 
     const baseOptions: RequestInit = {
         ...BASE_FETCH_INIT,
@@ -102,19 +150,33 @@ export const serverRequest = async <T>(url: string, initialOptions?: RequestOpti
 
             if (!response.ok) {
                 const parsed = await parseError(response);
+                const hadAuthHeader = headers.has('Authorization');
+                if (
+                    response.status === 401 &&
+                    refreshToken &&
+                    !triedRefreshToken
+                ) {
+                    triedRefreshToken = true;
+                    const refreshedTokens = await refreshServerToken(finalUrl, refreshToken);
+                    if (refreshedTokens) {
+                        headers.set('Authorization', `Bearer ${refreshedTokens.access_token}`);
+                        refreshToken = refreshedTokens.refresh_token;
+                        await trySetServerAuthCookies(refreshedTokens);
+                        lastErr = parsed;
+                        attempt -= 1;
+                        continue;
+                    }
+                }
                 if (
                     response.status === 401 &&
                     anonymousFallback &&
                     hadAuthHeader &&
                     !triedAnonymousFallback
                 ) {
-                    // Drop the (likely expired) Authorization header and retry
-                    // once as anonymous. Does not count against `retries`, and
-                    // is only ever attempted a single time per call.
                     triedAnonymousFallback = true;
                     headers.delete('Authorization');
                     lastErr = parsed;
-                    attempt -= 1; // don't consume a retry slot
+                    attempt -= 1;
                     continue;
                 }
                 if (
