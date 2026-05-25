@@ -125,7 +125,11 @@ services:
     depends_on:
       - "etcd"
       - "minio"
-    
+
+# Observability backend: run SigNoz separately via its own docker-compose
+# (see docs/observability.md). It exposes the OTLP collector on the same
+# ports (4317/4318) so applications need no env changes.
+
 volumes:
   standalone:
     driver: local

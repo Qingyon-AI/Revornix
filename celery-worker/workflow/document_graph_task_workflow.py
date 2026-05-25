@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, END
 
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from data.common import (
     close_extract_llm_client,
@@ -36,7 +36,12 @@ from enums.document import DocumentGraphStatus
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
+from workflow.timing import (
+    add_timed_node,
+    ainvoke_with_timing,
+    set_stage_metrics,
+    timed_stage,
+)
 
 
 class DocumentGraphState(TypedDict, total=False):
@@ -230,12 +235,12 @@ async def _extract_chunks(state: DocumentGraphState) -> DocumentGraphState:
                     await upsert_chunk_entity_relations(sub_entities)
                 upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
                 await _ensure_graph_task_not_cancelled(document_id)
-        info_logger.info(
-            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=extract_chunks, "
-            f"stage=extract_and_upsert_chunks, chunks={chunk_count}, "
-            f"entities={extracted_entities_count}, relations={extracted_relations_count}, "
-            f"{format_elapsed_fields(dedupe_elapsed_ms, field_prefix='dedupe_elapsed')}, "
-            f"{format_elapsed_fields(upsert_elapsed_ms, field_prefix='upsert_elapsed')}"
+        set_stage_metrics(
+            chunks=chunk_count,
+            entities=extracted_entities_count,
+            relations=extracted_relations_count,
+            dedupe_elapsed_ms=dedupe_elapsed_ms,
+            upsert_elapsed_ms=upsert_elapsed_ms,
         )
     finally:
         await close_extract_llm_client(llm_client)

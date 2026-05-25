@@ -6,7 +6,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.ai import reducer_summary, summary_content
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from data.common import (
     build_sampled_chunk_indexes,
@@ -21,7 +21,12 @@ from data.sql.base import async_session_context
 from enums.document import DocumentSummarizeStatus
 from proxy.ai_model_proxy import AIModelProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
+from workflow.timing import (
+    add_timed_node,
+    ainvoke_with_timing,
+    set_stage_metrics,
+    timed_stage,
+)
 
 
 class DocumentSummarizeState(TypedDict, total=False):
@@ -217,13 +222,13 @@ async def _summarize_document(
                 reduce_elapsed_ms += (time.perf_counter() - reduce_start) * 1000
                 reduce_count += 1
                 await _ensure_summarize_task_not_cancelled(document_id)
-        info_logger.info(
-            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=summarize_document, "
-            f"stage=summarize_chunks, chunks={chunk_count}, reduce_count={reduce_count}, "
-            f"summary_mode={summary_mode}, "
-            f"{format_elapsed_fields(extract_elapsed_ms, field_prefix='extract_elapsed')}, "
-            f"{format_elapsed_fields(summary_elapsed_ms, field_prefix='summary_elapsed')}, "
-            f"{format_elapsed_fields(reduce_elapsed_ms, field_prefix='reduce_elapsed')}"
+        set_stage_metrics(
+            chunks=chunk_count,
+            reduce_count=reduce_count,
+            summary_mode=summary_mode,
+            extract_elapsed_ms=extract_elapsed_ms,
+            summary_elapsed_ms=summary_elapsed_ms,
+            reduce_elapsed_ms=reduce_elapsed_ms,
         )
     finally:
         await close_extract_llm_client(llm_client)

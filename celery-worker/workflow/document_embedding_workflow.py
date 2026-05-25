@@ -6,7 +6,7 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from common.embedding_utils import coerce_embedding_vectors
 from data.common import stream_chunk_document
@@ -15,7 +15,12 @@ from data.sql.base import async_session_context
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
+from workflow.timing import (
+    add_timed_node,
+    ainvoke_with_timing,
+    set_stage_metrics,
+    timed_stage,
+)
 
 
 class DocumentEmbeddingState(TypedDict, total=False):
@@ -197,11 +202,11 @@ async def _embed_document(
                 embed_chunks,
             )
             upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
-    info_logger.info(
-        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=embed_document, "
-        f"stage=embed_and_upsert_batches, chunks={chunk_count}, batches={batch_count}, "
-        f"{format_elapsed_fields(embed_elapsed_ms, field_prefix='embed_elapsed')}, "
-        f"{format_elapsed_fields(upsert_elapsed_ms, field_prefix='upsert_elapsed')}"
+    set_stage_metrics(
+        chunks=chunk_count,
+        batches=batch_count,
+        embed_elapsed_ms=embed_elapsed_ms,
+        upsert_elapsed_ms=upsert_elapsed_ms,
     )
     return state
 

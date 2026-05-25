@@ -10,7 +10,7 @@ from io import BytesIO
 from dataclasses import dataclass
 from typing import cast
 from langfuse.openai import AsyncOpenAI
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from langfuse import propagate_attributes
 from common.markdown_helpers import get_markdown_content_by_document_id
 from enums.document import DocumentMdConvertStatus, DocumentAudioTranscribeStatus
@@ -26,7 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
-from workflow.timing import format_elapsed_fields
+from workflow.timing import set_stage_metrics
 
 
 def _clear_torch_cache() -> None:
@@ -324,10 +324,12 @@ async def get_existing_document_chunk_snapshot(
     )
     if snapshot is not None:
         snapshot.owner_id = owner_id
-        info_logger.info(
-            f"[WorkflowTiming] chunk_snapshot_cache_hit document_id={doc_id}, "
-            f"chunk_path={chunk_path}, chunk_count={snapshot.chunk_count}, "
-            f"markdown_length={snapshot.markdown_length}"
+        set_stage_metrics(
+            chunk_snapshot_status="cache_hit",
+            document_id=doc_id,
+            chunk_path=chunk_path,
+            chunk_count=snapshot.chunk_count,
+            markdown_length=snapshot.markdown_length,
         )
     return snapshot
 
@@ -353,11 +355,12 @@ async def ensure_document_chunk_snapshot(
         )
         if existing_snapshot is not None:
             existing_snapshot.owner_id = owner_id
-            info_logger.info(
-                f"[WorkflowTiming] chunk_snapshot_reused document_id={doc_id}, "
-                f"chunk_path={existing_snapshot.chunk_path}, "
-                f"chunk_count={existing_snapshot.chunk_count}, "
-                f"markdown_length={existing_snapshot.markdown_length}"
+            set_stage_metrics(
+                chunk_snapshot_status="reused",
+                document_id=doc_id,
+                chunk_path=existing_snapshot.chunk_path,
+                chunk_count=existing_snapshot.chunk_count,
+                markdown_length=existing_snapshot.markdown_length,
             )
             return existing_snapshot
 
@@ -437,12 +440,14 @@ async def ensure_document_chunk_snapshot(
         ),
         content_type="application/json",
     )
-    info_logger.info(
-        f"[WorkflowTiming] chunk_snapshot_built document_id={doc_id}, "
-        f"chunk_path={chunk_path}, markdown_length={metadata.markdown_length}, "
-        f"chunk_count={metadata.chunk_count}, "
-        f"{format_elapsed_fields(markdown_load_elapsed_ms, field_prefix='markdown_load_elapsed')}, "
-        f"{format_elapsed_fields(chunk_build_elapsed_ms, field_prefix='chunk_build_elapsed')}"
+    set_stage_metrics(
+        chunk_snapshot_status="built",
+        document_id=doc_id,
+        chunk_path=chunk_path,
+        markdown_length=metadata.markdown_length,
+        chunk_count=metadata.chunk_count,
+        markdown_load_elapsed_ms=markdown_load_elapsed_ms,
+        chunk_build_elapsed_ms=chunk_build_elapsed_ms,
     )
     return metadata
 
@@ -482,11 +487,13 @@ async def _stream_chunk_document_from_snapshot(
             yielded_chunks += 1
             if max_chunks is not None and yielded_chunks >= max_chunks:
                 break
-    info_logger.info(
-        f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
-        f"stage=stream_chunk_snapshot, document_id={doc_id}, "
-        f"chunk_path={chunk_snapshot_path}, chunks={yielded_chunks}, "
-        f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
+    set_stage_metrics(
+        chunk_source_stage="stream_chunk_snapshot",
+        document_id=doc_id,
+        chunk_path=chunk_snapshot_path,
+        chunks=yielded_chunks,
+        start_chunk_idx=start_chunk_idx,
+        max_chunks=max_chunks,
     )
 
 # -----------------------------
@@ -619,15 +626,17 @@ async def stream_chunk_document(
                 if reached_chunk_limit:
                     break
 
-            info_logger.info(
-                f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
-                f"stage=stream_chunk_document, document_id={doc_id}, "
-                f"chars={len(markdown_content)}, segments={len(segments)}, "
-                f"chunks={generated_chunks}, "
-                f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}, "
-                f"{format_elapsed_fields(chunking_elapsed_ms, field_prefix='chunking_elapsed')}, "
-                f"segment_size={segment_size}, "
-                f"start_chunk_idx={start_chunk_idx}, max_chunks={max_chunks}"
+            set_stage_metrics(
+                chunk_source_stage="stream_chunk_document",
+                document_id=doc_id,
+                chars=len(markdown_content),
+                segments=len(segments),
+                chunks=generated_chunks,
+                load_elapsed_ms=load_elapsed_ms,
+                chunking_elapsed_ms=chunking_elapsed_ms,
+                segment_size=segment_size,
+                start_chunk_idx=start_chunk_idx,
+                max_chunks=max_chunks,
             )
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
@@ -719,11 +728,11 @@ async def get_document_markdown_length(
         )
         load_elapsed_ms = (time.perf_counter() - load_start) * 1000
         markdown_length = len(markdown_content)
-        info_logger.info(
-            f"[WorkflowTiming] stage_summary workflow=document_chunk_source, "
-            f"stage=get_document_markdown_length, document_id={doc_id}, "
-            f"chars={markdown_length}, "
-            f"{format_elapsed_fields(load_elapsed_ms, field_prefix='load_elapsed')}"
+        set_stage_metrics(
+            chunk_source_stage="get_document_markdown_length",
+            document_id=doc_id,
+            chars=markdown_length,
+            load_elapsed_ms=load_elapsed_ms,
         )
         return markdown_length
 

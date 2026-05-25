@@ -34,7 +34,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, timed_stage
+from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics, timed_stage
 
 
 class SectionProcessState(TypedDict, total=False):
@@ -1009,11 +1009,11 @@ async def _compose_section_markdown_in_batches(
                 )
                 batch_processed = True
 
-    info_logger.info(
-        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=build_section_content, "
-        f"stage=compose_section_markdown_batch, section_id={section_id}, "
-        f"consumed_batches={consumed_batches}, split_batches={split_batches}, "
-        f"context_backoff_count={context_backoff_count}, final_context_limit={context_char_limit}"
+    set_stage_metrics(
+        consumed_batches=consumed_batches,
+        split_batches=split_batches,
+        context_backoff_count=context_backoff_count,
+        final_context_limit=context_char_limit,
     )
     return merged_markdown or ""
 
@@ -1570,14 +1570,16 @@ async def _build_section_content(
             f"plans={len(pending_image_plans_payload)}, md_file_name={md_file_name}"
         )
 
-    info_logger.info(
-        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=build_section_content, "
-        f"stage=section_content_summary, section_id={section_id}, "
-        f"target_documents={len(target_document_ids)}, ok_documents={len(ok_document_ids)}, "
-        f"failed_documents={len(failed_document_ids)}, entities={len(entities)}, "
-        f"relations={len(relations)}, graph_documents={len(graph_document_ids)}, "
-        f"rebuild_from_all_documents={rebuild_from_all_documents}, entities_used={len(entities_for_ai)}, "
-        f"relations_used={len(relations_for_ai)}"
+    set_stage_metrics(
+        target_documents=len(target_document_ids),
+        ok_documents=len(ok_document_ids),
+        failed_documents=len(failed_document_ids),
+        entities=len(entities),
+        relations=len(relations),
+        graph_documents=len(graph_document_ids),
+        rebuild_from_all_documents=rebuild_from_all_documents,
+        entities_used=len(entities_for_ai),
+        relations_used=len(relations_for_ai),
     )
 
     return state

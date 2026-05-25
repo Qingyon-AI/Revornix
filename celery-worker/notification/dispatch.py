@@ -1,13 +1,12 @@
 import asyncio
-import time
 import traceback
 from typing import TypedDict
 
 import crud
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from proxy.notification_proxy import NotificationProxy
 from data.sql.base import async_session_context
-from workflow.timing import format_elapsed_fields
+from workflow.timing import set_stage_metrics, timed_stage
 
 WORKFLOW_NAME = "notification_event"
 NOTIFICATION_DISPATCH_CONCURRENCY = 5
@@ -105,8 +104,12 @@ async def run_notification_event_workflow(
     trigger_event_uuid: str,
     params: dict | None = None,
 ) -> None:
-    start = time.perf_counter()
-    try:
+    with timed_stage(
+        workflow_name=WORKFLOW_NAME,
+        node_name="run_notification_event_workflow",
+        stage_name="dispatch_event",
+        context={"user_id": user_id, "trigger_event_uuid": trigger_event_uuid},
+    ):
         payloads: list[NotificationDispatchPayload] = []
         async with async_session_context() as db:
             db_trigger_event = await crud.notification.get_trigger_event_by_uuid_async(
@@ -137,6 +140,8 @@ async def run_notification_event_workflow(
                 }
                 payloads.append(payload)
 
+        set_stage_metrics(notification_payload_count=len(payloads))
+
         if payloads:
             semaphore = asyncio.Semaphore(NOTIFICATION_DISPATCH_CONCURRENCY)
             await asyncio.gather(
@@ -151,19 +156,3 @@ async def run_notification_event_workflow(
                     for payload in payloads
                 ]
             )
-
-    except Exception as e:
-        elapsed_ms = (time.perf_counter() - start) * 1000
-        exception_logger.error(
-            f"[WorkflowTiming] workflow_error workflow={WORKFLOW_NAME}, "
-            f"{format_elapsed_fields(elapsed_ms)}, user_id={user_id}, "
-            f"trigger_event_uuid={trigger_event_uuid}, error={e}"
-        )
-        raise
-
-    elapsed_ms = (time.perf_counter() - start) * 1000
-    info_logger.info(
-        f"[WorkflowTiming] workflow_end workflow={WORKFLOW_NAME}, "
-        f"{format_elapsed_fields(elapsed_ms)}, user_id={user_id}, "
-        f"trigger_event_uuid={trigger_event_uuid}"
-    )

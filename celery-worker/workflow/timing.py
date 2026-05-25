@@ -1,15 +1,34 @@
+"""OpenTelemetry-backed timing helpers for celery-worker workflows.
+
+The public API (``wrap_workflow_node``, ``add_timed_node``, ``timed_stage``,
+``ainvoke_with_timing``) is preserved so existing call-sites keep compiling;
+the implementation has been rewritten to emit proper OTel spans instead of
+``info_logger`` strings.
+
+Why this matters:
+- Spans give exact start/end timestamps + parent/child relationships → Jaeger
+  draws a flame chart for the entire workflow without grep tricks.
+- Attributes are typed and queryable in any OTLP backend; the old log lines
+  were free-form strings that needed per-line regex to analyse.
+- Errors recorded with ``span.record_exception`` show up alongside the timing
+  so a failing stage is immediately attributable.
+
+Migration helpers:
+- ``set_stage_metrics(**kwargs)`` attaches breakdown values (``foo_elapsed_ms``)
+  to the active span. Use it where the old code had a multi-field
+  ``[WorkflowTiming] stage_summary`` log line.
+"""
+from __future__ import annotations
+
 import inspect
-import os
-import time
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 
-from common.logger import exception_logger, info_logger
+from opentelemetry import trace
+from opentelemetry.trace import Span, Status, StatusCode
 
-
-_TRUTHY_VALUES = {"1", "true", "yes", "on"}
-WORKFLOW_TIMING_VERBOSE = os.environ.get("WORKFLOW_TIMING_VERBOSE", "0").strip().lower() in _TRUTHY_VALUES
+_tracer = trace.get_tracer("revornix-worker.workflow")
 
 
 _STATE_CONTEXT_KEYS = (
@@ -25,91 +44,43 @@ _STATE_CONTEXT_KEYS = (
 )
 
 
-def _log_timing_info(message: str, *, verbose_only: bool = False) -> None:
-    if verbose_only and not WORKFLOW_TIMING_VERBOSE:
+def _attr_safe(value: Any) -> Any:
+    """Coerce a value to a type OTel accepts as a span attribute."""
+    if value is None:
+        return None
+    if isinstance(value, (bool, int, float, str)):
+        return value
+    return str(value)
+
+
+def _attach_state_attrs(span: Span, payload: Any, *, prefix: str = "workflow") -> None:
+    if not span.is_recording():
         return
-    info_logger.info(message)
+    if isinstance(payload, dict):
+        for key in _STATE_CONTEXT_KEYS:
+            value = payload.get(key)
+            if value is None:
+                continue
+            attr = _attr_safe(value)
+            if attr is not None:
+                span.set_attribute(f"{prefix}.{key}", attr)
+    else:
+        span.set_attribute(f"{prefix}.state_type", type(payload).__name__)
 
 
-def format_elapsed_fields(elapsed_ms: float, *, field_prefix: str = "elapsed") -> str:
-    elapsed_seconds = elapsed_ms / 1000
-    return (
-        f"{field_prefix}_ms={elapsed_ms:.2f}, "
-        f"{field_prefix}_seconds={elapsed_seconds:.3f}"
-    )
-
-
-def _stringify_value(value: Any) -> str:
-    text = str(value)
-    if len(text) <= 64:
-        return text
-    return text[:61] + "..."
-
-
-def _format_context_from_mapping(data: dict[str, Any]) -> str:
-    parts: list[str] = []
-    for key in _STATE_CONTEXT_KEYS:
-        value = data.get(key)
+def set_stage_metrics(**metrics: Any) -> None:
+    """Attach typed metric attributes (e.g. ``foo_elapsed_ms=12.3``) to the
+    current span. Silently no-ops when no span is active.
+    """
+    span = trace.get_current_span()
+    if span is None or not span.is_recording():
+        return
+    for key, value in metrics.items():
         if value is None:
             continue
-        parts.append(f"{key}={_stringify_value(value)}")
-    if parts:
-        return ", ".join(parts)
-
-    keys_preview = ",".join(sorted(data.keys())[:8])
-    return f"state_keys={keys_preview}"
-
-
-def _format_context(state_or_payload: Any) -> str:
-    if isinstance(state_or_payload, dict):
-        return _format_context_from_mapping(state_or_payload)
-    return f"state_type={type(state_or_payload).__name__}"
-
-
-def _format_brief_mapping(data: dict[str, Any], *, limit: int = 8) -> str:
-    if not data:
-        return "no_context"
-    pairs = sorted(data.items(), key=lambda item: item[0])
-    parts: list[str] = []
-    for key, value in pairs[:limit]:
-        if value is None:
-            continue
-        parts.append(f"{key}={_stringify_value(value)}")
-    if len(pairs) > limit:
-        parts.append("...")
-    if parts:
-        return ", ".join(parts)
-    return "no_context"
-
-
-def _preview_keys(keys: list[str], *, limit: int = 8) -> str:
-    if not keys:
-        return "-"
-    if len(keys) <= limit:
-        return ",".join(keys)
-    return ",".join(keys[:limit]) + ",..."
-
-
-def _format_state_delta(before: Any, after: Any) -> str:
-    if not isinstance(before, dict) or not isinstance(after, dict):
-        return "state_delta=unavailable"
-
-    before_keys = set(before.keys())
-    after_keys = set(after.keys())
-    added_keys = sorted(after_keys - before_keys)
-    removed_keys = sorted(before_keys - after_keys)
-    shared_keys = before_keys & after_keys
-    changed_keys = sorted(
-        key for key in shared_keys
-        if before.get(key) != after.get(key)
-    )
-
-    return (
-        "state_delta="
-        f"added[{len(added_keys)}]={_preview_keys(added_keys)}; "
-        f"changed[{len(changed_keys)}]={_preview_keys(changed_keys)}; "
-        f"removed[{len(removed_keys)}]={_preview_keys(removed_keys)}"
-    )
+        attr = _attr_safe(value)
+        if attr is not None:
+            span.set_attribute(key, attr)
 
 
 def wrap_workflow_node(
@@ -118,68 +89,39 @@ def wrap_workflow_node(
     node_name: str,
     node_func: Callable[..., Any],
 ) -> Callable[..., Any]:
-    if inspect.iscoroutinefunction(node_func):
+    span_name = f"workflow.node {workflow_name}/{node_name}"
+    is_async = inspect.iscoroutinefunction(node_func)
+
+    if is_async:
         @wraps(node_func)
         async def _async_wrapper(*args: Any, **kwargs: Any) -> Any:
-            state = args[0] if args else kwargs.get("state")
-            before_state = state.copy() if isinstance(state, dict) else state
-            context = _format_context(state)
-            start = time.perf_counter()
-            _log_timing_info(
-                f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}",
-                verbose_only=True,
-            )
-            try:
-                result = await node_func(*args, **kwargs)
-            except Exception as e:
-                elapsed_ms = (time.perf_counter() - start) * 1000
-                exception_logger.error(
-                    f"[WorkflowTiming] node_error workflow={workflow_name}, node={node_name}, "
-                    f"{format_elapsed_fields(elapsed_ms)}, {context}, error={e}"
-                )
-                raise
-            elapsed_ms = (time.perf_counter() - start) * 1000
-            if WORKFLOW_TIMING_VERBOSE:
-                result_context = _format_context(result)
-                state_delta = _format_state_delta(before_state, result)
-                _log_timing_info(
-                    f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-                    f"{format_elapsed_fields(elapsed_ms)}, input={context}, output={result_context}, {state_delta}",
-                    verbose_only=True,
-                )
-            return result
+            with _tracer.start_as_current_span(span_name) as span:
+                span.set_attribute("workflow.name", workflow_name)
+                span.set_attribute("workflow.node", node_name)
+                state = args[0] if args else kwargs.get("state")
+                _attach_state_attrs(span, state, prefix="workflow")
+                try:
+                    return await node_func(*args, **kwargs)
+                except Exception as exc:
+                    span.record_exception(exc)
+                    span.set_status(Status(StatusCode.ERROR, str(exc)))
+                    raise
 
         return _async_wrapper
 
     @wraps(node_func)
     def _sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-        state = args[0] if args else kwargs.get("state")
-        before_state = state.copy() if isinstance(state, dict) else state
-        context = _format_context(state)
-        start = time.perf_counter()
-        _log_timing_info(
-            f"[WorkflowTiming] node_start workflow={workflow_name}, node={node_name}, {context}",
-            verbose_only=True,
-        )
-        try:
-            result = node_func(*args, **kwargs)
-        except Exception as e:
-            elapsed_ms = (time.perf_counter() - start) * 1000
-            exception_logger.error(
-                f"[WorkflowTiming] node_error workflow={workflow_name}, node={node_name}, "
-                f"{format_elapsed_fields(elapsed_ms)}, {context}, error={e}"
-            )
-            raise
-        elapsed_ms = (time.perf_counter() - start) * 1000
-        if WORKFLOW_TIMING_VERBOSE:
-            result_context = _format_context(result)
-            state_delta = _format_state_delta(before_state, result)
-            _log_timing_info(
-                f"[WorkflowTiming] node_end workflow={workflow_name}, node={node_name}, "
-                f"{format_elapsed_fields(elapsed_ms)}, input={context}, output={result_context}, {state_delta}",
-                verbose_only=True,
-            )
-        return result
+        with _tracer.start_as_current_span(span_name) as span:
+            span.set_attribute("workflow.name", workflow_name)
+            span.set_attribute("workflow.node", node_name)
+            state = args[0] if args else kwargs.get("state")
+            _attach_state_attrs(span, state, prefix="workflow")
+            try:
+                return node_func(*args, **kwargs)
+            except Exception as exc:
+                span.record_exception(exc)
+                span.set_status(Status(StatusCode.ERROR, str(exc)))
+                raise
 
     return _sync_wrapper
 
@@ -208,28 +150,25 @@ def timed_stage(
     node_name: str,
     stage_name: str,
     context: dict[str, Any] | None = None,
-):
-    context_text = _format_brief_mapping(context) if context else "no_context"
-    start = time.perf_counter()
-    _log_timing_info(
-        f"[WorkflowTiming] stage_start workflow={workflow_name}, node={node_name}, "
-        f"stage={stage_name}, {context_text}",
-        verbose_only=True,
-    )
-    try:
-        yield
-    except Exception as e:
-        elapsed_ms = (time.perf_counter() - start) * 1000
-        exception_logger.error(
-            f"[WorkflowTiming] stage_error workflow={workflow_name}, node={node_name}, "
-            f"stage={stage_name}, {format_elapsed_fields(elapsed_ms)}, {context_text}, error={e}"
-        )
-        raise
-    elapsed_ms = (time.perf_counter() - start) * 1000
-    _log_timing_info(
-        f"[WorkflowTiming] stage_end workflow={workflow_name}, node={node_name}, "
-        f"stage={stage_name}, {format_elapsed_fields(elapsed_ms)}, {context_text}"
-    )
+) -> Iterator[Span]:
+    span_name = f"workflow.stage {workflow_name}/{node_name}/{stage_name}"
+    with _tracer.start_as_current_span(span_name) as span:
+        span.set_attribute("workflow.name", workflow_name)
+        span.set_attribute("workflow.node", node_name)
+        span.set_attribute("workflow.stage", stage_name)
+        if context:
+            for key, value in context.items():
+                if value is None:
+                    continue
+                attr = _attr_safe(value)
+                if attr is not None:
+                    span.set_attribute(f"context.{key}", attr)
+        try:
+            yield span
+        except Exception as exc:
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, str(exc)))
+            raise
 
 
 async def ainvoke_with_timing(
@@ -238,23 +177,13 @@ async def ainvoke_with_timing(
     workflow,
     payload: dict[str, Any],
 ) -> Any:
-    context = _format_context(payload)
-    start = time.perf_counter()
-    _log_timing_info(
-        f"[WorkflowTiming] workflow_start workflow={workflow_name}, {context}",
-        verbose_only=True,
-    )
-    try:
-        result = await workflow.ainvoke(payload)
-    except Exception as e:
-        elapsed_ms = (time.perf_counter() - start) * 1000
-        exception_logger.error(
-            f"[WorkflowTiming] workflow_error workflow={workflow_name}, {format_elapsed_fields(elapsed_ms)}, "
-            f"{context}, error={e}"
-        )
-        raise
-    elapsed_ms = (time.perf_counter() - start) * 1000
-    _log_timing_info(
-        f"[WorkflowTiming] workflow_end workflow={workflow_name}, {format_elapsed_fields(elapsed_ms)}, {context}"
-    )
-    return result
+    span_name = f"workflow.invoke {workflow_name}"
+    with _tracer.start_as_current_span(span_name) as span:
+        span.set_attribute("workflow.name", workflow_name)
+        _attach_state_attrs(span, payload, prefix="workflow")
+        try:
+            return await workflow.ainvoke(payload)
+        except Exception as exc:
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, str(exc)))
+            raise
