@@ -16,7 +16,7 @@ from common.ai import (
 from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from data.common import (
     close_extract_llm_client,
@@ -49,7 +49,12 @@ from enums.document import (
 )
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields, timed_stage
+from workflow.timing import (
+    add_timed_node,
+    ainvoke_with_timing,
+    set_stage_metrics,
+    timed_stage,
+)
 
 
 class DocumentChunkProcessState(TypedDict, total=False):
@@ -111,12 +116,11 @@ async def _flush_chunk_upserts(
         chunks_info=chunks_info,
     )
     neo4j_elapsed_ms = (time.perf_counter() - neo4j_start) * 1000
-    info_logger.info(
-        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, node=process_document_chunks, "
-        f"stage=flush_chunk_upserts, batch_size={len(chunks_info)}, "
-        f"{format_elapsed_fields(milvus_elapsed_ms, field_prefix='milvus_elapsed')}, "
-        f"{format_elapsed_fields(neo4j_elapsed_ms, field_prefix='neo4j_elapsed')}, "
-        f"{format_elapsed_fields(milvus_elapsed_ms + neo4j_elapsed_ms)}"
+    set_stage_metrics(
+        batch_size=len(chunks_info),
+        milvus_elapsed_ms=milvus_elapsed_ms,
+        neo4j_elapsed_ms=neo4j_elapsed_ms,
+        elapsed_ms=milvus_elapsed_ms + neo4j_elapsed_ms,
     )
     return ChunkUpsertMetrics(
         batch_size=len(chunks_info),
@@ -630,21 +634,21 @@ async def _process_document_chunks(
             if pipeline_elapsed_ms > 0
             else 0.0
         )
-        info_logger.info(
-            f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, node=process_document_chunks, "
-            f"stage=chunk_preprocess_pipeline, chunks={processed_chunks}, "
-            f"entities={extracted_entities_total}, relations={extracted_relations_total}, "
-            f"{format_elapsed_fields(preprocess_embedding_elapsed_ms, field_prefix='embedding_elapsed')}, "
-            f"{format_elapsed_fields(preprocess_extract_elapsed_ms, field_prefix='extract_elapsed')}, "
-            f"{format_elapsed_fields(preprocess_summary_elapsed_ms, field_prefix='chunk_summary_elapsed')}, "
-            f"summary_reduce_batches={summary_reduce_batches}, "
-            f"{format_elapsed_fields(summary_reduce_elapsed_ms, field_prefix='summary_reduce_elapsed')}, "
-            f"{format_elapsed_fields(dedupe_elapsed_ms, field_prefix='dedupe_elapsed')}, "
-            f"upsert_batches={upsert_batches}, "
-            f"{format_elapsed_fields(upsert_milvus_elapsed_ms, field_prefix='upsert_milvus_elapsed')}, "
-            f"{format_elapsed_fields(upsert_neo4j_elapsed_ms, field_prefix='upsert_neo4j_elapsed')}, "
-            f"{format_elapsed_fields(pipeline_elapsed_ms, field_prefix='pipeline_elapsed')}, "
-            f"throughput_chunks_per_sec={throughput:.2f}"
+        set_stage_metrics(
+            chunks=processed_chunks,
+            entities=extracted_entities_total,
+            relations=extracted_relations_total,
+            embedding_elapsed_ms=preprocess_embedding_elapsed_ms,
+            extract_elapsed_ms=preprocess_extract_elapsed_ms,
+            chunk_summary_elapsed_ms=preprocess_summary_elapsed_ms,
+            summary_reduce_batches=summary_reduce_batches,
+            summary_reduce_elapsed_ms=summary_reduce_elapsed_ms,
+            dedupe_elapsed_ms=dedupe_elapsed_ms,
+            upsert_batches=upsert_batches,
+            upsert_milvus_elapsed_ms=upsert_milvus_elapsed_ms,
+            upsert_neo4j_elapsed_ms=upsert_neo4j_elapsed_ms,
+            pipeline_elapsed_ms=pipeline_elapsed_ms,
+            throughput_chunks_per_sec=round(throughput, 2),
         )
     except Exception as e:
         for pending_task in pending_tasks:

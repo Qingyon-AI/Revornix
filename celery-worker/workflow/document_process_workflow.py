@@ -5,7 +5,7 @@ import crud
 from celery import current_app
 from langgraph.graph import StateGraph, END
 
-from common.logger import exception_logger, format_log_message, info_logger
+from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
 from data.common import get_document_markdown_length
 from data.sql.base import async_session_context
@@ -24,7 +24,7 @@ from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
 from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
 
 class DocumentProcessState(TypedDict, total=False):
@@ -204,12 +204,13 @@ async def _process_document_chunks(
     markdown_length = await get_document_markdown_length(document_id)
     if markdown_length >= PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD:
         enable_auto_graph = markdown_length < ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD
-        info_logger.info(
-            f"[WorkflowTiming] progressive_document_processing_enabled "
-            f"workflow={WORKFLOW_NAME}, document_id={document_id}, user_id={user_id}, "
-            f"markdown_chars={markdown_length}, bootstrap_chunks={PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT}, "
-            f"auto_summary={auto_summary}, auto_podcast={auto_podcast}, "
-            f"enable_auto_graph={enable_auto_graph}"
+        set_stage_metrics(
+            progressive_enabled=True,
+            markdown_chars=markdown_length,
+            bootstrap_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            enable_auto_graph=enable_auto_graph,
         )
         await run_document_embedding_workflow(
             document_id=document_id,
@@ -449,10 +450,11 @@ def _enqueue_progressive_followup_tasks(
         group(followup_signatures),
     )
     workflow.apply_async()
-    info_logger.info(
-        f"[WorkflowTiming] progressive_document_followups_enqueued "
-        f"workflow={WORKFLOW_NAME}, document_id={document_id}, user_id={user_id}, "
-        f"auto_summary={auto_summary}, auto_podcast={auto_podcast}, auto_graph={auto_graph}"
+    set_stage_metrics(
+        progressive_followups_enqueued=True,
+        auto_summary=auto_summary,
+        auto_podcast=auto_podcast,
+        auto_graph=auto_graph,
     )
 
 

@@ -7,10 +7,18 @@ import threading
 from datetime import datetime, timezone
 
 from celery import Celery
-from celery.signals import worker_process_init, worker_ready
+from celery.signals import (
+    task_failure,
+    task_postrun,
+    task_prerun,
+    task_retry,
+    worker_process_init,
+    worker_ready,
+)
 
 from common.env import is_env_enabled
-from common.logger import exception_logger, info_logger
+from common.logger import exception_logger, info_logger, log_event
+from common.tracing import sentry_before_send_attach_otel, setup_worker_tracing
 from config.redis import REDIS_PORT, REDIS_URL
 from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
 
@@ -45,10 +53,16 @@ def _initialize_worker_sentry() -> None:
         import sentry_sdk
         from sentry_sdk.integrations.celery import CeleryIntegration
 
+        # Sentry handles ERRORS; tracing/performance lives in OTel
+        # (see common/tracing.py + Jaeger). traces_sample_rate=0 keeps the
+        # two SDKs from double-instrumenting the same code paths.
         sentry_sdk.init(
             dsn=WORKER_SENTRY_DSN,
             send_default_pii=True,
+            traces_sample_rate=0.0,
+            profiles_sample_rate=0.0,
             integrations=[CeleryIntegration()],
+            before_send=sentry_before_send_attach_otel,
         )
         _sentry_initialized_pid = current_pid
         info_logger.info(f"Worker sentry initialized for pid={current_pid}")
@@ -96,11 +110,86 @@ def _start_background_coroutine(target, *, name: str) -> None:
 
 
 _initialize_worker_sentry()
+setup_worker_tracing()
 
 
 @worker_process_init.connect
 def initialize_sentry_when_worker_process_init(**kwargs):
     _initialize_worker_sentry()
+    # Re-initialise OTel inside each worker process so spans flow through the
+    # right TracerProvider after fork. Idempotent per pid.
+    setup_worker_tracing()
+
+
+_task_start_times: dict[str, float] = {}
+
+
+@task_prerun.connect
+def _log_task_prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
+    import time
+    if task_id:
+        _task_start_times[task_id] = time.perf_counter()
+    log_event(
+        info_logger,
+        "celery_task_started",
+        celery_task_id=task_id,
+        celery_task_name=getattr(task, "name", None) or (sender.name if sender else None),
+    )
+
+
+@task_postrun.connect
+def _log_task_postrun(
+    sender=None,
+    task_id=None,
+    task=None,
+    retval=None,
+    state=None,
+    **_,
+):
+    import time
+    duration_ms = None
+    started = _task_start_times.pop(task_id, None) if task_id else None
+    if started is not None:
+        duration_ms = round((time.perf_counter() - started) * 1000, 2)
+    log_event(
+        info_logger,
+        "celery_task_finished",
+        celery_task_id=task_id,
+        celery_task_name=getattr(task, "name", None) or (sender.name if sender else None),
+        state=state,
+        duration_ms=duration_ms,
+    )
+
+
+@task_failure.connect
+def _log_task_failure(
+    sender=None,
+    task_id=None,
+    exception=None,
+    traceback=None,
+    einfo=None,
+    **_,
+):
+    log_event(
+        exception_logger,
+        "celery_task_failed",
+        level=40,  # logging.ERROR
+        celery_task_id=task_id,
+        celery_task_name=sender.name if sender else None,
+        error=repr(exception) if exception is not None else None,
+    )
+
+
+@task_retry.connect
+def _log_task_retry(sender=None, request=None, reason=None, einfo=None, **_):
+    log_event(
+        info_logger,
+        "celery_task_retry",
+        level=30,  # logging.WARNING
+        celery_task_id=getattr(request, "id", None) if request else None,
+        celery_task_name=sender.name if sender else None,
+        reason=repr(reason) if reason is not None else None,
+    )
 
 
 @worker_ready.connect

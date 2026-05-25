@@ -3,6 +3,14 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Surface every SSR `fetch` (URL, cache state, duration) in the dev / prod
+  // server log so the SEO fetch chain is visible without DevTools.
+  logging: {
+    fetches: {
+      fullUrl: true,
+      hmrRefreshes: true,
+    },
+  },
   rewrites: async () => {
     return [
       {

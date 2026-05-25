@@ -16,8 +16,14 @@ import schemas
 from common.apscheduler.app import initialize_scheduler_jobs, scheduler
 from common.env import is_env_enabled
 from common.logger import exception_logger, format_log_message, info_logger
+from common.request_logging import (
+    build_request_log,
+    emit_request_log,
+    resolve_trace_id,
+)
 from common.request_protection import protect_request
 from common.redis import redis_pool
+from common.tracing import sentry_before_send_attach_otel, setup_tracing
 from common.websocket import notificationManager
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
@@ -55,9 +61,15 @@ async def lifespan(app: FastAPI):
     try:
         if is_env_enabled(API_SENTRY_ENABLE):
             import sentry_sdk
+            # Sentry handles ERRORS; tracing/performance is owned by OTel
+            # (see common/tracing.py + Jaeger). traces_sample_rate is pinned
+            # to 0 so we never double-instrument the request path.
             sentry_sdk.init(
                 dsn=API_SENTRY_DSN,
                 send_default_pii=True,
+                traces_sample_rate=0.0,
+                profiles_sample_rate=0.0,
+                before_send=sentry_before_send_attach_otel,
             )
         redis_conn = await redis_pool()
         app.state.redis = redis_conn
@@ -114,6 +126,10 @@ app = FastAPI(
         openapi_url="/openapi.json",
         lifespan=lifespan
     )
+
+# Wire OpenTelemetry as early as possible so every router/middleware below is
+# auto-instrumented. setup_tracing is a no-op when OTEL_SDK_DISABLED=true.
+setup_tracing(app)
 
 import os
 
@@ -174,15 +190,34 @@ def read_openapi_yaml() -> Response:
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
-    rate_limit_state = await protect_request(request)
-    response = await call_next(request)
-    process_time = time.perf_counter() - start_time
-    response.headers["Process-Time"] = str(process_time)
-    if rate_limit_state is not None:
-        response.headers["X-RateLimit-Limit"] = str(rate_limit_state.limit)
-        response.headers["X-RateLimit-Remaining"] = str(rate_limit_state.remaining)
-        response.headers["X-RateLimit-Reset"] = str(rate_limit_state.reset_after_seconds)
-    return response
+    trace_id = resolve_trace_id(request)
+    response: Response | None = None
+    error_message: str | None = None
+    try:
+        rate_limit_state = await protect_request(request)
+        response = await call_next(request)
+        process_time = time.perf_counter() - start_time
+        response.headers["Process-Time"] = str(process_time)
+        response.headers["Trace-Id"] = trace_id
+        if rate_limit_state is not None:
+            response.headers["X-RateLimit-Limit"] = str(rate_limit_state.limit)
+            response.headers["X-RateLimit-Remaining"] = str(rate_limit_state.remaining)
+            response.headers["X-RateLimit-Reset"] = str(rate_limit_state.reset_after_seconds)
+        return response
+    except Exception as exc:
+        error_message = repr(exc)
+        raise
+    finally:
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        emit_request_log(
+            build_request_log(
+                request=request,
+                response=response,
+                trace_id=trace_id,
+                duration_ms=duration_ms,
+                error=error_message,
+            )
+        )
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):

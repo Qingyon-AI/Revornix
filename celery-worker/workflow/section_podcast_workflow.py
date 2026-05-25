@@ -9,7 +9,6 @@ from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
-from common.logger import info_logger
 from data.sql.base import async_session_context
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import SectionPodcastStatus, UserSectionRole
@@ -19,7 +18,7 @@ from common.podcast_graph import build_section_podcast_graph_context
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, format_elapsed_fields
+from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
 
 class SectionPodcastState(TypedDict, total=False):
@@ -150,17 +149,15 @@ async def _generate_section_podcast(
     state["podcast_tier"] = podcast_tier
     if not prepared_markdown_content.strip():
         raise Exception("Section podcast content is empty")
-    info_logger.info(
-        f"[WorkflowTiming] stage_summary workflow={WORKFLOW_NAME}, "
-        f"stage=prepare_podcast_input, section_id={section_id}, "
-        f"source_chars={source_chars}, "
-        f"graph_context_used={state.get('graph_context_used')}, "
-        f"graph_entities={graph_counts['entities']}, "
-        f"graph_relations={graph_counts['relations']}, "
-        f"graph_excerpts={graph_counts['excerpts']}, "
-        f"prepared_chars={len(prepared_markdown_content)}, "
-        f"podcast_tier={podcast_tier}, "
-        f"{format_elapsed_fields((time.perf_counter() - prepare_started_at) * 1000)}"
+    set_stage_metrics(
+        prepare_source_chars=source_chars,
+        graph_context_used=state.get("graph_context_used"),
+        graph_entities=graph_counts["entities"],
+        graph_relations=graph_counts["relations"],
+        graph_excerpts=graph_counts["excerpts"],
+        prepared_chars=len(prepared_markdown_content),
+        podcast_tier=podcast_tier,
+        prepare_elapsed_ms=(time.perf_counter() - prepare_started_at) * 1000,
     )
 
     engine = await EngineProxy.create_tts_engine(
@@ -173,12 +170,10 @@ async def _generate_section_podcast(
         text=prepared_markdown_content
     )
     await _ensure_section_podcast_task_not_cancelled(section_id)
-    info_logger.info(
-        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
-        f"node=generate_section_podcast, stage=synthesize_audio, "
-        f"section_id={section_id}, podcast_tier={podcast_tier}, "
-        f"input_chars={len(prepared_markdown_content)}, audio_bytes={len(synthesis_result.audio_bytes)}, "
-        f"{format_elapsed_fields((time.perf_counter() - synthesize_started_at) * 1000)}"
+    set_stage_metrics(
+        synthesize_input_chars=len(prepared_markdown_content),
+        synthesize_audio_bytes=len(synthesis_result.audio_bytes),
+        synthesize_elapsed_ms=(time.perf_counter() - synthesize_started_at) * 1000,
     )
 
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
@@ -202,11 +197,9 @@ async def _generate_section_podcast(
         ).encode("utf-8"),
         content_type="application/json"
     )
-    info_logger.info(
-        f"[WorkflowTiming] stage_end workflow={WORKFLOW_NAME}, "
-        f"node=generate_section_podcast, stage=upload_podcast_audio, "
-        f"section_id={section_id}, audio_bytes={len(synthesis_result.audio_bytes)}, "
-        f"{format_elapsed_fields((time.perf_counter() - upload_started_at) * 1000)}"
+    set_stage_metrics(
+        upload_audio_bytes=len(synthesis_result.audio_bytes),
+        upload_elapsed_ms=(time.perf_counter() - upload_started_at) * 1000,
     )
     state["podcast_file_name"] = podcast_file_name
     state["podcast_script_file_name"] = podcast_script_file_name
