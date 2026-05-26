@@ -20,7 +20,7 @@ The whole stack — web client, gateway, API, async workers, trending feed, docs
 ## Links
 
 - Official site: <https://revornix.com>
-- Live workspace: <https://app.revornix.com>
+- Live workspace: <https://app.revornix.com> (users in mainland China should prefer the local mirror <https://app.revornix.cn> for a more reliable connection)
 - Documentation: <https://revornix.com/docs>
 - Environment variables: <https://revornix.com/docs/environment>
 - Roadmap: [Notion roadmap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)

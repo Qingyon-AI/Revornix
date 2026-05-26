@@ -112,10 +112,10 @@ const AI_CONTINUATION_MAX_CHARS = 600;
 const AI_OPTIMIZED_MARKDOWN_MAX_CHARS = 60_000;
 const AI_IMAGE_PLAN_MAX_CHARS = 80_000;
 const AI_FULL_DOCUMENT_MAX_IMAGES = 4;
-const FENCED_CODE_BLOCK_ONLY_PATTERN = /^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/;
+const FENCED_CODE_BLOCK_ONLY_PATTERN = /^(```|~~~)[^\n]*\n(?:[\s\S]*?\n)?\1[ \t]*$/;
 
 const parseFencedCodeBlock = (text: string) => {
-	const match = text.match(/^(```|~~~)([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/);
+	const match = text.match(/^(```|~~~)([^\n]*)\n(?:([\s\S]*?)\n)?\1[ \t]*$/);
 	if (!match) {
 		return null;
 	}

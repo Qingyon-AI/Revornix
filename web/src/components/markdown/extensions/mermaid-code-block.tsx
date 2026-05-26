@@ -442,17 +442,28 @@ const MermaidCodeBlock = CodeBlockLowlight.configure({
 
 	parseMarkdown(token, helpers) {
 		const codeToken = token as { lang?: string; text?: string };
+		const text = (codeToken.text ?? '').replace(/\n+$/g, '');
+		// ProseMirror disallows empty text nodes — an empty fenced block must
+		// be parsed as a code block with no children.
 		return helpers.createNode(
 			'codeBlock',
 			{ language: codeToken.lang || 'plaintext' },
-			[helpers.createTextNode((codeToken.text ?? '').replace(/\n+$/g, ''))],
+			text ? [helpers.createTextNode(text)] : [],
 		);
 	},
 
-	renderMarkdown(node) {
+	renderMarkdown(node, helpers) {
+		// `node` here is a JSON node from @tiptap/markdown, not a ProseMirror
+		// Node — there is no `textContent`. We must walk `node.content` via the
+		// `helpers.renderChildren` API the same way the upstream
+		// extension-code-block does, otherwise every code block round-trips to
+		// an empty fence.
 		const language = String(node.attrs?.language ?? '').trim();
 		const fence = '```';
-		const content = String(node.textContent ?? '').replace(/\n+$/g, '');
+		const rendered = node.content
+			? String(helpers.renderChildren(node.content) ?? '')
+			: '';
+		const content = rendered.replace(/\n+$/g, '');
 		return `${fence}${language && language !== 'plaintext' ? language : ''}\n${content}\n${fence}`;
 	},
 });

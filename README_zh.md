@@ -20,7 +20,7 @@ Revornix 是一个开源、可本地部署的 AI 信息工作台。把那些"想
 ## 入口链接
 
 - 官网：<https://revornix.com>
-- 在线体验：<https://app.revornix.com>
+- 在线体验：<https://app.revornix.com>（中国境内推荐使用国内镜像 <https://app.revornix.cn>，链路更稳）
 - 文档：<https://revornix.com/docs>
 - 环境变量：<https://revornix.com/docs/environment>
 - 开发计划：[RoadMap](https://huaqinda.notion.site/RoadMap-224bbdbfa03380fabd7beda0b0337ea3)

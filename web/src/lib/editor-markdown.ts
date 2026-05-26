@@ -6,7 +6,11 @@ const BLOCK_PATTERNS = [
 	/^!\[[^\n]*\]\([^\n]+\)$/gm,
 ];
 
-const FENCED_CODE_BLOCK_PATTERN = /^(```|~~~)[^\n]*\n[\s\S]*?\n\1[ \t]*$/gm;
+// Body is optional: ``` foo\n``` (minimal empty block) must match too.
+// Without this, an emptied code block bypasses extract/restore, gets mangled
+// by downstream transforms, and round-tripping through the visual editor
+// fails with "无法被可视化模式解析".
+const FENCED_CODE_BLOCK_PATTERN = /^(```|~~~)[^\n]*\n(?:[\s\S]*?\n)?\1[ \t]*$/gm;
 const FENCED_CODE_BLOCK_PLACEHOLDER_PREFIX =
 	'__REVORNIX_FENCED_CODE_BLOCK__';
 const TABLE_SEPARATOR_CELL_PATTERN = /^\s*:?-{3,}:?\s*$/;
