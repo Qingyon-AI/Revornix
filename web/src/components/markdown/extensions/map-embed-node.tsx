@@ -18,6 +18,7 @@ import {
 import {
 	buildMapEmbedUrl,
 	hasMapEmbedTarget,
+	normalizeMapProvider,
 	normalizeMapZoom,
 } from '@/lib/map-embed';
 
@@ -39,21 +40,25 @@ const MapEmbedNodeView = ({
 	const lat = typeof node.attrs.lat === 'string' ? node.attrs.lat : '';
 	const lng = typeof node.attrs.lng === 'string' ? node.attrs.lng : '';
 	const zoom = normalizeMapZoom(node.attrs.zoom);
+	const provider = normalizeMapProvider(node.attrs.provider);
 	const isEditable = editor.isEditable;
+	const [draftProvider, setDraftProvider] = useState(provider);
 	const [draftQuery, setDraftQuery] = useState(query);
 	const [draftLat, setDraftLat] = useState(lat);
 	const [draftLng, setDraftLng] = useState(lng);
 	const [draftZoom, setDraftZoom] = useState(String(zoom));
 
 	useEffect(() => {
+		setDraftProvider(provider);
 		setDraftQuery(query);
 		setDraftLat(lat);
 		setDraftLng(lng);
 		setDraftZoom(String(zoom));
-	}, [query, lat, lng, zoom]);
+	}, [provider, query, lat, lng, zoom]);
 
 	const applyMap = () => {
 		updateAttributes({
+			provider: draftProvider,
 			query: draftQuery.trim(),
 			lat: draftLat.trim(),
 			lng: draftLng.trim(),
@@ -61,8 +66,11 @@ const MapEmbedNodeView = ({
 		});
 	};
 
-	const embedUrl = buildMapEmbedUrl({ query, lat, lng, zoom });
+	const embedUrl = buildMapEmbedUrl({ provider, query, lat, lng, zoom });
 	const label = query || (lat && lng ? `${lat}, ${lng}` : t('editor_map_title'));
+	const providerLabel = t(
+		provider === 'amap' ? 'editor_map_provider_amap' : 'editor_map_provider_google',
+	);
 
 	return (
 		<NodeViewWrapper>
@@ -73,6 +81,9 @@ const MapEmbedNodeView = ({
 				<div className='mb-3 flex min-w-0 items-center gap-2 text-sm font-medium text-foreground'>
 					<MapPinned className='size-4 shrink-0 text-primary' />
 					<span>{t('editor_map_title')}</span>
+					<span className='rounded-md bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground'>
+						{providerLabel}
+					</span>
 					<span className='truncate text-xs font-normal text-muted-foreground'>
 						{label}
 					</span>
@@ -96,7 +107,18 @@ const MapEmbedNodeView = ({
 				</div>
 				{isEditable ? (
 					<div className='mt-3 space-y-2'>
-						<div className='grid gap-2 sm:grid-cols-[1fr_7rem]'>
+						<div className='grid gap-2 sm:grid-cols-[9rem_1fr_7rem]'>
+							<select
+								value={draftProvider}
+								onChange={(event) =>
+									setDraftProvider(normalizeMapProvider(event.target.value))
+								}
+								onMouseDown={(event) => event.stopPropagation()}
+								className='h-9 rounded-lg border border-border/60 bg-background px-3 text-sm outline-none'
+								aria-label={t('editor_map_provider_label')}>
+								<option value='amap'>{t('editor_map_provider_amap')}</option>
+								<option value='google'>{t('editor_map_provider_google')}</option>
+							</select>
 							<input
 								value={draftQuery}
 								onChange={(event) => setDraftQuery(event.target.value)}
@@ -183,6 +205,14 @@ const MapEmbedNode = Node.create({
 					'data-query': attributes.query ?? '',
 				}),
 			},
+			provider: {
+				default: 'google',
+				parseHTML: (element) =>
+					normalizeMapProvider(element.getAttribute('data-provider')),
+				renderHTML: (attributes) => ({
+					'data-provider': normalizeMapProvider(attributes.provider),
+				}),
+			},
 			lat: {
 				default: '',
 				parseHTML: (element) => element.getAttribute('data-lat') ?? '',
@@ -252,6 +282,7 @@ const MapEmbedNode = Node.create({
 	parseMarkdown(token, helpers) {
 		const attrs = (token as { attrs?: Record<string, string> }).attrs ?? {};
 		return helpers.createNode('mapEmbed', {
+			provider: normalizeMapProvider(attrs['data-provider']),
 			query: attrs['data-query'] ?? '',
 			lat: attrs['data-lat'] ?? '',
 			lng: attrs['data-lng'] ?? '',
@@ -260,12 +291,15 @@ const MapEmbedNode = Node.create({
 	},
 
 	renderMarkdown(node) {
+		const provider = normalizeMapProvider(
+			typeof node.attrs?.provider === 'string' ? node.attrs.provider : null,
+		);
 		const query = typeof node.attrs?.query === 'string' ? node.attrs.query : '';
 		const lat = typeof node.attrs?.lat === 'string' ? node.attrs.lat : '';
 		const lng = typeof node.attrs?.lng === 'string' ? node.attrs.lng : '';
 		const zoom = String(normalizeMapZoom(node.attrs?.zoom));
 
-		return `<map-embed data-query="${escapeHtmlAttribute(query)}" data-lat="${escapeHtmlAttribute(lat)}" data-lng="${escapeHtmlAttribute(lng)}" data-zoom="${zoom}"></map-embed>`;
+		return `<map-embed data-provider="${provider}" data-query="${escapeHtmlAttribute(query)}" data-lat="${escapeHtmlAttribute(lat)}" data-lng="${escapeHtmlAttribute(lng)}" data-zoom="${zoom}"></map-embed>`;
 	},
 });
 
