@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import * as _ from 'lodash-es';
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
@@ -26,11 +25,7 @@ export async function generateMetadata(props: {
 	}
 
 	try {
-		const requestHeaders = await headers();
-		const document = await getDocumentDetailServer(
-			{ document_id: documentId },
-			new Headers(requestHeaders),
-		);
+		const document = await getDocumentDetailServer({ document_id: documentId });
 		const title = document.title?.trim() || 'Untitled Document';
 		const description = toMetaDescription(
 			document.description?.trim() || `Document detail for ${title}.`,

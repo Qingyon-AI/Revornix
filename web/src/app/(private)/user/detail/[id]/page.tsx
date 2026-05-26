@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import UserContainer from '@/components/user/user-container';
 import { buildMetadata, toMetaDescription } from '@/lib/seo-metadata';
@@ -26,11 +25,7 @@ export async function generateMetadata({
 	}
 
 	try {
-		const requestHeaders = await headers();
-		const user = await getUserInfoServer(
-			{ user_id: userId },
-			new Headers(requestHeaders),
-		);
+		const user = await getUserInfoServer({ user_id: userId });
 		const title = user.nickname?.trim() || 'User';
 		const description = toMetaDescription(
 			user.slogan?.trim() || `Profile page for ${title}.`,
