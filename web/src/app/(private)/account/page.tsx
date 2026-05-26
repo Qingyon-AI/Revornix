@@ -20,6 +20,7 @@ import PhoneBind from '@/components/user/phone-bind';
 import WeChatBind from '@/components/user/wechat-bind';
 import UserPlan from '@/components/user/user-plan';
 import UserComputeBalance from '@/components/user/user-compute-balance';
+import PasskeyManage from '@/components/user/passkey-manage';
 import { headers } from 'next/headers';
 import EmailBindCloud from '@/components/user/email-bind-cloud';
 import { isEnvEnabled } from '@/lib/env';
@@ -144,6 +145,18 @@ const AccountPage = async () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<PassWordUpdate />
+						</div>
+					</div>
+					<Separator />
+					<div className='flex justify-between items-center gap-4'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('account_mfa')}
+							<div className='text-[0.8rem] text-muted-foreground'>
+								{t('account_mfa_description')}
+							</div>
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<PasskeyManage />
 						</div>
 					</div>
 					{isEnvEnabled(process.env.NEXT_PUBLIC_ALLOW_THIRD_PARTY_AUTH) && (

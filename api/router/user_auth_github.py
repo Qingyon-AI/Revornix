@@ -2,28 +2,30 @@ import os
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import schemas
-from common.dependencies import get_async_db, get_current_user, get_current_user_short_lived, get_real_ip
-from common.jwt_utils import create_token
+from common.dependencies import get_async_db, get_cache, get_current_user, get_current_user_short_lived, get_real_ip
 from common.oauth_redirect import build_public_oauth_redirect_uri
 from common.tp_auth.github_utils import get_github_token, get_github_userInfo
 from data.sql.base import async_session_context
 from router.user_shared import (
     authorize_existing_oauth_user,
     commit_with_bucket_cleanup_async,
+    issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )
 from schemas.error import CustomException
 
 user_auth_github_router = APIRouter()
 
-@user_auth_github_router.post("/create/github", response_model=schemas.user.TokenResponse)
+@user_auth_github_router.post("/create/github", response_model=schemas.user.AuthResponse)
 async def create_user_by_github(
     request: Request,
     user: schemas.user.GithubUserCreate,
+    cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
 ):
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
@@ -59,11 +61,12 @@ async def create_user_by_github(
                 user_id=db_exist_github_user.user_id
             )
             await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
-            access_token, refresh_token = create_token(db_user)
-            return schemas.user.TokenResponse(
-                access_token=access_token,
-                refresh_token=refresh_token,
-                expires_in=3600
+            return await issue_tokens_or_create_mfa_challenge(
+                db=db,
+                cache=cache,
+                user=db_user,
+                first_factor_method="github",
+                ip=ip,
             )
         db_user = await crud.user.create_base_user_async(
             db=db,
@@ -85,8 +88,13 @@ async def create_user_by_github(
             db_user=db_user,
         )
         await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+        return await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="github",
+            ip=ip,
+        )
 
 @user_auth_github_router.post("/bind/github", response_model=schemas.common.NormalResponse)
 async def bind_github(

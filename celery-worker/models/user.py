@@ -23,6 +23,36 @@ class EmailUser(Base):
     has_seen_initial_password: Mapped[bool | None] = mapped_column(Boolean, comment='Whether the initial password has been viewed')
 
 
+class UserWebAuthnCredential(Base):
+    __tablename__ = 'user_webauthn_credential'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    credential_id: Mapped[str] = mapped_column(String(1024), index=True, nullable=False)
+    public_key: Mapped[str] = mapped_column(String(4096), nullable=False)
+    sign_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    device_type: Mapped[str | None] = mapped_column(String(50))
+    backed_up: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    transports: Mapped[str | None] = mapped_column(String(255))
+    name: Mapped[str | None] = mapped_column(String(100))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class UserTotpCredential(Base):
+    __tablename__ = 'user_totp_credential'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    secret: Mapped[str] = mapped_column(String(64), nullable=False)
+    name: Mapped[str | None] = mapped_column(String(100))
+    last_used_step: Mapped[int | None] = mapped_column(Integer)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class User(Base):
     __tablename__ = "user"
 
@@ -37,6 +67,8 @@ class User(Base):
     gender: Mapped[int | None] = mapped_column(Integer, comment='0: unk, 1: male, 2: female')
     age: Mapped[int | None] = mapped_column(Integer)
     is_forbidden: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    auth_epoch: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     default_document_reader_model_id: Mapped[int | None] = mapped_column(Integer)
     default_revornix_model_id: Mapped[int | None] = mapped_column(Integer)
     default_file_document_parse_user_engine_id: Mapped[int | None] = mapped_column(Integer)

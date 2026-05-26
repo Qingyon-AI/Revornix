@@ -11,11 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import crud
 import schemas
 from common.dependencies import get_async_db, get_cache, get_current_user, get_real_ip
-from common.jwt_utils import create_token
 from common.sms.tencent_sms import TencentSms
 from router.user_shared import (
     authorize_existing_oauth_user,
     commit_with_bucket_cleanup_async,
+    issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )
 from schemas.error import CustomException
@@ -45,7 +45,7 @@ async def create_user_by_sms_code(
 
     return schemas.common.SuccessResponse()
 
-@user_auth_phone_router.post('/create/sms/verify', response_model=schemas.user.TokenResponse)
+@user_auth_phone_router.post('/create/sms/verify', response_model=schemas.user.AuthResponse)
 async def create_user_by_sms_verify(
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
     db: AsyncSession = Depends(get_async_db),
@@ -72,11 +72,12 @@ async def create_user_by_sms_verify(
             user_id=phone_user_exist.user_id
         )
         await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
+        return await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="sms",
+            ip=ip,
         )
     else:
         db_user = await crud.user.create_base_user_async(
@@ -97,11 +98,12 @@ async def create_user_by_sms_verify(
             db_user=db_user,
         )
         await commit_with_bucket_cleanup_async(db=db, file_service=file_service)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
+        return await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="sms",
+            ip=ip,
         )
 
 @user_auth_phone_router.post('/bind/phone/code', response_model=schemas.common.NormalResponse)

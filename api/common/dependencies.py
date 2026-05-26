@@ -100,6 +100,17 @@ def _reject_if_refresh_token(payload: dict) -> None:
         )
 
 
+def _reject_if_stale_auth_epoch(payload: dict, user: models.user.User) -> None:
+    token_auth_epoch = payload.get("auth_epoch")
+    if token_auth_epoch is None:
+        token_auth_epoch = 0
+    if token_auth_epoch != user.auth_epoch:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication session is stale",
+        )
+
+
 async def resolve_current_user_from_token(
     *,
     request: Request,
@@ -131,6 +142,7 @@ async def resolve_current_user_from_token(
         )
         if user is None:
             raise credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
         if user.is_forbidden:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -169,6 +181,10 @@ async def _is_admin_or_root_from_authorization_async(
                 uuid=user_uuid,
             )
             if db_user is None:
+                return False
+            try:
+                _reject_if_stale_auth_epoch(payload=payload, user=db_user)
+            except HTTPException:
                 return False
             return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
         except Exception:
@@ -363,6 +379,7 @@ async def get_current_user_without_throw(
         )
         if user is None:
             raise invalid_credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
         if user.is_forbidden:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -408,6 +425,7 @@ async def get_current_user(
         )
         if user is None:
             raise credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
         if user.is_forbidden:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

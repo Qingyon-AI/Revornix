@@ -343,6 +343,204 @@ async def create_email_user_async(
     await db.flush()
     return db_email_user
 
+
+async def create_webauthn_credential_async(
+    db: AsyncSession,
+    user_id: int,
+    credential_id: str,
+    public_key: str,
+    sign_count: int,
+    device_type: str | None = None,
+    backed_up: bool = False,
+    transports: str | None = None,
+    name: str | None = None,
+):
+    db_user = await _get_active_user_by_id_async(db=db, user_id=user_id)
+    if db_user is None:
+        raise Exception("The base info of the WebAuthn credential you want to create does not exist")
+    credential = models.user.UserWebAuthnCredential(
+        user_id=user_id,
+        credential_id=credential_id,
+        public_key=public_key,
+        sign_count=sign_count,
+        device_type=device_type,
+        backed_up=backed_up,
+        transports=transports,
+        name=name,
+        create_time=datetime.now(timezone.utc),
+    )
+    db.add(credential)
+    await db.flush()
+    return credential
+
+
+async def get_webauthn_credentials_by_user_id_async(
+    db: AsyncSession,
+    user_id: int,
+):
+    result = await db.execute(
+        select(models.user.UserWebAuthnCredential)
+        .join(models.user.User)
+        .where(
+            models.user.UserWebAuthnCredential.user_id == user_id,
+            models.user.UserWebAuthnCredential.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+        )
+        .order_by(models.user.UserWebAuthnCredential.id.desc())
+    )
+    return result.scalars().all()
+
+
+async def get_webauthn_credential_by_credential_id_async(
+    db: AsyncSession,
+    credential_id: str,
+):
+    result = await db.execute(
+        select(models.user.UserWebAuthnCredential)
+        .join(models.user.User)
+        .where(
+            models.user.UserWebAuthnCredential.credential_id == credential_id,
+            models.user.UserWebAuthnCredential.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def update_webauthn_credential_after_auth_async(
+    db: AsyncSession,
+    credential: models.user.UserWebAuthnCredential,
+    sign_count: int,
+    device_type: str | None = None,
+    backed_up: bool | None = None,
+):
+    credential.sign_count = sign_count
+    if device_type is not None:
+        credential.device_type = device_type
+    if backed_up is not None:
+        credential.backed_up = backed_up
+    credential.last_used_at = datetime.now(timezone.utc)
+    await db.flush()
+    return credential
+
+
+async def delete_webauthn_credential_async(
+    db: AsyncSession,
+    user_id: int,
+    credential_id: int,
+):
+    now = datetime.now(timezone.utc)
+    await db.execute(
+        update(models.user.UserWebAuthnCredential)
+        .where(
+            models.user.UserWebAuthnCredential.id == credential_id,
+            models.user.UserWebAuthnCredential.user_id == user_id,
+            models.user.UserWebAuthnCredential.delete_at.is_(None),
+        )
+        .values(delete_at=now)
+    )
+    await db.flush()
+
+
+async def delete_webauthn_credentials_by_user_id_async(
+    db: AsyncSession,
+    user_id: int,
+):
+    now = datetime.now(timezone.utc)
+    await db.execute(
+        update(models.user.UserWebAuthnCredential)
+        .where(
+            models.user.UserWebAuthnCredential.user_id == user_id,
+            models.user.UserWebAuthnCredential.delete_at.is_(None),
+        )
+        .values(delete_at=now)
+    )
+    await db.flush()
+
+
+async def create_totp_credential_async(
+    db: AsyncSession,
+    user_id: int,
+    secret: str,
+    name: str | None = None,
+):
+    db_user = await _get_active_user_by_id_async(db=db, user_id=user_id)
+    if db_user is None:
+        raise Exception("The base info of the TOTP credential you want to create does not exist")
+    credential = models.user.UserTotpCredential(
+        user_id=user_id,
+        secret=secret,
+        name=name,
+        create_time=datetime.now(timezone.utc),
+    )
+    db.add(credential)
+    await db.flush()
+    return credential
+
+
+async def get_totp_credential_by_user_id_async(
+    db: AsyncSession,
+    user_id: int,
+):
+    result = await db.execute(
+        select(models.user.UserTotpCredential)
+        .join(models.user.User)
+        .where(
+            models.user.UserTotpCredential.user_id == user_id,
+            models.user.UserTotpCredential.delete_at.is_(None),
+            models.user.User.delete_at.is_(None),
+        )
+        .order_by(models.user.UserTotpCredential.id.desc())
+    )
+    return result.scalars().first()
+
+
+async def update_totp_credential_after_auth_async(
+    db: AsyncSession,
+    credential: models.user.UserTotpCredential,
+    last_used_step: int,
+):
+    credential.last_used_step = last_used_step
+    credential.last_used_at = datetime.now(timezone.utc)
+    await db.flush()
+    return credential
+
+
+async def delete_totp_credential_async(
+    db: AsyncSession,
+    user_id: int,
+):
+    now = datetime.now(timezone.utc)
+    await db.execute(
+        update(models.user.UserTotpCredential)
+        .where(
+            models.user.UserTotpCredential.user_id == user_id,
+            models.user.UserTotpCredential.delete_at.is_(None),
+        )
+        .values(delete_at=now)
+    )
+    await db.flush()
+
+
+async def bump_user_auth_epoch_async(
+    db: AsyncSession,
+    user: models.user.User,
+):
+    user.auth_epoch += 1
+    await db.flush()
+    return user
+
+
+async def update_user_mfa_status_async(
+    db: AsyncSession,
+    user: models.user.User,
+    enabled: bool,
+):
+    user.mfa_enabled = enabled
+    await db.flush()
+    return user
+
+
 def get_root_user(
     db: Session
 ):

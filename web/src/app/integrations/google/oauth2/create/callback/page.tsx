@@ -9,6 +9,7 @@ import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
 import { consumeOAuthState } from '@/lib/oauth-state';
+import { buildMfaLoginPath, hasAuthTokens, isMfaRequired } from '@/lib/auth-response';
 
 const GoogleCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -24,6 +25,18 @@ const GoogleCreatePage = () => {
 		}));
 		if (err || !res) {
 			toast.error(err?.message ?? 'Google login failed');
+			await utils.sleep(1000);
+			window.location.replace(
+				buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)
+			);
+			return;
+		}
+		if (isMfaRequired(res)) {
+			window.location.replace(buildPublicAppUrl(buildMfaLoginPath(res.challenge_id!, redirectTo, res.methods)));
+			return;
+		}
+		if (!hasAuthTokens(res)) {
+			toast.error('Google login failed');
 			await utils.sleep(1000);
 			window.location.replace(
 				buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)

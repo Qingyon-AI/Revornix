@@ -40,11 +40,11 @@ def create_token(
 ):
     # 注意这里token生成使用的是uuid，而不是email
     access_token = create_jwt(
-        {"sub": user.uuid, "type": ACCESS_TOKEN_TYPE},
+        {"sub": user.uuid, "type": ACCESS_TOKEN_TYPE, "auth_epoch": user.auth_epoch},
         expires_delta=ACCESS_TOKEN_EXPIRES,
     )
     refresh_token = create_jwt(
-        {"sub": user.uuid, "type": REFRESH_TOKEN_TYPE},
+        {"sub": user.uuid, "type": REFRESH_TOKEN_TYPE, "auth_epoch": user.auth_epoch},
         expires_delta=REFRESH_TOKEN_EXPIRES,
     )
     return access_token, refresh_token

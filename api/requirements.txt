@@ -42,6 +42,7 @@ langchain_core==1.4.0
 fastmcp==3.2.0
 lightrag-hku==1.4.14
 google-auth==2.41.1
+webauthn==2.7.1
 tencentcloud-sdk-python==3.1.47
 sentence_transformers==5.2.0
 neo4j==6.1.0

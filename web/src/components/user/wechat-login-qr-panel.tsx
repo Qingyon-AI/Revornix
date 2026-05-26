@@ -22,6 +22,7 @@ import {
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { useUserContext } from '@/provider/user-provider';
 import { decodeRedirectState } from '@/lib/safe-redirect';
+import { buildMfaLoginPath } from '@/lib/auth-response';
 
 type WechatLoginQrPanelProps = {
 	redirectState: string;
@@ -78,6 +79,14 @@ const WechatLoginQrPanel = ({
 			pollTimerRef.current = setTimeout(
 				() => pollOnce(scene),
 				POLL_INTERVAL_MS,
+			);
+			return;
+		}
+		if (res.status === 'confirmed' && res.mfa_required && res.challenge_id) {
+			clearTimers();
+			const redirectTo = decodeRedirectState(redirectState);
+			router.replace(
+				buildMfaLoginPath(res.challenge_id, redirectTo, res.methods),
 			);
 			return;
 		}
