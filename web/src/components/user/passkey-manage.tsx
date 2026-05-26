@@ -68,6 +68,8 @@ const PasskeyManage = () => {
 	const hasMfaMethod = passkeyEnabled || totp.enabled;
 	const enabled = Boolean(mainUserInfo?.mfa_enabled);
 	const cannotRemoveLastMfaMethod = enabled && passkeys.length + (totp.enabled ? 1 : 0) <= 1;
+	const currentHost =
+		typeof window === 'undefined' ? undefined : window.location.hostname;
 
 	const syncMfaEnabled = (nextEnabled: boolean) => {
 		const cachedUserInfo = queryClient.getQueryData<typeof mainUserInfo>(['myInfo']);
@@ -351,6 +353,11 @@ const PasskeyManage = () => {
 									<p className='text-xs leading-5 text-muted-foreground'>
 										{t('account_mfa_passkey_description')}
 									</p>
+									<p className='text-xs leading-5 text-muted-foreground'>
+										{t('account_mfa_passkey_domain_hint', {
+											domain: currentHost ?? '-',
+										})}
+									</p>
 								</div>
 								<Badge
 									variant='outline'
@@ -378,9 +385,11 @@ const PasskeyManage = () => {
 													{passkey.name || t('account_mfa_passkey_default_name')}
 												</div>
 												<div className='text-xs text-muted-foreground'>
-													{passkey.backed_up
-														? t('account_mfa_configured')
-														: t('account_mfa_passkey_title')}
+													{passkey.rp_id
+														? t('account_mfa_passkey_domain', { domain: passkey.rp_id })
+														: passkey.backed_up
+															? t('account_mfa_configured')
+															: t('account_mfa_passkey_title')}
 												</div>
 											</div>
 										</div>

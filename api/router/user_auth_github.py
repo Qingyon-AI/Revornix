@@ -68,6 +68,7 @@ async def create_user_by_github(
                 user=db_user,
                 first_factor_method="github",
                 ip=ip,
+                request=request,
             )
         db_user = await crud.user.create_base_user_async(
             db=db,
@@ -95,6 +96,7 @@ async def create_user_by_github(
             user=db_user,
             first_factor_method="github",
             ip=ip,
+            request=request,
         )
 
 @user_auth_github_router.post("/bind/github", response_model=schemas.common.NormalResponse)

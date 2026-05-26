@@ -12,8 +12,11 @@ from schemas.error import CustomException
 
 
 RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Revornix")
-RP_ID = os.environ.get("WEBAUTHN_RP_ID")
-EXPECTED_ORIGIN = os.environ.get("WEBAUTHN_EXPECTED_ORIGIN")
+ALLOWED_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.environ.get("WEBAUTHN_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 
 @dataclass(frozen=True)
@@ -63,7 +66,7 @@ def new_challenge_id() -> str:
 
 
 def get_webauthn_context(request: Request) -> WebAuthnContext:
-    raw_origin = EXPECTED_ORIGIN or request.headers.get("origin")
+    raw_origin = request.headers.get("origin")
     if not raw_origin:
         referer = request.headers.get("referer")
         if referer:
@@ -75,14 +78,17 @@ def get_webauthn_context(request: Request) -> WebAuthnContext:
     parsed_origin = urlparse(raw_origin)
     if not parsed_origin.scheme or not parsed_origin.netloc:
         raise CustomException(message="Invalid WebAuthn origin", code=400)
+    origin = f"{parsed_origin.scheme}://{parsed_origin.netloc}"
+    if ALLOWED_ORIGINS and origin not in ALLOWED_ORIGINS:
+        raise CustomException(message="WebAuthn origin is not allowed", code=400)
 
-    rp_id = RP_ID or parsed_origin.hostname
+    rp_id = parsed_origin.hostname
     if not rp_id:
         raise CustomException(message="Invalid WebAuthn RP ID", code=400)
 
     return WebAuthnContext(
         rp_id=rp_id,
-        origin=f"{parsed_origin.scheme}://{parsed_origin.netloc}",
+        origin=origin,
     )
 
 
@@ -127,14 +133,20 @@ def verify_passkey_registration(
     request: Request,
     credential: dict,
     expected_challenge: str,
+    expected_rp_id: str | None = None,
+    expected_origin: str | None = None,
 ):
     webauthn, *_ = _require_webauthn()
     context = get_webauthn_context(request)
+    rp_id = expected_rp_id or context.rp_id
+    origin = expected_origin or context.origin
+    if context.rp_id != rp_id or context.origin != origin:
+        raise CustomException(message="WebAuthn challenge origin does not match", code=400)
     return webauthn.verify_registration_response(
         credential=credential,
         expected_challenge=base64url_to_bytes(expected_challenge),
-        expected_rp_id=context.rp_id,
-        expected_origin=context.origin,
+        expected_rp_id=rp_id,
+        expected_origin=origin,
         require_user_verification=True,
     )
 
@@ -171,14 +183,20 @@ def verify_passkey_authentication(
     credential: dict,
     expected_challenge: str,
     stored_credential: models.user.UserWebAuthnCredential,
+    expected_rp_id: str | None = None,
+    expected_origin: str | None = None,
 ):
     webauthn, *_ = _require_webauthn()
     context = get_webauthn_context(request)
+    rp_id = expected_rp_id or context.rp_id
+    origin = expected_origin or context.origin
+    if context.rp_id != rp_id or context.origin != origin:
+        raise CustomException(message="WebAuthn challenge origin does not match", code=400)
     return webauthn.verify_authentication_response(
         credential=credential,
         expected_challenge=base64url_to_bytes(expected_challenge),
-        expected_rp_id=context.rp_id,
-        expected_origin=context.origin,
+        expected_rp_id=rp_id,
+        expected_origin=origin,
         credential_public_key=base64url_to_bytes(stored_credential.public_key),
         credential_current_sign_count=stored_credential.sign_count,
         require_user_verification=True,

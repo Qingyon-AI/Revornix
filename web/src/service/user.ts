@@ -39,6 +39,7 @@ export type AuthResponse = {
 
 export type PasskeyInfo = {
     id: number;
+    rp_id?: string | null;
     name?: string | null;
     device_type?: string | null;
     backed_up: boolean;

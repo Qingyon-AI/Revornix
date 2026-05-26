@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -132,6 +132,7 @@ async def create_user_by_wechat_mini(
 
 @user_auth_wechat_router.post("/create/wechat/web", response_model=schemas.user.AuthResponse)
 async def create_user_by_wechat_web(
+    request: Request,
     wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest,
     cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
@@ -168,6 +169,7 @@ async def create_user_by_wechat_web(
                 user=db_user,
                 first_factor_method="wechat_web",
                 ip=ip,
+                request=request,
             )
 
         db_exist_wechat_user_by_union_id = await crud.user.get_wechat_user_by_wechat_union_id_async(
@@ -223,6 +225,7 @@ async def create_user_by_wechat_web(
             user=db_user,
             first_factor_method="wechat_web",
             ip=ip,
+            request=request,
         )
 
 @user_auth_wechat_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
@@ -302,6 +305,7 @@ async def create_wechat_official_login_qrcode():
     response_model=schemas.user.WeChatOfficialQrStatusResponse,
 )
 async def query_wechat_official_login_status(
+    request: Request,
     request_body: schemas.user.WeChatOfficialQrStatusRequest,
     cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip),
@@ -334,6 +338,7 @@ async def query_wechat_official_login_status(
             user=db_user,
             first_factor_method="wechat_official",
             ip=ip,
+            request=request,
         )
         return schemas.user.WeChatOfficialQrStatusResponse(
             status='confirmed',
