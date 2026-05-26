@@ -67,6 +67,7 @@ const PasskeyManage = () => {
 	const passkeyEnabled = passkeys.length > 0;
 	const hasMfaMethod = passkeyEnabled || totp.enabled;
 	const enabled = Boolean(mainUserInfo?.mfa_enabled);
+	const cannotRemoveLastMfaMethod = enabled && passkeys.length + (totp.enabled ? 1 : 0) <= 1;
 
 	const syncMfaEnabled = (nextEnabled: boolean) => {
 		const cachedUserInfo = queryClient.getQueryData<typeof mainUserInfo>(['myInfo']);
@@ -154,6 +155,10 @@ const PasskeyManage = () => {
 	};
 
 	const handleDelete = async (credentialId: number) => {
+		if (cannotRemoveLastMfaMethod && passkeys.length <= 1) {
+			toast.error(t('account_mfa_remove_last_method_blocked'));
+			return;
+		}
 		setDeletingId(credentialId);
 		const [tokenRes, err] = await utils.to(
 			deletePasskey({ credential_id: credentialId }),
@@ -218,6 +223,10 @@ const PasskeyManage = () => {
 	};
 
 	const handleDeleteTotp = async () => {
+		if (cannotRemoveLastMfaMethod) {
+			toast.error(t('account_mfa_remove_last_method_blocked'));
+			return;
+		}
 		setTotpDeleting(true);
 		const [tokenRes, err] = await utils.to(deleteTotp());
 		if (err || !tokenRes) {
@@ -380,7 +389,7 @@ const PasskeyManage = () => {
 											variant='ghost'
 											size='icon'
 											className='size-8 shrink-0 rounded-md'
-											disabled={deletingId === passkey.id}
+											disabled={deletingId === passkey.id || (cannotRemoveLastMfaMethod && passkeys.length <= 1)}
 											onClick={() => handleDelete(passkey.id)}
 											aria-label={t('account_mfa_remove_passkey')}>
 											{deletingId === passkey.id ? (
@@ -499,7 +508,7 @@ const PasskeyManage = () => {
 										type='button'
 										variant='outline'
 										className='h-10 w-full rounded-lg'
-										disabled={totpDeleting}
+										disabled={totpDeleting || cannotRemoveLastMfaMethod}
 										onClick={handleDeleteTotp}>
 										{totpDeleting && (
 											<Loader2 className='mr-1 size-4 animate-spin' />

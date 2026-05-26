@@ -40,6 +40,7 @@ from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
 from router.user_shared import (
     commit_with_bucket_cleanup_async,
+    ensure_can_remove_login_method,
     issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )

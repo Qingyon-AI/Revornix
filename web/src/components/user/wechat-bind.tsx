@@ -26,6 +26,7 @@ import { useTranslations } from 'next-intl';
 import type { WeChatInfo } from '@/generated';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 import WechatBindQrPanel from './wechat-bind-qr-panel';
+import { isLastLoginMethod } from '@/lib/user-auth-methods';
 
 const getWechatPlatformLabel = (
 	t: ReturnType<typeof useTranslations>,
@@ -49,6 +50,7 @@ const WeChatBind = () => {
 	const [bindDialogOpen, setBindDialogOpen] = useState(false);
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const wechatInfos = mainUserInfo?.wechat_infos ?? [];
+	const cannotUnbind = isLastLoginMethod(mainUserInfo);
 
 	const handleUnBindWeChat = async () => {
 		setUnBindStatus(true);
@@ -92,9 +94,9 @@ const WeChatBind = () => {
 						))}
 						<div className='flex w-fit shrink-0 items-center'>
 							<AccountUnbindConfirmButton
-								description={t('account_wechat_unbind_confirm_description')}
+								description={cannotUnbind ? t('account_unbind_last_method_description') : t('account_wechat_unbind_confirm_description')}
 								className='h-auto px-0 text-xs'
-								disabled={unBindStatus}
+								disabled={unBindStatus || cannotUnbind}
 								onConfirm={handleUnBindWeChat}
 							/>
 							<TooltipProvider>

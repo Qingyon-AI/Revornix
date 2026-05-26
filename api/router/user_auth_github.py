@@ -14,6 +14,7 @@ from data.sql.base import async_session_context
 from router.user_shared import (
     authorize_existing_oauth_user,
     commit_with_bucket_cleanup_async,
+    ensure_can_remove_login_method,
     issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )
@@ -157,6 +158,7 @@ async def unbind_github(
     user = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db)
 ):
+    await ensure_can_remove_login_method(db=db, user_id=user.id)
     await crud.user.delete_github_user_by_user_id_async(
         db=db,
         user_id=user.id
