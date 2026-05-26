@@ -25,6 +25,11 @@ export interface GoogleUserBind {
      * @memberof GoogleUserBind
      */
     code: string;
+    /**
+     * @type {string}
+     * @memberof GoogleUserBind
+     */
+    redirect_uri?: string | null;
 }
 
 /**
@@ -43,9 +48,10 @@ export function GoogleUserBindFromJSONTyped(json: any, ignoreDiscriminator: bool
     if (json == null) {
         return json;
     }
-    return {
+        return {
         
         'code': json['code'],
+        'redirect_uri': json['redirect_uri'] == null ? undefined : json['redirect_uri'],
     };
 }
 
@@ -61,6 +67,6 @@ export function GoogleUserBindToJSONTyped(value?: GoogleUserBind | null, ignoreD
     return {
         
         'code': value['code'],
+        'redirect_uri': value['redirect_uri'],
     };
 }
-

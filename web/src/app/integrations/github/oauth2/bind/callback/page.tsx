@@ -6,7 +6,7 @@ import { utils } from '@kinda/utils';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { buildPublicAppUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
 
 const GitHubBindPage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -15,7 +15,10 @@ const GitHubBindPage = () => {
 	const code = searchParams.get('code');
 
 	const onBindGitHubUser = async (code: string) => {
-		const [res, err] = await utils.to(bindGitHub({ code }));
+		const [res, err] = await utils.to(bindGitHub({
+			code,
+			redirect_uri: buildOAuthCallbackUrl('github', 'bind'),
+		}));
 		if (err || !res) {
 			toast.error(err.message);
 			await utils.sleep(1000);

@@ -34,17 +34,21 @@ async def create_user_by_google(
     redirect_uri = build_public_oauth_redirect_uri(
         request,
         "integrations/google/oauth2/create/callback",
+        user.redirect_uri,
     )
-    token = await get_google_token(
-        google_client_id=GOOGLE_CLIENT_ID,
-        google_client_secret=GOOGLE_CLIENT_SECRET,
-        code=user.code,
-        redirect_uri=redirect_uri,
-    )
-    if token is None:
+    try:
+        token = await get_google_token(
+            google_client_id=GOOGLE_CLIENT_ID,
+            google_client_secret=GOOGLE_CLIENT_SECRET,
+            code=user.code,
+            redirect_uri=redirect_uri,
+        )
+        idinfo = await get_google_token_info(token.get('id_token'))
+    except Exception as exc:
+        raise CustomException(message="Failed to fetch Google account information", code=400) from exc
+    if token is None or idinfo is None:
         raise CustomException(message="Failed to fetch Google account information", code=400)
 
-    idinfo = await get_google_token_info(token.get('id_token'))
     if idinfo.get('aud') != GOOGLE_CLIENT_ID:
         raise CustomException(message="Google ID token audience is invalid", code=400)
     issuer = idinfo.get('iss')
@@ -107,17 +111,21 @@ async def bind_google(
     redirect_uri = build_public_oauth_redirect_uri(
         request,
         "integrations/google/oauth2/bind/callback",
+        bind_google.redirect_uri,
     )
-    token = await get_google_token(
-        google_client_id=GOOGLE_CLIENT_ID,
-        google_client_secret=GOOGLE_CLIENT_SECRET,
-        code=bind_google.code,
-        redirect_uri=redirect_uri
-    )
-    if token is None:
+    try:
+        token = await get_google_token(
+            google_client_id=GOOGLE_CLIENT_ID,
+            google_client_secret=GOOGLE_CLIENT_SECRET,
+            code=bind_google.code,
+            redirect_uri=redirect_uri
+        )
+        idinfo = await get_google_token_info(token.get('id_token'))
+    except Exception as exc:
+        raise CustomException(message="Failed to fetch Google account information", code=400) from exc
+    if token is None or idinfo is None:
         raise CustomException(message="Failed to fetch Google account information", code=400)
 
-    idinfo = await get_google_token_info(token.get('id_token'))
     if idinfo.get('aud') != GOOGLE_CLIENT_ID:
         raise CustomException(message="Google ID token audience is invalid", code=400)
     issuer = idinfo.get('iss')

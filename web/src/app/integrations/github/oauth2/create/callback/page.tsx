@@ -8,7 +8,7 @@ import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { decodeRedirectState } from '@/lib/safe-redirect';
-import { buildPublicAppUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
 
 const GitHubCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -19,7 +19,10 @@ const GitHubCreatePage = () => {
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
 	const onCreateGitHubUser = async (code: string) => {
-		const [res, err] = await utils.to(createUserByGithub({ code }));
+		const [res, err] = await utils.to(createUserByGithub({
+			code,
+			redirect_uri: buildOAuthCallbackUrl('github', 'create'),
+		}));
 		if (err || !res) {
 			toast.error(err?.message ?? 'GitHub login failed');
 			await utils.sleep(1000);

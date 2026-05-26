@@ -8,7 +8,7 @@ import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
 import { decodeRedirectState } from '@/lib/safe-redirect';
-import { buildPublicAppUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
 
 const GoogleCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -19,7 +19,10 @@ const GoogleCreatePage = () => {
 	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
 	const onCreateGoogleUser = async (code: string) => {
-		const [res, err] = await utils.to(createUserByGoogle({ code }));
+		const [res, err] = await utils.to(createUserByGoogle({
+			code,
+			redirect_uri: buildOAuthCallbackUrl('google', 'create'),
+		}));
 		if (err || !res) {
 			toast.error(err?.message ?? 'Google login failed');
 			await utils.sleep(1000);
