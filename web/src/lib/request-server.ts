@@ -16,6 +16,18 @@ import {
 const ACCESS_TOKEN_EXPIRES_DAYS = 7;
 const REFRESH_TOKEN_EXPIRES_DAYS = 30;
 const REFRESH_PATH = '/user/token/update';
+const HOP_BY_HOP_HEADERS = [
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'transfer-encoding',
+    'upgrade',
+    'host',
+    'content-length',
+];
 
 type TokenResponse = {
     access_token: string;
@@ -30,6 +42,19 @@ const resolveRefreshUrl = (requestUrl: string) => {
         parsedUrl.pathname.startsWith('/api/');
     const apiPrefix = usesGatewayApiPrefix ? '/api' : '';
     return `${parsedUrl.origin}${apiPrefix}${REFRESH_PATH}`;
+};
+
+const sanitizeOutboundHeaders = (headers: Headers) => {
+    const connectionHeader = headers.get('connection');
+    if (connectionHeader) {
+        connectionHeader
+            .split(',')
+            .map((headerName) => headerName.trim())
+            .filter(Boolean)
+            .forEach((headerName) => headers.delete(headerName));
+    }
+
+    HOP_BY_HOP_HEADERS.forEach((headerName) => headers.delete(headerName));
 };
 
 const trySetServerAuthCookies = async (tokens: TokenResponse) => {
@@ -86,6 +111,7 @@ const refreshServerToken = async (
 
 export const serverRequest = async <T>(url: string, initialOptions?: ServerRequestOptions): Promise<T> => {
     const headers = new Headers(initialOptions?.headers || undefined);
+    sanitizeOutboundHeaders(headers);
     if (!headers.has('Content-Type')) {
         headers.append('Content-Type', 'application/json');
     }

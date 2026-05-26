@@ -191,7 +191,7 @@ export const getSectionMarkdownContent = async (data: SectionDetailRequest): Pro
 
 export const getSectionDetailServer = async (
     data: SectionDetailRequest,
-    headers: Headers,
+    headers?: Headers,
 ): Promise<SectionDetailWithPpt> => {
     return await serverRequest(sectionApi.getSectionDetail, {
         data,

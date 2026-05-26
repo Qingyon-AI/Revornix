@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import SectionContainer from '@/components/section/section-container';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -29,11 +28,7 @@ export async function generateMetadata({
 	}
 
 	try {
-		const requestHeaders = await headers();
-		const section = await getSectionDetailServer(
-			{ section_id: sectionId },
-			new Headers(requestHeaders),
-		);
+		const section = await getSectionDetailServer({ section_id: sectionId });
 		const title = section.title?.trim() || 'Untitled Section';
 		const description = toMetaDescription(
 			section.description?.trim() || `Section detail for ${title}.`,

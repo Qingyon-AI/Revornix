@@ -15,8 +15,10 @@ export const register = async () => {
     if (process.env.NEXT_RUNTIME !== 'nodejs') {
         return;
     }
+    const serviceName = process.env.OTEL_SERVICE_NAME || 'revornix-web';
+    console.log(`registering instrumentation, ${serviceName}`);
     registerOTel({
-        serviceName: process.env.OTEL_SERVICE_NAME || 'revornix-web',
+        serviceName: serviceName,
         // `@vercel/otel` auto-wires fetch + Node.js instrumentation; we add
         // manual spans on top for the SSR request paths.
     });
