@@ -46,6 +46,38 @@ class WeChatMiniUserCreateRequest(BaseModel):
 class WeChatWebUserCreateRequest(BaseModel):
     code: str
 
+class WeChatOfficialQrCreateResponse(BaseModel):
+    scene_str: str
+    ticket: str
+    image_url: str
+    expires_in: int
+
+class WeChatOfficialQrStatusRequest(BaseModel):
+    scene_str: str
+
+class WeChatOfficialQrStatusResponse(BaseModel):
+    status: str  # pending | confirmed | expired
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_in: int | None = None
+
+class WeChatOfficialBindQrCreateResponse(BaseModel):
+    scene_str: str
+    ticket: str
+    image_url: str
+    expires_in: int
+
+class WeChatOfficialBindQrStatusRequest(BaseModel):
+    scene_str: str
+
+class WeChatOfficialBindQrStatusResponse(BaseModel):
+    # pending: not yet scanned
+    # confirmed: scanned and bound successfully
+    # conflict: scanned but the WeChat account is already attached elsewhere
+    # expired: scene expired or unknown
+    status: str
+    message: str | None = None
+
 class SmsUserCodeCreateRequest(BaseModel):
     phone: str
 

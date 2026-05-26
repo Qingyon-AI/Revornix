@@ -41,7 +41,8 @@ import { GITHUB_CLIENT_ID } from '@/config/github';
 import WechatIcon from '../icons/wechat-icon';
 import { encodeRedirectState, getSafeRedirectPage } from '@/lib/safe-redirect';
 import { isEnvEnabled } from '@/lib/env';
-import { buildOAuthCallbackUrl, buildWechatCallbackUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl } from '@/lib/oauth';
+import WechatLoginQrPanel from './wechat-login-qr-panel';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(2).max(50),
@@ -66,6 +67,7 @@ const PhoneLoginForm = () => {
 
 	const [sendingCode, setSendingCode] = useState(false);
 	const [submitLoading, setSubmitLoading] = useState(false);
+	const [showWechatLogin, setShowWechatLogin] = useState(false);
 	const [targetDate, setTargetDate] = useState<number>();
 	const [countdown] = useCountDown({
 		targetDate,
@@ -144,7 +146,14 @@ const PhoneLoginForm = () => {
 		window.location.assign(link);
 	};
 
-	const wechatCreateRedirectUri = buildWechatCallbackUrl('create');
+	if (showWechatLogin) {
+		return (
+			<WechatLoginQrPanel
+				redirectState={redirectState}
+				onBack={() => setShowWechatLogin(false)}
+			/>
+		);
+	}
 
 	return (
 		<Form {...phoneForm}>
@@ -226,16 +235,14 @@ const PhoneLoginForm = () => {
 								</span>
 							</div>
 							<div className='w-full grid grid-cols-4 gap-2'>
-								<Link
-									href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
-										process.env.NEXT_PUBLIC_WECHAT_APP_ID
-									}&redirect_uri=${encodeURIComponent(
-										wechatCreateRedirectUri
-									)}&response_type=code&scope=snsapi_login&state=${redirectState}#wechat_redirect`}>
-									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
-										<WechatIcon />
-									</Button>
-								</Link>
+								<Button
+									type='button'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
+									aria-label={t('seo_login_wechat')}
+									onClick={() => setShowWechatLogin(true)}>
+									<WechatIcon />
+								</Button>
 								<Button
 									type='button'
 									variant='outline'

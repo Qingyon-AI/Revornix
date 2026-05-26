@@ -280,6 +280,47 @@ async def get_official_wechat_user_info(
     return OfficialWeChatUserInfoResponse(**data)
 
 
+class OfficialWeChatQrTicketResponse(BaseModel):
+    ticket: str
+    expire_seconds: int | None = None
+    url: str | None = None
+    errcode: int | None = None
+    errmsg: str | None = None
+
+
+async def create_official_wechat_qrcode_ticket(
+    *,
+    access_token: str,
+    scene_str: str,
+    expire_seconds: int = 300,
+) -> OfficialWeChatQrTicketResponse:
+    """Create a temporary parameterized QR code via the Official Account API.
+
+    See: https://developers.weixin.qq.com/doc/offiaccount/Account_Management/Generating_a_Parametric_QR_Code.html
+    """
+    payload = {
+        "expire_seconds": expire_seconds,
+        "action_name": "QR_STR_SCENE",
+        "action_info": {"scene": {"scene_str": scene_str}},
+    }
+    async with httpx.AsyncClient(timeout=_get_timeout()) as client:
+        response = await client.post(
+            "https://api.weixin.qq.com/cgi-bin/qrcode/create",
+            params={"access_token": access_token},
+            json=payload,
+        )
+        response.raise_for_status()
+    data = response.json()
+    _validate_wechat_api_response(data)
+    return OfficialWeChatQrTicketResponse(**data)
+
+
+def build_official_wechat_qrcode_image_url(ticket: str) -> str:
+    from urllib.parse import quote
+
+    return f"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket={quote(ticket, safe='')}"
+
+
 async def download_official_wechat_media(
     access_token: str,
     media_id: str,

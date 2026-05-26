@@ -259,6 +259,60 @@ export const createUserByWechat = async (data: WeChatWebUserCreateRequest): Prom
     })
 }
 
+export type WechatOfficialQrCreateResponse = {
+    scene_str: string;
+    ticket: string;
+    image_url: string;
+    expires_in: number;
+};
+
+export type WechatOfficialQrStatusResponse = {
+    status: 'pending' | 'confirmed' | 'expired';
+    access_token?: string | null;
+    refresh_token?: string | null;
+    expires_in?: number | null;
+};
+
+export const createWechatOfficialQrcode = async (): Promise<WechatOfficialQrCreateResponse> => {
+    return await request(userApi.createWechatOfficialQrcode, {
+        data: {}
+    })
+}
+
+export const queryWechatOfficialQrStatus = async (
+    scene_str: string
+): Promise<WechatOfficialQrStatusResponse> => {
+    return await request(userApi.queryWechatOfficialQrStatus, {
+        data: { scene_str }
+    })
+}
+
+export type WechatOfficialBindQrCreateResponse = {
+    scene_str: string;
+    ticket: string;
+    image_url: string;
+    expires_in: number;
+};
+
+export type WechatOfficialBindQrStatusResponse = {
+    status: 'pending' | 'confirmed' | 'conflict' | 'expired';
+    message?: string | null;
+};
+
+export const createWechatOfficialBindQrcode = async (): Promise<WechatOfficialBindQrCreateResponse> => {
+    return await request(userApi.createWechatOfficialBindQrcode, {
+        data: {}
+    })
+}
+
+export const queryWechatOfficialBindStatus = async (
+    scene_str: string
+): Promise<WechatOfficialBindQrStatusResponse> => {
+    return await request(userApi.queryWechatOfficialBindStatus, {
+        data: { scene_str }
+    })
+}
+
 export const bindWeChat = async (data: WeChatWebUserBindRequest): Promise<NormalResponse> => {
     return await request(userApi.bindWeChat, {
         data

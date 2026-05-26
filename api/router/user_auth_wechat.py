@@ -10,7 +10,21 @@ import models
 import schemas
 from common.dependencies import get_async_db, get_current_user, get_current_user_short_lived, get_real_ip
 from common.jwt_utils import create_token
-from common.tp_auth.wechat_utils import get_mini_wechat_tokens, get_web_user_info, get_web_wechat_tokens
+from common.tp_auth.wechat_utils import (
+    build_official_wechat_qrcode_image_url,
+    create_official_wechat_qrcode_ticket,
+    get_mini_wechat_tokens,
+    get_official_wechat_access_token,
+    get_web_user_info,
+    get_web_wechat_tokens,
+)
+from common.wechat_official_login_session import (
+    SCENE_TTL_SECONDS,
+    consume_session,
+    create_bind_session,
+    create_login_session,
+    get_session,
+)
 from enums.user import WeChatUserSource
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from data.sql.base import async_session_context
@@ -242,6 +256,207 @@ async def bind_wechat(
         )
         await db.commit()
         return schemas.common.SuccessResponse()
+
+@user_auth_wechat_router.post(
+    '/create/wechat/official/qrcode',
+    response_model=schemas.user.WeChatOfficialQrCreateResponse,
+)
+async def create_wechat_official_login_qrcode():
+    app_id = os.environ.get('WECHAT_OFFICIAL_APP_ID')
+    app_secret = os.environ.get('WECHAT_OFFICIAL_APP_SECRET')
+    if app_id is None or app_secret is None:
+        raise CustomException('WeChat Official login is not configured', 500)
+
+    access_token = await get_official_wechat_access_token(
+        app_id=app_id,
+        app_secret=app_secret,
+    )
+    session = create_login_session()
+    ticket = await create_official_wechat_qrcode_ticket(
+        access_token=access_token,
+        scene_str=session.scene_str,
+        expire_seconds=SCENE_TTL_SECONDS,
+    )
+    return schemas.user.WeChatOfficialQrCreateResponse(
+        scene_str=session.scene_str,
+        ticket=ticket.ticket,
+        image_url=build_official_wechat_qrcode_image_url(ticket.ticket),
+        expires_in=SCENE_TTL_SECONDS,
+    )
+
+
+@user_auth_wechat_router.post(
+    '/create/wechat/official/status',
+    response_model=schemas.user.WeChatOfficialQrStatusResponse,
+)
+async def query_wechat_official_login_status(
+    request_body: schemas.user.WeChatOfficialQrStatusRequest,
+    ip: str | None = Depends(get_real_ip),
+):
+    session = get_session(request_body.scene_str)
+    if session is None:
+        return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
+
+    if session.status == 'pending':
+        return schemas.user.WeChatOfficialQrStatusResponse(status='pending')
+
+    if session.status == 'consumed':
+        return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
+
+    consumed = consume_session(request_body.scene_str)
+    if consumed is None or consumed.user_id is None:
+        return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
+
+    async with async_session_context() as db:
+        db_user = await crud.user.get_user_by_id_async(db=db, user_id=consumed.user_id)
+        if db_user is None:
+            return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
+        await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
+        access_token, refresh_token = create_token(db_user)
+        return schemas.user.WeChatOfficialQrStatusResponse(
+            status='confirmed',
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=3600,
+        )
+
+
+@user_auth_wechat_router.post(
+    '/bind/wechat/official/qrcode',
+    response_model=schemas.user.WeChatOfficialBindQrCreateResponse,
+)
+async def create_wechat_official_bind_qrcode(
+    user: models.user.User = Depends(get_current_user),
+):
+    app_id = os.environ.get('WECHAT_OFFICIAL_APP_ID')
+    app_secret = os.environ.get('WECHAT_OFFICIAL_APP_SECRET')
+    if app_id is None or app_secret is None:
+        raise CustomException('WeChat Official binding is not configured', 500)
+
+    # Fast-fail before burning a WeChat ticket: refuse if the user already has
+    # an official-account binding. The polling endpoint re-checks too, since
+    # the user may have bound from another tab between QR creation and scan.
+    async with async_session_context() as db:
+        existing = await crud.user.get_wechat_user_by_user_id_async(
+            db=db,
+            user_id=user.id,
+            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+        )
+        if len(existing) > 0:
+            raise CustomException(
+                message='A WeChat Official Account is already bound to this user',
+                code=403,
+            )
+
+    access_token = await get_official_wechat_access_token(
+        app_id=app_id,
+        app_secret=app_secret,
+    )
+    session = create_bind_session(user_id=user.id)
+    ticket = await create_official_wechat_qrcode_ticket(
+        access_token=access_token,
+        scene_str=session.scene_str,
+        expire_seconds=SCENE_TTL_SECONDS,
+    )
+    return schemas.user.WeChatOfficialBindQrCreateResponse(
+        scene_str=session.scene_str,
+        ticket=ticket.ticket,
+        image_url=build_official_wechat_qrcode_image_url(ticket.ticket),
+        expires_in=SCENE_TTL_SECONDS,
+    )
+
+
+@user_auth_wechat_router.post(
+    '/bind/wechat/official/status',
+    response_model=schemas.user.WeChatOfficialBindQrStatusResponse,
+)
+async def query_wechat_official_bind_status(
+    request_body: schemas.user.WeChatOfficialBindQrStatusRequest,
+    user: models.user.User = Depends(get_current_user),
+):
+    session = get_session(request_body.scene_str)
+    if session is None or session.kind != 'bind':
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='expired')
+
+    # Defend against a stolen scene_str: only the user who created the bind
+    # session can consume it.
+    if session.user_id != user.id:
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='expired')
+
+    if session.status == 'pending':
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='pending')
+
+    if session.status == 'consumed':
+        # Idempotent: a previous poll already finished the work.
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='confirmed')
+
+    openid = session.scanned_openid
+    union_id = session.scanned_unionid
+    nickname = session.scanned_nickname
+    if openid is None or union_id is None:
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='expired')
+
+    async with async_session_context() as db:
+        # Re-check post-scan: user could have bound from another tab.
+        existing = await crud.user.get_wechat_user_by_user_id_async(
+            db=db,
+            user_id=user.id,
+            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+        )
+        if len(existing) > 0:
+            consume_session(request_body.scene_str)
+            return schemas.user.WeChatOfficialBindQrStatusResponse(
+                status='conflict',
+                message='A WeChat Official Account is already bound to this user',
+            )
+
+        # Reject if this openid is live-bound to a *different* Revornix user.
+        # Soft-deleted records are allowed to be reactivated below.
+        openid_owner = await crud.user.get_wechat_user_by_wechat_open_id_async(
+            db=db,
+            wechat_user_open_id=openid,
+            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+        )
+        if openid_owner is not None and openid_owner.user_id != user.id:
+            consume_session(request_body.scene_str)
+            return schemas.user.WeChatOfficialBindQrStatusResponse(
+                status='conflict',
+                message='This WeChat account is already bound to another user',
+            )
+
+        if openid_owner is not None and openid_owner.user_id == user.id:
+            # Already linked to the same user; nothing to do (shouldn't happen
+            # given the earlier guard, but stay defensive).
+            consume_session(request_body.scene_str)
+            return schemas.user.WeChatOfficialBindQrStatusResponse(status='confirmed')
+
+        # Try to revive a soft-deleted record for this openid before creating
+        # a new one, to match the resolution behaviour elsewhere.
+        soft_deleted = await crud.user.get_wechat_user_by_wechat_open_id_async(
+            db=db,
+            wechat_user_open_id=openid,
+            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+            include_deleted=True,
+        )
+        if soft_deleted is not None and soft_deleted.delete_at is not None:
+            soft_deleted.delete_at = None
+            soft_deleted.user_id = user.id
+            soft_deleted.wechat_user_union_id = union_id
+            if nickname:
+                soft_deleted.wechat_user_name = nickname[:100]
+        else:
+            await crud.user.create_wechat_user_async(
+                db=db,
+                user_id=user.id,
+                wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+                wechat_user_open_id=openid,
+                wechat_user_union_id=union_id,
+                wechat_user_name=(nickname or '')[:100] or None,
+            )
+        await db.commit()
+        consume_session(request_body.scene_str)
+        return schemas.user.WeChatOfficialBindQrStatusResponse(status='confirmed')
+
 
 @user_auth_wechat_router.post('/unbind/wechat', response_model=schemas.common.NormalResponse)
 async def unbind_wechat(

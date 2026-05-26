@@ -6,20 +6,26 @@ import { useUserContext } from '@/provider/user-provider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog';
+import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from '@/components/ui/hybrid-tooltip';
-import Link from 'next/link';
 import { unBindWeChat } from '@/service/user';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { WeChatInfo } from '@/generated';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
-import { buildWechatCallbackUrl } from '@/lib/oauth';
-import { generateUUID } from '@/lib/uuid';
+import WechatBindQrPanel from './wechat-bind-qr-panel';
 
 const getWechatPlatformLabel = (
 	t: ReturnType<typeof useTranslations>,
@@ -40,18 +46,9 @@ const getWechatPlatformLabel = (
 const WeChatBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
+	const [bindDialogOpen, setBindDialogOpen] = useState(false);
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const wechatInfos = mainUserInfo?.wechat_infos ?? [];
-
-	const wechatAuthUrl = useMemo(() => {
-		const redirectUri = buildWechatCallbackUrl('bind');
-
-		return `https://open.weixin.qq.com/connect/qrconnect?appid=${
-			process.env.NEXT_PUBLIC_WECHAT_APP_ID
-		}&redirect_uri=${encodeURIComponent(
-			redirectUri,
-		)}&response_type=code&scope=snsapi_login&state=${generateUUID()}#wechat_redirect`;
-	}, []);
 
 	const handleUnBindWeChat = async () => {
 		setUnBindStatus(true);
@@ -123,11 +120,29 @@ const WeChatBind = () => {
 			)}
 
 			{mainUserInfo && wechatBindings.length === 0 && (
-				<Link href={wechatAuthUrl}>
-					<Button type='button' variant={'outline'}>
-						{t('account_go_bind')}
-					</Button>
-				</Link>
+				<Dialog open={bindDialogOpen} onOpenChange={setBindDialogOpen}>
+					<DialogTrigger asChild>
+						<Button type='button' variant={'outline'}>
+							{t('account_go_bind')}
+						</Button>
+					</DialogTrigger>
+					<DialogContent className='sm:max-w-sm'>
+						<DialogHeader>
+							<DialogTitle>{t('account_wechat_bind_title')}</DialogTitle>
+							<DialogDescription>
+								{t('account_wechat_bind_description')}
+							</DialogDescription>
+						</DialogHeader>
+						{bindDialogOpen && (
+							<WechatBindQrPanel
+								onBound={() => {
+									setBindDialogOpen(false);
+									refreshMainUserInfo();
+								}}
+							/>
+						)}
+					</DialogContent>
+				</Dialog>
 			)}
 		</div>
 	);
