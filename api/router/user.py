@@ -3,7 +3,7 @@ import secrets
 import string
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from jwt.exceptions import ExpiredSignatureError
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +28,7 @@ from common.file import get_remote_file_signed_url, get_remote_file_signed_urls
 from common.hash import verify_password
 from common.jwt_utils import REFRESH_TOKEN_TYPE, create_token
 from common.logger import exception_logger, format_log_message
+from common.passkey import get_webauthn_context
 from common.resource_plan_access import (
     ensure_default_resources_access,
     is_privileged_user,
@@ -764,6 +765,7 @@ async def initial_see_password(
 
 @user_router.post('/mine/info', response_model=schemas.user.PrivateUserInfo)
 async def my_info(
+    request: Request,
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db)
 ):
@@ -824,6 +826,7 @@ async def my_info(
     passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
+        rp_id=get_webauthn_context(request).rp_id,
     )
     res.passkeys = [schemas.user.PasskeyInfo.model_validate(passkey) for passkey in passkeys]
     totp_credential = await crud.user.get_totp_credential_by_user_id_async(
@@ -852,6 +855,7 @@ async def my_info(
 
 @user_router.post('/mfa/status/update', response_model=schemas.user.TokenResponse)
 async def update_mfa_status(
+    request: Request,
     request_body: schemas.user.MfaStatusUpdateRequest,
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
@@ -866,6 +870,7 @@ async def update_mfa_status(
         passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
             db=db,
             user_id=db_user.id,
+            rp_id=get_webauthn_context(request).rp_id,
         )
         totp_credential = await crud.user.get_totp_credential_by_user_id_async(
             db=db,
@@ -892,6 +897,7 @@ async def update_mfa_status(
 # 邮箱密码登陆
 @user_router.post("/login", response_model=schemas.user.AuthResponse)
 async def login(
+    request: Request,
     user_login_request: schemas.user.UserLoginRequest,
     db: AsyncSession = Depends(get_async_db),
     cache: Redis = Depends(get_cache),
@@ -928,6 +934,7 @@ async def login(
         user=user,
         first_factor_method="password",
         ip=ip,
+        request=request,
     )
 
 @user_router.post("/token/update", response_model=schemas.user.TokenResponse)

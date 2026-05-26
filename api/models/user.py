@@ -69,6 +69,7 @@ class UserWebAuthnCredential(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
+    rp_id: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     credential_id: Mapped[str] = mapped_column(String(1024), index=True, nullable=False)
     public_key: Mapped[str] = mapped_column(String(4096), nullable=False)
     sign_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

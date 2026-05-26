@@ -216,6 +216,7 @@ class EmailInfo(BaseModel):
 
 class PasskeyInfo(BaseModel):
     id: int
+    rp_id: str | None = None
     name: str | None = None
     device_type: str | None = None
     backed_up: bool = False

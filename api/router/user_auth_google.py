@@ -74,6 +74,7 @@ async def create_user_by_google(
                 user=db_user,
                 first_factor_method="google",
                 ip=ip,
+                request=request,
             )
         db_user = await crud.user.create_base_user_async(
             db=db,
@@ -100,6 +101,7 @@ async def create_user_by_google(
             user=db_user,
             first_factor_method="google",
             ip=ip,
+            request=request,
         )
 
 @user_auth_google_router.post("/bind/google", response_model=schemas.common.NormalResponse)

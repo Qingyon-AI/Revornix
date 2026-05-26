@@ -2,6 +2,7 @@ import asyncio
 import json
 from datetime import datetime, timezone
 
+from fastapi import Request
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
-from common.passkey import new_challenge_id
+from common.passkey import get_webauthn_context, new_challenge_id
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message
 from enums.file import RemoteFileService
@@ -75,6 +76,7 @@ async def issue_tokens_or_create_mfa_challenge(
     user: models.user.User,
     first_factor_method: str,
     ip: str | None,
+    request: Request | None = None,
 ) -> schemas.user.AuthResponse:
     if user.is_forbidden:
         raise CustomException(message="User is forbidden", code=403)
@@ -84,6 +86,7 @@ async def issue_tokens_or_create_mfa_challenge(
     passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
+        rp_id=get_webauthn_context(request).rp_id if request is not None else None,
     )
     totp_credential = await crud.user.get_totp_credential_by_user_id_async(
         db=db,

@@ -347,6 +347,7 @@ async def create_email_user_async(
 async def create_webauthn_credential_async(
     db: AsyncSession,
     user_id: int,
+    rp_id: str,
     credential_id: str,
     public_key: str,
     sign_count: int,
@@ -360,6 +361,7 @@ async def create_webauthn_credential_async(
         raise Exception("The base info of the WebAuthn credential you want to create does not exist")
     credential = models.user.UserWebAuthnCredential(
         user_id=user_id,
+        rp_id=rp_id,
         credential_id=credential_id,
         public_key=public_key,
         sign_count=sign_count,
@@ -377,15 +379,19 @@ async def create_webauthn_credential_async(
 async def get_webauthn_credentials_by_user_id_async(
     db: AsyncSession,
     user_id: int,
+    rp_id: str | None = None,
 ):
+    where_clauses = [
+        models.user.UserWebAuthnCredential.user_id == user_id,
+        models.user.UserWebAuthnCredential.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
+    ]
+    if rp_id is not None:
+        where_clauses.append(models.user.UserWebAuthnCredential.rp_id == rp_id)
     result = await db.execute(
         select(models.user.UserWebAuthnCredential)
         .join(models.user.User)
-        .where(
-            models.user.UserWebAuthnCredential.user_id == user_id,
-            models.user.UserWebAuthnCredential.delete_at.is_(None),
-            models.user.User.delete_at.is_(None),
-        )
+        .where(*where_clauses)
         .order_by(models.user.UserWebAuthnCredential.id.desc())
     )
     return result.scalars().all()
@@ -394,15 +400,19 @@ async def get_webauthn_credentials_by_user_id_async(
 async def get_webauthn_credential_by_credential_id_async(
     db: AsyncSession,
     credential_id: str,
+    rp_id: str | None = None,
 ):
+    where_clauses = [
+        models.user.UserWebAuthnCredential.credential_id == credential_id,
+        models.user.UserWebAuthnCredential.delete_at.is_(None),
+        models.user.User.delete_at.is_(None),
+    ]
+    if rp_id is not None:
+        where_clauses.append(models.user.UserWebAuthnCredential.rp_id == rp_id)
     result = await db.execute(
         select(models.user.UserWebAuthnCredential)
         .join(models.user.User)
-        .where(
-            models.user.UserWebAuthnCredential.credential_id == credential_id,
-            models.user.UserWebAuthnCredential.delete_at.is_(None),
-            models.user.User.delete_at.is_(None),
-        )
+        .where(*where_clauses)
     )
     return result.scalar_one_or_none()
 

@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +10,7 @@ import models
 import schemas
 from common.dependencies import get_async_db, get_cache, get_current_user, get_real_ip
 from common.jwt_utils import create_token
-from common.passkey import new_challenge_id
+from common.passkey import get_webauthn_context, new_challenge_id
 from common.totp import create_otpauth_uri, create_totp_secret, verify_totp_code
 from data.sql.base import async_session_context
 from schemas.error import CustomException
@@ -202,6 +202,7 @@ async def verify_totp_authentication(
     response_model=schemas.user.TokenResponse,
 )
 async def delete_totp(
+    request: Request,
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
 ):
@@ -215,9 +216,11 @@ async def delete_totp(
     if credential is None:
         raise CustomException(message="Authenticator app is not enabled", code=404)
     if db_user.mfa_enabled:
+        context = get_webauthn_context(request)
         passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
             db=db,
             user_id=db_user.id,
+            rp_id=context.rp_id,
         )
         if not passkeys:
             raise CustomException(

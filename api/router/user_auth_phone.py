@@ -4,7 +4,7 @@ import string
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,6 +48,7 @@ async def create_user_by_sms_code(
 
 @user_auth_phone_router.post('/create/sms/verify', response_model=schemas.user.AuthResponse)
 async def create_user_by_sms_verify(
+    request: Request,
     sms_user_code_verify_request: schemas.user.SmsUserCodeVerifyCreate,
     db: AsyncSession = Depends(get_async_db),
     cache: Redis = Depends(get_cache),
@@ -79,6 +80,7 @@ async def create_user_by_sms_verify(
             user=db_user,
             first_factor_method="sms",
             ip=ip,
+            request=request,
         )
     else:
         db_user = await crud.user.create_base_user_async(
@@ -105,6 +107,7 @@ async def create_user_by_sms_verify(
             user=db_user,
             first_factor_method="sms",
             ip=ip,
+            request=request,
         )
 
 @user_auth_phone_router.post('/bind/phone/code', response_model=schemas.common.NormalResponse)

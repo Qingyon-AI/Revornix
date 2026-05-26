@@ -14,6 +14,7 @@ from common.passkey import (
     bytes_to_base64url,
     generate_passkey_authentication_options,
     generate_passkey_registration_options,
+    get_webauthn_context,
     new_challenge_id,
     verify_passkey_authentication,
     verify_passkey_registration,
@@ -60,6 +61,7 @@ def _credential_to_info(
 ) -> schemas.user.PasskeyInfo:
     return schemas.user.PasskeyInfo(
         id=credential.id,
+        rp_id=credential.rp_id,
         name=credential.name,
         device_type=credential.device_type,
         backed_up=credential.backed_up,
@@ -73,12 +75,15 @@ def _credential_to_info(
     response_model=list[schemas.user.PasskeyInfo],
 )
 async def list_passkeys(
+    request: Request,
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    context = get_webauthn_context(request)
     credentials = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
+        rp_id=context.rp_id,
     )
     return [_credential_to_info(item) for item in credentials]
 
@@ -93,9 +98,11 @@ async def create_passkey_registration_options(
     db: AsyncSession = Depends(get_async_db),
     cache: Redis = Depends(get_cache),
 ):
+    context = get_webauthn_context(request)
     credentials = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
+        rp_id=context.rp_id,
     )
     options = generate_passkey_registration_options(
         request=request,
@@ -108,6 +115,8 @@ async def create_passkey_registration_options(
         value=json.dumps({
             "user_id": user.id,
             "challenge": options["challenge"],
+            "rp_id": context.rp_id,
+            "origin": context.origin,
         }),
         ex=PASSKEY_CHALLENGE_TTL_SECONDS,
     )
@@ -138,6 +147,8 @@ async def verify_passkey_registration_endpoint(
             request=request,
             credential=request_body.credential,
             expected_challenge=cached["challenge"],
+            expected_rp_id=cached.get("rp_id"),
+            expected_origin=cached.get("origin"),
         )
     except Exception as exc:
         raise CustomException(message="Passkey registration failed", code=400) from exc
@@ -159,6 +170,7 @@ async def verify_passkey_registration_endpoint(
     await crud.user.create_webauthn_credential_async(
         db=db,
         user_id=user.id,
+        rp_id=cached["rp_id"],
         credential_id=credential_id,
         public_key=bytes_to_base64url(verification.credential_public_key),
         sign_count=verification.sign_count,
@@ -185,6 +197,7 @@ async def create_passkey_authentication_options(
     request_body: schemas.user.PasskeyAuthenticationOptionsRequest,
     cache: Redis = Depends(get_cache),
 ):
+    context = get_webauthn_context(request)
     login_challenge = await _get_cached_json(
         cache,
         f"mfa:login:{request_body.challenge_id}",
@@ -197,6 +210,7 @@ async def create_passkey_authentication_options(
         credentials = await crud.user.get_webauthn_credentials_by_user_id_async(
             db=db,
             user_id=user_id,
+            rp_id=context.rp_id,
         )
     if not credentials:
         raise CustomException(message="No passkey is registered for this user", code=400)
@@ -212,6 +226,8 @@ async def create_passkey_authentication_options(
             "mfa_challenge_id": request_body.challenge_id,
             "user_id": user_id,
             "challenge": options["challenge"],
+            "rp_id": context.rp_id,
+            "origin": context.origin,
         }),
         ex=PASSKEY_CHALLENGE_TTL_SECONDS,
     )
@@ -251,6 +267,7 @@ async def verify_passkey_authentication_endpoint(
         stored_credential = await crud.user.get_webauthn_credential_by_credential_id_async(
             db=db,
             credential_id=credential_id,
+            rp_id=cached.get("rp_id"),
         )
         if stored_credential is None or stored_credential.user_id != cached.get("user_id"):
             raise CustomException(message="Passkey credential was not found", code=400)
@@ -261,6 +278,8 @@ async def verify_passkey_authentication_endpoint(
                 credential=request_body.credential,
                 expected_challenge=cached["challenge"],
                 stored_credential=stored_credential,
+                expected_rp_id=cached.get("rp_id"),
+                expected_origin=cached.get("origin"),
             )
         except Exception as exc:
             raise CustomException(message="Passkey authentication failed", code=400) from exc
@@ -298,16 +317,19 @@ async def verify_passkey_authentication_endpoint(
     response_model=schemas.user.TokenResponse,
 )
 async def delete_passkey(
+    request: Request,
     request_body: schemas.user.PasskeyDeleteRequest,
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    context = get_webauthn_context(request)
     db_user = await crud.user.get_user_by_id_async(db=db, user_id=user.id)
     if db_user is None:
         raise CustomException(message="User was not found", code=404)
     credentials = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=db_user.id,
+        rp_id=context.rp_id,
     )
     if not any(item.id == request_body.credential_id for item in credentials):
         raise CustomException(message="Passkey was not found", code=404)
