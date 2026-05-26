@@ -302,19 +302,32 @@ async def delete_passkey(
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=user.id)
+    if db_user is None:
+        raise CustomException(message="User was not found", code=404)
     credentials = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
-        user_id=user.id,
+        user_id=db_user.id,
     )
     if not any(item.id == request_body.credential_id for item in credentials):
         raise CustomException(message="Passkey was not found", code=404)
+    if db_user.mfa_enabled:
+        totp_credential = await crud.user.get_totp_credential_by_user_id_async(
+            db=db,
+            user_id=db_user.id,
+        )
+        if len(credentials) <= 1 and totp_credential is None:
+            raise CustomException(
+                message="Disable MFA or add another MFA method before removing the last one",
+                code=400,
+            )
     await crud.user.delete_webauthn_credential_async(
         db=db,
-        user_id=user.id,
+        user_id=db_user.id,
         credential_id=request_body.credential_id,
     )
     await db.commit()
-    access_token, refresh_token = create_token(user)
+    access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,

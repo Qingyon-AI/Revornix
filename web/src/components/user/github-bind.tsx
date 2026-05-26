@@ -11,11 +11,13 @@ import { useTranslations } from 'next-intl';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 import { buildOAuthCallbackUrl } from '@/lib/oauth';
 import { beginOAuthState } from '@/lib/oauth-state';
+import { isLastLoginMethod } from '@/lib/user-auth-methods';
 
 const GitHubBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+	const cannotUnbind = isLastLoginMethod(mainUserInfo);
 	const handleBindGitHub = () => {
 		// `state` carries a CSRF nonce; the bind callback verifies it before
 		// trusting the OAuth code.
@@ -43,9 +45,9 @@ const GitHubBind = () => {
 						ID: {mainUserInfo.github_info.github_user_id}
 					</div>
 					<AccountUnbindConfirmButton
-						description={t('account_unbind_confirm_description')}
+						description={cannotUnbind ? t('account_unbind_last_method_description') : t('account_unbind_confirm_description')}
 						className='text-xs'
-						disabled={unBindStatus}
+						disabled={unBindStatus || cannotUnbind}
 						onConfirm={handleUnBindGitHub}
 					/>
 				</div>

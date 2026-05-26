@@ -31,6 +31,7 @@ import { utils } from '@kinda/utils';
 import { useCountDown } from 'ahooks';
 import { useTranslations } from 'next-intl';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
+import { isLastLoginMethod } from '@/lib/user-auth-methods';
 
 const phoneFormSchema = z.object({
 	phone: z.string().min(8).max(40),
@@ -48,6 +49,7 @@ const PhoneBind = () => {
 	const [sendingCode, startSendingCodeTransition] = useTransition();
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const [showPhoneBindFormDialog, setShowPhoneBindFormDialog] = useState(false);
+	const cannotUnbind = isLastLoginMethod(mainUserInfo);
 
 	const form = useForm<z.infer<typeof phoneFormSchema>>({
 		resolver: zodResolver(phoneFormSchema),
@@ -143,9 +145,9 @@ const PhoneBind = () => {
 						{mainUserInfo.phone_info.phone}
 					</div>
 					<AccountUnbindConfirmButton
-						description={t('account_unbind_confirm_description')}
+						description={cannotUnbind ? t('account_unbind_last_method_description') : t('account_unbind_confirm_description')}
 						className='text-xs'
-						disabled={unBindingPhone}
+						disabled={unBindingPhone || cannotUnbind}
 						onConfirm={handleUnBindPhone}
 					/>
 				</div>

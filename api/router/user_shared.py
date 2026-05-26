@@ -122,6 +122,22 @@ async def issue_tokens_or_create_mfa_challenge(
     )
 
 
+async def ensure_can_remove_login_method(
+    *,
+    db: AsyncSession,
+    user_id: int,
+) -> None:
+    method_count = await crud.user.count_user_login_methods_async(
+        db=db,
+        user_id=user_id,
+    )
+    if method_count <= 1:
+        raise CustomException(
+            message="Bind another sign-in method before removing the current one",
+            code=400,
+        )
+
+
 def cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:
     if file_service.s3_client is None or file_service.bucket is None:
         return

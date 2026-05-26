@@ -541,6 +541,41 @@ async def update_user_mfa_status_async(
     return user
 
 
+async def count_user_login_methods_async(
+    db: AsyncSession,
+    user_id: int,
+) -> int:
+    email_user = await get_email_user_by_user_id_async(db=db, user_id=user_id)
+    phone_user = await get_phone_user_by_user_id_async(db=db, user_id=user_id)
+    github_user = await get_github_user_by_user_id_async(db=db, user_id=user_id)
+    google_user = await get_google_user_by_user_id_async(db=db, user_id=user_id)
+    wechat_users = await get_wechat_user_by_user_id_async(db=db, user_id=user_id)
+    return sum(
+        [
+            email_user is not None,
+            phone_user is not None,
+            github_user is not None,
+            google_user is not None,
+            len(wechat_users) > 0,
+        ]
+    )
+
+
+async def count_user_mfa_methods_async(
+    db: AsyncSession,
+    user_id: int,
+) -> int:
+    passkeys = await get_webauthn_credentials_by_user_id_async(
+        db=db,
+        user_id=user_id,
+    )
+    totp_credential = await get_totp_credential_by_user_id_async(
+        db=db,
+        user_id=user_id,
+    )
+    return int(len(passkeys) > 0) + int(totp_credential is not None)
+
+
 def get_root_user(
     db: Session
 ):

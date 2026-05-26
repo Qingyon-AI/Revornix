@@ -205,16 +205,29 @@ async def delete_totp(
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=user.id)
+    if db_user is None:
+        raise CustomException(message="User was not found", code=404)
     credential = await crud.user.get_totp_credential_by_user_id_async(
         db=db,
-        user_id=user.id,
+        user_id=db_user.id,
     )
     if credential is None:
         raise CustomException(message="Authenticator app is not enabled", code=404)
+    if db_user.mfa_enabled:
+        passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
+            db=db,
+            user_id=db_user.id,
+        )
+        if not passkeys:
+            raise CustomException(
+                message="Disable MFA or add another MFA method before removing the last one",
+                code=400,
+            )
 
-    await crud.user.delete_totp_credential_async(db=db, user_id=user.id)
+    await crud.user.delete_totp_credential_async(db=db, user_id=db_user.id)
     await db.commit()
-    access_token, refresh_token = create_token(user)
+    access_token, refresh_token = create_token(db_user)
     return schemas.user.TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
