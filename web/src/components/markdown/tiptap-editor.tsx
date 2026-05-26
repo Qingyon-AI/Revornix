@@ -78,6 +78,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { FileService } from '@/lib/file';
 import { normalizeEditorMarkdown } from '@/lib/editor-markdown';
+import { DEFAULT_NEW_MAP_PROVIDER } from '@/lib/map-embed';
 import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
@@ -616,6 +617,7 @@ const TipTapEditor = ({
 			.insertContent({
 				type: 'mapEmbed',
 				attrs: {
+					provider: DEFAULT_NEW_MAP_PROVIDER,
 					query: 'Shanghai',
 					zoom: '13',
 				},
