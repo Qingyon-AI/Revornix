@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
-import { decodeRedirectState } from '@/lib/safe-redirect';
 import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
+import { consumeOAuthState } from '@/lib/oauth-state';
 
 const GitHubCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -16,9 +16,8 @@ const GitHubCreatePage = () => {
 	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
-	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
-	const onCreateGitHubUser = async (code: string) => {
+	const onCreateGitHubUser = async (code: string, redirectTo: string) => {
 		const [res, err] = await utils.to(createUserByGithub({
 			code,
 			redirect_uri: buildOAuthCallbackUrl('github', 'create'),
@@ -43,8 +42,20 @@ const GitHubCreatePage = () => {
 		}
 		if (consumed.current) return;
 		consumed.current = true;
-		onCreateGitHubUser(code);
-	}, [code]);
+		const handleCallback = async () => {
+			const oauthState = consumeOAuthState(searchParams.get('state'));
+			if (!oauthState.ok) {
+				toast.error('OAuth request expired or could not be verified');
+				await utils.sleep(1000);
+				window.location.replace(
+					buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(oauthState.redirect)}`)
+				);
+				return;
+			}
+			onCreateGitHubUser(code, oauthState.redirect);
+		};
+		handleCallback();
+	}, [code, searchParams]);
 
 	return (
 		<div className='flex h-screen w-full items-center justify-center px-4'>
