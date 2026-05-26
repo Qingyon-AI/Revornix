@@ -40,6 +40,7 @@ from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
 from router.user_shared import (
     commit_with_bucket_cleanup_async,
+    issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )
 from schemas.error import CustomException
@@ -818,6 +819,23 @@ async def my_info(
                                                     nickname=wechat_user.wechat_user_name,
                                                     platform=wechat_user.wechat_platform) for wechat_user in wechat_users]
 
+    res.mfa_enabled = user.mfa_enabled
+    passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    res.passkeys = [schemas.user.PasskeyInfo.model_validate(passkey) for passkey in passkeys]
+    totp_credential = await crud.user.get_totp_credential_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    res.totp = schemas.user.TotpInfo(
+        enabled=totp_credential is not None,
+        name=totp_credential.name if totp_credential is not None else None,
+        last_used_at=totp_credential.last_used_at if totp_credential is not None else None,
+        create_time=totp_credential.create_time if totp_credential is not None else None,
+    )
+
     fans = await crud.user.count_user_fans_async(
         db=db,
         user_id=user.id
@@ -830,11 +848,52 @@ async def my_info(
     res.follows = follows
     return res
 
+
+@user_router.post('/mfa/status/update', response_model=schemas.user.TokenResponse)
+async def update_mfa_status(
+    request_body: schemas.user.MfaStatusUpdateRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    db_user = await crud.user.get_user_by_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    if db_user is None:
+        raise CustomException(message="User not found", code=404)
+    if request_body.enabled:
+        passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
+            db=db,
+            user_id=db_user.id,
+        )
+        totp_credential = await crud.user.get_totp_credential_by_user_id_async(
+            db=db,
+            user_id=db_user.id,
+        )
+        if not passkeys and totp_credential is None:
+            raise CustomException(
+                message="Configure at least one MFA method before enabling MFA",
+                code=400,
+            )
+    await crud.user.update_user_mfa_status_async(
+        db=db,
+        user=db_user,
+        enabled=request_body.enabled,
+    )
+    await db.commit()
+    access_token, refresh_token = create_token(db_user)
+    return schemas.user.TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=3600,
+    )
+
 # 邮箱密码登陆
-@user_router.post("/login", response_model=schemas.user.TokenResponse)
+@user_router.post("/login", response_model=schemas.user.AuthResponse)
 async def login(
     user_login_request: schemas.user.UserLoginRequest,
     db: AsyncSession = Depends(get_async_db),
+    cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
 ):
     # Login endpoint should not return 401, otherwise frontend global 401
@@ -862,14 +921,12 @@ async def login(
         provided_password=user_login_request.password
     ):
         raise invalid_credentials
-    user.last_login_ip = ip
-    user.last_login_time = datetime.now(timezone.utc)
-    await db.commit()
-    access_token, refresh_token = create_token(user)
-    return schemas.user.TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=3600
+    return await issue_tokens_or_create_mfa_challenge(
+        db=db,
+        cache=cache,
+        user=user,
+        first_factor_method="password",
+        ip=ip,
     )
 
 @user_router.post("/token/update", response_model=schemas.user.TokenResponse)
@@ -898,6 +955,11 @@ async def update_token(
     )
     if user is None:
         raise CustomException(message="User for this refresh token was not found", code=403)
+    token_auth_epoch = payload.get("auth_epoch")
+    if token_auth_epoch is None:
+        token_auth_epoch = 0
+    if token_auth_epoch != user.auth_epoch:
+        raise CustomException(message="Refresh token is stale, please log in again", code=403)
     # Banned users keep their refresh token valid; without this guard they
     # could mint new access tokens indefinitely (each request would still
     # 403 at get_current_user, but we shouldn't even hand out the token).
@@ -952,6 +1014,14 @@ async def delete_user(
         user_id=user.id
     )
     await crud.user.delete_phone_user_by_user_id_async(
+        db=db,
+        user_id=user.id
+    )
+    await crud.user.delete_webauthn_credentials_by_user_id_async(
+        db=db,
+        user_id=user.id
+    )
+    await crud.user.delete_totp_credential_async(
         db=db,
         user_id=user.id
     )

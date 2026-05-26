@@ -28,6 +28,46 @@ export type ComputeLedgerRequest = {
     direction?: 'all' | 'income' | 'expense';
 }
 
+export type AuthResponse = {
+    access_token?: string | null;
+    refresh_token?: string | null;
+    expires_in?: number | null;
+    mfa_required?: boolean;
+    challenge_id?: string | null;
+    methods?: string[];
+}
+
+export type PasskeyInfo = {
+    id: number;
+    name?: string | null;
+    device_type?: string | null;
+    backed_up: boolean;
+    last_used_at?: string | null;
+    create_time: string;
+}
+
+export type PasskeyOptionsResponse = {
+    challenge_id: string;
+    options: Record<string, any>;
+}
+
+export type TotpInfo = {
+    enabled: boolean;
+    name?: string | null;
+    last_used_at?: string | null;
+    create_time?: string | null;
+}
+
+export type TotpRegistrationOptionsResponse = {
+    challenge_id: string;
+    secret: string;
+    otpauth_uri: string;
+}
+
+export type MfaStatusUpdateRequest = {
+    enabled: boolean;
+}
+
 export const getUserInfoForPaySystem = async (): Promise<UserResponseDTO> => {
     return await request(userApi.getUserInfoForPaySystem)
 }
@@ -131,10 +171,85 @@ export const deleteUser = async (): Promise<NormalResponse> => {
     return await request(userApi.deleteUser)
 }
 
-export const loginUser = async (data: UserLoginRequest): Promise<TokenResponse> => {
+export const loginUser = async (data: UserLoginRequest): Promise<AuthResponse> => {
     return await request(userApi.loginUser, {
         data
     })
+}
+
+export const listPasskeys = async (): Promise<PasskeyInfo[]> => {
+    return await request(userApi.passkeyList)
+}
+
+export const createPasskeyRegistrationOptions = async (): Promise<PasskeyOptionsResponse> => {
+    return await request(userApi.passkeyRegisterOptions)
+}
+
+export const verifyPasskeyRegistration = async (data: {
+    challenge_id: string;
+    credential: Record<string, any>;
+    name?: string;
+}): Promise<TokenResponse> => {
+    return await request(userApi.passkeyRegisterVerify, { data })
+}
+
+export const createPasskeyAuthenticationOptions = async (data: {
+    challenge_id: string;
+}): Promise<PasskeyOptionsResponse> => {
+    return await request(userApi.passkeyAuthOptions, {
+        data,
+        redirectOnAuthFailure: false,
+    })
+}
+
+export const verifyPasskeyAuthentication = async (data: {
+    challenge_id: string;
+    credential: Record<string, any>;
+}): Promise<TokenResponse> => {
+    return await request(userApi.passkeyAuthVerify, {
+        data,
+        redirectOnAuthFailure: false,
+    })
+}
+
+export const deletePasskey = async (data: {
+    credential_id: number;
+}): Promise<TokenResponse> => {
+    return await request(userApi.passkeyDelete, { data })
+}
+
+export const updateMfaStatus = async (data: MfaStatusUpdateRequest): Promise<TokenResponse> => {
+    return await request(userApi.updateMfaStatus, { data })
+}
+
+export const getTotpStatus = async (): Promise<TotpInfo> => {
+    return await request(userApi.totpStatus)
+}
+
+export const createTotpRegistrationOptions = async (): Promise<TotpRegistrationOptionsResponse> => {
+    return await request(userApi.totpRegisterOptions)
+}
+
+export const verifyTotpRegistration = async (data: {
+    challenge_id: string;
+    code: string;
+    name?: string;
+}): Promise<TokenResponse> => {
+    return await request(userApi.totpRegisterVerify, { data })
+}
+
+export const verifyTotpAuthentication = async (data: {
+    challenge_id: string;
+    code: string;
+}): Promise<TokenResponse> => {
+    return await request(userApi.totpAuthVerify, {
+        data,
+        redirectOnAuthFailure: false,
+    })
+}
+
+export const deleteTotp = async (): Promise<TokenResponse> => {
+    return await request(userApi.totpDelete)
 }
 
 export const getMyInfo = async (): Promise<PrivateUserInfo> => {
@@ -193,13 +308,13 @@ export const bindEmail = async (data: BindEmailVerifyRequest): Promise<NormalRes
     })
 }
 
-export const createUserByGoogle = async (data: GoogleUserCreate): Promise<TokenResponse> => {
+export const createUserByGoogle = async (data: GoogleUserCreate): Promise<AuthResponse> => {
     return await request(userApi.createUserByGoogle, {
         data
     })
 }
 
-export const createUserByGithub = async (data: GithubUserCreate): Promise<TokenResponse> => {
+export const createUserByGithub = async (data: GithubUserCreate): Promise<AuthResponse> => {
     return await request(userApi.createUserByGithub, {
         data
     })
@@ -231,7 +346,7 @@ export const createUserSMSCode = async (data: SmsUserCodeCreateRequest): Promise
     })
 }
 
-export const createSMSUserVerify = async (data: SmsUserCodeVerifyCreate): Promise<TokenResponse> => {
+export const createSMSUserVerify = async (data: SmsUserCodeVerifyCreate): Promise<AuthResponse> => {
     return await request(userApi.createSMSUserVerify, {
         data
     })
@@ -253,7 +368,7 @@ export const unBindPhone = async () => {
     return await request(userApi.unBindPhone)
 }
 
-export const createUserByWechat = async (data: WeChatWebUserCreateRequest): Promise<TokenResponse> => {
+export const createUserByWechat = async (data: WeChatWebUserCreateRequest): Promise<AuthResponse> => {
     return await request(userApi.createUserByWechatWeb, {
         data
     })
@@ -271,6 +386,9 @@ export type WechatOfficialQrStatusResponse = {
     access_token?: string | null;
     refresh_token?: string | null;
     expires_in?: number | null;
+    mfa_required?: boolean;
+    challenge_id?: string | null;
+    methods?: string[];
 };
 
 export const createWechatOfficialQrcode = async (): Promise<WechatOfficialQrCreateResponse> => {

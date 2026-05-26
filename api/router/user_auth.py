@@ -4,9 +4,13 @@ from router.user_auth_github import user_auth_github_router
 from router.user_auth_google import user_auth_google_router
 from router.user_auth_phone import user_auth_phone_router
 from router.user_auth_wechat import user_auth_wechat_router
+from router.user_mfa_passkey import user_mfa_passkey_router
+from router.user_mfa_totp import user_mfa_totp_router
 
 user_auth_router = APIRouter()
 user_auth_router.include_router(user_auth_google_router)
 user_auth_router.include_router(user_auth_github_router)
 user_auth_router.include_router(user_auth_phone_router)
 user_auth_router.include_router(user_auth_wechat_router)
+user_auth_router.include_router(user_mfa_passkey_router)
+user_auth_router.include_router(user_mfa_totp_router)

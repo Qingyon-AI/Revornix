@@ -60,6 +60,9 @@ class WeChatOfficialQrStatusResponse(BaseModel):
     access_token: str | None = None
     refresh_token: str | None = None
     expires_in: int | None = None
+    mfa_required: bool = False
+    challenge_id: str | None = None
+    methods: list[str] = []
 
 class WeChatOfficialBindQrCreateResponse(BaseModel):
     scene_str: str
@@ -135,6 +138,9 @@ class DefaultModelUpdateRequest(BaseModel):
     default_revornix_model_id: int | None = None
     default_ai_interaction_language: int | None = None
 
+class MfaStatusUpdateRequest(BaseModel):
+    enabled: bool
+
 class DailyReportStatusChangeRequest(BaseModel):
     status: bool
     run_time: str | None = None # "00:00:00" 格式
@@ -178,6 +184,14 @@ class TokenResponse(BaseModel):
     refresh_token: str
     expires_in: int
 
+class AuthResponse(BaseModel):
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_in: int | None = None
+    mfa_required: bool = False
+    challenge_id: str | None = None
+    methods: list[str] = []
+
 class PasswordUpdateRequest(BaseModel):
     origin_password: str
     new_password: str
@@ -200,6 +214,20 @@ class EmailInfo(BaseModel):
     is_initial_password: bool
     has_seen_initial_password: bool | None
 
+class PasskeyInfo(BaseModel):
+    id: int
+    name: str | None = None
+    device_type: str | None = None
+    backed_up: bool = False
+    last_used_at: datetime | None = None
+    create_time: datetime
+
+class TotpInfo(BaseModel):
+    enabled: bool
+    name: str | None = None
+    last_used_at: datetime | None = None
+    create_time: datetime | None = None
+
 class PrivateUserInfo(BaseModel):
     id: int
     uuid: str
@@ -215,6 +243,9 @@ class PrivateUserInfo(BaseModel):
     github_info: GithubInfo | None = None
     google_info: GoogleInfo | None = None
     wechat_infos: list[WeChatInfo] | None = None
+    mfa_enabled: bool = False
+    passkeys: list[PasskeyInfo] | None = None
+    totp: TotpInfo | None = None
     default_user_file_system: int | None = None
     default_read_mark_reason: int | None = None
     default_document_reader_model_id: int | None = None
@@ -251,3 +282,40 @@ class UserPublicInfo(BaseModel):
     is_followed: bool | None = None
     fans: int | None = None
     follows: int | None = None
+
+class PasskeyRegistrationOptionsResponse(BaseModel):
+    challenge_id: str
+    options: dict
+
+class PasskeyRegistrationVerifyRequest(BaseModel):
+    challenge_id: str
+    credential: dict
+    name: str | None = None
+
+class PasskeyAuthenticationOptionsRequest(BaseModel):
+    challenge_id: str
+
+class PasskeyAuthenticationOptionsResponse(BaseModel):
+    challenge_id: str
+    options: dict
+
+class PasskeyAuthenticationVerifyRequest(BaseModel):
+    challenge_id: str
+    credential: dict
+
+class PasskeyDeleteRequest(BaseModel):
+    credential_id: int
+
+class TotpRegistrationOptionsResponse(BaseModel):
+    challenge_id: str
+    secret: str
+    otpauth_uri: str
+
+class TotpRegistrationVerifyRequest(BaseModel):
+    challenge_id: str
+    code: str
+    name: str | None = None
+
+class TotpAuthenticationVerifyRequest(BaseModel):
+    challenge_id: str
+    code: str

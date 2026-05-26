@@ -141,6 +141,12 @@ export interface PrivateUserInfo {
     wechat_infos?: Array<WeChatInfo> | null;
     /**
      * 
+     * @type {boolean}
+     * @memberof PrivateUserInfo
+     */
+    mfa_enabled?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -237,6 +243,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'github_info': json['github_info'] == null ? undefined : GithubInfoFromJSON(json['github_info']),
         'google_info': json['google_info'] == null ? undefined : GoogleInfoFromJSON(json['google_info']),
         'wechat_infos': json['wechat_infos'] == null ? undefined : ((json['wechat_infos'] as Array<any>).map(WeChatInfoFromJSON)),
+        'mfa_enabled': json['mfa_enabled'] == null ? undefined : json['mfa_enabled'],
         'default_user_file_system': json['default_user_file_system'] == null ? undefined : json['default_user_file_system'],
         'default_read_mark_reason': json['default_read_mark_reason'] == null ? undefined : json['default_read_mark_reason'],
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
@@ -275,6 +282,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'github_info': GithubInfoToJSON(value['github_info']),
         'google_info': GoogleInfoToJSON(value['google_info']),
         'wechat_infos': value['wechat_infos'] == null ? undefined : ((value['wechat_infos'] as Array<any>).map(WeChatInfoToJSON)),
+        'mfa_enabled': value['mfa_enabled'],
         'default_user_file_system': value['default_user_file_system'],
         'default_read_mark_reason': value['default_read_mark_reason'],
         'default_document_reader_model_id': value['default_document_reader_model_id'],
@@ -287,4 +295,3 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
-

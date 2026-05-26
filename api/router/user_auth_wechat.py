@@ -3,13 +3,13 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 import models
 import schemas
-from common.dependencies import get_async_db, get_current_user, get_current_user_short_lived, get_real_ip
-from common.jwt_utils import create_token
+from common.dependencies import get_async_db, get_cache, get_current_user, get_current_user_short_lived, get_real_ip
 from common.tp_auth.wechat_utils import (
     build_official_wechat_qrcode_image_url,
     create_official_wechat_qrcode_ticket,
@@ -31,15 +31,17 @@ from data.sql.base import async_session_context
 from router.user_shared import (
     authorize_existing_oauth_user,
     commit_with_bucket_cleanup_async,
+    issue_tokens_or_create_mfa_challenge,
     setup_default_file_system_for_user_async,
 )
 from schemas.error import CustomException
 
 user_auth_wechat_router = APIRouter()
 
-@user_auth_wechat_router.post('/create/wechat/mini', response_model=schemas.user.TokenResponse)
+@user_auth_wechat_router.post('/create/wechat/mini', response_model=schemas.user.AuthResponse)
 async def create_user_by_wechat_mini(
     wechat_mini_user_create_request: schemas.user.WeChatMiniUserCreateRequest,
+    cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
 ):
     WECHAT_MINI_APP_ID = os.environ.get('WECHAT_MINI_APP_ID')
@@ -67,11 +69,12 @@ async def create_user_by_wechat_mini(
                 user_id=db_exist_wechat_user_by_open_id.user_id
             )
             await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
-            access_token, refresh_token = create_token(db_user)
-            return schemas.user.TokenResponse(
-                access_token=access_token,
-                refresh_token=refresh_token,
-                expires_in=3600
+            return await issue_tokens_or_create_mfa_challenge(
+                db=db,
+                cache=cache,
+                user=db_user,
+                first_factor_method="wechat_mini",
+                ip=ip,
             )
 
         db_exist_wechat_user_by_union_id = await crud.user.get_wechat_user_by_wechat_union_id_async(
@@ -118,16 +121,18 @@ async def create_user_by_wechat_mini(
                 wechat_user_name=db_user.nickname
             )
         await commit_with_bucket_cleanup_async(db=db, file_service=bucket_file_service)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
+        return await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="wechat_mini",
+            ip=ip,
         )
 
-@user_auth_wechat_router.post("/create/wechat/web", response_model=schemas.user.TokenResponse)
+@user_auth_wechat_router.post("/create/wechat/web", response_model=schemas.user.AuthResponse)
 async def create_user_by_wechat_web(
     wechat_web_user_create_request: schemas.user.WeChatWebUserCreateRequest,
+    cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip)
 ):
     WECHAT_WEB_APP_ID = os.environ.get('WECHAT_WEB_APP_ID')
@@ -156,8 +161,13 @@ async def create_user_by_wechat_web(
                 user_id=db_exist_wechat_user_by_openid.user_id
             )
             await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
-            access_token, refresh_token = create_token(db_user)
-            return schemas.user.TokenResponse(access_token=access_token, refresh_token=refresh_token, expires_in=3600)
+            return await issue_tokens_or_create_mfa_challenge(
+                db=db,
+                cache=cache,
+                user=db_user,
+                first_factor_method="wechat_web",
+                ip=ip,
+            )
 
         db_exist_wechat_user_by_union_id = await crud.user.get_wechat_user_by_wechat_union_id_async(
             db=db,
@@ -206,11 +216,12 @@ async def create_user_by_wechat_web(
                 wechat_user_name=db_user.nickname
             )
         await commit_with_bucket_cleanup_async(db=db, file_service=bucket_file_service)
-        access_token, refresh_token = create_token(db_user)
-        return schemas.user.TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600
+        return await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="wechat_web",
+            ip=ip,
         )
 
 @user_auth_wechat_router.post("/bind/wechat/web", response_model=schemas.common.NormalResponse)
@@ -291,6 +302,7 @@ async def create_wechat_official_login_qrcode():
 )
 async def query_wechat_official_login_status(
     request_body: schemas.user.WeChatOfficialQrStatusRequest,
+    cache: Redis = Depends(get_cache),
     ip: str | None = Depends(get_real_ip),
 ):
     session = get_session(request_body.scene_str)
@@ -315,12 +327,21 @@ async def query_wechat_official_login_status(
         if db_user is None:
             return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
         await authorize_existing_oauth_user(db=db, db_user=db_user, ip=ip)
-        access_token, refresh_token = create_token(db_user)
+        auth_result = await issue_tokens_or_create_mfa_challenge(
+            db=db,
+            cache=cache,
+            user=db_user,
+            first_factor_method="wechat_official",
+            ip=ip,
+        )
         return schemas.user.WeChatOfficialQrStatusResponse(
             status='confirmed',
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=3600,
+            access_token=auth_result.access_token,
+            refresh_token=auth_result.refresh_token,
+            expires_in=auth_result.expires_in,
+            mfa_required=auth_result.mfa_required,
+            challenge_id=auth_result.challenge_id,
+            methods=auth_result.methods,
         )
 
 

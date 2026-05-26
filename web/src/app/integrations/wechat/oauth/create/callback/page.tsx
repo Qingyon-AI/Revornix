@@ -9,6 +9,7 @@ import { setAuthCookies } from '@/lib/auth-cookies';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
 import { consumeOAuthState } from '@/lib/oauth-state';
+import { buildMfaLoginPath, hasAuthTokens, isMfaRequired } from '@/lib/auth-response';
 
 const WeChatCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -22,6 +23,16 @@ const WeChatCreatePage = () => {
 		const [res, err] = await utils.to(createUserByWechat({ code }));
 		if (err || !res) {
 			toast.error(err?.message ?? 'WeChat login failed');
+			await utils.sleep(1000);
+			router.replace(`/login?redirect_to=${encodeURIComponent(redirectTo)}`);
+			return;
+		}
+		if (isMfaRequired(res)) {
+			router.replace(buildMfaLoginPath(res.challenge_id!, redirectTo, res.methods));
+			return;
+		}
+		if (!hasAuthTokens(res)) {
+			toast.error('WeChat login failed');
 			await utils.sleep(1000);
 			router.replace(`/login?redirect_to=${encodeURIComponent(redirectTo)}`);
 			return;

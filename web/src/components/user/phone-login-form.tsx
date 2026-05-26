@@ -43,6 +43,7 @@ import { encodeRedirectState, getSafeRedirectPage } from '@/lib/safe-redirect';
 import { isEnvEnabled } from '@/lib/env';
 import { buildOAuthCallbackUrl } from '@/lib/oauth';
 import { beginOAuthState } from '@/lib/oauth-state';
+import { buildMfaLoginPath, hasAuthTokens, isMfaRequired } from '@/lib/auth-response';
 import WechatLoginQrPanel from './wechat-login-qr-panel';
 
 const phoneFormSchema = z.object({
@@ -102,12 +103,20 @@ const PhoneLoginForm = () => {
 		if (err || !res) {
 			toast.error(err?.message ?? t('seo_login_failed'));
 			setSubmitLoading(false);
-		} else {
+		} else if (isMfaRequired(res)) {
+			setSubmitLoading(false);
+			router.replace(
+				buildMfaLoginPath(res.challenge_id!, redirect_page, res.methods),
+			);
+		} else if (hasAuthTokens(res)) {
 			setAuthCookies(res);
 			toast.success(t('seo_login_success'));
 			setSubmitLoading(false);
 			refreshMainUserInfo();
 			router.replace(redirect_page);
+		} else {
+			toast.error(t('seo_login_failed'));
+			setSubmitLoading(false);
 		}
 	};
 

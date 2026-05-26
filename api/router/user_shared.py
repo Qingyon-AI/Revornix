@@ -1,11 +1,16 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import crud
 import models
+import schemas
+from common.passkey import new_challenge_id
+from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message
 from enums.file import RemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
@@ -40,6 +45,81 @@ async def authorize_existing_oauth_user(
     db_user.last_login_ip = ip
     db_user.last_login_time = datetime.now(timezone.utc)
     await db.commit()
+
+
+MFA_CHALLENGE_TTL_SECONDS = 5 * 60
+MFA_CHALLENGE_KEY_PREFIX = "mfa:login:"
+
+
+def _mfa_challenge_key(challenge_id: str) -> str:
+    return f"{MFA_CHALLENGE_KEY_PREFIX}{challenge_id}"
+
+
+async def consume_mfa_login_challenge(
+    cache: Redis,
+    challenge_id: str,
+) -> dict | None:
+    raw_payload = await cache.get(_mfa_challenge_key(challenge_id))
+    if raw_payload is None:
+        return None
+    await cache.delete(_mfa_challenge_key(challenge_id))
+    if isinstance(raw_payload, bytes):
+        raw_payload = raw_payload.decode("utf-8")
+    return json.loads(raw_payload)
+
+
+async def issue_tokens_or_create_mfa_challenge(
+    *,
+    db: AsyncSession,
+    cache: Redis,
+    user: models.user.User,
+    first_factor_method: str,
+    ip: str | None,
+) -> schemas.user.AuthResponse:
+    if user.is_forbidden:
+        raise CustomException(message="User is forbidden", code=403)
+    user.last_login_ip = ip
+    user.last_login_time = datetime.now(timezone.utc)
+
+    passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    totp_credential = await crud.user.get_totp_credential_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    methods = []
+    if passkeys:
+        methods.append("passkey")
+    if totp_credential is not None:
+        methods.append("totp")
+
+    if user.mfa_enabled and methods:
+        await db.commit()
+        challenge_id = new_challenge_id()
+        await cache.set(
+            name=_mfa_challenge_key(challenge_id),
+            value=json.dumps({
+                "user_id": user.id,
+                "first_factor_method": first_factor_method,
+                "ip": ip,
+            }),
+            ex=MFA_CHALLENGE_TTL_SECONDS,
+        )
+        return schemas.user.AuthResponse(
+            mfa_required=True,
+            challenge_id=challenge_id,
+            methods=methods,
+        )
+
+    await db.commit()
+    access_token, refresh_token = create_token(user)
+    return schemas.user.AuthResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=3600,
+    )
 
 
 def cleanup_user_bucket_sync(file_service: BuiltInRemoteFileService) -> None:

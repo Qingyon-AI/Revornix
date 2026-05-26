@@ -62,6 +62,7 @@ const auth = (request: NextRequest) => {
     if (
         whitelist.includes(normalizedPath) ||
         isPublicMetadataPath(normalizedPath) ||
+        normalizedPath.startsWith('/login/mfa') ||
         normalizedPath === '/community' ||
         normalizedPath === '/hot-search' ||
         normalizedPath.startsWith('/integrations') ||
