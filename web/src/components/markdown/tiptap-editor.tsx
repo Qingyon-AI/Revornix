@@ -21,6 +21,7 @@ import {
 	List,
 	ListOrdered,
 	Loader2,
+	MapPinned,
 	MessageSquarePlus,
 	PencilRuler,
 	Sparkles,
@@ -64,6 +65,7 @@ import ImageNode from './extensions/image-node';
 import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
 import VideoEmbedNode from './extensions/video-embed-node';
+import MapEmbedNode from './extensions/map-embed-node';
 import MathBlockNode from './extensions/math-block-node';
 import MathInlineNode from './extensions/math-inline-node';
 import TextColorMark from './extensions/text-color-mark';
@@ -94,6 +96,9 @@ type TipTapEditorProps = {
 	toolbarEnd?: ReactNode;
 	fullscreen?: boolean;
 	onFullscreenChange?: (fullscreen: boolean) => void;
+	onFullscreenSave?: () => void;
+	fullscreenSaveDisabled?: boolean;
+	fullscreenSaveLoading?: boolean;
 	onInitialParse?: (info: { isEmpty: boolean; sourceLength: number }) => void;
 };
 
@@ -291,6 +296,9 @@ const TipTapEditor = ({
 	toolbarEnd,
 	fullscreen,
 	onFullscreenChange,
+	onFullscreenSave,
+	fullscreenSaveDisabled = false,
+	fullscreenSaveLoading = false,
 	onInitialParse,
 }: TipTapEditorProps) => {
 	const TEXT_COLORS = [
@@ -429,6 +437,7 @@ const TipTapEditor = ({
 				DrawingNode,
 				TableNode,
 				VideoEmbedNode,
+				MapEmbedNode,
 				MathBlockNode,
 				MathInlineNode,
 				UnderlineExtension,
@@ -596,6 +605,20 @@ const TipTapEditor = ({
 			.focus()
 			.insertContent({
 				type: 'tableNode',
+			})
+			.run();
+	};
+
+	const insertMapNode = () => {
+		editor
+			?.chain()
+			.focus()
+			.insertContent({
+				type: 'mapEmbed',
+				attrs: {
+					query: 'Shanghai',
+					zoom: '13',
+				},
 			})
 			.run();
 	};
@@ -1984,6 +2007,16 @@ const TipTapEditor = ({
 							type='button'
 							variant='ghost'
 							className={getToolbarActionButtonClassName()}
+							title={t('editor_toolbar_insert_map')}
+							onMouseDown={preserveEditorSelection}
+							onClick={insertMapNode}>
+							<MapPinned className='size-4' />
+							<span>{t('editor_toolbar_label_map')}</span>
+						</Button>
+						<Button
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
 							title={t('editor_toolbar_insert_formula')}
 							onMouseDown={preserveEditorSelection}
 							onClick={() =>
@@ -2088,6 +2121,30 @@ const TipTapEditor = ({
 				</div>
 				<div className='shrink-0' />
 				<div className='flex shrink-0 items-center gap-1 border-l border-border/60 pl-2'>
+					{showFullscreen && onFullscreenSave ? (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type='button'
+									variant='ghost'
+									className={getToolbarActionButtonClassName()}
+									title={t('markdown_edit_fullscreen_save')}
+									onMouseDown={preserveEditorSelection}
+									onClick={onFullscreenSave}
+									disabled={fullscreenSaveDisabled || fullscreenSaveLoading}>
+									{fullscreenSaveLoading ? (
+										<Loader2 className='size-4 animate-spin' />
+									) : (
+										<FilePenLine className='size-4' />
+									)}
+									<span>{t('save')}</span>
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								{t('markdown_edit_fullscreen_save_shortcut')}
+							</TooltipContent>
+						</Tooltip>
+					) : null}
 					{toolbarEnd}
 					<Tooltip>
 						<TooltipTrigger asChild>
