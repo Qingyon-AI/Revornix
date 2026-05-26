@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import UnderlineExtension from '@tiptap/extension-underline';
 import { Markdown } from '@tiptap/markdown';
 import {
 	Highlighter,
@@ -23,7 +22,9 @@ import {
 	Loader2,
 	MapPinned,
 	MessageSquarePlus,
+	Minus,
 	PencilRuler,
+	Quote,
 	Sparkles,
 	Square,
 	Strikethrough,
@@ -32,6 +33,7 @@ import {
 	Table2,
 	Type,
 	Underline,
+	type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -108,6 +110,35 @@ type ContinueSelectionSnapshot = {
 	from: number;
 	to: number;
 	context: string;
+};
+type SlashMenuState = {
+	open: boolean;
+	query: string;
+	range: {
+		from: number;
+		to: number;
+	};
+	position: {
+		top: number;
+		left: number;
+	};
+	selectedIndex: number;
+};
+type SlashMenuItem = {
+	id: string;
+	label: string;
+	description: string;
+	keywords: string[];
+	icon: LucideIcon;
+	disabled?: boolean;
+	run: (context: { editor: NonNullable<ReturnType<typeof useEditor>>; match: SlashMenuMatch }) => void;
+};
+type SlashMenuMatch = {
+	query: string;
+	range: {
+		from: number;
+		to: number;
+	};
 };
 
 const AI_CONTINUATION_TIMEOUT_MS = 45_000;
@@ -324,6 +355,12 @@ const TipTapEditor = ({
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
 	const hasNotifiedInitialParseRef = useRef(false);
+	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const slashMenuItemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+	const slashMenuItemsRef = useRef<SlashMenuItem[]>([]);
+	const runSlashMenuItemRef = useRef<(item: SlashMenuItem) => boolean>(
+		() => false,
+	);
 	const continueAbortControllerRef = useRef<AbortController | null>(null);
 	const continueAbortReasonRef = useRef<'user' | 'timeout' | null>(null);
 	const activeContinuationPlaceholderIdRef = useRef<string | null>(null);
@@ -351,6 +388,21 @@ const TipTapEditor = ({
 	] = useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [isMounted, setIsMounted] = useState(false);
+	const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
+		open: false,
+		query: '',
+		range: {
+			from: 0,
+			to: 0,
+		},
+		position: {
+			top: 0,
+			left: 0,
+		},
+		selectedIndex: 0,
+	});
+	const slashMenuRef = useRef(slashMenu);
+	const slashMenuSuppressUntilRef = useRef(0);
 	const [selectedContinuationModelId, setSelectedContinuationModelId] =
 		useState<number | null>(mainUserInfo?.default_revornix_model_id ?? null);
 	const [selectedIllustrationEngineId, setSelectedIllustrationEngineId] =
@@ -358,6 +410,73 @@ const TipTapEditor = ({
 			mainUserInfo?.default_image_generate_engine_id ?? null,
 		);
 	const imageFileOwnerId = creatorId ?? mainUserInfo?.id;
+
+	const closeSlashMenu = () => {
+		slashMenuRef.current = {
+			...slashMenuRef.current,
+			open: false,
+			query: '',
+			selectedIndex: 0,
+		};
+		setSlashMenu((current) =>
+			current.open
+				? {
+						...current,
+						open: false,
+						query: '',
+						selectedIndex: 0,
+					}
+				: current,
+		);
+	};
+
+	const suppressSlashMenu = () => {
+		slashMenuSuppressUntilRef.current = Date.now() + 150;
+	};
+
+	const getActiveSlashMenuMatch = (): SlashMenuMatch | null => {
+		const currentEditor = editorRef.current;
+		if (
+			!currentEditor ||
+			currentEditor.isDestroyed ||
+			!currentEditor.isEditable ||
+			currentEditor.isActive('codeBlock')
+		) {
+			return null;
+		}
+
+		const { selection } = currentEditor.state;
+		if (!selection.empty) {
+			return null;
+		}
+
+		const { $from } = selection;
+		const textBeforeCursor = $from.parent.textBetween(
+			0,
+			$from.parentOffset,
+			undefined,
+			'\ufffc',
+		);
+		const slashIndex = textBeforeCursor.lastIndexOf('/');
+		if (
+			slashIndex === -1 ||
+			/\s/.test(textBeforeCursor.slice(slashIndex + 1))
+		) {
+			return null;
+		}
+
+		return {
+			query: textBeforeCursor.slice(slashIndex + 1),
+			range: {
+				from: selection.from - textBeforeCursor.length + slashIndex,
+				to: selection.from,
+			},
+		};
+	};
+
+	useEffect(() => {
+		slashMenuRef.current = slashMenu;
+	}, [slashMenu]);
 
 	useEffect(() => {
 		setSelectedContinuationModelId(
@@ -441,7 +560,6 @@ const TipTapEditor = ({
 				MapEmbedNode,
 				MathBlockNode,
 				MathInlineNode,
-				UnderlineExtension,
 				TextColorMark,
 				TextHighlightMark,
 				MermaidCodeBlock,
@@ -456,6 +574,7 @@ const TipTapEditor = ({
 						return false;
 					}
 
+					closeSlashMenu();
 					const anchor = event.target.closest('a[href]');
 					if (!anchor) {
 						return false;
@@ -493,6 +612,56 @@ const TipTapEditor = ({
 					);
 					return true;
 				},
+				handleKeyDown: (_view, event) => {
+					if (!slashMenuRef.current.open) {
+						return false;
+					}
+
+					if (event.key === 'ArrowDown') {
+						event.preventDefault();
+						setSlashMenu((current) => ({
+							...current,
+							selectedIndex: Math.min(
+								current.selectedIndex + 1,
+								Math.max(slashMenuItemsRef.current.length - 1, 0),
+							),
+						}));
+						return true;
+					}
+
+					if (event.key === 'ArrowUp') {
+						event.preventDefault();
+						setSlashMenu((current) => ({
+							...current,
+							selectedIndex: Math.max(0, current.selectedIndex - 1),
+						}));
+						return true;
+					}
+
+					if (event.key === 'Escape') {
+						event.preventDefault();
+						closeSlashMenu();
+						return true;
+					}
+
+					if (event.key === 'Enter' || event.key === 'Tab') {
+						if (!getActiveSlashMenuMatch()) {
+							closeSlashMenu();
+							return false;
+						}
+
+						event.preventDefault();
+						const item =
+							slashMenuItemsRef.current[slashMenuRef.current.selectedIndex] ??
+							slashMenuItemsRef.current[0];
+						if (item) {
+							return runSlashMenuItemRef.current(item);
+						}
+						return true;
+					}
+
+					return false;
+				},
 			},
 			onUpdate: ({ editor }) => {
 				onChange?.(normalizeEditorMarkdown(editor.getMarkdown()));
@@ -500,6 +669,10 @@ const TipTapEditor = ({
 		},
 		[imageFileOwnerId],
 	);
+
+	useEffect(() => {
+		editorRef.current = editor;
+	}, [editor]);
 
 	// Force the Placeholder plugin to recompute its decoration once the view is
 	// mounted. With `immediatelyRender: false`, the first paint can land before
@@ -544,6 +717,75 @@ const TipTapEditor = ({
 			to: Math.min(to, nextDocSize),
 		});
 	}, [editor, value, placeholder]);
+
+	useEffect(() => {
+		if (!editor) {
+			return;
+		}
+
+		const updateSlashMenu = () => {
+			if (Date.now() < slashMenuSuppressUntilRef.current) {
+				closeSlashMenu();
+				return;
+			}
+
+			if (!editor.isEditable || editor.isActive('codeBlock')) {
+				closeSlashMenu();
+				return;
+			}
+
+			const { selection } = editor.state;
+			if (!selection.empty) {
+				closeSlashMenu();
+				return;
+			}
+
+			const { $from } = selection;
+			const textBeforeCursor = $from.parent.textBetween(
+				0,
+				$from.parentOffset,
+				undefined,
+				'\ufffc',
+			);
+			const slashIndex = textBeforeCursor.lastIndexOf('/');
+			if (
+				slashIndex === -1 ||
+				/\s/.test(textBeforeCursor.slice(slashIndex + 1))
+			) {
+				closeSlashMenu();
+				return;
+			}
+
+			const query = textBeforeCursor.slice(slashIndex + 1);
+			const from = selection.from - textBeforeCursor.length + slashIndex;
+			const to = selection.from;
+			const coords = editor.view.coordsAtPos(to);
+			setSlashMenu((current) => ({
+				open: true,
+				query,
+				range: {
+					from,
+					to,
+				},
+				position: {
+					top: Math.min(coords.bottom + 8, window.innerHeight - 16),
+					left: Math.min(Math.max(coords.left, 12), window.innerWidth - 332),
+				},
+				selectedIndex:
+					current.open && current.query === query
+						? current.selectedIndex
+						: 0,
+			}));
+		};
+
+		updateSlashMenu();
+		editor.on('transaction', updateSlashMenu);
+		editor.on('blur', closeSlashMenu);
+		return () => {
+			editor.off('transaction', updateSlashMenu);
+			editor.off('blur', closeSlashMenu);
+		};
+	}, [editor]);
 
 	const toolbarState = useEditorState({
 		editor,
@@ -624,6 +866,27 @@ const TipTapEditor = ({
 			})
 			.run();
 	};
+
+	const runSlashMenuItem = (item: SlashMenuItem) => {
+		if (item.disabled) {
+			return false;
+		}
+		const currentEditor = editorRef.current;
+		const match = getActiveSlashMenuMatch();
+		if (!currentEditor || currentEditor.isDestroyed || !match) {
+			closeSlashMenu();
+			return false;
+		}
+
+		suppressSlashMenu();
+		closeSlashMenu();
+		item.run({ editor: currentEditor, match });
+		return true;
+	};
+
+	useEffect(() => {
+		runSlashMenuItemRef.current = runSlashMenuItem;
+	});
 
 	const rememberSelection = () => {
 		if (!editor) {
@@ -1701,6 +1964,334 @@ const TipTapEditor = ({
 	const fullscreenLabel = showFullscreen
 		? t('exit_fullscreen')
 		: t('enter_fullscreen');
+	const slashMenuItems = useMemo<SlashMenuItem[]>(
+		() => [
+			{
+				id: 'paragraph',
+				label: t('editor_slash_paragraph'),
+				description: t('editor_slash_paragraph_description'),
+				keywords: ['text', 'paragraph', 'p', '正文', '段落'],
+				icon: Type,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.setParagraph()
+						.run(),
+			},
+			{
+				id: 'heading-1',
+				label: t('editor_toolbar_heading_1'),
+				description: t('editor_slash_heading_1_description'),
+				keywords: ['h1', 'title', 'heading', '标题', '一级标题'],
+				icon: Heading1,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleHeading({ level: 1 })
+						.run(),
+			},
+			{
+				id: 'heading-2',
+				label: t('editor_toolbar_heading_2'),
+				description: t('editor_slash_heading_2_description'),
+				keywords: ['h2', 'subtitle', 'heading', '标题', '二级标题'],
+				icon: Heading2,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleHeading({ level: 2 })
+						.run(),
+			},
+			{
+				id: 'bullet-list',
+				label: t('editor_toolbar_bullet_list'),
+				description: t('editor_slash_bullet_list_description'),
+				keywords: ['ul', 'bullet', 'list', '无序', '列表'],
+				icon: List,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleBulletList()
+						.run(),
+			},
+			{
+				id: 'ordered-list',
+				label: t('editor_toolbar_ordered_list'),
+				description: t('editor_slash_ordered_list_description'),
+				keywords: ['ol', 'number', 'list', '有序', '编号', '列表'],
+				icon: ListOrdered,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleOrderedList()
+						.run(),
+			},
+			{
+				id: 'blockquote',
+				label: t('editor_slash_blockquote'),
+				description: t('editor_slash_blockquote_description'),
+				keywords: ['quote', 'blockquote', '引用'],
+				icon: Quote,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleBlockquote()
+						.run(),
+			},
+			{
+				id: 'code-block',
+				label: t('editor_toolbar_code_block'),
+				description: t('editor_slash_code_block_description'),
+				keywords: ['code', 'pre', '代码', '代码块'],
+				icon: Code2,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.toggleCodeBlock()
+						.run(),
+			},
+			{
+				id: 'horizontal-rule',
+				label: t('editor_slash_horizontal_rule'),
+				description: t('editor_slash_horizontal_rule_description'),
+				keywords: ['hr', 'divider', 'rule', '分割线', '分隔线'],
+				icon: Minus,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.setHorizontalRule()
+						.run(),
+			},
+			{
+				id: 'image',
+				label: t('editor_toolbar_label_image'),
+				description: t('editor_slash_image_description'),
+				keywords: ['image', 'upload', 'picture', '图片', '上传'],
+				icon: ImagePlus,
+				disabled: !enableImageUpload || isUploadingImage,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					openImagePicker();
+				},
+			},
+			{
+				id: 'drawing',
+				label: t('editor_toolbar_label_drawing'),
+				description: t('editor_slash_drawing_description'),
+				keywords: ['draw', 'drawing', 'canvas', '手绘', '画板'],
+				icon: PencilRuler,
+				disabled: !enableDrawing,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.insertContent({
+							type: 'drawing',
+						})
+						.run(),
+			},
+			{
+				id: 'table',
+				label: t('editor_toolbar_label_table'),
+				description: t('editor_slash_table_description'),
+				keywords: ['table', 'grid', '表格'],
+				icon: Table2,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.insertContent({
+							type: 'tableNode',
+						})
+						.run(),
+			},
+			{
+				id: 'map',
+				label: t('editor_toolbar_label_map'),
+				description: t('editor_slash_map_description'),
+				keywords: ['map', 'location', '地图', '位置'],
+				icon: MapPinned,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.insertContent({
+							type: 'mapEmbed',
+							attrs: {
+								provider: DEFAULT_NEW_MAP_PROVIDER,
+								query: 'Shanghai',
+								zoom: '13',
+							},
+						})
+						.run(),
+			},
+			{
+				id: 'formula',
+				label: t('editor_toolbar_label_formula'),
+				description: t('editor_slash_formula_description'),
+				keywords: ['math', 'formula', 'latex', '公式'],
+				icon: Sigma,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.insertContent({
+							type: 'mathBlock',
+							attrs: { formula: '\\int_0^1 x^2 \\\\, dx' },
+						})
+						.run(),
+			},
+			{
+				id: 'ai-continue',
+				label: t('editor_toolbar_continue'),
+				description: t('editor_slash_ai_continue_description'),
+				keywords: ['ai', 'continue', 'write', '续写', '智能'],
+				icon: MessageSquarePlus,
+				disabled: isContinuing,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					openContinueDialog();
+				},
+			},
+			{
+				id: 'ai-optimize',
+				label: t('editor_toolbar_optimize_full'),
+				description: t('editor_slash_ai_optimize_description'),
+				keywords: ['ai', 'optimize', 'rewrite', '优化', '全文'],
+				icon: FilePenLine,
+				disabled: isOptimizingDocument || isGeneratingDocumentIllustration,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					setIsFullOptimizeDialogOpen(true);
+				},
+			},
+			{
+				id: 'ai-illustration',
+				label: t('editor_toolbar_full_illustration'),
+				description: t('editor_slash_ai_illustration_description'),
+				keywords: ['ai', 'illustration', 'image', '配图', '插图', '全文'],
+				icon: Sparkles,
+				disabled: isGeneratingDocumentIllustration || isOptimizingDocument,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					setIsFullIllustrationDialogOpen(true);
+				},
+			},
+		],
+		[
+			editor,
+			enableDrawing,
+			enableImageUpload,
+			isContinuing,
+			isGeneratingDocumentIllustration,
+			isOptimizingDocument,
+			isUploadingImage,
+			t,
+		],
+	);
+	const filteredSlashMenuItems = useMemo(() => {
+		const normalizedQuery = slashMenu.query.trim().toLowerCase();
+		if (!normalizedQuery) {
+			return slashMenuItems;
+		}
+
+		return slashMenuItems.filter((item) =>
+			[item.label, item.description, ...item.keywords]
+				.join(' ')
+				.toLowerCase()
+				.includes(normalizedQuery),
+		);
+	}, [slashMenu.query, slashMenuItems]);
+	const normalizedSlashSelectedIndex = Math.min(
+		slashMenu.selectedIndex,
+		Math.max(filteredSlashMenuItems.length - 1, 0),
+	);
+
+	useEffect(() => {
+		slashMenuItemsRef.current = filteredSlashMenuItems;
+		slashMenuItemRefs.current = slashMenuItemRefs.current.slice(
+			0,
+			filteredSlashMenuItems.length,
+		);
+		if (
+			slashMenu.open &&
+			slashMenu.selectedIndex !== normalizedSlashSelectedIndex
+		) {
+			setSlashMenu((current) => ({
+				...current,
+				selectedIndex: normalizedSlashSelectedIndex,
+			}));
+		}
+	}, [
+		filteredSlashMenuItems,
+		normalizedSlashSelectedIndex,
+		slashMenu.open,
+		slashMenu.selectedIndex,
+	]);
+
+	useEffect(() => {
+		if (!slashMenu.open) {
+			return;
+		}
+
+		slashMenuItemRefs.current[
+			normalizedSlashSelectedIndex
+		]?.scrollIntoView({
+			block: 'nearest',
+		});
+	}, [normalizedSlashSelectedIndex, slashMenu.open]);
 
 	const editorShell = (
 		<div
@@ -2185,6 +2776,82 @@ const TipTapEditor = ({
 				editor={editor}
 				className='min-h-[260px] flex-1 overflow-auto p-4 lg:min-h-0 lg:p-5 [&_.ProseMirror]:mx-auto [&_.ProseMirror]:max-w-full md:[&_.ProseMirror]:max-w-[640px] lg:[&_.ProseMirror]:max-w-[800px] xl:[&_.ProseMirror]:max-w-[720px] 2xl:[&_.ProseMirror]:max-w-[960px] [&_.ProseMirror]:min-h-full [&_.ProseMirror]:w-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:text-[0.95rem] [&_.ProseMirror]:leading-7 [&_.ProseMirror_>_:first-child]:mt-0 [&_.ProseMirror_>_:last-child]:mb-0 [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h1]:mt-6 [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h2]:mt-5 [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_h3]:mt-4 [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_p]:mb-2 [&_.ProseMirror_p]:mt-0 [&_.ProseMirror_ul]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ol]:my-2 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_li]:my-1 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-border [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:text-muted-foreground [&_.ProseMirror_hr]:my-5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-zinc-300/70 dark:[&_.ProseMirror_hr]:border-zinc-500/60 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:border [&_.ProseMirror_code]:border-zinc-200 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:text-zinc-900 dark:[&_.ProseMirror_code]:border-zinc-700 dark:[&_.ProseMirror_code]:bg-zinc-800 dark:[&_.ProseMirror_code]:text-zinc-100 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-zinc-200 [&_.ProseMirror_pre]:bg-zinc-100 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:text-zinc-900 dark:[&_.ProseMirror_pre]:border-zinc-700 dark:[&_.ProseMirror_pre]:bg-zinc-900 dark:[&_.ProseMirror_pre]:text-zinc-100 [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_pre_code]:leading-5 [&_.ProseMirror_u]:underline [&_.ProseMirror_mark]:rounded-[0.2rem] [&_.ProseMirror_mark]:px-0.5 [&_.ProseMirror_s]:text-muted-foreground [&_.ProseMirror_img]:my-4 [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:w-full [&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:rounded-2xl [&_.ProseMirror_img]:object-cover [&_.ProseMirror_p.is-editor-empty:first-child]:before:pointer-events-none [&_.ProseMirror_p.is-editor-empty:first-child]:before:float-left [&_.ProseMirror_p.is-editor-empty:first-child]:before:h-0 [&_.ProseMirror_p.is-editor-empty:first-child]:before:text-muted-foreground [&_.ProseMirror_p.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]'
 			/>
+			{slashMenu.open && isMounted
+				? createPortal(
+						<div
+							className='fixed z-[80] w-[320px] overflow-hidden rounded-lg border border-border/70 bg-popover text-popover-foreground shadow-xl'
+							style={{
+								top: slashMenu.position.top,
+								left: slashMenu.position.left,
+							}}
+							onMouseDown={(event) => event.preventDefault()}>
+							<div className='border-b border-border/60 px-3 py-2'>
+								<p className='text-xs font-medium text-muted-foreground'>
+									{t('editor_slash_title')}
+								</p>
+							</div>
+							<div className='max-h-[min(22rem,calc(100vh-8rem))] overflow-y-auto p-1'>
+								{filteredSlashMenuItems.length > 0 ? (
+									filteredSlashMenuItems.map((item, index) => {
+										const Icon = item.icon;
+										const selected = index === normalizedSlashSelectedIndex;
+										return (
+											<button
+												key={item.id}
+												ref={(element) => {
+													slashMenuItemRefs.current[index] = element;
+												}}
+												type='button'
+												className={cn(
+													'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm outline-none transition-colors',
+													selected && 'bg-accent text-accent-foreground',
+													item.disabled &&
+														'cursor-not-allowed opacity-50 hover:bg-transparent',
+													!selected &&
+														!item.disabled &&
+														'hover:bg-accent/60 hover:text-accent-foreground',
+												)}
+												disabled={item.disabled}
+												onMouseEnter={() =>
+													setSlashMenu((current) => ({
+														...current,
+														selectedIndex: index,
+													}))
+												}
+												onClick={() => runSlashMenuItem(item)}>
+												<span
+													className={cn(
+														'flex size-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background text-muted-foreground',
+														selected &&
+															'border-accent-foreground/20 bg-accent-foreground/10 text-accent-foreground',
+													)}>
+													<Icon className='size-4' />
+												</span>
+												<span className='min-w-0 flex-1'>
+													<span className='block truncate font-medium'>
+														{item.label}
+													</span>
+													<span
+														className={cn(
+															'block truncate text-xs text-muted-foreground',
+															selected && 'text-accent-foreground/75',
+														)}>
+														{item.description}
+													</span>
+												</span>
+											</button>
+										);
+									})
+								) : (
+									<div className='px-3 py-6 text-center text-sm text-muted-foreground'>
+										{t('editor_slash_empty')}
+									</div>
+								)}
+							</div>
+						</div>,
+						document.body,
+					)
+				: null}
 			<Dialog
 				open={isContinueDialogOpen}
 				onOpenChange={(open) => {
