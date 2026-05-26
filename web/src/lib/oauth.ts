@@ -22,13 +22,13 @@ const normalizePublicBaseUrl = (rawValue?: string | null) => {
 };
 
 const getPublicBaseUrl = () => {
+	if (typeof window !== 'undefined') {
+		return window.location.origin;
+	}
+
 	const configuredBaseUrl = normalizePublicBaseUrl(process.env.NEXT_PUBLIC_HOST);
 	if (configuredBaseUrl) {
 		return configuredBaseUrl;
-	}
-
-	if (typeof window !== 'undefined') {
-		return window.location.origin;
 	}
 
 	return 'http://localhost:3000';

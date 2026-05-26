@@ -34,16 +34,20 @@ async def create_user_by_github(
     redirect_uri = build_public_oauth_redirect_uri(
         request,
         "integrations/github/oauth2/create/callback",
+        user.redirect_uri,
     )
-    token = await get_github_token(
-        github_client_id=GITHUB_CLIENT_ID,
-        github_client_secret=GITHUB_CLIENT_SECRET,
-        code=user.code,
-        redirect_uri=redirect_uri,
-    )
-    if token is None:
+    try:
+        token = await get_github_token(
+            github_client_id=GITHUB_CLIENT_ID,
+            github_client_secret=GITHUB_CLIENT_SECRET,
+            code=user.code,
+            redirect_uri=redirect_uri,
+        )
+        github_user_info = await get_github_userInfo(token=token.get('access_token'))
+    except Exception as exc:
+        raise CustomException(message="Failed to fetch GitHub account information", code=400) from exc
+    if token is None or github_user_info is None:
         raise CustomException(message="Failed to fetch GitHub account information", code=400)
-    github_user_info = await get_github_userInfo(token=token.get('access_token'))
     async with async_session_context() as db:
         db_exist_github_user = await crud.user.get_github_user_by_github_user_id_async(
             db=db,
@@ -98,18 +102,22 @@ async def bind_github(
     redirect_uri = build_public_oauth_redirect_uri(
         request,
         "integrations/github/oauth2/bind/callback",
+        bind_github.redirect_uri,
     )
-    token = await get_github_token(
-        github_client_id=GITHUB_CLIENT_ID,
-        github_client_secret=GITHUB_CLIENT_SECRET,
-        code=bind_github.code,
-        redirect_uri=redirect_uri
-    )
-    if token is None:
+    try:
+        token = await get_github_token(
+            github_client_id=GITHUB_CLIENT_ID,
+            github_client_secret=GITHUB_CLIENT_SECRET,
+            code=bind_github.code,
+            redirect_uri=redirect_uri
+        )
+        github_user_info = await get_github_userInfo(
+            token=token.get('access_token')
+        )
+    except Exception as exc:
+        raise CustomException(message="Failed to fetch GitHub account information", code=400) from exc
+    if token is None or github_user_info is None:
         raise CustomException(message="Failed to fetch GitHub account information", code=400)
-    github_user_info = await get_github_userInfo(
-        token=token.get('access_token')
-    )
 
     async with async_session_context() as db:
         db_github_user_exist = await crud.user.get_github_user_by_user_id_async(

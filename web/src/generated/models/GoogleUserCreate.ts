@@ -25,6 +25,11 @@ export interface GoogleUserCreate {
      * @memberof GoogleUserCreate
      */
     code: string;
+    /**
+     * @type {string}
+     * @memberof GoogleUserCreate
+     */
+    redirect_uri?: string | null;
 }
 
 /**
@@ -43,9 +48,10 @@ export function GoogleUserCreateFromJSONTyped(json: any, ignoreDiscriminator: bo
     if (json == null) {
         return json;
     }
-    return {
+        return {
         
         'code': json['code'],
+        'redirect_uri': json['redirect_uri'] == null ? undefined : json['redirect_uri'],
     };
 }
 
@@ -61,6 +67,6 @@ export function GoogleUserCreateToJSONTyped(value?: GoogleUserCreate | null, ign
     return {
         
         'code': value['code'],
+        'redirect_uri': value['redirect_uri'],
     };
 }
-

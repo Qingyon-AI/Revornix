@@ -1,8 +1,10 @@
 from datetime import datetime
 
 from pydantic import Field, field_validator
-from .base import BaseModel
+
 from enums.section import UserSectionAuthority
+
+from .base import BaseModel
 
 PUBLIC_PAGINATION_LIMIT = 20
 
@@ -63,15 +65,19 @@ class PhoneInfo(BaseModel):
 
 class GoogleUserCreate(BaseModel):
     code: str
+    redirect_uri: str | None = None
 
 class GoogleUserBind(BaseModel):
     code: str
+    redirect_uri: str | None = None
 
 class GithubUserCreate(BaseModel):
     code: str
+    redirect_uri: str | None = None
 
 class GithubUserBind(BaseModel):
     code: str
+    redirect_uri: str | None = None
 
 class GoogleInfo(BaseModel):
     google_user_id: str

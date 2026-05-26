@@ -25,6 +25,11 @@ export interface GithubUserBind {
      * @memberof GithubUserBind
      */
     code: string;
+    /**
+     * @type {string}
+     * @memberof GithubUserBind
+     */
+    redirect_uri?: string | null;
 }
 
 /**
@@ -43,9 +48,10 @@ export function GithubUserBindFromJSONTyped(json: any, ignoreDiscriminator: bool
     if (json == null) {
         return json;
     }
-    return {
+        return {
         
         'code': json['code'],
+        'redirect_uri': json['redirect_uri'] == null ? undefined : json['redirect_uri'],
     };
 }
 
@@ -61,6 +67,6 @@ export function GithubUserBindToJSONTyped(value?: GithubUserBind | null, ignoreD
     return {
         
         'code': value['code'],
+        'redirect_uri': value['redirect_uri'],
     };
 }
-

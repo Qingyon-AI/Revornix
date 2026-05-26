@@ -6,7 +6,7 @@ import { utils } from '@kinda/utils';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { buildPublicAppUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
 
 const GoogleBindPage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -15,7 +15,10 @@ const GoogleBindPage = () => {
 	const code = searchParams.get('code');
 
 	const onBindGoogleUser = async (code: string) => {
-		const [res, err] = await utils.to(bindGoogle({ code }));
+		const [res, err] = await utils.to(bindGoogle({
+			code,
+			redirect_uri: buildOAuthCallbackUrl('google', 'bind'),
+		}));
 		if (err || !res) {
 			toast.error(err.message);
 			await utils.sleep(1000);
