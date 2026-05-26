@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { utils } from '@kinda/utils';
 import { useUserContext } from '@/provider/user-provider';
-import { decodeRedirectState } from '@/lib/safe-redirect';
 import { buildOAuthCallbackUrl, buildPublicAppUrl } from '@/lib/oauth';
+import { consumeOAuthState } from '@/lib/oauth-state';
 
 const GoogleCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -16,9 +16,8 @@ const GoogleCreatePage = () => {
 	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
-	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
-	const onCreateGoogleUser = async (code: string) => {
+	const onCreateGoogleUser = async (code: string, redirectTo: string) => {
 		const [res, err] = await utils.to(createUserByGoogle({
 			code,
 			redirect_uri: buildOAuthCallbackUrl('google', 'create'),
@@ -43,8 +42,20 @@ const GoogleCreatePage = () => {
 		}
 		if (consumed.current) return;
 		consumed.current = true;
-		onCreateGoogleUser(code);
-	}, [code]);
+		const handleCallback = async () => {
+			const oauthState = consumeOAuthState(searchParams.get('state'));
+			if (!oauthState.ok) {
+				toast.error('OAuth request expired or could not be verified');
+				await utils.sleep(1000);
+				window.location.replace(
+					buildPublicAppUrl(`/login?redirect_to=${encodeURIComponent(oauthState.redirect)}`)
+				);
+				return;
+			}
+			onCreateGoogleUser(code, oauthState.redirect);
+		};
+		handleCallback();
+	}, [code, searchParams]);
 
 	return (
 		<div className='flex h-screen w-full items-center justify-center px-4'>

@@ -651,6 +651,23 @@ async def bind_email_verify(
     await cache.delete(
         f'{user.id}-user-bind-email-{bind_email_verify_request.email}'
     )
+    # Defend against multiple bindings: get_email_user_by_user_id_async uses
+    # scalar_one_or_none, so inserting a second live row blows up /mine/info
+    # and password update for this user.
+    existing_email_user = await crud.user.get_email_user_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    if existing_email_user is not None:
+        raise CustomException(message="An email is already bound to this user", code=400)
+    # Re-check that nobody else grabbed this email between sending the code
+    # and verifying it.
+    email_taken = await crud.user.get_email_user_by_email_async(
+        db=db,
+        email=bind_email_verify_request.email,
+    )
+    if email_taken is not None:
+        raise CustomException(message="Email already exists", code=400)
     await crud.user.create_email_user_async(
         db=db,
         user_id=user.id,
@@ -881,6 +898,11 @@ async def update_token(
     )
     if user is None:
         raise CustomException(message="User for this refresh token was not found", code=403)
+    # Banned users keep their refresh token valid; without this guard they
+    # could mint new access tokens indefinitely (each request would still
+    # 403 at get_current_user, but we shouldn't even hand out the token).
+    if user.is_forbidden:
+        raise CustomException(message="User is forbidden", code=403)
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
     await db.commit()

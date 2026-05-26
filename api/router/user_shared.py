@@ -14,7 +14,7 @@ from schemas.error import CustomException
 
 async def authorize_existing_oauth_user(
     db: AsyncSession,
-    db_user: models.user.User,
+    db_user: models.user.User | None,
     ip: str | None,
 ) -> None:
     """Validate an existing user signing in via OAuth and refresh login metadata.
@@ -22,7 +22,19 @@ async def authorize_existing_oauth_user(
     Why: prior to this, OAuth flows returned a fresh token without checking
     `is_forbidden`, letting banned users keep logging in. Also kept
     last_login_ip/time stale for OAuth re-logins.
+
+    Defensive None check: every OAuth create-flow looks up a `*_user` record
+    by external id, then calls `get_user_by_id_async` which excludes
+    soft-deleted Users. If the foreign row is orphaned (e.g. via partial
+    commits, manual SQL, or future code paths that forget to soft-delete the
+    user-side mirror), `db_user` is None and accessing `.is_forbidden` would
+    raise AttributeError. Returning a clean 4xx is friendlier.
     """
+    if db_user is None:
+        raise CustomException(
+            message="WeChat user record exists, but the linked user was not found",
+            code=404,
+        )
     if db_user.is_forbidden:
         raise CustomException(message="User is forbidden", code=403)
     db_user.last_login_ip = ip

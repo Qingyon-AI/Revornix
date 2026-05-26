@@ -1098,13 +1098,20 @@ def get_wechat_user_by_wechat_union_id(
 async def get_wechat_user_by_wechat_union_id_async(
     db: AsyncSession,
     wechat_user_union_id: str,
+    include_deleted: bool = False,
 ):
-    result = await db.execute(
-        select(models.user.WechatUser).where(
-            models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
-            models.user.WechatUser.delete_at.is_(None),
-        )
+    # Deterministic ordering: prefer the most recently created live record so
+    # callers that look at [0] always land on the same row across DB engines.
+    stmt = select(models.user.WechatUser).where(
+        models.user.WechatUser.wechat_user_union_id == wechat_user_union_id,
     )
+    if not include_deleted:
+        stmt = stmt.where(models.user.WechatUser.delete_at.is_(None))
+    stmt = stmt.order_by(
+        models.user.WechatUser.delete_at.is_(None).desc(),
+        models.user.WechatUser.id.desc(),
+    )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 def get_phone_user_by_phone(

@@ -10,14 +10,17 @@ import { utils } from '@kinda/utils';
 import { useTranslations } from 'next-intl';
 import AccountUnbindConfirmButton from './account-unbind-confirm-button';
 import { buildOAuthCallbackUrl } from '@/lib/oauth';
+import { beginOAuthState } from '@/lib/oauth-state';
 
 const GitHubBind = () => {
 	const t = useTranslations();
 	const [unBindStatus, setUnBindStatus] = useState(false);
 	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
 	const handleBindGitHub = () => {
-		// redirect the user to github
-		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${buildOAuthCallbackUrl('github', 'bind')}`;
+		// `state` carries a CSRF nonce; the bind callback verifies it before
+		// trusting the OAuth code.
+		const state = beginOAuthState('/account');
+		const link = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&response_type=code&redirect_uri=${buildOAuthCallbackUrl('github', 'bind')}&state=${state}`;
 		window.location.assign(link);
 	};
 	const handleUnBindGitHub = async () => {

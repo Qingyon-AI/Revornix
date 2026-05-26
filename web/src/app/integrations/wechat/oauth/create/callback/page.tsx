@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { useUserContext } from '@/provider/user-provider';
 import { utils } from '@kinda/utils';
-import { decodeRedirectState } from '@/lib/safe-redirect';
+import { consumeOAuthState } from '@/lib/oauth-state';
 
 const WeChatCreatePage = () => {
 	const { refreshMainUserInfo } = useUserContext();
@@ -17,9 +17,8 @@ const WeChatCreatePage = () => {
 	const consumed = useRef(false);
 
 	const code = searchParams.get('code');
-	const redirectTo = decodeRedirectState(searchParams.get('state'));
 
-	const onCreateWeChatUser = async (code: string) => {
+	const onCreateWeChatUser = async (code: string, redirectTo: string) => {
 		const [res, err] = await utils.to(createUserByWechat({ code }));
 		if (err || !res) {
 			toast.error(err?.message ?? 'WeChat login failed');
@@ -39,8 +38,18 @@ const WeChatCreatePage = () => {
 		}
 		if (consumed.current) return;
 		consumed.current = true;
-		onCreateWeChatUser(code);
-	}, [code]);
+		const handleCallback = async () => {
+			const oauthState = consumeOAuthState(searchParams.get('state'));
+			if (!oauthState.ok) {
+				toast.error('OAuth request expired or could not be verified');
+				await utils.sleep(1000);
+				router.replace(`/login?redirect_to=${encodeURIComponent(oauthState.redirect)}`);
+				return;
+			}
+			onCreateWeChatUser(code, oauthState.redirect);
+		};
+		handleCallback();
+	}, [code, router, searchParams]);
 
 	return (
 		<div className='flex h-screen w-full items-center justify-center px-4'>

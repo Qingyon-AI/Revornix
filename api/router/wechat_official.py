@@ -18,12 +18,13 @@ import crud
 import models
 import schemas
 from common.document_creation import create_document_for_user
-from common.logger import exception_logger, format_log_message
+from common.logger import exception_logger, format_log_message, info_logger
 from common.wechat_official_login_session import (
     SceneKind,
     attach_bind_scan,
     confirm_login_session,
     detect_scene_kind,
+    get_session,
 )
 from common.timezone import UTC_TIMEZONE_NAME, get_cached_user_timezone
 from common.tp_auth.wechat_utils import (
@@ -362,6 +363,14 @@ async def _ensure_user_default_file_system(
     await db.refresh(user)
 
 
+def _shorten(value: str | None, head: int = 6, tail: int = 4) -> str:
+    if not value:
+        return "<empty>"
+    if len(value) <= head + tail + 1:
+        return value
+    return f"{value[:head]}…{value[-tail:]}"
+
+
 async def _resolve_wechat_official_user(
     *,
     db,
@@ -369,6 +378,13 @@ async def _resolve_wechat_official_user(
     union_id: str,
     nickname: str | None,
 ) -> models.user.User:
+    info_logger.info(
+        format_log_message(
+            "wechat_official_resolve_start",
+            openid=_shorten(openid),
+            union_id=_shorten(union_id),
+        )
+    )
     db_official_user = await crud.user.get_wechat_user_by_wechat_open_id_async(
         db=db,
         wechat_user_open_id=openid,
@@ -391,38 +407,39 @@ async def _resolve_wechat_official_user(
             should_commit = True
         if should_commit:
             await db.commit()
+        info_logger.info(
+            format_log_message(
+                "wechat_official_resolve_hit_openid",
+                user_id=db_user.id,
+                union_id=_shorten(union_id),
+            )
+        )
         return db_user
 
-    deleted_official_user = await crud.user.get_wechat_user_by_wechat_open_id_async(
-        db=db,
-        wechat_user_open_id=openid,
-        filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
-        include_deleted=True,
-    )
-    if deleted_official_user is not None and deleted_official_user.delete_at is not None:
-        db_user = await crud.user.get_user_by_id_async(
-            db=db,
-            user_id=deleted_official_user.user_id,
-        )
-        if db_user is not None:
-            deleted_official_user.delete_at = None
-            deleted_official_user.wechat_user_union_id = union_id
-            normalized_nickname = _truncate_text(nickname, 100)
-            if normalized_nickname:
-                deleted_official_user.wechat_user_name = normalized_nickname
-            await db.commit()
-            return db_user
-
+    # Step 2 — find a live record by unionid across all platforms. This is
+    # the cross-app merge path (e.g. user is currently bound on platform=1
+    # and scans an official-account QR for the first time → attach a new
+    # platform=3 row to the same Revornix user).
+    #
+    # We deliberately *do not* fall back to soft-deleted records here.
+    # If the user explicitly unbound (or had their wechat_user row soft-
+    # deleted via account /delete + re-register), they expect a fresh
+    # Revornix account on the next OAuth signin, not a silent resurrection
+    # of the abandoned one. Same policy as Google/GitHub flows.
     db_wechat_users = await crud.user.get_wechat_user_by_wechat_union_id_async(
         db=db,
         wechat_user_union_id=union_id,
     )
     db_user = None
-    if db_wechat_users:
-        db_user = await crud.user.get_user_by_id_async(
+    for record in db_wechat_users:
+        candidate = await crud.user.get_user_by_id_async(
             db=db,
-            user_id=db_wechat_users[0].user_id,
+            user_id=record.user_id,
         )
+        if candidate is not None:
+            db_user = candidate
+            break
+
     if db_user is None:
         normalized_nickname = _normalize_nickname(nickname)
         db_user = await crud.user.create_base_user_async(
@@ -446,17 +463,60 @@ async def _resolve_wechat_official_user(
             db=db,
             file_service=file_service,
         )
+        info_logger.info(
+            format_log_message(
+                "wechat_official_resolve_created_new_user",
+                user_id=db_user.id,
+                union_id=_shorten(union_id),
+                openid=_shorten(openid),
+                live_union_id_matches=len(db_wechat_users),
+            )
+        )
         return db_user
 
-    await crud.user.create_wechat_user_async(
+    # Only create a new platform=3 record when one doesn't exist yet for this
+    # user (e.g. step 3.5 revival already attached a record). Without this
+    # guard we'd create duplicate official-account rows on every later scan
+    # of a user whose old record was revived.
+    existing_official = await crud.user.get_wechat_user_by_user_id_async(
         db=db,
         user_id=db_user.id,
-        wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
-        wechat_user_open_id=openid,
-        wechat_user_union_id=union_id,
-        wechat_user_name=_truncate_text(nickname, 100, fallback=db_user.nickname),
+        filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
     )
+    if len(existing_official) == 0:
+        await crud.user.create_wechat_user_async(
+            db=db,
+            user_id=db_user.id,
+            wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
+            wechat_user_open_id=openid,
+            wechat_user_union_id=union_id,
+            wechat_user_name=_truncate_text(nickname, 100, fallback=db_user.nickname),
+        )
+
+    # Sync the canonical unionid across all of this user's wechat_user rows.
+    # If the user's open-platform binding changed historically, older rows may
+    # carry a stale unionid and the next signin would otherwise miss them
+    # again. We touch only rows whose unionid drifted to avoid noisy writes.
+    all_user_records = await crud.user.get_wechat_user_by_user_id_async(
+        db=db,
+        user_id=db_user.id,
+    )
+    drift_count = 0
+    for record in all_user_records:
+        if record.wechat_user_union_id != union_id:
+            record.wechat_user_union_id = union_id
+            drift_count += 1
+
     await db.commit()
+    info_logger.info(
+        format_log_message(
+            "wechat_official_resolve_attached_to_user",
+            user_id=db_user.id,
+            union_id=_shorten(union_id),
+            union_id_drift_fixed=drift_count,
+            attached_new_record=len(existing_official) == 0,
+        )
+    )
     return db_user
 
 
@@ -891,6 +951,35 @@ async def receive_wechat_official_message(
                     nonce=nonce,
                 )
             if scene_kind == "bind":
+                # Anti-phishing UX: the user scanning the QR is not
+                # necessarily the user who created the bind session. Without
+                # showing the target Revornix account nickname here, an
+                # attacker could generate a bind QR for their own account
+                # and trick a victim into scanning it; the victim's WeChat
+                # would silently get attached to the attacker. By echoing
+                # the target nickname back inside WeChat, the victim has a
+                # chance to notice "I'm not 张三, this is wrong".
+                target_nickname: str | None = None
+                bind_session = get_session(scene_str)
+                if bind_session is not None and bind_session.user_id is not None:
+                    try:
+                        async with async_session_context() as nickname_db:
+                            target_user = await crud.user.get_user_by_id_async(
+                                db=nickname_db,
+                                user_id=bind_session.user_id,
+                            )
+                            if target_user is not None:
+                                target_nickname = target_user.nickname
+                    except Exception as exc:
+                        # Logging only — we still want to send a reply.
+                        exception_logger.error(
+                            format_log_message(
+                                "wechat_official_bind_nickname_lookup_failed",
+                                scene_str=scene_str,
+                                error=exc,
+                            )
+                        )
+
                 _spawn_background(
                     _process_wechat_official_bind_scan(
                         incoming_message.from_user_name,
@@ -899,9 +988,22 @@ async def receive_wechat_official_message(
                         app_secret,
                     )
                 )
+
+                if target_nickname:
+                    reply_content = (
+                        f"已收到你的扫码请求，正在绑定到 Revornix 账号「{target_nickname}」。\n"
+                        "如果你不认识这个账号或并未在网页发起绑定，请忽略本消息——"
+                        "你可以在公众号后台或 Revornix 网页随时解绑。"
+                    )
+                else:
+                    reply_content = (
+                        "已收到你的扫码请求，绑定信息已记录。\n"
+                        "如果不是你本人发起的操作，请忽略本消息。"
+                    )
+
                 return _build_text_reply_response(
                     incoming_message=incoming_message,
-                    content="账号绑定已确认，请回到网页查看结果。",
+                    content=reply_content,
                     is_encrypted_request=is_encrypted_request,
                     crypto_config=crypto_config,
                     nonce=nonce,

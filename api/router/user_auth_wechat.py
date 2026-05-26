@@ -294,7 +294,10 @@ async def query_wechat_official_login_status(
     ip: str | None = Depends(get_real_ip),
 ):
     session = get_session(request_body.scene_str)
-    if session is None:
+    if session is None or session.kind != 'login':
+        # Treat wrong-kind scenes as expired. Without this guard a bind scene
+        # — whose `user_id` is filled at creation time — could be replayed
+        # against this anonymous endpoint to mint tokens for the bind target.
         return schemas.user.WeChatOfficialQrStatusResponse(status='expired')
 
     if session.status == 'pending':
@@ -430,29 +433,19 @@ async def query_wechat_official_bind_status(
             consume_session(request_body.scene_str)
             return schemas.user.WeChatOfficialBindQrStatusResponse(status='confirmed')
 
-        # Try to revive a soft-deleted record for this openid before creating
-        # a new one, to match the resolution behaviour elsewhere.
-        soft_deleted = await crud.user.get_wechat_user_by_wechat_open_id_async(
+        # Always create a fresh wechat_user row. Soft-deleted records are
+        # treated as historical artifacts — reviving them would silently
+        # re-attach the new bind to whatever user owned the row before,
+        # which conflicts with the policy that an unbound link should not
+        # resurrect old account state.
+        await crud.user.create_wechat_user_async(
             db=db,
+            user_id=user.id,
+            wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
             wechat_user_open_id=openid,
-            filter_wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
-            include_deleted=True,
+            wechat_user_union_id=union_id,
+            wechat_user_name=(nickname or '')[:100] or None,
         )
-        if soft_deleted is not None and soft_deleted.delete_at is not None:
-            soft_deleted.delete_at = None
-            soft_deleted.user_id = user.id
-            soft_deleted.wechat_user_union_id = union_id
-            if nickname:
-                soft_deleted.wechat_user_name = nickname[:100]
-        else:
-            await crud.user.create_wechat_user_async(
-                db=db,
-                user_id=user.id,
-                wechat_platform=WeChatUserSource.REVORNIX_OFFICIAL_ACCOUNT,
-                wechat_user_open_id=openid,
-                wechat_user_union_id=union_id,
-                wechat_user_name=(nickname or '')[:100] or None,
-            )
         await db.commit()
         consume_session(request_body.scene_str)
         return schemas.user.WeChatOfficialBindQrStatusResponse(status='confirmed')

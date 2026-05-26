@@ -152,6 +152,14 @@ async def bind_phone_verify(
     await cache.delete(
         f'{user.id}-user-bind-sms-{bind_phone_code_verify_request.phone}'
     )
+    # Defend against multiple bindings: get_phone_user_by_user_id_async uses
+    # scalar_one_or_none, so a second live row breaks /mine/info for the user.
+    existing_phone_user = await crud.user.get_phone_user_by_user_id_async(
+        db=db,
+        user_id=user.id,
+    )
+    if existing_phone_user is not None:
+        raise CustomException(message='A phone number is already bound to this user', code=400)
     phone_exist = await crud.user.get_phone_user_by_phone_async(
         db=db,
         phone=bind_phone_code_verify_request.phone
