@@ -39,7 +39,8 @@ import { useLoginProvider } from '@/provider/login-provider';
 import WechatIcon from '../icons/wechat-icon';
 import { encodeRedirectState, getSafeRedirectPage } from '@/lib/safe-redirect';
 import { isEnvEnabled } from '@/lib/env';
-import { buildOAuthCallbackUrl, buildWechatCallbackUrl } from '@/lib/oauth';
+import { buildOAuthCallbackUrl } from '@/lib/oauth';
+import WechatLoginQrPanel from './wechat-login-qr-panel';
 
 const EmailLoginForm = () => {
 	const t = useTranslations();
@@ -55,6 +56,7 @@ const EmailLoginForm = () => {
 	const redirect_page = getSafeRedirectPage(searchParams.get('redirect_to'));
 	const redirectState = encodeRedirectState(searchParams.get('redirect_to'));
 	const [submitLoading, setSubmitLoading] = useState(false);
+	const [showWechatLogin, setShowWechatLogin] = useState(false);
 	const router = useRouter();
 	const { refreshMainUserInfo } = useUserContext();
 	const emailForm = useForm<z.infer<typeof emailFormSchema>>({
@@ -117,7 +119,14 @@ const EmailLoginForm = () => {
 		window.location.assign(link);
 	};
 
-	const wechatCreateRedirectUri = buildWechatCallbackUrl('create');
+	if (showWechatLogin) {
+		return (
+			<WechatLoginQrPanel
+				redirectState={redirectState}
+				onBack={() => setShowWechatLogin(false)}
+			/>
+		);
+	}
 
 	return (
 		<Form {...emailForm}>
@@ -183,16 +192,14 @@ const EmailLoginForm = () => {
 								</span>
 							</div>
 							<div className='w-full grid grid-cols-4 gap-2'>
-								<Link
-									href={`https://open.weixin.qq.com/connect/qrconnect?appid=${
-										process.env.NEXT_PUBLIC_WECHAT_APP_ID
-									}&redirect_uri=${encodeURIComponent(
-										wechatCreateRedirectUri
-									)}&response_type=code&scope=snsapi_login&state=${redirectState}#wechat_redirect`}>
-									<Button type='button' variant='outline' className='h-11 w-full rounded-xl shadow-none'>
-										<WechatIcon />
-									</Button>
-								</Link>
+								<Button
+									type='button'
+									variant='outline'
+									className='h-11 w-full rounded-xl shadow-none'
+									aria-label={t('seo_login_wechat')}
+									onClick={() => setShowWechatLogin(true)}>
+									<WechatIcon />
+								</Button>
 								<Button
 									type='button'
 									variant='outline'

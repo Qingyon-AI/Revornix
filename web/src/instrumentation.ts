@@ -15,6 +15,22 @@ export const register = async () => {
     if (process.env.NEXT_RUNTIME !== 'nodejs') {
         return;
     }
+    // Why this opt-out: Next.js 16 + Turbopack dev mode generates an enormous
+    // number of short-lived promises during React Server rendering. The
+    // `@vercel/otel` SDK installs a Node async-hooks tracer that records every
+    // promise in an internal Map, which quickly hits V8's ~16M-entry limit and
+    // crashes the dev server with `RangeError: Map maximum size exceeded`. We
+    // therefore skip OTel registration in dev unless the developer explicitly
+    // opts in by setting `OTEL_ENABLED=true`.
+    const isProduction = process.env.NODE_ENV === 'production';
+    const explicitlyEnabled = process.env.OTEL_ENABLED === 'true';
+    const explicitlyDisabled = process.env.OTEL_ENABLED === 'false';
+    if (explicitlyDisabled) {
+        return;
+    }
+    if (!isProduction && !explicitlyEnabled) {
+        return;
+    }
     const serviceName = process.env.OTEL_SERVICE_NAME || 'revornix-web';
     console.log(`registering instrumentation, ${serviceName}`);
     registerOTel({

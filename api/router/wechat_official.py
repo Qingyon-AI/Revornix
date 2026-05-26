@@ -19,6 +19,12 @@ import models
 import schemas
 from common.document_creation import create_document_for_user
 from common.logger import exception_logger, format_log_message
+from common.wechat_official_login_session import (
+    SceneKind,
+    attach_bind_scan,
+    confirm_login_session,
+    detect_scene_kind,
+)
 from common.timezone import UTC_TIMEZONE_NAME, get_cached_user_timezone
 from common.tp_auth.wechat_utils import (
     WeChatMediaDownload,
@@ -93,6 +99,8 @@ class WeChatOfficialIncomingMessage:
     format: str | None = None
     recognition: str | None = None
     event: str | None = None
+    event_key: str | None = None
+    ticket: str | None = None
 
 
 def _get_wechat_official_settings() -> tuple[str | None, str | None, str | None, str | None]:
@@ -239,7 +247,31 @@ def _parse_wechat_official_message(body: bytes) -> WeChatOfficialIncomingMessage
         format=payload.get("Format"),
         recognition=payload.get("Recognition"),
         event=payload.get("Event", "").lower() or None,
+        event_key=payload.get("EventKey") or None,
+        ticket=payload.get("Ticket") or None,
     )
+
+
+def _extract_qr_scene(
+    event: str | None,
+    event_key: str | None,
+) -> tuple[SceneKind, str] | None:
+    """Pull a managed scene_str out of a SCAN / subscribe-with-qrscene event."""
+    if not event_key:
+        return None
+    candidate: str | None = None
+    if event == "subscribe":
+        # Subscribe via scanning a parameterized QR carries "qrscene_" prefix.
+        if event_key.startswith("qrscene_"):
+            candidate = event_key[len("qrscene_"):]
+    elif event == "scan":
+        candidate = event_key
+    if candidate is None:
+        return None
+    kind = detect_scene_kind(candidate)
+    if kind is None:
+        return None
+    return kind, candidate
 
 
 def _extract_encrypted_message(body: bytes) -> str | None:
@@ -616,6 +648,86 @@ async def _process_wechat_official_message(
         )
 
 
+async def _process_wechat_official_login_scan(
+    openid: str,
+    scene_str: str,
+    app_id: str,
+    app_secret: str,
+) -> None:
+    try:
+        access_token = await get_official_wechat_access_token(
+            app_id=app_id,
+            app_secret=app_secret,
+        )
+        wechat_user_info = await get_official_wechat_user_info(
+            access_token=access_token,
+            openid=openid,
+        )
+        if wechat_user_info.unionid is None:
+            raise Exception(
+                "WeChat official account unionid is missing. Please ensure the official account is bound to the same Open Platform account."
+            )
+        async with async_session_context() as db:
+            db_user = await _resolve_wechat_official_user(
+                db=db,
+                openid=openid,
+                union_id=wechat_user_info.unionid,
+                nickname=wechat_user_info.nickname,
+            )
+        confirm_login_session(scene_str, db_user.id)
+    except Exception as exc:
+        exception_logger.error(
+            format_log_message(
+                "wechat_official_login_scan_failed",
+                openid=openid,
+                scene_str=scene_str,
+                error=exc,
+            )
+        )
+
+
+async def _process_wechat_official_bind_scan(
+    openid: str,
+    scene_str: str,
+    app_id: str,
+    app_secret: str,
+) -> None:
+    """Capture identity for a bind-flow scan.
+
+    Unlike the login flow we do *not* write to the database here. The actual
+    bind happens in the authenticated polling endpoint, which can return
+    detailed errors (already bound, openid taken, etc.) to the user.
+    """
+    try:
+        access_token = await get_official_wechat_access_token(
+            app_id=app_id,
+            app_secret=app_secret,
+        )
+        wechat_user_info = await get_official_wechat_user_info(
+            access_token=access_token,
+            openid=openid,
+        )
+        if wechat_user_info.unionid is None:
+            raise Exception(
+                "WeChat official account unionid is missing. Please ensure the official account is bound to the same Open Platform account."
+            )
+        attach_bind_scan(
+            scene_str=scene_str,
+            openid=openid,
+            unionid=wechat_user_info.unionid,
+            nickname=wechat_user_info.nickname,
+        )
+    except Exception as exc:
+        exception_logger.error(
+            format_log_message(
+                "wechat_official_bind_scan_failed",
+                openid=openid,
+                scene_str=scene_str,
+                error=exc,
+            )
+        )
+
+
 async def _process_wechat_official_unsubscribe(
     openid: str,
 ) -> None:
@@ -756,6 +868,44 @@ async def receive_wechat_official_message(
     incoming_message = _parse_wechat_official_message(parsed_body)
 
     if incoming_message.msg_type == "event":
+        qr_scene = _extract_qr_scene(
+            incoming_message.event,
+            incoming_message.event_key,
+        )
+        if qr_scene is not None and app_id and app_secret:
+            scene_kind, scene_str = qr_scene
+            if scene_kind == "login":
+                _spawn_background(
+                    _process_wechat_official_login_scan(
+                        incoming_message.from_user_name,
+                        scene_str,
+                        app_id,
+                        app_secret,
+                    )
+                )
+                return _build_text_reply_response(
+                    incoming_message=incoming_message,
+                    content="登录成功，请回到网页继续操作。",
+                    is_encrypted_request=is_encrypted_request,
+                    crypto_config=crypto_config,
+                    nonce=nonce,
+                )
+            if scene_kind == "bind":
+                _spawn_background(
+                    _process_wechat_official_bind_scan(
+                        incoming_message.from_user_name,
+                        scene_str,
+                        app_id,
+                        app_secret,
+                    )
+                )
+                return _build_text_reply_response(
+                    incoming_message=incoming_message,
+                    content="账号绑定已确认，请回到网页查看结果。",
+                    is_encrypted_request=is_encrypted_request,
+                    crypto_config=crypto_config,
+                    nonce=nonce,
+                )
         if incoming_message.event == "subscribe":
             if app_id and app_secret:
                 _spawn_background(
