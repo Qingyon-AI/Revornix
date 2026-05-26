@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Code2, Expand, Eye, Loader2, Shrink, SquarePen } from 'lucide-react';
+import { Code2, Expand, Eye, Loader2, Save, Shrink, SquarePen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -107,7 +107,7 @@ const EditableMarkdownPanel = ({
 		setIsEditing(false);
 	};
 
-	const handleSave = async () => {
+	const handleSave = useCallback(async () => {
 		if (!hasChanges) {
 			toast.info(t('form_no_change'));
 			return;
@@ -126,7 +126,34 @@ const EditableMarkdownPanel = ({
 		} finally {
 			setIsSaving(false);
 		}
-	};
+	}, [hasChanges, isSaving, normalizedDraft, onSave, t]);
+
+	useEffect(() => {
+		if (!isEditing || !isEditorFullscreen) {
+			return;
+		}
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (
+				event.key.toLowerCase() !== 's' ||
+				!(event.metaKey || event.ctrlKey) ||
+				event.shiftKey ||
+				event.altKey
+			) {
+				return;
+			}
+
+			event.preventDefault();
+			if (!isSaving) {
+				void handleSave();
+			}
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		return () => {
+			window.removeEventListener('keydown', onKeyDown);
+		};
+	}, [isEditing, isEditorFullscreen, isSaving, handleSave]);
 
 	const queueVisualMode = () => {
 		setDraft((current) => {
@@ -183,6 +210,25 @@ const EditableMarkdownPanel = ({
 					{t('markdown_edit_source_mode')}
 				</div>
 				<div className='flex items-center gap-1'>
+					{isEditorFullscreen ? (
+						<Button
+							type='button'
+							variant='ghost'
+							size='sm'
+							className='h-8 gap-1.5 px-2'
+							title={t('markdown_edit_fullscreen_save')}
+							onClick={() => {
+								void handleSave();
+							}}
+							disabled={isSaving}>
+							{isSaving ? (
+								<Loader2 className='size-4 animate-spin' />
+							) : (
+								<Save className='size-4' />
+							)}
+							{t('save')}
+						</Button>
+					) : null}
 					<Button
 						type='button'
 						variant='ghost'
@@ -301,6 +347,11 @@ const EditableMarkdownPanel = ({
 								className='min-h-[32rem]'
 								fullscreen={isEditorFullscreen}
 								onFullscreenChange={setIsEditorFullscreen}
+								onFullscreenSave={() => {
+									void handleSave();
+								}}
+								fullscreenSaveDisabled={isSaving}
+								fullscreenSaveLoading={isSaving}
 								onInitialParse={handleInitialVisualParse}
 								toolbarEnd={
 									<Button

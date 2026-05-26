@@ -12,6 +12,7 @@ import ImageNode from './extensions/image-node';
 import DrawingNode from './extensions/drawing-node';
 import TableNode from './extensions/table-node';
 import VideoEmbedNode from './extensions/video-embed-node';
+import MapEmbedNode from './extensions/map-embed-node';
 import MathBlockNode from './extensions/math-block-node';
 import MathInlineNode from './extensions/math-inline-node';
 import TextColorMark from './extensions/text-color-mark';
@@ -43,6 +44,7 @@ const TipTapMarkdownViewer = ({
 				DrawingNode,
 				TableNode,
 				VideoEmbedNode,
+				MapEmbedNode,
 				MathBlockNode,
 				MathInlineNode,
 				UnderlineExtension,
