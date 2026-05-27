@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import Cookies from 'js-cookie';
 import {
 	ArrowLeft,
 	FileText,
 	LayoutDashboard,
+	Loader2,
 	Shield,
 	ShieldCheck,
 	Users,
@@ -50,7 +53,33 @@ const ADMIN_NAV_ITEMS = [
 const AdminLayoutShell = ({ children }: { children: React.ReactNode }) => {
 	const t = useTranslations();
 	const pathname = usePathname();
+	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
+
+	const hasAccessToken =
+		typeof window !== 'undefined' && Boolean(Cookies.get('access_token'));
+	const isAdmin =
+		mainUserInfo?.role === UserRole.ADMIN ||
+		mainUserInfo?.role === UserRole.ROOT;
+
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		if (!Cookies.get('access_token')) {
+			router.replace('/dashboard');
+			return;
+		}
+		if (mainUserInfo && !isAdmin) {
+			router.replace('/dashboard');
+		}
+	}, [mainUserInfo, isAdmin, router]);
+
+	if (!hasAccessToken || !mainUserInfo || !isAdmin) {
+		return (
+			<div className='flex min-h-screen w-full items-center justify-center'>
+				<Loader2 className='size-5 animate-spin text-muted-foreground' />
+			</div>
+		);
+	}
 
 	return (
 		<div className='min-h-screen dark:'>
