@@ -255,9 +255,12 @@ async def _load_markdown_content(
         )
         if note is None or not note.md_file_name:
             raise ValueError("Quick note document not found")
-        return cast(str, await remote_file_service.get_file_content_by_file_path(
+        raw_content = await remote_file_service.get_file_content_by_file_path(
             file_path=note.md_file_name
-        ))
+        )
+        if isinstance(raw_content, bytes):
+            return raw_content.decode("utf-8")
+        return cast(str, raw_content)
     elif cat == DocumentCategory.AUDIO:
         transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
             db=db, 
