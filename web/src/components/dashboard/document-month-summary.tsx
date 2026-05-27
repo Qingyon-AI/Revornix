@@ -18,11 +18,11 @@ import { useQuery } from '@tanstack/react-query';
 import { summaryMonthDocumentCount } from '@/service/document';
 import { format, subDays } from 'date-fns';
 import { useMemo } from 'react';
-import { Skeleton } from '../ui/skeleton';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { BarChart3 } from 'lucide-react';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { MonthChartSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const DocumentMonthSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
@@ -69,7 +69,7 @@ const DocumentMonthSummary = ({ className }: { className?: string }) => {
 				<CardDescription>{t('month_summary_description')}</CardDescription>
 			</CardHeader>
 			<CardContent>
-				{isFetching && <Skeleton className='w-full h-[250px]' />}
+				{isFetching && <MonthChartSkeleton />}
 				{!isFetching && data && (
 					<ChartContainer config={chartConfig} className='mx-auto w-full h-[250px]'>
 						<BarChart accessibilityLayer data={fillMissingDates}>

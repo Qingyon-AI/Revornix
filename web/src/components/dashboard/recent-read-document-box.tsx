@@ -22,6 +22,7 @@ import {
 import { Clock3 } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { StackedDocumentsSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const RecentReadDocumentBox = () => {
 	const t = useTranslations();
@@ -58,7 +59,7 @@ const RecentReadDocumentBox = () => {
 			</CardHeader>
 			<CardContent className='flex-1 px-5 pt-0'>
 				{isFetchingRecentReadDocuments && (
-					<Skeleton className='h-32 w-full rounded-xl' />
+					<StackedDocumentsSkeleton />
 				)}
 				{!isFetchingRecentReadDocuments &&
 					recentReadDocuments &&

@@ -22,6 +22,7 @@ import {
 import { Star, StarOff } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { StackedDocumentsSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const StarDocumentBox = () => {
 	const t = useTranslations();
@@ -57,7 +58,7 @@ const StarDocumentBox = () => {
 			</CardHeader>
 			<CardContent className='flex-1 px-5 pt-0'>
 				{isFetchingStarDocuments && (
-					<Skeleton className='h-32 w-full rounded-xl' />
+					<StackedDocumentsSkeleton />
 				)}
 				{!isFetchingStarDocuments &&
 					starDocuments &&

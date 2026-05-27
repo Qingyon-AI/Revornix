@@ -28,7 +28,6 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 } from '@/components/ui/empty';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import AudioPlayer from '@/components/ui/audio-player';
 import { SectionPodcastStatus, SectionProcessStatus } from '@/enums/section';
@@ -37,6 +36,7 @@ import { getSectionAutomationWarnings } from '@/lib/section-automation';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { TodaySummarySkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const TodaySummary = () => {
 	const t = useTranslations();
@@ -228,7 +228,7 @@ const TodaySummary = () => {
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{isFetching && !section && (
-					<Skeleton className='h-48 w-full rounded-2xl' />
+					<TodaySummarySkeleton />
 				)}
 				{isError && (
 					<Empty>

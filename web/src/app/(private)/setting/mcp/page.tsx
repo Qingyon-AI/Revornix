@@ -116,6 +116,30 @@ const MCPPage = () => {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
+						{isFetching && !isRefetching
+							? Array.from({ length: 5 }).map((_, index) => (
+									<TableRow key={`mcp-skeleton-${index}`}>
+										<TableCell>
+											<Skeleton className='h-4 w-32 rounded-full' />
+										</TableCell>
+										<TableCell>
+											<Skeleton className='h-6 w-14 rounded-full' />
+										</TableCell>
+										<TableCell>
+											<Skeleton className='h-4 w-48 max-w-full rounded-full' />
+										</TableCell>
+										<TableCell>
+											<Skeleton className='h-6 w-10 rounded-full' />
+										</TableCell>
+										<TableCell>
+											<div className='flex gap-2'>
+												<Skeleton className='size-9 rounded-md' />
+												<Skeleton className='size-9 rounded-md' />
+											</div>
+										</TableCell>
+									</TableRow>
+								))
+							: null}
 						{data &&
 							data.data &&
 							data.data.length > 0 &&
@@ -189,7 +213,6 @@ const MCPPage = () => {
 							})}
 					</TableBody>
 				</Table>
-				{isFetching && !isRefetching && <Skeleton className='w-full h-52' />}
 				{data && data.data && data.data.length === 0 && (
 					<div className='text-center p-5 text-xs text-muted-foreground rounded bg-muted'>
 						{t('mcp_server_empty')}

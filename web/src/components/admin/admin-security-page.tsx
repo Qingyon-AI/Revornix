@@ -31,6 +31,52 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
+const SecuritySummarySkeleton = () => {
+	return (
+		<div className='overflow-hidden rounded-[20px] border border-border/60'>
+			<div className='grid grid-cols-4 border-b border-border/60 bg-muted/30 px-4 py-3'>
+				{Array.from({ length: 4 }).map((_, index) => (
+					<Skeleton key={index} className='h-4 w-24 rounded-full' />
+				))}
+			</div>
+			<div className='divide-y divide-border/50'>
+				{Array.from({ length: 7 }).map((_, rowIndex) => (
+					<div key={rowIndex} className='grid grid-cols-4 px-4 py-3'>
+						<Skeleton className='h-4 w-32 rounded-full' />
+						<Skeleton className='h-4 w-10 rounded-full' />
+						<Skeleton className='h-4 w-10 rounded-full' />
+						<Skeleton className='h-4 w-10 rounded-full' />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+};
+
+const SecurityEventsSkeleton = () => {
+	return (
+		<div className='space-y-3'>
+			{Array.from({ length: 4 }).map((_, index) => (
+				<div
+					key={index}
+					className='rounded-2xl border border-border/60 bg-background/60 p-4'>
+					<div className='flex flex-wrap gap-2'>
+						<Skeleton className='h-6 w-20 rounded-full' />
+						<Skeleton className='h-6 w-24 rounded-full' />
+						<Skeleton className='h-6 w-16 rounded-full' />
+					</div>
+					<div className='mt-3 space-y-2'>
+						<Skeleton className='h-4 w-3/4 rounded-full' />
+						<Skeleton className='h-4 w-full rounded-full' />
+						<Skeleton className='h-4 w-5/6 rounded-full' />
+						<Skeleton className='h-3.5 w-1/2 rounded-full' />
+					</div>
+				</div>
+			))}
+		</div>
+	);
+};
+
 const AdminSecurityPage = () => {
 	const t = useTranslations();
 
@@ -86,7 +132,7 @@ const AdminSecurityPage = () => {
 							</CardHeader>
 							<CardContent className='min-h-[360px]'>
 								{antiScrapeQuery.isLoading ? (
-									<Skeleton className='h-[360px] rounded-[20px]' />
+									<SecuritySummarySkeleton />
 								) : antiScrapeQuery.isError ? (
 									<Empty className='flex min-h-[360px] items-center justify-center rounded-[20px]'>
 										<EmptyHeader>
@@ -153,7 +199,7 @@ const AdminSecurityPage = () => {
 							</CardHeader>
 							<CardContent className='min-h-[360px] space-y-3'>
 								{antiScrapeQuery.isLoading ? (
-									<Skeleton className='h-[360px] rounded-[20px]' />
+									<SecurityEventsSkeleton />
 								) : antiScrapeQuery.isError ? (
 									<Empty className='flex min-h-[360px] items-center justify-center rounded-[20px]'>
 										<EmptyHeader>

@@ -18,7 +18,6 @@ import {
 import { getDocumentLabelSummary } from '@/service/document';
 import { useQuery } from '@tanstack/react-query';
 import { cn, getRandomColor } from '@/lib/utils';
-import { Skeleton } from '../ui/skeleton';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -29,6 +28,7 @@ import {
 } from '@/components/ui/empty';
 import { PieChart as PieChartIcon, Tags } from 'lucide-react';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { LabelChartSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const DocumentLabelSummary = ({ className }: { className?: string }) => {
 	const t = useTranslations();
@@ -75,7 +75,7 @@ const DocumentLabelSummary = ({ className }: { className?: string }) => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1 pb-0'>
-				{isFetching && <Skeleton className='w-full h-[250px]' />}
+				{isFetching && <LabelChartSkeleton />}
 				{!isFetching && data && colorizedData.length > 0 && (
 					<ChartContainer
 						config={chartConfig}
