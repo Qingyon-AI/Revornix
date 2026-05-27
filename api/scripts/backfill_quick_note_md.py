@@ -94,7 +94,7 @@ async def _backfill_row(
     await file_service.upload_raw_content_to_path(
         file_path=md_file_name,
         content=content.encode("utf-8"),
-        content_type="text/markdown; charset=utf-8",
+        content_type="text/plain",
     )
 
     async with async_session_context() as db:

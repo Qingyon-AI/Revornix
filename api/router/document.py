@@ -987,7 +987,7 @@ async def update_document(
         await remote_file_service.upload_raw_content_to_path(
             file_path=db_quick_note_document.md_file_name,
             content=document_update_request.content.encode("utf-8"),
-            content_type="text/markdown; charset=utf-8",
+            content_type="text/plain",
         )
         db_document.content_update_time = now
     if document_update_request.labels is not None:

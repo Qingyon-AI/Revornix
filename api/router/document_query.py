@@ -296,6 +296,15 @@ async def _resolve_document_markdown_file_path(
             raise schemas.error.CustomException("Document markdown is not ready", code=404)
         return snapshot.md_file_name
 
+    if document.category == DocumentCategory.QUICK_NOTE:
+        quick_note_document = await crud.document.get_quick_note_document_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        if quick_note_document is None or not quick_note_document.md_file_name:
+            raise schemas.error.CustomException("Document markdown is not ready", code=404)
+        return quick_note_document.md_file_name
+
     task_bundle_row = await crud.task.get_document_task_bundle_by_document_id_async(
         db=db,
         document_id=document.id,

@@ -386,7 +386,7 @@ async def create_document_for_user(
         await remote_file_service.upload_raw_content_to_path(
             file_path=md_file_name,
             content=document_create_request.content.encode("utf-8"),
-            content_type="text/markdown; charset=utf-8",
+            content_type="text/plain",
         )
         await crud.document.create_quick_note_document_async(
             db=db,
