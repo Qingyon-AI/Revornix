@@ -78,7 +78,7 @@ class QuickNoteDocument(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
-    content: Mapped[str] = mapped_column(Text(), nullable=False)
+    md_file_name: Mapped[str] = mapped_column(String(500), nullable=False, comment='The path of the quick note markdown file in the user file system')
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

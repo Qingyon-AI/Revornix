@@ -1,15 +1,20 @@
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { getDocumentDetail, updateDocument } from '@/service/document';
+import {
+	getDocumentDetail,
+	getDocumentMarkdownContent,
+	updateDocument,
+} from '@/service/document';
 import 'katex/dist/katex.min.css';
 import { MarkdownContentSkeleton } from '../ui/skeleton';
 import { useInView } from 'react-intersection-observer';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { useInterval } from 'ahooks';
 import { useUserContext } from '@/provider/user-provider';
 import { useTranslations } from 'next-intl';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
+import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import useDocumentMarkdownEditable from '@/hooks/use-document-markdown-editable';
 
@@ -49,6 +54,16 @@ const QuickDocumentDetail = ({
 	}, delay);
 
 	const [markdownRendered, setMarkdownRendered] = useState(false);
+	const [markdown, setMarkdown] = useState<string>();
+	const [markdownGetError, setMarkdownGetError] = useState<string>();
+	const loadedMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const loadingMarkdownSourceKeyRef = useRef<string | undefined>(undefined);
+	const stableMarkdownSourceKey = toStableMarkdownSourceKey(
+		document?.quick_note_info?.md_file_name,
+	);
+	const markdownSourceKey = stableMarkdownSourceKey
+		? `${stableMarkdownSourceKey}:${document?.content_update_time ?? ''}`
+		: undefined;
 
 	const { ref: bottomRef, inView } = useInView();
 
@@ -60,10 +75,38 @@ const QuickDocumentDetail = ({
 		}
 	}, [document]);
 
+	const onGetMarkdown = async (sourceKey: string) => {
+		if (!document?.quick_note_info?.md_file_name) {
+			return;
+		}
+		if (
+			loadedMarkdownSourceKeyRef.current === sourceKey ||
+			loadingMarkdownSourceKeyRef.current === sourceKey
+		) {
+			return;
+		}
+		loadingMarkdownSourceKeyRef.current = sourceKey;
+		try {
+			const res = await getDocumentMarkdownContent({
+				document_id: document.id,
+			});
+			setMarkdown(res);
+			setMarkdownGetError(undefined);
+			setMarkdownRendered(true);
+			loadedMarkdownSourceKeyRef.current = sourceKey;
+		} catch (e: any) {
+			setMarkdownGetError(e?.message);
+		} finally {
+			if (loadingMarkdownSourceKeyRef.current === sourceKey) {
+				loadingMarkdownSourceKeyRef.current = undefined;
+			}
+		}
+	};
+
 	useEffect(() => {
-		if (!document || !document.quick_note_info) return;
-		setMarkdownRendered(true);
-	}, [document, mainUserInfo]);
+		if (!markdownSourceKey) return;
+		void onGetMarkdown(markdownSourceKey);
+	}, [markdownSourceKey]);
 
 	useEffect(() => {
 		if (!markdownRendered || !inView) return;
@@ -75,6 +118,11 @@ const QuickDocumentDetail = ({
 			document_id: id,
 			content,
 		});
+		setMarkdown(content);
+		setMarkdownRendered(true);
+		setMarkdownGetError(undefined);
+		loadedMarkdownSourceKeyRef.current = undefined;
+		loadingMarkdownSourceKeyRef.current = undefined;
 		queryClient.invalidateQueries({
 			queryKey: ['getDocumentDetail', id],
 			exact: true,
@@ -83,13 +131,9 @@ const QuickDocumentDetail = ({
 
 	return (
 		<div className={cn('w-full relative pt-4', className)}>
-			{isError && error && (
+			{((isError && error) || markdownGetError) && (
 				<div className='h-full w-full flex justify-center items-center text-muted-foreground text-xs'>
-					{error?.message ?? (
-						<div className='flex flex-col text-center gap-2'>
-							<p>{error.message}</p>
-						</div>
-					)}
+					{error?.message ?? markdownGetError}
 				</div>
 			)}
 			{isFetching && !isRefetching && (
@@ -98,14 +142,10 @@ const QuickDocumentDetail = ({
 					showToolbar={canEditMarkdown}
 				/>
 			)}
-			{!isError && (
+			{!isError && !markdownGetError && (
 				<>
 					<EditableMarkdownPanel
-						content={
-							document?.quick_note_info?.content
-								? document.quick_note_info.content
-								: t('document_no_md')
-						}
+						content={markdown ? markdown : t('document_no_md')}
 						creatorId={document?.creator.id}
 						onSave={handleSaveMarkdown}
 						editable={canEditMarkdown}

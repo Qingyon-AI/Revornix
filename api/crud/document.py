@@ -121,10 +121,10 @@ async def create_base_document_async(
 def create_quick_note_document(
     db: Session,
     document_id: int,
-    content: str
+    md_file_name: str
 ):
     db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id,
-                                                               content=content)
+                                                               md_file_name=md_file_name)
     db.add(db_quick_note_document)
     db.flush()
     return db_quick_note_document
@@ -132,10 +132,10 @@ def create_quick_note_document(
 async def create_quick_note_document_async(
     db: AsyncSession,
     document_id: int,
-    content: str
+    md_file_name: str
 ):
     db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id,
-                                                               content=content)
+                                                               md_file_name=md_file_name)
     db.add(db_quick_note_document)
     await db.flush()
     return db_quick_note_document

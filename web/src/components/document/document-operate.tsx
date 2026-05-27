@@ -489,7 +489,7 @@ const DocumentOperate = ({
 		(data.category === DocumentCategory.AUDIO &&
 			data.transcribe_task?.status !== DocumentTranscribeStatus.SUCCESS) ||
 		(data.category === DocumentCategory.QUICK_NOTE &&
-			!data.quick_note_info?.content?.trim());
+			!data.quick_note_info?.md_file_name);
 
 	const renderOriginAction = (
 		buttonClassName: string,

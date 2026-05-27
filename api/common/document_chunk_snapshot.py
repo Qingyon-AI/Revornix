@@ -71,10 +71,10 @@ def _resolve_document_snapshot_paths(
             db=db,
             document_id=document.id,
         )
-        if quick_note_document is None or quick_note_document.content is None:
+        if quick_note_document is None or not quick_note_document.md_file_name:
             return None
         source_signature = _hash_source_signature(
-            f"{document.category}:{hashlib.sha256(quick_note_document.content.encode('utf-8')).hexdigest()}"
+            f"{document.category}:{quick_note_document.md_file_name}"
         )
     elif document.category == DocumentCategory.AUDIO:
         transcribe_task = crud.task.get_document_audio_transcribe_task_by_document_id(
@@ -114,10 +114,10 @@ async def _resolve_document_snapshot_paths_async(
             db=db,
             document_id=document.id,
         )
-        if quick_note_document is None or quick_note_document.content is None:
+        if quick_note_document is None or not quick_note_document.md_file_name:
             return None
         source_signature = _hash_source_signature(
-            f"{document.category}:{hashlib.sha256(quick_note_document.content.encode('utf-8')).hexdigest()}"
+            f"{document.category}:{quick_note_document.md_file_name}"
         )
     elif document.category == DocumentCategory.AUDIO:
         transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(

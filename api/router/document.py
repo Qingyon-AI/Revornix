@@ -18,6 +18,7 @@ from common.celery.app import (
     start_process_section,
 )
 from common.document_creation import create_document_for_user
+from proxy.file_system_proxy import FileSystemProxy
 from common.dependencies import (
     check_deployed_by_official,
     get_authorization_header,
@@ -980,7 +981,14 @@ async def update_document(
         )
         if db_quick_note_document is None:
             raise schemas.error.CustomException("Quick note content not found", code=404)
-        db_quick_note_document.content = document_update_request.content
+        if not db_quick_note_document.md_file_name:
+            raise schemas.error.CustomException("Quick note markdown file is missing", code=500)
+        remote_file_service = await FileSystemProxy.create(user_id=user.id)
+        await remote_file_service.upload_raw_content_to_path(
+            file_path=db_quick_note_document.md_file_name,
+            content=document_update_request.content.encode("utf-8"),
+            content_type="text/markdown; charset=utf-8",
+        )
         db_document.content_update_time = now
     if document_update_request.labels is not None:
         exist_document_labels = await crud.document.get_document_labels_by_document_id_async(

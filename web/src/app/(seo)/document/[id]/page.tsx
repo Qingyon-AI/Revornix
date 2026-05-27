@@ -84,7 +84,12 @@ const getDocumentMarkdown = async (
 		});
 	}
 	if (document.category === DocumentCategory.QUICK_NOTE) {
-		return document.quick_note_info?.content ?? null;
+		if (!document.quick_note_info?.md_file_name) {
+			return null;
+		}
+		return await getDocumentMarkdownContentServer({
+			document_id: document.id,
+		});
 	}
 	if (document.category === DocumentCategory.AUDIO) {
 		return document.transcribe_task?.transcribed_text ?? null;

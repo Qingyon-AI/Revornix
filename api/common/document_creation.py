@@ -1,3 +1,4 @@
+import uuid
 from datetime import date as date_type
 from datetime import datetime, timezone
 
@@ -7,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import crud
 import models
 import schemas
+from proxy.file_system_proxy import FileSystemProxy
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
@@ -366,6 +368,11 @@ async def create_document_for_user(
     elif document_create_request.category == DocumentCategory.QUICK_NOTE:
         if document_create_request.content is None:
             raise CustomException("Content is required for quick notes", code=400)
+        if user.default_user_file_system is None:
+            raise CustomException(
+                "Default file system is not configured; quick notes require a file system to store the markdown",
+                code=400,
+            )
         db_document = await crud.document.create_base_document_async(
             db=db,
             creator_id=user.id,
@@ -374,11 +381,19 @@ async def create_document_for_user(
             title=f"Quick Note saved at {now}",
             description=f"Quick Note saved at {now}",
         )
+        md_file_name = f"quick_notes/{uuid.uuid4().hex}.md"
+        remote_file_service = await FileSystemProxy.create(user_id=user.id)
+        await remote_file_service.upload_raw_content_to_path(
+            file_path=md_file_name,
+            content=document_create_request.content.encode("utf-8"),
+            content_type="text/markdown; charset=utf-8",
+        )
         await crud.document.create_quick_note_document_async(
             db=db,
             document_id=db_document.id,
-            content=document_create_request.content,
+            md_file_name=md_file_name,
         )
+        db_document.content_update_time = now
     elif document_create_request.category == DocumentCategory.AUDIO:
         if document_create_request.file_name is None:
             raise CustomException("File name is required for audio documents", code=400)
