@@ -14,24 +14,24 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ *
  * @export
  * @interface QuickNoteDocumentInfo
  */
 export interface QuickNoteDocumentInfo {
     /**
-     * 
+     *
      * @type {string}
      * @memberof QuickNoteDocumentInfo
      */
-    content: string;
+    md_file_name: string;
 }
 
 /**
  * Check if a given object implements the QuickNoteDocumentInfo interface.
  */
 export function instanceOfQuickNoteDocumentInfo(value: object): value is QuickNoteDocumentInfo {
-    if (!('content' in value) || value['content'] === undefined) return false;
+    if (!('md_file_name' in value) || value['md_file_name'] === undefined) return false;
     return true;
 }
 
@@ -44,8 +44,8 @@ export function QuickNoteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminato
         return json;
     }
     return {
-        
-        'content': json['content'],
+
+        'md_file_name': json['md_file_name'],
     };
 }
 
@@ -59,8 +59,8 @@ export function QuickNoteDocumentInfoToJSONTyped(value?: QuickNoteDocumentInfo |
     }
 
     return {
-        
-        'content': value['content'],
+
+        'md_file_name': value['md_file_name'],
     };
 }
 

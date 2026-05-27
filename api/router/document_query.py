@@ -453,7 +453,7 @@ async def get_document_detail(
         quick_note_document = subtype_bundle[2] if subtype_bundle is not None else None
         if quick_note_document is not None:
             res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
-                content=quick_note_document.content
+                md_file_name=quick_note_document.md_file_name
             )
     elif document.category == DocumentCategory.AUDIO:
         audio_document = subtype_bundle[3] if subtype_bundle is not None else None

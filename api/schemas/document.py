@@ -303,7 +303,7 @@ class FileDocumentInfo(BaseModel):
     file_name: str
 
 class QuickNoteDocumentInfo(BaseModel):
-    content: str
+    md_file_name: str
 
 class AudioDocumentInfo(BaseModel):
     audio_file_name: str

@@ -129,9 +129,9 @@ async def get_markdown_content_by_document_id(
                     db=db,
                     document_id=document_id
                 )
-                if quick_note_document is None:
+                if quick_note_document is None or not quick_note_document.md_file_name:
                     raise Exception("The quick note info of the document is not found")
-                markdown_content = quick_note_document.content
+                markdown_file_name = quick_note_document.md_file_name
             elif db_document.category == DocumentCategory.AUDIO:
                 db_transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
                     db=db,

@@ -207,7 +207,7 @@ async def _build_admin_document_detail(
         )
         if quick_note_document is not None:
             res.quick_note_info = schemas.document.QuickNoteDocumentInfo(
-                content=quick_note_document.content,
+                md_file_name=quick_note_document.md_file_name,
             )
     elif document.category == DocumentCategory.AUDIO:
         audio_document = await crud.document.get_audio_document_by_document_id_async(

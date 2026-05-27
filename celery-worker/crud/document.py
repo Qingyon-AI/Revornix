@@ -37,12 +37,12 @@ async def create_document_labels_async(
     return db_document_labels
 
 def create_quick_note_document(
-    db: Session, 
-    document_id: int, 
-    content: str
+    db: Session,
+    document_id: int,
+    md_file_name: str
 ):
-    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id, 
-                                                               content=content)
+    db_quick_note_document = models.document.QuickNoteDocument(document_id=document_id,
+                                                               md_file_name=md_file_name)
     db.add(db_quick_note_document)
     db.flush()
     return db_quick_note_document
