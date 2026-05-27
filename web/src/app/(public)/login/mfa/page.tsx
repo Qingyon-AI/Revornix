@@ -15,8 +15,10 @@ export const metadata: Metadata = buildNoIndexAppMetadata(
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function MfaLoginPage(props: { searchParams: SearchParams }) {
-	const searchParams = await props.searchParams;
-	const cookieStore = await cookies();
+	const [searchParams, cookieStore] = await Promise.all([
+		props.searchParams,
+		cookies(),
+	]);
 	if (cookieStore.get('access_token')) {
 		const redirectToRaw = Array.isArray(searchParams.redirect_to)
 			? searchParams.redirect_to[0]

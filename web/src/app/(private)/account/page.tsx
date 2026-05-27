@@ -33,8 +33,7 @@ export const metadata: Metadata = buildNoIndexAppMetadata(
 );
 
 const AccountPage = async () => {
-	const t = await getTranslations();
-	const headersList = await headers();
+	const [t, headersList] = await Promise.all([getTranslations(), headers()]);
 	const host = headersList.get('host');
 
 	return (

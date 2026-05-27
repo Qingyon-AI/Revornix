@@ -11,9 +11,8 @@ export async function generateMetadata({
 }: {
 	params: Params;
 }): Promise<Metadata> {
-	const { id } = await params;
+	const [{ id }, t] = await Promise.all([params, getTranslations()]);
 	const userId = Number(id);
-	const t = await getTranslations();
 
 	if (!userId) {
 		return buildMetadata({

@@ -11,9 +11,8 @@ import { getDocumentDetailServer } from '@/service/document';
 export async function generateMetadata(props: {
 	params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-	const { id } = await props.params;
+	const [{ id }, t] = await Promise.all([props.params, getTranslations()]);
 	const documentId = Number(id);
-	const t = await getTranslations();
 
 	if (!documentId) {
 		return buildMetadata({

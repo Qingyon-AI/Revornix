@@ -96,13 +96,31 @@ const buildSectionMetaDescription = (section: SectionInfoType) => {
 	return toMetaDescription(fallback);
 };
 
+const logOptionalSectionDataError = ({
+	sectionId,
+	uuid,
+	source,
+	error,
+}: {
+	sectionId?: number;
+	uuid: string;
+	source: string;
+	error: unknown;
+}) => {
+	if (!error) return;
+
+	console.error(`[SEO section] failed to load ${source}`, {
+		sectionId,
+		uuid,
+		error,
+	});
+};
+
 export async function generateMetadata(props: {
 	params: Params;
 	searchParams: SearchParams;
 }): Promise<Metadata | undefined> {
-	const t = await getTranslations();
-	// read route params
-	const { uuid } = await props.params;
+	const [t, { uuid }] = await Promise.all([getTranslations(), props.params]);
 
 	// fetch data
 	const [section_res, section_err] = await utils.to(
@@ -148,9 +166,11 @@ const SEOSectionDetail = async (props: {
 	params: Params;
 	searchParams: SearchParams;
 }) => {
-	const t = await getTranslations();
-	const locale = await getLocale();
-	const params = await props.params;
+	const [t, locale, params] = await Promise.all([
+		getTranslations(),
+		getLocale(),
+		props.params,
+	]);
 	const uuid = params.uuid;
 
 	let markdown: string | null = null;
@@ -171,16 +191,17 @@ const SEOSectionDetail = async (props: {
 		section = section_res;
 	}
 
-	if (section_res && section_res.md_file_name) {
-		const [markdown_res] = await utils.to(
-			getSEOSectionMarkdownContentServer({ uuid }),
-		);
-		markdown = markdown_res ?? null;
-	}
-
-	const [initialCommentsRes, initialDocumentsRes, initialGraphRes] =
+	const [
+		markdownRes,
+		initialCommentsRes,
+		initialDocumentsRes,
+		initialGraphRes,
+	] =
 		section_res?.id
 			? await Promise.all([
+					section_res.md_file_name
+						? utils.to(getSEOSectionMarkdownContentServer({ uuid }))
+						: Promise.resolve([null, null] as const),
 					utils.to(
 						searchSectionCommentServer({
 							section_id: section_res.id,
@@ -206,8 +227,34 @@ const SEOSectionDetail = async (props: {
 					[null, null],
 					[null, null],
 					[null, null],
+					[null, null],
 				];
 
+	markdown = markdownRes[0] ?? null;
+	logOptionalSectionDataError({
+		sectionId: section_res?.id,
+		uuid,
+		source: 'markdown',
+		error: markdownRes[1],
+	});
+	logOptionalSectionDataError({
+		sectionId: section_res?.id,
+		uuid,
+		source: 'comments',
+		error: initialCommentsRes[1],
+	});
+	logOptionalSectionDataError({
+		sectionId: section_res?.id,
+		uuid,
+		source: 'documents',
+		error: initialDocumentsRes[1],
+	});
+	logOptionalSectionDataError({
+		sectionId: section_res?.id,
+		uuid,
+		source: 'graph',
+		error: initialGraphRes[1],
+	});
 	const initialComments = initialCommentsRes[0] ?? undefined;
 	const initialDocuments = initialDocumentsRes[0] ?? undefined;
 	const initialGraph = initialGraphRes[0] ?? undefined;
