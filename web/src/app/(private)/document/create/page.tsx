@@ -16,8 +16,7 @@ export const metadata: Metadata = buildNoIndexAppMetadata(
 type SearchParams = Promise<{ [key: string]: string }>;
 
 const CreatePage = async (props: { searchParams: SearchParams }) => {
-	await props.searchParams;
-	const t = await getTranslations();
+	const [, t] = await Promise.all([props.searchParams, getTranslations()]);
 	return (
 		<div className='flex min-h-0 flex-1 flex-col overflow-x-hidden lg:h-[calc(100dvh-var(--private-top-header-height,3.5rem))] lg:max-h-[calc(100dvh-var(--private-top-header-height,3.5rem))] lg:overflow-hidden'>
 			<Tabs

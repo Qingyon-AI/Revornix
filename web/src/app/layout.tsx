@@ -72,9 +72,11 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const locale = await getLocale();
-	const messages = await getMessages();
-	const t = await getTranslations();
+	const [locale, messages, t] = await Promise.all([
+		getLocale(),
+		getMessages(),
+		getTranslations(),
+	]);
 	const siteName = t('website_title');
 	const description = toMetaDescription(t('website_description'));
 	const siteOrigin = getSiteOrigin();

@@ -43,7 +43,6 @@ import {
 	toMetaDescription,
 } from '@/lib/seo-metadata';
 import ImageWithFallback from '@/components/ui/image-with-fallback';
-import { Separator } from '@/components/ui/separator';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentGraphStatus } from '@/enums/document';
 import MobileAutoAudioTrack from '@/components/ui/mobile-auto-audio-track';
@@ -97,11 +96,25 @@ const getDocumentMarkdown = async (
 	return null;
 };
 
+const logOptionalDocumentDataError = ({
+	documentId,
+	source,
+	error,
+}: {
+	documentId: number;
+	source: string;
+	error: unknown;
+}) => {
+	console.error(`[SEO document] failed to load ${source}`, {
+		documentId,
+		error,
+	});
+};
+
 export async function generateMetadata(props: {
 	params: Params;
 }): Promise<Metadata> {
-	const { id } = await props.params;
-	const t = await getTranslations();
+	const [{ id }, t] = await Promise.all([props.params, getTranslations()]);
 
 	try {
 		const document = await getDocumentDetailServer({
@@ -172,20 +185,44 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 		const document = await getDocumentDetailServer({
 			document_id: documentId,
 		});
-		const initialGraph = await searchDocumentGraphServer({
-			document_id: documentId,
-		}).catch(() => null);
-		const initialComments = await searchDocumentCommentServer({
-			document_id: documentId,
-			keyword: '',
-			limit: 10,
-		}).catch(() => undefined);
-		const initialNotes = await searchPublicDocumentNotesServer({
-			document_id: documentId,
-			keyword: '',
-			limit: 10,
-		}).catch(() => undefined);
-		const markdown = await getDocumentMarkdown(document);
+		const [initialGraph, initialComments, initialNotes, markdown] =
+			await Promise.all([
+				searchDocumentGraphServer({
+					document_id: documentId,
+				}).catch((error) => {
+					logOptionalDocumentDataError({
+						documentId,
+						source: 'graph',
+						error,
+					});
+					return null;
+				}),
+				searchDocumentCommentServer({
+					document_id: documentId,
+					keyword: '',
+					limit: 10,
+				}).catch((error) => {
+					logOptionalDocumentDataError({
+						documentId,
+						source: 'comments',
+						error,
+					});
+					return undefined;
+				}),
+				searchPublicDocumentNotesServer({
+					document_id: documentId,
+					keyword: '',
+					limit: 10,
+				}).catch((error) => {
+					logOptionalDocumentDataError({
+						documentId,
+						source: 'public notes',
+						error,
+					});
+					return undefined;
+				}),
+				getDocumentMarkdown(document),
+			]);
 		const categoryLabel = getCategoryLabel(document.category, t);
 		const coverSrc = getDocumentCoverSrc(document);
 		const creatorAvatar = replacePath(
@@ -494,67 +531,52 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 						},
 					]}
 				/>
-				<div className='mx-auto w-full max-w-[920px] space-y-5'>
-					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
-						<Link
-							href={`/user/${document.creator.id}`}
-							className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
-							<Avatar className='size-7'>
-								<AvatarImage
-									src={creatorAvatar}
-									alt={document.creator.nickname}
-									className='object-cover'
-								/>
-								<AvatarFallback className='text-[11px] font-semibold'>
-									{document.creator.nickname.slice(0, 1)}
-								</AvatarFallback>
-							</Avatar>
-							<span>{document.creator.nickname}</span>
-						</Link>
-						<Badge
-							variant='outline'
-							className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
-							{categoryLabel}
-						</Badge>
-						<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
-							<CalendarClock className='size-3.5' />
-							<span>{t('seo_document_updated_at')}</span>
-							<span className='text-foreground/85'>
-								{new Intl.DateTimeFormat(locale, {
-									dateStyle: 'medium',
-								}).format(
-									new Date(document.update_time ?? document.create_time),
-								)}
-							</span>
+					<div className='mx-auto w-full max-w-[920px] space-y-5'>
+						<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+							<Link
+								href={`/user/${document.creator.id}`}
+								className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
+								<Avatar className='size-7'>
+									<AvatarImage
+										src={creatorAvatar}
+										alt={document.creator.nickname}
+										className='object-cover'
+									/>
+									<AvatarFallback className='text-[11px] font-semibold'>
+										{document.creator.nickname.slice(0, 1)}
+									</AvatarFallback>
+								</Avatar>
+								<span>{document.creator.nickname}</span>
+							</Link>
+							<Badge
+								variant='outline'
+								className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
+								{categoryLabel}
+							</Badge>
+							<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
+								<CalendarClock className='size-3.5' />
+								<span>{t('seo_document_updated_at')}</span>
+								<span className='text-foreground/85'>
+									{new Intl.DateTimeFormat(locale, {
+										dateStyle: 'medium',
+									}).format(
+										new Date(document.update_time ?? document.create_time),
+									)}
+								</span>
+							</div>
+						</div>
+
+						<div className='space-y-3'>
+							<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
+								{document.title || t('document_no_title')}
+							</h1>
+							<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
+								{document.description || t('document_no_description')}
+							</p>
 						</div>
 					</div>
 
-					<div className='space-y-3'>
-						<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
-							{document.title || t('document_no_title')}
-						</h1>
-						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
-							{document.description || t('document_no_description')}
-						</p>
-						<SeoDocumentAiSummaryPanel document={document} />
-					</div>
-				</div>
-
-				<div className='mx-auto w-full space-y-6'>
-					<div className='space-y-6'>
-						{coverSrc ? (
-							<ImageWithFallback
-								src={coverSrc}
-								alt={document.title}
-								preview
-								className='h-[220px] w-full object-cover object-center sm:h-[300px] rounded-xl'
-								fallbackClassName='h-[220px] w-full sm:h-[300px]'
-								fallbackSvgClassName='max-w-[220px] p-6'
-							/>
-						) : null}
-
-						<Separator className='max-w-[920px] mx-auto' />
-
+					<div className='mx-auto w-full space-y-6'>
 						<MarkdownContentShell
 							enableFloatingToc
 							floatingTocFooter={
@@ -575,9 +597,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 							className='mx-auto w-full'
 							contentClassName='overflow-x-hidden'>
 							<TipTapMarkdownViewer
-								content={
-									markdown || document.description || t('document_no_md')
-								}
+								content={markdown || document.description || t('document_no_md')}
 								creatorId={document.creator.id}
 							/>
 							{document.category === DocumentCategory.FILE ||
@@ -588,10 +608,25 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									</div>
 								))}
 						</MarkdownContentShell>
-					</div>
-				</div>
 
-				<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
+						<SeoDocumentAiSummaryPanel
+							document={document}
+							className='mx-auto max-w-[920px]'
+						/>
+
+						{coverSrc ? (
+							<ImageWithFallback
+								src={coverSrc}
+								alt={document.title}
+								preview
+								className='mx-auto h-[220px] w-full max-w-[920px] rounded-xl object-cover object-center sm:h-[300px]'
+								fallbackClassName='mx-auto h-[220px] w-full max-w-[920px] sm:h-[300px]'
+								fallbackSvgClassName='max-w-[220px] p-6'
+							/>
+						) : null}
+					</div>
+
+					<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
 					<div className='space-y-2'>
 						<h2 className='text-2xl font-semibold tracking-tight'>
 							{t('seo_document_notes_title')}
