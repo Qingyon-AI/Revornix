@@ -22,6 +22,7 @@ import {
 import { Inbox } from 'lucide-react';
 import { useUserContext } from '@/provider/user-provider';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { StackedDocumentsSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const UnReadDocumentBox = () => {
 	const router = useRouter();
@@ -57,7 +58,7 @@ const UnReadDocumentBox = () => {
 				</CardHeader>
 				<CardContent className='flex-1 px-5 pt-0'>
 					{isFetchingUnReadDocuments && (
-						<Skeleton className='h-32 w-full rounded-xl' />
+						<StackedDocumentsSkeleton />
 					)}
 					{!isFetchingUnReadDocuments &&
 						unReadDocuments &&

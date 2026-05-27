@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { DAILY_HOT_API_PREFIX } from '@/config/api';
 import type { Website } from '@/components/hot-search/types';
 import Link from 'next/link';
@@ -24,6 +23,7 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import CardTitleIcon from '@/components/ui/card-title-icon';
+import { TodayNewsSkeleton } from '@/components/dashboard/dashboard-skeletons';
 
 const TodayNews = () => {
 	const t = useTranslations();
@@ -126,7 +126,7 @@ const TodayNews = () => {
 			</CardHeader>
 			<CardContent className='flex-1'>
 				{refreshStatus ? (
-					<Skeleton className='w-full min-h-[240px] h-full' />
+					<TodayNewsSkeleton />
 				) : error ? (
 					<Empty className='h-full'>
 						<EmptyHeader>
