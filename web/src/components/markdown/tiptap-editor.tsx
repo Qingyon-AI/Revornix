@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import UnderlineExtension from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Markdown } from '@tiptap/markdown';
 import {
@@ -13,10 +14,12 @@ import {
 	Code2,
 	FilePenLine,
 	Expand,
+	Info,
 	Italic,
 	Heading1,
 	Heading2,
 	ImagePlus,
+	Paperclip,
 	List,
 	ListOrdered,
 	Loader2,
@@ -72,6 +75,8 @@ import MathBlockNode from './extensions/math-block-node';
 import MathInlineNode from './extensions/math-inline-node';
 import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
+import CalloutNode from './extensions/callout-node';
+import FileAttachmentNode from './extensions/file-attachment-node';
 import aiApi from '@/api/ai';
 import { getUserTimeZone } from '@/lib/time';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
@@ -85,7 +90,11 @@ import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
-import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import {
+	FILE_ATTACHMENT_MAX_UPLOAD_BYTES,
+	formatUploadSize,
+	IMAGE_MAX_UPLOAD_BYTES,
+} from '@/lib/upload';
 import { generateUUID } from '@/lib/uuid';
 
 type TipTapEditorProps = {
@@ -353,6 +362,7 @@ const TipTapEditor = ({
 	const { mainUserInfo } = useUserContext();
 	const { revornixModel, imageGenerateEngine } = useDefaultResourceAccess();
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
+	const fileAttachmentInputRef = useRef<HTMLInputElement | null>(null);
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
 	const hasNotifiedInitialParseRef = useRef(false);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -366,6 +376,8 @@ const TipTapEditor = ({
 	const activeContinuationPlaceholderIdRef = useRef<string | null>(null);
 	const hasStreamedContinuationRef = useRef(false);
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
+	const [isUploadingFileAttachment, setIsUploadingFileAttachment] =
+		useState(false);
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
 	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] =
 		useState(false);
@@ -549,6 +561,7 @@ const TipTapEditor = ({
 					showOnlyWhenEditable: true,
 					showOnlyCurrent: false,
 				}),
+				UnderlineExtension,
 				ImageNode.configure({
 					ownerId: imageFileOwnerId,
 				}),
@@ -563,6 +576,10 @@ const TipTapEditor = ({
 				TextColorMark,
 				TextHighlightMark,
 				MermaidCodeBlock,
+				CalloutNode,
+				FileAttachmentNode.configure({
+					ownerId: imageFileOwnerId,
+				}),
 				Markdown,
 			],
 			content: normalizeEditorMarkdown(value),
@@ -863,6 +880,18 @@ const TipTapEditor = ({
 					query: 'Shanghai',
 					zoom: '13',
 				},
+			})
+			.run();
+	};
+
+	const insertCalloutNode = () => {
+		editor
+			?.chain()
+			.focus()
+			.insertContent({
+				type: 'callout',
+				attrs: { type: 'NOTE' },
+				content: [{ type: 'paragraph' }],
 			})
 			.run();
 	};
@@ -1960,6 +1989,71 @@ const TipTapEditor = ({
 		}
 	};
 
+	const triggerFileAttachmentPicker = () => {
+		fileAttachmentInputRef.current?.click();
+	};
+
+	const handleFileAttachmentUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.target.files?.[0];
+		if (!file) {
+			return;
+		}
+
+		if (file.size > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+				}),
+			);
+			event.target.value = '';
+			return;
+		}
+
+		if (
+			!mainUserInfo?.default_user_file_system ||
+			!userFileSystemDetail?.file_system_id
+		) {
+			toast.error(t('error_default_file_system_not_found'));
+			event.target.value = '';
+			return;
+		}
+
+		setIsUploadingFileAttachment(true);
+		try {
+			const dotIndex = file.name.lastIndexOf('.');
+			const suffix =
+				dotIndex > 0 && dotIndex < file.name.length - 1
+					? file.name.slice(dotIndex + 1).toLowerCase()
+					: '';
+			const filePath = suffix
+				? `files/quick-note/${generateUUID()}.${suffix}`
+				: `files/quick-note/${generateUUID()}`;
+			const fileService = new FileService(userFileSystemDetail.file_system_id);
+			await fileService.uploadFile(filePath, file);
+			editor
+				?.chain()
+				.focus()
+				.insertContent({
+					type: 'fileAttachment',
+					attrs: {
+						src: filePath,
+						name: file.name,
+						mime: file.type || '',
+						size: file.size,
+					},
+				})
+				.run();
+		} catch (error) {
+			console.error(error);
+			toast.error(t('editor_file_attachment_upload_failed'));
+		} finally {
+			setIsUploadingFileAttachment(false);
+			event.target.value = '';
+		}
+	};
+
 	const showFullscreen = fullscreen ?? isFallbackFullscreen;
 	const fullscreenLabel = showFullscreen
 		? t('exit_fullscreen')
@@ -2161,6 +2255,44 @@ const TipTapEditor = ({
 						.run(),
 			},
 			{
+				id: 'callout',
+				label: t('editor_toolbar_label_callout'),
+				description: t('editor_slash_callout_description'),
+				keywords: ['callout', 'note', 'tip', 'warning', 'caution', 'important', 'alert', '提示', '注意'],
+				icon: Info,
+				run: ({ editor, match }) =>
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.insertContent({
+							type: 'callout',
+							attrs: { type: 'NOTE' },
+							content: [
+								{ type: 'paragraph' },
+							],
+						})
+						.run(),
+			},
+			{
+				id: 'file-attachment',
+				label: t('editor_toolbar_label_file_attachment'),
+				description: t('editor_slash_file_attachment_description'),
+				keywords: ['file', 'attachment', 'upload', 'download', '附件', '文件'],
+				icon: Paperclip,
+				disabled: isUploadingFileAttachment,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					triggerFileAttachmentPicker();
+				},
+			},
+			{
 				id: 'formula',
 				label: t('editor_toolbar_label_formula'),
 				description: t('editor_slash_formula_description'),
@@ -2237,6 +2369,7 @@ const TipTapEditor = ({
 			isContinuing,
 			isGeneratingDocumentIllustration,
 			isOptimizingDocument,
+			isUploadingFileAttachment,
 			isUploadingImage,
 			t,
 		],
@@ -2586,6 +2719,40 @@ const TipTapEditor = ({
 								<span>{t('editor_toolbar_label_drawing')}</span>
 							</Button>
 						)}
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type='button'
+									variant='ghost'
+									className={getToolbarActionButtonClassName()}
+									title={t('editor_toolbar_label_file_attachment')}
+									onMouseDown={preserveEditorSelection}
+									onClick={triggerFileAttachmentPicker}
+									disabled={isUploadingFileAttachment}>
+									{isUploadingFileAttachment ? (
+										<Loader2 className='size-4 animate-spin' />
+									) : (
+										<Paperclip className='size-4' />
+									)}
+									<span>{t('editor_toolbar_label_file_attachment')}</span>
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								{t('upload_limit_hint', {
+									size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+								})}
+							</TooltipContent>
+						</Tooltip>
+						<Button
+							type='button'
+							variant='ghost'
+							className={getToolbarActionButtonClassName()}
+							title={t('editor_toolbar_label_callout')}
+							onMouseDown={preserveEditorSelection}
+							onClick={insertCalloutNode}>
+							<Info className='size-4' />
+							<span>{t('editor_toolbar_label_callout')}</span>
+						</Button>
 						<Button
 							type='button'
 							variant='ghost'
@@ -2771,6 +2938,12 @@ const TipTapEditor = ({
 						onChange={handleImageUpload}
 					/>
 				)}
+				<input
+					ref={fileAttachmentInputRef}
+					type='file'
+					className='hidden'
+					onChange={handleFileAttachmentUpload}
+				/>
 			</div>
 			<EditorContent
 				editor={editor}
