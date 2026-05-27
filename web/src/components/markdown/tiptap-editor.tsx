@@ -2714,7 +2714,7 @@ const TipTapEditor = ({
 				</div>
 				<div className='shrink-0' />
 				<div className='flex shrink-0 items-center gap-1 border-l border-border/60 pl-2'>
-					{showFullscreen && onFullscreenSave ? (
+					{onFullscreenSave ? (
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<Button

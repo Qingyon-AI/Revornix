@@ -225,6 +225,12 @@ const AddQuickNote = () => {
 
 	const draftStorageKey = `${QUICK_NOTE_DRAFT_STORAGE_KEY}.${mainUserInfo?.id ?? 'anonymous'}`;
 	const watchedDraftValues = useWatch({ control: form.control });
+	const submitDisabled =
+		mutateCreateDocument.isPending ||
+		!(watchedDraftValues.content && watchedDraftValues.content.trim()) ||
+		(Boolean(watchedDraftValues.auto_tag) && documentReaderUnavailable) ||
+		(Boolean(watchedDraftValues.auto_summary) && documentReaderUnavailable) ||
+		(Boolean(watchedDraftValues.auto_podcast) && podcastEngineUnavailable);
 
 	const buildDraftPayload = useCallback(
 		(values: Partial<z.infer<typeof formSchema>>) => {
@@ -356,19 +362,37 @@ const AddQuickNote = () => {
 		}
 	}, [buildDraftPayload, draftStorageKey, form, mainUserInfo?.id, t]);
 
+	const submitCreateFromEditor = useCallback(() => {
+		void form.handleSubmit(onFormValidateSuccess, onFormValidateError)();
+	}, [form]);
+
 	useEffect(() => {
-		const handleSaveDraftShortcut = (event: KeyboardEvent) => {
-			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-				event.preventDefault();
-				saveQuickNoteDraft();
+		const handleSaveShortcut = (event: KeyboardEvent) => {
+			if (!((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's')) {
+				return;
 			}
+			event.preventDefault();
+			// In fullscreen the right-side submit button is hidden, so Cmd/Ctrl+S
+			// triggers a real create-submit instead of just a draft snapshot.
+			if (isEditorFullscreen) {
+				if (!mutateCreateDocument.isPending) {
+					submitCreateFromEditor();
+				}
+				return;
+			}
+			saveQuickNoteDraft();
 		};
 
-		window.addEventListener('keydown', handleSaveDraftShortcut);
+		window.addEventListener('keydown', handleSaveShortcut);
 		return () => {
-			window.removeEventListener('keydown', handleSaveDraftShortcut);
+			window.removeEventListener('keydown', handleSaveShortcut);
 		};
-	}, [saveQuickNoteDraft]);
+	}, [
+		isEditorFullscreen,
+		mutateCreateDocument.isPending,
+		saveQuickNoteDraft,
+		submitCreateFromEditor,
+	]);
 
 	useEffect(() => {
 		if (typeof window === 'undefined' || mainUserInfo?.id === undefined) {
@@ -442,11 +466,14 @@ const AddQuickNote = () => {
 								return (
 									<FormItem className='flex min-h-[400px] flex-col lg:h-full lg:min-h-0'>
 										<div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border/70 bg-background shadow-sm'>
-											<div className='flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-2 py-1.5'>
+											<div className='flex h-10 shrink-0 items-center justify-between gap-2 border-b border-border/60 px-2 py-1.5'>
 												<PanelTitle
 													icon={WandSparkles}
 													title={t('document_create_quick_note')}
 												/>
+												<span className='hidden truncate text-[11px] text-muted-foreground sm:inline'>
+													{t('document_create_quick_note_shortcut_hint')}
+												</span>
 											</div>
 											{editorMode === 'visual' ? (
 												<TipTapEditor
@@ -460,6 +487,9 @@ const AddQuickNote = () => {
 													creatorId={mainUserInfo?.id}
 													fullscreen={isEditorFullscreen}
 													onFullscreenChange={setIsEditorFullscreen}
+													onFullscreenSave={submitCreateFromEditor}
+													fullscreenSaveDisabled={submitDisabled}
+													fullscreenSaveLoading={mutateCreateDocument.isPending}
 													toolbarEnd={
 														<Tooltip>
 															<TooltipTrigger asChild>
@@ -531,6 +561,21 @@ const AddQuickNote = () => {
 																	{t('markdown_edit_source_mode')}
 																</div>
 																<div className='flex items-center gap-1'>
+																	<Button
+																		type='button'
+																		variant='ghost'
+																		size='sm'
+																		className='h-8 gap-1.5 px-2'
+																		title={t('markdown_edit_fullscreen_save')}
+																		onClick={submitCreateFromEditor}
+																		disabled={submitDisabled}>
+																		{mutateCreateDocument.isPending ? (
+																			<Loader2 className='size-4 animate-spin' />
+																		) : (
+																			<Save className='size-4' />
+																		)}
+																		{t('save')}
+																	</Button>
 																	<Tooltip>
 																		<TooltipTrigger asChild>
 																			<Button
@@ -803,13 +848,7 @@ const AddQuickNote = () => {
 							type='submit'
 							size='lg'
 							className='w-full'
-							disabled={
-								mutateCreateDocument.isPending ||
-								!form.watch('content') ||
-								(form.watch('auto_tag') && documentReaderUnavailable) ||
-								(form.watch('auto_summary') && documentReaderUnavailable) ||
-								(form.watch('auto_podcast') && podcastEngineUnavailable)
-							}>
+							disabled={submitDisabled}>
 							<Save className='size-4' />
 							{t('document_create_submit')}
 							{mutateCreateDocument.isPending && (
