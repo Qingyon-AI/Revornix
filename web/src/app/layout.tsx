@@ -136,8 +136,8 @@ export default async function RootLayout({
 					</ReactQueryProvider>
 					<Toaster position='top-right' richColors />
 				</NextIntlClientProvider>
+				{GA_ID && <GoogleAnalytics gaId={GA_ID} />}
 			</body>
-			{GA_ID && <GoogleAnalytics gaId={GA_ID} />}
 		</html>
 	);
 }
