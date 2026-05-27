@@ -129,7 +129,7 @@ const EditableMarkdownPanel = ({
 	}, [hasChanges, isSaving, normalizedDraft, onSave, t]);
 
 	useEffect(() => {
-		if (!isEditing || !isEditorFullscreen) {
+		if (!isEditing) {
 			return;
 		}
 
@@ -144,7 +144,7 @@ const EditableMarkdownPanel = ({
 			}
 
 			event.preventDefault();
-			if (!isSaving) {
+			if (!isSaving && hasChanges) {
 				void handleSave();
 			}
 		};
@@ -153,7 +153,7 @@ const EditableMarkdownPanel = ({
 		return () => {
 			window.removeEventListener('keydown', onKeyDown);
 		};
-	}, [isEditing, isEditorFullscreen, isSaving, handleSave]);
+	}, [isEditing, isSaving, hasChanges, handleSave]);
 
 	const queueVisualMode = () => {
 		setDraft((current) => {
@@ -210,25 +210,23 @@ const EditableMarkdownPanel = ({
 					{t('markdown_edit_source_mode')}
 				</div>
 				<div className='flex items-center gap-1'>
-					{isEditorFullscreen ? (
-						<Button
-							type='button'
-							variant='ghost'
-							size='sm'
-							className='h-8 gap-1.5 px-2'
-							title={t('markdown_edit_fullscreen_save')}
-							onClick={() => {
-								void handleSave();
-							}}
-							disabled={isSaving}>
-							{isSaving ? (
-								<Loader2 className='size-4 animate-spin' />
-							) : (
-								<Save className='size-4' />
-							)}
-							{t('save')}
-						</Button>
-					) : null}
+					<Button
+						type='button'
+						variant='ghost'
+						size='sm'
+						className='h-8 gap-1.5 px-2'
+						title={t('markdown_edit_fullscreen_save')}
+						onClick={() => {
+							void handleSave();
+						}}
+						disabled={isSaving || !hasChanges}>
+						{isSaving ? (
+							<Loader2 className='size-4 animate-spin' />
+						) : (
+							<Save className='size-4' />
+						)}
+						{t('save')}
+					</Button>
 					<Button
 						type='button'
 						variant='ghost'
@@ -281,10 +279,33 @@ const EditableMarkdownPanel = ({
 				<div className='mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6'>
 				<div className='flex items-center justify-between gap-3 rounded-[22px] border border-border/50 bg-background/35 px-4 py-3 shadow-none'>
 					<div className='min-w-0'>
-						<p className='text-sm font-medium text-foreground'>
-							{t('markdown_edit_title')}
-						</p>
-						<p className='text-xs text-muted-foreground'>
+						<div className='flex items-center gap-2'>
+							<p className='text-sm font-medium text-foreground'>
+								{t('markdown_edit_title')}
+							</p>
+							{isEditing ? (
+								<span
+									className={cn(
+										'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
+										hasChanges
+											? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+											: 'bg-muted text-muted-foreground',
+									)}>
+									<span
+										className={cn(
+											'inline-block size-1.5 rounded-full',
+											hasChanges
+												? 'bg-amber-500'
+												: 'bg-muted-foreground/50',
+										)}
+									/>
+									{hasChanges
+										? t('markdown_edit_unsaved_changes')
+										: t('markdown_edit_no_changes')}
+								</span>
+							) : null}
+						</div>
+						<p className='mt-1 text-xs text-muted-foreground'>
 							{isEditing
 								? t('markdown_edit_editing_hint')
 								: t('markdown_edit_view_hint')}
@@ -309,7 +330,8 @@ const EditableMarkdownPanel = ({
 									onClick={() => {
 										void handleSave();
 									}}
-									disabled={isSaving}>
+									title={t('markdown_edit_fullscreen_save_shortcut')}
+									disabled={isSaving || !hasChanges}>
 									{isSaving ? (
 										<Loader2 className='size-4 animate-spin' />
 									) : null}
@@ -350,7 +372,7 @@ const EditableMarkdownPanel = ({
 								onFullscreenSave={() => {
 									void handleSave();
 								}}
-								fullscreenSaveDisabled={isSaving}
+								fullscreenSaveDisabled={isSaving || !hasChanges}
 								fullscreenSaveLoading={isSaving}
 								onInitialParse={handleInitialVisualParse}
 								toolbarEnd={
