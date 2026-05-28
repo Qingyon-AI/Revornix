@@ -14,19 +14,179 @@ import {
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
+	useSidebar,
 } from '@/components/ui/sidebar';
-import { RightSidebarProvider } from '@/provider/right-sidebar-provider';
+import {
+	RightSidebarProvider,
+	useRightSidebar,
+} from '@/provider/right-sidebar-provider';
 import { Inbox, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'nextjs-toploader/app';
+import { useEffect, useRef } from 'react';
+
+const EDITABLE_SELECTOR =
+	'input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"]';
+const OVERLAY_SELECTOR =
+	'[role="dialog"], [role="menu"], [role="listbox"]';
+const SHORTCUT_SEQUENCE_TIMEOUT = 1_200;
+
+const isEditableTarget = (target: EventTarget | null) => {
+	if (!(target instanceof HTMLElement)) return false;
+
+	return target.isContentEditable || Boolean(target.closest(EDITABLE_SELECTOR));
+};
+
+const isOverlayTarget = (target: EventTarget | null) => {
+	return target instanceof HTMLElement && Boolean(target.closest(OVERLAY_SELECTOR));
+};
+
+const GlobalPrivateShortcuts = () => {
+	const router = useRouter();
+	const { isMobile, openMobile, setOpenMobile } = useSidebar();
+	const {
+		hasContent: hasRightSidebarContent,
+		open: rightSidebarOpen,
+		setOpen: setRightSidebarOpen,
+	} = useRightSidebar();
+	const shortcutSequenceRef = useRef<{
+		key: string;
+		startedAt: number;
+	} | null>(null);
+
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.defaultPrevented) return;
+
+			const isPrimaryKey = event.metaKey || event.ctrlKey;
+			const key = event.key.toLowerCase();
+			const isEditable = isEditableTarget(event.target);
+			const now = Date.now();
+			const shortcutSequence = shortcutSequenceRef.current;
+
+			if (
+				isPrimaryKey &&
+				!event.altKey &&
+				!event.shiftKey &&
+				key === 'n' &&
+				!isEditable
+			) {
+				event.preventDefault();
+				router.push('/document/create');
+				return;
+			}
+
+			if (
+				isPrimaryKey &&
+				!event.altKey &&
+				event.shiftKey &&
+				key === 'n' &&
+				!isEditable
+			) {
+				event.preventDefault();
+				router.push('/section/create');
+				return;
+			}
+
+			if (
+				isPrimaryKey &&
+				!event.altKey &&
+				!event.shiftKey &&
+				event.key === ',' &&
+				!isEditable
+			) {
+				event.preventDefault();
+				router.push('/setting');
+				return;
+			}
+
+			if (
+				!isPrimaryKey &&
+				!event.altKey &&
+				!event.shiftKey &&
+				!isEditable &&
+				key.length === 1
+			) {
+				if (key === 'n') {
+					shortcutSequenceRef.current = { key, startedAt: now };
+					return;
+				}
+
+				const isFreshSequence =
+					shortcutSequence?.key === 'n' &&
+					now - shortcutSequence.startedAt <= SHORTCUT_SEQUENCE_TIMEOUT;
+
+				if (isFreshSequence && key === 'd') {
+					event.preventDefault();
+					shortcutSequenceRef.current = null;
+					router.push('/document/create');
+					return;
+				}
+
+				if (isFreshSequence && key === 's') {
+					event.preventDefault();
+					shortcutSequenceRef.current = null;
+					router.push('/section/create');
+					return;
+				}
+
+				shortcutSequenceRef.current = null;
+			}
+
+			if (
+				event.key === 'Escape' &&
+				!event.metaKey &&
+				!event.ctrlKey &&
+				!event.altKey &&
+				!event.shiftKey
+			) {
+				shortcutSequenceRef.current = null;
+
+				if (
+					isOverlayTarget(event.target) ||
+					document.querySelector(OVERLAY_SELECTOR)
+				) {
+					return;
+				}
+
+				if (rightSidebarOpen && hasRightSidebarContent) {
+					event.preventDefault();
+					setRightSidebarOpen(false);
+					return;
+				}
+
+				if (isMobile && openMobile) {
+					event.preventDefault();
+					setOpenMobile(false);
+				}
+			}
+		};
+
+		document.addEventListener('keydown', onKeyDown, true);
+		return () => document.removeEventListener('keydown', onKeyDown, true);
+	}, [
+		hasRightSidebarContent,
+		isMobile,
+		openMobile,
+		rightSidebarOpen,
+		router,
+		setOpenMobile,
+		setRightSidebarOpen,
+	]);
+
+	return null;
+};
 
 const PrivateLayoutShell = ({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) => {
+
 	return (
 		<SidebarProvider>
 			<RightSidebarProvider>
+				<GlobalPrivateShortcuts />
 				<AppSidebar />
 				<SidebarInset
 					style={
