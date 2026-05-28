@@ -3,6 +3,7 @@ import json
 import asyncio
 import random
 import re
+import time
 from typing import Any
 import crud
 from langfuse import propagate_attributes
@@ -13,7 +14,7 @@ from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
 from pydantic import BaseModel
 from data.custom_types.all import RelationInfo, EntityInfo
-from common.logger import exception_logger
+from common.logger import exception_logger, info_logger, format_log_message
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion
 from data.sql.base import async_session_context
@@ -149,15 +150,47 @@ async def _call_with_llm_retry(
     last_error: Exception | None = None
 
     for attempt in range(1, LLM_RETRY_MAX_ATTEMPTS + 1):
+        info_logger.info(format_log_message(
+            "llm_call_started",
+            operation=operation_name,
+            user_id=user_id,
+            model_id=model_id,
+            attempt=attempt,
+            max_attempts=LLM_RETRY_MAX_ATTEMPTS,
+        ))
+        started = time.perf_counter()
         try:
-            return await call()
+            result = await call()
         except Exception as error:
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
             last_error = error
             retryable = _is_retryable_llm_error(error)
+            status_code = _get_error_status_code(error)
+            info_logger.warning(format_log_message(
+                "llm_call_failed",
+                operation=operation_name,
+                user_id=user_id,
+                model_id=model_id,
+                attempt=attempt,
+                duration_ms=duration_ms,
+                retryable=retryable,
+                status_code=status_code,
+                error=repr(error),
+            ))
             if not retryable or attempt >= LLM_RETRY_MAX_ATTEMPTS:
+                exception_logger.error(format_log_message(
+                    "llm_call_failed_final",
+                    operation=operation_name,
+                    user_id=user_id,
+                    model_id=model_id,
+                    attempt=attempt,
+                    duration_ms=duration_ms,
+                    retryable=retryable,
+                    status_code=status_code,
+                    error=repr(error),
+                ))
                 raise
 
-            status_code = _get_error_status_code(error)
             delay_seconds = (
                 LLM_RETRY_BASE_DELAY_SECONDS * (2 ** (attempt - 1))
             ) + random.uniform(0, 0.35)
@@ -169,6 +202,34 @@ async def _call_with_llm_retry(
                 f"error={repr(error)}"
             )
             await asyncio.sleep(delay_seconds)
+            continue
+
+        duration_ms = round((time.perf_counter() - started) * 1000, 2)
+        usage_in: int | None = None
+        usage_out: int | None = None
+        try:
+            usage = getattr(result, "usage", None)
+            if usage is not None:
+                usage_in = getattr(usage, "prompt_tokens", None) or getattr(
+                    usage, "input_tokens", None
+                )
+                usage_out = getattr(usage, "completion_tokens", None) or getattr(
+                    usage, "output_tokens", None
+                )
+        except Exception:
+            usage_in = None
+            usage_out = None
+        info_logger.info(format_log_message(
+            "llm_call_finished",
+            operation=operation_name,
+            user_id=user_id,
+            model_id=model_id,
+            attempt=attempt,
+            duration_ms=duration_ms,
+            tokens_in=usage_in,
+            tokens_out=usage_out,
+        ))
+        return result
 
     if last_error is not None:
         raise last_error
