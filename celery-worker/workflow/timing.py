@@ -21,12 +21,15 @@ Migration helpers:
 from __future__ import annotations
 
 import inspect
+import time
 from contextlib import contextmanager
 from functools import wraps
 from typing import Any, Callable, Iterator
 
 from opentelemetry import trace
 from opentelemetry.trace import Span, Status, StatusCode
+
+from common.logger import exception_logger, info_logger, log_event
 
 _tracer = trace.get_tracer("revornix-worker.workflow")
 
@@ -68,6 +71,22 @@ def _attach_state_attrs(span: Span, payload: Any, *, prefix: str = "workflow") -
         span.set_attribute(f"{prefix}.state_type", type(payload).__name__)
 
 
+def _log_context_from_state(payload: Any) -> dict[str, Any]:
+    """Extract loggable context (document_id/section_id/user_id/...) from a
+    langgraph state dict so log lines carry the same correlation fields as
+    OTel spans.
+    """
+    if not isinstance(payload, dict):
+        return {}
+    context: dict[str, Any] = {}
+    for key in _STATE_CONTEXT_KEYS:
+        value = payload.get(key)
+        if value is None:
+            continue
+        context[key] = value
+    return context
+
+
 def set_stage_metrics(**metrics: Any) -> None:
     """Attach typed metric attributes (e.g. ``foo_elapsed_ms=12.3``) to the
     current span. Silently no-ops when no span is active.
@@ -100,12 +119,42 @@ def wrap_workflow_node(
                 span.set_attribute("workflow.node", node_name)
                 state = args[0] if args else kwargs.get("state")
                 _attach_state_attrs(span, state, prefix="workflow")
+                log_ctx = _log_context_from_state(state)
+                log_event(
+                    info_logger,
+                    "workflow_node_started",
+                    workflow_name=workflow_name,
+                    node_name=node_name,
+                    **log_ctx,
+                )
+                started = time.perf_counter()
                 try:
-                    return await node_func(*args, **kwargs)
+                    result = await node_func(*args, **kwargs)
                 except Exception as exc:
+                    duration_ms = round((time.perf_counter() - started) * 1000, 2)
                     span.record_exception(exc)
                     span.set_status(Status(StatusCode.ERROR, str(exc)))
+                    log_event(
+                        exception_logger,
+                        "workflow_node_failed",
+                        level=40,  # logging.ERROR
+                        workflow_name=workflow_name,
+                        node_name=node_name,
+                        duration_ms=duration_ms,
+                        error=repr(exc),
+                        **log_ctx,
+                    )
                     raise
+                duration_ms = round((time.perf_counter() - started) * 1000, 2)
+                log_event(
+                    info_logger,
+                    "workflow_node_finished",
+                    workflow_name=workflow_name,
+                    node_name=node_name,
+                    duration_ms=duration_ms,
+                    **log_ctx,
+                )
+                return result
 
         return _async_wrapper
 
@@ -116,12 +165,42 @@ def wrap_workflow_node(
             span.set_attribute("workflow.node", node_name)
             state = args[0] if args else kwargs.get("state")
             _attach_state_attrs(span, state, prefix="workflow")
+            log_ctx = _log_context_from_state(state)
+            log_event(
+                info_logger,
+                "workflow_node_started",
+                workflow_name=workflow_name,
+                node_name=node_name,
+                **log_ctx,
+            )
+            started = time.perf_counter()
             try:
-                return node_func(*args, **kwargs)
+                result = node_func(*args, **kwargs)
             except Exception as exc:
+                duration_ms = round((time.perf_counter() - started) * 1000, 2)
                 span.record_exception(exc)
                 span.set_status(Status(StatusCode.ERROR, str(exc)))
+                log_event(
+                    exception_logger,
+                    "workflow_node_failed",
+                    level=40,
+                    workflow_name=workflow_name,
+                    node_name=node_name,
+                    duration_ms=duration_ms,
+                    error=repr(exc),
+                    **log_ctx,
+                )
                 raise
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
+            log_event(
+                info_logger,
+                "workflow_node_finished",
+                workflow_name=workflow_name,
+                node_name=node_name,
+                duration_ms=duration_ms,
+                **log_ctx,
+            )
+            return result
 
     return _sync_wrapper
 
@@ -156,6 +235,7 @@ def timed_stage(
         span.set_attribute("workflow.name", workflow_name)
         span.set_attribute("workflow.node", node_name)
         span.set_attribute("workflow.stage", stage_name)
+        log_ctx: dict[str, Any] = {}
         if context:
             for key, value in context.items():
                 if value is None:
@@ -163,12 +243,44 @@ def timed_stage(
                 attr = _attr_safe(value)
                 if attr is not None:
                     span.set_attribute(f"context.{key}", attr)
+                    log_ctx[key] = attr
+        log_event(
+            info_logger,
+            "workflow_stage_started",
+            workflow_name=workflow_name,
+            node_name=node_name,
+            stage_name=stage_name,
+            **log_ctx,
+        )
+        started = time.perf_counter()
         try:
             yield span
         except Exception as exc:
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR, str(exc)))
+            log_event(
+                exception_logger,
+                "workflow_stage_failed",
+                level=40,
+                workflow_name=workflow_name,
+                node_name=node_name,
+                stage_name=stage_name,
+                duration_ms=duration_ms,
+                error=repr(exc),
+                **log_ctx,
+            )
             raise
+        duration_ms = round((time.perf_counter() - started) * 1000, 2)
+        log_event(
+            info_logger,
+            "workflow_stage_finished",
+            workflow_name=workflow_name,
+            node_name=node_name,
+            stage_name=stage_name,
+            duration_ms=duration_ms,
+            **log_ctx,
+        )
 
 
 async def ainvoke_with_timing(
@@ -181,9 +293,36 @@ async def ainvoke_with_timing(
     with _tracer.start_as_current_span(span_name) as span:
         span.set_attribute("workflow.name", workflow_name)
         _attach_state_attrs(span, payload, prefix="workflow")
+        log_ctx = _log_context_from_state(payload)
+        log_event(
+            info_logger,
+            "workflow_invoke_started",
+            workflow_name=workflow_name,
+            **log_ctx,
+        )
+        started = time.perf_counter()
         try:
-            return await workflow.ainvoke(payload)
+            result = await workflow.ainvoke(payload)
         except Exception as exc:
+            duration_ms = round((time.perf_counter() - started) * 1000, 2)
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR, str(exc)))
+            log_event(
+                exception_logger,
+                "workflow_invoke_failed",
+                level=40,
+                workflow_name=workflow_name,
+                duration_ms=duration_ms,
+                error=repr(exc),
+                **log_ctx,
+            )
             raise
+        duration_ms = round((time.perf_counter() - started) * 1000, 2)
+        log_event(
+            info_logger,
+            "workflow_invoke_finished",
+            workflow_name=workflow_name,
+            duration_ms=duration_ms,
+            **log_ctx,
+        )
+        return result
