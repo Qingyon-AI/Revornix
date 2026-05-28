@@ -29,6 +29,8 @@ import {
 	Library,
 	UserCircle,
 	X,
+	FilePlus2,
+	BookPlus,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
@@ -122,8 +124,10 @@ const ResultRow = ({
 
 const PRIVATE_NAV: NavEntry[] = [
 	{ href: '/dashboard', label: 'nav_dashboard', keywords: ['dashboard', 'home', '主页', '仪表盘'], icon: LayoutDashboard },
+	{ href: '/document/create', label: 'nav_create_document', keywords: ['create', 'new', 'document', '新建', '创建', '文档'], icon: FilePlus2 },
 	{ href: '/document/mine', label: 'nav_my_documents', keywords: ['documents', 'mine', '文档', '我的'], icon: FileText },
 	{ href: '/document/star', label: 'nav_starred', keywords: ['star', 'favorite', '收藏', '星标'], icon: Star },
+	{ href: '/section/create', label: 'nav_create_section', keywords: ['create', 'new', 'section', 'column', '新建', '创建', '专栏'], icon: BookPlus },
 	{ href: '/section/mine', label: 'nav_my_sections', keywords: ['section', 'column', '专栏'], icon: BookOpen },
 	{ href: '/section/subscribed', label: 'nav_subscribed_sections', keywords: ['subscribed', 'follow', '订阅'], icon: Library },
 	{ href: '/revornix-ai', label: 'nav_revornix_ai', keywords: ['ai', 'chat', 'assistant'], icon: Sparkles },
