@@ -221,10 +221,13 @@ async def get_document_infos(
         if transcribe_task is not None:
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
+                md_file_name=transcribe_task.md_file_name,
                 transcribed_text=transcribe_task.transcribed_text,
                 create_time=transcribe_task.create_time,
                 update_time=transcribe_task.update_time,
             )
+            if transcribe_task.md_file_name is not None:
+                remote_fields_to_sign.append((info.transcribe_task, "md_file_name", document.creator_id))
 
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
@@ -304,6 +307,18 @@ async def _resolve_document_markdown_file_path(
         if quick_note_document is None or not quick_note_document.md_file_name:
             raise schemas.error.CustomException("Document markdown is not ready", code=404)
         return quick_note_document.md_file_name
+
+    if document.category == DocumentCategory.AUDIO:
+        transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
+            db=db,
+            document_id=document.id,
+        )
+        if transcribe_task is None or transcribe_task.md_file_name is None:
+            # Legacy audio rows without ``md_file_name`` haven't been
+            # backfilled yet; surface a clear error so the operator runs
+            # ``scripts/backfill_audio_transcribed_md.py``.
+            raise schemas.error.CustomException("Document markdown is not ready", code=404)
+        return transcribe_task.md_file_name
 
     task_bundle_row = await crud.task.get_document_task_bundle_by_document_id_async(
         db=db,
