@@ -309,10 +309,8 @@ async def _get_document_ready_state_async(
             return False, "transcribe_task_missing"
         if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS:
             return False, f"transcribe_status={transcribe_task.status}"
-        # New rows expose the transcript via ``md_file_name``; legacy rows
-        # still keep it inline in ``transcribed_text``. Either one is fine.
-        if transcribe_task.md_file_name is None and transcribe_task.transcribed_text is None:
-            return False, "transcribe_text_missing"
+        if transcribe_task.md_file_name is None:
+            return False, "transcribe_md_missing"
         return True, "ready"
 
     return False, f"unsupported_category={category}"

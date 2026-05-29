@@ -149,10 +149,6 @@ async def _transcribe_document_audio(
         if db_transcribe_task is None:
             raise Exception("The transcribe task of the document is not found")
         db_transcribe_task.md_file_name = md_file_name
-        # New rows leave ``transcribed_text`` empty — readers fall back to
-        # the file system path. Old rows that still have inline text keep
-        # working until the backfill migration drops the column.
-        db_transcribe_task.transcribed_text = None
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = datetime.now(timezone.utc)

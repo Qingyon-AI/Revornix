@@ -298,17 +298,9 @@ async def _resolve_document_source_signature(
                 db=db,
                 document_id=doc_id,
             )
-            if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS:
+            if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.md_file_name is None:
                 raise ValueError("The transcribe task of the document is not finished")
-            # New rows use ``md_file_name`` (path stable across snapshots so
-            # we can sign-hash the path itself). Legacy rows still carry the
-            # full transcript inline — hash its content to stay compatible.
-            if transcribe_task.md_file_name is not None:
-                signature_source = f"{category}:{transcribe_task.md_file_name}"
-            elif transcribe_task.transcribed_text is not None:
-                signature_source = f"{category}:{hashlib.sha256(transcribe_task.transcribed_text.encode('utf-8')).hexdigest()}"
-            else:
-                raise ValueError("The transcribe task of the document is not finished")
+            signature_source = f"{category}:{transcribe_task.md_file_name}"
         else:
             raise ValueError(f"Unsupported document category: {category}")
         return creator_id, _hash_source_signature(signature_source)
@@ -693,21 +685,14 @@ async def _load_markdown_content(
         )
         if transcribe_task is None:
             raise ValueError("The transcribe task of the document is not found")
-        if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS:
+        if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.md_file_name is None:
             raise ValueError("The transcribe task of the document is not finished")
-        # New rows: read transcript from file system, same code path as
-        # FILE / WEBSITE / QUICK_NOTE. Legacy rows: fall back to the inline
-        # column until the backfill drops it.
-        if transcribe_task.md_file_name is not None:
-            raw_content = await remote_file_service.get_file_content_by_file_path(
-                file_path=transcribe_task.md_file_name
-            )
-            if isinstance(raw_content, bytes):
-                return raw_content.decode("utf-8")
-            return cast(str, raw_content)
-        if transcribe_task.transcribed_text is not None:
-            return transcribe_task.transcribed_text
-        raise ValueError("The transcribe task of the document is not finished")
+        raw_content = await remote_file_service.get_file_content_by_file_path(
+            file_path=transcribe_task.md_file_name
+        )
+        if isinstance(raw_content, bytes):
+            return raw_content.decode("utf-8")
+        return cast(str, raw_content)
     else:
         raise ValueError(f"Unsupported document category: {cat}")
 

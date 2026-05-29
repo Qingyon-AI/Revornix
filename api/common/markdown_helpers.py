@@ -109,7 +109,6 @@ async def get_markdown_content_by_document_id(
     user_id: int,
     remote_file_service: RemoteFileServiceProtocol | None = None,
 ):
-    markdown_content: str | None = None
     markdown_file_name: str | None = None
     try:
         async with async_session_context() as db:
@@ -149,14 +148,12 @@ async def get_markdown_content_by_document_id(
                     db=db,
                     document_id=document_id
                 )
-                if db_transcribe_task is None or db_transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or db_transcribe_task.transcribed_text is None:
+                if db_transcribe_task is None or db_transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or db_transcribe_task.md_file_name is None:
                     raise Exception("Document transcription is not complete")
-                markdown_content = db_transcribe_task.transcribed_text
+                markdown_file_name = db_transcribe_task.md_file_name
             else:
                 raise Exception("Document category not supported")
 
-        if markdown_content is not None:
-            return markdown_content
         if markdown_file_name is None:
             raise Exception("The markdown file name is not found")
 
@@ -168,11 +165,10 @@ async def get_markdown_content_by_document_id(
         raw_content = await file_service.get_file_content_by_file_path(
             file_path=markdown_file_name
         )
-        markdown_content = _coerce_markdown_text(
+        return _coerce_markdown_text(
             raw_content,
             source=markdown_file_name,
         )
-        return markdown_content
     except Exception as e:
         exception_logger.error(
             format_log_message(
