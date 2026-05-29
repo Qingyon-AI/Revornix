@@ -222,7 +222,6 @@ async def get_document_infos(
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
                 md_file_name=transcribe_task.md_file_name,
-                transcribed_text=transcribe_task.transcribed_text,
                 create_time=transcribe_task.create_time,
                 update_time=transcribe_task.update_time,
             )

@@ -263,14 +263,19 @@ async def _load_markdown_content(
         return cast(str, raw_content)
     elif cat == DocumentCategory.AUDIO:
         transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
-            db=db, 
+            db=db,
             document_id=db_document.id
         )
         if transcribe_task is None:
             raise ValueError("The transcribe task of the document is not found")
-        if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+        if transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.md_file_name is None:
             raise ValueError("The transcribe task of the document is not finished")
-        return transcribe_task.transcribed_text
+        raw_content = await remote_file_service.get_file_content_by_file_path(
+            file_path=transcribe_task.md_file_name
+        )
+        if isinstance(raw_content, bytes):
+            return raw_content.decode("utf-8")
+        return cast(str, raw_content)
     else:
         raise ValueError(f"Unsupported document category: {cat}")
 

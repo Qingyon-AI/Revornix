@@ -81,10 +81,10 @@ def _resolve_document_snapshot_paths(
             db=db,
             document_id=document.id,
         )
-        if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+        if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.md_file_name is None:
             return None
         source_signature = _hash_source_signature(
-            f"{document.category}:{hashlib.sha256(transcribe_task.transcribed_text.encode('utf-8')).hexdigest()}"
+            f"{document.category}:{transcribe_task.md_file_name}"
         )
 
     if source_signature is None:
@@ -124,10 +124,10 @@ async def _resolve_document_snapshot_paths_async(
             db=db,
             document_id=document.id,
         )
-        if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.transcribed_text is None:
+        if transcribe_task is None or transcribe_task.status != DocumentAudioTranscribeStatus.SUCCESS or transcribe_task.md_file_name is None:
             return None
         source_signature = _hash_source_signature(
-            f"{document.category}:{hashlib.sha256(transcribe_task.transcribed_text.encode('utf-8')).hexdigest()}"
+            f"{document.category}:{transcribe_task.md_file_name}"
         )
 
     if source_signature is None:

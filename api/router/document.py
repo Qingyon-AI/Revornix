@@ -469,7 +469,6 @@ async def transcribe_audio_document(
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.TRANSCRIBING:
             raise schemas.error.CustomException("Transcription task is already in progress", code=409)
         db_transcribe_task.status = DocumentAudioTranscribeStatus.WAIT_TO
-        db_transcribe_task.transcribed_text = None
         db_transcribe_task.md_file_name = None
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = now
