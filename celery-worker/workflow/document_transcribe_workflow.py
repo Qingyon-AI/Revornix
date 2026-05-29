@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from typing import TypedDict
 
@@ -9,6 +10,7 @@ from common.document_guard import ensure_document_active
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
+from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
 from workflow.timing import add_timed_node, ainvoke_with_timing
 
@@ -123,6 +125,21 @@ async def _transcribe_document_audio(
         audio_file_name=audio_file_name
     )
 
+    # Mirror what FILE/WEBSITE convert does: upload the transcript as a
+    # standalone markdown file in the user's default file system so every
+    # downstream stage (chunking, embedding, summarisation, graph) reads
+    # through the same FileSystemProxy code path.
+    md_file_name = f"audio_transcripts/{uuid.uuid4().hex}.md"
+    remote_file_service = await FileSystemProxy.create(user_id=user_id)
+    await _ensure_transcribe_task_not_cancelled(document_id)
+    async with async_session_context() as db:
+        await ensure_document_active(db=db, document_id=document_id)
+    await remote_file_service.upload_raw_content_to_path(
+        file_path=md_file_name,
+        content=(text or "").encode("utf-8"),
+        content_type="text/plain",
+    )
+
     async with async_session_context() as db:
         await ensure_document_active(db=db, document_id=document_id)
         db_transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
@@ -131,7 +148,11 @@ async def _transcribe_document_audio(
         )
         if db_transcribe_task is None:
             raise Exception("The transcribe task of the document is not found")
-        db_transcribe_task.transcribed_text = text
+        db_transcribe_task.md_file_name = md_file_name
+        # New rows leave ``transcribed_text`` empty — readers fall back to
+        # the file system path. Old rows that still have inline text keep
+        # working until the backfill migration drops the column.
+        db_transcribe_task.transcribed_text = None
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = datetime.now(timezone.utc)

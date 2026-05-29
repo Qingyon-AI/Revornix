@@ -15,7 +15,12 @@ class DocumentAudioTranscribeTask(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), index=True, nullable=False)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transcribe, 1: transcribing, 2: transcribed successfully, 3: transcribe failed')
-    transcribed_text: Mapped[str | None] = mapped_column(String(20000), comment='The transcribed text of the speech')
+    # ``transcribed_text`` is the legacy inline storage. New transcripts are
+    # written to the user's remote file system via ``md_file_name`` to match
+    # other document categories (FILE/WEBSITE/QUICK_NOTE). The column stays
+    # for backfill / rollback and is dropped in a later revision.
+    transcribed_text: Mapped[str | None] = mapped_column(String(20000), comment='Legacy: inline transcript text. New rows leave this NULL and use md_file_name instead.')
+    md_file_name: Mapped[str | None] = mapped_column(String(500), comment='Path of the transcript markdown file uploaded to the file system')
     celery_task_id: Mapped[str | None] = mapped_column(String(255), comment='The celery task id for this transcribe task')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

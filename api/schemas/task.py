@@ -5,7 +5,12 @@ from .base import BaseModel
 
 class DocumentTranscribeTask(BaseModel):
     status: int
-    transcribed_text: str | None
+    # ``md_file_name`` is the new, canonical transcript location (mirrors
+    # FILE / WEBSITE / QUICK_NOTE). Will be signed into a download URL by
+    # the router. ``transcribed_text`` stays populated only for legacy rows
+    # until the backfill migration drops the column.
+    md_file_name: str | None = None
+    transcribed_text: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
 
