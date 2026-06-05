@@ -91,7 +91,12 @@ const getDocumentMarkdown = async (
 		});
 	}
 	if (document.category === DocumentCategory.AUDIO) {
-		return document.transcribe_task?.transcribed_text ?? null;
+		if (!document.transcribe_task?.md_file_name) {
+			return null;
+		}
+		return await getDocumentMarkdownContentServer({
+			document_id: document.id,
+		});
 	}
 	return null;
 };

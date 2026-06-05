@@ -9,7 +9,7 @@ import { SectionPodcastStatus } from '@/enums/section';
 import type { SectionDetailWithPpt } from '@/service/section';
 
 import AudioPlayer from '../ui/audio-player';
-import AudioStatusCard from '../ui/audio-status-card';
+import TaskStateCard from '../ui/task-state-card';
 import { Button } from '../ui/button';
 import SidebarTaskNode from '../ui/sidebar-task-node';
 
@@ -46,7 +46,7 @@ const SectionMediaPodcastTask = ({
 
 	if (hasPendingAutoPodcastFlow) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
@@ -59,7 +59,8 @@ const SectionMediaPodcastTask = ({
 
 	if (creatorStatusResolved && !isCreator && !section.podcast_task) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_user_unable')}
 				description={t('section_podcast_placeholder_description')}
@@ -71,7 +72,8 @@ const SectionMediaPodcastTask = ({
 
 	if (isCreator && !section.podcast_task) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
@@ -88,7 +90,7 @@ const SectionMediaPodcastTask = ({
 
 	if (section.podcast_task?.status === SectionPodcastStatus.GENERATING) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
 				badge={t('document_podcast_status_doing')}
 				title={t('section_podcast_processing')}
 				description={t('section_podcast_processing_description')}
@@ -106,7 +108,7 @@ const SectionMediaPodcastTask = ({
 
 	if (section.podcast_task?.status === SectionPodcastStatus.WAIT_TO) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
@@ -123,7 +125,8 @@ const SectionMediaPodcastTask = ({
 
 	if (section.podcast_task?.status === SectionPodcastStatus.CANCELLED) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('cancel')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
@@ -180,7 +183,8 @@ const SectionMediaPodcastTask = ({
 
 	if (section.podcast_task?.status === SectionPodcastStatus.FAILED) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('document_podcast_status_failed')}
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}

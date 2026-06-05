@@ -24,6 +24,7 @@ interface AudioPlayerContextValue {
 	volume: number;
 	playbackRate: number;
 	toggleTrack: (track: AudioTrackInfo) => Promise<void>;
+	playTrackAt: (track: AudioTrackInfo, time: number) => Promise<void>;
 	registerTrack: (
 		track: AudioTrackInfo,
 		options?: { force?: boolean },
@@ -153,6 +154,49 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 		}
 	}, []);
 
+	const playTrackAt = useCallback(async (
+		trackInfo: AudioTrackInfo,
+		time: number,
+	) => {
+		const audio = audioRef.current;
+		if (!audio || !trackInfo.src || !Number.isFinite(time)) return;
+
+		const nextTrack = normalizeAudioTrack(trackInfo);
+		const isCurrentTrack = trackRef.current?.key === nextTrack.key;
+		const nextTime = Math.max(0, time);
+		dismissedTrackKeyRef.current = null;
+		setTrack(nextTrack);
+
+		const applySeek = () => {
+			try {
+				audio.currentTime = nextTime;
+				setCurrentTime(nextTime);
+			} catch {
+				// Some browsers reject seeking before metadata is available.
+			}
+		};
+
+		if (!isCurrentTrack || audio.getAttribute('src') !== nextTrack.src) {
+			audio.pause();
+			audio.src = nextTrack.src;
+			audio.load();
+			setDuration(0);
+			if (audio.readyState >= 1) {
+				applySeek();
+			} else {
+				audio.addEventListener('loadedmetadata', applySeek, { once: true });
+			}
+		} else {
+			applySeek();
+		}
+
+		try {
+			await audio.play();
+		} catch {
+			// Ignore playback failures to keep the UI stable.
+		}
+	}, []);
+
 	const registerTrack = useCallback((
 		trackInfo: AudioTrackInfo,
 		options?: { force?: boolean },
@@ -237,6 +281,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			volume,
 			playbackRate,
 			toggleTrack,
+			playTrackAt,
 			registerTrack,
 			pause,
 			resume,
@@ -252,6 +297,7 @@ export const AudioPlayerProvider = ({ children }: { children: ReactNode }) => {
 			isPlaying,
 			pause,
 			playbackRate,
+			playTrackAt,
 			registerTrack,
 			resume,
 			seek,

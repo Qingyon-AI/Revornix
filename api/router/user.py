@@ -228,7 +228,27 @@ async def update_default_file_system(
     user: models.user.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db)
 ):
-    user.default_user_file_system = default_file_system_update_request.default_user_file_system
+    default_user_file_system = default_file_system_update_request.default_user_file_system
+    if default_user_file_system is None:
+        raise schemas.error.CustomException("Default file system is required", code=400)
+
+    user_file_system = await crud.file_system.get_user_file_system_by_id_async(
+        db=db,
+        user_file_system_id=default_user_file_system,
+    )
+    if user_file_system is None:
+        raise schemas.error.CustomException("User file system not found", code=404)
+    if user_file_system.user_id != user.id:
+        raise schemas.error.CustomException(
+            "You don't have permission to use this file system",
+            code=403,
+        )
+
+    db_user = await crud.user.get_user_by_id_async(db=db, user_id=user.id)
+    if db_user is None:
+        raise schemas.error.CustomException("User not found", code=404)
+    db_user.default_user_file_system = default_user_file_system
+    db_user.update_time = datetime.now(timezone.utc)
     await db.commit()
     return schemas.common.SuccessResponse(message="The default file system is updated successfully.")
 
@@ -256,7 +276,8 @@ async def update_default_engine(
         default_website_document_parse_user_engine_id=default_engine_update_request.default_website_document_parse_user_engine_id,
         default_podcast_user_engine_id=default_engine_update_request.default_podcast_user_engine_id,
         default_image_generate_engine_id=default_engine_update_request.default_image_generate_engine_id,
-        default_audio_transcribe_engine_id=default_engine_update_request.default_audio_transcribe_engine_id
+        default_audio_transcribe_engine_id=default_engine_update_request.default_audio_transcribe_engine_id,
+        default_audio_meeting_mode=default_engine_update_request.default_audio_meeting_mode
     )
     await db.commit()
     return schemas.common.SuccessResponse(message="The default engine is updated successfully.")

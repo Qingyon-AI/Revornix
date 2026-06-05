@@ -7,7 +7,8 @@
 Name | Type
 ------------ | -------------
 `status` | number
-`transcribed_text` | string
+`md_file_name` | string
+`segments_file_name` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -19,7 +20,8 @@ import type { DocumentTranscribeTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
-  "transcribed_text": null,
+  "md_file_name": null,
+  "segments_file_name": null,
   "create_time": null,
   "update_time": null,
 } satisfies DocumentTranscribeTask
@@ -36,5 +38,4 @@ console.log(exampleParsed)
 ```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 

@@ -13,7 +13,7 @@ import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
 import { useEffect, useState } from 'react';
-import AudioStatusCard from '../ui/audio-status-card';
+import TaskStateCard from '../ui/task-state-card';
 import { Button } from '../ui/button';
 import { AudioLines, Hourglass, Loader2 } from 'lucide-react';
 import EngineSelect from '@/components/ai/engine-select';
@@ -102,7 +102,8 @@ const DocumentPodcast = ({
 	return (
 		<>
 			{!document?.podcast_task && (
-				<AudioStatusCard
+				<TaskStateCard
+					icon={AudioLines}
 					badge={t('document_podcast_status_todo')}
 					title={t('document_podcast_unset')}
 					description={t('document_podcast_placeholder_description')}
@@ -121,7 +122,7 @@ const DocumentPodcast = ({
 				<>
 					{document?.podcast_task?.status ===
 						DocumentPodcastStatus.WAIT_TO && (
-							<AudioStatusCard
+							<TaskStateCard
 								badge={t('document_podcast_status_todo')}
 								title={t('document_podcast_wait_to')}
 								description={t('document_podcast_wait_to_description')}
@@ -137,7 +138,7 @@ const DocumentPodcast = ({
 						)}
 						{document?.podcast_task?.status ===
 							DocumentPodcastStatus.GENERATING && (
-								<AudioStatusCard
+								<TaskStateCard
 									badge={t('document_podcast_status_doing')}
 									title={t('document_podcast_processing')}
 								description={t('document_podcast_processing_description')}
@@ -193,7 +194,8 @@ const DocumentPodcast = ({
 								/>
 							)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.FAILED && (
-						<AudioStatusCard
+						<TaskStateCard
+							icon={AudioLines}
 							badge={t('document_podcast_status_failed')}
 							title={t('document_podcast_failed')}
 							description={t('document_podcast_failed_description')}
@@ -208,7 +210,8 @@ const DocumentPodcast = ({
 						/>
 					)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.CANCELLED && (
-						<AudioStatusCard
+						<TaskStateCard
+							icon={AudioLines}
 							badge={t('cancel')}
 							title={t('document_podcast_unset')}
 							description={t('document_podcast_placeholder_description')}

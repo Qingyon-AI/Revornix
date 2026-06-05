@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from data.sql.base import Base
@@ -135,6 +135,8 @@ class AudioDocument(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     audio_file_name: Mapped[str] = mapped_column(String(500), nullable=False)
+    meeting_mode: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment='Whether this audio is processed as a meeting record (speaker diarization + timestamped transcript)')
+    speaker_map: Mapped[str | None] = mapped_column(Text, comment='JSON map of raw speaker labels to display names, e.g. {"S1":"Alice"}')
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

@@ -194,7 +194,13 @@ export interface PrivateUserInfo {
      */
     default_audio_transcribe_engine_id?: number | null;
     /**
-     * 
+     *
+     * @type {boolean}
+     * @memberof PrivateUserInfo
+     */
+    default_audio_meeting_mode?: boolean | null;
+    /**
+     *
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -252,6 +258,7 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'default_file_document_parse_user_engine_id': json['default_file_document_parse_user_engine_id'] == null ? undefined : json['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': json['default_podcast_user_engine_id'] == null ? undefined : json['default_podcast_user_engine_id'],
         'default_audio_transcribe_engine_id': json['default_audio_transcribe_engine_id'] == null ? undefined : json['default_audio_transcribe_engine_id'],
+        'default_audio_meeting_mode': json['default_audio_meeting_mode'] == null ? undefined : json['default_audio_meeting_mode'],
         'default_image_generate_engine_id': json['default_image_generate_engine_id'] == null ? undefined : json['default_image_generate_engine_id'],
         'default_ai_interaction_language': json['default_ai_interaction_language'] == null ? undefined : json['default_ai_interaction_language'],
     };
@@ -291,6 +298,7 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_file_document_parse_user_engine_id': value['default_file_document_parse_user_engine_id'],
         'default_podcast_user_engine_id': value['default_podcast_user_engine_id'],
         'default_audio_transcribe_engine_id': value['default_audio_transcribe_engine_id'],
+        'default_audio_meeting_mode': value['default_audio_meeting_mode'],
         'default_image_generate_engine_id': value['default_image_generate_engine_id'],
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };

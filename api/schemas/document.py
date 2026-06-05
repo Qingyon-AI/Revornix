@@ -105,6 +105,11 @@ class DocumentEmbeddingRequest(BaseModel):
 class DocumentTranscribeRequest(BaseModel):
     document_id: int
     engine_id: int | None = None
+    audio_meeting_mode: bool | None = None
+
+class DocumentAudioSpeakerRenameRequest(BaseModel):
+    document_id: int
+    speaker_map: dict[str, str]
 
 class DocumentMarkdownConvertRequest(BaseModel):
     document_id: int
@@ -188,6 +193,7 @@ class BaseDocumentCreateRequest(BaseModel):
     auto_podcast: bool = False
     auto_transcribe: bool = False
     auto_tag: bool = False
+    audio_meeting_mode: bool | None = None
 
 class DocumentCreateRequest(BaseDocumentCreateRequest):
     from_plat: str
@@ -307,6 +313,8 @@ class QuickNoteDocumentInfo(BaseModel):
 
 class AudioDocumentInfo(BaseModel):
     audio_file_name: str
+    meeting_mode: bool = False
+    speaker_map: dict[str, str] | None = None
 
 class DocumentDetailResponse(BaseModel):
     id: int

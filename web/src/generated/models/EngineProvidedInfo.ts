@@ -13,8 +13,16 @@
  */
 
 import { mapValues } from '../runtime';
+import type { EngineCapabilities } from './EngineCapabilities';
+import {
+    EngineCapabilitiesFromJSON,
+    EngineCapabilitiesFromJSONTyped,
+    EngineCapabilitiesToJSON,
+    EngineCapabilitiesToJSONTyped,
+} from './EngineCapabilities';
+
 /**
- * 
+ *
  * @export
  * @interface EngineProvidedInfo
  */
@@ -61,6 +69,12 @@ export interface EngineProvidedInfo {
      * @memberof EngineProvidedInfo
      */
     description_zh?: string | null;
+    /**
+     *
+     * @type {EngineCapabilities}
+     * @memberof EngineProvidedInfo
+     */
+    capabilities?: EngineCapabilities | null;
 }
 
 /**
@@ -92,6 +106,7 @@ export function EngineProvidedInfoFromJSONTyped(json: any, ignoreDiscriminator: 
         'name_zh': json['name_zh'],
         'description': json['description'] == null ? undefined : json['description'],
         'description_zh': json['description_zh'] == null ? undefined : json['description_zh'],
+        'capabilities': json['capabilities'] == null ? undefined : EngineCapabilitiesFromJSON(json['capabilities']),
     };
 }
 
@@ -113,5 +128,6 @@ export function EngineProvidedInfoToJSONTyped(value?: EngineProvidedInfo | null,
         'name_zh': value['name_zh'],
         'description': value['description'],
         'description_zh': value['description_zh'],
+        'capabilities': EngineCapabilitiesToJSON(value['capabilities']),
     };
 }
