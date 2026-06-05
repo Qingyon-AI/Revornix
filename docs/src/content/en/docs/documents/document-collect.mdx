@@ -26,6 +26,8 @@ You can collect content directly in the product UI, or through APIs, SDKs, exten
 - Tags: document tags used for later filtering and organization.
 - Auto tag: the system selects tags from your tag list based on document content.
 - Auto summary: the system uses the default document-reading / summary model to generate summary fields and replace the default title and description.
+- Auto transcription: audio documents can enter transcription automatically after creation. The transcript becomes the main body used by later summary, graph, embedding, and related workflows.
+- Meeting-record mode: available for audio documents when auto transcription is enabled. It adds speaker separation and timestamps, which works well for meetings, interviews, and multi-speaker discussions.
 - Auto podcast: the system generates an audio podcast from the document and attaches it to the document.
 - Push to sections: select sections during creation so the document enters those section workflows immediately.
 
@@ -72,4 +74,6 @@ If you build automation agents in OpenClaw, you can use the dedicated [OpenClaw 
 
 - File documents depend on the default file parsing engine.
 - Audio documents depend on the default transcription engine and are uploaded into the default file system before transcription starts.
+- Meeting-record mode depends on the transcription engine returning segmented results. When supported, the detail page shows speaker-segmented Markdown, clickable timestamps, right-sidebar meeting insights, and a speaker rename entry.
+- Newly generated meeting-mode Markdown displays millisecond timestamps, such as `00:07.860`; older transcripts using integer-second timestamps such as `00:07` remain compatible.
 - The web upload flow accepts common document and presentation formats, including `pdf / doc / docx / ppt / pptx / jpg / jpeg / png`.

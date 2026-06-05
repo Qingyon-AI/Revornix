@@ -21,7 +21,7 @@ In practice:
 - The quick-note editor also supports full-page fullscreen editing for longer drafting sessions.
 - Link documents depend on the website parsing engine.
 - File documents depend on the file parsing engine. The upload flow accepts common document and presentation formats, including `pdf / doc / docx / ppt / pptx / jpg / jpeg / png`.
-- Audio documents go through transcription first, then can continue into summary, graph, and podcast-related workflows.
+- Audio documents go through transcription first, then can continue into summary, graph, and podcast-related workflows. When meeting-record mode is enabled, the transcript also includes speaker separation and clickable timestamps.
 
 <Callout>
 	Except for quick notes, most document sources continue through the product as structured Markdown content plus their original source metadata.
@@ -45,6 +45,8 @@ Creating a document usually means submitting both the source and some workflow c
 - Bound sections
 - Auto summary
 - Auto tagging
+- Auto transcription for audio documents
+- Meeting-record mode for audio documents
 - Auto podcast
 
 If you enter document creation from a section detail page, that section can already be preselected so the new document joins that section immediately.
@@ -80,6 +82,23 @@ Documents whose main body is stored as Markdown can now be edited directly from 
 
 <Callout>
 	Once Markdown is edited manually, Revornix marks results derived from the previous body as stale. That includes embeddings, AI summaries, knowledge graphs, podcasts, and section-side derived outputs that depend on the document body.
+</Callout>
+
+### Audio transcription and meeting-record mode
+
+After transcription succeeds, an audio document stores its transcript as Markdown so it can continue into summary, graph, embedding, and podcast workflows. Regular transcription is best for single-speaker audio or sources where speaker separation is not important.
+
+When you enable meeting-record mode while creating an audio document, Revornix asks a transcription engine with segment support to produce a meeting-style transcript:
+
+- Each segment includes a speaker label such as `S1` or `S2`.
+- Each segment includes a timestamp; newly generated transcripts display millisecond precision, such as `00:07.860`.
+- Clicking a timestamp in the Markdown body jumps the source audio to that point.
+- The fullscreen audio player's Transcript panel shows the same segmented text and can also seek by segment.
+- The right sidebar shows meeting insights, including overview, action items, and decisions.
+- Speaker names can be renamed from the detail page, for example changing `S1` to a real participant name. Renaming affects the display name only; the original transcript artifact is not rewritten.
+
+<Callout type='info'>
+	Meeting-record mode depends on the transcription engine's segment capability. If the default audio transcription engine cannot return segments or speaker labels, the create page disables meeting-record mode or asks you to switch to a capable engine.
 </Callout>
 
 ### Supplemental notes
@@ -151,6 +170,7 @@ That makes document management an upstream part of the section workflow rather t
 | --- | --- |
 | Document metadata | Postgres |
 | Original files / converted Markdown / related assets | [Custom File Service](../integrations/custom-file-system) |
+| Audio transcript Markdown / meeting segment JSON | [Custom File Service](../integrations/custom-file-system) |
 | Document vectors | Milvus |
 | Document knowledge graph | Neo4j |
 | Document podcast audio | [Custom File Service](../integrations/custom-file-system) |

@@ -260,7 +260,9 @@ Create a document using the same ingestion and processing flow as the app. The s
 | `file_name` | string | Conditionally required | Required for file documents and should match the uploaded `file_path` |
 | `auto_summary` | boolean | No | Whether to auto-generate summary |
 | `auto_podcast` | boolean | No | Whether to auto-generate podcast |
+| `auto_transcribe` | boolean | No | Whether to automatically transcribe an audio document |
 | `auto_tag` | boolean | No | Whether to auto-tag |
+| `audio_meeting_mode` | boolean | No | Whether an audio document should use meeting-record mode; requires a transcription engine with segment support |
 
 #### Category mapping
 
@@ -304,6 +306,37 @@ response = client.post(
     },
 )
 ```
+
+To create a meeting-record audio document, upload the audio file to the default file system first, then create a `category=3` audio document with transcription and meeting-record mode enabled:
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key",
+    "X-User-Timezone": "Asia/Shanghai",
+}
+
+response = client.post(
+    "http://localhost:8001/tp/document/create",
+    headers=headers,
+    json={
+        "category": 3,
+        "file_name": "uploads/meeting-demo.mp3",
+        "title": "Project meeting",
+        "sections": [],
+        "labels": [],
+        "auto_summary": True,
+        "auto_podcast": False,
+        "auto_tag": False,
+        "auto_transcribe": True,
+        "audio_meeting_mode": True,
+    },
+)
+```
+
+After meeting-record transcription succeeds, the document detail contains the regular Markdown transcript plus a structured segment JSON artifact. The segment JSON powers the fullscreen-player Transcript panel, timestamp seeking, speaker renaming, and right-sidebar meeting insights.
 
 ### `POST /tp/document/vector/search`
 
