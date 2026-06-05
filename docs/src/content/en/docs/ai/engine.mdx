@@ -22,7 +22,7 @@ These engines usually work together with default models to form complete workflo
 | Markdown parsing | Markitdown, Jina, MinerU API | Convert websites and files into Markdown |
 | Podcast generation | Volc Podcast Engine, OpenAI Audio Engine | Document and section podcast output |
 | Image generation | Banana Image, Bailian Image, Volc Image | Section illustrations and PPT slides |
-| Audio transcription | Volc STT Fast, Volc STT Standard | Audio-document transcription |
+| Audio transcription | Volc STT Fast, Volc STT Standard | Audio-document transcription and meeting segmentation |
 
 ## 2. Default engine slots are now split by responsibility
 
@@ -149,6 +149,17 @@ The difference is not in field names but in runtime behavior:
 
 - `Volc Fast STT`: optimized for fast turnaround and shorter audio
 - `Volc Standard STT`: supports longer audio and returns results via submit-plus-poll flow
+
+Meeting-record mode also depends on segment-level transcription capability:
+
+- `segments`: the engine can return per-segment start time, end time, and text.
+- `diarization`: the engine can return speaker labels. If an engine supports `segments` but not `diarization`, Revornix can still generate timestamped segments, but speaker separation degrades.
+
+The meeting Markdown body, fullscreen-player Transcript panel, timestamp seeking, speaker renaming, and right-sidebar meeting insights all build on this segmented transcript artifact. Newly generated meeting Markdown keeps millisecond timestamps, such as `00:07.860`.
+
+<Callout type='info'>
+	If the default audio transcription engine does not support segments, the create page cannot enable meeting-record mode. Switch to a segment-capable transcription engine in Settings before creating the audio document.
+</Callout>
 
 ### Image understanding engines
 

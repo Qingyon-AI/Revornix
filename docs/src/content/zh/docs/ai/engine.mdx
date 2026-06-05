@@ -22,7 +22,7 @@ import { Callout } from 'nextra/components';
 | Markdown 解析 | Markitdown、Jina、MinerU API | 网站 / 文件转 Markdown |
 | 播客生成 | Volc Podcast Engine、OpenAI Audio Engine | 文档 / 专栏播客 |
 | 图片生成 | Banana Image、Bailian Image、Volc Image | 专栏插图、PPT 幻灯片图 |
-| 音频转写 | Volc STT Fast、Volc STT Standard | 音频文档转文字 |
+| 音频转写 | Volc STT Fast、Volc STT Standard | 音频文档转文字、会议记录分段 |
 
 ## 2. 默认引擎位现在已经拆细
 
@@ -147,6 +147,17 @@ import { Callout } from 'nextra/components';
 
 - `Volc Fast STT`：偏快速返回，适合两小时以内音频
 - `Volc Standard STT`：支持更长音频，并通过提交后轮询结果的方式返回
+
+会议记录模式还会额外依赖转写引擎的分段能力：
+
+- `segments`：引擎能返回每段文本的开始时间、结束时间和文本内容。
+- `diarization`：引擎能返回说话人标签。若引擎只有 `segments` 但没有 `diarization`，仍可生成带时间戳的分段文本，但说话人区分会降级。
+
+详情页中的会议正文、全屏播放器 Transcript、时间戳跳转、说话人重命名和右侧会议洞察，都会基于这类分段产物继续工作。新生成的会议 Markdown 会保留毫秒级时间戳，例如 `00:07.860`。
+
+<Callout type='info'>
+	如果默认音频转写引擎不支持分段，创建音频文档时无法开启会议记录模式。你可以在设置页切换到支持 `segments` 的转写引擎后再创建音频文档。
+</Callout>
 
 ### 图像理解引擎
 

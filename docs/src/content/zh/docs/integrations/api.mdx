@@ -260,7 +260,9 @@ response = client.post(
 | `file_name` | string | 条件必填 | 文件文档时必填，对应上传时的 `file_path` |
 | `auto_summary` | boolean | 否 | 是否自动生成摘要 |
 | `auto_podcast` | boolean | 否 | 是否自动生成播客 |
+| `auto_transcribe` | boolean | 否 | 音频文档是否自动转写 |
 | `auto_tag` | boolean | 否 | 是否自动打标 |
+| `audio_meeting_mode` | boolean | 否 | 音频文档是否启用会议记录模式；启用后需要转写引擎支持分段结果 |
 
 #### 分类
 
@@ -303,6 +305,37 @@ response = client.post(
     },
 )
 ```
+
+创建会议记录音频文档时，需要先把音频上传到默认文件系统，再创建 `category=3` 的音频文档，并开启转写和会议记录模式：
+
+```python
+import httpx
+
+client = httpx.Client()
+headers = {
+    "API-KEY": "your api key",
+    "X-User-Timezone": "Asia/Shanghai",
+}
+
+response = client.post(
+    "http://localhost:8001/tp/document/create",
+    headers=headers,
+    json={
+        "category": 3,
+        "file_name": "uploads/meeting-demo.mp3",
+        "title": "Project meeting",
+        "sections": [],
+        "labels": [],
+        "auto_summary": True,
+        "auto_podcast": False,
+        "auto_tag": False,
+        "auto_transcribe": True,
+        "audio_meeting_mode": True,
+    },
+)
+```
+
+会议记录模式成功转写后，文档详情会包含普通 Markdown 转写结果，以及结构化分段 JSON。分段 JSON 用于全屏播放器 Transcript、时间戳跳转、说话人重命名和右侧会议洞察等能力。
 
 ### `POST /tp/document/vector/search`
 
