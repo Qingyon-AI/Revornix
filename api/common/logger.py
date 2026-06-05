@@ -92,5 +92,15 @@ def format_log_message(event: str, **fields: Any) -> str:
     return " ".join(parts)
 
 
+def log_event(
+    logger: logging.Logger,
+    event: str,
+    *,
+    level: int = logging.INFO,
+    **fields: Any,
+) -> None:
+    logger.log(level, format_log_message(event, **fields))
+
+
 def log_exception():
     exception_logger.error(traceback.format_exc())

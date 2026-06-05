@@ -1,3 +1,4 @@
+import json
 from typing import Any, cast
 
 from fastapi import APIRouter, Depends
@@ -20,6 +21,19 @@ from proxy.file_system_proxy import FileSystemProxy
 from router.logic_helpers import ensure_document_access, resolve_infinite_scroll_meta
 
 document_query_router = APIRouter()
+
+
+def _parse_speaker_map(raw: str | None) -> dict[str, str] | None:
+    """Decode the stored speaker-map JSON into a label->name dict."""
+    if not raw:
+        return None
+    try:
+        parsed = json.loads(raw)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    return {str(key): str(value) for key, value in parsed.items()}
 
 
 def _fuse_chunk_and_title_results(
@@ -222,11 +236,14 @@ async def get_document_infos(
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
                 md_file_name=transcribe_task.md_file_name,
+                segments_file_name=transcribe_task.segments_file_name,
                 create_time=transcribe_task.create_time,
                 update_time=transcribe_task.update_time,
             )
             if transcribe_task.md_file_name is not None:
                 remote_fields_to_sign.append((info.transcribe_task, "md_file_name", document.creator_id))
+            if transcribe_task.segments_file_name is not None:
+                remote_fields_to_sign.append((info.transcribe_task, "segments_file_name", document.creator_id))
 
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
@@ -482,7 +499,9 @@ async def get_document_detail(
         audio_document = subtype_bundle[3] if subtype_bundle is not None else None
         if audio_document is not None:
             res.audio_info = schemas.document.AudioDocumentInfo(
-                audio_file_name=audio_document.audio_file_name
+                audio_file_name=audio_document.audio_file_name,
+                meeting_mode=bool(audio_document.meeting_mode),
+                speaker_map=_parse_speaker_map(audio_document.speaker_map),
             )
     task_bundle_row = await crud.task.get_document_task_bundle_by_document_id_async(
         db=db,
@@ -529,12 +548,21 @@ async def get_document_detail(
         )
     res.embedding_task = embedding_task
     res.graph_task = graph_task
-    res.transcribe_task = transcribe_task
+    if transcribe_task is not None:
+        res.transcribe_task = schemas.task.DocumentTranscribeTask(
+            status=transcribe_task.status,
+            md_file_name=transcribe_task.md_file_name,
+            segments_file_name=transcribe_task.segments_file_name,
+            create_time=transcribe_task.create_time,
+            update_time=transcribe_task.update_time,
+        )
     res.process_task = process_task
     await _batch_sign_remote_fields([
         (res.file_info, "file_name", document.creator_id),
         (res.audio_info, "audio_file_name", document.creator_id),
         (res.convert_task, "md_file_name", document.creator_id),
+        (res.transcribe_task, "md_file_name", document.creator_id),
+        (res.transcribe_task, "segments_file_name", document.creator_id),
         (res.podcast_task, "podcast_file_name", document.creator_id),
         (res.podcast_task, "podcast_script_file_name", document.creator_id),
     ])

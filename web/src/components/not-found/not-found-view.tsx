@@ -18,6 +18,7 @@ type NotFoundViewProps = {
 	description?: ReactNode;
 	icon?: LucideIcon;
 	actions?: NotFoundAction[];
+	footer?: ReactNode;
 	className?: string;
 };
 
@@ -28,6 +29,7 @@ const NotFoundView = ({
 	description,
 	icon: Icon = SearchX,
 	actions,
+	footer,
 	className,
 }: NotFoundViewProps) => {
 	const showCode = code !== null && code !== '';
@@ -82,6 +84,11 @@ const NotFoundView = ({
 							</Button>
 						);
 					})}
+				</div>
+			) : null}
+			{footer ? (
+				<div className='flex flex-wrap items-center justify-center gap-2 pt-1'>
+					{footer}
 				</div>
 			) : null}
 		</div>

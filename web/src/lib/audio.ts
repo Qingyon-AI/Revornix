@@ -7,6 +7,7 @@ export interface AudioTrackInfo {
 	artist?: string;
 	cover?: string;
 	scriptUrl?: string;
+	speakerMap?: Record<string, string>;
 }
 
 export interface AudioTranscriptSegment {
@@ -31,6 +32,7 @@ export interface AudioTrack {
 	artist: string;
 	cover: string;
 	scriptUrl?: string;
+	speakerMap?: Record<string, string>;
 }
 
 const AUDIO_TRANSCRIPT_SPEAKER_LABELS: Record<string, string> = {
@@ -71,6 +73,7 @@ export const normalizeAudioTrack = (track: AudioTrackInfo): AudioTrack => ({
 	artist: track.artist?.trim() || 'Unknown Artist',
 	cover: track.cover || DEFAULT_AUDIO_COVER,
 	scriptUrl: track.scriptUrl,
+	speakerMap: track.speakerMap,
 });
 
 export const getCachedAudioDuration = (key: string) => {

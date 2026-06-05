@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { SectionPodcastStatus } from '@/enums/section';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import AudioStatusCard from '@/components/ui/audio-status-card';
 import TaskStateCard from '@/components/ui/task-state-card';
 import { formatAudioTime } from '@/lib/audio';
 
@@ -89,10 +88,12 @@ const SectionPodcastSeoCard = ({
 
 	if (status == null) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
+				variant='plain'
 				className={className}
 			/>
 		);
@@ -100,13 +101,14 @@ const SectionPodcastSeoCard = ({
 
 	if (status === SectionPodcastStatus.GENERATING) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
 				badge={t('document_podcast_status_doing')}
 				title={t('section_podcast_processing')}
 				description={t('section_podcast_processing_description')}
 				icon={Loader2}
 				tone='default'
 				actionLoading
+				variant='plain'
 				className={className}
 				spinning
 			/>
@@ -115,12 +117,13 @@ const SectionPodcastSeoCard = ({
 
 	if (status === SectionPodcastStatus.WAIT_TO) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
 				badge={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
 				icon={Hourglass}
 				tone='warning'
+				variant='plain'
 				className={className}
 			/>
 		);
@@ -199,21 +202,25 @@ const SectionPodcastSeoCard = ({
 
 	if (status === SectionPodcastStatus.FAILED) {
 		return (
-			<AudioStatusCard
+			<TaskStateCard
+				icon={AudioLines}
 				badge={t('document_podcast_status_failed')}
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}
 				tone='danger'
+				variant='plain'
 				className={className}
 			/>
 		);
 	}
 
 	return (
-		<AudioStatusCard
+		<TaskStateCard
+			icon={AudioLines}
 			badge={t('document_podcast_status_todo')}
 			title={t('section_podcast_unset')}
 			description={t('section_podcast_placeholder_description')}
+			variant='plain'
 			className={className}
 		/>
 	);

@@ -43,6 +43,7 @@ export default {
     cancelDocumentEmbedding: API_PREFIX + '/document/embedding/cancel',
     transcribeDocument: API_PREFIX + '/document/transcribe',
     cancelDocumentTranscribe: API_PREFIX + '/document/transcribe/cancel',
+    renameAudioSpeakers: API_PREFIX + '/document/audio/speaker/rename',
     searchPublicDocumentNotes: API_PREFIX + '/document/note/public/search',
     createComment: API_PREFIX + '/document/comment/create',
     deleteComment: API_PREFIX + '/document/comment/delete',

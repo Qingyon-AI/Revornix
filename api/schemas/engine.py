@@ -10,6 +10,28 @@ from enums.billing import EngineBillingMode
 PUBLIC_PAGINATION_LIMIT = 20
 
 
+class STTCapabilityInfo(BaseModel):
+    """Audio-domain STT engine capability declaration.
+
+    Lives under ``EngineCapabilities.stt`` so STT-specific fields never leak
+    onto unrelated engine categories. Surfaced so clients can decide whether
+    an STT engine is eligible for meeting-record mode.
+    """
+    segments: bool = False
+    diarization: bool = False
+    max_audio_seconds: int | None = None
+
+class EngineCapabilities(BaseModel):
+    """Per-category capability envelope for a provided engine.
+
+    Each sub-field is scoped to its domain (e.g. ``stt`` for audio
+    transcription). Only the sub-field matching the engine's category is
+    populated; everything else stays ``None``. New domains (tts, image, ...)
+    plug in here as additional sub-fields instead of widening
+    ``EngineProvidedInfo``.
+    """
+    stt: STTCapabilityInfo | None = None
+
 class EngineProvidedInfo(BaseModel):
     id: int
     uuid: str
@@ -18,6 +40,7 @@ class EngineProvidedInfo(BaseModel):
     name_zh: str
     description: str | None = None
     description_zh: str | None = None
+    capabilities: EngineCapabilities | None = None
 
 class EngineProvidedSearchRequest(BaseModel):
     keyword: str
@@ -99,7 +122,7 @@ class EngineDetail(BaseModel):
     config_json: str | None = None
     creator: UserPublicInfo
     engine_provided: EngineProvidedInfo
-        
+
 class EngineBaseInfo(BaseModel):
     id: int
     uuid: str

@@ -233,6 +233,24 @@ def create_document_audio_transcribe_task(
     db.flush()
     return task
 
+
+async def create_document_audio_transcribe_task_async(
+    db: AsyncSession,
+    user_id: int,
+    document_id: int,
+    status: DocumentAudioTranscribeStatus = DocumentAudioTranscribeStatus.WAIT_TO
+):
+    now = datetime.now(timezone.utc)
+    task = models.task.DocumentAudioTranscribeTask(
+        user_id=user_id,
+        status=status,
+        document_id=document_id,
+        create_time=now
+    )
+    db.add(task)
+    await db.flush()
+    return task
+
 def create_document_process_task(
     db: Session,
     user_id: int,

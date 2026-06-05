@@ -6,6 +6,7 @@ from .base import BaseModel
 class DocumentTranscribeTask(BaseModel):
     status: int
     md_file_name: str | None = None
+    segments_file_name: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
 

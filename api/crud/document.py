@@ -156,11 +156,13 @@ def create_audio_document(
 async def create_audio_document_async(
     db: AsyncSession,
     document_id: int,
-    audio_file_name: str
+    audio_file_name: str,
+    meeting_mode: bool = False
 ):
     db_audio_document = models.document.AudioDocument(
         document_id=document_id,
-        audio_file_name=audio_file_name
+        audio_file_name=audio_file_name,
+        meeting_mode=meeting_mode
     )
     db.add(db_audio_document)
     await db.flush()

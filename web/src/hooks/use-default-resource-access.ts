@@ -207,6 +207,14 @@ export const useDefaultResourceAccess = () => {
 		),
 	});
 
+	// Meeting mode reuses the default transcribe engine; the only extra gate is
+	// whether that engine's class declares STT segment support (per
+	// ``engine_provided.capabilities.stt.segments``). Anything else (configured,
+	// accessible, subscription) is already covered by ``transcribeEngine``.
+	const transcribeEngineSupportsMeetingMode = Boolean(
+		transcribeEngineQuery.data?.engine_provided?.capabilities?.stt?.segments,
+	);
+
 	const imageGenerateEngine = buildDefaultResourceAccessState({
 		configured: Boolean(mainUserInfo?.default_image_generate_engine_id),
 		loading: imageGenerateEngineQuery.isLoading,
@@ -226,6 +234,7 @@ export const useDefaultResourceAccess = () => {
 		fileParseEngine,
 		podcastEngine,
 		transcribeEngine,
+		transcribeEngineSupportsMeetingMode,
 		imageGenerateEngine,
 	};
 };

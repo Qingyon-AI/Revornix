@@ -24,7 +24,8 @@ from common.subscription_access import (
     is_subscription_required_level,
     normalize_plan_access_level,
 )
-from enums.engine_enums import UserEngineRole
+from enums.engine_enums import EngineCategory, UserEngineRole
+from base_implement.stt_engine_base import STTEngineBase
 from enums.user import UserRole
 from common.encrypt import decrypt_engine_config, encrypt_engine_config
 from proxy.engine_proxy import EngineProxy
@@ -74,6 +75,53 @@ async def _ensure_subscription_access(
         )
 
 
+def _resolve_stt_capability(
+    db_engine_provided: models.engine.EngineProvided,
+) -> schemas.engine.STTCapabilityInfo | None:
+    """Read the static STT capability declaration for an STT engine, if any.
+
+    Capability is a property of the engine class (keyed by ``engine_provided.uuid``),
+    not of any particular user-wrapped instance, so it belongs on
+    ``EngineProvidedInfo``. We resolve the class without instantiating it.
+    """
+    if db_engine_provided.category != EngineCategory.STT:
+        return None
+    try:
+        engine_cls = EngineProxy.resolve_engine_class(db_engine_provided.uuid)
+    except Exception:
+        return None
+    if not issubclass(engine_cls, STTEngineBase):
+        return None
+    capability = engine_cls.CAPABILITY
+    return schemas.engine.STTCapabilityInfo(
+        segments=capability.segments,
+        diarization=capability.diarization,
+        max_audio_seconds=capability.max_audio_seconds,
+    )
+
+
+def _resolve_engine_capabilities(
+    db_engine_provided: models.engine.EngineProvided,
+) -> schemas.engine.EngineCapabilities | None:
+    """Build the per-category capability envelope for a provided engine.
+
+    Routes each domain's static declaration into its own sub-field; if nothing
+    applies, returns ``None`` so the response stays compact.
+    """
+    stt_capability = _resolve_stt_capability(db_engine_provided)
+    if stt_capability is None:
+        return None
+    return schemas.engine.EngineCapabilities(stt=stt_capability)
+
+
+def _build_engine_provided_info(
+    db_engine_provided: models.engine.EngineProvided,
+) -> schemas.engine.EngineProvidedInfo:
+    base = schemas.engine.EngineProvidedInfo.model_validate(db_engine_provided)
+    base.capabilities = _resolve_engine_capabilities(db_engine_provided)
+    return base
+
+
 def _serialize_engine_info(
     db_engine: models.engine.Engine,
     *,
@@ -90,6 +138,9 @@ def _serialize_engine_info(
             "subscription_required": is_subscription_required_level(
                 required_plan_level,
             ),
+            "engine_provided": _build_engine_provided_info(
+                db_engine.engine_provided,
+            ).model_dump(),
         }
     )
 
@@ -114,6 +165,9 @@ def _serialize_engine_detail(
             "subscription_required": is_subscription_required_level(
                 required_plan_level,
             ),
+            "engine_provided": _build_engine_provided_info(
+                db_engine.engine_provided,
+            ).model_dump(),
         }
     )
 
@@ -459,7 +513,7 @@ async def provide_document_parse_engine(
         filter_category=engine_search_request.filter_category,
     )
     engines = [
-        schemas.engine.EngineProvidedInfo.model_validate(db_engine_provided) 
+        _build_engine_provided_info(db_engine_provided)
         for db_engine_provided in db_engines_provided
     ]
     return schemas.engine.EngineProvidedSearchResponse(data=engines)

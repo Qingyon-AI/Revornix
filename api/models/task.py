@@ -16,6 +16,7 @@ class DocumentAudioTranscribeTask(Base):
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
     status: Mapped[int] = mapped_column(Integer, nullable=False, comment='0: waiting to transcribe, 1: transcribing, 2: transcribed successfully, 3: transcribe failed')
     md_file_name: Mapped[str | None] = mapped_column(String(500), comment='Path of the transcript markdown file uploaded to the file system')
+    segments_file_name: Mapped[str | None] = mapped_column(String(500), comment='Path of the structured transcript JSON (timestamped segments + speaker) for meeting mode')
     celery_task_id: Mapped[str | None] = mapped_column(String(255), comment='The celery task id for this transcribe task')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

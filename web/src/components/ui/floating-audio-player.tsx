@@ -274,6 +274,14 @@ const FloatingAudioPlayer = () => {
 		(segment) => Boolean(segment?.text?.trim()),
 	);
 	const transcriptText = transcript?.plain_text?.trim() ?? '';
+	const resolveSegmentSpeakerLabel = (speaker?: string | null) => {
+		const normalizedSpeaker = speaker?.trim();
+		if (!normalizedSpeaker) return '';
+		return (
+			track?.speakerMap?.[normalizedSpeaker]?.trim() ||
+			resolveTranscriptSpeakerLabel(normalizedSpeaker)
+		);
+	};
 	const mobilePanelsRef = useRef<HTMLDivElement>(null);
 	const mobilePanelTargetRef = useRef<'player' | 'transcript' | null>(null);
 	const activeTranscriptSegmentIndex = transcriptSegments.findIndex(
@@ -752,17 +760,17 @@ const FloatingAudioPlayer = () => {
 																		isActive ? 'bg-foreground' : 'bg-transparent',
 																	)}
 																/>
-																{(resolveTranscriptSpeakerLabel(segment.speaker) ||
+																{(resolveSegmentSpeakerLabel(segment.speaker) ||
 																	seekable) && (
 																	<div className='mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]'>
-																		{resolveTranscriptSpeakerLabel(segment.speaker) && (
+																		{resolveSegmentSpeakerLabel(segment.speaker) && (
 																			<span
 																				className={cn(
 																					isActive
 																						? 'text-foreground/80'
 																						: 'text-muted-foreground/80',
 																				)}>
-																				{resolveTranscriptSpeakerLabel(segment.speaker)}
+																				{resolveSegmentSpeakerLabel(segment.speaker)}
 																			</span>
 																		)}
 																		{seekable && (
@@ -935,7 +943,7 @@ const FloatingAudioPlayer = () => {
 											Transcript
 										</div>
 										<div className='text-sm text-muted-foreground'>
-											Podcast script for the current session
+											Transcript for the current session
 										</div>
 									</div>
 								</div>
@@ -986,9 +994,9 @@ const FloatingAudioPlayer = () => {
 															}
 														}}>
 														<div className='mb-2 flex flex-wrap items-center gap-2'>
-															{resolveTranscriptSpeakerLabel(segment.speaker) ? (
+															{resolveSegmentSpeakerLabel(segment.speaker) ? (
 																<div className='text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80'>
-																	{resolveTranscriptSpeakerLabel(segment.speaker)}
+																	{resolveSegmentSpeakerLabel(segment.speaker)}
 																</div>
 															) : null}
 															{typeof segment.start === 'number' &&

@@ -27,6 +27,7 @@ from common.dependencies import (
     plan_ability_checked_in_func,
 )
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
+from common.stt_capability import engine_supports_meeting_mode
 from common.timezone import (
     get_cached_user_timezone,
     normalize_timezone_name,
@@ -443,6 +444,24 @@ async def transcribe_audio_document(
             collaborator.authority if collaborator is not None else None
         ),
     )
+    db_audio_document = await crud.document.get_audio_document_by_document_id_async(
+        db=db,
+        document_id=transcribe_request.document_id,
+    )
+    if db_audio_document is None:
+        raise schemas.error.CustomException("The document does not have audio info", code=400)
+
+    # Meeting-record mode: explicit request value wins, otherwise keep whatever
+    # the audio document was created with.
+    if transcribe_request.audio_meeting_mode is not None:
+        meeting_mode = transcribe_request.audio_meeting_mode
+    else:
+        meeting_mode = bool(db_audio_document.meeting_mode)
+
+    # One engine for both modes: the user's default transcribe engine. Meeting
+    # mode just asks the same engine for timestamped speaker segments, which
+    # requires it to declare ``STTCapability.segments``. An explicit
+    # ``engine_id`` in the request still wins.
     selected_engine_id = (
         transcribe_request.engine_id or user.default_audio_transcribe_engine_id
     )
@@ -456,6 +475,19 @@ async def transcribe_audio_document(
         user=user,
         engine_id=selected_engine_id,
     )
+    if meeting_mode and not await engine_supports_meeting_mode(
+        db=db,
+        engine_id=selected_engine_id,
+    ):
+        raise schemas.error.CustomException(
+            "The selected audio engine does not support meeting-record mode (speaker segments)",
+            code=400,
+        )
+
+    # Persist the resolved mode; switching modes invalidates any prior speaker map.
+    if bool(db_audio_document.meeting_mode) != meeting_mode:
+        db_audio_document.speaker_map = None
+    db_audio_document.meeting_mode = meeting_mode
 
     db_transcribe_task = await crud.task.get_document_audio_transcribe_task_by_document_id_async(
         db=db,
@@ -470,6 +502,7 @@ async def transcribe_audio_document(
             raise schemas.error.CustomException("Transcription task is already in progress", code=409)
         db_transcribe_task.status = DocumentAudioTranscribeStatus.WAIT_TO
         db_transcribe_task.md_file_name = None
+        db_transcribe_task.segments_file_name = None
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = now
     else:
@@ -494,6 +527,54 @@ async def transcribe_audio_document(
         },
     )
     db_transcribe_task.celery_task_id = task_result.id
+    await db.commit()
+
+    return schemas.common.SuccessResponse()
+
+
+@document_router.post('/audio/speaker/rename', response_model=schemas.common.NormalResponse)
+async def rename_audio_speakers(
+    rename_request: schemas.document.DocumentAudioSpeakerRenameRequest,
+    user: models.user.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Rename diarized speakers for a meeting-record audio document.
+
+    P0 scope: this only persists the raw-label -> display-name map on the audio
+    document. The stored transcript markdown / segments JSON are not re-rendered;
+    clients apply the map when presenting the transcript.
+    """
+    import json
+
+    db_document = await crud.document.get_document_by_document_id_async(
+        db=db,
+        document_id=rename_request.document_id,
+    )
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    collaborator = await _get_document_collaborator(
+        db=db,
+        document_id=db_document.id,
+        user_id=user.id,
+    )
+    ensure_document_write_access(
+        is_creator=db_document.creator_id == user.id,
+        has_document_write_access=_has_document_write_access(
+            collaborator.authority if collaborator is not None else None
+        ),
+    )
+    db_audio_document = await crud.document.get_audio_document_by_document_id_async(
+        db=db,
+        document_id=rename_request.document_id,
+    )
+    if db_audio_document is None:
+        raise schemas.error.CustomException("The document does not have audio info", code=400)
+    if not db_audio_document.meeting_mode:
+        raise schemas.error.CustomException(
+            "Speaker rename is only available for meeting-record audio",
+            code=400,
+        )
+    db_audio_document.speaker_map = json.dumps(rename_request.speaker_map, ensure_ascii=False)
     await db.commit()
 
     return schemas.common.SuccessResponse()

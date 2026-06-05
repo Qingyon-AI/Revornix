@@ -101,6 +101,11 @@ export type DocumentTranscribeRequest = {
     engine_id?: number
 }
 
+export type DocumentAudioSpeakerRenameRequest = {
+    document_id: number
+    speaker_map: Record<string, string>
+}
+
 export type CancelDocumentTaskRequest = {
     document_id: number
 }
@@ -119,6 +124,12 @@ export const transcribeDocument = async (data: DocumentTranscribeRequest): Promi
 
 export const cancelDocumentTranscribe = async (data: CancelDocumentTaskRequest): Promise<NormalResponse> => {
     return await request(documentApi.cancelDocumentTranscribe, {
+        data
+    })
+}
+
+export const renameAudioSpeakers = async (data: DocumentAudioSpeakerRenameRequest): Promise<NormalResponse> => {
+    return await request(documentApi.renameAudioSpeakers, {
         data
     })
 }

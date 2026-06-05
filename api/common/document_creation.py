@@ -12,6 +12,7 @@ from proxy.file_system_proxy import FileSystemProxy
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
+from common.stt_capability import engine_supports_meeting_mode
 from common.section_schedule import build_day_section_trigger
 from common.section_defaults import (
     TODAY_SECTION_DEFAULT_AUTO_ILLUSTRATION,
@@ -148,10 +149,7 @@ async def ensure_document_creation_requirements(
             user=user,
             engine_id=user.default_website_document_parse_user_engine_id,
         )
-    elif document_create_request.category in (
-        DocumentCategory.FILE,
-        DocumentCategory.AUDIO,
-    ):
+    elif document_create_request.category == DocumentCategory.FILE:
         if user.default_file_document_parse_user_engine_id is None:
             raise CustomException(
                 "Default file parse engine is not configured",
@@ -397,6 +395,29 @@ async def create_document_for_user(
     elif document_create_request.category == DocumentCategory.AUDIO:
         if document_create_request.file_name is None:
             raise CustomException("File name is required for audio documents", code=400)
+        # Meeting-record mode: explicit request value wins, otherwise fall back
+        # to the user's default toggle. The engine is always the user's default
+        # transcribe engine; meeting mode just toggles whether we ask it for
+        # timestamped speaker segments, which requires the engine to declare
+        # ``STTCapability.segments``.
+        if document_create_request.audio_meeting_mode is not None:
+            meeting_mode = document_create_request.audio_meeting_mode
+        else:
+            meeting_mode = user.default_audio_meeting_mode
+        if meeting_mode:
+            if user.default_audio_transcribe_engine_id is None:
+                raise CustomException(
+                    "Meeting-record mode requires a default audio transcribe engine to be configured",
+                    code=400,
+                )
+            if not await engine_supports_meeting_mode(
+                db=db,
+                engine_id=user.default_audio_transcribe_engine_id,
+            ):
+                raise CustomException(
+                    "The selected audio engine does not support meeting-record mode (speaker segments)",
+                    code=400,
+                )
         db_document = await crud.document.create_base_document_async(
             db=db,
             creator_id=user.id,
@@ -409,6 +430,7 @@ async def create_document_for_user(
             db=db,
             document_id=db_document.id,
             audio_file_name=document_create_request.file_name,
+            meeting_mode=meeting_mode,
         )
     else:
         raise CustomException("Unsupported document category", code=400)

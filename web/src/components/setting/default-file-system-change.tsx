@@ -23,7 +23,6 @@ import {
 import { useUserContext } from '@/provider/user-provider';
 import { getMineFileSystems } from '@/service/file-system';
 import { updateUserDefaultFileSystem } from '@/service/user';
-import { utils } from '@kinda/utils';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -34,7 +33,8 @@ import ResourceSelectEmptyState from './resource-select-empty-state';
 
 const DefaultFileSystemChange = () => {
 	const t = useTranslations();
-	const { mainUserInfo, refreshMainUserInfo } = useUserContext();
+	const { mainUserInfo, refreshMainUserInfo, tempUpdateUserInfo } =
+		useUserContext();
 
 	const queryClient = getQueryClient();
 
@@ -74,30 +74,41 @@ const DefaultFileSystemChange = () => {
 			return;
 		}
 		// 想切换：先记录目标 id，打开确认对话框
+		setSelectedFs(value);
 		setTargetFsId(id);
 		setConfirmOpen(true);
 	};
 
 	const mutateChange = useMutation({
-		mutationFn: () => {
+		mutationFn: (nextFileSystemId: number) => {
 			return updateUserDefaultFileSystem({
-				default_user_file_system: targetFsId,
+				default_user_file_system: nextFileSystemId,
 			});
 		},
 		onError(error, variables, onMutateResult, context) {
 			console.error(error);
 			toast.error(error.message);
+			if (mainUserInfo?.default_user_file_system) {
+				setSelectedFs(String(mainUserInfo.default_user_file_system));
+			}
 		},
-		onSuccess(data, variables, onMutateResult, context) {
+		onSuccess(data, nextFileSystemId, onMutateResult, context) {
 			toast.success(
 				t('setting_file_system_page_current_file_system_update_successfully'),
 			);
-			// 刷新 mainUserInfo -> effect 会同步 selectedFs
-			refreshMainUserInfo(); // 更新用户信息
+			setSelectedFs(String(nextFileSystemId));
+			if (mainUserInfo) {
+				tempUpdateUserInfo({
+					...mainUserInfo,
+					default_user_file_system: nextFileSystemId,
+				});
+			}
+			void refreshMainUserInfo(); // 更新用户信息
 			queryClient.invalidateQueries({
-				queryKey: ['getUserFileSystemDetail', mainUserInfo?.id],
+				queryKey: ['getUserFileSystemDetail'],
 			});
 			setConfirmOpen(false);
+			setTargetFsId(null);
 		},
 	});
 
@@ -107,6 +118,17 @@ const DefaultFileSystemChange = () => {
 			setSelectedFs(String(mainUserInfo.default_user_file_system));
 		}
 		setConfirmOpen(false);
+		setTargetFsId(null);
+	};
+
+	const handleConfirmOpenChange = (open: boolean) => {
+		if (open) {
+			setConfirmOpen(true);
+			return;
+		}
+		if (!mutateChange.isPending) {
+			handleCancelChange();
+		}
 	};
 
 	return (
@@ -148,7 +170,7 @@ const DefaultFileSystemChange = () => {
 				</SelectContent>
 			</Select>
 
-			<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+			<AlertDialog open={confirmOpen} onOpenChange={handleConfirmOpenChange}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle className='flex flex-row items-center gap-2 mb-2'>
@@ -166,9 +188,11 @@ const DefaultFileSystemChange = () => {
 							{t('cancel')}
 						</AlertDialogCancel>
 						<AlertDialogAction
-							disabled={mutateChange.isPending}
-							onClick={() => {
-								mutateChange.mutate();
+							disabled={mutateChange.isPending || targetFsId === null}
+							onClick={(event) => {
+								event.preventDefault();
+								if (targetFsId === null) return;
+								mutateChange.mutate(targetFsId);
 							}}>
 							{t('confirm')}
 							{mutateChange.isPending && (

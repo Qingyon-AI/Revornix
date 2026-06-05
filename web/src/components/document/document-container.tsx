@@ -52,6 +52,30 @@ const DocumentDetailSkeleton = () => {
 	);
 };
 
+type AudioInfoWithTranscriptMeta = {
+	speaker_map?: unknown;
+};
+
+const normalizeAudioSpeakerMap = (value: unknown): Record<string, string> => {
+	if (!value) return {};
+	if (typeof value === 'string') {
+		try {
+			return normalizeAudioSpeakerMap(JSON.parse(value));
+		} catch {
+			return {};
+		}
+	}
+	if (typeof value !== 'object') return {};
+	return Object.fromEntries(
+		Object.entries(value as Record<string, unknown>)
+			.filter(
+				(entry): entry is [string, string] =>
+					typeof entry[1] === 'string',
+			)
+			.map(([key, speaker]) => [key, speaker.trim() || key]),
+	);
+};
+
 const DocumentContainer = ({ id }: { id: number }) => {
 	const t = useTranslations();
 	const queryClient = getQueryClient();
@@ -103,10 +127,20 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		document?.cover && document.creator
 			? replacePath(document.cover, document.creator.id)
 			: null;
+	const audioSpeakerMapValue = (
+		document?.audio_info as AudioInfoWithTranscriptMeta | undefined
+	)?.speaker_map;
+	const audioSpeakerMap = useMemo(
+		() => normalizeAudioSpeakerMap(audioSpeakerMapValue),
+		[audioSpeakerMapValue],
+	);
 	const primaryAudioSrc =
 		document?.audio_info?.audio_file_name ||
 		document?.podcast_task?.podcast_file_name ||
 		null;
+	const primaryAudioScriptUrl = document?.audio_info?.audio_file_name
+		? document.transcribe_task?.segments_file_name ?? undefined
+		: document?.podcast_task?.podcast_script_file_name ?? undefined;
 	const hasMobileFloatingAudioPlayer = Boolean(primaryAudioSrc || audioTrack);
 	const mobileOperateOffsetClassName = hasMobileFloatingAudioPlayer
 		? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))]'
@@ -319,8 +353,11 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			{document && primaryAudioSrc ? (
 				<MobileAutoAudioTrack
 					src={primaryAudioSrc}
-					scriptUrl={
-						document.podcast_task?.podcast_script_file_name ?? undefined
+					scriptUrl={primaryAudioScriptUrl}
+					speakerMap={
+						document.audio_info?.audio_file_name
+							? audioSpeakerMap
+							: undefined
 					}
 					title={document.title || t('document_no_title')}
 					artist={document.creator?.nickname || 'AI Generated'}

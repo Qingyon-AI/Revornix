@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDocument, createLabel, getLabels } from '@/service/document';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
 	AlertCircleIcon,
 	FileAudio,
@@ -18,6 +18,7 @@ import {
 	Tags,
 	TextCursorInput,
 	Trash2,
+	Users,
 	WandSparkles,
 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -59,8 +60,12 @@ const AddAudio = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
-	const { documentReaderModel, fileParseEngine, transcribeEngine } =
-		useDefaultResourceAccess();
+	const {
+		documentReaderModel,
+		fileParseEngine,
+		transcribeEngine,
+		transcribeEngineSupportsMeetingMode,
+	} = useDefaultResourceAccess();
 	const formSchema = z.object({
 		category: z.number(),
 		file_name: z.string(),
@@ -77,6 +82,7 @@ const AddAudio = () => {
 		auto_podcast: z.boolean(),
 		auto_tag: z.boolean(),
 		auto_transcribe: z.boolean(),
+		audio_meeting_mode: z.boolean(),
 	});
 	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -90,7 +96,8 @@ const AddAudio = () => {
 			sections: sectionId ? [Number(sectionId)] : [],
 			auto_podcast: false,
 			auto_tag: false,
-			auto_transcribe: false,
+			auto_transcribe: true,
+			audio_meeting_mode: false,
 		},
 	});
 	const [submitting, setSubmitting] = useState(false);
@@ -199,6 +206,23 @@ const AddAudio = () => {
 		transcribeEngine.loading ||
 		!transcribeEngine.configured ||
 		transcribeEngine.subscriptionLocked;
+	// Meeting mode is gated by the transcribe engine's own capability: it must
+	// declare ``STTCapability.segments``. Configuration / subscription are
+	// already inherited via ``transcribeEngineUnavailable``.
+	const meetingModeUnavailable =
+		transcribeEngineUnavailable || !transcribeEngineSupportsMeetingMode;
+
+	// Default ``auto_transcribe`` to true so meeting mode is one click away, but
+	// downgrade to false once we know the transcribe engine is unavailable —
+	// otherwise the form would submit-block on a default the user never chose.
+	// Meeting mode rides on top of auto_transcribe, so reset it too.
+	useEffect(() => {
+		if (transcribeEngine.loading) return;
+		if (transcribeEngineUnavailable && form.getValues('auto_transcribe')) {
+			form.setValue('auto_transcribe', false);
+			form.setValue('audio_meeting_mode', false);
+		}
+	}, [transcribeEngine.loading, transcribeEngineUnavailable, form]);
 
 	const extFromMime = (mime: string) => {
 		if (mime.includes('wav')) return 'wav';
@@ -384,6 +408,39 @@ const AddAudio = () => {
 																	'document_create_auto_transcribe_engine_unset',
 																)
 														: undefined
+												}
+											/>
+										</FormItem>
+									)}
+								/>
+								<FormField
+									name='audio_meeting_mode'
+									control={form.control}
+									render={({ field }) => (
+										<FormItem>
+											<AutomationOption
+												icon={Users}
+												title={t('document_create_audio_meeting_mode')}
+												description={t(
+													'document_create_audio_meeting_mode_description',
+												)}
+												checked={field.value}
+												disabled={
+													(meetingModeUnavailable && !field.value) ||
+													!form.watch('auto_transcribe')
+												}
+												onCheckedChange={field.onChange}
+												alert={
+													!form.watch('auto_transcribe')
+														? t('document_create_audio_meeting_mode_with_transcribe')
+														: transcribeEngine.subscriptionLocked
+															? t('default_resource_subscription_locked')
+															: !transcribeEngineSupportsMeetingMode &&
+																  transcribeEngine.configured
+																? t(
+																		'document_create_audio_meeting_mode_engine_unset',
+																	)
+																: undefined
 												}
 											/>
 										</FormItem>
@@ -582,6 +639,9 @@ const AddAudio = () => {
 								(form.watch('auto_summary') && documentReaderUnavailable) ||
 								(form.watch('auto_transcribe') &&
 									transcribeEngineUnavailable) ||
+								(form.watch('audio_meeting_mode') &&
+									(meetingModeUnavailable ||
+										!form.watch('auto_transcribe'))) ||
 								(form.watch('auto_tag') &&
 									(documentReaderUnavailable ||
 										transcribeEngineUnavailable ||

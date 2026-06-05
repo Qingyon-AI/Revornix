@@ -1717,6 +1717,7 @@ def update_user_default_engine(
     default_podcast_user_engine_id: int | None = None,
     default_image_generate_engine_id: int | None = None,
     default_audio_transcribe_engine_id: int | None = None,
+    default_audio_meeting_mode: bool | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_user_query = db.query(models.user.User)
@@ -1736,6 +1737,8 @@ def update_user_default_engine(
         db_user.default_image_generate_engine_id = default_image_generate_engine_id
     if default_audio_transcribe_engine_id is not None:
         db_user.default_audio_transcribe_engine_id = default_audio_transcribe_engine_id
+    if default_audio_meeting_mode is not None:
+        db_user.default_audio_meeting_mode = default_audio_meeting_mode
     db_user.update_time = now
     db.flush()
     return db_user
@@ -1748,6 +1751,7 @@ async def update_user_default_engine_async(
     default_podcast_user_engine_id: int | None = None,
     default_image_generate_engine_id: int | None = None,
     default_audio_transcribe_engine_id: int | None = None,
+    default_audio_meeting_mode: bool | None = None,
 ):
     now = datetime.now(timezone.utc)
     db_user = await _get_active_user_by_id_async(db=db, user_id=user_id)
@@ -1763,6 +1767,8 @@ async def update_user_default_engine_async(
         db_user.default_image_generate_engine_id = default_image_generate_engine_id
     if default_audio_transcribe_engine_id is not None:
         db_user.default_audio_transcribe_engine_id = default_audio_transcribe_engine_id
+    if default_audio_meeting_mode is not None:
+        db_user.default_audio_meeting_mode = default_audio_meeting_mode
     db_user.update_time = now
     await db.flush()
     return db_user

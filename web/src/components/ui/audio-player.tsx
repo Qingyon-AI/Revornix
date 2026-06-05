@@ -37,6 +37,7 @@ export default function AudioPlayer({
 	artist = 'Unknown Artist',
 	cover = DEFAULT_AUDIO_COVER,
 	scriptUrl,
+	speakerMap,
 	variant = 'default',
 	className,
 }: AudioPlayerProps) {
@@ -60,6 +61,7 @@ export default function AudioPlayer({
 		artist,
 		cover,
 		scriptUrl,
+		speakerMap,
 	});
 	const [cachedDuration, setCachedDuration] = useState(
 		getCachedAudioDuration(normalizedTrack.key)

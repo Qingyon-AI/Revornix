@@ -30,7 +30,13 @@ export interface DocumentTranscribeTask {
      * @type {string}
      * @memberof DocumentTranscribeTask
      */
-    transcribed_text: string | null;
+    md_file_name?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentTranscribeTask
+     */
+    segments_file_name?: string | null;
     /**
      * 
      * @type {Date}
@@ -50,7 +56,6 @@ export interface DocumentTranscribeTask {
  */
 export function instanceOfDocumentTranscribeTask(value: object): value is DocumentTranscribeTask {
     if (!('status' in value) || value['status'] === undefined) return false;
-    if (!('transcribed_text' in value) || value['transcribed_text'] === undefined) return false;
     return true;
 }
 
@@ -65,7 +70,8 @@ export function DocumentTranscribeTaskFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'status': json['status'],
-        'transcribed_text': json['transcribed_text'],
+        'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
+        'segments_file_name': json['segments_file_name'] == null ? undefined : json['segments_file_name'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
     };
@@ -83,9 +89,9 @@ export function DocumentTranscribeTaskToJSONTyped(value?: DocumentTranscribeTask
     return {
         
         'status': value['status'],
-        'transcribed_text': value['transcribed_text'],
+        'md_file_name': value['md_file_name'],
+        'segments_file_name': value['segments_file_name'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
-

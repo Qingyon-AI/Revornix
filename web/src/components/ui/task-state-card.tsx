@@ -1,11 +1,12 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
+import { Loader2, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
 import { Badge } from './badge';
+import { Button } from './button';
 import { Card } from './card';
 
 export type TaskStateTone = 'default' | 'warning' | 'danger' | 'success';
@@ -60,6 +61,10 @@ type TaskStateCardProps = {
 	badge?: string;
 	hint?: ReactNode;
 	action?: ReactNode;
+	actionLabel?: string;
+	onAction?: () => void;
+	actionDisabled?: boolean;
+	actionLoading?: boolean;
 	children?: ReactNode;
 	tone?: TaskStateTone;
 	variant?: 'card' | 'panel' | 'plain';
@@ -77,6 +82,10 @@ const TaskStateCard = ({
 	badge,
 	hint,
 	action,
+	actionLabel,
+	onAction,
+	actionDisabled,
+	actionLoading,
 	children,
 	tone = 'default',
 	variant = 'card',
@@ -89,6 +98,19 @@ const TaskStateCard = ({
 	const toneClasses = toneClassNames[tone];
 	const isPanel = variant === 'panel';
 	const isPlain = variant === 'plain';
+
+	const resolvedAction =
+		action ??
+		(actionLabel && onAction ? (
+			<Button
+				variant='outline'
+				className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+				onClick={onAction}
+				disabled={actionDisabled || actionLoading}>
+				{actionLoading ? <Loader2 className='size-4 animate-spin' /> : null}
+				{actionLabel}
+			</Button>
+		) : null);
 
 	const wrapperClassName = cn(
 		isPlain
@@ -144,7 +166,7 @@ const TaskStateCard = ({
 					</div>
 				) : null}
 
-				{action ? <div className='flex flex-wrap justify-center gap-2'>{action}</div> : null}
+				{resolvedAction ? <div className='flex flex-wrap justify-center gap-2'>{resolvedAction}</div> : null}
 			</div>
 		</div>
 	) : (
@@ -164,7 +186,7 @@ const TaskStateCard = ({
 			</div>
 
 			<div className='min-w-0 flex-1 space-y-2'>
-				{badge || action ? (
+				{badge || resolvedAction ? (
 					<div className='flex flex-wrap items-center gap-2'>
 						{badge ? (
 							<Badge
@@ -176,7 +198,7 @@ const TaskStateCard = ({
 								{badge}
 							</Badge>
 						) : null}
-						{action ? <div className='ml-auto flex flex-wrap items-center gap-2'>{action}</div> : null}
+						{resolvedAction ? <div className='ml-auto flex flex-wrap items-center gap-2'>{resolvedAction}</div> : null}
 					</div>
 				) : null}
 

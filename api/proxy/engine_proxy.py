@@ -60,6 +60,53 @@ class EngineProxy:
         setattr(limited_method, "_revornix_concurrency_wrapped", True)
         setattr(engine, method_name, limited_method)
 
+    @staticmethod
+    def resolve_engine_class(engine_provided_uuid: str) -> type[EngineBase]:
+        """Map a provided-engine uuid to its concrete engine class.
+
+        Returns the class (not an instance) so callers can read static metadata
+        such as ``STTEngineBase.CAPABILITY`` without instantiating the engine or
+        hitting the database / network.
+        """
+        if engine_provided_uuid == EngineProvided.Volc_TTS.meta.uuid:
+            from engine.tts.volc.tts import VolcTTSEngine
+            return VolcTTSEngine
+        elif engine_provided_uuid == EngineProvided.Volc_Image.meta.uuid:
+            from engine.image_generate.volc import VolcImageGenerateEngine
+            return VolcImageGenerateEngine
+        elif engine_provided_uuid == EngineProvided.Bailian_Image.meta.uuid:
+            from engine.image_generate.bailian import BailianImageGenerateEngine
+            return BailianImageGenerateEngine
+        elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
+            from engine.image_generate.banana import BananaImageGenerateEngine
+            return BananaImageGenerateEngine
+        elif engine_provided_uuid == EngineProvided.OpenAI_Image.meta.uuid:
+            from engine.image_generate.openai_image import OpenAIImageGenerateEngine
+            return OpenAIImageGenerateEngine
+        elif engine_provided_uuid == EngineProvided.Kimi_Image_Understand.meta.uuid:
+            from engine.image_understand.kimi import KimiImageUnderstandEngine
+            return KimiImageUnderstandEngine
+        elif engine_provided_uuid == EngineProvided.Jina.meta.uuid:
+            from engine.markdown.jina import JinaEngine
+            return JinaEngine
+        elif engine_provided_uuid == EngineProvided.MarkitDown.meta.uuid:
+            from engine.markdown.markitdown import MarkitdownEngine
+            return MarkitdownEngine
+        elif engine_provided_uuid == EngineProvided.MinerU_API.meta.uuid:
+            from engine.markdown.mineru_api import MineruApiEngine
+            return MineruApiEngine
+        elif engine_provided_uuid == EngineProvided.OpenAI_TTS.meta.uuid:
+            from engine.tts.openai_audio import OpenAIAudioEngine
+            return OpenAIAudioEngine
+        elif engine_provided_uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
+            from engine.stt.volc_standard import VolcSTTStandardEngine
+            return VolcSTTStandardEngine
+        elif engine_provided_uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
+            from engine.stt.volc_fast import VolcSTTFastEngine
+            return VolcSTTFastEngine
+        else:
+            raise Exception("Unknown engine provided")
+
     # =========================
     # Factory（唯一推荐入口）
     # =========================
@@ -173,45 +220,7 @@ class EngineProxy:
         if engine_provided_uuid is None or engine_uuid is None:
             raise Exception("The engine metadata is missing")
 
-        engine: EngineBase | None = None
-        if engine_provided_uuid == EngineProvided.Volc_TTS.meta.uuid:
-            from engine.tts.volc.tts import VolcTTSEngine
-            engine = VolcTTSEngine()
-        elif engine_provided_uuid == EngineProvided.Volc_Image.meta.uuid:
-            from engine.image_generate.volc import VolcImageGenerateEngine
-            engine = VolcImageGenerateEngine()
-        elif engine_provided_uuid == EngineProvided.Bailian_Image.meta.uuid:
-            from engine.image_generate.bailian import BailianImageGenerateEngine
-            engine = BailianImageGenerateEngine()
-        elif engine_provided_uuid == EngineProvided.Banana_Image.meta.uuid:
-            from engine.image_generate.banana import BananaImageGenerateEngine
-            engine = BananaImageGenerateEngine()
-        elif engine_provided_uuid == EngineProvided.OpenAI_Image.meta.uuid:
-            from engine.image_generate.openai_image import OpenAIImageGenerateEngine
-            engine = OpenAIImageGenerateEngine()
-        elif engine_provided_uuid == EngineProvided.Kimi_Image_Understand.meta.uuid:
-            from engine.image_understand.kimi import KimiImageUnderstandEngine
-            engine = KimiImageUnderstandEngine()
-        elif engine_provided_uuid == EngineProvided.Jina.meta.uuid:
-            from engine.markdown.jina import JinaEngine
-            engine = JinaEngine()
-        elif engine_provided_uuid == EngineProvided.MarkitDown.meta.uuid:
-            from engine.markdown.markitdown import MarkitdownEngine
-            engine = MarkitdownEngine()
-        elif engine_provided_uuid == EngineProvided.MinerU_API.meta.uuid:
-            from engine.markdown.mineru_api import MineruApiEngine
-            engine = MineruApiEngine()
-        elif engine_provided_uuid == EngineProvided.OpenAI_TTS.meta.uuid:
-            from engine.tts.openai_audio import OpenAIAudioEngine
-            engine = OpenAIAudioEngine()
-        elif engine_provided_uuid == EngineProvided.Volc_STT_Standard.meta.uuid:
-            from engine.stt.volc_standard import VolcSTTStandardEngine
-            engine = VolcSTTStandardEngine()
-        elif engine_provided_uuid == EngineProvided.Volc_STT_Fast.meta.uuid:
-            from engine.stt.volc_fast import VolcSTTFastEngine
-            engine = VolcSTTFastEngine()
-        else:
-            raise Exception("Unknown engine provided")
+        engine = cls.resolve_engine_class(engine_provided_uuid)()
 
         if engine_config_json:
             engine_config = decrypt_engine_config(engine_config_json)
