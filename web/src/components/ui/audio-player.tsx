@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronDown, Pause, Play, Volume2 } from 'lucide-react';
+import { Pause, Play, Volume2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,11 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import {
 	DEFAULT_AUDIO_COVER,
@@ -142,117 +147,129 @@ export default function AudioPlayer({
 	return (
 		<div
 			className={cn(
-				'flex min-w-0 flex-col gap-4',
+				'flex min-w-0 flex-col gap-3',
 				className,
 			)}>
 			<div className='flex items-center gap-3'>
 				<img
 					src={normalizedTrack.cover}
 					alt={normalizedTrack.title}
-					className='size-16 flex-shrink-0 rounded-2xl object-cover'
+					className='size-12 flex-shrink-0 rounded-xl object-cover'
 				/>
 				<div className='min-w-0 flex-1'>
-					<h3 className='truncate text-lg font-semibold leading-tight'>
+					<h3 className='truncate text-base font-semibold leading-tight'>
 						{normalizedTrack.title}
 					</h3>
 					<p className='truncate text-sm text-muted-foreground'>
 						{normalizedTrack.artist}
 					</p>
 				</div>
-			</div>
 
-			<div className='flex min-w-0 flex-1 flex-col gap-4'>
-				<div className='flex items-center gap-3'>
-					<Button
-						type='button'
-						variant='outline'
-						size='icon'
-						onClick={() => void toggleTrack(normalizedTrack)}
-						className='h-10 w-10 rounded-full'>
-						{playing ? (
-							<Pause className='h-4 w-4' />
-						) : (
-							<Play className='h-4 w-4 fill-current' />
-						)}
-						<span className='sr-only'>
-							{playing ? t('audio_player_pause') : t('audio_player_play')}
-						</span>
-					</Button>
-
-					<div className='flex min-w-0 flex-1 items-center gap-2'>
-						<span className='w-10 text-right text-xs text-muted-foreground tabular-nums'>
-							{formatAudioTime(progress)}
-						</span>
-						{durationValue > 0 ? (
-							<div
-								className='flex-1'
+				<div className='ml-auto flex shrink-0 items-center gap-1.5'>
+					<Popover>
+						<PopoverTrigger asChild>
+							<Button
+								type='button'
+								variant='outline'
+								size='icon'
+								className='size-8 shrink-0 rounded-full border-border/70 shadow-none'
 								onClick={(event) => event.stopPropagation()}
 								onPointerDown={(event) => event.stopPropagation()}>
-								<Slider
-									value={[progress]}
-									max={durationValue}
-									step={0.1}
-									className='flex-1'
-									onValueChange={(value) => {
-										if (!isActive) return;
-										seek(value[0]);
-									}}
-								/>
-							</div>
-						) : (
-							<div className='h-2 flex-1 animate-pulse rounded-md bg-muted opacity-50' />
-						)}
-						<span className='w-10 text-xs text-muted-foreground tabular-nums'>
-							{formatAudioTime(durationValue)}
-						</span>
-					</div>
-				</div>
-
-				<div className='flex flex-wrap items-center gap-4'>
-					<div className='flex min-w-0 flex-1 items-center gap-2'>
-						<Volume2 className='h-4 w-4 shrink-0 text-muted-foreground' />
-						<div
-							className='flex-1'
+								<Volume2 className='size-4 text-muted-foreground' />
+								<span className='sr-only'>{t('audio_player_volume')}</span>
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent
+							align='end'
+							className='w-44 rounded-2xl p-3'
 							onClick={(event) => event.stopPropagation()}
 							onPointerDown={(event) => event.stopPropagation()}>
-							<Slider
-								value={[volume]}
-								max={1}
-								step={0.01}
-								onValueChange={(value) => setVolume(value[0])}
-							/>
-						</div>
-					</div>
+							<div className='space-y-2'>
+								<div className='flex items-center justify-between text-xs text-muted-foreground'>
+									<span>{t('audio_player_volume')}</span>
+									<span>{Math.round(volume * 100)}%</span>
+								</div>
+								<Slider
+									value={[volume]}
+									max={1}
+									step={0.01}
+									onValueChange={(value) => setVolume(value[0])}
+								/>
+							</div>
+						</PopoverContent>
+					</Popover>
 
-					<div className='ml-auto flex items-center gap-2'>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									type='button'
-									variant='outline'
-									size='sm'
-									className='h-8 min-w-[4rem] rounded-full border-border/70 px-3 text-xs shadow-none'>
-									{playbackRate}x
-									<ChevronDown className='size-3.5 opacity-70' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' className='min-w-[8rem] rounded-2xl'>
-								<DropdownMenuRadioGroup
-									value={String(playbackRate)}
-									onValueChange={(value) => setPlaybackRate(Number(value))}>
-									{PLAYBACK_RATE_OPTIONS.map((rate) => (
-										<DropdownMenuRadioItem
-											key={rate}
-											value={String(rate)}
-											className='rounded-xl'>
-											{rate}x
-										</DropdownMenuRadioItem>
-									))}
-								</DropdownMenuRadioGroup>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								type='button'
+								variant='outline'
+								size='sm'
+								className='h-8 shrink-0 rounded-full border-border/70 px-2.5 text-xs shadow-none'
+								onClick={(event) => event.stopPropagation()}
+								onPointerDown={(event) => event.stopPropagation()}>
+								{playbackRate}x
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end' className='min-w-[8rem] rounded-2xl'>
+							<DropdownMenuRadioGroup
+								value={String(playbackRate)}
+								onValueChange={(value) => setPlaybackRate(Number(value))}>
+								{PLAYBACK_RATE_OPTIONS.map((rate) => (
+									<DropdownMenuRadioItem
+										key={rate}
+										value={String(rate)}
+										className='rounded-xl'>
+										{rate}x
+									</DropdownMenuRadioItem>
+								))}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
+			</div>
+
+			<div className='flex min-w-0 items-center gap-2'>
+				<Button
+					type='button'
+					variant='outline'
+					size='icon'
+					onClick={() => void toggleTrack(normalizedTrack)}
+					className='size-9 shrink-0 rounded-full'>
+					{playing ? (
+						<Pause className='size-4' />
+					) : (
+						<Play className='size-4 fill-current' />
+					)}
+					<span className='sr-only'>
+						{playing ? t('audio_player_pause') : t('audio_player_play')}
+					</span>
+				</Button>
+
+				<span className='shrink-0 text-xs tabular-nums text-muted-foreground'>
+					{formatAudioTime(progress)}
+				</span>
+				{durationValue > 0 ? (
+					<div
+						className='min-w-0 flex-1'
+						onClick={(event) => event.stopPropagation()}
+						onPointerDown={(event) => event.stopPropagation()}>
+						<Slider
+							value={[progress]}
+							max={durationValue}
+							step={0.1}
+							onValueChange={(value) => {
+								if (!isActive) return;
+								seek(value[0]);
+							}}
+						/>
+					</div>
+				) : (
+					<div className='h-2 min-w-0 flex-1 animate-pulse rounded-md bg-muted opacity-50' />
+				)}
+				<span className='shrink-0 text-xs tabular-nums text-muted-foreground'>
+					{formatAudioTime(durationValue)}
+				</span>
 			</div>
 		</div>
 	);

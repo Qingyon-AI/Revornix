@@ -302,7 +302,6 @@ export const SeoDocumentMetaSidebar = ({
 						icon={AudioLines}
 						status={t('document_podcast_status_success')}
 						title={t('seo_document_audio')}
-						description={document.title || t('document_no_title')}
 						tone='success'
 						result={
 							<AudioPlayer

@@ -582,6 +582,11 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					</div>
 
 					<div className='mx-auto w-full space-y-6'>
+						<SeoDocumentAiSummaryPanel
+							document={document}
+							className='mx-auto max-w-[920px]'
+						/>
+
 						<MarkdownContentShell
 							enableFloatingToc
 							floatingTocFooter={
@@ -613,11 +618,6 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 									</div>
 								))}
 						</MarkdownContentShell>
-
-						<SeoDocumentAiSummaryPanel
-							document={document}
-							className='mx-auto max-w-[920px]'
-						/>
 
 						{coverSrc ? (
 							<ImageWithFallback

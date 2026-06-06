@@ -28,21 +28,13 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { cn, replacePath } from '@/lib/utils';
 import {
-	cancelDocumentEmbedding,
 	cancelDocumentSummary,
-	embeddingDocument,
 	getDocumentDetail,
 	summaryDocumentContentByAi,
 } from '@/service/document';
 import {
 	DocumentCategory,
-	DocumentEmbeddingStatus,
-	DocumentGraphStatus,
-	DocumentMdConvertStatus,
-	DocumentPodcastStatus,
-	DocumentProcessStatus,
 	DocumentSummarizeStatus,
-	DocumentTranscribeStatus,
 } from '@/enums/document';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -146,36 +138,6 @@ const DocumentInfo = ({
 		},
 	});
 
-	const mutateEmbeddingDocument = useMutation({
-		mutationFn: () =>
-			embeddingDocument({
-				document_id: id,
-			}),
-		onSuccess() {
-			toast.success(t('ai_embedding_submit'));
-			queryClient.invalidateQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
-		},
-		onError(error) {
-			toast.error(error.message);
-			console.error(error);
-		},
-	});
-
-	const mutateCancelEmbedding = useMutation({
-		mutationFn: () => cancelDocumentEmbedding({ document_id: id }),
-		onSuccess() {
-			toast.success(t('cancel'));
-			queryClient.invalidateQueries({
-				queryKey: ['getDocumentDetail', id],
-			});
-		},
-		onError(error) {
-			toast.error(error.message || t('something_wrong'));
-		},
-	});
-
 	const mutateCancelSummary = useMutation({
 		mutationFn: () => cancelDocumentSummary({ document_id: id }),
 		onSuccess() {
@@ -247,11 +209,6 @@ const DocumentInfo = ({
 					<Skeleton className='h-7 w-16 rounded-full' />
 				</div>
 
-				<div className='flex flex-wrap gap-2'>
-					<Skeleton className='h-9 w-32 rounded-full' />
-					<Skeleton className='h-9 w-36 rounded-full' />
-				</div>
-
 				<div className='space-y-4 border-t border-border/50 pt-5'>
 					<div>
 						<div className='flex items-start gap-3'>
@@ -295,157 +252,7 @@ const DocumentInfo = ({
 					: data.category === DocumentCategory.AUDIO
 						? t('document_category_audio')
 						: t('document_category_others');
-	const fromPlatLabel = data.from_plat || '-';
-	const statusActionClassName =
-		'h-auto p-0 text-xs font-medium text-muted-foreground underline underline-offset-4';
 	const freshnessState = getDocumentFreshnessState(data);
-
-	const renderStatusBadge = (
-		label: string,
-		value: string,
-		action?: ReactNode,
-	) => {
-		return (
-			<div className='inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-muted-foreground'>
-				<span>{label}</span>
-				<span className='font-medium text-foreground'>{value}</span>
-				{action ? (
-					<>
-						<span className='text-border'>/</span>
-						{action}
-					</>
-				) : null}
-			</div>
-		);
-	};
-
-	const statusBadges = [
-		data.embedding_task
-			? renderStatusBadge(
-					t('document_embedding_status'),
-					freshnessState.embeddingStale
-						? t('document_status_stale')
-						: data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO
-							? t('document_embedding_status_todo')
-							: data.embedding_task.status === DocumentEmbeddingStatus.Embedding
-								? t('document_embedding_status_doing')
-								: data.embedding_task.status === DocumentEmbeddingStatus.SUCCESS
-									? t('document_embedding_status_success')
-									: t('document_embedding_status_failed'),
-					data.embedding_task.status === DocumentEmbeddingStatus.FAILED ||
-						freshnessState.embeddingStale ? (
-						<Button
-							variant='link'
-							size='sm'
-							className={statusActionClassName}
-							disabled={mutateEmbeddingDocument.isPending}
-							onClick={() => {
-								mutateEmbeddingDocument.mutate();
-							}}>
-							{t('ai_reembedding')}
-							{mutateEmbeddingDocument.isPending ? (
-								<Loader2 className='size-3.5 animate-spin' />
-							) : null}
-						</Button>
-					) : data.embedding_task.status === DocumentEmbeddingStatus.WAIT_TO ||
-					  data.embedding_task.status === DocumentEmbeddingStatus.Embedding ? (
-						<Button
-							variant='link'
-							size='sm'
-							className={statusActionClassName}
-							disabled={mutateCancelEmbedding.isPending}
-							onClick={() => {
-								mutateCancelEmbedding.mutate();
-							}}>
-							{t('cancel')}
-							{mutateCancelEmbedding.isPending ? (
-								<Loader2 className='size-3.5 animate-spin' />
-							) : null}
-						</Button>
-					) : undefined,
-				)
-			: null,
-		data.transcribe_task
-			? renderStatusBadge(
-					t('document_transcribe_status'),
-					data.transcribe_task.status === DocumentTranscribeStatus.WAIT_TO
-						? t('document_transcribe_status_todo')
-						: data.transcribe_task.status ===
-							  DocumentTranscribeStatus.TRANSCRIBING
-							? t('document_transcribe_status_doing')
-							: data.transcribe_task.status === DocumentTranscribeStatus.SUCCESS
-								? t('document_transcribe_status_success')
-								: t('document_transcribe_status_failed'),
-				)
-			: null,
-		data.graph_task
-			? renderStatusBadge(
-					t('document_graph_status'),
-					freshnessState.graphStale
-						? t('document_status_stale')
-						: data.graph_task.status === DocumentGraphStatus.WAIT_TO
-							? t('document_graph_status_todo')
-							: data.graph_task.status === DocumentGraphStatus.BUILDING
-								? t('document_graph_status_doing')
-								: data.graph_task.status === DocumentGraphStatus.SUCCESS
-									? t('document_graph_status_success')
-									: t('document_graph_status_failed'),
-				)
-			: null,
-		data.summarize_task
-			? renderStatusBadge(
-					t('document_summarize_status'),
-					freshnessState.summaryStale
-						? t('document_status_stale')
-						: data.summarize_task.status === DocumentSummarizeStatus.WAIT_TO
-							? t('document_summarize_status_todo')
-							: data.summarize_task.status ===
-								  DocumentSummarizeStatus.SUMMARIZING
-								? t('document_summarize_status_doing')
-								: data.summarize_task.status === DocumentSummarizeStatus.SUCCESS
-									? t('document_summarize_status_success')
-									: t('document_summarize_status_failed'),
-				)
-			: null,
-		data.convert_task
-			? renderStatusBadge(
-					t('document_md_status'),
-					data.convert_task.status === DocumentMdConvertStatus.WAIT_TO
-						? t('document_md_status_todo')
-						: data.convert_task.status === DocumentMdConvertStatus.CONVERTING
-							? t('document_md_status_doing')
-							: data.convert_task.status === DocumentMdConvertStatus.SUCCESS
-								? t('document_md_status_success')
-								: t('document_md_status_failed'),
-				)
-			: null,
-		data.podcast_task
-			? renderStatusBadge(
-					t('document_podcast_status'),
-					freshnessState.podcastStale
-						? t('document_status_stale')
-						: data.podcast_task.status === DocumentPodcastStatus.WAIT_TO
-							? t('document_podcast_status_todo')
-							: data.podcast_task.status === DocumentPodcastStatus.GENERATING
-								? t('document_podcast_status_doing')
-								: data.podcast_task.status === DocumentPodcastStatus.SUCCESS
-									? t('document_podcast_status_success')
-									: t('document_podcast_status_failed'),
-				)
-			: null,
-		data.process_task
-			? renderStatusBadge(
-					t('document_process_status'),
-					data.process_task.status === DocumentProcessStatus.WAIT_TO
-						? t('document_process_status_todo')
-						: data.process_task.status === DocumentProcessStatus.PROCESSING
-							? t('document_process_status_doing')
-							: data.process_task.status === DocumentProcessStatus.SUCCESS
-								? t('document_process_status_success')
-								: t('document_process_status_failed'),
-				)
-			: null,
-	].filter(Boolean);
 
 	const summaryActionButton = (
 		<Button
@@ -616,6 +423,12 @@ const DocumentInfo = ({
 				) : null}
 			</div>
 
+			<Separator className='bg-border/60' />
+
+			<div className='space-y-4'>
+				{renderSummaryCard()}
+			</div>
+
 			{afterCreator ? (
 				<>
 					<Separator className='bg-border/60' />
@@ -677,15 +490,6 @@ const DocumentInfo = ({
 				/>
 			</div>
 
-			<Separator className='bg-border/60' />
-
-			{statusBadges.length > 0 ? (
-				<div className='flex flex-wrap gap-2'>{statusBadges}</div>
-			) : null}
-
-			<div className='space-y-4 border-t border-border/50 pt-5'>
-				{renderSummaryCard()}
-			</div>
 			<ResourceConfirmDialog
 				open={isSummaryDialogOpen}
 				onOpenChange={setIsSummaryDialogOpen}

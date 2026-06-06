@@ -53,7 +53,6 @@ const DocumentAudio = ({
 					icon={AudioLines}
 					status='Source Audio'
 					title={document.title ?? 'Unknown Title'}
-					description={document.creator.nickname ?? 'Unknown Author'}
 					tone='success'
 					result={
 						<AudioPlayer
