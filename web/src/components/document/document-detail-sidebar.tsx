@@ -23,7 +23,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import DocumentAudio from './document-audio';
 import DocumentGraph from './document-graph';
 import DocumentInfo from './document-info';
-import DocumentMeetingInsights from './document-meeting-insights';
 import DocumentPodcast from './document-podcast';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
 import JoinRequestsCard from '@/components/permission/join-requests-card';
@@ -250,10 +249,7 @@ const DocumentDetailSidebar = ({
 
 					<SidebarSection>
 						{documentCategory === DocumentCategory.AUDIO ? (
-							<div className='space-y-4'>
-								<DocumentAudio document_id={id} />
-								<DocumentMeetingInsights document_id={id} />
-							</div>
+							<DocumentAudio document_id={id} />
 						) : (
 							<DocumentPodcast document_id={id} />
 						)}

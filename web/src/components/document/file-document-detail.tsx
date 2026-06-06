@@ -10,8 +10,13 @@ import {
 	touchDocumentContent,
 } from '@/service/document';
 import 'katex/dist/katex.min.css';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
-import { Info, Loader2 } from 'lucide-react';
+import {
+	ExternalLink,
+	Hourglass,
+	Loader2,
+	RefreshCw,
+	TriangleAlert,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import { utils } from '@kinda/utils';
 import { toast } from 'sonner';
@@ -26,9 +31,9 @@ import { DocumentMdConvertStatus } from '@/enums/document';
 import { shouldPollDocumentDetail } from '@/lib/document-task';
 import { useRef } from 'react';
 import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
-import TipTapMarkdownViewer from '../markdown/tiptap-markdown-viewer';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import useDocumentMarkdownEditable from '@/hooks/use-document-markdown-editable';
+import { NotFoundView } from '../not-found/not-found-view';
 
 const FileDocumentDetail = ({
 	id,
@@ -43,8 +48,10 @@ const FileDocumentDetail = ({
 	const { mainUserInfo } = useUserContext();
 	const queryClient = getQueryClient();
 	const statusContainerClassName = cn(
-		'mx-auto flex h-full w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] flex-col items-center justify-center gap-2 px-4 text-center text-xs text-muted-foreground sm:px-6',
+		'mx-auto w-full max-w-full md:max-w-[640px] lg:max-w-[800px] xl:max-w-[720px] 2xl:max-w-[960px] px-4 sm:px-6',
 	);
+	const statusViewClassName =
+		'min-h-[calc(100dvh-14rem)] px-4 py-12 sm:min-h-[calc(100dvh-14.25rem)]';
 	const [markdownRendered, setMarkdownRendered] = useState(false);
 	const {
 		data: document,
@@ -197,6 +204,35 @@ const FileDocumentDetail = ({
 		setDelay(1000);
 	};
 
+	const renderRetryButton = () => (
+		<Button
+			className='rounded-full'
+			disabled={markdownTransforming}
+			onClick={() => void handleTransformToMarkdown()}>
+			{markdownTransforming ? (
+				<Loader2 className='size-4 animate-spin' />
+			) : (
+				<RefreshCw className='size-4' />
+			)}
+			{t('retry')}
+		</Button>
+	);
+
+	const renderOriginalFileButton = () => {
+		if (!document?.file_info?.file_name) {
+			return null;
+		}
+
+		return (
+			<Button asChild variant='outline' className='rounded-full'>
+				<a href={document.file_info.file_name} target='_blank' rel='noreferrer'>
+					<ExternalLink className='size-4' />
+					{t('file_document_go_to_origin')}
+				</a>
+			</Button>
+		);
+	};
+
 	useEffect(() => {
 		if (!markdownSourceKey) {
 			return;
@@ -223,77 +259,69 @@ const FileDocumentDetail = ({
 		<div className={cn('w-full relative pt-4', className)}>
 			{((isError && error) || markdownGetError) && (
 				<div className={statusContainerClassName}>
-					{error?.message ?? <p>{markdownGetError}</p>}
+					<NotFoundView
+						code={null}
+						icon={TriangleAlert}
+						title={t('document_markdown_load_failed')}
+						description={error?.message ?? markdownGetError}
+						className={statusViewClassName}
+					/>
 				</div>
 			)}
 			{document &&
 				(document.convert_task?.status === DocumentMdConvertStatus.WAIT_TO ||
 					!document.convert_task) && (
 					<div className={statusContainerClassName}>
-						<p className='flex flex-row items-center'>
-							<span className='mr-1'>
-								{t('document_transform_to_markdown_todo')}
-							</span>
-							<Tooltip>
-								<TooltipTrigger>
-									<Info size={15} />
-								</TooltipTrigger>
-								<TooltipContent>
-									{t('document_transform_to_markdown_todo_tips')}
-								</TooltipContent>
-							</Tooltip>
-						</p>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
-							onClick={() => {
-								handleTransformToMarkdown();
-							}}>
-							{t('retry')}
-							{markdownTransforming && (
-								<Loader2 className='size-4 animate-spin' />
-							)}
-						</Button>
+						<NotFoundView
+							code={null}
+							icon={Hourglass}
+							title={t('document_transform_to_markdown_todo')}
+							description={t('document_transform_to_markdown_todo_tips')}
+							className={statusViewClassName}
+							footer={
+								<>
+									{renderRetryButton()}
+									{renderOriginalFileButton()}
+								</>
+							}
+						/>
 					</div>
 				)}
 			{document &&
 				document.convert_task?.status ===
 					DocumentMdConvertStatus.CONVERTING && (
 					<div className={statusContainerClassName}>
-						<p className='flex flex-row items-center'>
-							{t('document_transform_to_markdown_doing')}
-						</p>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
-							onClick={() => {
-								handleTransformToMarkdown();
-							}}>
-							{t('retry')}
-							{markdownTransforming && (
-								<Loader2 className='size-4 animate-spin' />
-							)}
-						</Button>
+						<NotFoundView
+							code={null}
+							icon={Loader2}
+							title={t('document_transform_to_markdown_doing_title')}
+							description={t('document_transform_to_markdown_doing')}
+							className={statusViewClassName}
+							footer={
+								<>
+									{renderRetryButton()}
+									{renderOriginalFileButton()}
+								</>
+							}
+						/>
 					</div>
 				)}
 			{document &&
 				document.convert_task?.status === DocumentMdConvertStatus.FAILED && (
 					<div className={statusContainerClassName}>
-						<p>{t('document_transform_to_markdown_failed')}</p>
-						<Button
-							variant={'link'}
-							className='h-fit p-0 text-xs'
-							disabled={markdownTransforming}
-							onClick={() => {
-								handleTransformToMarkdown();
-							}}>
-							{t('retry')}
-							{markdownTransforming && (
-								<Loader2 className='size-4 animate-spin' />
-							)}
-						</Button>
+						<NotFoundView
+							code={null}
+							icon={TriangleAlert}
+							title={t('document_transform_to_markdown_failed')}
+							description={t('document_transform_to_markdown_failed_description')}
+							className={statusViewClassName}
+							footer={
+								<>
+									{renderRetryButton()}
+									{renderOriginalFileButton()}
+								</>
+							}
+						/>
 					</div>
 				)}
 			{document &&
