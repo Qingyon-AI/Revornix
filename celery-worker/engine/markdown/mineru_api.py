@@ -453,14 +453,20 @@ class MineruApiEngine(MarkdownEngineBase):
             try:
                 async with async_playwright() as p:
                     browser = await p.chromium.launch(headless=True)
-                    page = await browser.new_page()
-                    response = await page.goto(url)
-                    final_url = page.url
-                    page_title = await page.title()
-                    if response is not None:
-                        response_status = response.status
-                    await page.pdf(path=str(temp_shot_pdf_path))
-                    await browser.close()
+                    try:
+                        page = await browser.new_page()
+                        response = await page.goto(
+                            url,
+                            wait_until="domcontentloaded",
+                            timeout=15000,
+                        )
+                        final_url = page.url
+                        page_title = await page.title()
+                        if response is not None:
+                            response_status = response.status
+                        await page.pdf(path=str(temp_shot_pdf_path))
+                    finally:
+                        await browser.close()
 
                 stage = "extract_website_pdf"
                 results = await self._extract_files([str(temp_shot_pdf_path)])
