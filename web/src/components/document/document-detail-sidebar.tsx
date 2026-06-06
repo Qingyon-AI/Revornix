@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import DocumentAudio from './document-audio';
+import DocumentEmbedding from './document-embedding';
 import DocumentGraph from './document-graph';
 import DocumentInfo from './document-info';
 import DocumentPodcast from './document-podcast';
@@ -244,6 +245,13 @@ const DocumentDetailSidebar = ({
 									/>
 								) : undefined
 							}
+						/>
+					</SidebarSection>
+
+					<SidebarSection>
+						<DocumentEmbedding
+							document_id={id}
+							canWriteDocument={canWriteDocument}
 						/>
 					</SidebarSection>
 

@@ -18,8 +18,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 
 import {
-	SectionPodcastStatus,
-	SectionProcessStatus,
 	UserSectionAuthority,
 } from '@/enums/section';
 import { formatInUserTimeZone, toDate } from '@/lib/time';
@@ -139,11 +137,6 @@ const SectionInfo = ({
 					))}
 				</div>
 
-				<div className='flex flex-wrap gap-2 border-t border-border/50 pt-4'>
-					<Skeleton className='h-9 w-32 rounded-full' />
-					<Skeleton className='h-9 w-36 rounded-full' />
-					<Skeleton className='h-9 w-32 rounded-full' />
-				</div>
 			</div>
 		);
 	}
@@ -171,89 +164,7 @@ const SectionInfo = ({
 				locale: locale === 'zh' ? zhCN : enUS,
 			})
 		: '--';
-	const renderStatusBadge = (label: string, value: string) => {
-		return (
-			<div className='inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-muted-foreground'>
-				<span>{label}</span>
-				<span className='font-medium text-foreground'>{value}</span>
-			</div>
-		);
-	};
-	const effectivePodcastStatus = section.podcast_task?.status;
-	const documentIntegrationStatus = (() => {
-		const summary = section.document_integration;
-		if (!summary || (section.documents_count ?? 0) <= 0) {
-			return undefined;
-		}
 
-		if ((summary.supplementing_count ?? 0) > 0) {
-			return t('section_document_integration_status_doing', {
-				count: summary.supplementing_count ?? 0,
-			});
-		}
-		if ((summary.failed_count ?? 0) > 0) {
-			return t('section_document_integration_status_failed', {
-				count: summary.failed_count ?? 0,
-			});
-		}
-		if ((summary.wait_to_count ?? 0) > 0) {
-			return t('section_document_integration_status_todo', {
-				count: summary.wait_to_count ?? 0,
-			});
-		}
-		if ((summary.success_count ?? 0) > 0) {
-			return t('section_document_integration_status_success');
-		}
-		return undefined;
-	})();
-	const statusBadges = [
-		section.process_task
-			? {
-					key: 'process',
-					node: renderStatusBadge(
-						t('section_process_status'),
-						section.process_task.status === SectionProcessStatus.WAIT_TO
-							? t('section_process_status_todo')
-							: section.process_task.status === SectionProcessStatus.PROCESSING
-								? t('section_process_status_doing')
-								: section.process_task.status === SectionProcessStatus.SUCCESS
-									? t('section_process_status_success')
-									: t('section_process_status_failed'),
-					),
-				}
-			: null,
-		documentIntegrationStatus
-			? {
-					key: 'document-integration',
-					node: renderStatusBadge(
-						t('section_document_integration_status'),
-						documentIntegrationStatus,
-					),
-				}
-			: null,
-		effectivePodcastStatus !== undefined
-			? {
-					key: 'podcast',
-					node: renderStatusBadge(
-						t('section_podcast_status'),
-						effectivePodcastStatus === SectionPodcastStatus.WAIT_TO
-							? t('section_podcast_status_todo')
-							: effectivePodcastStatus === SectionPodcastStatus.GENERATING
-								? t('section_podcast_status_doing')
-								: effectivePodcastStatus === SectionPodcastStatus.SUCCESS
-									? t('section_podcast_status_success')
-									: t('section_podcast_status_failed'),
-					),
-				}
-			: null,
-	].filter(
-		(
-			item,
-		): item is {
-			key: string;
-			node: ReturnType<typeof renderStatusBadge>;
-		} => Boolean(item),
-	);
 	return (
 		<>
 			<div className='space-y-2'>
@@ -376,15 +287,6 @@ const SectionInfo = ({
 				/>
 			</div>
 
-			<Separator className='bg-border/60' />
-
-			{statusBadges.length > 0 ? (
-				<div className='flex flex-wrap gap-2'>
-					{statusBadges.map((badge) => (
-						<div key={badge.key}>{badge.node}</div>
-					))}
-				</div>
-			) : null}
 		</>
 	);
 };
