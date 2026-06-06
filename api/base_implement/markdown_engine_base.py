@@ -48,10 +48,21 @@ class MarkdownEngineBase(EngineBase):
     ) -> str | None:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            await page.goto(url)
-            html_content = await page.content()
-            await browser.close()
+            try:
+                page = await browser.new_page()
+                await page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=15000,
+                )
+                html_content = await page.content()
+            except Exception as e:
+                exception_logger.error(
+                    f"Failed to load website cover page: {url}, error: {e}"
+                )
+                return None
+            finally:
+                await browser.close()
 
         soup = BeautifulSoup(html_content, "html.parser")
 
