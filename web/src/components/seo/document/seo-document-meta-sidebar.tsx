@@ -240,7 +240,7 @@ export const SeoDocumentMetaSidebar = ({
 					{document.labels && document.labels.length > 0 ? (
 						<div className='flex flex-wrap gap-1.5'>
 							{document.labels.map((label) => (
-								<MetaBadge key={label.id}>{label.name}</MetaBadge>
+								<MetaBadge key={label.id}># {label.name}</MetaBadge>
 							))}
 						</div>
 					) : null}

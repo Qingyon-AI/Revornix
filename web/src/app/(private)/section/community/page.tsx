@@ -152,7 +152,7 @@ const CommunitySectionPage = () => {
 													<Label
 														htmlFor={`label_${label.id}`}
 														className='text-xs'>
-														{label.name}
+														# {label.name}
 													</Label>
 													<Checkbox
 														id={`label_${label.id}`}

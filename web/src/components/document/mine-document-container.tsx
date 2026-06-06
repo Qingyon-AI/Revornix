@@ -161,7 +161,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 													<Label
 														htmlFor={`label_${label.id}`}
 														className='text-xs'>
-														{label.name}
+														# {label.name}
 													</Label>
 													<Checkbox
 														id={`label_${label.id}`}

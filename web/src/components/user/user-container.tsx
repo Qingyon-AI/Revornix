@@ -454,9 +454,7 @@ const UserContainer = ({ id }: { id: number }) => {
 								<div className='inline-flex items-center gap-1.5'>
 									<FileText className='size-4' />
 									<span>
-										{t('user_detail_documents_result', {
-											count: totalDocuments,
-										})}
+										{t('user_detail_document_total')} {totalDocuments}
 									</span>
 								</div>
 							</div>

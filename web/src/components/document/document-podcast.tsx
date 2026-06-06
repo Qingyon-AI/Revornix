@@ -13,7 +13,6 @@ import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { DocumentPodcastStatus } from '@/enums/document';
 import { useUserContext } from '@/provider/user-provider';
 import { useEffect, useState } from 'react';
-import TaskStateCard from '../ui/task-state-card';
 import { Button } from '../ui/button';
 import { AudioLines, Hourglass, Loader2 } from 'lucide-react';
 import EngineSelect from '@/components/ai/engine-select';
@@ -98,23 +97,43 @@ const DocumentPodcast = ({
 				))}
 			</div>
 		) : undefined;
+	const renderPodcastAction = ({
+		label,
+		onClick,
+		loading = false,
+		disabled = false,
+	}: {
+		label: string;
+		onClick: () => void;
+		loading?: boolean;
+		disabled?: boolean;
+	}) => (
+		<Button
+			variant='outline'
+			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+			onClick={onClick}
+			disabled={disabled || loading}>
+			{loading ? <Loader2 className='size-4 animate-spin' /> : null}
+			{label}
+		</Button>
+	);
 
 	return (
 		<>
 			{!document?.podcast_task && (
-				<TaskStateCard
+				<SidebarTaskNode
 					icon={AudioLines}
-					badge={t('document_podcast_status_todo')}
+					status={t('document_podcast_status_todo')}
 					title={t('document_podcast_unset')}
 					description={t('document_podcast_placeholder_description')}
-					actionLabel={t('document_podcast_generate')}
-					onAction={() => setIsGenerateDialogOpen(true)}
-					actionDisabled={false}
-					actionLoading={mutateGeneratePodcast.isPending}
 					tone={canGeneratePodcast ? 'warning' : 'danger'}
 					className={className}
 					hint={podcastHint}
-					variant='plain'
+					action={renderPodcastAction({
+						label: t('document_podcast_generate'),
+						onClick: () => setIsGenerateDialogOpen(true),
+						loading: mutateGeneratePodcast.isPending,
+					})}
 				/>
 			)}
 
@@ -122,37 +141,37 @@ const DocumentPodcast = ({
 				<>
 					{document?.podcast_task?.status ===
 						DocumentPodcastStatus.WAIT_TO && (
-							<TaskStateCard
-								badge={t('document_podcast_status_todo')}
+							<SidebarTaskNode
+								status={t('document_podcast_status_todo')}
 								title={t('document_podcast_wait_to')}
 								description={t('document_podcast_wait_to_description')}
 								icon={Hourglass}
-								actionLabel={t('cancel')}
-								onAction={() => mutateCancelPodcast.mutate()}
-								actionDisabled={false}
-								actionLoading={mutateCancelPodcast.isPending}
 								tone='warning'
 								className={className}
-								variant='plain'
+								action={renderPodcastAction({
+									label: t('cancel'),
+									onClick: () => mutateCancelPodcast.mutate(),
+									loading: mutateCancelPodcast.isPending,
+								})}
 							/>
 						)}
-						{document?.podcast_task?.status ===
-							DocumentPodcastStatus.GENERATING && (
-								<TaskStateCard
-									badge={t('document_podcast_status_doing')}
-									title={t('document_podcast_processing')}
+					{document?.podcast_task?.status ===
+						DocumentPodcastStatus.GENERATING && (
+							<SidebarTaskNode
+								status={t('document_podcast_status_doing')}
+								title={t('document_podcast_processing')}
 								description={t('document_podcast_processing_description')}
 								icon={Loader2}
 								tone='default'
-								actionLabel={t('cancel')}
-								onAction={() => mutateCancelPodcast.mutate()}
-								actionDisabled={false}
-								actionLoading={mutateCancelPodcast.isPending}
 								className={className}
-								spinning
-								variant='plain'
-								/>
-							)}
+								iconClassName='animate-spin'
+								action={renderPodcastAction({
+									label: t('cancel'),
+									onClick: () => mutateCancelPodcast.mutate(),
+									loading: mutateCancelPodcast.isPending,
+								})}
+							/>
+						)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.SUCCESS &&
 						document?.podcast_task?.podcast_file_name && (
 							<SidebarTaskNode
@@ -166,63 +185,58 @@ const DocumentPodcast = ({
 								description={t('document_podcast_placeholder_description')}
 								tone={freshnessState.podcastStale ? 'warning' : 'success'}
 								hint={podcastHint}
-									action={
-										<Button
-											variant='outline'
-											className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
-											onClick={() => setIsGenerateDialogOpen(true)}
-											disabled={false}>
-											{t('document_podcast_regenerate')}
-										</Button>
-									}
-									result={
-										<AudioPlayer
-											src={document?.podcast_task?.podcast_file_name}
-											scriptUrl={
-												document?.podcast_task?.podcast_script_file_name ?? undefined
-											}
-											cover={
+								action={renderPodcastAction({
+									label: t('document_podcast_regenerate'),
+									onClick: () => setIsGenerateDialogOpen(true),
+								})}
+								result={
+									<AudioPlayer
+										src={document?.podcast_task?.podcast_file_name}
+										scriptUrl={
+											document?.podcast_task?.podcast_script_file_name ?? undefined
+										}
+										cover={
 											document.cover
 												? replacePath(document.cover, document.creator.id)
 												: undefined
 										}
 										title={document.title ?? 'Unkown Title'}
 										artist={'AI Generated'}
-										/>
-									}
-									className={className}
-								/>
-							)}
+									/>
+								}
+								className={className}
+							/>
+						)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.FAILED && (
-						<TaskStateCard
+						<SidebarTaskNode
 							icon={AudioLines}
-							badge={t('document_podcast_status_failed')}
+							status={t('document_podcast_status_failed')}
 							title={t('document_podcast_failed')}
 							description={t('document_podcast_failed_description')}
-							actionLabel={t('document_podcast_regenerate')}
-							onAction={() => setIsGenerateDialogOpen(true)}
-							actionDisabled={false}
-							actionLoading={mutateGeneratePodcast.isPending}
 							tone='danger'
 							className={className}
 							hint={podcastHint}
-							variant='plain'
+							action={renderPodcastAction({
+								label: t('document_podcast_regenerate'),
+								onClick: () => setIsGenerateDialogOpen(true),
+								loading: mutateGeneratePodcast.isPending,
+							})}
 						/>
 					)}
 					{document?.podcast_task?.status === DocumentPodcastStatus.CANCELLED && (
-						<TaskStateCard
+						<SidebarTaskNode
 							icon={AudioLines}
-							badge={t('cancel')}
+							status={t('cancel')}
 							title={t('document_podcast_unset')}
 							description={t('document_podcast_placeholder_description')}
-							actionLabel={t('document_podcast_generate')}
-							onAction={() => setIsGenerateDialogOpen(true)}
-							actionDisabled={false}
-							actionLoading={mutateGeneratePodcast.isPending}
 							tone='warning'
 							className={className}
 							hint={podcastHint}
-							variant='plain'
+							action={renderPodcastAction({
+								label: t('document_podcast_generate'),
+								onClick: () => setIsGenerateDialogOpen(true),
+								loading: mutateGeneratePodcast.isPending,
+							})}
 						/>
 					)}
 				</>

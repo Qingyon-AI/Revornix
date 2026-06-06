@@ -344,7 +344,7 @@ const SectionInfo = ({
 			{section.labels && section.labels.length > 0 ? (
 				<div className='flex flex-wrap gap-1.5'>
 					{section.labels.map((label) => {
-						return <InfoBadge key={label.id}>{label.name}</InfoBadge>;
+						return <InfoBadge key={label.id}># {label.name}</InfoBadge>;
 					})}
 				</div>
 			) : null}

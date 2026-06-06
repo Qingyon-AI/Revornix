@@ -370,6 +370,7 @@ const WebsiteDocumentDetail = ({
 						<NotFoundView
 							code={null}
 							icon={Loader2}
+							iconClassName='animate-spin'
 							title={t('document_transform_to_markdown_doing_title')}
 							description={t('document_transform_to_markdown_doing')}
 							className={statusViewClassName}

@@ -103,7 +103,7 @@ const SectionCard = ({
 								<div
 									key={label.id}
 									className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-[11px] text-muted-foreground'>
-									{label.name}
+									# {label.name}
 								</div>
 							);
 						})}
@@ -200,7 +200,7 @@ const SectionCard = ({
 								<div
 									key={label.id}
 									className='w-fit rounded-full border border-border/50 bg-card/75 px-2.5 py-1 text-xs text-muted-foreground'>
-									{label.name}
+									# {label.name}
 								</div>
 							);
 						})}

@@ -9,7 +9,6 @@ import { SectionPodcastStatus } from '@/enums/section';
 import type { SectionDetailWithPpt } from '@/service/section';
 
 import AudioPlayer from '../ui/audio-player';
-import TaskStateCard from '../ui/task-state-card';
 import { Button } from '../ui/button';
 import SidebarTaskNode from '../ui/sidebar-task-node';
 
@@ -43,100 +42,108 @@ const SectionMediaPodcastTask = ({
 	onCancel,
 }: SectionMediaPodcastTaskProps) => {
 	const t = useTranslations();
+	const renderAction = (
+		label: string,
+		onClick: () => void,
+		loading = false,
+	) => (
+		<Button
+			variant='outline'
+			className='h-8 rounded-full border-border/70 bg-background/65 px-3 text-xs font-medium shadow-none hover:bg-background'
+			onClick={onClick}
+			disabled={loading}>
+			{loading ? <Loader2 className='mr-1.5 size-3.5 animate-spin' /> : null}
+			{label}
+		</Button>
+	);
 
 	if (hasPendingAutoPodcastFlow) {
 		return (
-			<TaskStateCard
-				badge={t('document_podcast_status_todo')}
+			<SidebarTaskNode
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
 				icon={Hourglass}
 				tone='warning'
-				variant='plain'
 			/>
 		);
 	}
 
 	if (creatorStatusResolved && !isCreator && !section.podcast_task) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_todo')}
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_user_unable')}
 				description={t('section_podcast_placeholder_description')}
 				tone='default'
-				variant='plain'
 			/>
 		);
 	}
 
 	if (isCreator && !section.podcast_task) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_todo')}
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
-				actionLabel={t('section_podcast_generate')}
-				onAction={onOpenDialog}
-				actionDisabled={false}
-				actionLoading={isGeneratePending}
 				tone={canGeneratePodcast ? 'warning' : 'danger'}
-				variant='plain'
 				hint={podcastHint}
+				action={renderAction(
+					t('section_podcast_generate'),
+					onOpenDialog,
+					isGeneratePending,
+				)}
 			/>
 		);
 	}
 
 	if (section.podcast_task?.status === SectionPodcastStatus.GENERATING) {
 		return (
-			<TaskStateCard
-				badge={t('document_podcast_status_doing')}
+			<SidebarTaskNode
+				status={t('document_podcast_status_doing')}
 				title={t('section_podcast_processing')}
 				description={t('section_podcast_processing_description')}
 				icon={Loader2}
+				iconClassName='animate-spin'
 				tone='default'
-				actionLabel={t('cancel')}
-				onAction={onCancel}
-				actionDisabled={false}
-				actionLoading={isCancelPending}
-				variant='plain'
-				spinning
+				action={renderAction(t('cancel'), onCancel, isCancelPending)}
 			/>
 		);
 	}
 
 	if (section.podcast_task?.status === SectionPodcastStatus.WAIT_TO) {
 		return (
-			<TaskStateCard
-				badge={t('document_podcast_status_todo')}
+			<SidebarTaskNode
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
 				icon={Hourglass}
-				actionLabel={t('cancel')}
-				onAction={onCancel}
-				actionDisabled={false}
-				actionLoading={isCancelPending}
 				tone='warning'
-				variant='plain'
+				action={renderAction(t('cancel'), onCancel, isCancelPending)}
 			/>
 		);
 	}
 
 	if (section.podcast_task?.status === SectionPodcastStatus.CANCELLED) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('cancel')}
+				status={t('cancel')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
-				actionLabel={isCreator ? t('section_podcast_generate') : undefined}
-				onAction={isCreator ? onOpenDialog : undefined}
-				actionDisabled={false}
-				actionLoading={isGeneratePending}
 				tone='warning'
-				variant='plain'
 				hint={podcastHint}
+				action={
+					isCreator
+						? renderAction(
+								t('section_podcast_generate'),
+								onOpenDialog,
+								isGeneratePending,
+							)
+						: undefined
+				}
 			/>
 		);
 	}
@@ -183,18 +190,22 @@ const SectionMediaPodcastTask = ({
 
 	if (section.podcast_task?.status === SectionPodcastStatus.FAILED) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_failed')}
+				status={t('document_podcast_status_failed')}
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}
-				actionLabel={isCreator ? t('section_podcast_regenerate') : undefined}
-				onAction={isCreator ? onOpenDialog : undefined}
-				actionDisabled={false}
-				actionLoading={isGeneratePending}
 				tone='danger'
 				hint={podcastHint}
-				variant='plain'
+				action={
+					isCreator
+						? renderAction(
+								t('section_podcast_regenerate'),
+								onOpenDialog,
+								isGeneratePending,
+							)
+						: undefined
+				}
 			/>
 		);
 	}
