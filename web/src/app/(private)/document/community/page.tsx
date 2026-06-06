@@ -148,7 +148,7 @@ const CommunityDocumentPage = () => {
 											<Label
 												htmlFor={`community_document_label_${label.id}`}
 												className='text-xs'>
-												{label.name}
+												# {label.name}
 											</Label>
 											<Checkbox
 												id={`community_document_label_${label.id}`}

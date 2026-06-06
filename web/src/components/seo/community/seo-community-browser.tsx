@@ -301,7 +301,7 @@ const SeoCommunityBrowser = ({
 											? 'border-foreground bg-foreground text-background'
 											: 'border-border/60 bg-background/70 text-muted-foreground hover:border-border hover:text-foreground',
 									)}>
-									#{label.name}
+									# {label.name}
 								</Link>
 							))}
 						</div>

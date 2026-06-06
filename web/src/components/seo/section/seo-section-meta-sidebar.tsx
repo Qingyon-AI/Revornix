@@ -322,7 +322,7 @@ export const SeoSectionMetaSidebar = ({
 							key={label.id}
 							variant='secondary'
 							className='rounded-full bg-muted/60 px-3 py-1 text-xs text-muted-foreground'>
-							{label.name}
+							# {label.name}
 						</Badge>
 					))}
 					</div>

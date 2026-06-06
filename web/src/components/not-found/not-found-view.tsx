@@ -17,6 +17,7 @@ type NotFoundViewProps = {
 	title: ReactNode;
 	description?: ReactNode;
 	icon?: LucideIcon;
+	iconClassName?: string;
 	actions?: NotFoundAction[];
 	footer?: ReactNode;
 	className?: string;
@@ -28,6 +29,7 @@ const NotFoundView = ({
 	title,
 	description,
 	icon: Icon = SearchX,
+	iconClassName,
 	actions,
 	footer,
 	className,
@@ -40,7 +42,7 @@ const NotFoundView = ({
 				className,
 			)}>
 			<div className='flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground'>
-				<Icon className='size-6' strokeWidth={1.5} />
+				<Icon className={cn('size-6', iconClassName)} strokeWidth={1.5} />
 			</div>
 			<div className='space-y-3'>
 				{eyebrow ? (

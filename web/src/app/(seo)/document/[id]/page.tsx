@@ -415,7 +415,7 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 													key={label.id}
 													variant='secondary'
 													className='rounded-full bg-secondary/70 px-3 py-1 text-xs'>
-													{label.name}
+													# {label.name}
 												</Badge>
 											))}
 										</div>

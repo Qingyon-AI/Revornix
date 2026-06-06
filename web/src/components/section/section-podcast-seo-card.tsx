@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { SectionPodcastStatus } from '@/enums/section';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import TaskStateCard from '@/components/ui/task-state-card';
+import SidebarTaskNode from '@/components/ui/sidebar-task-node';
 import { formatAudioTime } from '@/lib/audio';
 
 type SectionPodcastSeoCardProps = {
@@ -88,12 +88,11 @@ const SectionPodcastSeoCard = ({
 
 	if (status == null) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_todo')}
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_unset')}
 				description={t('section_podcast_placeholder_description')}
-				variant='plain'
 				className={className}
 			/>
 		);
@@ -101,29 +100,26 @@ const SectionPodcastSeoCard = ({
 
 	if (status === SectionPodcastStatus.GENERATING) {
 		return (
-			<TaskStateCard
-				badge={t('document_podcast_status_doing')}
+			<SidebarTaskNode
+				status={t('document_podcast_status_doing')}
 				title={t('section_podcast_processing')}
 				description={t('section_podcast_processing_description')}
 				icon={Loader2}
+				iconClassName='animate-spin'
 				tone='default'
-				actionLoading
-				variant='plain'
 				className={className}
-				spinning
 			/>
 		);
 	}
 
 	if (status === SectionPodcastStatus.WAIT_TO) {
 		return (
-			<TaskStateCard
-				badge={t('document_podcast_status_todo')}
+			<SidebarTaskNode
+				status={t('document_podcast_status_todo')}
 				title={t('section_podcast_wait_to')}
 				description={t('section_podcast_wait_to_description')}
 				icon={Hourglass}
 				tone='warning'
-				variant='plain'
 				className={className}
 			/>
 		);
@@ -134,93 +130,93 @@ const SectionPodcastSeoCard = ({
 		const resolvedCover = cover ?? SECTION_PODCAST_FALLBACK_COVER;
 
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_success')}
+				status={t('document_podcast_status_success')}
 				title={t('section_podcast_ready')}
 				tone='success'
-				className={className}>
-				<div className='space-y-3 rounded-[20px] border border-border/60 bg-background/40 p-3 sm:p-4'>
-					<div className='flex items-center gap-3'>
-						<img
-							src={resolvedCover}
-							alt={resolvedTitle}
-							className='size-16 shrink-0 rounded-2xl object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10'
-						/>
-						<div className='min-w-0'>
-							<div className='line-clamp-2 text-sm font-medium text-foreground'>
-								{resolvedTitle}
-							</div>
-							<div className='text-xs text-muted-foreground'>
-								AI Generated
+				className={className}
+				result={
+					<div className='space-y-3 rounded-[20px] border border-border/60 bg-background/40 p-3 sm:p-4'>
+						<div className='flex items-center gap-3'>
+							<img
+								src={resolvedCover}
+								alt={resolvedTitle}
+								className='size-16 shrink-0 rounded-2xl object-cover ring-1 ring-black/10 ring-inset dark:ring-white/10'
+							/>
+							<div className='min-w-0'>
+								<div className='line-clamp-2 text-sm font-medium text-foreground'>
+									{resolvedTitle}
+								</div>
+								<div className='text-xs text-muted-foreground'>
+									AI Generated
+								</div>
 							</div>
 						</div>
-					</div>
-					<div className='flex items-center gap-3 rounded-2xl border border-border/60 bg-background/65 px-3 py-3'>
-						<Button
-							type='button'
-							variant='outline'
-							size='icon'
-							className='size-10 shrink-0 rounded-full'
-							onClick={(event) => {
-								event.stopPropagation();
-								void togglePlayback();
-							}}
-							onPointerDown={(event) => event.stopPropagation()}>
-							{isPlaying ? (
-								<Pause className='size-4' />
-							) : (
-								<Play className='size-4' />
-							)}
-							<span className='sr-only'>
-								{isPlaying ? t('audio_player_pause') : t('audio_player_play')}
-							</span>
-						</Button>
-						<div className='min-w-0 flex-1'>
-							<div className='mb-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground'>
-								<span>{formatAudioTime(currentTime)}</span>
-								<span>{formatAudioTime(duration)}</span>
-							</div>
-							<div
-								onClick={(event) => event.stopPropagation()}
+						<div className='flex items-center gap-3 rounded-2xl border border-border/60 bg-background/65 px-3 py-3'>
+							<Button
+								type='button'
+								variant='outline'
+								size='icon'
+								className='size-10 shrink-0 rounded-full'
+								onClick={(event) => {
+									event.stopPropagation();
+									void togglePlayback();
+								}}
 								onPointerDown={(event) => event.stopPropagation()}>
-								<Slider
-									value={[currentTime]}
-									max={duration > 0 ? duration : 1}
-									step={0.1}
-									className='w-full'
-									onValueChange={handleSeek}
-								/>
+								{isPlaying ? (
+									<Pause className='size-4' />
+								) : (
+									<Play className='size-4' />
+								)}
+								<span className='sr-only'>
+									{isPlaying ? t('audio_player_pause') : t('audio_player_play')}
+								</span>
+							</Button>
+							<div className='min-w-0 flex-1'>
+								<div className='mb-2 flex items-center justify-between gap-3 text-[11px] text-muted-foreground'>
+									<span>{formatAudioTime(currentTime)}</span>
+									<span>{formatAudioTime(duration)}</span>
+								</div>
+								<div
+									onClick={(event) => event.stopPropagation()}
+									onPointerDown={(event) => event.stopPropagation()}>
+									<Slider
+										value={[currentTime]}
+										max={duration > 0 ? duration : 1}
+										step={0.1}
+										className='w-full'
+										onValueChange={handleSeek}
+									/>
+								</div>
 							</div>
 						</div>
+						<audio ref={audioRef} preload='metadata' src={podcastFileName} />
 					</div>
-					<audio ref={audioRef} preload='metadata' src={podcastFileName} />
-				</div>
-			</TaskStateCard>
+				}
+			/>
 		);
 	}
 
 	if (status === SectionPodcastStatus.FAILED) {
 		return (
-			<TaskStateCard
+			<SidebarTaskNode
 				icon={AudioLines}
-				badge={t('document_podcast_status_failed')}
+				status={t('document_podcast_status_failed')}
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}
 				tone='danger'
-				variant='plain'
 				className={className}
 			/>
 		);
 	}
 
 	return (
-		<TaskStateCard
+		<SidebarTaskNode
 			icon={AudioLines}
-			badge={t('document_podcast_status_todo')}
+			status={t('document_podcast_status_todo')}
 			title={t('section_podcast_unset')}
 			description={t('section_podcast_placeholder_description')}
-			variant='plain'
 			className={className}
 		/>
 	);

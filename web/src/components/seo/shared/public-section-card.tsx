@@ -63,7 +63,7 @@ const PublicSectionCard = ({ section }: { section: PublicSectionInfo }) => {
 							<div
 								key={label.id}
 								className='rounded-full border border-border/60 bg-background/55 px-2.5 py-1 text-[11px] text-muted-foreground'>
-								{label.name}
+								# {label.name}
 							</div>
 						))}
 						<div className='rounded-full border border-border/45 bg-transparent px-2.5 py-1 text-[11px] text-muted-foreground/80'>

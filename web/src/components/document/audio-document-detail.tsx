@@ -392,6 +392,7 @@ const AudioDocumentDetail = ({
 						<NotFoundView
 							code={null}
 							icon={Loader2}
+							iconClassName='animate-spin'
 							eyebrow={t('document_transcribe_status_doing')}
 							title={t('document_transcribe_doing_title')}
 							description={t('document_transcribe_doing')}

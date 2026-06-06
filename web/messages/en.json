@@ -2003,6 +2003,7 @@
     "user_detail_relationship_following": "Following",
     "user_detail_relationship_not_following": "Not Following",
     "user_detail_section_total": "Sections",
+    "user_detail_document_total": "Documents",
     "user_detail_sections_title": "Published Sections",
     "user_detail_sections_description": "Browse the public sections shared by this user.",
     "user_detail_sections_search_placeholder": "Search this user's sections",
