@@ -25,6 +25,12 @@ export interface SectionGraphRequest {
      * @memberof SectionGraphRequest
      */
     section_id: number;
+    /**
+     *
+     * @type {string}
+     * @memberof SectionGraphRequest
+     */
+    mode?: string;
 }
 
 /**
@@ -46,6 +52,7 @@ export function SectionGraphRequestFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'section_id': json['section_id'],
+        'mode': json['mode'] == null ? undefined : json['mode'],
     };
 }
 
@@ -61,6 +68,7 @@ export function SectionGraphRequestToJSONTyped(value?: SectionGraphRequest | nul
     return {
         
         'section_id': value['section_id'],
+        'mode': value['mode'],
     };
 }
 

@@ -3,8 +3,12 @@ import { DocumentGraphRequest, SectionGraphRequest, GraphResponse } from '@/gene
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
 
-export const searchGraph = async (): Promise<GraphResponse> => {
-    return await request(graphApi.searchGraph)
+export type GraphMode = 'knowledge' | 'document'
+
+export const searchGraph = async (data?: { mode?: GraphMode }): Promise<GraphResponse> => {
+    return await request(graphApi.searchGraph, {
+        data: data ?? {}
+    })
 }
 
 export const searchDocumentGraph = async (data: DocumentGraphRequest): Promise<GraphResponse> => {

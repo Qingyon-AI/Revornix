@@ -1,21 +1,24 @@
 'use client';
 
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import EntityGraphCanvas, {
 	type GraphCanvasLink,
 	type GraphCanvasNode,
 } from '@/components/graph/entity-graph-canvas';
+import GraphModeTabs from '@/components/graph/graph-mode-tabs';
 import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentGraphStatus } from '@/enums/document';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import { getDocumentFreshnessState } from '@/lib/result-freshness';
 import { getDocumentDetail } from '@/service/document';
-import { searchDocumentGraph } from '@/service/graph';
+import { searchDocumentGraph, type GraphMode } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Hourglass, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTopLoader } from 'nextjs-toploader';
 
 const DocumentGraph = ({
 	document_id,
@@ -29,6 +32,19 @@ const DocumentGraph = ({
 	onHasRenderableGraphChange?: (hasRenderableGraph: boolean) => void;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const loader = useTopLoader();
+	const [mode, setMode] = useState<GraphMode>('knowledge');
+
+	const handleDocumentNodeClick = (documentId: string) => {
+		// Clicking the current document's own node would navigate to the same
+		// route (a no-op that also leaves the loader spinning), so skip it.
+		if (Number(documentId) === document_id) {
+			return;
+		}
+		loader.start();
+		router.push(`/document/detail/${documentId}`);
+	};
 
 	const {
 		data: document,
@@ -43,10 +59,11 @@ const DocumentGraph = ({
 	const freshnessState = getDocumentFreshnessState(document);
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchDocumentGraphData', document_id, graphStatus],
+		queryKey: ['searchDocumentGraphData', document_id, graphStatus, mode],
 		queryFn: async () =>
 			searchDocumentGraph({
 				document_id,
+				mode,
 			}),
 		enabled: isGraphReady,
 	});
@@ -60,7 +77,7 @@ const DocumentGraph = ({
 			renderableGraph.nodes.map((node) => ({
 				id: node.id,
 				label: node.text,
-				group: 'entity',
+				group: node.kind === 'document' ? 'document' : 'entity',
 				degree: node.degree,
 				sources:
 					node.sources?.map((source) => ({
@@ -86,6 +103,8 @@ const DocumentGraph = ({
 	useEffect(() => {
 		onHasRenderableGraphChange?.(hasRenderableGraph);
 	}, [hasRenderableGraph, onHasRenderableGraphChange]);
+
+	const modeTabs = <GraphModeTabs value={mode} onValueChange={setMode} />;
 
 	return (
 		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
@@ -174,9 +193,16 @@ const DocumentGraph = ({
 							edges={edges}
 							className='h-full w-full'
 							showSearch={showSearch}
+							toolbar={modeTabs}
+							onDocumentNodeClick={handleDocumentNodeClick}
 						/>
 					) : null}
 				</>
+			) : null}
+			{isGraphReady && !hasRenderableGraph ? (
+				<div className='absolute left-1/2 top-3 z-30 -translate-x-1/2'>
+					{modeTabs}
+				</div>
 			) : null}
 		</div>
 	);

@@ -46,7 +46,13 @@ export interface Node {
      */
     degree: number;
     /**
-     * 
+     *
+     * @type {string}
+     * @memberof Node
+     */
+    kind?: string;
+    /**
+     *
      * @type {Array<NodeSource>}
      * @memberof Node
      */
@@ -76,6 +82,7 @@ export function NodeFromJSONTyped(json: any, ignoreDiscriminator: boolean): Node
         'id': json['id'],
         'text': json['text'],
         'degree': json['degree'],
+        'kind': json['kind'] == null ? undefined : json['kind'],
         'sources': json['sources'] == null ? undefined : ((json['sources'] as Array<any>).map(NodeSourceFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function NodeToJSONTyped(value?: Node | null, ignoreDiscriminator: boolea
         'id': value['id'],
         'text': value['text'],
         'degree': value['degree'],
+        'kind': value['kind'],
         'sources': value['sources'] == null ? undefined : ((value['sources'] as Array<any>).map(NodeSourceToJSON)),
     };
 }

@@ -62,6 +62,126 @@ async def _load_graph_for_documents(doc_ids: list[int]) -> tuple[list[schemas.gr
         return list(unique_nodes.values()), edges
 
 
+async def _load_document_graph_for_documents(
+    doc_ids: list[int],
+) -> tuple[list[schemas.graph.Node], list[schemas.graph.Edge]]:
+    """Document-to-document co-occurrence graph for an explicit document set.
+
+    Two documents are linked when they mention at least one common entity; the
+    edge weight is the number of shared entities.
+    """
+    if not doc_ids:
+        return [], []
+
+    async with async_neo4j_driver.session() as session:
+        edge_query = """
+            UNWIND $doc_ids AS doc_id1
+            UNWIND $doc_ids AS doc_id2
+            WITH doc_id1, doc_id2
+            WHERE doc_id1 < doc_id2
+            MATCH (d1:Document {id: doc_id1})-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(e:Entity)
+                  <-[:MENTIONS]-(:Chunk)<-[:HAS_CHUNK]-(d2:Document {id: doc_id2})
+            WITH d1, d2, count(DISTINCT e) AS weight
+            RETURN d1.id AS src_id, d2.id AS tgt_id, weight
+        """
+        node_query = """
+            UNWIND $doc_ids AS doc_id
+            MATCH (d:Document {id: doc_id})
+            RETURN d.id AS id, d.title AS title
+        """
+        edges_result = await session.run(edge_query, doc_ids=doc_ids)
+        edges: list[schemas.graph.Edge] = []
+        degree_by_id: dict[str, int] = {}
+        async for record in edges_result:
+            src_id = str(record["src_id"])
+            tgt_id = str(record["tgt_id"])
+            weight = record.get("weight") or 0
+            edges.append(
+                schemas.graph.Edge(src_node=src_id, tgt_node=tgt_id, weight=weight)
+            )
+            degree_by_id[src_id] = degree_by_id.get(src_id, 0) + 1
+            degree_by_id[tgt_id] = degree_by_id.get(tgt_id, 0) + 1
+
+        nodes_result = await session.run(node_query, doc_ids=doc_ids)
+        nodes: list[schemas.graph.Node] = []
+        async for record in nodes_result:
+            node_id = str(record["id"])
+            nodes.append(
+                schemas.graph.Node(
+                    id=node_id,
+                    text=record.get("title") or "",
+                    degree=degree_by_id.get(node_id, 0),
+                    kind="document",
+                )
+            )
+        return nodes, edges
+
+
+async def _load_document_graph_for_user(
+    user_id: int,
+) -> tuple[list[schemas.graph.Node], list[schemas.graph.Edge]]:
+    """Document-to-document co-occurrence graph across all of a user's documents."""
+    async with async_neo4j_driver.session() as session:
+        edge_query = """
+            MATCH (d1:Document)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(e:Entity)
+                  <-[:MENTIONS]-(:Chunk)<-[:HAS_CHUNK]-(d2:Document)
+            WHERE d1.creator_id = $user_id AND d2.creator_id = $user_id AND d1.id < d2.id
+            WITH d1, d2, count(DISTINCT e) AS weight
+            RETURN d1.id AS src_id, d2.id AS tgt_id, weight
+        """
+        node_query = """
+            MATCH (d:Document)
+            WHERE d.creator_id = $user_id
+            RETURN d.id AS id, d.title AS title
+        """
+        edges_result = await session.run(edge_query, user_id=user_id)
+        edges: list[schemas.graph.Edge] = []
+        degree_by_id: dict[str, int] = {}
+        async for record in edges_result:
+            src_id = str(record["src_id"])
+            tgt_id = str(record["tgt_id"])
+            weight = record.get("weight") or 0
+            edges.append(
+                schemas.graph.Edge(src_node=src_id, tgt_node=tgt_id, weight=weight)
+            )
+            degree_by_id[src_id] = degree_by_id.get(src_id, 0) + 1
+            degree_by_id[tgt_id] = degree_by_id.get(tgt_id, 0) + 1
+
+        nodes_result = await session.run(node_query, user_id=user_id)
+        nodes: list[schemas.graph.Node] = []
+        async for record in nodes_result:
+            node_id = str(record["id"])
+            nodes.append(
+                schemas.graph.Node(
+                    id=node_id,
+                    text=record.get("title") or "",
+                    degree=degree_by_id.get(node_id, 0),
+                    kind="document",
+                )
+            )
+        return nodes, edges
+
+
+async def _load_document_graph_for_document(
+    doc_id: int,
+) -> tuple[list[schemas.graph.Node], list[schemas.graph.Edge]]:
+    """Ego document graph: the document plus every other document that shares an
+    entity with it, and the co-occurrence edges among that neighbourhood."""
+    async with async_neo4j_driver.session() as session:
+        neighbour_query = """
+            MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(e:Entity)
+                  <-[:MENTIONS]-(:Chunk)<-[:HAS_CHUNK]-(other:Document)
+            WHERE other.id <> $doc_id
+            RETURN DISTINCT other.id AS id
+        """
+        neighbour_result = await session.run(neighbour_query, doc_id=doc_id)
+        doc_ids = [doc_id]
+        async for record in neighbour_result:
+            doc_ids.append(record["id"])
+
+    return await _load_document_graph_for_documents(doc_ids)
+
+
 async def _load_graph_for_user(user_id: int) -> tuple[list[schemas.graph.Node], list[schemas.graph.Edge]]:
     async with async_neo4j_driver.session() as session:
         entity_query = """
@@ -134,9 +254,7 @@ async def section_graph(
         db=db,
         section_id=section_id
     )
-    if db_section_publish is not None:
-        nodes, edges = await _load_graph_for_documents(document_ids)
-    else:
+    if db_section_publish is None:
         if user is None:
             raise schemas.error.CustomException("You don't have permission to view this section", code=403)
 
@@ -147,6 +265,10 @@ async def section_graph(
 
         if user.id not in [user.id for user in users]:
             raise schemas.error.CustomException("You don't have permission to view this section", code=403)
+
+    if section_graph_request.mode == schemas.graph.GraphMode.DOCUMENT:
+        nodes, edges = await _load_document_graph_for_documents(document_ids)
+    else:
         nodes, edges = await _load_graph_for_documents(document_ids)
 
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges)
@@ -187,13 +309,20 @@ async def document_graph(
             code=403,
         )
 
-    nodes, edges = await _load_graph_for_documents([doc_id])
+    if document_graph_request.mode == schemas.graph.GraphMode.DOCUMENT:
+        nodes, edges = await _load_document_graph_for_document(doc_id)
+    else:
+        nodes, edges = await _load_graph_for_documents([doc_id])
 
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges)
 
 @graph_router.post("/search", response_model=schemas.graph.GraphResponse)
 async def graph(
+    graph_search_request: schemas.graph.GraphSearchRequest = schemas.graph.GraphSearchRequest(),
     user: models.user.User = Depends(get_current_user)
 ):
-    nodes, edges = await _load_graph_for_user(user.id)
+    if graph_search_request.mode == schemas.graph.GraphMode.DOCUMENT:
+        nodes, edges = await _load_document_graph_for_user(user.id)
+    else:
+        nodes, edges = await _load_graph_for_user(user.id)
     return schemas.graph.GraphResponse(nodes=nodes, edges=edges)

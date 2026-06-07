@@ -25,6 +25,12 @@ export interface DocumentGraphRequest {
      * @memberof DocumentGraphRequest
      */
     document_id: number;
+    /**
+     *
+     * @type {string}
+     * @memberof DocumentGraphRequest
+     */
+    mode?: string;
 }
 
 /**
@@ -46,6 +52,7 @@ export function DocumentGraphRequestFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'document_id': json['document_id'],
+        'mode': json['mode'] == null ? undefined : json['mode'],
     };
 }
 
@@ -61,6 +68,7 @@ export function DocumentGraphRequestToJSONTyped(value?: DocumentGraphRequest | n
     return {
         
         'document_id': value['document_id'],
+        'mode': value['mode'],
     };
 }
 

@@ -6,7 +6,8 @@ import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
 import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import NodeSourceDialog, {
 	type GraphNodeWithSource,
 } from './node-source-dialog';
@@ -44,6 +45,8 @@ type EntityGraphCanvasProps = {
 	className?: string;
 	statsText?: string;
 	showSearch?: boolean;
+	toolbar?: ReactNode;
+	onDocumentNodeClick?: (documentId: string) => void;
 };
 
 const ZOOM_MIN = 0.68;
@@ -70,6 +73,7 @@ const getGraphTheme = (theme: string) => {
 			nodeEnd: '#67e8f9',
 			nodeStroke: '#e2e8f0',
 			nodeMutedStroke: '#0f172a',
+			documentNode: '#f59e0b',
 			link: '#334155',
 			linkActive: '#7dd3fc',
 			labelText: '#f8fafc',
@@ -83,6 +87,7 @@ const getGraphTheme = (theme: string) => {
 		nodeEnd: '#0f766e',
 		nodeStroke: '#f8fafc',
 		nodeMutedStroke: '#cbd5e1',
+		documentNode: '#d97706',
 		link: '#cbd5e1',
 		linkActive: '#0f766e',
 		labelText: '#0f172a',
@@ -174,8 +179,17 @@ const EntityGraphCanvas = ({
 	className,
 	statsText,
 	showSearch = true,
+	toolbar,
+	onDocumentNodeClick,
 }: EntityGraphCanvasProps) => {
+	const t = useTranslations();
+	const hasDocumentNodes = inputNodes.some((node) => node.group === 'document');
+	const hasEntityNodes = inputNodes.some(
+		(node) => (node.group ?? 'entity') === 'entity',
+	);
 	const svgRef = useRef<SVGSVGElement | null>(null);
+	const onDocumentNodeClickRef = useRef(onDocumentNodeClick);
+	onDocumentNodeClickRef.current = onDocumentNodeClick;
 	const selectedNodeIdRef = useRef<string | null>(null);
 	const highlightNodeRef = useRef<(nodeId: string | null) => void>(() => {});
 	const searchHighlightRef = useRef<
@@ -497,7 +511,11 @@ const EntityGraphCanvas = ({
 				.data(nodes)
 				.join('circle')
 				.attr('r', (node) => node.renderRadius)
-				.attr('fill', (node) => fillScale(node.degree ?? 1))
+				.attr('fill', (node) =>
+					node.group === 'document'
+						? graphTheme.documentNode
+						: fillScale(node.degree ?? 1),
+				)
 				.attr('stroke', graphTheme.nodeStroke)
 				.attr('stroke-width', 1.8)
 				.style('cursor', 'pointer')
@@ -516,6 +534,10 @@ const EntityGraphCanvas = ({
 				})
 				.on('click', (event, node) => {
 					event.stopPropagation();
+					if (node.group === 'document' && onDocumentNodeClickRef.current) {
+						onDocumentNodeClickRef.current(node.id);
+						return;
+					}
 					selectedNodeIdRef.current = node.id;
 					setSelectedNode(node);
 					applyHighlight(node);
@@ -1114,8 +1136,14 @@ const EntityGraphCanvas = ({
 				className,
 			)}>
 			<svg ref={svgRef} className='relative z-10 block h-full w-full' />
-			{showSearch ? (
-				<div className='absolute left-4 top-4 z-20 flex w-[min(24rem,calc(100%-6rem))] max-w-full items-center gap-2 rounded-2xl border border-border/70 bg-background/92 p-2 shadow-sm backdrop-blur'>
+			{showSearch || toolbar ? (
+				<div
+					className={cn(
+						'pointer-events-none absolute inset-x-4 top-4 z-20 flex items-start gap-3',
+						showSearch ? 'justify-between' : 'justify-start',
+					)}>
+					{showSearch ? (
+						<div className='pointer-events-auto flex w-[min(24rem,calc(100%-12rem))] max-w-full items-center gap-2 rounded-2xl border border-border/70 bg-background/92 p-2 backdrop-blur'>
 					<div className='flex min-w-0 flex-1 items-center gap-2'>
 						<Search className='size-4 shrink-0 text-muted-foreground' />
 						<Input
@@ -1184,11 +1212,51 @@ const EntityGraphCanvas = ({
 							<span className='sr-only'>Next match</span>
 						</Button>
 					</div>
+						</div>
+					) : null}
+					{toolbar ? (
+						<div className='pointer-events-auto'>{toolbar}</div>
+					) : null}
 				</div>
 			) : null}
 			{statsText ? (
-				<div className='pointer-events-none absolute bottom-4 right-4 z-20 rounded-full border border-border/70 bg-background/88 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur'>
+				<div className='pointer-events-none absolute bottom-4 right-4 z-20 rounded-full border border-border/70 bg-background/88 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur'>
 					{statsText}
+				</div>
+			) : null}
+			{hasEntityNodes || hasDocumentNodes ? (
+				<div className='pointer-events-none absolute bottom-4 left-4 z-20 flex flex-col gap-1.5 rounded-2xl border border-border/70 bg-background/88 px-3 py-2 text-xs text-muted-foreground backdrop-blur'>
+					{hasEntityNodes ? (
+						<div className='flex items-center gap-2'>
+							<span
+								className='size-3 shrink-0 rounded-full'
+								style={{
+									backgroundColor: getGraphTheme(resolvedTheme ?? 'light')
+										.nodeEnd,
+								}}
+							/>
+							<span>{t('graph_legend_entity')}</span>
+						</div>
+					) : null}
+					{hasDocumentNodes ? (
+						<div className='flex items-center gap-2'>
+							<span
+								className='size-3 shrink-0 rounded-full'
+								style={{
+									backgroundColor: getGraphTheme(resolvedTheme ?? 'light')
+										.documentNode,
+								}}
+							/>
+							<span>{t('graph_legend_document')}</span>
+						</div>
+					) : null}
+					<div className='flex items-center gap-2'>
+						<span className='flex shrink-0 items-center gap-0.5'>
+							<span className='size-1.5 rounded-full bg-muted-foreground/60' />
+							<span className='size-3 rounded-full bg-muted-foreground/60' />
+						</span>
+						<span>{t('graph_legend_degree')}</span>
+					</div>
 				</div>
 			) : null}
 			<NodeSourceDialog
