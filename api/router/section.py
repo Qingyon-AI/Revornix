@@ -20,6 +20,7 @@ from common.celery.app import (
     start_trigger_user_notification_event,
 )
 from common.dependencies import get_async_db, get_current_user, get_request_timezone
+from common.remote_file_cleanup import delete_section_remote_files
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.section_schedule import build_day_section_trigger
 from common.timezone import (
@@ -902,6 +903,13 @@ async def delete_section(
     )
     if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
         raise schemas.error.CustomException("You don't have permission to delete this section", code=403)
+
+    db_section = await crud.section.get_section_by_section_id_async(
+        db=db,
+        section_id=section_delete_request.section_id
+    )
+    if db_section is not None:
+        await delete_section_remote_files(db=db, sections=[db_section])
 
     db_users = await crud.section.get_users_for_section_by_section_id_async(
         db=db,

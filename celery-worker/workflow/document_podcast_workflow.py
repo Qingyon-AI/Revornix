@@ -10,6 +10,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.file import register_remote_file
 from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_document_podcast_graph_context
 from data.common import (
@@ -274,23 +275,42 @@ async def _generate_document_podcast(
         await ensure_document_active(db=db, document_id=document_id)
 
     upload_started_at = time.perf_counter()
+    podcast_script_content = json.dumps(
+        {
+            "version": 1,
+            "title": state.get("document_title"),
+            "plain_text": synthesis_result.script_text or prepared_markdown_content,
+            "segments": synthesis_result.script_segments or [],
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_file_name,
         content=synthesis_result.audio_bytes,
         content_type="audio/mpeg"
     )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=podcast_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="audio/mpeg",
+        size_bytes=len(synthesis_result.audio_bytes),
+        source="document_podcast",
+    )
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_script_file_name,
-        content=json.dumps(
-            {
-                "version": 1,
-                "title": state.get("document_title"),
-                "plain_text": synthesis_result.script_text or prepared_markdown_content,
-                "segments": synthesis_result.script_segments or [],
-            },
-            ensure_ascii=False,
-        ).encode("utf-8"),
+        content=podcast_script_content,
         content_type="application/json",
+    )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=podcast_script_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="application/json",
+        size_bytes=len(podcast_script_content),
+        source="document_podcast_script",
     )
     set_stage_metrics(
         upload_audio_bytes=len(synthesis_result.audio_bytes),

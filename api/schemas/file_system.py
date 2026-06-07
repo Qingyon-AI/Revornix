@@ -5,6 +5,7 @@ from .base import BaseModel
 
 class GenericFileSystemUploadResponse(BaseModel):
     file_path: str
+    stored_file_id: int | None = None
 
 class PresignUploadURLRequest(BaseModel):
     file_path: str
@@ -15,10 +16,56 @@ class PresignUploadURLResponse(BaseModel):
     file_path: str
     expiration: datetime
     fields: dict | None = None
+    stored_file_id: int | None = None
 
 class MigrateFileSystemRequest(BaseModel):
     source_user_file_system_id: int
     target_user_file_system_id: int
+    stored_file_ids: list[int] | None = None
+
+class StoredFileSearchRequest(BaseModel):
+    keyword: str | None = None
+    user_file_system_id: int | None = None
+    start: int | None = None
+    limit: int = 50
+
+class StoredFileInfo(BaseModel):
+    id: int
+    owner_user_id: int
+    user_file_system_id: int
+    file_system_id: int
+    path: str
+    content_type: str | None = None
+    size_bytes: int | None = None
+    source: str | None = None
+    create_time: datetime
+    update_time: datetime | None = None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )
+
+class StoredFileSearchResponse(BaseModel):
+    total: int
+    start: int | None = None
+    limit: int
+    has_more: bool
+    next_start: int | None = None
+    data: list[StoredFileInfo]
+
+class StoredFileSyncRequest(BaseModel):
+    user_file_system_id: int | None = None
+
+class StoredFileSyncResponse(BaseModel):
+    synced: int
+    candidates: int
+    total: int
+
+class StoredFileMigrateResponse(BaseModel):
+    migrated: int
+    skipped: int
+    failed: int
 
 class FileSystemInfoRequest(BaseModel):
     file_system_id: int

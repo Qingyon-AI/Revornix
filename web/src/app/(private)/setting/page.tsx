@@ -15,6 +15,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { FolderSync } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import DefaultDocumentReadMarkReasonChoose from '@/components/setting/default-document-read-mark-reason-choose';
 import FileSystemManage from '@/components/setting/file-system-manage';
 import DefaultFileSystemChange from '@/components/setting/default-file-system-change';
@@ -76,6 +79,22 @@ const SettingPage = () => {
 						</Label>
 						<div className='flex flex-col gap-2'>
 							<DefaultFileSystemChange />
+						</div>
+					</div>
+					<Separator />
+					<div
+						className='flex justify-between items-center'
+						id='file_system_files_manage'>
+						<Label className='flex flex-col gap-2 items-start'>
+							{t('setting_file_system_files_manage')}
+						</Label>
+						<div className='flex flex-col gap-2'>
+							<Button asChild variant='outline'>
+								<Link href='/setting/file-system-migration'>
+									<FolderSync className='size-4' />
+									{t('setting_file_system_manage_goto')}
+								</Link>
+							</Button>
 						</div>
 					</div>
 				</CardContent>

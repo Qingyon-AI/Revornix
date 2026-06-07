@@ -21,6 +21,8 @@ class RemoteFileServiceProtocol():
         self.file_service_description_zh = file_service_description_zh
         self.file_service_config = file_service_config
         self.user_id = user_id
+        self.user_file_system_id: int | None = None
+        self.file_system_id: int | None = None
         
     def set_config(self, config: dict[str, Any]) -> None:
         self.file_service_config = json.dumps(config)

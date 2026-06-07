@@ -12,7 +12,7 @@ import crud
 import models
 import schemas
 from common.celery.app import start_trigger_user_notification_event
-from common.document_chunk_snapshot import delete_document_chunk_snapshots
+from common.remote_file_cleanup import delete_document_remote_files
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
     decode_jwt_token,
@@ -1017,7 +1017,7 @@ async def delete_user(
     )
     document_ids = [document.id for document in db_documents]
 
-    await delete_document_chunk_snapshots(
+    await delete_document_remote_files(
         db=db,
         documents=db_documents,
     )

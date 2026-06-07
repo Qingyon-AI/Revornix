@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
+from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
@@ -267,6 +268,15 @@ async def _convert_document_content(
         file_path=md_file_name,
         content=content.encode("utf-8"),
         content_type="text/plain"
+    )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=md_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="text/plain",
+        size_bytes=len(content.encode("utf-8")),
+        source="document_convert",
     )
 
     state["md_file_name"] = md_file_name

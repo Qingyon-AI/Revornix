@@ -11,6 +11,7 @@ import schemas
 from proxy.file_system_proxy import FileSystemProxy
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
+from common.file import register_remote_file
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.stt_capability import engine_supports_meeting_mode
 from common.section_schedule import build_day_section_trigger
@@ -385,6 +386,15 @@ async def create_document_for_user(
             file_path=md_file_name,
             content=document_create_request.content.encode("utf-8"),
             content_type="text/plain",
+        )
+        await register_remote_file(
+            user_id=user.id,
+            file_path=md_file_name,
+            user_file_system_id=remote_file_service.user_file_system_id,
+            file_system_id=remote_file_service.file_system_id,
+            content_type="text/plain",
+            size_bytes=len(document_create_request.content.encode("utf-8")),
+            source="quick_note",
         )
         await crud.document.create_quick_note_document_async(
             db=db,

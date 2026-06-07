@@ -10,6 +10,7 @@ from base_implement.stt_engine_base import Segment
 
 from common.logger import exception_logger, info_logger, log_event
 from common.document_guard import ensure_document_active
+from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
@@ -226,11 +227,30 @@ async def _transcribe_document_audio(
         content=md_content.encode("utf-8"),
         content_type="text/plain",
     )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=md_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="text/plain",
+        size_bytes=len(md_content.encode("utf-8")),
+        source="document_transcribe",
+    )
     if segments_file_name is not None:
+        segments_content = _serialize_segments(segments).encode("utf-8")
         await remote_file_service.upload_raw_content_to_path(
             file_path=segments_file_name,
-            content=_serialize_segments(segments).encode("utf-8"),
+            content=segments_content,
             content_type="application/json",
+        )
+        await register_remote_file(
+            user_id=user_id,
+            file_path=segments_file_name,
+            user_file_system_id=remote_file_service.user_file_system_id,
+            file_system_id=remote_file_service.file_system_id,
+            content_type="application/json",
+            size_bytes=len(segments_content),
+            source="document_transcribe_segments",
         )
 
     async with async_session_context() as db:
