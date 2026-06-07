@@ -14,7 +14,7 @@ import models
 import schemas
 from common.dependencies import get_async_db, get_current_user
 from common.jwt_utils import create_token
-from common.document_chunk_snapshot import delete_document_chunk_snapshots
+from common.remote_file_cleanup import delete_document_remote_files, delete_section_remote_files
 from common.resource_plan_access import is_privileged_user
 from common.upload_limits import validate_file_upload_size
 from config.base import UNION_PAY_API_PREFIX
@@ -284,7 +284,7 @@ async def _delete_user_with_related_resources(
     )
     document_ids = [document.id for document in db_documents]
 
-    await delete_document_chunk_snapshots(
+    await delete_document_remote_files(
         db=db,
         documents=db_documents,
     )
@@ -366,6 +366,7 @@ async def _delete_user_with_related_resources(
         db=db,
         user_id=user.id,
     )
+    await delete_section_remote_files(db=db, sections=db_sections)
     for db_section in db_sections:
         db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,
@@ -1332,7 +1333,7 @@ async def delete_admin_documents(
             code=404,
         )
 
-    await delete_document_chunk_snapshots(
+    await delete_document_remote_files(
         db=db,
         documents=documents,
     )
@@ -1522,6 +1523,8 @@ async def delete_admin_sections(
         )
         if db_section is None:
             raise schemas.error.CustomException(f"Section not found: {section_id}", code=404)
+
+        await delete_section_remote_files(db=db, sections=[db_section])
 
         db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,

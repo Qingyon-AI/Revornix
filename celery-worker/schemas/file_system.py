@@ -12,10 +12,12 @@ class PresignUploadURLResponse(BaseModel):
     file_path: str
     expiration: datetime
     fields: dict | None = None
+    stored_file_id: int | None = None
 
 class MigrateFileSystemRequest(BaseModel):
     source_user_file_system_id: int
     target_user_file_system_id: int
+    stored_file_ids: list[int] | None = None
 
 class FileSystemInfoRequest(BaseModel):
     file_system_id: int

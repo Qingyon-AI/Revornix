@@ -35,6 +35,8 @@ class FileSystemProxy:
             raise Exception("Unknown file system category")
 
         remote_file_service.user_id = user_id
+        remote_file_service.user_file_system_id = db_user_file_system.id
+        remote_file_service.file_system_id = db_file_system.id
         if db_user_file_system.config_json is not None:
             file_service_config = decrypt_file_system_config(
                 db_user_file_system.config_json
@@ -83,6 +85,36 @@ class FileSystemProxy:
         except Exception as e:
             exception_logger.error(f'''Failed to create file system proxy: {e}''')
             raise
+
+    @classmethod
+    async def create_for_user_file_system(
+        cls,
+        *,
+        user_id: int,
+        user_file_system_id: int,
+    ) -> RemoteFileServiceProtocol:
+        async with async_session_context() as db:
+            db_user_file_system = await crud.file_system.get_user_file_system_by_id_async(
+                db=db,
+                user_file_system_id=user_file_system_id,
+            )
+            if db_user_file_system is None:
+                raise Exception("User file system not found")
+            if db_user_file_system.user_id != user_id:
+                raise Exception("User file system owner mismatch")
+
+            db_file_system = await crud.file_system.get_file_system_by_id_async(
+                db=db,
+                file_system_id=db_user_file_system.file_system_id,
+            )
+            if db_file_system is None:
+                raise Exception("File system not found")
+
+        return await cls._build_remote_file_service(
+            user_id=user_id,
+            db_user_file_system=db_user_file_system,
+            db_file_system=db_file_system,
+        )
 
     @classmethod
     async def create_for_users(

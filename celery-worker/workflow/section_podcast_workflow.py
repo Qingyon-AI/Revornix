@@ -9,6 +9,7 @@ from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import SectionPodcastStatus, UserSectionRole
@@ -179,23 +180,42 @@ async def _generate_section_podcast(
     podcast_file_name = f"files/{uuid.uuid4().hex}.mp3"
     podcast_script_file_name = f"files/{uuid.uuid4().hex}.json"
     upload_started_at = time.perf_counter()
+    podcast_script_content = json.dumps(
+        {
+            "version": 1,
+            "title": state.get("section_title"),
+            "plain_text": synthesis_result.script_text or prepared_markdown_content,
+            "segments": synthesis_result.script_segments or [],
+        },
+        ensure_ascii=False,
+    ).encode("utf-8")
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_file_name,
         content=synthesis_result.audio_bytes,
         content_type="audio/mpeg"
     )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=podcast_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="audio/mpeg",
+        size_bytes=len(synthesis_result.audio_bytes),
+        source="section_podcast",
+    )
     await remote_file_service.upload_raw_content_to_path(
         file_path=podcast_script_file_name,
-        content=json.dumps(
-            {
-                "version": 1,
-                "title": state.get("section_title"),
-                "plain_text": synthesis_result.script_text or prepared_markdown_content,
-                "segments": synthesis_result.script_segments or [],
-            },
-            ensure_ascii=False,
-        ).encode("utf-8"),
+        content=podcast_script_content,
         content_type="application/json"
+    )
+    await register_remote_file(
+        user_id=user_id,
+        file_path=podcast_script_file_name,
+        user_file_system_id=remote_file_service.user_file_system_id,
+        file_system_id=remote_file_service.file_system_id,
+        content_type="application/json",
+        size_bytes=len(podcast_script_content),
+        source="section_podcast_script",
     )
     set_stage_metrics(
         upload_audio_bytes=len(synthesis_result.audio_bytes),

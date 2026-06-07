@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import crud
 import models
 import schemas
-from common.document_chunk_snapshot import delete_document_chunk_snapshots
+from common.remote_file_cleanup import delete_document_remote_files
 from common.dependencies import get_async_db, get_current_user
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
@@ -148,7 +148,7 @@ async def delete_document(
     )
     document_ids = [document.id for document in documents]
 
-    await delete_document_chunk_snapshots(
+    await delete_document_remote_files(
         db=db,
         documents=documents,
     )

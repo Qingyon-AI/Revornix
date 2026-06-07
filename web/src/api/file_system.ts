@@ -10,4 +10,7 @@ export default {
     getPresignUploadURL: API_PREFIX + "/file-system/presign-upload-url",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
     uploadFileToGenericFileSystem: API_PREFIX + "/file-system/generic-s3/upload",
+    searchStoredFiles: API_PREFIX + "/file-system/files/search",
+    syncStoredFiles: API_PREFIX + "/file-system/files/sync",
+    migrateStoredFiles: API_PREFIX + "/file-system/files/migrate",
 }

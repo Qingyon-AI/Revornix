@@ -18,6 +18,7 @@ from common.celery.app import (
     start_process_section,
 )
 from common.document_creation import create_document_for_user
+from common.file import register_remote_file
 from proxy.file_system_proxy import FileSystemProxy
 from common.dependencies import (
     check_deployed_by_official,
@@ -1069,6 +1070,15 @@ async def update_document(
             file_path=db_quick_note_document.md_file_name,
             content=document_update_request.content.encode("utf-8"),
             content_type="text/plain",
+        )
+        await register_remote_file(
+            user_id=user.id,
+            file_path=db_quick_note_document.md_file_name,
+            user_file_system_id=remote_file_service.user_file_system_id,
+            file_system_id=remote_file_service.file_system_id,
+            content_type="text/plain",
+            size_bytes=len(document_update_request.content.encode("utf-8")),
+            source="quick_note_update",
         )
         db_document.content_update_time = now
     if document_update_request.labels is not None:
