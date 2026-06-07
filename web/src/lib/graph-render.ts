@@ -35,6 +35,7 @@ const normalizeNode = (node: Node | null | undefined): Node | null => {
 		id: node.id.trim(),
 		text: node.text.trim(),
 		degree: node.degree,
+		kind: node.kind,
 		sources: node.sources
 			?.map((source) => normalizeNodeSource(source))
 			.filter((source): source is NodeSource => Boolean(source)),

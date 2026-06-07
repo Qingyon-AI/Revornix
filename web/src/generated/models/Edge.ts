@@ -26,11 +26,17 @@ export interface Edge {
      */
     src_node: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof Edge
      */
     tgt_node: string;
+    /**
+     *
+     * @type {number}
+     * @memberof Edge
+     */
+    weight?: number | null;
 }
 
 /**
@@ -54,6 +60,7 @@ export function EdgeFromJSONTyped(json: any, ignoreDiscriminator: boolean): Edge
         
         'src_node': json['src_node'],
         'tgt_node': json['tgt_node'],
+        'weight': json['weight'] == null ? undefined : json['weight'],
     };
 }
 
@@ -70,6 +77,7 @@ export function EdgeToJSONTyped(value?: Edge | null, ignoreDiscriminator: boolea
         
         'src_node': value['src_node'],
         'tgt_node': value['tgt_node'],
+        'weight': value['weight'],
     };
 }
 

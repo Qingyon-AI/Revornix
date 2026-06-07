@@ -1,21 +1,24 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import EntityGraphCanvas, {
 	type GraphCanvasLink,
 	type GraphCanvasNode,
 } from '@/components/graph/entity-graph-canvas';
+import GraphModeTabs from '@/components/graph/graph-mode-tabs';
 import GraphStatePanel from '@/components/graph/graph-state-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SectionProcessStatus } from '@/enums/section';
 import { getRenderableGraphData } from '@/lib/graph-render';
 import { getSectionFreshnessState } from '@/lib/result-freshness';
 import { getSectionDetail } from '@/service/section';
-import { searchSectionGraph } from '@/service/graph';
+import { searchSectionGraph, type GraphMode } from '@/service/graph';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTopLoader } from 'nextjs-toploader';
 
 const SectionGraph = ({
 	section_id,
@@ -27,6 +30,9 @@ const SectionGraph = ({
 	showStaleHint?: boolean;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
+	const loader = useTopLoader();
+	const [mode, setMode] = useState<GraphMode>('knowledge');
 	const {
 		data: section,
 		isError: isSectionDetailError,
@@ -46,10 +52,11 @@ const SectionGraph = ({
 			: null;
 
 	const { data, isLoading, isError, error, isFetched } = useQuery({
-		queryKey: ['searchDocumentGraph', section_id, processStatus],
+		queryKey: ['searchDocumentGraph', section_id, processStatus, mode],
 		queryFn: async () =>
 			searchSectionGraph({
 				section_id,
+				mode,
 			}),
 	});
 
@@ -62,7 +69,7 @@ const SectionGraph = ({
 			renderableGraph.nodes.map((node) => ({
 				id: node.id,
 				label: node.text,
-				group: 'entity',
+				group: node.kind === 'document' ? 'document' : 'entity',
 				degree: node.degree,
 				sources:
 					node.sources?.map((source) => ({
@@ -89,6 +96,8 @@ const SectionGraph = ({
 			: null;
 	const hasGraphError = Boolean(graphErrorMessage);
 
+	const modeTabs = <GraphModeTabs value={mode} onValueChange={setMode} />;
+
 	return (
 		<div className='relative flex h-full min-h-40 w-full items-center justify-center'>
 			{!section && !isSectionDetailError ? (
@@ -98,7 +107,7 @@ const SectionGraph = ({
 			{nodes.length > 0 ? (
 				<>
 					{staleHint ? (
-						<div className='pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 shadow-sm dark:text-amber-200'>
+						<div className='pointer-events-none absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 shadow-sm dark:text-amber-200'>
 							<AlertCircle className='size-3.5' />
 							<span>{staleHint}</span>
 						</div>
@@ -108,8 +117,18 @@ const SectionGraph = ({
 						edges={edges}
 						className='h-full w-full'
 						showSearch={showSearch}
+						toolbar={modeTabs}
+						onDocumentNodeClick={(documentId) => {
+							loader.start();
+							router.push(`/document/detail/${documentId}`);
+						}}
 					/>
 				</>
+			) : null}
+			{section && !isSectionDetailError && nodes.length === 0 ? (
+				<div className='absolute left-1/2 top-3 z-30 -translate-x-1/2'>
+					{modeTabs}
+				</div>
 			) : null}
 			{!nodes.length && !hasIncompleteGraphPayload && hasGraphError ? (
 				<GraphStatePanel
