@@ -87,6 +87,7 @@ async def create_section_comment(
     parent_id = section_comment_create_request.parent_id
     root_id: int | None = None
     reply_user_id: int | None = None
+    parent_comment_creator_id: int | None = None
 
     if parent_id is not None:
         db_parent = await crud.section.get_section_comment_by_id_async(
@@ -97,6 +98,7 @@ async def create_section_comment(
             raise schemas.error.CustomException("Parent comment not found", code=404)
         # Flatten to two levels: root_id is parent's root_id if it has one, else parent.id
         root_id = db_parent.root_id if db_parent.root_id is not None else db_parent.id
+        parent_comment_creator_id = db_parent.creator_id
         # If replying to a reply, capture the user being replied to
         if db_parent.root_id is not None:
             reply_user_id = db_parent.creator_id
@@ -117,18 +119,23 @@ async def create_section_comment(
         section_id=section_comment_create_request.section_id,
         filter_roles=[UserSectionRole.MEMBER, UserSectionRole.CREATOR]
     )
+    recipient_ids = {db_user.id for db_user in db_users}
+    # The author of the comment being replied to must be notified too, even if
+    # they only participate as a subscriber.
+    if parent_comment_creator_id is not None:
+        recipient_ids.add(parent_comment_creator_id)
     await asyncio.gather(*[
         asyncio.to_thread(
             start_trigger_user_notification_event.delay,
-            user_id=db_user.id,
+            user_id=recipient_id,
             trigger_event_uuid=NotificationTriggerEventUUID.SECTION_COMMENTED.value,
             params={
                 "section_id": section_comment_create_request.section_id,
-                "receiver_id": db_user.id,
+                "receiver_id": recipient_id,
                 "comment_id": db_comment.id,
             },
         )
-        for db_user in db_users if db_user.id != user.id
+        for recipient_id in recipient_ids if recipient_id != user.id
     ])
     return schemas.common.SuccessResponse()
 
