@@ -65,7 +65,9 @@ class SectionContentUpdatedNotificationTemplate(NotificationTemplate):
                 file_name=section_cover
             )
 
-        if section_role == UserSectionRole.MEMBER:
+        if section_role == UserSectionRole.CREATOR:
+            relation_phrase = "you created"
+        elif section_role == UserSectionRole.MEMBER:
             relation_phrase = "you participate in"
         elif section_role == UserSectionRole.SUBSCRIBER:
             relation_phrase = "you subscribed to"

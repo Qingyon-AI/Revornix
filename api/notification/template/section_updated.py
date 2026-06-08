@@ -19,8 +19,8 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
     ):
         super().__init__(
             uuid='4b655b12996540e1b6ee23d16a093bf6',
-            name="Section Updated Template",
-            name_zh="专栏更新通知模版",
+            name="Section Process Completed Template",
+            name_zh="专栏处理完成通知模版",
             description="This is a section updated template",
             description_zh="这是一个专栏更新通知模板"
         )
@@ -65,7 +65,9 @@ class SectionUpdatedNotificationTemplate(NotificationTemplate):
                 file_name=section_cover
             )
 
-        if section_role == UserSectionRole.MEMBER:
+        if section_role == UserSectionRole.CREATOR:
+            relation_phrase = "you created"
+        elif section_role == UserSectionRole.MEMBER:
             relation_phrase = "you participate in"
         elif section_role == UserSectionRole.SUBSCRIBER:
             relation_phrase = "you subscribed to"

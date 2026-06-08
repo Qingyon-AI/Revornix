@@ -20,7 +20,7 @@ class UserNotificationTargetRole(IntEnum):
 class NotificationTriggerEventUUID(Enum):
     REMOVED_FROM_SECTION = 'bf860113d5ee4486a23a6692888d27f3'
     SECTION_COMMENTED = '2840a3b104124bd59afbae2a57c93dbf'
-    SECTION_UPDATED = '97072bb797d148d2a1607f10cb1ebf83'
+    SECTION_PROCESS_COMPLETED = '97072bb797d148d2a1607f10cb1ebf83'
     SECTION_SUBSCRIBED = '8c79f93f9dbd4b20bddb3c3a1bd57377'
     SECTION_CONTENT_UPDATED = '7a3c2f1e8d4b4a9eb3c8f2d6e4c1a9b0'
     DOCUMENT_PROCESS_COMPLETED = '3e6b9a1c5d2847f0a8c4b7e9f2d3a4b5'
@@ -40,9 +40,9 @@ class NotificationTemplate(Enum):
         uuid='1ba024dfd7c249d8a09bb873dca708e6',
         name='Section Commented',
     )
-    SECTION_UPDATED = NotificationTemplateMeta(
+    SECTION_PROCESS_COMPLETED = NotificationTemplateMeta(
         uuid='4b655b12996540e1b6ee23d16a093bf6',
-        name='Section Updated',
+        name='Section Process Completed',
     )
     SECTION_SUBSCRIBED = NotificationTemplateMeta(
         uuid='dd4726e202d543cd9eca59e2311d0f11',

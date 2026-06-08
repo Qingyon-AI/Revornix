@@ -70,8 +70,10 @@ class SectionCommentedNotificationTemplate(NotificationTemplate):
             relation_phrase = "you participate in"
         elif section_role == UserSectionRole.CREATOR:
             relation_phrase = "you created"
+        elif section_role == UserSectionRole.SUBSCRIBER:
+            relation_phrase = "you subscribed to"
         else:
-            raise Exception("user is not a member or creator of the section")
+            raise Exception("invalid user section role")
 
         link = f'/section/detail/{section_id}?comment_id={comment_id}' if comment_id else f'/section/detail/{section_id}'
         base_title = "Section Commented"

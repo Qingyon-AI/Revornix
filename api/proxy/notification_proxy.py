@@ -137,7 +137,7 @@ class NotificationProxy:
             notification_template = SectionCommentedNotificationTemplate()
         elif template_uuid == NotificationTemplate.DOCUMENT_COMMENTED.meta.uuid:
             notification_template = DocumentCommentedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_UPDATED.meta.uuid:
+        elif template_uuid == NotificationTemplate.SECTION_PROCESS_COMPLETED.meta.uuid:
             notification_template = SectionUpdatedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid:
             notification_template = SectionSubscribedNotificationTemplate()

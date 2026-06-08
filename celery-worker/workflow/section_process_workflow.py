@@ -1622,7 +1622,7 @@ async def _mark_section_process_success(
                 "common.celery.app.start_trigger_user_notification_event",
                 kwargs={
                     "user_id": db_user.id,
-                    "trigger_event_uuid": NotificationTriggerEventUUID.SECTION_UPDATED.value,
+                    "trigger_event_uuid": NotificationTriggerEventUUID.SECTION_PROCESS_COMPLETED.value,
                     "params": {
                         "section_id": section_id,
                         "receiver_id": db_user.id,
