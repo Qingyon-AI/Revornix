@@ -18,7 +18,7 @@ notification_task_manage_router = APIRouter()
 TRIGGER_EVENT_TEMPLATE_UUID_MAP = {
     NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value: NotificationTemplate.REMOVED_FROM_SECTION.meta.uuid,
     NotificationTriggerEventUUID.SECTION_COMMENTED.value: NotificationTemplate.SECTION_COMMENTED.meta.uuid,
-    NotificationTriggerEventUUID.SECTION_UPDATED.value: NotificationTemplate.SECTION_UPDATED.meta.uuid,
+    NotificationTriggerEventUUID.SECTION_PROCESS_COMPLETED.value: NotificationTemplate.SECTION_PROCESS_COMPLETED.meta.uuid,
     NotificationTriggerEventUUID.SECTION_SUBSCRIBED.value: NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid,
     NotificationTriggerEventUUID.SECTION_CONTENT_UPDATED.value: NotificationTemplate.SECTION_CONTENT_UPDATED.meta.uuid,
     NotificationTriggerEventUUID.DOCUMENT_PROCESS_COMPLETED.value: NotificationTemplate.DOCUMENT_PROCESS_COMPLETED.meta.uuid,

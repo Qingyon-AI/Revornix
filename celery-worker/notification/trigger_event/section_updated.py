@@ -7,8 +7,8 @@ class SectionUpdatedNotificationTriggerEvent(NotificationTriggerEventProtocol):
     ):
         super().__init__(
             uuid='97072bb797d148d2a1607f10cb1ebf83',
-            name = "SectionUpdated",
-            name_zh = "专栏更新",
-            description = "When the section which you subscribe/participate has been updated",
-            description_zh = "当你订阅/参与的专栏发生更新的时候"
+            name = "SectionProcessCompleted",
+            name_zh = "专栏处理完成",
+            description = "When the processing of a section you created/participate in/subscribe to has completed",
+            description_zh = "当你创建/参与/订阅的专栏处理完成的时候"
         )
