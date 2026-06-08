@@ -1609,7 +1609,11 @@ async def _mark_section_process_success(
         db_users = await crud.section.get_users_for_section_by_section_id_async(
             db=db,
             section_id=section_id,
-            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER],
+            filter_roles=[
+                UserSectionRole.CREATOR,
+                UserSectionRole.MEMBER,
+                UserSectionRole.SUBSCRIBER,
+            ],
         )
 
     for db_user in db_users:

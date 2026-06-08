@@ -50,13 +50,10 @@ from notification.target.email_notification_target_provided import EmailNotifica
 from notification.target.feishu_notification_target_provided import FeishuNotificationTargetProvided
 from notification.target.telegram_notification_target_provided import TelegramNotificationTargetProvided
 from notification.template.document_commented import DocumentCommentedNotificationTemplate
-from notification.template.document_podcast_ready import DocumentPodcastReadyNotificationTemplate
 from notification.template.document_process_completed import DocumentProcessCompletedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_content_updated import SectionContentUpdatedNotificationTemplate
-from notification.template.section_podcast_ready import SectionPodcastReadyNotificationTemplate
-from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
@@ -64,13 +61,10 @@ from notification.template.section_join_request_handled import SectionJoinReques
 from notification.template.document_join_requested import DocumentJoinRequestedNotificationTemplate
 from notification.template.document_join_request_handled import DocumentJoinRequestHandledNotificationTemplate
 from notification.trigger_event.document_commented import DocumentCommentedNotificationTriggerEvent
-from notification.trigger_event.document_podcast_ready import DocumentPodcastReadyNotificationTriggerEvent
 from notification.trigger_event.document_process_completed import DocumentProcessCompletedNotificationTriggerEvent
 from notification.trigger_event.removed_from_section import RemovedFromSectionNotificationTriggerEvent
 from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
 from notification.trigger_event.section_content_updated import SectionContentUpdatedNotificationTriggerEvent
-from notification.trigger_event.section_podcast_ready import SectionPodcastReadyNotificationTriggerEvent
-from notification.trigger_event.section_ppt_ready import SectionPptReadyNotificationTriggerEvent
 from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
 from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
 from notification.trigger_event.section_join_requested import SectionJoinRequestedNotificationTriggerEvent
@@ -181,10 +175,7 @@ async def seed_database(db: AsyncSession):
         SectionSubscribedNotificationTemplate(),
         RemovedFromSectionNotificationTemplate(),
         SectionContentUpdatedNotificationTemplate(),
-        SectionPodcastReadyNotificationTemplate(),
-        SectionPptReadyNotificationTemplate(),
         DocumentProcessCompletedNotificationTemplate(),
-        DocumentPodcastReadyNotificationTemplate(),
         DocumentCommentedNotificationTemplate(),
         SectionJoinRequestedNotificationTemplate(),
         SectionJoinRequestHandledNotificationTemplate(),
@@ -209,10 +200,7 @@ async def seed_database(db: AsyncSession):
         SectionCommentedNotificationTriggerEvent(),
         SectionSubscribedNotificationTriggerEvent(),
         SectionContentUpdatedNotificationTriggerEvent(),
-        SectionPodcastReadyNotificationTriggerEvent(),
-        SectionPptReadyNotificationTriggerEvent(),
         DocumentProcessCompletedNotificationTriggerEvent(),
-        DocumentPodcastReadyNotificationTriggerEvent(),
         DocumentCommentedNotificationTriggerEvent(),
         SectionJoinRequestedNotificationTriggerEvent(),
         SectionJoinRequestHandledNotificationTriggerEvent(),

@@ -11,13 +11,10 @@ from notification.tool.email import EmailNotificationTool
 from notification.tool.feishu import FeishuNotificationTool
 from notification.tool.telegram import TelegramNotificationTool
 from notification.template.document_commented import DocumentCommentedNotificationTemplate
-from notification.template.document_podcast_ready import DocumentPodcastReadyNotificationTemplate
 from notification.template.document_process_completed import DocumentProcessCompletedNotificationTemplate
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_content_updated import SectionContentUpdatedNotificationTemplate
-from notification.template.section_podcast_ready import SectionPodcastReadyNotificationTemplate
-from notification.template.section_ppt_ready import SectionPptReadyNotificationTemplate
 from notification.template.section_updated import SectionUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
@@ -148,14 +145,8 @@ class NotificationProxy:
             notification_template = RemovedFromSectionNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_CONTENT_UPDATED.meta.uuid:
             notification_template = SectionContentUpdatedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_PODCAST_READY.meta.uuid:
-            notification_template = SectionPodcastReadyNotificationTemplate()
-        elif template_uuid == NotificationTemplate.SECTION_PPT_READY.meta.uuid:
-            notification_template = SectionPptReadyNotificationTemplate()
         elif template_uuid == NotificationTemplate.DOCUMENT_PROCESS_COMPLETED.meta.uuid:
             notification_template = DocumentProcessCompletedNotificationTemplate()
-        elif template_uuid == NotificationTemplate.DOCUMENT_PODCAST_READY.meta.uuid:
-            notification_template = DocumentPodcastReadyNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_JOIN_REQUESTED.meta.uuid:
             notification_template = SectionJoinRequestedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_JOIN_REQUEST_HANDLED.meta.uuid:

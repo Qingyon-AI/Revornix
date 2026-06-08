@@ -98,6 +98,7 @@ async def create_document_comment(
     parent_id = request_data.parent_id
     root_id: int | None = None
     reply_user_id: int | None = None
+    parent_comment_creator_id: int | None = None
 
     if parent_id is not None:
         db_parent = await crud.document.get_document_comment_by_id_async(
@@ -107,6 +108,7 @@ async def create_document_comment(
         if db_parent is None or db_parent.document_id != request_data.document_id:
             raise schemas.error.CustomException("Parent comment not found", code=404)
         root_id = db_parent.root_id if db_parent.root_id is not None else db_parent.id
+        parent_comment_creator_id = db_parent.creator_id
         if db_parent.root_id is not None:
             reply_user_id = db_parent.creator_id
 
@@ -125,7 +127,12 @@ async def create_document_comment(
         db=db,
         document_id=request_data.document_id,
     )
-    target_user_ids = [uid for uid in collaborator_ids if uid != user.id]
+    recipient_ids = set(collaborator_ids)
+    # The author of the comment being replied to must be notified too, even if
+    # they are not a document collaborator.
+    if parent_comment_creator_id is not None:
+        recipient_ids.add(parent_comment_creator_id)
+    target_user_ids = [uid for uid in recipient_ids if uid != user.id]
     await asyncio.gather(*[
         asyncio.to_thread(
             start_trigger_user_notification_event.delay,
