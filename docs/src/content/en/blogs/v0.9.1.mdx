@@ -1,0 +1,81 @@
+---
+title: v0.9.1
+description: Account MFA & login security, Markdown editor upgrades (map node / slash commands), audio meeting mode, notification & completion-timing rework, dual-view knowledge graph, observability migration.
+---
+
+# Revornix-v0.9.1
+
+Over 40 commits have landed since v0.9.0. This release focuses on account security, editor capabilities, unified content storage, the robustness of the notification system and processing pipeline, plus a batch of observability and UI polish.
+
+## Highlights
+
+### Account Security & Login
+
+- **Multi-factor authentication (MFA)**: accounts can now enable TOTP and Passkey for an extra layer of protection on login and sensitive actions.
+- **Login-method deletion protection**: you can no longer delete a login method when it is the account's only credential, preventing you from locking yourself out.
+- **Reworked WeChat login & account binding**: binding, unbinding and login paths are clearer and more consistent.
+- **OAuth login optimizations & fixes**: several login edge cases were fixed for a smoother sign-in experience.
+
+### Markdown Editor
+
+- **Map node**: insert and edit maps inside a document, with further interaction polish.
+- **More custom nodes and slash commands**: type `/` to quickly insert blocks while writing.
+- Fixed a number of rendering and interaction issues across editor scenarios.
+
+### Unified Content Storage
+
+- **Quick notes migrated to Markdown files**: unified quick-note storage and saving logic, with related Markdown display fixes.
+- **Audio notes migrated to Markdown files**: transcription results are now managed as md files for easier search and reuse.
+
+### Audio Documents
+
+- **Meeting mode**: transcription tuned for meeting recordings, supporting speaker-separation scenarios.
+- Reworked **audio player** interaction and presentation.
+
+### Notification System
+
+- **Reworked completion-notification timing**: the document/section "process completed" notification is now emitted by the orchestration layer only after **all follow-up tasks (embedding, graph, summary, podcast) have truly settled** — no more "done" while sub-tasks are still running, and no duplicate notifications.
+- **More accurate recipients**: completion, content-edit and comment-reply notifications now include roles that were previously missed (e.g. the section creator, the author of a replied-to comment).
+- **Separated emit vs. dispatch**: inner processing workflows no longer embed notification logic; the emitting side (`notification/emit`) and the consuming side (`notification/dispatch`) have clear responsibilities.
+- Trimmed unnecessary "sub-task completed" notifications while keeping the overall completion reminder.
+
+### Knowledge Graph
+
+- The knowledge graph can switch between **knowledge-node** and **document-node** views, with a legend and a unified toolbar among other interaction improvements.
+
+### File System
+
+- Further file-system optimization: deleting a document/section now also cleans up the corresponding remote file resources, avoiding storage leaks.
+
+### Community & Pages
+
+- Added a **public documents page** for browsing and sharing public content.
+- Optimized the **hot-search page** and the dashboard loading experience.
+
+### Observability & Internals
+
+- **Logs & traces migration**: unified log and trace collection across `web` / `api` / `celery-worker` (see `OBSERVABILITY.md`).
+- Added finer-grained worker logs; added a timeout guard for the Milvus connection.
+- Optimized front-end async loading; moved `instrumentation.ts` into `src/`; fixed header propagation for server-side requests.
+
+### UI Details & Shortcuts
+
+- Reworked the chat input area: the bottom-left now uses a `+` menu to hold upload and other actions, unifying the document / section / Revornix AI chat boxes.
+- Added several keyboard shortcuts.
+- A batch of UI detail polish and 404 / navigation fixes.
+
+### Bug Fixes
+
+- Fixed several admin-panel control issues.
+- Fixed details in OAuth login, quick-note Markdown, the editor, and more.
+- Removed a batch of dead code.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share ideas and collaborate!
+
+You can open new issues in this project's Issues section.
+
+## Contributing
+
+Please see our [contributor guide](https://revornix.com/docs/developer/contribute) for more information.

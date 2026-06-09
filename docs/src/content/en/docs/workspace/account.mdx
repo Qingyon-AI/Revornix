@@ -31,6 +31,17 @@ Click the user avatar in the bottom-left corner -> Account to open the settings 
 
 The same page also includes account capabilities such as email changes, password changes, and API key management.
 
+## Multi-Factor Authentication (MFA)
+
+MFA adds an extra layer of protection to your account. In account settings you can enable one or more second factors:
+
+- **Authenticator app (TOTP)**: scan a QR code with Google Authenticator, 1Password, etc., then enter the rotating 6-digit code at login.
+- **Passkey**: based on device biometrics / platform keys (Touch ID, Windows Hello, your phone) — passwordless and more phishing-resistant.
+
+Once MFA is enabled, login and certain sensitive actions require a second verification step.
+
+<Callout>**Login-method deletion protection**: when a login method is the account's only remaining credential, the system blocks its deletion so you can't lock yourself out. Make sure at least one usable login method remains before removing one.</Callout>
+
 ## Account API Key
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522173450485.png)

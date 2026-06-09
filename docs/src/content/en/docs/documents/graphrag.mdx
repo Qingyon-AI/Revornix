@@ -17,7 +17,9 @@ Document graphs and section graphs do not follow exactly the same flow:
 The graph view supports:
 
 - Searching entity nodes
-- Clicking a node to inspect its source documents and chunks
+- Switching between **knowledge-node** and **document-node** views: the former shows references between entities, while the latter treats documents as nodes and links them by shared entities
+- Clicking an entity node to inspect its source documents and chunks; in document view, clicking a document node jumps straight to that document
 - Browsing document-level and section-level relationships at different scopes
+- A legend that distinguishes node types (entity / document); larger nodes mean more connections
 
 The graph data is stored in Neo4j and is built from document chunks, entities, and their relations.

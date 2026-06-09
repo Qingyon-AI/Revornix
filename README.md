@@ -65,6 +65,7 @@ A short tour of what the platform actually does today. For step-by-step walkthro
 
 - **Multi-format ingestion** — web pages, PDF, Word, Excel, PPT, plain text, audio, and structured data through the public API.
 - **Pluggable converters** — pick a default engine (MinerU, Jina, custom) per workspace; mix engines per document type if needed.
+- **Audio transcription** — turn audio documents into searchable Markdown, with a meeting mode for speaker separation.
 - **Vector retrieval + GraphRAG** — every document is chunked into Milvus and projected onto a personal knowledge graph in Neo4j for context-aware AI answers.
 - **Global search** — vector or text mode over your private library, plus a separate public surface for published documents, sections, creators and labels.
 - **Sections** — curated collections that can stay private, be shared with collaborators, or be published to the community feed.
@@ -75,7 +76,8 @@ A short tour of what the platform actually does today. For step-by-step walkthro
 - **AI illustrations** — inline figures generated and embedded into long-form content.
 - **Trending feed** — aggregated hot-search across mainstream platforms via the bundled `hot-news/`.
 - **Rich Markdown reading & editing** — Tiptap-based editor with tables, Mermaid, math, images, and a floating table of contents on long public pages.
-- **Notifications** — pick channels (email, in-app, push) and let the system surface task completion or scheduled digests.
+- **Notifications** — pick channels (email, in-app, push) and get notified on events such as processing completed, comments, subscriptions and collaboration requests.
+- **Account security (MFA)** — protect accounts with TOTP authenticator apps and passkeys, plus protection against deleting your last login method.
 - **Multilingual & responsive** — English / Chinese product UI, plus English / Chinese / Japanese repository docs; mobile and desktop layouts.
 - **Layered protection** — `gateway/` blocks obvious scraping at the edge, `api/` rate-limits sensitive public endpoints.
 

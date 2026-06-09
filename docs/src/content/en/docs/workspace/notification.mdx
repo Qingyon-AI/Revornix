@@ -184,21 +184,32 @@ Same as above.
 
 ![](https://qingyon-revornix-public.oss-cn-beijing.aliyuncs.com/images/20260522173655370.png)
 
-Both time triggers and event triggers are supported. You can choose based on your actual needs.
+Notification tasks currently support event triggers only; time-based triggers are no longer offered.
 
-Event triggers currently support only:
+Event triggers currently support:
 
 - RemovedFromSection: You are removed from a section
+- SectionProcessCompleted: Processing of a section you created/participated in/subscribed to has completed
+- SectionContentUpdated: The title, description, cover or labels of a section you participate in/subscribe to was edited
 - SectionCommented: A section you created/participated in is commented
 - SectionSubscribed: A section you created/participated in is subscribed
-- SectionUpdated: A section you participated in/subscribed to is updated
+- SectionJoinRequested: Someone requests to join a section you manage
+- SectionJoinRequestHandled: Your request to join a section was reviewed
+- DocumentProcessCompleted: A document's processing pipeline (convert, summary, embedding, tagging, graph) has completed
+- DocumentCommented: A document you participate in is commented
+- DocumentJoinRequested: Someone requests to collaborate on a document you manage
+- DocumentJoinRequestHandled: Your request to collaborate on a document was reviewed
 
-Both custom notification content and template notification content are supported. If you need real-time dynamic messages, you must use template content, because custom content is fixed at configuration time and cannot be changed dynamically.
+A notification task automatically matches the template that corresponds to the event you pick, so you don't need to choose a template manually. The current built-in mapping is:
 
-Currently available templates:
-
-- Daily Summary Template: Daily summary template
-- Removed From Section Template: Notification template for being removed from a section
-- Section Commented Template: Notification template for section comments
-- Section Subscribed Template: Notification template for section subscriptions
-- Section Updated Template: Notification template for section updates
+- Removed From Section -> Notification template for being removed from a section
+- Section Process Completed -> Notification template for section processing completed
+- Section Content Updated -> Notification template for section content edited
+- Section Commented -> Notification template for section comments
+- Section Subscribed -> Notification template for section subscriptions
+- Section Join Requested -> Notification template for section join requests
+- Section Join Request Handled -> Notification template for section join requests handled
+- Document Process Completed -> Notification template for document processing completed
+- Document Commented -> Notification template for document comments
+- Document Join Requested -> Notification template for document collaboration requests
+- Document Join Request Handled -> Notification template for document collaboration requests handled
