@@ -19,9 +19,7 @@ from data.sql.base import async_session_context
 from enums.section import (
     SectionDocumentIntegration,
     SectionProcessStatus,
-    UserSectionRole,
 )
-from enums.notification import NotificationTriggerEventUUID
 from enums.document import DocumentAudioTranscribeStatus, DocumentCategory, DocumentMdConvertStatus
 from enums.user import AIInteractionLanguage
 from base_implement.image_generate_engine_base import ImageGenerateEngineBase
@@ -1606,34 +1604,9 @@ async def _mark_section_process_success(
             db_section_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
 
-        db_users = await crud.section.get_users_for_section_by_section_id_async(
-            db=db,
-            section_id=section_id,
-            filter_roles=[
-                UserSectionRole.CREATOR,
-                UserSectionRole.MEMBER,
-                UserSectionRole.SUBSCRIBER,
-            ],
-        )
-
-    for db_user in db_users:
-        try:
-            current_app.send_task(
-                "common.celery.app.start_trigger_user_notification_event",
-                kwargs={
-                    "user_id": db_user.id,
-                    "trigger_event_uuid": NotificationTriggerEventUUID.SECTION_PROCESS_COMPLETED.value,
-                    "params": {
-                        "section_id": section_id,
-                        "receiver_id": db_user.id,
-                    },
-                },
-            )
-        except Exception as e:
-            exception_logger.error(
-                f"Failed to dispatch section_updated notification: section_id={section_id}, user_id={db_user.id}, error={e}"
-            )
-
+    # The "section process completed" notification is fired by the orchestration
+    # layer (common.celery.app.start_process_section) after this workflow and any
+    # auto follow-up (podcast) have settled — not from inside the workflow.
     return state
 
 

@@ -863,7 +863,10 @@ async def _process_document_chunks(
             )
         except Exception as status_error:
             exception_logger.error(f"Failed to update graph task status: {status_error}")
-        raise
+        # The knowledge graph is an optional artifact: its failure is recorded on
+        # the graph task status above but must not fail the whole chunk workflow,
+        # otherwise the core embedding (already done) would never reach the
+        # "document process completed" notification. Do not re-raise.
 
     return state
 

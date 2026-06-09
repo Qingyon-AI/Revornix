@@ -2,14 +2,12 @@ from datetime import datetime, timezone
 from typing import TypedDict
 
 import crud
-from celery import current_app
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
 from data.common import get_document_markdown_length
 from data.sql.base import async_session_context
-from enums.notification import NotificationTriggerEventUUID
 from enums.document import (
     DocumentEmbeddingStatus,
     DocumentGraphStatus,
@@ -36,6 +34,7 @@ class DocumentProcessState(TypedDict, total=False):
     auto_tag: bool
     override: dict | DocumentOverrideProperty | None
     use_progressive_followups: bool
+    progressive_auto_graph: bool
 
 
 WORKFLOW_NAME = "document_process"
@@ -218,21 +217,11 @@ async def _process_document_chunks(
             max_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
             manage_task_status=False,
         )
-        await _prepare_progressive_followup_tasks(
-            document_id=document_id,
-            user_id=user_id,
-            auto_summary=auto_summary,
-            auto_podcast=auto_podcast,
-            auto_graph=enable_auto_graph,
-        )
-        _enqueue_progressive_followup_tasks(
-            document_id=document_id,
-            user_id=user_id,
-            auto_summary=auto_summary,
-            auto_podcast=auto_podcast,
-            auto_graph=enable_auto_graph,
-        )
+        # The remaining embedding + optional follow-ups (and the completion
+        # notification) are enqueued by the orchestration layer after this
+        # workflow returns; the node only records the decision in state.
         state["use_progressive_followups"] = True
+        state["progressive_auto_graph"] = enable_auto_graph
         return state
 
     await run_document_chunk_process_workflow(
@@ -259,10 +248,19 @@ async def _maybe_generate_podcast(
     async with async_session_context() as db:
         await ensure_document_active(db=db, document_id=document_id)
 
-    await run_document_podcast_workflow(
-        document_id=document_id,
-        user_id=user_id
-    )
+    # The podcast is an optional add-on: its failure is recorded on the podcast
+    # task's own status and must not block the "document process completed"
+    # notification fired by the downstream mark node.
+    try:
+        await run_document_podcast_workflow(
+            document_id=document_id,
+            user_id=user_id
+        )
+    except Exception as e:
+        exception_logger.warning(
+            f"Document podcast generation failed (recorded on its own task "
+            f"status): document_id={document_id}, user_id={user_id}, error={e}"
+        )
     return state
 
 
@@ -284,34 +282,13 @@ async def _mark_process_success(
             db_document_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
 
-        db_document = await crud.document.get_document_by_document_id_async(
-            db=db,
-            document_id=document_id,
-        )
-        recipient_id = db_document.creator_id if db_document is not None else None
-
-    if recipient_id is not None:
-        try:
-            current_app.send_task(
-                "common.celery.app.start_trigger_user_notification_event",
-                kwargs={
-                    "user_id": recipient_id,
-                    "trigger_event_uuid": NotificationTriggerEventUUID.DOCUMENT_PROCESS_COMPLETED.value,
-                    "params": {
-                        "document_id": document_id,
-                        "receiver_id": recipient_id,
-                    },
-                },
-            )
-        except Exception as e:
-            exception_logger.error(
-                f"Failed to dispatch document_process_completed notification: document_id={document_id}, user_id={recipient_id}, error={e}"
-            )
-
+    # The "document process completed" notification is fired by the orchestration
+    # layer (common.celery.app.start_process_document) after this workflow and any
+    # progressive follow-ups have settled — not from inside the workflow.
     return state
 
 
-async def _prepare_progressive_followup_tasks(
+async def prepare_progressive_followup_tasks(
     *,
     document_id: int,
     user_id: int,
@@ -383,7 +360,7 @@ async def _prepare_progressive_followup_tasks(
         await db.commit()
 
 
-def _enqueue_progressive_followup_tasks(
+def enqueue_progressive_followups(
     *,
     document_id: int,
     user_id: int,
@@ -391,10 +368,30 @@ def _enqueue_progressive_followup_tasks(
     auto_podcast: bool,
     auto_graph: bool,
 ) -> None:
-    from celery import chain, group
+    from celery import chain, chord, group
     from common.celery.app import celery_app
 
-    followup_signatures = [
+    def _optional_followup(kind: str) -> object:
+        # Optional follow-ups (graph/summary/podcast) run best-effort via the
+        # safe wrapper, which records FAILED on their own task and swallows the
+        # error. They therefore never fail the chord, so their failure does not
+        # block the completion notification.
+        return celery_app.signature(
+            "common.celery.app.run_progressive_followup",
+            kwargs={
+                "kind": kind,
+                "document_id": document_id,
+                "user_id": user_id,
+            },
+            immutable=True,
+        )
+
+    # The embedding remainder is core: it uses the raising task so that if it
+    # fails the chord errors and the finalize callback (completion notification)
+    # is NOT fired — matching the non-progressive path where an embedding failure
+    # also blocks the notification. Optional follow-ups can't fail the chord, so
+    # the callback fires iff the core embedding succeeded.
+    header_signatures = [
         celery_app.signature(
             "common.celery.app.start_process_document_embedding",
             kwargs={
@@ -406,38 +403,22 @@ def _enqueue_progressive_followup_tasks(
         ),
     ]
     if auto_graph:
-        followup_signatures.append(
-            celery_app.signature(
-                "common.celery.app.start_process_document_graph",
-                kwargs={
-                    "document_id": document_id,
-                    "user_id": user_id,
-                },
-                immutable=True,
-            )
-        )
+        header_signatures.append(_optional_followup("graph"))
     if auto_summary:
-        followup_signatures.append(
-            celery_app.signature(
-                "common.celery.app.start_process_document_summarize",
-                kwargs={
-                    "document_id": document_id,
-                    "user_id": user_id,
-                },
-                immutable=True,
-            )
-        )
+        header_signatures.append(_optional_followup("summarize"))
     if auto_podcast:
-        followup_signatures.append(
-            celery_app.signature(
-                "common.celery.app.start_process_document_podcast",
-                kwargs={
-                    "document_id": document_id,
-                    "user_id": user_id,
-                },
-                immutable=True,
-            )
-        )
+        header_signatures.append(_optional_followup("podcast"))
+
+    finalize_signature = celery_app.signature(
+        "common.celery.app.start_finalize_document_process",
+        kwargs={
+            "document_id": document_id,
+        },
+        immutable=True,
+    )
+    # Fire the "document process completed" notification once, after the core
+    # embedding succeeds and every optional follow-up has settled.
+    followups_chord = chord(group(header_signatures), finalize_signature)
     workflow = chain(
         celery_app.signature(
             "common.celery.app.start_prepare_document_chunk_snapshot",
@@ -447,7 +428,7 @@ def _enqueue_progressive_followup_tasks(
             },
             immutable=True,
         ),
-        group(followup_signatures),
+        followups_chord,
     )
     workflow.apply_async()
     set_stage_metrics(
@@ -540,10 +521,10 @@ async def run_document_process_workflow(
     auto_transcribe: bool = False,
     auto_tag: bool = False,
     override: dict | None = None
-) -> None:
+) -> DocumentProcessState:
     workflow = get_document_process_workflow()
     try:
-        await ainvoke_with_timing(
+        final_state = await ainvoke_with_timing(
             workflow_name=WORKFLOW_NAME,
             workflow=workflow,
             payload={
@@ -556,6 +537,7 @@ async def run_document_process_workflow(
                 "override": override,
             },
         )
+        return final_state
     except Exception as e:
         exception_logger.error(
             format_log_message(
