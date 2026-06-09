@@ -191,13 +191,27 @@ import StaticImage from '../../../../components/static-image';
 事件触发支持以下事件：
 
 - RemovedFromSection 你被移出专栏
+- SectionProcessCompleted 你创建/参与/订阅的专栏处理完成
+- SectionContentUpdated 你参与/订阅的专栏标题、描述、封面或标签被编辑
 - SectionCommented 你创建/参与的专栏被评论
 - SectionSubscribed 你创建/参与的专栏被订阅
-- SectionUpdated 你参与/订阅的专栏发生更新
+- SectionJoinRequested 有人申请加入你管理的专栏
+- SectionJoinRequestHandled 你申请加入专栏的请求被审批
+- DocumentProcessCompleted 文档的处理流水线（转换、摘要、向量化、打标、构图）完成
+- DocumentCommented 你参与的文档被评论
+- DocumentJoinRequested 有人申请协作你管理的文档
+- DocumentJoinRequestHandled 你申请协作文档的请求被审批
 
 通知任务会根据你选择的事件自动匹配对应模板，不需要手动选择模板参数。当前内置映射如下：
 
 - Removed From Section -> 被移出专栏的通知模板
+- Section Process Completed -> 专栏处理完成的通知模板
+- Section Content Updated -> 专栏内容被编辑的通知模板
 - Section Commented -> 专栏被评论的通知模板
 - Section Subscribed -> 专栏被订阅的通知模板
-- Section Updated -> 专栏发生更新的通知模板
+- Section Join Requested -> 专栏被申请加入的通知模板
+- Section Join Request Handled -> 专栏加入申请被处理的通知模板
+- Document Process Completed -> 文档处理完成的通知模板
+- Document Commented -> 文档被评论的通知模板
+- Document Join Requested -> 文档被申请协作的通知模板
+- Document Join Request Handled -> 文档协作申请被处理的通知模板

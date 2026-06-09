@@ -1,6 +1,6 @@
 {
   "name": "revornix-web-service",
-  "version": "0.6.0",
+  "version": "0.9.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
