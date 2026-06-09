@@ -6,11 +6,18 @@ import Cookies from 'js-cookie';
 import {
 	ImagePlus,
 	Loader2,
+	Plus,
 	Send,
 	SlidersHorizontal,
 	Wrench,
 	X,
 } from 'lucide-react';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useForm } from 'react-hook-form';
 import { AIEvent, Message } from '@/types/ai';
 import { Form, FormField, FormItem } from '@/components/ui/form';
@@ -524,35 +531,35 @@ const MessageSendForm = () => {
 								/>
 								<div className='flex items-center justify-between gap-2 px-2 pb-2'>
 									<div className='flex items-center gap-0.5 min-w-0'>
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<Button
-														type='button'
-														size='icon'
-														variant='ghost'
-														className='size-8 rounded-full text-muted-foreground hover:text-foreground'
-														onClick={openPicker}
-														disabled={
-															mutateSendMessage.isPending || isUploadingImages
-														}>
-														{isUploadingImages ? (
-															<Loader2 className='size-4 animate-spin' />
-														) : (
-															<ImagePlus className='size-4' />
-														)}
-													</Button>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>
-														{t('upload_image')} ·{' '}
-														{t('upload_limit_hint', {
-															size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-														})}
-													</p>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													type='button'
+													size='icon'
+													variant='ghost'
+													className='size-8 rounded-full text-muted-foreground hover:text-foreground'
+													disabled={
+														mutateSendMessage.isPending || isUploadingImages
+													}
+													aria-label={t('chat_add_menu')}>
+													{isUploadingImages ? (
+														<Loader2 className='size-4 animate-spin' />
+													) : (
+														<Plus className='size-4' />
+													)}
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align='start' side='top' className='shadow-none'>
+												<DropdownMenuItem
+													onClick={openPicker}
+													disabled={
+														mutateSendMessage.isPending || isUploadingImages
+													}>
+													<ImagePlus className='size-4' />
+													<span>{t('upload_image')}</span>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
 										{isMobile ? (
 											<Drawer>
 												<DrawerTrigger asChild>

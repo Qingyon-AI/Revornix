@@ -4,7 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { Bot, ImagePlus, Loader2, Send, X } from 'lucide-react';
+import { Bot, ImagePlus, Loader2, Plus, Send, X } from 'lucide-react';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -395,27 +401,31 @@ const DocumentOperateAI = ({
 					/>
 					<div className='flex items-center justify-between gap-4 p-2'>
 						<div className='flex min-w-0 items-center gap-3 text-xs text-muted-foreground'>
-							<div className='flex min-w-0 flex-col gap-1'>
-								<Button
-									type='button'
-									size='sm'
-									variant='outline'
-									className='h-8 rounded-full px-3 text-[11px] shadow-none'
-									onClick={openPicker}
-									disabled={isSending || isUploadingImages}>
-									{isUploadingImages ? (
-										<Loader2 className='size-3.5 animate-spin' />
-									) : (
-										<ImagePlus className='size-3.5' />
-									)}
-									<span>{t('upload_image')}</span>
-								</Button>
-								<span className='pl-1 text-[11px] text-muted-foreground'>
-									{t('upload_limit_hint', {
-										size: formatUploadSize(IMAGE_MAX_UPLOAD_BYTES),
-									})}
-								</span>
-							</div>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										type='button'
+										size='icon'
+										variant='outline'
+										className='size-8 rounded-full shadow-none'
+										disabled={isSending || isUploadingImages}
+										aria-label={t('chat_add_menu')}>
+										{isUploadingImages ? (
+											<Loader2 className='size-4 animate-spin' />
+										) : (
+											<Plus className='size-4' />
+										)}
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align='start' side='top' className='shadow-none'>
+									<DropdownMenuItem
+										onClick={openPicker}
+										disabled={isSending || isUploadingImages}>
+										<ImagePlus className='size-4' />
+										<span>{t('upload_image')}</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 						<Button
 							type='button'
