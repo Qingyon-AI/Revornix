@@ -217,9 +217,16 @@ def start_process_document(
     auto_tag: bool = False,
     override: dict | None = None,
 ):
-    from workflow.document_process_workflow import run_document_process_workflow
+    from workflow.document_process_workflow import (
+        run_document_process_workflow,
+        prepare_progressive_followup_tasks,
+        enqueue_progressive_followups,
+    )
 
-    _run(
+    # The workflow raises on failure/cancel (status already recorded inside), so
+    # reaching here means the core processing succeeded. Orchestration owns what
+    # happens next: optional follow-ups and the completion notification.
+    final_state = _run(
         run_document_process_workflow(
             document_id=document_id,
             user_id=user_id,
@@ -230,6 +237,33 @@ def start_process_document(
             override=override,
         )
     )
+
+    if final_state and final_state.get("use_progressive_followups"):
+        # Large document: the remaining embedding + optional follow-ups run as a
+        # chord whose finalize callback fires the completion notification once the
+        # core embedding succeeds (optional follow-ups can't block it).
+        auto_graph = bool(final_state.get("progressive_auto_graph", False))
+        _run(
+            prepare_progressive_followup_tasks(
+                document_id=document_id,
+                user_id=user_id,
+                auto_summary=auto_summary,
+                auto_podcast=auto_podcast,
+                auto_graph=auto_graph,
+            )
+        )
+        enqueue_progressive_followups(
+            document_id=document_id,
+            user_id=user_id,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            auto_graph=auto_graph,
+        )
+    else:
+        # Small document: everything ran inline, so the pipeline is fully done.
+        from notification.emit import emit_document_process_completed
+
+        _run(emit_document_process_completed(document_id=document_id))
 
 
 @celery_app.task
@@ -277,6 +311,9 @@ def start_process_section(
             await db.commit()
             return True
 
+    # The workflow raises on failure/cancel (status already recorded inside), so
+    # reaching here means the core section processing succeeded. Orchestration
+    # owns what happens next: the optional podcast and the completion notification.
     _run(
         run_section_process_workflow(
             section_id=section_id,
@@ -289,11 +326,20 @@ def start_process_section(
         )
     )
     if auto_podcast and _run(_prepare_section_podcast_task()):
-        start_process_section_podcast.delay(
-            section_id,
-            user_id,
-            engine_id=podcast_engine_id,
-        )
+        # Run the podcast, then fire the completion notification from a finalize
+        # task. The podcast task swallows ordinary failures (so the chain still
+        # reaches finalize) but re-raises on cancellation (so the chain stops and
+        # no completion is announced).
+        from celery import chain
+
+        chain(
+            run_section_podcast_followup.si(section_id, user_id, podcast_engine_id),
+            start_finalize_section_process.si(section_id),
+        ).apply_async()
+    else:
+        from notification.emit import emit_section_process_completed
+
+        _run(emit_section_process_completed(section_id))
 
 
 @celery_app.task
@@ -430,6 +476,68 @@ def start_prepare_document_chunk_snapshot(
 
 
 @celery_app.task
+def start_finalize_document_process(
+    document_id: int,
+):
+    """Chord success callback fired after the core embedding succeeds and every
+    optional follow-up has settled; sends the "document process completed"
+    notification so it is never premature."""
+    from notification.emit import emit_document_process_completed
+
+    _run(emit_document_process_completed(document_id=document_id))
+
+
+@celery_app.task
+def run_progressive_followup(
+    kind: str,
+    document_id: int,
+    user_id: int,
+):
+    """Run a single optional progressive follow-up (graph/summary/podcast) and
+    swallow its exception.
+
+    The underlying workflow already records FAILED on its own task row before
+    raising, so swallowing here loses no information. It keeps an optional
+    follow-up's failure from failing the enclosing chord — so it never blocks
+    the completion notification (only the core embedding can)."""
+    try:
+        if kind == "graph":
+            from workflow.document_graph_task_workflow import run_document_graph_task_workflow
+
+            _run(
+                run_document_graph_task_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        elif kind == "summarize":
+            from workflow.document_summarize_workflow import run_document_summarize_workflow
+
+            _run(
+                run_document_summarize_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        elif kind == "podcast":
+            from workflow.document_podcast_workflow import run_document_podcast_workflow
+
+            _run(
+                run_document_podcast_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        else:
+            exception_logger.error(f"Unknown progressive follow-up kind: {kind}")
+    except Exception as e:
+        info_logger.warning(
+            f"Progressive follow-up '{kind}' failed (failure recorded on its own "
+            f"task status): document_id={document_id}, user_id={user_id}, error={e}"
+        )
+
+
+@celery_app.task
 def update_document_process_status(
     document_id: int,
     status: int,
@@ -450,6 +558,10 @@ def start_process_section_podcast(
     user_id: int,
     engine_id: int | None = None,
 ):
+    """Generate the section podcast (on-demand entry point used by the API).
+
+    Plain task semantics: it propagates failures so the celery task is marked
+    FAILED, matching what the on-demand "generate podcast" endpoint expects."""
     from workflow.section_podcast_workflow import run_section_podcast_workflow
 
     _run(
@@ -459,6 +571,50 @@ def start_process_section_podcast(
             engine_id=engine_id,
         )
     )
+
+
+@celery_app.task
+def run_section_podcast_followup(
+    section_id: int,
+    user_id: int,
+    engine_id: int | None = None,
+):
+    """Section podcast run as the auto follow-up of a section process flow.
+
+    Chained before ``start_finalize_section_process``: it swallows ordinary
+    failures so the chain still reaches finalize (the core section processing
+    already succeeded, and the podcast records its own FAILED status), but
+    re-raises on cancellation so the chain stops and no completion notification
+    is sent."""
+    from workflow.cancelled import WorkflowCancelledError
+    from workflow.section_podcast_workflow import run_section_podcast_workflow
+
+    try:
+        _run(
+            run_section_podcast_workflow(
+                section_id=section_id,
+                user_id=user_id,
+                engine_id=engine_id,
+            )
+        )
+    except WorkflowCancelledError:
+        raise
+    except Exception as e:
+        info_logger.warning(
+            f"Section podcast generation failed (recorded on its own task "
+            f"status): section_id={section_id}, user_id={user_id}, error={e}"
+        )
+
+
+@celery_app.task
+def start_finalize_section_process(
+    section_id: int,
+):
+    """Chain tail fired after the section's auto podcast has settled; sends the
+    "section process completed" notification so it is never premature."""
+    from notification.emit import emit_section_process_completed
+
+    _run(emit_section_process_completed(section_id))
 
 
 @celery_app.task
