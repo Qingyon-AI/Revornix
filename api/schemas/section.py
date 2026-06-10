@@ -62,9 +62,11 @@ class SectionDocumentRequest(BaseModel):
     limit: int = Field(default=10, le=PUBLIC_PAGINATION_LIMIT)
     desc: bool = True
     keyword: str | None = None
+    access_key: str | None = None
 
 class SectionSeoDetailRequest(BaseModel):
     uuid: str
+    access_key: str | None = None
 
 class SectionPublishGetRequest(BaseModel):
     section_id: int
@@ -72,8 +74,16 @@ class SectionPublishGetRequest(BaseModel):
 class SectionPublishGetResponse(BaseModel):
     status: bool
     uuid: str | None = None
+    has_access_key: bool = False
+    # Plaintext key, only ever returned to the creator via publish/get
+    access_key: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
+
+class SectionAccessKeyUpdateRequest(BaseModel):
+    section_id: int
+    # None or blank clears the key (link becomes fully public again)
+    access_key: str | None = None
 
 class SectionRePublishRequest(BaseModel):
     section_id: int
@@ -274,6 +284,7 @@ class SectionInfo(BaseModel):
     labels: list[SectionLabel] | None = None
     cover: str | None
     publish_uuid: str | None = None
+    has_access_key: bool = False
     podcast_task: SectionPodcastTask | None = None
     process_task: SectionProcessTask | None = None
     document_integration: SectionDocumentIntegrationSummary | None = None

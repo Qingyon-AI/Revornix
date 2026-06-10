@@ -18,7 +18,7 @@ from data.milvus.search import (
 )
 from enums.document import DocumentCategory
 from proxy.file_system_proxy import FileSystemProxy
-from common.access_control import ensure_document_access
+from common.access_control import ensure_document_access, ensure_publish_access_key
 from common.query_helpers import resolve_infinite_scroll_meta
 
 document_query_router = APIRouter()
@@ -95,15 +95,29 @@ async def _ensure_document_access(
     document_id: int,
     document_creator_id: int,
     user_id: int | None,
-) -> None:
+    access_key: str | None = None,
+) -> models.document.PublishDocument | None:
     db_published_document = await crud.document.get_publish_document_by_document_id_async(
         db=db,
         document_id=document_id,
     )
     if user_id is not None and document_creator_id == user_id:
-        return
+        return db_published_document
     if db_published_document is not None:
-        return
+        has_direct_access = False
+        if user_id is not None:
+            db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
+                db=db,
+                user_id=user_id,
+                document_id=document_id,
+            )
+            has_direct_access = db_user_document is not None
+        ensure_publish_access_key(
+            access_key_encrypted=db_published_document.access_key_encrypted,
+            provided_key=access_key,
+            has_direct_access=has_direct_access,
+        )
+        return db_published_document
 
     if user_id is None:
         ensure_document_access(
@@ -112,7 +126,7 @@ async def _ensure_document_access(
             has_public_document=False,
             has_document_collaborator=False,
         )
-        return
+        return None
 
     db_user_document = await crud.document.get_user_document_by_user_id_and_document_id_async(
         db=db,
@@ -125,6 +139,7 @@ async def _ensure_document_access(
         has_public_document=False,
         has_document_collaborator=db_user_document is not None,
     )
+    return None
 
 
 async def get_document_infos(
@@ -145,6 +160,13 @@ async def get_document_infos(
         db=db,
         user_ids=creator_ids,
     )
+    db_publish_documents = await crud.document.get_publish_documents_by_document_ids_async(
+        db=db,
+        document_ids=document_ids,
+    )
+    publish_uuid_by_document_id = {
+        item.document_id: item.uuid for item in db_publish_documents
+    }
 
     task_bundle_by_document_id = {
         document_id: (
@@ -173,6 +195,7 @@ async def get_document_infos(
     remote_fields_to_sign: list[tuple[Any, str, int]] = []
     for document in documents:
         info = schemas.document.DocumentInfo.model_validate(document)
+        info.publish_uuid = publish_uuid_by_document_id.get(document.id)
         db_user = user_by_id.get(document.creator_id)
         if db_user is not None:
             info.creator = schemas.user.UserPublicInfo.model_validate(db_user)
@@ -273,10 +296,27 @@ async def _resolve_document_from_detail_request(
             raise schemas.error.CustomException("Document not found", code=404)
         return document
 
+    if document_detail_request.uuid is not None and document_detail_request.uuid.strip():
+        # Public share links resolve through the publish uuid, mirroring
+        # sections: unpublished/revoked documents are simply not found.
+        db_publish_document = await crud.document.get_publish_document_by_uuid_async(
+            db=db,
+            uuid=document_detail_request.uuid.strip(),
+        )
+        if db_publish_document is None:
+            raise schemas.error.CustomException("Document not found", code=404)
+        document = await crud.document.get_document_by_document_id_async(
+            db=db,
+            document_id=db_publish_document.document_id,
+        )
+        if document is None:
+            raise schemas.error.CustomException("Document not found", code=404)
+        return document
+
     assert document_detail_request.url is not None
     normalized_url = document_detail_request.url.strip()
     if not normalized_url:
-        raise schemas.error.CustomException("Either document_id or url is required", code=400)
+        raise schemas.error.CustomException("Either document_id, uuid or url is required", code=400)
     if user is None:
         raise schemas.error.CustomException(
             "Authentication is required when querying document detail by url",
@@ -361,11 +401,12 @@ async def get_document_detail(
     )
     document_id = document.id
 
-    await _ensure_document_access(
+    db_publish_document = await _ensure_document_access(
         db=db,
         document_id=document_id,
         document_creator_id=document.creator_id,
         user_id=user.id if user is not None else None,
+        access_key=document_detail_request.access_key,
     )
 
     is_star = None
@@ -439,6 +480,8 @@ async def get_document_detail(
     ]
     res = schemas.document.DocumentDetailResponse(
         id=document.id,
+        publish_uuid=db_publish_document.uuid if db_publish_document is not None else None,
+        has_access_key=db_publish_document.access_key_encrypted is not None if db_publish_document is not None else False,
         labels=labels,
         sections=sections,
         users=collaborators,
@@ -589,6 +632,7 @@ async def get_document_markdown_content(
         document_id=document.id,
         document_creator_id=document.creator_id,
         user_id=user.id if user is not None else None,
+        access_key=document_markdown_request.access_key,
     )
     markdown_file_path = await _resolve_document_markdown_file_path(
         db=db,

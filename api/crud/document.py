@@ -1,5 +1,6 @@
 from datetime import date as date_type
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import Date, and_, cast, func, or_, select
@@ -281,6 +282,7 @@ def create_publish_document(
     now = datetime.now(timezone.utc)
     db_publish_document = models.document.PublishDocument(
         document_id=document_id,
+        uuid=uuid4().hex,
         create_time=now,
     )
     db.add(db_publish_document)
@@ -294,6 +296,7 @@ async def create_publish_document_async(
     now = datetime.now(timezone.utc)
     db_publish_document = models.document.PublishDocument(
         document_id=document_id,
+        uuid=uuid4().hex,
         create_time=now,
     )
     db.add(db_publish_document)
@@ -474,6 +477,7 @@ async def search_published_documents_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(
             models.document.PublishDocument.delete_at.is_(None),
+            models.document.PublishDocument.access_key_encrypted.is_(None),
         )
     stmt = stmt.where(
         models.document.Document.delete_at.is_(None),
@@ -537,6 +541,7 @@ async def count_published_documents_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(
             models.document.PublishDocument.delete_at.is_(None),
+            models.document.PublishDocument.access_key_encrypted.is_(None),
         )
     stmt = stmt.where(
         models.document.Document.delete_at.is_(None),
@@ -574,6 +579,7 @@ async def search_next_published_document_async(
             models.document.PublishDocument.document_id == models.document.Document.id,
         ).where(
             models.document.PublishDocument.delete_at.is_(None),
+            models.document.PublishDocument.access_key_encrypted.is_(None),
         )
     stmt = stmt.where(
         models.document.Document.delete_at.is_(None),
@@ -1467,6 +1473,16 @@ async def get_document_by_document_id_async(
     )
     return (await db.execute(stmt)).scalar_one_or_none()
 
+async def get_publish_document_by_uuid_async(
+    db: AsyncSession,
+    uuid: str,
+):
+    stmt = select(models.document.PublishDocument).where(
+        models.document.PublishDocument.uuid == uuid,
+        models.document.PublishDocument.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
 async def get_documents_by_document_ids_async(
     db: AsyncSession,
     document_ids: list[int],
@@ -2008,6 +2024,7 @@ async def get_public_labels_async(
             models.document.DocumentLabel.delete_at.is_(None),
             models.document.Document.delete_at.is_(None),
             models.document.PublishDocument.delete_at.is_(None),
+            models.document.PublishDocument.access_key_encrypted.is_(None),
         )
         .group_by(models.document.Label.id)
         .order_by(

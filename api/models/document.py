@@ -27,6 +27,8 @@ class PublishDocument(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("document.id"), index=True, nullable=False)
+    uuid: Mapped[str] = mapped_column(String(32), index=True, nullable=False)
+    access_key_encrypted: Mapped[str | None] = mapped_column(String(128), comment='AES-GCM encrypted share access key; NULL means the link is fully public')
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

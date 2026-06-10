@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,6 +7,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_async_db, get_current_user
+from common.encrypt import decrypt_share_access_key, encrypt_share_access_key
 from common.resource_actions import resolve_publish_action
 
 document_publish_manage_router = APIRouter()
@@ -70,12 +73,51 @@ async def document_publish_get_request(
     if db_publish_document is None:
         return schemas.document.DocumentPublishGetResponse(
             status=False,
+            uuid=None,
+            has_access_key=False,
             create_time=None,
             update_time=None,
         )
 
+    access_key = None
+    if db_publish_document.access_key_encrypted is not None:
+        access_key = decrypt_share_access_key(db_publish_document.access_key_encrypted)
+
     return schemas.document.DocumentPublishGetResponse(
         status=True,
+        uuid=db_publish_document.uuid,
+        has_access_key=db_publish_document.access_key_encrypted is not None,
+        access_key=access_key,
         create_time=db_publish_document.create_time,
         update_time=db_publish_document.update_time,
     )
+
+
+@document_publish_manage_router.post('/publish/access-key', response_model=schemas.common.NormalResponse)
+async def update_document_publish_access_key(
+    access_key_update_request: schemas.document.DocumentAccessKeyUpdateRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user),
+):
+    db_document = await crud.document.get_document_by_document_id_async(
+        db=db,
+        document_id=access_key_update_request.document_id,
+    )
+    if db_document is None:
+        raise schemas.error.CustomException("Document not found", code=404)
+    if db_document.creator_id != user.id:
+        raise schemas.error.CustomException("You are forbidden to manage the access key of this document", code=403)
+
+    db_publish_document = await crud.document.get_publish_document_by_document_id_async(
+        db=db,
+        document_id=access_key_update_request.document_id,
+    )
+    if db_publish_document is None:
+        raise schemas.error.CustomException("Document is not published", code=400)
+
+    normalized_key = (access_key_update_request.access_key or "").strip()
+    db_publish_document.access_key_encrypted = encrypt_share_access_key(normalized_key) if normalized_key else None
+    db_publish_document.update_time = datetime.now(timezone.utc)
+
+    await db.commit()
+    return schemas.common.SuccessResponse()
