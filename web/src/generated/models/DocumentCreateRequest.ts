@@ -104,6 +104,18 @@ export interface DocumentCreateRequest {
      */
     audio_meeting_mode?: boolean | null;
     /**
+     *
+     * @type {boolean}
+     * @memberof DocumentCreateRequest
+     */
+    auto_publish?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof DocumentCreateRequest
+     */
+    access_key?: string | null;
+    /**
      * 
      * @type {string}
      * @memberof DocumentCreateRequest
@@ -145,6 +157,8 @@ export function DocumentCreateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'auto_tag': json['auto_tag'] == null ? undefined : json['auto_tag'],
         'audio_meeting_mode': json['audio_meeting_mode'] == null ? undefined : json['audio_meeting_mode'],
         'from_plat': json['from_plat'],
+        'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -174,6 +188,8 @@ export function DocumentCreateRequestToJSONTyped(value?: DocumentCreateRequest |
         'auto_tag': value['auto_tag'],
         'audio_meeting_mode': value['audio_meeting_mode'],
         'from_plat': value['from_plat'],
+        'auto_publish': value['auto_publish'],
+        'access_key': value['access_key'],
     };
 }
 

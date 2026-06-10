@@ -21,6 +21,7 @@ import {
 	Sparkles,
 	Tags,
 	WandSparkles,
+	Globe2,
 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
+import { Input } from '../ui/input';
 import { AutomationOption, PanelTitle } from '@/components/form-panel';
 import {
 	InputGroup,
@@ -77,6 +79,8 @@ const AddLink = () => {
 		auto_summary: z.boolean(),
 		auto_podcast: z.boolean(),
 		auto_tag: z.boolean(),
+		auto_publish: z.boolean(),
+		access_key: z.string().optional(),
 	});
 	const router = useRouter();
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -90,6 +94,8 @@ const AddLink = () => {
 			sections: sectionId ? [Number(sectionId)] : [],
 			auto_podcast: false,
 			auto_tag: false,
+			auto_publish: false,
+			access_key: '',
 		},
 	});
 
@@ -351,6 +357,40 @@ const AddLink = () => {
 										</FormItem>
 									)}
 								/>
+									<FormField
+										name='auto_publish'
+										control={form.control}
+										render={({ field }) => (
+											<FormItem>
+												<AutomationOption
+													icon={Globe2}
+													title={t('document_create_auto_publish')}
+													description={t(
+														'document_create_auto_publish_description',
+													)}
+													checked={field.value}
+													disabled={false}
+													onCheckedChange={field.onChange}
+												/>
+											</FormItem>
+										)}
+									/>
+									{form.watch('auto_publish') ? (
+										<FormField
+											name='access_key'
+											control={form.control}
+											render={({ field }) => (
+												<FormItem>
+													<Input
+														className='font-mono'
+														placeholder={t('access_key_optional_placeholder')}
+														value={field.value ?? ''}
+														onChange={field.onChange}
+													/>
+												</FormItem>
+											)}
+										/>
+									) : null}
 							</div>
 							<div className='space-y-3 border-t border-border/60 pt-3'>
 								<PanelTitle

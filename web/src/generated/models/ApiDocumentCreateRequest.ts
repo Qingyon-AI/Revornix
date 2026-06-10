@@ -103,6 +103,18 @@ export interface ApiDocumentCreateRequest {
      * @memberof ApiDocumentCreateRequest
      */
     audio_meeting_mode?: boolean | null;
+    /**
+     *
+     * @type {boolean}
+     * @memberof ApiDocumentCreateRequest
+     */
+    auto_publish?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof ApiDocumentCreateRequest
+     */
+    access_key?: string | null;
 }
 
 /**
@@ -137,6 +149,8 @@ export function ApiDocumentCreateRequestFromJSONTyped(json: any, ignoreDiscrimin
         'auto_transcribe': json['auto_transcribe'] == null ? undefined : json['auto_transcribe'],
         'auto_tag': json['auto_tag'] == null ? undefined : json['auto_tag'],
         'audio_meeting_mode': json['audio_meeting_mode'] == null ? undefined : json['audio_meeting_mode'],
+        'auto_publish': json['auto_publish'] == null ? undefined : json['auto_publish'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -165,6 +179,8 @@ export function ApiDocumentCreateRequestToJSONTyped(value?: ApiDocumentCreateReq
         'auto_transcribe': value['auto_transcribe'],
         'auto_tag': value['auto_tag'],
         'audio_meeting_mode': value['audio_meeting_mode'],
+        'auto_publish': value['auto_publish'],
+        'access_key': value['access_key'],
     };
 }
 
