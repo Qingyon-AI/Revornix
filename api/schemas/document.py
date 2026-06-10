@@ -39,8 +39,18 @@ class DocumentPublishGetRequest(BaseModel):
 
 class DocumentPublishGetResponse(BaseModel):
     status: bool
+    uuid: str | None = None
+    has_access_key: bool = False
+    # Plaintext key, only ever returned to the creator via publish/get
+    access_key: str | None = None
     create_time: datetime | None = None
     update_time: datetime | None = None
+
+
+class DocumentAccessKeyUpdateRequest(BaseModel):
+    document_id: int
+    # None or blank clears the key (link becomes fully public again)
+    access_key: str | None = None
 
 class MineDocumentAuthorityRequest(BaseModel):
     document_id: int
@@ -260,6 +270,7 @@ class SearchPublicDocumentsRequest(BaseModel):
 
 class DocumentInfo(BaseModel):
     id: int
+    publish_uuid: str | None = None
     creator_id: int
     creator: UserPublicInfo | None = None
     category: int
@@ -318,6 +329,8 @@ class AudioDocumentInfo(BaseModel):
 
 class DocumentDetailResponse(BaseModel):
     id: int
+    publish_uuid: str | None = None
+    has_access_key: bool = False
     category: int
     title: str
     from_plat: str
@@ -356,12 +369,18 @@ class DocumentDeleteRequest(BaseModel):
 
 class DocumentDetailRequest(BaseModel):
     document_id: int | None = None
+    uuid: str | None = None
     url: str | None = None
+    access_key: str | None = None
 
     @model_validator(mode="after")
     def validate_document_identifier(self):
-        if self.document_id is None and (self.url is None or len(self.url.strip()) == 0):
-            raise ValueError("Either document_id or url is required")
+        if (
+            self.document_id is None
+            and (self.uuid is None or len(self.uuid.strip()) == 0)
+            and (self.url is None or len(self.url.strip()) == 0)
+        ):
+            raise ValueError("Either document_id, uuid or url is required")
         return self
 
 
@@ -369,6 +388,7 @@ class DocumentMarkdownContentRequest(BaseModel):
     document_id: int | None = None
     url: str | None = None
     snapshot_id: int | None = None
+    access_key: str | None = None
 
     @model_validator(mode="after")
     def validate_document_identifier(self):

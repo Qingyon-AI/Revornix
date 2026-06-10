@@ -1291,7 +1291,8 @@ def search_published_sections(
                              models.section.SectionLabel.delete_at.is_(None))
     query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at.is_(None))
+    query = query.filter(models.section.PublishSection.delete_at.is_(None),
+                         models.section.PublishSection.access_key_encrypted.is_(None))
     if desc:
         query = query.order_by(models.section.Section.id.desc())
     else:
@@ -1324,6 +1325,7 @@ async def search_published_sections_async(
         .where(
             models.section.Section.delete_at.is_(None),
             models.section.PublishSection.delete_at.is_(None),
+            models.section.PublishSection.access_key_encrypted.is_(None),
         )
         .options(selectinload(models.section.Section.creator))
         .distinct()
@@ -1369,7 +1371,8 @@ def count_published_sections(
                              models.section.SectionLabel.delete_at.is_(None))
     query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at.is_(None))
+    query = query.filter(models.section.PublishSection.delete_at.is_(None),
+                         models.section.PublishSection.access_key_encrypted.is_(None))
     query = query.distinct()
     return query.count()
 
@@ -1389,6 +1392,7 @@ async def count_published_sections_async(
         .where(
             models.section.Section.delete_at.is_(None),
             models.section.PublishSection.delete_at.is_(None),
+            models.section.PublishSection.access_key_encrypted.is_(None),
         )
     )
     if keyword is not None and len(keyword) > 0:
@@ -1416,7 +1420,8 @@ def search_next_published_section(
     query = db.query(models.section.Section)
     query = query.filter(models.section.Section.delete_at.is_(None))
     query = query.join(models.section.PublishSection, models.section.PublishSection.section_id == models.section.Section.id)
-    query = query.filter(models.section.PublishSection.delete_at.is_(None))
+    query = query.filter(models.section.PublishSection.delete_at.is_(None),
+                         models.section.PublishSection.access_key_encrypted.is_(None))
     if keyword is not None and len(keyword) > 0:
         query = query.filter(
             or_(
@@ -1453,6 +1458,7 @@ async def search_next_published_section_async(
         .where(
             models.section.Section.delete_at.is_(None),
             models.section.PublishSection.delete_at.is_(None),
+            models.section.PublishSection.access_key_encrypted.is_(None),
         )
     )
     if keyword is not None and len(keyword) > 0:
@@ -2166,6 +2172,7 @@ async def get_public_labels_async(
             models.section.SectionLabel.delete_at.is_(None),
             models.section.Section.delete_at.is_(None),
             models.section.PublishSection.delete_at.is_(None),
+            models.section.PublishSection.access_key_encrypted.is_(None),
         )
         .group_by(models.section.Label.id)
         .order_by(

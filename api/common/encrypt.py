@@ -27,6 +27,25 @@ FILE_SYSTEM_CONFIG_MASTER_KEY = base64.b64decode(FILE_SYSTEM_CONFIG_ENCRYPT_KEY)
 NOTIFICATION_SOURCE_CONFIG_MASTER_KEY = base64.b64decode(NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY)
 NOTIFICATION_TARGET_CONFIG_MASTER_KEY = base64.b64decode(NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY)
 
+# Share access keys are stored encrypted (not hashed) so the creator can view
+# the current key in the share dialog. Reuses the api-key master key to avoid
+# yet another required environment variable.
+def encrypt_share_access_key(
+    access_key: str
+):
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
+    nonce = os.urandom(12)
+    ciphertext = aesgcm.encrypt(nonce, access_key.encode(), None)
+    return base64.b64encode(nonce + ciphertext).decode()
+
+def decrypt_share_access_key(
+    encoded: str
+):
+    raw = base64.b64decode(encoded)
+    nonce, ciphertext = raw[:12], raw[12:]
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
+    return aesgcm.decrypt(nonce, ciphertext, None).decode()
+
 def encrypt_file_system_config(
     file_system_config_json_str: str
 ):

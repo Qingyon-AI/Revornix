@@ -1,7 +1,37 @@
+import hmac
+
 import models
 import schemas
+from common.encrypt import decrypt_share_access_key
 from enums.document import UserDocumentAuthority
 from enums.section import UserSectionAuthority, UserSectionRole
+
+# Distinct messages so the frontend can tell "show the key prompt" apart
+# from "the entered key is wrong".
+ACCESS_KEY_REQUIRED_MESSAGE = "Access key required"
+ACCESS_KEY_INCORRECT_MESSAGE = "Access key incorrect"
+
+
+def ensure_publish_access_key(
+    *,
+    access_key_encrypted: str | None,
+    provided_key: str | None,
+    has_direct_access: bool,
+) -> None:
+    """Feishu-style share gate: anonymous visitors may view a published
+    resource if they present the correct access key; creators/members
+    bypass the key entirely. No-op when the publish row has no key."""
+    if access_key_encrypted is None or has_direct_access:
+        return
+    normalized_key = provided_key.strip() if provided_key else ""
+    if not normalized_key:
+        raise schemas.error.CustomException(ACCESS_KEY_REQUIRED_MESSAGE, code=403)
+    try:
+        stored_key = decrypt_share_access_key(access_key_encrypted)
+    except Exception:
+        raise schemas.error.CustomException(ACCESS_KEY_INCORRECT_MESSAGE, code=403)
+    if not hmac.compare_digest(stored_key.encode(), normalized_key.encode()):
+        raise schemas.error.CustomException(ACCESS_KEY_INCORRECT_MESSAGE, code=403)
 
 
 def ensure_private_section_access(

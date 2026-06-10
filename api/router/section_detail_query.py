@@ -28,7 +28,11 @@ from enums.section import (
     UserSectionAuthority,
     UserSectionRole,
 )
-from common.access_control import ensure_private_section_access
+from common.access_control import (
+    ensure_private_section_access,
+    ensure_publish_access_key,
+    has_section_member_identity,
+)
 
 section_detail_query_router = APIRouter()
 
@@ -249,6 +253,7 @@ async def _build_section_info_response(
         ),
     )
     res.publish_uuid = db_publish_section.uuid if db_publish_section is not None else None
+    res.has_access_key = db_publish_section.access_key_encrypted is not None if db_publish_section is not None else False
 
     if res.md_file_name is not None:
         await _batch_sign_remote_fields([(res, "md_file_name", res.creator.id)])
@@ -341,6 +346,12 @@ async def section_document_request(
         ensure_private_section_access(
             user_id=user.id if user is not None else None,
             member_user_ids=member_user_ids,
+        )
+    else:
+        ensure_publish_access_key(
+            access_key_encrypted=db_publish_section.access_key_encrypted,
+            provided_key=section_document_request.access_key,
+            has_direct_access=has_member_access,
         )
 
     has_more = False
@@ -436,6 +447,20 @@ async def section_seo_detail_request(
 
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
+
+    has_direct_access = False
+    if user is not None:
+        db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+            db=db,
+            section_id=db_section.id,
+            user_id=user.id,
+        )
+        has_direct_access = has_section_member_identity(db_section_user)
+    ensure_publish_access_key(
+        access_key_encrypted=db_section_publish.access_key_encrypted,
+        provided_key=section_seo_detail_request.access_key,
+        has_direct_access=has_direct_access,
+    )
 
     return await _build_section_info_response(
         db=db,
@@ -544,6 +569,21 @@ async def get_seo_section_markdown_content(
     )
     if db_section is None:
         raise schemas.error.CustomException("Section not found", code=404)
+
+    has_direct_access = False
+    if user is not None:
+        db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+            db=db,
+            section_id=db_section.id,
+            user_id=user.id,
+        )
+        has_direct_access = has_section_member_identity(db_section_user)
+    ensure_publish_access_key(
+        access_key_encrypted=db_publish_section.access_key_encrypted,
+        provided_key=section_seo_detail_request.access_key,
+        has_direct_access=has_direct_access,
+    )
+
     if db_section.md_file_name is None:
         raise schemas.error.CustomException("Section markdown is not ready", code=404)
 
