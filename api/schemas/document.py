@@ -204,6 +204,10 @@ class BaseDocumentCreateRequest(BaseModel):
     auto_transcribe: bool = False
     auto_tag: bool = False
     audio_meeting_mode: bool | None = None
+    # Publish right away after creation; access_key optionally protects the
+    # public link (only meaningful together with auto_publish).
+    auto_publish: bool = False
+    access_key: str | None = None
 
 class DocumentCreateRequest(BaseDocumentCreateRequest):
     from_plat: str
