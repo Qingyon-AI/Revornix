@@ -20,6 +20,7 @@ from common.celery.app import (
     start_trigger_user_notification_event,
 )
 from common.dependencies import get_async_db, get_current_user, get_request_timezone
+from common.encrypt import encrypt_share_access_key
 from common.remote_file_cleanup import delete_section_remote_files
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.section_schedule import build_day_section_trigger
@@ -646,10 +647,13 @@ async def create_section(
         authority=UserSectionAuthority.FULL_ACCESS
     )
     if section_create_request.auto_publish:
-        await crud.section.create_publish_section_async(
+        db_publish_section = await crud.section.create_publish_section_async(
             db=db,
             section_id=db_section.id
         )
+        access_key = (section_create_request.access_key or "").strip()
+        if access_key:
+            db_publish_section.access_key_encrypted = encrypt_share_access_key(access_key)
     if (
         section_create_request.process_task_trigger_type == SectionProcessTriggerType.SCHEDULER
         and section_create_request.process_task_trigger_scheduler is None

@@ -60,6 +60,7 @@ const CreatePage = () => {
 			.string()
 			.min(1, { message: t('section_form_description_needed') }),
 		auto_publish: z.boolean(),
+		access_key: z.string().optional(),
 		auto_podcast: z.boolean(),
 		auto_illustration: z.boolean(),
 		cover: z.string().nullable(),
@@ -79,6 +80,7 @@ const CreatePage = () => {
 			description: '',
 			labels: [],
 			auto_publish: false,
+			access_key: '',
 			auto_podcast: false,
 			auto_illustration: false,
 			process_task_trigger_type: 1,
@@ -127,6 +129,7 @@ const CreatePage = () => {
 				cover: values.cover,
 				labels: values.labels,
 				auto_publish: values.auto_publish,
+				access_key: values.access_key,
 				auto_podcast: values.auto_podcast,
 				auto_illustration: values.auto_illustration,
 				process_task_trigger_type: values.process_task_trigger_type,
@@ -454,6 +457,22 @@ const CreatePage = () => {
 											);
 										}}
 									/>
+									{form.watch('auto_publish') ? (
+										<FormField
+											name='access_key'
+											control={form.control}
+											render={({ field }) => (
+												<FormItem>
+													<Input
+														className='font-mono'
+														placeholder={t('access_key_optional_placeholder')}
+														value={field.value ?? ''}
+														onChange={field.onChange}
+													/>
+												</FormItem>
+											)}
+										/>
+									) : null}
 
 									<FormField
 										name='auto_podcast'

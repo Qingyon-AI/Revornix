@@ -50,6 +50,12 @@ export interface SectionCreateRequest {
      */
     auto_publish?: boolean;
     /**
+     *
+     * @type {string}
+     * @memberof SectionCreateRequest
+     */
+    access_key?: string | null;
+    /**
      * 
      * @type {boolean}
      * @memberof SectionCreateRequest
@@ -105,6 +111,7 @@ export function SectionCreateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
         'process_task_trigger_type': json['process_task_trigger_type'],
         'process_task_trigger_scheduler': json['process_task_trigger_scheduler'] == null ? undefined : json['process_task_trigger_scheduler'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -128,6 +135,7 @@ export function SectionCreateRequestToJSONTyped(value?: SectionCreateRequest | n
         'auto_illustration': value['auto_illustration'],
         'process_task_trigger_type': value['process_task_trigger_type'],
         'process_task_trigger_scheduler': value['process_task_trigger_scheduler'],
+        'access_key': value['access_key'],
     };
 }
 
