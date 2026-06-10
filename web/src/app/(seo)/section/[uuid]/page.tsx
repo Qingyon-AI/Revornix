@@ -22,7 +22,12 @@ import { SectionProcessStatus } from '@/enums/section';
 import TipTapMarkdownViewer from '@/components/markdown/tiptap-markdown-viewer';
 import MarkdownContentShell from '@/components/markdown/markdown-content-shell';
 import Link from 'next/link';
-import { isSeoNotFoundError } from '@/lib/seo';
+import {
+	isAccessKeyError,
+	isAccessKeyIncorrectError,
+	isSeoNotFoundError,
+} from '@/lib/seo';
+import AccessKeyGate from '@/components/shared/access-key-gate';
 import {
 	getSEOSectionMarkdownContentServer,
 	searchSectionCommentServer,
@@ -58,6 +63,17 @@ const getSectionDetail = async (
 	return await serverRequest(sectionApi.getSEOSectionDetail, {
 		data,
 	});
+};
+
+// The access key only ever travels in the URL (?key=...) — it is never
+// persisted locally; the gate navigates to the keyed URL on submit.
+const resolveAccessKey = async (searchParams?: SearchParams) => {
+	const params = searchParams ? await searchParams : undefined;
+	const keyParam = params?.key;
+	if (typeof keyParam === 'string' && keyParam.trim()) {
+		return keyParam.trim();
+	}
+	return undefined;
 };
 
 const formatSectionDate = (
@@ -124,11 +140,11 @@ export async function generateMetadata(props: {
 
 	// fetch data
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ uuid: uuid }),
+		getSectionDetail({ uuid: uuid, access_key: await resolveAccessKey(props.searchParams) }),
 	);
 
 	if (section_err) {
-		if (isSeoNotFoundError(section_err)) {
+		if (isAccessKeyError(section_err) || isSeoNotFoundError(section_err)) {
 			return;
 		}
 		throw new Error('Something is wrong while getting the section detail');
@@ -157,6 +173,9 @@ export async function generateMetadata(props: {
 				section_res.title,
 				...(section_res.labels?.map((label) => label.name) ?? []),
 			],
+			// Key-protected content must never be indexed even when the
+			// visitor can currently see it.
+			noIndex: section_res.has_access_key === true,
 		});
 	}
 	return;
@@ -172,15 +191,26 @@ const SEOSectionDetail = async (props: {
 		props.params,
 	]);
 	const uuid = params.uuid;
+	const accessKey = await resolveAccessKey(props.searchParams);
 
 	let markdown: string | null = null;
 	let section: SectionInfoType | null = null;
 
 	const [section_res, section_err] = await utils.to(
-		getSectionDetail({ uuid: uuid }),
+		getSectionDetail({ uuid: uuid, access_key: accessKey }),
 	);
 
 	if (section_err) {
+		if (isAccessKeyError(section_err)) {
+			return (
+				<AccessKeyGate
+					incorrect={
+						accessKey !== undefined &&
+						isAccessKeyIncorrectError(section_err)
+					}
+				/>
+			);
+		}
 		if (isSeoNotFoundError(section_err)) {
 			notFound();
 		}
@@ -200,7 +230,12 @@ const SEOSectionDetail = async (props: {
 		section_res?.id
 			? await Promise.all([
 					section_res.md_file_name
-						? utils.to(getSEOSectionMarkdownContentServer({ uuid }))
+						? utils.to(
+								getSEOSectionMarkdownContentServer({
+									uuid,
+									access_key: accessKey,
+								}),
+							)
 						: Promise.resolve([null, null] as const),
 					utils.to(
 						searchSectionCommentServer({
@@ -215,6 +250,7 @@ const SEOSectionDetail = async (props: {
 							keyword: '',
 							desc: true,
 							limit: 10,
+							access_key: accessKey,
 						}),
 					),
 					utils.to(

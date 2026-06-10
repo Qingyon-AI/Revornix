@@ -258,7 +258,9 @@ const CommunityPage = async (props: { searchParams: SearchParams }) => {
 						'@type': 'Article',
 						name: document.title,
 						description: document.description,
-						url: createAbsoluteUrl(`/document/${document.id}`),
+						url: createAbsoluteUrl(
+							`/document/${document.publish_uuid ?? document.id}`,
+						),
 					})) ?? [])
 				: (sections?.elements?.slice(0, 8).map((section) => ({
 						'@type': 'CollectionPage',

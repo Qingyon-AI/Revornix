@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { SectionPublishGetResponse } from '@/generated';
 import { Label } from '../ui/label';
@@ -12,6 +13,7 @@ import {
 	getSectionPublish,
 	publishSection,
 	republishSection,
+	updateSectionPublishAccessKey,
 } from '@/service/section';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -86,6 +88,38 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 		},
 	});
 
+	const [accessKeyDraft, setAccessKeyDraft] = useState('');
+	// Show the current key directly in the input so the creator can read,
+	// tweak or clear it in place.
+	useEffect(() => {
+		setAccessKeyDraft(sectionPublish?.access_key ?? '');
+	}, [sectionPublish?.access_key]);
+	const mutateAccessKey = useMutation({
+		mutationFn: (accessKey: string | null) =>
+			updateSectionPublishAccessKey({
+				section_id,
+				access_key: accessKey,
+			}),
+		onSuccess(data, accessKey) {
+			toast.success(
+				accessKey ? t('access_key_updated') : t('access_key_cleared')
+			);
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionPublish', section_id],
+			});
+		},
+		onError(error) {
+			toast.error(error.message);
+		},
+	});
+
+	const currentAccessKey = sectionPublish?.access_key ?? null;
+	const publicSectionBaseUrl = `${process.env.NEXT_PUBLIC_HOST}/section/${sectionPublish?.uuid}`;
+	// Keyed links unlock directly without prompting visitors for the key.
+	const publicSectionUrl = currentAccessKey
+		? `${publicSectionBaseUrl}?key=${encodeURIComponent(currentAccessKey)}`
+		: publicSectionBaseUrl;
+
 	const handleUpdateTheShareStatus = (e: boolean) => {
 		mutatePublish.mutate(e);
 	};
@@ -108,16 +142,12 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 					<Input
 						disabled
 						className='truncate'
-						value={`${process.env.NEXT_PUBLIC_HOST}/section/${sectionPublish.uuid}`}
+						value={publicSectionUrl}
 					/>
 					<Button
 						size={'icon'}
 						onClick={() => {
-							sectionPublish &&
-								sectionPublish.uuid &&
-								copy(
-									`${process.env.NEXT_PUBLIC_HOST}/section/${sectionPublish?.uuid}`
-								);
+							copy(publicSectionUrl);
 							toast.success(t('copied'));
 						}}>
 						<CopyIcon />
@@ -130,6 +160,43 @@ const SectionPublish = ({ section_id }: { section_id: number }) => {
 						}}>
 						<RefreshCcwIcon />
 					</Button>
+				</div>
+			)}
+			{sectionPublish?.status && sectionPublish?.uuid && (
+				<div className='w-full flex flex-col gap-2'>
+					<Label>{t('access_key_label')}</Label>
+					{sectionPublish?.has_access_key && (
+						<p className='text-xs text-muted-foreground'>
+							{t('access_key_enabled_hint')}
+						</p>
+					)}
+					<div className='w-full flex items-center gap-2'>
+						<Input
+							className='font-mono'
+							placeholder={t('access_key_placeholder')}
+							value={accessKeyDraft}
+							onChange={(e) => setAccessKeyDraft(e.target.value)}
+						/>
+						<Button
+							disabled={
+								!accessKeyDraft.trim() ||
+								accessKeyDraft.trim() === currentAccessKey ||
+								mutateAccessKey.isPending
+							}
+							onClick={() =>
+								mutateAccessKey.mutate(accessKeyDraft.trim())
+							}>
+							{t('access_key_set')}
+						</Button>
+						{sectionPublish?.has_access_key && (
+							<Button
+								variant={'outline'}
+								disabled={mutateAccessKey.isPending}
+								onClick={() => mutateAccessKey.mutate(null)}>
+								{t('access_key_clear')}
+							</Button>
+						)}
+					</div>
 				</div>
 			)}
 		</>

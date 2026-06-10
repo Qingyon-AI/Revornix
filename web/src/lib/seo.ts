@@ -73,6 +73,21 @@ export const formatSeoDate = (
 	}).format(new Date(value));
 };
 
+// Mirrors the backend messages in api/common/access_control.py so the SEO
+// pages can show the key prompt instead of a 404.
+export const isAccessKeyRequiredError = (error: unknown) =>
+	!!error &&
+	typeof error === 'object' &&
+	(error as { message?: string }).message === 'Access key required';
+
+export const isAccessKeyIncorrectError = (error: unknown) =>
+	!!error &&
+	typeof error === 'object' &&
+	(error as { message?: string }).message === 'Access key incorrect';
+
+export const isAccessKeyError = (error: unknown) =>
+	isAccessKeyRequiredError(error) || isAccessKeyIncorrectError(error);
+
 export const isSeoNotFoundError = (error: unknown) => {
 	if (!error || typeof error !== 'object') {
 		return false;
