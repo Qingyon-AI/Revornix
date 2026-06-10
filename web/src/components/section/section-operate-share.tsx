@@ -1,6 +1,12 @@
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getSectionPublish, publishSection, republishSection } from '@/service/section';
+import {
+	getSectionPublish,
+	publishSection,
+	republishSection,
+	updateSectionPublishAccessKey,
+} from '@/service/section';
 import { Badge } from '../ui/badge';
 import {
 	Dialog,
@@ -19,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { getQueryClient } from '@/lib/get-query-client';
 import { toast } from 'sonner';
 import { getSiteOrigin } from '@/lib/seo-metadata';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const SectionOperateShare = ({
 	section_id,
@@ -60,8 +66,13 @@ const SectionOperateShare = ({
 		enabled: canPublish,
 	});
 	const isPublished = Boolean(sectionPublish?.status);
-	const publicSectionUrl =
-		sectionPublish?.uuid ? `${getSiteOrigin()}/section/${sectionPublish.uuid}` : '';
+	const currentAccessKey = sectionPublish?.access_key ?? null;
+	// Keyed links unlock directly without prompting visitors for the key.
+	const publicSectionUrl = sectionPublish?.uuid
+		? currentAccessKey
+			? `${getSiteOrigin()}/section/${sectionPublish.uuid}?key=${encodeURIComponent(currentAccessKey)}`
+			: `${getSiteOrigin()}/section/${sectionPublish.uuid}`
+		: '';
 
 	const mutatePublishSection = useMutation({
 		mutationFn: (status: boolean) => publishSection({ section_id, status }),
@@ -85,6 +96,32 @@ const SectionOperateShare = ({
 		mutationFn: () => republishSection({ section_id }),
 		onSuccess() {
 			toast.success(t('section_publish_status_on'));
+			queryClient.invalidateQueries({
+				queryKey: ['getSectionPublish', section_id],
+			});
+		},
+		onError(error) {
+			console.error(error);
+			toast.error(error.message);
+		},
+	});
+
+	const [accessKeyDraft, setAccessKeyDraft] = useState('');
+	// Show the current key directly in the input so the creator can read,
+	// tweak or clear it in place.
+	useEffect(() => {
+		setAccessKeyDraft(sectionPublish?.access_key ?? '');
+	}, [sectionPublish?.access_key]);
+	const mutateAccessKey = useMutation({
+		mutationFn: (accessKey: string | null) =>
+			updateSectionPublishAccessKey({
+				section_id,
+				access_key: accessKey,
+			}),
+		onSuccess(_, accessKey) {
+			toast.success(
+				accessKey ? t('access_key_updated') : t('access_key_cleared'),
+			);
 			queryClient.invalidateQueries({
 				queryKey: ['getSectionPublish', section_id],
 			});
@@ -203,6 +240,48 @@ const SectionOperateShare = ({
 									<p className='mt-3 break-all rounded-2xl border border-border/60 bg-background/60 px-3 py-2 text-xs leading-5 text-muted-foreground'>
 										{publicSectionUrl}
 									</p>
+								) : null}
+								{isPublished ? (
+									<div className='mt-3 space-y-2'>
+										<p className='text-sm font-semibold text-foreground'>
+											{t('access_key_label')}
+										</p>
+										{sectionPublish?.has_access_key ? (
+											<p className='text-xs leading-5 text-muted-foreground'>
+												{t('access_key_enabled_hint')}
+											</p>
+										) : null}
+										<div className='flex flex-wrap items-center gap-2'>
+											<Input
+												className='min-w-40 flex-1 font-mono'
+												placeholder={t('access_key_placeholder')}
+												value={accessKeyDraft}
+												onChange={(e) => setAccessKeyDraft(e.target.value)}
+											/>
+											<Button
+												variant='outline'
+												className='rounded-full'
+												disabled={
+													!accessKeyDraft.trim() ||
+													accessKeyDraft.trim() === currentAccessKey ||
+													mutateAccessKey.isPending
+												}
+												onClick={() =>
+													mutateAccessKey.mutate(accessKeyDraft.trim())
+												}>
+												{t('access_key_set')}
+											</Button>
+											{sectionPublish?.has_access_key ? (
+												<Button
+													variant='outline'
+													className='rounded-full'
+													disabled={mutateAccessKey.isPending}
+													onClick={() => mutateAccessKey.mutate(null)}>
+													{t('access_key_clear')}
+												</Button>
+											) : null}
+										</div>
+									</div>
 								) : null}
 							</div>
 							) : null}
