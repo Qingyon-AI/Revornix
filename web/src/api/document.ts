@@ -16,6 +16,7 @@ export default {
     deleteDocument: API_PREFIX + '/document/delete',
     publishDocument: API_PREFIX + '/document/publish',
     getDocumentPublish: API_PREFIX + '/document/publish/get',
+    updateDocumentPublishAccessKey: API_PREFIX + '/document/publish/access-key',
     searchPublicDocument: API_PREFIX + '/document/public/search',
     getMineDocumentAuthority: API_PREFIX + '/document/mine/authority',
     getDocumentUser: API_PREFIX + '/document/user',

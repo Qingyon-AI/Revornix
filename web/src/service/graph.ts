@@ -1,9 +1,11 @@
 import graphApi from '@/api/graph'
-import { DocumentGraphRequest, SectionGraphRequest, GraphResponse } from '@/generated'
+import { DocumentGraphRequest, SectionGraphRequest, GraphResponse, type GraphMode } from '@/generated'
 import { request } from '@/lib/request'
 import { serverRequest } from '@/lib/request-server'
 
-export type GraphMode = 'knowledge' | 'document'
+// Re-export the generated model ('knowledge' | 'document') so consumers can keep
+// importing from this module.
+export type { GraphMode } from '@/generated'
 
 export const searchGraph = async (data?: { mode?: GraphMode }): Promise<GraphResponse> => {
     return await request(graphApi.searchGraph, {

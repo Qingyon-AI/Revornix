@@ -1,71 +1,37 @@
 import documentApi from '@/api/document'
-import { InfiniteScrollPaginationDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InfiniteScrollPaginationDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest, UserPublicInfo } from '@/generated'
+import { InfiniteScrollPaginationDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InfiniteScrollPaginationDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest, UserPublicInfo, DocumentAiSummaryRequest, DocumentPublishRequest, DocumentPublishGetRequest, MineDocumentAuthorityRequest, DocumentUserAuthorityResponse, DocumentUserRequest, DocumentUserAddRequest, DocumentUserModifyRequest, DocumentUserDeleteRequest, GenerateDocumentPodcastRequest, DocumentGraphGenerateRequest, DocumentTranscribeRequest, DocumentAudioSpeakerRenameRequest, CancelDocumentTaskRequest, DocumentMarkdownContentRequest, SearchPublicDocumentsRequest, DocumentCommentCreateRequest, DocumentCommentSearchRequest, DocumentCommentReplySearchRequest, DocumentCommentLikeRequest, DocumentCommentDeleteRequest } from '@/generated'
+
+// Re-export generated request/response models so consumers can keep importing from this module.
+export type { DocumentAiSummaryRequest, DocumentPublishRequest, DocumentPublishGetRequest, MineDocumentAuthorityRequest, DocumentUserAuthorityResponse, DocumentUserRequest, DocumentUserAddRequest, DocumentUserModifyRequest, DocumentUserDeleteRequest, GenerateDocumentPodcastRequest, DocumentGraphGenerateRequest, DocumentTranscribeRequest, DocumentAudioSpeakerRenameRequest, CancelDocumentTaskRequest, DocumentMarkdownContentRequest, SearchPublicDocumentsRequest, DocumentCommentCreateRequest, DocumentCommentSearchRequest, DocumentCommentReplySearchRequest, DocumentCommentLikeRequest, DocumentCommentDeleteRequest } from '@/generated'
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
 import type { ServerRequestOptions } from '@/lib/request-core'
 import { serverRequest } from '@/lib/request-server'
 
-export type DocumentAiSummaryRequest = {
-    document_id: number
-    model_id?: number
-}
-
-export type DocumentPublishRequest = {
-    document_id: number
-    status: boolean
-}
-
 export type DocumentPinRequest = {
     document_id: number
     status: boolean
 }
 
-export type DocumentPublishGetRequest = {
-    document_id: number
-}
-
+// NOTE: kept local (not the generated model) — the generated type declares Date
+// timestamps, but the raw `request` wrapper returns plain JSON strings.
 export type DocumentPublishGetResponse = {
     status: boolean
+    uuid?: string | null
+    has_access_key?: boolean
+    access_key?: string | null
     create_time?: string | null
     update_time?: string | null
 }
 
-export type MineDocumentAuthorityRequest = {
+export type DocumentAccessKeyUpdateRequest = {
     document_id: number
+    // null/blank clears the key (link becomes fully public again)
+    access_key?: string | null
 }
 
-export type DocumentUserAuthorityResponse = {
-    document_id: number
-    user_id: number
-    authority: number
-    is_creator: boolean
-}
-
-export type DocumentUserRequest = {
-    document_id: number
-    start?: number
-    limit?: number
-    keyword?: string
-}
-
-export type DocumentUserAddRequest = {
-    document_id: number
-    user_id: number
-    authority: 0 | 1 | 2
-}
-
-export type DocumentUserModifyRequest = {
-    document_id: number
-    user_id: number
-    authority: 0 | 1 | 2
-}
-
-export type DocumentUserDeleteRequest = {
-    document_id: number
-    user_id: number
-}
-
+// NOTE: kept local — generated model declares Date timestamps (runtime is string).
 export type DocumentCollaboratorPublicInfo = {
     id: number
     avatar: string
@@ -84,36 +50,6 @@ export type InfiniteScrollPagination<T> = {
     has_more: boolean
     next_start?: number | null
     elements: T[]
-}
-
-export type GenerateDocumentPodcastRequest = {
-    document_id: number
-    engine_id?: number
-}
-
-export type DocumentGraphGenerateRequest = {
-    document_id: number
-    model_id?: number
-}
-
-export type DocumentTranscribeRequest = {
-    document_id: number
-    engine_id?: number
-}
-
-export type DocumentAudioSpeakerRenameRequest = {
-    document_id: number
-    speaker_map: Record<string, string>
-}
-
-export type CancelDocumentTaskRequest = {
-    document_id: number
-}
-
-export type DocumentMarkdownContentRequest = {
-    document_id?: number
-    url?: string
-    snapshot_id?: number
 }
 
 export const transcribeDocument = async (data: DocumentTranscribeRequest): Promise<NormalResponse> => {
@@ -184,6 +120,12 @@ export const publishDocument = async (data: DocumentPublishRequest): Promise<Nor
 
 export const getDocumentPublish = async (data: DocumentPublishGetRequest): Promise<DocumentPublishGetResponse> => {
     return await request(documentApi.getDocumentPublish, {
+        data
+    })
+}
+
+export const updateDocumentPublishAccessKey = async (data: DocumentAccessKeyUpdateRequest): Promise<NormalResponse> => {
+    return await request(documentApi.updateDocumentPublishAccessKey, {
         data
     })
 }
@@ -319,15 +261,6 @@ export const searchAllMyDocument = async (data: SearchAllMyDocumentsRequest): Pr
     return await request(documentApi.searchMyDocuments, { data })
 }
 
-export type SearchPublicDocumentsRequest = {
-    start?: number
-    limit: number
-    keyword?: string
-    creator_id?: number
-    label_ids?: number[]
-    desc?: boolean
-}
-
 export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchPublicDocument, { data })
 }
@@ -342,21 +275,25 @@ export const searchUserStarDocument = async (data: SearchMyStarDocumentsRequest)
     return await request(documentApi.searchStarDocument, { data })
 }
 
-export const getDocumentDetail = async ({ document_id }: { document_id: number }): Promise<DocumentDetailResponse> => {
+export const getDocumentDetail = async ({ document_id, uuid, access_key }: { document_id?: number; uuid?: string; access_key?: string }): Promise<DocumentDetailResponse> => {
     return await request(documentApi.documentDetail, {
         data: {
-            document_id
+            document_id,
+            uuid,
+            access_key
         }
     })
 }
 
 export const getDocumentDetailServer = async (
-    { document_id }: { document_id: number },
+    { document_id, uuid, access_key }: { document_id?: number; uuid?: string; access_key?: string },
     headers?: Headers,
 ): Promise<DocumentDetailResponse> => {
     return await serverRequest(documentApi.documentDetail, {
         data: {
             document_id,
+            uuid,
+            access_key,
         },
         headers,
     })
@@ -402,6 +339,7 @@ export const getDocumentLabelSummary = async (): Promise<LabelSummaryResponse> =
 
 export type DocumentCommentSortType = 'time' | 'hot'
 
+// NOTE: kept local — generated model declares Date timestamps (runtime is string).
 export type DocumentCommentInfo = {
     id: number
     content: string
@@ -424,35 +362,6 @@ export type InfiniteScrollPaginationDocumentCommentInfo = {
     has_more: boolean
     elements: DocumentCommentInfo[]
     next_start?: number | null
-}
-
-export type DocumentCommentCreateRequest = {
-    content: string
-    document_id: number
-    parent_id?: number | null
-}
-
-export type DocumentCommentSearchRequest = {
-    document_id: number
-    start?: number | null
-    limit?: number
-    keyword?: string | null
-    sort?: DocumentCommentSortType
-    preview_reply_limit?: number
-}
-
-export type DocumentCommentReplySearchRequest = {
-    root_comment_id: number
-    start?: number | null
-    limit?: number
-}
-
-export type DocumentCommentLikeRequest = {
-    document_comment_id: number
-}
-
-export type DocumentCommentDeleteRequest = {
-    document_comment_ids: number[]
 }
 
 export const createDocumentComment = async (data: DocumentCommentCreateRequest): Promise<NormalResponse> => {
@@ -529,6 +438,7 @@ export const getDocumentMarkdownContentServer = async (data: {
     document_id?: number
     url?: string
     snapshot_id?: number
+    access_key?: string
 }): Promise<string> => {
     return await serverRequest(documentApi.getDocumentMarkdownContent, { data })
 }
