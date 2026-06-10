@@ -1,6 +1,23 @@
 import accessRequestApi from '@/api/access-request';
 import { request } from '@/lib/request';
-import type { NormalResponse, UserPublicInfo } from '@/generated';
+import type {
+	NormalResponse,
+	UserPublicInfo,
+	AccessRequestCreateRequest,
+	AccessRequestListRequest,
+	AccessRequestMineRequest,
+	AccessRequestHandleRequest,
+	AccessRequestCancelRequest,
+} from '@/generated';
+
+// Re-export generated request models so consumers can keep importing from this module.
+export type {
+	AccessRequestCreateRequest,
+	AccessRequestListRequest,
+	AccessRequestMineRequest,
+	AccessRequestHandleRequest,
+	AccessRequestCancelRequest,
+} from '@/generated';
 
 export enum AccessRequestTargetType {
 	SECTION = 0,
@@ -14,6 +31,8 @@ export enum AccessRequestStatus {
 	CANCELLED = 3,
 }
 
+// NOTE: kept local (not the generated model) — the generated type declares Date
+// timestamps, but the raw `request` wrapper returns plain JSON strings.
 export type AccessRequestInfo = {
 	id: number;
 	target_type: AccessRequestTargetType;
@@ -26,34 +45,6 @@ export type AccessRequestInfo = {
 	handle_message: string | null;
 	create_time: string;
 	update_time: string | null;
-};
-
-export type AccessRequestCreateRequest = {
-	target_type: AccessRequestTargetType;
-	target_id: number;
-	message?: string | null;
-};
-
-export type AccessRequestListRequest = {
-	target_type: AccessRequestTargetType;
-	target_id: number;
-	status?: AccessRequestStatus | null;
-};
-
-export type AccessRequestMineRequest = {
-	target_type: AccessRequestTargetType;
-	target_id: number;
-};
-
-export type AccessRequestHandleRequest = {
-	access_request_id: number;
-	approve: boolean;
-	authority?: number | null;
-	handle_message?: string | null;
-};
-
-export type AccessRequestCancelRequest = {
-	access_request_id: number;
 };
 
 export type AccessRequestListResponse = {

@@ -1,5 +1,8 @@
 import userApi from '@/api/user'
-import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InfiniteScrollPaginationUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
+import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InfiniteScrollPaginationUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest, AuthResponse, TotpRegistrationOptionsResponse, MfaStatusUpdateRequest } from '@/generated';
+
+// Re-export generated models so consumers can keep importing from this module.
+export type { AuthResponse, TotpRegistrationOptionsResponse, MfaStatusUpdateRequest } from '@/generated';
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
 import { serverRequest } from '@/lib/request-server';
@@ -28,15 +31,9 @@ export type ComputeLedgerRequest = {
     direction?: 'all' | 'income' | 'expense';
 }
 
-export type AuthResponse = {
-    access_token?: string | null;
-    refresh_token?: string | null;
-    expires_in?: number | null;
-    mfa_required?: boolean;
-    challenge_id?: string | null;
-    methods?: string[];
-}
-
+// NOTE: PasskeyInfo / TotpInfo are kept local (not the generated models) — the
+// generated types declare Date timestamps, but the raw `request` wrapper returns
+// plain JSON strings.
 export type PasskeyInfo = {
     id: number;
     rp_id?: string | null;
@@ -57,16 +54,6 @@ export type TotpInfo = {
     name?: string | null;
     last_used_at?: string | null;
     create_time?: string | null;
-}
-
-export type TotpRegistrationOptionsResponse = {
-    challenge_id: string;
-    secret: string;
-    otpauth_uri: string;
-}
-
-export type MfaStatusUpdateRequest = {
-    enabled: boolean;
 }
 
 export const getUserInfoForPaySystem = async (): Promise<UserResponseDTO> => {

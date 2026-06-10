@@ -32,6 +32,7 @@ export default {
     publishSection: API_PREFIX + "/section/publish",
     republishSection: API_PREFIX + "/section/republish",
     getSectionPublish: API_PREFIX + "/section/publish/get",
+    updateSectionPublishAccessKey: API_PREFIX + "/section/publish/access-key",
     searchSectionDocuments: API_PREFIX + "/section/documents",
     retrySectionDocumentIntegration: API_PREFIX + "/section/document/retry",
     triggerSectionProcess: API_PREFIX + "/section/process/trigger",

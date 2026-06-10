@@ -14,10 +14,25 @@ import type {
 	NotificationSource,
 	NotificationTarget,
 	SectionInfo,
+	AdminUserSearchRequest,
+	AdminUserCreateRequest,
+	AdminUserUpdateRequest,
+	AdminAntiScrapeSummaryWindow,
+} from '@/generated';
+
+// Re-export generated models so consumers can keep importing from this module.
+export type {
+	AdminUserSearchRequest,
+	AdminUserCreateRequest,
+	AdminUserUpdateRequest,
+	AdminAntiScrapeSummaryWindow,
 } from '@/generated';
 import type { PaginationData } from '@/schemas/pagination';
 import { request } from '@/lib/request';
 
+// NOTE: the Admin* summary/detail/ledger/event types below are kept local (not the
+// generated models) — the generated types declare Date timestamps, but the raw
+// `request` wrapper returns plain JSON strings.
 export type AdminUserSummary = {
 	id: number;
 	uuid: string;
@@ -71,34 +86,6 @@ export type AdminUserComputeLedgerResponse = {
 	has_more: boolean;
 };
 
-export type AdminUserSearchRequest = {
-	keyword?: string;
-	role?: number;
-	is_forbidden?: boolean;
-	page_num?: number;
-	page_size?: number;
-};
-
-export type AdminUserCreateRequest = {
-	nickname: string;
-	email: string;
-	password: string;
-	role: number;
-	slogan?: string;
-	avatar?: string;
-};
-
-export type AdminUserUpdateRequest = {
-	user_id: number;
-	nickname?: string;
-	email?: string;
-	password?: string;
-	role?: number;
-	slogan?: string;
-	avatar?: string;
-	is_forbidden?: boolean;
-};
-
 export type AdminDocumentSummary = {
 	id: number;
 	title: string;
@@ -122,11 +109,6 @@ export type AdminSectionSummary = {
 	publish_uuid?: string | null;
 	create_time: string;
 	update_time?: string | null;
-};
-
-export type AdminAntiScrapeSummaryWindow = {
-	minutes: number;
-	counts: Record<string, number>;
 };
 
 export type AdminAntiScrapeEvent = {

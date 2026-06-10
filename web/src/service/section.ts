@@ -1,5 +1,8 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InfiniteScrollPaginationSectionDocumentInfo, InfiniteScrollPaginationSectionInfo, InfiniteScrollPaginationSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentDeleteRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse, UserPublicInfo } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InfiniteScrollPaginationSectionDocumentInfo, InfiniteScrollPaginationSectionInfo, InfiniteScrollPaginationSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentDeleteRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse, UserPublicInfo, RetrySectionDocumentRequest, TriggerSectionProcessRequest, GenerateSectionPptRequest, GenerateSectionPodcastRequest, CancelSectionTaskRequest, SectionPptSlide, SectionCommentCreateRequest, SectionCommentSearchRequest, SectionCommentReplySearchRequest, SectionCommentLikeRequest } from '@/generated';
+
+// Re-export generated models so consumers can keep importing from this module.
+export type { RetrySectionDocumentRequest, TriggerSectionProcessRequest, GenerateSectionPptRequest, GenerateSectionPodcastRequest, CancelSectionTaskRequest, SectionPptSlide, SectionCommentCreateRequest, SectionCommentSearchRequest, SectionCommentReplySearchRequest, SectionCommentLikeRequest } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -7,46 +10,13 @@ import { request } from '@/lib/request';
 import type { ServerRequestOptions } from '@/lib/request-core';
 import { serverRequest } from '@/lib/request-server';
 
-export type RetrySectionDocumentRequest = {
-    section_id: number
-    document_id: number
-}
-
-export type TriggerSectionProcessRequest = {
-    section_id: number
-    model_id?: number
-    image_engine_id?: number
-    podcast_engine_id?: number
-}
-
-export type GenerateSectionPptRequest = {
-    section_id: number
-    model_id?: number
-    image_engine_id?: number
-}
-
-export type GenerateSectionPodcastRequest = {
-    section_id: number
-    engine_id?: number
-}
-
-export type CancelSectionTaskRequest = {
-    section_id: number
-}
-
 export type SectionPinRequest = {
     section_id: number
     status: boolean
 }
 
-export type SectionPptSlide = {
-    id: string
-    title: string
-    summary: string
-    prompt: string
-    image_url?: string | null
-}
-
+// NOTE: kept local (not the generated model) — the generated type declares Date
+// timestamps, but the raw `request` wrapper returns plain JSON strings.
 export type SectionPptPreview = {
     status: string
     title?: string | null
@@ -207,6 +177,7 @@ export const getSEOSectionDetail = async (data: SectionSeoDetailRequest): Promis
 
 export type SectionCommentSortType = 'time' | 'hot'
 
+// NOTE: kept local — generated model declares Date timestamps (runtime is string).
 export type SectionCommentInfo = {
     id: number
     content: string
@@ -229,31 +200,6 @@ export type InfiniteScrollPaginationSectionCommentInfo = {
     has_more: boolean
     elements: SectionCommentInfo[]
     next_start?: number | null
-}
-
-export type SectionCommentCreateRequest = {
-    content: string
-    section_id: number
-    parent_id?: number | null
-}
-
-export type SectionCommentSearchRequest = {
-    section_id: number
-    start?: number | null
-    limit?: number
-    keyword?: string | null
-    sort?: SectionCommentSortType
-    preview_reply_limit?: number
-}
-
-export type SectionCommentReplySearchRequest = {
-    root_comment_id: number
-    start?: number | null
-    limit?: number
-}
-
-export type SectionCommentLikeRequest = {
-    section_comment_id: number
 }
 
 export const createSectionComment = async (data: SectionCommentCreateRequest): Promise<NormalResponse> => {
@@ -346,6 +292,18 @@ export const getSectionPublish = async (data: SectionPublishGetRequest): Promise
     })
 }
 
+export type SectionAccessKeyUpdateRequest = {
+    section_id: number
+    // null/blank clears the key (link becomes fully public again)
+    access_key?: string | null
+}
+
+export const updateSectionPublishAccessKey = async (data: SectionAccessKeyUpdateRequest): Promise<NormalResponse> => {
+    return await request(sectionApi.updateSectionPublishAccessKey, {
+        data
+    })
+}
+
 export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InfiniteScrollPaginationSectionDocumentInfo> => {
     return await request(sectionApi.searchSectionDocuments, {
         data
@@ -408,6 +366,7 @@ export const searchSectionCommentServer = async (
 
 export const getSEOSectionMarkdownContentServer = async (data: {
     uuid: string
+    access_key?: string
 }): Promise<string> => {
     return await serverRequest(sectionApi.getSEOSectionMarkdownContent, { data })
 }

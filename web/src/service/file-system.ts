@@ -1,7 +1,13 @@
 import { request } from '@/lib/request'
 import fileSystemApi from '@/api/file_system'
-import { FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemDetail, UserFileSystemInfoRequest, UserFileSystemUpdateRequest, PresignUploadURLRequest } from '@/generated'
+import { FileSystemInfo, FileSystemInfoRequest, FileSystemInstallRequest, FileSystemInstallResponse, FileSystemSearchRequest, MineFileSystemSearchResponse, NormalResponse, ProvideFileSystemSearchResponse, PresignUploadURLResponse, UserFileSystemDeleteRequest, UserFileSystemDetail, UserFileSystemInfoRequest, UserFileSystemUpdateRequest, PresignUploadURLRequest, StoredFileSearchRequest, StoredFileSyncRequest, StoredFileSyncResponse, StoredFileMigrateResponse } from '@/generated'
 
+// Re-export generated models so consumers can keep importing from this module.
+export type { StoredFileSearchRequest, StoredFileSyncRequest, StoredFileSyncResponse, StoredFileMigrateResponse } from '@/generated'
+
+// NOTE: StoredFileInfo / StoredFileSearchResponse are kept local (not the generated
+// models) — the generated types declare Date timestamps, but the raw `request`
+// wrapper returns plain JSON strings.
 export type StoredFileInfo = {
     id: number;
     owner_user_id: number;
@@ -15,13 +21,6 @@ export type StoredFileInfo = {
     update_time?: string | null;
 }
 
-export type StoredFileSearchRequest = {
-    keyword?: string | null;
-    user_file_system_id?: number | null;
-    start?: number | null;
-    limit?: number;
-}
-
 export type StoredFileSearchResponse = {
     total: number;
     start?: number | null;
@@ -31,26 +30,12 @@ export type StoredFileSearchResponse = {
     data: StoredFileInfo[];
 }
 
-export type StoredFileSyncRequest = {
-    user_file_system_id?: number | null;
-}
-
-export type StoredFileSyncResponse = {
-    synced: number;
-    candidates: number;
-    total: number;
-}
-
+// NOTE: StoredFileMigrateRequest has no generated counterpart (missing from the
+// OpenAPI client) — keep local until the client is regenerated.
 export type StoredFileMigrateRequest = {
     source_user_file_system_id: number;
     target_user_file_system_id: number;
     stored_file_ids?: number[] | null;
-}
-
-export type StoredFileMigrateResponse = {
-    migrated: number;
-    skipped: number;
-    failed: number;
 }
 
 export const getProvideFileSystems = async (data: FileSystemSearchRequest): Promise<ProvideFileSystemSearchResponse> => {
