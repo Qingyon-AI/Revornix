@@ -351,6 +351,8 @@ class SectionCreateRequest(BaseModel):
     cover: str | None = None
     labels: list[int]
     auto_publish: bool = False
+    # Optionally protects the public link (only meaningful with auto_publish)
+    access_key: str | None = None
     auto_podcast: bool = False
     auto_illustration: bool = False
     process_task_trigger_type: int
