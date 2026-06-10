@@ -84,7 +84,7 @@ No authorization required
 
 ## graphGraphSearchPost
 
-> GraphResponse graphGraphSearchPost(authorization, xUserTimezone)
+> GraphResponse graphGraphSearchPost(authorization, xUserTimezone, graphSearchRequest)
 
 Graph
 
@@ -106,6 +106,8 @@ async function example() {
     authorization: authorization_example,
     // string (optional)
     xUserTimezone: xUserTimezone_example,
+    // GraphSearchRequest (optional)
+    graphSearchRequest: ...,
   } satisfies GraphGraphSearchPostRequest;
 
   try {
@@ -127,6 +129,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **graphSearchRequest** | [GraphSearchRequest](GraphSearchRequest.md) |  | [Optional] |
 
 ### Return type
 
@@ -138,7 +141,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

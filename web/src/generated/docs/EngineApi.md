@@ -522,7 +522,7 @@ No authorization required
 
 ## searchDocumentParseEngineEngineCommunityPost
 
-> InifiniteScrollPagnitionEngineInfo searchDocumentParseEngineEngineCommunityPost(communityEngineSearchRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationEngineInfo searchDocumentParseEngineEngineCommunityPost(communityEngineSearchRequest, authorization, xUserTimezone)
 
 Search Document Parse Engine
 
@@ -573,7 +573,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionEngineInfo**](InifiniteScrollPagnitionEngineInfo.md)
+[**InfiniteScrollPaginationEngineInfo**](InfiniteScrollPaginationEngineInfo.md)
 
 ### Authorization
 

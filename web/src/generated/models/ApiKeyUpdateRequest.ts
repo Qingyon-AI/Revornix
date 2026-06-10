@@ -14,19 +14,19 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface ApiKeyUpdateRequest
  */
 export interface ApiKeyUpdateRequest {
     /**
-     *
+     * 
      * @type {number}
      * @memberof ApiKeyUpdateRequest
      */
     api_key_id: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof ApiKeyUpdateRequest
      */
@@ -51,7 +51,7 @@ export function ApiKeyUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator:
         return json;
     }
     return {
-
+        
         'api_key_id': json['api_key_id'],
         'description': json['description'],
     };
@@ -67,8 +67,9 @@ export function ApiKeyUpdateRequestToJSONTyped(value?: ApiKeyUpdateRequest | nul
     }
 
     return {
-
+        
         'api_key_id': value['api_key_id'],
         'description': value['description'],
     };
 }
+

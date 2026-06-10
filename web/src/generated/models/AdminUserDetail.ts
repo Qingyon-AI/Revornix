@@ -33,6 +33,12 @@ export interface AdminUserDetail {
     uuid: string;
     /**
      * 
+     * @type {string}
+     * @memberof AdminUserDetail
+     */
+    cover?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof AdminUserDetail
      */
@@ -197,6 +203,7 @@ export function AdminUserDetailFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'id': json['id'],
         'uuid': json['uuid'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'role': json['role'],
         'avatar': json['avatar'],
         'nickname': json['nickname'],
@@ -236,6 +243,7 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         
         'id': value['id'],
         'uuid': value['uuid'],
+        'cover': value['cover'],
         'role': value['role'],
         'avatar': value['avatar'],
         'nickname': value['nickname'],
@@ -261,3 +269,4 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
+

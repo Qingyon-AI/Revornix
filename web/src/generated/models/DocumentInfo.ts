@@ -103,7 +103,7 @@ export interface DocumentInfo {
      */
     creator_id: number;
     /**
-     *
+     * 
      * @type {UserPublicInfo}
      * @memberof DocumentInfo
      */
@@ -292,3 +292,4 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
     };
 }
+

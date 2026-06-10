@@ -13,6 +13,7 @@ Name | Type
 `labels` | Array&lt;number&gt;
 `sections` | Array&lt;number&gt;
 `content` | string
+`is_public` | boolean
 
 ## Example
 
@@ -28,6 +29,7 @@ const example = {
   "labels": null,
   "sections": null,
   "content": null,
+  "is_public": null,
 } satisfies DocumentUpdateRequest
 
 console.log(example)

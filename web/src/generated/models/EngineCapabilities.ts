@@ -23,12 +23,18 @@ import {
 
 /**
  * Per-category capability envelope for a provided engine.
+ * 
+ * Each sub-field is scoped to its domain (e.g. ``stt`` for audio
+ * transcription). Only the sub-field matching the engine's category is
+ * populated; everything else stays ``None``. New domains (tts, image, ...)
+ * plug in here as additional sub-fields instead of widening
+ * ``EngineProvidedInfo``.
  * @export
  * @interface EngineCapabilities
  */
 export interface EngineCapabilities {
     /**
-     *
+     * 
      * @type {STTCapabilityInfo}
      * @memberof EngineCapabilities
      */
@@ -51,7 +57,7 @@ export function EngineCapabilitiesFromJSONTyped(json: any, ignoreDiscriminator: 
         return json;
     }
     return {
-
+        
         'stt': json['stt'] == null ? undefined : STTCapabilityInfoFromJSON(json['stt']),
     };
 }
@@ -66,7 +72,8 @@ export function EngineCapabilitiesToJSONTyped(value?: EngineCapabilities | null,
     }
 
     return {
-
+        
         'stt': STTCapabilityInfoToJSON(value['stt']),
     };
 }
+

@@ -6,10 +6,17 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 | [**addLabelDocumentLabelCreatePost**](DocumentApi.md#addlabeldocumentlabelcreatepost) | **POST** /document/label/create | Add Label |
 | [**askDocumentAiDocumentAskPost**](DocumentApi.md#askdocumentaidocumentaskpost) | **POST** /document/ask | Ask Document Ai |
+| [**cancelAiSummaryDocumentAiSummaryCancelPost**](DocumentApi.md#cancelaisummarydocumentaisummarycancelpost) | **POST** /document/ai/summary/cancel | Cancel Ai Summary |
+| [**cancelEmbeddingDocumentEmbeddingCancelPost**](DocumentApi.md#cancelembeddingdocumentembeddingcancelpost) | **POST** /document/embedding/cancel | Cancel Embedding |
+| [**cancelGraphDocumentGraphCancelPost**](DocumentApi.md#cancelgraphdocumentgraphcancelpost) | **POST** /document/graph/cancel | Cancel Graph |
+| [**cancelPodcastDocumentPodcastCancelPost**](DocumentApi.md#cancelpodcastdocumentpodcastcancelpost) | **POST** /document/podcast/cancel | Cancel Podcast |
+| [**cancelTranscribeDocumentTranscribeCancelPost**](DocumentApi.md#canceltranscribedocumenttranscribecancelpost) | **POST** /document/transcribe/cancel | Cancel Transcribe |
 | [**createAiSummaryDocumentAiSummaryPost**](DocumentApi.md#createaisummarydocumentaisummarypost) | **POST** /document/ai/summary | Create Ai Summary |
+| [**createDocumentCommentDocumentCommentCreatePost**](DocumentApi.md#createdocumentcommentdocumentcommentcreatepost) | **POST** /document/comment/create | Create Document Comment |
 | [**createDocumentDocumentCreatePost**](DocumentApi.md#createdocumentdocumentcreatepost) | **POST** /document/create | Create Document |
 | [**createEmbeddingDocumentEmbeddingPost**](DocumentApi.md#createembeddingdocumentembeddingpost) | **POST** /document/embedding | Create Embedding |
 | [**createNoteDocumentNoteCreatePost**](DocumentApi.md#createnotedocumentnotecreatepost) | **POST** /document/note/create | Create Note |
+| [**deleteDocumentCommentDocumentCommentDeletePost**](DocumentApi.md#deletedocumentcommentdocumentcommentdeletepost) | **POST** /document/comment/delete | Delete Document Comment |
 | [**deleteDocumentDocumentDeletePost**](DocumentApi.md#deletedocumentdocumentdeletepost) | **POST** /document/delete | Delete Document |
 | [**deleteDocumentUserDocumentUserDeletePost**](DocumentApi.md#deletedocumentuserdocumentuserdeletepost) | **POST** /document/user/delete | Delete Document User |
 | [**deleteLabelDocumentLabelDeletePost**](DocumentApi.md#deletelabeldocumentlabeldeletepost) | **POST** /document/label/delete | Delete Label |
@@ -21,22 +28,33 @@ All URIs are relative to *http://localhost*
 | [**documentUserRequestDocumentUserPost**](DocumentApi.md#documentuserrequestdocumentuserpost) | **POST** /document/user | Document User Request |
 | [**generateGraphDocumentGraphGeneratePost**](DocumentApi.md#generategraphdocumentgraphgeneratepost) | **POST** /document/graph/generate | Generate Graph |
 | [**generatePodcastDocumentPodcastGeneratePost**](DocumentApi.md#generatepodcastdocumentpodcastgeneratepost) | **POST** /document/podcast/generate | Generate Podcast |
+| [**getDocumentCommentDetailDocumentCommentDetailPost**](DocumentApi.md#getdocumentcommentdetaildocumentcommentdetailpost) | **POST** /document/comment/detail | Get Document Comment Detail |
 | [**getDocumentDetailDocumentDetailPost**](DocumentApi.md#getdocumentdetaildocumentdetailpost) | **POST** /document/detail | Get Document Detail |
+| [**getDocumentMarkdownContentDocumentMarkdownContentPost**](DocumentApi.md#getdocumentmarkdowncontentdocumentmarkdowncontentpost) | **POST** /document/markdown/content | Get Document Markdown Content |
 | [**getLabelSummaryDocumentLabelSummaryPost**](DocumentApi.md#getlabelsummarydocumentlabelsummarypost) | **POST** /document/label/summary | Get Label Summary |
 | [**getMineDocumentAuthorityDocumentMineAuthorityPost**](DocumentApi.md#getminedocumentauthoritydocumentmineauthoritypost) | **POST** /document/mine/authority | Get Mine Document Authority |
 | [**getMonthSummaryDocumentMonthSummaryPost**](DocumentApi.md#getmonthsummarydocumentmonthsummarypost) | **POST** /document/month/summary | Get Month Summary |
+| [**likeDocumentCommentDocumentCommentLikePost**](DocumentApi.md#likedocumentcommentdocumentcommentlikepost) | **POST** /document/comment/like | Like Document Comment |
 | [**listLabelDocumentLabelListPost**](DocumentApi.md#listlabeldocumentlabellistpost) | **POST** /document/label/list | List Label |
+| [**listPublicLabelDocumentLabelPublicListPost**](DocumentApi.md#listpubliclabeldocumentlabelpubliclistpost) | **POST** /document/label/public/list | List Public Label |
 | [**readDocumentDocumentReadPost**](DocumentApi.md#readdocumentdocumentreadpost) | **POST** /document/read | Read Document |
 | [**recentReadDocumentDocumentRecentSearchPost**](DocumentApi.md#recentreaddocumentdocumentrecentsearchpost) | **POST** /document/recent/search | Recent Read Document |
+| [**renameAudioSpeakersDocumentAudioSpeakerRenamePost**](DocumentApi.md#renameaudiospeakersdocumentaudiospeakerrenamepost) | **POST** /document/audio/speaker/rename | Rename Audio Speakers |
 | [**searchAllMineDocumentsDocumentSearchMinePost**](DocumentApi.md#searchallminedocumentsdocumentsearchminepost) | **POST** /document/search/mine | Search All Mine Documents |
+| [**searchDocumentCommentDocumentCommentSearchPost**](DocumentApi.md#searchdocumentcommentdocumentcommentsearchpost) | **POST** /document/comment/search | Search Document Comment |
+| [**searchDocumentCommentRepliesDocumentCommentReplySearchPost**](DocumentApi.md#searchdocumentcommentrepliesdocumentcommentreplysearchpost) | **POST** /document/comment/reply/search | Search Document Comment Replies |
 | [**searchKnowledgeVectorDocumentVectorSearchPost**](DocumentApi.md#searchknowledgevectordocumentvectorsearchpost) | **POST** /document/vector/search | Search Knowledge Vector |
 | [**searchMyStarDocumentsDocumentStarSearchPost**](DocumentApi.md#searchmystardocumentsdocumentstarsearchpost) | **POST** /document/star/search | Search My Star Documents |
 | [**searchNoteDocumentNoteSearchPost**](DocumentApi.md#searchnotedocumentnotesearchpost) | **POST** /document/note/search | Search Note |
+| [**searchPublicDocumentNotesDocumentNotePublicSearchPost**](DocumentApi.md#searchpublicdocumentnotesdocumentnotepublicsearchpost) | **POST** /document/note/public/search | Search Public Document Notes |
 | [**searchPublicDocumentsDocumentPublicSearchPost**](DocumentApi.md#searchpublicdocumentsdocumentpublicsearchpost) | **POST** /document/public/search | Search Public Documents |
+| [**searchPublicKnowledgeVectorDocumentPublicVectorSearchPost**](DocumentApi.md#searchpublicknowledgevectordocumentpublicvectorsearchpost) | **POST** /document/public/vector/search | Search Public Knowledge Vector |
 | [**searchUserUnreadDocumentsDocumentUnreadSearchPost**](DocumentApi.md#searchuserunreaddocumentsdocumentunreadsearchpost) | **POST** /document/unread/search | Search User Unread Documents |
 | [**starDocumentDocumentStarPost**](DocumentApi.md#stardocumentdocumentstarpost) | **POST** /document/star | Star Document |
+| [**touchDocumentContentDocumentTouchContentPost**](DocumentApi.md#touchdocumentcontentdocumenttouchcontentpost) | **POST** /document/touch-content | Touch Document Content |
 | [**transcribeAudioDocumentDocumentTranscribePost**](DocumentApi.md#transcribeaudiodocumentdocumenttranscribepost) | **POST** /document/transcribe | Transcribe Audio Document |
 | [**transformMarkdownDocumentMarkdownTransformPost**](DocumentApi.md#transformmarkdowndocumentmarkdowntransformpost) | **POST** /document/markdown/transform | Transform Markdown |
+| [**unlikeDocumentCommentDocumentCommentUnlikePost**](DocumentApi.md#unlikedocumentcommentdocumentcommentunlikepost) | **POST** /document/comment/unlike | Unlike Document Comment |
 | [**updateDocumentDocumentUpdatePost**](DocumentApi.md#updatedocumentdocumentupdatepost) | **POST** /document/update | Update Document |
 
 
@@ -185,6 +203,366 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## cancelAiSummaryDocumentAiSummaryCancelPost
+
+> NormalResponse cancelAiSummaryDocumentAiSummaryCancelPost(cancelDocumentTaskRequest, authorization, xUserTimezone)
+
+Cancel Ai Summary
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CancelAiSummaryDocumentAiSummaryCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // CancelDocumentTaskRequest
+    cancelDocumentTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelAiSummaryDocumentAiSummaryCancelPostRequest;
+
+  try {
+    const data = await api.cancelAiSummaryDocumentAiSummaryCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelDocumentTaskRequest** | [CancelDocumentTaskRequest](CancelDocumentTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelEmbeddingDocumentEmbeddingCancelPost
+
+> NormalResponse cancelEmbeddingDocumentEmbeddingCancelPost(cancelDocumentTaskRequest, authorization, xUserTimezone)
+
+Cancel Embedding
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CancelEmbeddingDocumentEmbeddingCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // CancelDocumentTaskRequest
+    cancelDocumentTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelEmbeddingDocumentEmbeddingCancelPostRequest;
+
+  try {
+    const data = await api.cancelEmbeddingDocumentEmbeddingCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelDocumentTaskRequest** | [CancelDocumentTaskRequest](CancelDocumentTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelGraphDocumentGraphCancelPost
+
+> NormalResponse cancelGraphDocumentGraphCancelPost(cancelDocumentTaskRequest, authorization, xUserTimezone)
+
+Cancel Graph
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CancelGraphDocumentGraphCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // CancelDocumentTaskRequest
+    cancelDocumentTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelGraphDocumentGraphCancelPostRequest;
+
+  try {
+    const data = await api.cancelGraphDocumentGraphCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelDocumentTaskRequest** | [CancelDocumentTaskRequest](CancelDocumentTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelPodcastDocumentPodcastCancelPost
+
+> NormalResponse cancelPodcastDocumentPodcastCancelPost(cancelDocumentTaskRequest, authorization, xUserTimezone)
+
+Cancel Podcast
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CancelPodcastDocumentPodcastCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // CancelDocumentTaskRequest
+    cancelDocumentTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelPodcastDocumentPodcastCancelPostRequest;
+
+  try {
+    const data = await api.cancelPodcastDocumentPodcastCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelDocumentTaskRequest** | [CancelDocumentTaskRequest](CancelDocumentTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelTranscribeDocumentTranscribeCancelPost
+
+> NormalResponse cancelTranscribeDocumentTranscribeCancelPost(cancelDocumentTaskRequest, authorization, xUserTimezone)
+
+Cancel Transcribe
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CancelTranscribeDocumentTranscribeCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // CancelDocumentTaskRequest
+    cancelDocumentTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelTranscribeDocumentTranscribeCancelPostRequest;
+
+  try {
+    const data = await api.cancelTranscribeDocumentTranscribeCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelDocumentTaskRequest** | [CancelDocumentTaskRequest](CancelDocumentTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## createAiSummaryDocumentAiSummaryPost
 
 > NormalResponse createAiSummaryDocumentAiSummaryPost(documentAiSummaryRequest, authorization, xUserTimezone)
@@ -231,6 +609,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentAiSummaryRequest** | [DocumentAiSummaryRequest](DocumentAiSummaryRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createDocumentCommentDocumentCommentCreatePost
+
+> NormalResponse createDocumentCommentDocumentCommentCreatePost(documentCommentCreateRequest, authorization, xUserTimezone)
+
+Create Document Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { CreateDocumentCommentDocumentCommentCreatePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentCreateRequest
+    documentCommentCreateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CreateDocumentCommentDocumentCommentCreatePostRequest;
+
+  try {
+    const data = await api.createDocumentCommentDocumentCommentCreatePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentCreateRequest** | [DocumentCommentCreateRequest](DocumentCommentCreateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -447,6 +897,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentNoteCreateRequest** | [DocumentNoteCreateRequest](DocumentNoteCreateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## deleteDocumentCommentDocumentCommentDeletePost
+
+> NormalResponse deleteDocumentCommentDocumentCommentDeletePost(documentCommentDeleteRequest, authorization, xUserTimezone)
+
+Delete Document Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { DeleteDocumentCommentDocumentCommentDeletePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentDeleteRequest
+    documentCommentDeleteRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies DeleteDocumentCommentDocumentCommentDeletePostRequest;
+
+  try {
+    const data = await api.deleteDocumentCommentDocumentCommentDeletePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentDeleteRequest** | [DocumentCommentDeleteRequest](DocumentCommentDeleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -1051,7 +1573,7 @@ No authorization required
 
 ## documentUserRequestDocumentUserPost
 
-> InifiniteScrollPagnitionDocumentCollaboratorPublicInfo documentUserRequestDocumentUserPost(documentUserRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentCollaboratorPublicInfo documentUserRequestDocumentUserPost(documentUserRequest, authorization, xUserTimezone)
 
 Document User Request
 
@@ -1100,7 +1622,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentCollaboratorPublicInfo**](InifiniteScrollPagnitionDocumentCollaboratorPublicInfo.md)
+[**InfiniteScrollPaginationDocumentCollaboratorPublicInfo**](InfiniteScrollPaginationDocumentCollaboratorPublicInfo.md)
 
 ### Authorization
 
@@ -1265,6 +1787,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getDocumentCommentDetailDocumentCommentDetailPost
+
+> DocumentCommentInfo getDocumentCommentDetailDocumentCommentDetailPost(documentCommentDetailRequest, authorization, xUserTimezone)
+
+Get Document Comment Detail
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { GetDocumentCommentDetailDocumentCommentDetailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentDetailRequest
+    documentCommentDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetDocumentCommentDetailDocumentCommentDetailPostRequest;
+
+  try {
+    const data = await api.getDocumentCommentDetailDocumentCommentDetailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentDetailRequest** | [DocumentCommentDetailRequest](DocumentCommentDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**DocumentCommentInfo**](DocumentCommentInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getDocumentDetailDocumentDetailPost
 
 > DocumentDetailResponse getDocumentDetailDocumentDetailPost(documentDetailRequest, authorization, xUserTimezone)
@@ -1326,6 +1920,78 @@ No authorization required
 
 - **Content-Type**: `application/json`
 - **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getDocumentMarkdownContentDocumentMarkdownContentPost
+
+> string getDocumentMarkdownContentDocumentMarkdownContentPost(documentMarkdownContentRequest, authorization, xUserTimezone)
+
+Get Document Markdown Content
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { GetDocumentMarkdownContentDocumentMarkdownContentPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentMarkdownContentRequest
+    documentMarkdownContentRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetDocumentMarkdownContentDocumentMarkdownContentPostRequest;
+
+  try {
+    const data = await api.getDocumentMarkdownContentDocumentMarkdownContentPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentMarkdownContentRequest** | [DocumentMarkdownContentRequest](DocumentMarkdownContentRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `text/plain`, `application/json`
 
 
 ### HTTP response details
@@ -1547,6 +2213,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## likeDocumentCommentDocumentCommentLikePost
+
+> NormalResponse likeDocumentCommentDocumentCommentLikePost(documentCommentLikeRequest, authorization, xUserTimezone)
+
+Like Document Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { LikeDocumentCommentDocumentCommentLikePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentLikeRequest
+    documentCommentLikeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies LikeDocumentCommentDocumentCommentLikePostRequest;
+
+  try {
+    const data = await api.likeDocumentCommentDocumentCommentLikePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentLikeRequest** | [DocumentCommentLikeRequest](DocumentCommentLikeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## listLabelDocumentLabelListPost
 
 > SchemasDocumentLabelListResponse listLabelDocumentLabelListPost(authorization, xUserTimezone)
@@ -1612,6 +2350,63 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | Successful Response |  -  |
 | **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## listPublicLabelDocumentLabelPublicListPost
+
+> SchemasDocumentLabelListResponse listPublicLabelDocumentLabelPublicListPost()
+
+List Public Label
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { ListPublicLabelDocumentLabelPublicListPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  try {
+    const data = await api.listPublicLabelDocumentLabelPublicListPost();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SchemasDocumentLabelListResponse**](SchemasDocumentLabelListResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1690,7 +2485,7 @@ No authorization required
 
 ## recentReadDocumentDocumentRecentSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentInfo recentReadDocumentDocumentRecentSearchPost(searchRecentReadRequest, authorization, xUserTimezone)
 
 Recent Read Document
 
@@ -1739,7 +2534,81 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## renameAudioSpeakersDocumentAudioSpeakerRenamePost
+
+> NormalResponse renameAudioSpeakersDocumentAudioSpeakerRenamePost(documentAudioSpeakerRenameRequest, authorization, xUserTimezone)
+
+Rename Audio Speakers
+
+Rename diarized speakers for a meeting-record audio document.  P0 scope: this only persists the raw-label -&gt; display-name map on the audio document. The stored transcript markdown / segments JSON are not re-rendered; clients apply the map when presenting the transcript.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentAudioSpeakerRenameRequest
+    documentAudioSpeakerRenameRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest;
+
+  try {
+    const data = await api.renameAudioSpeakersDocumentAudioSpeakerRenamePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentAudioSpeakerRenameRequest** | [DocumentAudioSpeakerRenameRequest](DocumentAudioSpeakerRenameRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -1762,7 +2631,7 @@ No authorization required
 
 ## searchAllMineDocumentsDocumentSearchMinePost
 
-> InifiniteScrollPagnitionDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentInfo searchAllMineDocumentsDocumentSearchMinePost(searchAllMyDocumentsRequest, authorization, xUserTimezone)
 
 Search All Mine Documents
 
@@ -1811,7 +2680,151 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchDocumentCommentDocumentCommentSearchPost
+
+> InfiniteScrollPaginationDocumentCommentInfo searchDocumentCommentDocumentCommentSearchPost(documentCommentSearchRequest, authorization, xUserTimezone)
+
+Search Document Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { SearchDocumentCommentDocumentCommentSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentSearchRequest
+    documentCommentSearchRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SearchDocumentCommentDocumentCommentSearchPostRequest;
+
+  try {
+    const data = await api.searchDocumentCommentDocumentCommentSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentSearchRequest** | [DocumentCommentSearchRequest](DocumentCommentSearchRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InfiniteScrollPaginationDocumentCommentInfo**](InfiniteScrollPaginationDocumentCommentInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchDocumentCommentRepliesDocumentCommentReplySearchPost
+
+> InfiniteScrollPaginationDocumentCommentInfo searchDocumentCommentRepliesDocumentCommentReplySearchPost(documentCommentReplySearchRequest, authorization, xUserTimezone)
+
+Search Document Comment Replies
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentReplySearchRequest
+    documentCommentReplySearchRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest;
+
+  try {
+    const data = await api.searchDocumentCommentRepliesDocumentCommentReplySearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentReplySearchRequest** | [DocumentCommentReplySearchRequest](DocumentCommentReplySearchRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InfiniteScrollPaginationDocumentCommentInfo**](InfiniteScrollPaginationDocumentCommentInfo.md)
 
 ### Authorization
 
@@ -1906,7 +2919,7 @@ No authorization required
 
 ## searchMyStarDocumentsDocumentStarSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentInfo searchMyStarDocumentsDocumentStarSearchPost(searchMyStarDocumentsRequest, authorization, xUserTimezone)
 
 Search My Star Documents
 
@@ -1955,7 +2968,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -1978,7 +2991,7 @@ No authorization required
 
 ## searchNoteDocumentNoteSearchPost
 
-> InifiniteScrollPagnitionDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentNoteInfo searchNoteDocumentNoteSearchPost(searchDocumentNoteRequest, authorization, xUserTimezone)
 
 Search Note
 
@@ -2027,7 +3040,81 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentNoteInfo**](InifiniteScrollPagnitionDocumentNoteInfo.md)
+[**InfiniteScrollPaginationDocumentNoteInfo**](InfiniteScrollPaginationDocumentNoteInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchPublicDocumentNotesDocumentNotePublicSearchPost
+
+> InfiniteScrollPaginationDocumentNoteInfo searchPublicDocumentNotesDocumentNotePublicSearchPost(searchDocumentNoteRequest, authorization, xUserTimezone)
+
+Search Public Document Notes
+
+Public-readable note search.  Notes are listed read-only; gated by published-or-collaborator access. Mirrors the public access pattern used by document comments.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // SearchDocumentNoteRequest
+    searchDocumentNoteRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest;
+
+  try {
+    const data = await api.searchPublicDocumentNotesDocumentNotePublicSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **searchDocumentNoteRequest** | [SearchDocumentNoteRequest](SearchDocumentNoteRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InfiniteScrollPaginationDocumentNoteInfo**](InfiniteScrollPaginationDocumentNoteInfo.md)
 
 ### Authorization
 
@@ -2050,7 +3137,7 @@ No authorization required
 
 ## searchPublicDocumentsDocumentPublicSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchPublicDocumentsDocumentPublicSearchPost(searchPublicDocumentsRequest)
+> InfiniteScrollPaginationDocumentInfo searchPublicDocumentsDocumentPublicSearchPost(searchPublicDocumentsRequest, authorization, xUserTimezone)
 
 Search Public Documents
 
@@ -2070,6 +3157,10 @@ async function example() {
   const body = {
     // SearchPublicDocumentsRequest
     searchPublicDocumentsRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
   } satisfies SearchPublicDocumentsDocumentPublicSearchPostRequest;
 
   try {
@@ -2090,10 +3181,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **searchPublicDocumentsRequest** | [SearchPublicDocumentsRequest](SearchPublicDocumentsRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchPublicKnowledgeVectorDocumentPublicVectorSearchPost
+
+> VectorSearchResponse searchPublicKnowledgeVectorDocumentPublicVectorSearchPost(vectorSearchRequest)
+
+Search Public Knowledge Vector
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // VectorSearchRequest
+    vectorSearchRequest: ...,
+  } satisfies SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest;
+
+  try {
+    const data = await api.searchPublicKnowledgeVectorDocumentPublicVectorSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **vectorSearchRequest** | [VectorSearchRequest](VectorSearchRequest.md) |  | |
+
+### Return type
+
+[**VectorSearchResponse**](VectorSearchResponse.md)
 
 ### Authorization
 
@@ -2116,7 +3275,7 @@ No authorization required
 
 ## searchUserUnreadDocumentsDocumentUnreadSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationDocumentInfo searchUserUnreadDocumentsDocumentUnreadSearchPost(searchUnreadListRequest, authorization, xUserTimezone)
 
 Search User Unread Documents
 
@@ -2165,7 +3324,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -2238,6 +3397,78 @@ example().catch(console.error);
 ### Return type
 
 [**SuccessResponse**](SuccessResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## touchDocumentContentDocumentTouchContentPost
+
+> NormalResponse touchDocumentContentDocumentTouchContentPost(documentDetailRequest, authorization, xUserTimezone)
+
+Touch Document Content
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { TouchDocumentContentDocumentTouchContentPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentDetailRequest
+    documentDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies TouchDocumentContentDocumentTouchContentPostRequest;
+
+  try {
+    const data = await api.touchDocumentContentDocumentTouchContentPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentDetailRequest** | [DocumentDetailRequest](DocumentDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -2376,6 +3607,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentMarkdownConvertRequest** | [DocumentMarkdownConvertRequest](DocumentMarkdownConvertRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## unlikeDocumentCommentDocumentCommentUnlikePost
+
+> NormalResponse unlikeDocumentCommentDocumentCommentUnlikePost(documentCommentLikeRequest, authorization, xUserTimezone)
+
+Unlike Document Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { UnlikeDocumentCommentDocumentCommentUnlikePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentCommentLikeRequest
+    documentCommentLikeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UnlikeDocumentCommentDocumentCommentUnlikePostRequest;
+
+  try {
+    const data = await api.unlikeDocumentCommentDocumentCommentUnlikePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentCommentLikeRequest** | [DocumentCommentLikeRequest](DocumentCommentLikeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

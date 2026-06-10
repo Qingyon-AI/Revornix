@@ -32,7 +32,7 @@ from router.ai import (
     _normalize_chat_images,
     create_agent,
 )
-from router.logic_helpers import ensure_private_section_access
+from common.access_control import ensure_private_section_access
 
 section_ai_router = APIRouter()
 

@@ -12,147 +12,257 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  AllMySectionsResponse,
-  CreateLabelResponse,
-  DaySectionRequest,
-  DaySectionResponse,
-  GenerateSectionPodcastRequest,
-  GenerateSectionPptRequest,
-  HTTPValidationError,
-  InifiniteScrollPagnitionSectionCommentInfo,
-  InifiniteScrollPagnitionSectionDocumentInfo,
-  InifiniteScrollPagnitionSectionInfo,
-  InifiniteScrollPagnitionSectionUserPublicInfo,
-  LabelAddRequest,
-  LabelDeleteRequest,
-  MineSectionRoleAndAuthorityRequest,
-  NormalResponse,
-  RetrySectionDocumentRequest,
-  SchemasSectionLabelListResponse,
-  SearchMineSectionsRequest,
-  SearchPublicSectionsRequest,
-  SearchSubscribedSectionRequest,
-  SearchUserSectionsRequest,
-  SectionAskRequest,
-  SectionCommentCreateRequest,
-  SectionCommentDeleteRequest,
-  SectionCommentSearchRequest,
-  SectionCreateRequest,
-  SectionCreateResponse,
-  SectionDeleteRequest,
-  SectionDetailRequest,
-  SectionDocumentRequest,
-  SectionInfo,
-  SectionPublishGetRequest,
-  SectionPublishGetResponse,
-  SectionPublishRequest,
-  SectionRePublishRequest,
-  SectionSeoDetailRequest,
-  SectionSubscribeRequest,
-  SectionUpdateRequest,
-  SectionUserAddRequest,
-  SectionUserDeleteRequest,
-  SectionUserModifyRequest,
-  SectionUserRequest,
-  SectionUserRoleAndAuthorityRequest,
-  SectionUserRoleAndAuthorityResponse,
-  TriggerSectionProcessRequest,
-} from '../models/index';
 import {
+    type AllMySectionsResponse,
     AllMySectionsResponseFromJSON,
     AllMySectionsResponseToJSON,
+} from '../models/AllMySectionsResponse';
+import {
+    type CancelSectionTaskRequest,
+    CancelSectionTaskRequestFromJSON,
+    CancelSectionTaskRequestToJSON,
+} from '../models/CancelSectionTaskRequest';
+import {
+    type CreateLabelResponse,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
+} from '../models/CreateLabelResponse';
+import {
+    type DaySectionRequest,
     DaySectionRequestFromJSON,
     DaySectionRequestToJSON,
+} from '../models/DaySectionRequest';
+import {
+    type DaySectionResponse,
     DaySectionResponseFromJSON,
     DaySectionResponseToJSON,
+} from '../models/DaySectionResponse';
+import {
+    type GenerateSectionPodcastRequest,
     GenerateSectionPodcastRequestFromJSON,
     GenerateSectionPodcastRequestToJSON,
+} from '../models/GenerateSectionPodcastRequest';
+import {
+    type GenerateSectionPptRequest,
     GenerateSectionPptRequestFromJSON,
     GenerateSectionPptRequestToJSON,
+} from '../models/GenerateSectionPptRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionSectionCommentInfoFromJSON,
-    InifiniteScrollPagnitionSectionCommentInfoToJSON,
-    InifiniteScrollPagnitionSectionDocumentInfoFromJSON,
-    InifiniteScrollPagnitionSectionDocumentInfoToJSON,
-    InifiniteScrollPagnitionSectionInfoFromJSON,
-    InifiniteScrollPagnitionSectionInfoToJSON,
-    InifiniteScrollPagnitionSectionUserPublicInfoFromJSON,
-    InifiniteScrollPagnitionSectionUserPublicInfoToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationSectionCommentInfo,
+    InfiniteScrollPaginationSectionCommentInfoFromJSON,
+    InfiniteScrollPaginationSectionCommentInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionCommentInfo';
+import {
+    type InfiniteScrollPaginationSectionDocumentInfo,
+    InfiniteScrollPaginationSectionDocumentInfoFromJSON,
+    InfiniteScrollPaginationSectionDocumentInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionDocumentInfo';
+import {
+    type InfiniteScrollPaginationSectionInfo,
+    InfiniteScrollPaginationSectionInfoFromJSON,
+    InfiniteScrollPaginationSectionInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionInfo';
+import {
+    type InfiniteScrollPaginationSectionUserPublicInfo,
+    InfiniteScrollPaginationSectionUserPublicInfoFromJSON,
+    InfiniteScrollPaginationSectionUserPublicInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionUserPublicInfo';
+import {
+    type LabelAddRequest,
     LabelAddRequestFromJSON,
     LabelAddRequestToJSON,
+} from '../models/LabelAddRequest';
+import {
+    type LabelDeleteRequest,
     LabelDeleteRequestFromJSON,
     LabelDeleteRequestToJSON,
+} from '../models/LabelDeleteRequest';
+import {
+    type MineSectionRoleAndAuthorityRequest,
     MineSectionRoleAndAuthorityRequestFromJSON,
     MineSectionRoleAndAuthorityRequestToJSON,
+} from '../models/MineSectionRoleAndAuthorityRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type RetrySectionDocumentRequest,
     RetrySectionDocumentRequestFromJSON,
     RetrySectionDocumentRequestToJSON,
+} from '../models/RetrySectionDocumentRequest';
+import {
+    type SchemasSectionLabelListResponse,
     SchemasSectionLabelListResponseFromJSON,
     SchemasSectionLabelListResponseToJSON,
+} from '../models/SchemasSectionLabelListResponse';
+import {
+    type SearchMineSectionsRequest,
     SearchMineSectionsRequestFromJSON,
     SearchMineSectionsRequestToJSON,
+} from '../models/SearchMineSectionsRequest';
+import {
+    type SearchPublicSectionsRequest,
     SearchPublicSectionsRequestFromJSON,
     SearchPublicSectionsRequestToJSON,
+} from '../models/SearchPublicSectionsRequest';
+import {
+    type SearchSubscribedSectionRequest,
     SearchSubscribedSectionRequestFromJSON,
     SearchSubscribedSectionRequestToJSON,
+} from '../models/SearchSubscribedSectionRequest';
+import {
+    type SearchUserSectionsRequest,
     SearchUserSectionsRequestFromJSON,
     SearchUserSectionsRequestToJSON,
+} from '../models/SearchUserSectionsRequest';
+import {
+    type SectionAskRequest,
     SectionAskRequestFromJSON,
     SectionAskRequestToJSON,
+} from '../models/SectionAskRequest';
+import {
+    type SectionCommentCreateRequest,
     SectionCommentCreateRequestFromJSON,
     SectionCommentCreateRequestToJSON,
+} from '../models/SectionCommentCreateRequest';
+import {
+    type SectionCommentDeleteRequest,
     SectionCommentDeleteRequestFromJSON,
     SectionCommentDeleteRequestToJSON,
+} from '../models/SectionCommentDeleteRequest';
+import {
+    type SectionCommentDetailRequest,
+    SectionCommentDetailRequestFromJSON,
+    SectionCommentDetailRequestToJSON,
+} from '../models/SectionCommentDetailRequest';
+import {
+    type SectionCommentInfo,
+    SectionCommentInfoFromJSON,
+    SectionCommentInfoToJSON,
+} from '../models/SectionCommentInfo';
+import {
+    type SectionCommentLikeRequest,
+    SectionCommentLikeRequestFromJSON,
+    SectionCommentLikeRequestToJSON,
+} from '../models/SectionCommentLikeRequest';
+import {
+    type SectionCommentReplySearchRequest,
+    SectionCommentReplySearchRequestFromJSON,
+    SectionCommentReplySearchRequestToJSON,
+} from '../models/SectionCommentReplySearchRequest';
+import {
+    type SectionCommentSearchRequest,
     SectionCommentSearchRequestFromJSON,
     SectionCommentSearchRequestToJSON,
+} from '../models/SectionCommentSearchRequest';
+import {
+    type SectionCreateRequest,
     SectionCreateRequestFromJSON,
     SectionCreateRequestToJSON,
+} from '../models/SectionCreateRequest';
+import {
+    type SectionCreateResponse,
     SectionCreateResponseFromJSON,
     SectionCreateResponseToJSON,
+} from '../models/SectionCreateResponse';
+import {
+    type SectionDeleteRequest,
     SectionDeleteRequestFromJSON,
     SectionDeleteRequestToJSON,
+} from '../models/SectionDeleteRequest';
+import {
+    type SectionDetailRequest,
     SectionDetailRequestFromJSON,
     SectionDetailRequestToJSON,
+} from '../models/SectionDetailRequest';
+import {
+    type SectionDocumentRequest,
     SectionDocumentRequestFromJSON,
     SectionDocumentRequestToJSON,
+} from '../models/SectionDocumentRequest';
+import {
+    type SectionInfo,
     SectionInfoFromJSON,
     SectionInfoToJSON,
+} from '../models/SectionInfo';
+import {
+    type SectionPublishGetRequest,
     SectionPublishGetRequestFromJSON,
     SectionPublishGetRequestToJSON,
+} from '../models/SectionPublishGetRequest';
+import {
+    type SectionPublishGetResponse,
     SectionPublishGetResponseFromJSON,
     SectionPublishGetResponseToJSON,
+} from '../models/SectionPublishGetResponse';
+import {
+    type SectionPublishRequest,
     SectionPublishRequestFromJSON,
     SectionPublishRequestToJSON,
+} from '../models/SectionPublishRequest';
+import {
+    type SectionRePublishRequest,
     SectionRePublishRequestFromJSON,
     SectionRePublishRequestToJSON,
+} from '../models/SectionRePublishRequest';
+import {
+    type SectionSeoDetailRequest,
     SectionSeoDetailRequestFromJSON,
     SectionSeoDetailRequestToJSON,
+} from '../models/SectionSeoDetailRequest';
+import {
+    type SectionSubscribeRequest,
     SectionSubscribeRequestFromJSON,
     SectionSubscribeRequestToJSON,
+} from '../models/SectionSubscribeRequest';
+import {
+    type SectionUpdateRequest,
     SectionUpdateRequestFromJSON,
     SectionUpdateRequestToJSON,
+} from '../models/SectionUpdateRequest';
+import {
+    type SectionUserAddRequest,
     SectionUserAddRequestFromJSON,
     SectionUserAddRequestToJSON,
+} from '../models/SectionUserAddRequest';
+import {
+    type SectionUserDeleteRequest,
     SectionUserDeleteRequestFromJSON,
     SectionUserDeleteRequestToJSON,
+} from '../models/SectionUserDeleteRequest';
+import {
+    type SectionUserModifyRequest,
     SectionUserModifyRequestFromJSON,
     SectionUserModifyRequestToJSON,
+} from '../models/SectionUserModifyRequest';
+import {
+    type SectionUserRequest,
     SectionUserRequestFromJSON,
     SectionUserRequestToJSON,
+} from '../models/SectionUserRequest';
+import {
+    type SectionUserRoleAndAuthorityRequest,
     SectionUserRoleAndAuthorityRequestFromJSON,
     SectionUserRoleAndAuthorityRequestToJSON,
+} from '../models/SectionUserRoleAndAuthorityRequest';
+import {
+    type SectionUserRoleAndAuthorityResponse,
     SectionUserRoleAndAuthorityResponseFromJSON,
     SectionUserRoleAndAuthorityResponseToJSON,
+} from '../models/SectionUserRoleAndAuthorityResponse';
+import {
+    type TriggerSectionProcessRequest,
     TriggerSectionProcessRequestFromJSON,
     TriggerSectionProcessRequestToJSON,
-} from '../models/index';
+} from '../models/TriggerSectionProcessRequest';
 
 export interface AddLabelSectionLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
@@ -162,6 +272,24 @@ export interface AddLabelSectionLabelCreatePostRequest {
 
 export interface AskSectionAiSectionAskPostRequest {
     sectionAskRequest: SectionAskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelPodcastSectionPodcastCancelPostRequest {
+    cancelSectionTaskRequest: CancelSectionTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelPptSectionPptCancelPostRequest {
+    cancelSectionTaskRequest: CancelSectionTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelProcessSectionProcessCancelPostRequest {
+    cancelSectionTaskRequest: CancelSectionTaskRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -237,7 +365,19 @@ export interface GetMySubscribedSectionsSectionSubscribedPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface GetSectionCommentDetailSectionCommentDetailPostRequest {
+    sectionCommentDetailRequest: SectionCommentDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface GetSectionDetailSectionDetailPostRequest {
+    sectionDetailRequest: SectionDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface GetSectionMarkdownContentSectionMarkdownContentPostRequest {
     sectionDetailRequest: SectionDetailRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
@@ -245,6 +385,18 @@ export interface GetSectionDetailSectionDetailPostRequest {
 
 export interface GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest {
     sectionUserRoleAndAuthorityRequest: SectionUserRoleAndAuthorityRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest {
+    sectionSeoDetailRequest: SectionSeoDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface LikeSectionCommentSectionCommentLikePostRequest {
+    sectionCommentLikeRequest: SectionCommentLikeRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -268,6 +420,12 @@ export interface RetrySectionDocumentIntegrationSectionDocumentRetryPostRequest 
 
 export interface SearchMineSectionsSectionMineSearchPostRequest {
     searchMineSectionsRequest: SearchMineSectionsRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface SearchSectionCommentRepliesSectionCommentReplySearchPostRequest {
+    sectionCommentReplySearchRequest: SectionCommentReplySearchRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -340,6 +498,12 @@ export interface SubscribeSectionSectionSubscribePostRequest {
 
 export interface TriggerSectionProcessSectionProcessTriggerPostRequest {
     triggerSectionProcessRequest: TriggerSectionProcessRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface UnlikeSectionCommentSectionCommentUnlikePostRequest {
+    sectionCommentLikeRequest: SectionCommentLikeRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -468,6 +632,171 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async askSectionAiSectionAskPost(requestParameters: AskSectionAiSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.askSectionAiSectionAskPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelPodcastSectionPodcastCancelPost without sending the request
+     */
+    async cancelPodcastSectionPodcastCancelPostRequestOpts(requestParameters: CancelPodcastSectionPodcastCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelSectionTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelSectionTaskRequest',
+                'Required parameter "cancelSectionTaskRequest" was null or undefined when calling cancelPodcastSectionPodcastCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/podcast/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelSectionTaskRequestToJSON(requestParameters['cancelSectionTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Podcast
+     */
+    async cancelPodcastSectionPodcastCancelPostRaw(requestParameters: CancelPodcastSectionPodcastCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelPodcastSectionPodcastCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Podcast
+     */
+    async cancelPodcastSectionPodcastCancelPost(requestParameters: CancelPodcastSectionPodcastCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelPodcastSectionPodcastCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelPptSectionPptCancelPost without sending the request
+     */
+    async cancelPptSectionPptCancelPostRequestOpts(requestParameters: CancelPptSectionPptCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelSectionTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelSectionTaskRequest',
+                'Required parameter "cancelSectionTaskRequest" was null or undefined when calling cancelPptSectionPptCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/ppt/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelSectionTaskRequestToJSON(requestParameters['cancelSectionTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Ppt
+     */
+    async cancelPptSectionPptCancelPostRaw(requestParameters: CancelPptSectionPptCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelPptSectionPptCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Ppt
+     */
+    async cancelPptSectionPptCancelPost(requestParameters: CancelPptSectionPptCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelPptSectionPptCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelProcessSectionProcessCancelPost without sending the request
+     */
+    async cancelProcessSectionProcessCancelPostRequestOpts(requestParameters: CancelProcessSectionProcessCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelSectionTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelSectionTaskRequest',
+                'Required parameter "cancelSectionTaskRequest" was null or undefined when calling cancelProcessSectionProcessCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/process/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelSectionTaskRequestToJSON(requestParameters['cancelSectionTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Process
+     */
+    async cancelProcessSectionProcessCancelPostRaw(requestParameters: CancelProcessSectionProcessCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelProcessSectionProcessCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Process
+     */
+    async cancelProcessSectionProcessCancelPost(requestParameters: CancelProcessSectionProcessCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelProcessSectionProcessCancelPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1106,18 +1435,73 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Get My Subscribed Sections
      */
-    async getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.getMySubscribedSectionsSectionSubscribedPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Get My Subscribed Sections
      */
-    async getMySubscribedSectionsSectionSubscribedPost(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async getMySubscribedSectionsSectionSubscribedPost(requestParameters: GetMySubscribedSectionsSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.getMySubscribedSectionsSectionSubscribedPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getSectionCommentDetailSectionCommentDetailPost without sending the request
+     */
+    async getSectionCommentDetailSectionCommentDetailPostRequestOpts(requestParameters: GetSectionCommentDetailSectionCommentDetailPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentDetailRequest',
+                'Required parameter "sectionCommentDetailRequest" was null or undefined when calling getSectionCommentDetailSectionCommentDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/comment/detail`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentDetailRequestToJSON(requestParameters['sectionCommentDetailRequest']),
+        };
+    }
+
+    /**
+     * Get Section Comment Detail
+     */
+    async getSectionCommentDetailSectionCommentDetailPostRaw(requestParameters: GetSectionCommentDetailSectionCommentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SectionCommentInfo>> {
+        const requestOptions = await this.getSectionCommentDetailSectionCommentDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SectionCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Section Comment Detail
+     */
+    async getSectionCommentDetailSectionCommentDetailPost(requestParameters: GetSectionCommentDetailSectionCommentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SectionCommentInfo> {
+        const response = await this.getSectionCommentDetailSectionCommentDetailPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1177,6 +1561,65 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getSectionMarkdownContentSectionMarkdownContentPost without sending the request
+     */
+    async getSectionMarkdownContentSectionMarkdownContentPostRequestOpts(requestParameters: GetSectionMarkdownContentSectionMarkdownContentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionDetailRequest',
+                'Required parameter "sectionDetailRequest" was null or undefined when calling getSectionMarkdownContentSectionMarkdownContentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/markdown/content`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionDetailRequestToJSON(requestParameters['sectionDetailRequest']),
+        };
+    }
+
+    /**
+     * Get Section Markdown Content
+     */
+    async getSectionMarkdownContentSectionMarkdownContentPostRaw(requestParameters: GetSectionMarkdownContentSectionMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        const requestOptions = await this.getSectionMarkdownContentSectionMarkdownContentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Get Section Markdown Content
+     */
+    async getSectionMarkdownContentSectionMarkdownContentPost(requestParameters: GetSectionMarkdownContentSectionMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.getSectionMarkdownContentSectionMarkdownContentPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost without sending the request
      */
     async getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequestOpts(requestParameters: GetSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPostRequest): Promise<runtime.RequestOpts> {
@@ -1232,6 +1675,120 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost without sending the request
+     */
+    async getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequestOpts(requestParameters: GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionSeoDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionSeoDetailRequest',
+                'Required parameter "sectionSeoDetailRequest" was null or undefined when calling getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/detail/seo/markdown/content`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionSeoDetailRequestToJSON(requestParameters['sectionSeoDetailRequest']),
+        };
+    }
+
+    /**
+     * Get Seo Section Markdown Content
+     */
+    async getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRaw(requestParameters: GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        const requestOptions = await this.getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Get Seo Section Markdown Content
+     */
+    async getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost(requestParameters: GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for likeSectionCommentSectionCommentLikePost without sending the request
+     */
+    async likeSectionCommentSectionCommentLikePostRequestOpts(requestParameters: LikeSectionCommentSectionCommentLikePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentLikeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentLikeRequest',
+                'Required parameter "sectionCommentLikeRequest" was null or undefined when calling likeSectionCommentSectionCommentLikePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/comment/like`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentLikeRequestToJSON(requestParameters['sectionCommentLikeRequest']),
+        };
+    }
+
+    /**
+     * Like Section Comment
+     */
+    async likeSectionCommentSectionCommentLikePostRaw(requestParameters: LikeSectionCommentSectionCommentLikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.likeSectionCommentSectionCommentLikePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Like Section Comment
+     */
+    async likeSectionCommentSectionCommentLikePost(requestParameters: LikeSectionCommentSectionCommentLikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.likeSectionCommentSectionCommentLikePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for listLabelSectionLabelListPost without sending the request
      */
     async listLabelSectionLabelListPostRequestOpts(requestParameters: ListLabelSectionLabelListPostRequest): Promise<runtime.RequestOpts> {
@@ -1277,6 +1834,43 @@ export class SectionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for listPublicLabelSectionLabelPublicListPost without sending the request
+     */
+    async listPublicLabelSectionLabelPublicListPostRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/section/label/public/list`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * List Public Label
+     */
+    async listPublicLabelSectionLabelPublicListPostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasSectionLabelListResponse>> {
+        const requestOptions = await this.listPublicLabelSectionLabelPublicListPostRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasSectionLabelListResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * List Public Label
+     */
+    async listPublicLabelSectionLabelPublicListPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasSectionLabelListResponse> {
+        const response = await this.listPublicLabelSectionLabelPublicListPostRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for publicSectionsSectionPublicSearchPost without sending the request
      */
     async publicSectionsSectionPublicSearchPostRequestOpts(requestParameters: PublicSectionsSectionPublicSearchPostRequest): Promise<runtime.RequestOpts> {
@@ -1316,17 +1910,17 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Public Sections
      */
-    async publicSectionsSectionPublicSearchPostRaw(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async publicSectionsSectionPublicSearchPostRaw(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.publicSectionsSectionPublicSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Public Sections
      */
-    async publicSectionsSectionPublicSearchPost(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async publicSectionsSectionPublicSearchPost(requestParameters: PublicSectionsSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.publicSectionsSectionPublicSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1426,18 +2020,73 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Search Mine Sections
      */
-    async searchMineSectionsSectionMineSearchPostRaw(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchMineSectionsSectionMineSearchPostRaw(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.searchMineSectionsSectionMineSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Mine Sections
      */
-    async searchMineSectionsSectionMineSearchPost(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async searchMineSectionsSectionMineSearchPost(requestParameters: SearchMineSectionsSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.searchMineSectionsSectionMineSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchSectionCommentRepliesSectionCommentReplySearchPost without sending the request
+     */
+    async searchSectionCommentRepliesSectionCommentReplySearchPostRequestOpts(requestParameters: SearchSectionCommentRepliesSectionCommentReplySearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentReplySearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentReplySearchRequest',
+                'Required parameter "sectionCommentReplySearchRequest" was null or undefined when calling searchSectionCommentRepliesSectionCommentReplySearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/comment/reply/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentReplySearchRequestToJSON(requestParameters['sectionCommentReplySearchRequest']),
+        };
+    }
+
+    /**
+     * Search Section Comment Replies
+     */
+    async searchSectionCommentRepliesSectionCommentReplySearchPostRaw(requestParameters: SearchSectionCommentRepliesSectionCommentReplySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionCommentInfo>> {
+        const requestOptions = await this.searchSectionCommentRepliesSectionCommentReplySearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Section Comment Replies
+     */
+    async searchSectionCommentRepliesSectionCommentReplySearchPost(requestParameters: SearchSectionCommentRepliesSectionCommentReplySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionCommentInfo> {
+        const response = await this.searchSectionCommentRepliesSectionCommentReplySearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1481,17 +2130,17 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Search Section Comment
      */
-    async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
+    async searchSectionCommentSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionCommentInfo>> {
         const requestOptions = await this.searchSectionCommentSectionCommentSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionCommentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionCommentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Section Comment
      */
-    async searchSectionCommentSectionCommentSearchPost(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionCommentInfo> {
+    async searchSectionCommentSectionCommentSearchPost(requestParameters: SearchSectionCommentSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionCommentInfo> {
         const response = await this.searchSectionCommentSectionCommentSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1536,17 +2185,17 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Search User Sections
      */
-    async searchUserSectionsSectionUserSearchPostRaw(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchUserSectionsSectionUserSearchPostRaw(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.searchUserSectionsSectionUserSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User Sections
      */
-    async searchUserSectionsSectionUserSearchPost(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async searchUserSectionsSectionUserSearchPost(requestParameters: SearchUserSectionsSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.searchUserSectionsSectionUserSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1591,17 +2240,17 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Section Document Request
      */
-    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionDocumentInfo>> {
+    async sectionDocumentRequestSectionDocumentsPostRaw(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionDocumentInfo>> {
         const requestOptions = await this.sectionDocumentRequestSectionDocumentsPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Section Document Request
      */
-    async sectionDocumentRequestSectionDocumentsPost(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionDocumentInfo> {
+    async sectionDocumentRequestSectionDocumentsPost(requestParameters: SectionDocumentRequestSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionDocumentInfo> {
         const response = await this.sectionDocumentRequestSectionDocumentsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1976,17 +2625,17 @@ export class SectionApi extends runtime.BaseAPI {
     /**
      * Section User Request
      */
-    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionUserPublicInfo>> {
+    async sectionUserRequestSectionUserPostRaw(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionUserPublicInfo>> {
         const requestOptions = await this.sectionUserRequestSectionUserPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionUserPublicInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionUserPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Section User Request
      */
-    async sectionUserRequestSectionUserPost(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionUserPublicInfo> {
+    async sectionUserRequestSectionUserPost(requestParameters: SectionUserRequestSectionUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionUserPublicInfo> {
         const response = await this.sectionUserRequestSectionUserPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2098,6 +2747,61 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async triggerSectionProcessSectionProcessTriggerPost(requestParameters: TriggerSectionProcessSectionProcessTriggerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.triggerSectionProcessSectionProcessTriggerPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for unlikeSectionCommentSectionCommentUnlikePost without sending the request
+     */
+    async unlikeSectionCommentSectionCommentUnlikePostRequestOpts(requestParameters: UnlikeSectionCommentSectionCommentUnlikePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['sectionCommentLikeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'sectionCommentLikeRequest',
+                'Required parameter "sectionCommentLikeRequest" was null or undefined when calling unlikeSectionCommentSectionCommentUnlikePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/section/comment/unlike`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SectionCommentLikeRequestToJSON(requestParameters['sectionCommentLikeRequest']),
+        };
+    }
+
+    /**
+     * Unlike Section Comment
+     */
+    async unlikeSectionCommentSectionCommentUnlikePostRaw(requestParameters: UnlikeSectionCommentSectionCommentUnlikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unlikeSectionCommentSectionCommentUnlikePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unlike Section Comment
+     */
+    async unlikeSectionCommentSectionCommentUnlikePost(requestParameters: UnlikeSectionCommentSectionCommentUnlikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unlikeSectionCommentSectionCommentUnlikePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

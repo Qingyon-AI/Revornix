@@ -14,7 +14,7 @@ from common.dependencies import (
 )
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
-from router.logic_helpers import ensure_private_section_access
+from common.access_control import ensure_private_section_access
 section_comment_manage_router = APIRouter()
 
 
@@ -140,7 +140,7 @@ async def create_section_comment(
     return schemas.common.SuccessResponse()
 
 
-@section_comment_manage_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
+@section_comment_manage_router.post('/comment/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionCommentInfo])
 async def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -223,7 +223,7 @@ async def search_section_comment(
             preview_replies=preview_infos,
         ))
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total_parent,
         elements=elements,
         start=section_comment_search_request.start,
@@ -233,7 +233,7 @@ async def search_section_comment(
     )
 
 
-@section_comment_manage_router.post('/comment/reply/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo])
+@section_comment_manage_router.post('/comment/reply/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionCommentInfo])
 async def search_section_comment_replies(
     request_data: schemas.section.SectionCommentReplySearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -282,7 +282,7 @@ async def search_section_comment_replies(
         for r in db_replies
     ]
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=elements,
         start=request_data.start,

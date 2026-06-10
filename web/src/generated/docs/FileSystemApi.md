@@ -9,8 +9,11 @@ All URIs are relative to *http://localhost*
 | [**getPresignedUrlFileSystemPresignUploadUrlPost**](FileSystemApi.md#getpresignedurlfilesystempresignuploadurlpost) | **POST** /file-system/presign-upload-url | Get Presigned Url |
 | [**getUserFileSystemInfoFileSystemUserFileSystemDetailPost**](FileSystemApi.md#getuserfilesysteminfofilesystemuserfilesystemdetailpost) | **POST** /file-system/user-file-system/detail | Get User File System Info |
 | [**installUserFileSystemFileSystemInstallPost**](FileSystemApi.md#installuserfilesystemfilesysteminstallpost) | **POST** /file-system/install | Install User File System |
+| [**migrateStoredFilesFileSystemFilesMigratePost**](FileSystemApi.md#migratestoredfilesfilesystemfilesmigratepost) | **POST** /file-system/files/migrate | Migrate Stored Files |
 | [**provideFileSystemFileSystemProvidePost**](FileSystemApi.md#providefilesystemfilesystemprovidepost) | **POST** /file-system/provide | Provide File System |
 | [**searchMineFileSystemFileSystemMinePost**](FileSystemApi.md#searchminefilesystemfilesystemminepost) | **POST** /file-system/mine | Search Mine File System |
+| [**searchStoredFilesFileSystemFilesSearchPost**](FileSystemApi.md#searchstoredfilesfilesystemfilessearchpost) | **POST** /file-system/files/search | Search Stored Files |
+| [**syncStoredFilesFileSystemFilesSyncPost**](FileSystemApi.md#syncstoredfilesfilesystemfilessyncpost) | **POST** /file-system/files/sync | Sync Stored Files |
 | [**updateFileSystemFileSystemUpdatePost**](FileSystemApi.md#updatefilesystemfilesystemupdatepost) | **POST** /file-system/update | Update File System |
 | [**uploadFileSystemFileSystemGenericS3UploadPost**](FileSystemApi.md#uploadfilesystemfilesystemgenerics3uploadpost) | **POST** /file-system/generic-s3/upload | Upload File System |
 
@@ -376,6 +379,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## migrateStoredFilesFileSystemFilesMigratePost
+
+> StoredFileMigrateResponse migrateStoredFilesFileSystemFilesMigratePost(migrateFileSystemRequest, authorization, xUserTimezone)
+
+Migrate Stored Files
+
+### Example
+
+```ts
+import {
+  Configuration,
+  FileSystemApi,
+} from '';
+import type { MigrateStoredFilesFileSystemFilesMigratePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new FileSystemApi();
+
+  const body = {
+    // MigrateFileSystemRequest
+    migrateFileSystemRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies MigrateStoredFilesFileSystemFilesMigratePostRequest;
+
+  try {
+    const data = await api.migrateStoredFilesFileSystemFilesMigratePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **migrateFileSystemRequest** | [MigrateFileSystemRequest](MigrateFileSystemRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**StoredFileMigrateResponse**](StoredFileMigrateResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## provideFileSystemFileSystemProvidePost
 
 > ProvideFileSystemSearchResponse provideFileSystemFileSystemProvidePost(fileSystemSearchRequest, authorization, xUserTimezone)
@@ -520,6 +595,150 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## searchStoredFilesFileSystemFilesSearchPost
+
+> StoredFileSearchResponse searchStoredFilesFileSystemFilesSearchPost(storedFileSearchRequest, authorization, xUserTimezone)
+
+Search Stored Files
+
+### Example
+
+```ts
+import {
+  Configuration,
+  FileSystemApi,
+} from '';
+import type { SearchStoredFilesFileSystemFilesSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new FileSystemApi();
+
+  const body = {
+    // StoredFileSearchRequest
+    storedFileSearchRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SearchStoredFilesFileSystemFilesSearchPostRequest;
+
+  try {
+    const data = await api.searchStoredFilesFileSystemFilesSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storedFileSearchRequest** | [StoredFileSearchRequest](StoredFileSearchRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**StoredFileSearchResponse**](StoredFileSearchResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## syncStoredFilesFileSystemFilesSyncPost
+
+> StoredFileSyncResponse syncStoredFilesFileSystemFilesSyncPost(storedFileSyncRequest, authorization, xUserTimezone)
+
+Sync Stored Files
+
+### Example
+
+```ts
+import {
+  Configuration,
+  FileSystemApi,
+} from '';
+import type { SyncStoredFilesFileSystemFilesSyncPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new FileSystemApi();
+
+  const body = {
+    // StoredFileSyncRequest
+    storedFileSyncRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SyncStoredFilesFileSystemFilesSyncPostRequest;
+
+  try {
+    const data = await api.syncStoredFilesFileSystemFilesSyncPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **storedFileSyncRequest** | [StoredFileSyncRequest](StoredFileSyncRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**StoredFileSyncResponse**](StoredFileSyncResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## updateFileSystemFileSystemUpdatePost
 
 > NormalResponse updateFileSystemFileSystemUpdatePost(userFileSystemUpdateRequest, authorization, xUserTimezone)
@@ -612,8 +831,8 @@ async function example() {
   const api = new FileSystemApi();
 
   const body = {
-    // string
-    file: file_example,
+    // Blob
+    file: BINARY_DATA_HERE,
     // string
     filePath: filePath_example,
     // string
@@ -641,7 +860,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **file** | `string` |  | [Defaults to `undefined`] |
+| **file** | `Blob` |  | [Defaults to `undefined`] |
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |

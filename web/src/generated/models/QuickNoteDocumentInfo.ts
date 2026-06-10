@@ -14,13 +14,13 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface QuickNoteDocumentInfo
  */
 export interface QuickNoteDocumentInfo {
     /**
-     *
+     * 
      * @type {string}
      * @memberof QuickNoteDocumentInfo
      */
@@ -44,7 +44,7 @@ export function QuickNoteDocumentInfoFromJSONTyped(json: any, ignoreDiscriminato
         return json;
     }
     return {
-
+        
         'md_file_name': json['md_file_name'],
     };
 }
@@ -59,7 +59,7 @@ export function QuickNoteDocumentInfoToJSONTyped(value?: QuickNoteDocumentInfo |
     }
 
     return {
-
+        
         'md_file_name': value['md_file_name'],
     };
 }

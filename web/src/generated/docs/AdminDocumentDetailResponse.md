@@ -14,6 +14,7 @@ Name | Type
 `cover` | string
 `create_time` | Date
 `update_time` | Date
+`content_update_time` | Date
 `labels` | [Array&lt;DocumentLabel&gt;](DocumentLabel.md)
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `sections` | [Array&lt;SchemasDocumentBaseSectionInfo&gt;](SchemasDocumentBaseSectionInfo.md)
@@ -48,6 +49,7 @@ const example = {
   "cover": null,
   "create_time": null,
   "update_time": null,
+  "content_update_time": null,
   "labels": null,
   "creator": null,
   "sections": null,

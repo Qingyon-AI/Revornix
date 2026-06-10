@@ -8,16 +8,8 @@ Name | Type
 ------------ | -------------
 `notification_task_id` | number
 `title` | string
-`content_type` | number
 `enable` | boolean
-`notification_template_id` | number
-`trigger_type` | number
-`trigger_scheduler_cron` | string
 `trigger_event_id` | number
-`notification_title` | string
-`notification_content` | string
-`notification_link` | string
-`notification_cover` | string
 `notification_source_id` | number
 `notification_target_id` | number
 
@@ -30,16 +22,8 @@ import type { UpdateNotificationTaskRequest } from ''
 const example = {
   "notification_task_id": null,
   "title": null,
-  "content_type": null,
   "enable": null,
-  "notification_template_id": null,
-  "trigger_type": null,
-  "trigger_scheduler_cron": null,
   "trigger_event_id": null,
-  "notification_title": null,
-  "notification_content": null,
-  "notification_link": null,
-  "notification_cover": null,
   "notification_source_id": null,
   "notification_target_id": null,
 } satisfies UpdateNotificationTaskRequest

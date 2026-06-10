@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `creator_id` | number
+`creator` | [UserPublicInfo](UserPublicInfo.md)
 `category` | number
 `title` | string
 `from_plat` | string
@@ -35,6 +36,7 @@ import type { DocumentInfo } from ''
 const example = {
   "id": null,
   "creator_id": null,
+  "creator": null,
   "category": null,
   "title": null,
   "from_plat": null,

@@ -12,24 +12,32 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  DocumentGraphRequest,
-  GraphResponse,
-  HTTPValidationError,
-  SectionGraphRequest,
-} from '../models/index';
 import {
+    type DocumentGraphRequest,
     DocumentGraphRequestFromJSON,
     DocumentGraphRequestToJSON,
+} from '../models/DocumentGraphRequest';
+import {
+    type GraphResponse,
     GraphResponseFromJSON,
     GraphResponseToJSON,
+} from '../models/GraphResponse';
+import {
+    type GraphSearchRequest,
+    GraphSearchRequestFromJSON,
+    GraphSearchRequestToJSON,
+} from '../models/GraphSearchRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type SectionGraphRequest,
     SectionGraphRequestFromJSON,
     SectionGraphRequestToJSON,
-} from '../models/index';
+} from '../models/SectionGraphRequest';
 
 export interface DocumentGraphGraphDocumentPostRequest {
     documentGraphRequest: DocumentGraphRequest;
@@ -40,6 +48,7 @@ export interface DocumentGraphGraphDocumentPostRequest {
 export interface GraphGraphSearchPostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
+    graphSearchRequest?: GraphSearchRequest;
 }
 
 export interface SectionGraphGraphSectionPostRequest {
@@ -116,6 +125,8 @@ export class GraphApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        headerParameters['Content-Type'] = 'application/json';
+
         if (requestParameters['authorization'] != null) {
             headerParameters['authorization'] = String(requestParameters['authorization']);
         }
@@ -132,6 +143,7 @@ export class GraphApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: GraphSearchRequestToJSON(requestParameters['graphSearchRequest']),
         };
     }
 

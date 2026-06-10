@@ -84,7 +84,7 @@ async def _batch_sign_user_avatars(
 ) -> None:
     await _batch_sign_user_media(users)
 
-@user_router.post('/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+@user_router.post('/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.user.UserPublicInfo])
 async def search_user(
     search_user_request: schemas.user.SearchUserRequest,
     current_user: models.user.User = Depends(get_current_user),
@@ -177,7 +177,7 @@ async def search_user(
     has_more = db_next_user is not None
     next_start = db_next_user.id if db_next_user is not None else None
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         start=search_user_request.start,
         limit=search_user_request.limit,
@@ -186,7 +186,7 @@ async def search_user(
         elements=users
     )
 
-@user_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+@user_router.post('/public/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.user.UserPublicInfo])
 async def search_public_users(
     search_public_users_request: schemas.user.SearchPublicUsersRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -213,7 +213,7 @@ async def search_public_users(
         keyword=search_public_users_request.keyword,
     )
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         start=search_public_users_request.start,
         limit=search_public_users_request.limit,
@@ -306,7 +306,7 @@ async def update_default_model(
     await db.commit()
     return schemas.common.SuccessResponse(message="The default model is updated successfully.")
 
-@user_router.post('/fans', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+@user_router.post('/fans', response_model=schemas.pagination.InfiniteScrollPagination[schemas.user.UserPublicInfo])
 async def search_user_fans(
     search_user_fans_request: schemas.user.SearchUserFansRequest,
     _current_user: models.user.User = Depends(get_current_user),
@@ -348,7 +348,7 @@ async def search_user_fans(
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
     await _batch_sign_user_media(users=elements)
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=elements,
         start=search_user_fans_request.start,
@@ -357,7 +357,7 @@ async def search_user_fans(
         next_start=next_start
     )
 
-@user_router.post('/follows', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.user.UserPublicInfo])
+@user_router.post('/follows', response_model=schemas.pagination.InfiniteScrollPagination[schemas.user.UserPublicInfo])
 async def search_user_follows(
     search_user_follows_request: schemas.user.SearchUserFollowsRequest,
     _current_user: models.user.User = Depends(get_current_user),
@@ -399,7 +399,7 @@ async def search_user_follows(
         element.follows = follows_by_user_id.get(item.id, 0)
         elements.append(element)
     await _batch_sign_user_media(users=elements)
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=elements,
         start=search_user_follows_request.start,

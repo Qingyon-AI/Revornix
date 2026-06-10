@@ -1,5 +1,5 @@
 import notificationApi from '@/api/notification'
-import { NormalResponse, DeleteNotificationRecordRequest, InifiniteScrollPagnitionNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, UpdateNotificationSourceRequest, AddNotificationTargetRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, PaginationNotificationTask, PageableRequest, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest, SearchNotificationSourceRequest, InifiniteScrollPagnitionNotificationSource, NotificationSourceForkRequest, NotificationTargetForkRequest, DeleteNotificationSourceRequest, NotificationSourceDetailRequest, NotificationSourceDetail, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, SearchNotificationTargetRequest, InifiniteScrollPagnitionNotificationTarget, NotificationTargetsProvidedResponse, NotificationSourcesProvidedResponse, NotificationTargetDetail, NotificationSourcesUsableResponse, NotificationTargetsUsableResponse, EmailTargetSendCodeRequest } from '@/generated';
+import { NormalResponse, DeleteNotificationRecordRequest, InfiniteScrollPaginationNotificationRecord, NotificationRecordDetailRequest, ReadNotificationRecordRequest, SearchNotificationRecordRequest, AddNotificationSourceRequest, UpdateNotificationSourceRequest, AddNotificationTargetRequest, UpdateNotificationTargetRequest, AddNotificationTaskRequest, DeleteNotificationTaskRequest, UpdateNotificationTaskRequest, NotificationTask, NotificationTaskDetailRequest, NotificationTemplatesResponse, PaginationNotificationTask, PageableRequest, TriggerEventsResponse, GetNotificationSourceRelatedTaskResponse, GetNotificationTargetRelatedTaskResponse, GetNotificationTargetRelatedTaskRequest, GetNotificationSourceRelatedTaskRequest, SearchNotificationSourceRequest, InfiniteScrollPaginationNotificationSource, NotificationSourceForkRequest, NotificationTargetForkRequest, DeleteNotificationSourceRequest, NotificationSourceDetailRequest, NotificationSourceDetail, DeleteNotificationTargetRequest, NotificationTargetDetailRequest, SearchNotificationTargetRequest, InfiniteScrollPaginationNotificationTarget, NotificationTargetsProvidedResponse, NotificationSourcesProvidedResponse, NotificationTargetDetail, NotificationSourcesUsableResponse, NotificationTargetsUsableResponse, EmailTargetSendCodeRequest } from '@/generated';
 import { request } from '@/lib/request';
 
 export const forkNotificationSource = async (data: NotificationSourceForkRequest): Promise<NormalResponse> => {
@@ -50,7 +50,7 @@ export const deleteNotificationRecords = async (data: DeleteNotificationRecordRe
     })
 }
 
-export const searchNotificationRecords = async (data: SearchNotificationRecordRequest): Promise<InifiniteScrollPagnitionNotificationRecord> => {
+export const searchNotificationRecords = async (data: SearchNotificationRecordRequest): Promise<InfiniteScrollPaginationNotificationRecord> => {
     return await request(notificationApi.searchNotificationRecords, {
         data
     })
@@ -90,7 +90,7 @@ export const getMineNotificationSourceDetail = async (data: NotificationSourceDe
     })
 }
 
-export const getMineNotificationSources = async (data: SearchNotificationSourceRequest): Promise<InifiniteScrollPagnitionNotificationSource> => {
+export const getMineNotificationSources = async (data: SearchNotificationSourceRequest): Promise<InfiniteScrollPaginationNotificationSource> => {
     return await request(notificationApi.getMineNotificationSources, {
         data
     })
@@ -124,7 +124,7 @@ export const getMineNotificationTargetDetail = async (data: NotificationTargetDe
     })
 }
 
-export const getMineNotificationTargets = async (data: SearchNotificationTargetRequest): Promise<InifiniteScrollPagnitionNotificationTarget> => {
+export const getMineNotificationTargets = async (data: SearchNotificationTargetRequest): Promise<InfiniteScrollPaginationNotificationTarget> => {
     return await request(notificationApi.getMineNotificationTargets, {
         data
     })

@@ -11,7 +11,7 @@ from common.dependencies import get_async_db, get_current_user, plan_ability_che
 from enums.ability import Ability
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionRole
-from router.logic_helpers import has_section_full_access
+from common.access_control import has_section_full_access
 
 section_user_manage_router = APIRouter()
 

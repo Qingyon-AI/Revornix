@@ -49,6 +49,12 @@ export interface DefaultEngineUpdateRequest {
      * @memberof DefaultEngineUpdateRequest
      */
     default_audio_transcribe_engine_id?: number | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DefaultEngineUpdateRequest
+     */
+    default_audio_meeting_mode?: boolean | null;
 }
 
 /**
@@ -73,6 +79,7 @@ export function DefaultEngineUpdateRequestFromJSONTyped(json: any, ignoreDiscrim
         'default_podcast_user_engine_id': json['default_podcast_user_engine_id'] == null ? undefined : json['default_podcast_user_engine_id'],
         'default_image_generate_engine_id': json['default_image_generate_engine_id'] == null ? undefined : json['default_image_generate_engine_id'],
         'default_audio_transcribe_engine_id': json['default_audio_transcribe_engine_id'] == null ? undefined : json['default_audio_transcribe_engine_id'],
+        'default_audio_meeting_mode': json['default_audio_meeting_mode'] == null ? undefined : json['default_audio_meeting_mode'],
     };
 }
 
@@ -92,6 +99,7 @@ export function DefaultEngineUpdateRequestToJSONTyped(value?: DefaultEngineUpdat
         'default_podcast_user_engine_id': value['default_podcast_user_engine_id'],
         'default_image_generate_engine_id': value['default_image_generate_engine_id'],
         'default_audio_transcribe_engine_id': value['default_audio_transcribe_engine_id'],
+        'default_audio_meeting_mode': value['default_audio_meeting_mode'],
     };
 }
 

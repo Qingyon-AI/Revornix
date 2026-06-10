@@ -11,6 +11,7 @@ Name | Type
 `nickname` | string
 `slogan` | string
 `authority` | [UserDocumentAuthority](UserDocumentAuthority.md)
+`managed_by` | number
 `create_time` | Date
 `update_time` | Date
 
@@ -26,6 +27,7 @@ const example = {
   "nickname": null,
   "slogan": null,
   "authority": null,
+  "managed_by": null,
   "create_time": null,
   "update_time": null,
 } satisfies DocumentCollaboratorPublicInfo

@@ -25,6 +25,12 @@ export interface GenericFileSystemUploadResponse {
      * @memberof GenericFileSystemUploadResponse
      */
     file_path: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof GenericFileSystemUploadResponse
+     */
+    stored_file_id?: number | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function GenericFileSystemUploadResponseFromJSONTyped(json: any, ignoreDi
     return {
         
         'file_path': json['file_path'],
+        'stored_file_id': json['stored_file_id'] == null ? undefined : json['stored_file_id'],
     };
 }
 
@@ -61,6 +68,7 @@ export function GenericFileSystemUploadResponseToJSONTyped(value?: GenericFileSy
     return {
         
         'file_path': value['file_path'],
+        'stored_file_id': value['stored_file_id'],
     };
 }
 

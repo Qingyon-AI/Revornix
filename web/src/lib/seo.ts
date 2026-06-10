@@ -4,8 +4,8 @@
 
 import {
 	DocumentDetailResponse,
-	InifiniteScrollPagnitionSectionInfo,
-	InifiniteScrollPagnitionDocumentInfo,
+	InfiniteScrollPaginationSectionInfo,
+	InfiniteScrollPaginationDocumentInfo,
 	SchemasDocumentBaseSectionInfo,
 	SectionInfo,
 } from '@/generated';
@@ -16,7 +16,7 @@ export type PublicSectionInfo = SectionInfo & {
 };
 
 export type PublicSectionPagination = Omit<
-	InifiniteScrollPagnitionSectionInfo,
+	InfiniteScrollPaginationSectionInfo,
 	'elements'
 > & {
 	elements: PublicSectionInfo[];
@@ -30,10 +30,10 @@ export type PublicDocumentDetail = Omit<DocumentDetailResponse, 'sections'> & {
 	sections?: PublicDocumentSectionInfo[];
 };
 
-export type PublicDocumentInfo = InifiniteScrollPagnitionDocumentInfo['elements'][number];
+export type PublicDocumentInfo = InfiniteScrollPaginationDocumentInfo['elements'][number];
 
 export type PublicDocumentPagination = Omit<
-	InifiniteScrollPagnitionDocumentInfo,
+	InfiniteScrollPaginationDocumentInfo,
 	'elements'
 > & {
 	elements: PublicDocumentInfo[];

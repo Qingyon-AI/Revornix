@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 
 import crud
 from base_implement.markdown_engine_base import FileInfo, MarkdownEngineBase, WebsiteInfo
-from common.common import extract_title_and_summary
+from common.markdown_helpers import extract_title_and_summary
 from data.sql.base import async_session_context
 from enums.engine_enums import EngineCategory, EngineProvided
 from proxy.ai_model_proxy import AIModelProxy

@@ -95,3 +95,4 @@ export function DocumentTranscribeTaskToJSONTyped(value?: DocumentTranscribeTask
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

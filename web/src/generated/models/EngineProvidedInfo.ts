@@ -22,23 +22,23 @@ import {
 } from './EngineCapabilities';
 
 /**
- *
+ * 
  * @export
  * @interface EngineProvidedInfo
  */
 export interface EngineProvidedInfo {
     /**
      * 
-     * @type {string}
-     * @memberof EngineProvidedInfo
-     */
-    uuid: string;
-    /**
-     * 
      * @type {number}
      * @memberof EngineProvidedInfo
      */
     id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof EngineProvidedInfo
+     */
+    uuid: string;
     /**
      * 
      * @type {number}
@@ -70,7 +70,7 @@ export interface EngineProvidedInfo {
      */
     description_zh?: string | null;
     /**
-     *
+     * 
      * @type {EngineCapabilities}
      * @memberof EngineProvidedInfo
      */
@@ -81,8 +81,8 @@ export interface EngineProvidedInfo {
  * Check if a given object implements the EngineProvidedInfo interface.
  */
 export function instanceOfEngineProvidedInfo(value: object): value is EngineProvidedInfo {
-    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
@@ -99,8 +99,8 @@ export function EngineProvidedInfoFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'uuid': json['uuid'],
         'id': json['id'],
+        'uuid': json['uuid'],
         'category': json['category'],
         'name': json['name'],
         'name_zh': json['name_zh'],
@@ -121,8 +121,8 @@ export function EngineProvidedInfoToJSONTyped(value?: EngineProvidedInfo | null,
 
     return {
         
-        'uuid': value['uuid'],
         'id': value['id'],
+        'uuid': value['uuid'],
         'category': value['category'],
         'name': value['name'],
         'name_zh': value['name_zh'],
@@ -131,3 +131,4 @@ export function EngineProvidedInfoToJSONTyped(value?: EngineProvidedInfo | null,
         'capabilities': EngineCapabilitiesToJSON(value['capabilities']),
     };
 }
+

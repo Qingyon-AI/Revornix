@@ -56,7 +56,7 @@ import { Switch } from '../ui/switch';
 import { Separator } from '../ui/separator';
 import { Alert, AlertTitle } from '../ui/alert';
 import {
-	InifiniteScrollPagnitionNotificationSource,
+	InfiniteScrollPaginationNotificationSource,
 	NotificationSource,
 } from '@/generated';
 import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
@@ -151,7 +151,7 @@ const UpdateNotificationSource = ({
 		mutationFn: updateNotificationSource,
 		onSuccess(data, variables, context) {
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationSource,
+				InfiniteScrollPaginationNotificationSource,
 				NotificationSource
 			>(queryClient, ['searchNotificationSources'], (item) => {
 				if (item.id !== notification_source_id) return item;

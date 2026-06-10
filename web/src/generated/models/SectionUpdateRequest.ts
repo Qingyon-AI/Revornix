@@ -54,6 +54,12 @@ export interface SectionUpdateRequest {
      * @type {boolean}
      * @memberof SectionUpdateRequest
      */
+    is_public?: boolean | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionUpdateRequest
+     */
     auto_podcast?: boolean | null;
     /**
      * 
@@ -98,6 +104,7 @@ export function SectionUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator
         'description': json['description'] == null ? undefined : json['description'],
         'cover': json['cover'] == null ? undefined : json['cover'],
         'labels': json['labels'] == null ? undefined : json['labels'],
+        'is_public': json['is_public'] == null ? undefined : json['is_public'],
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
         'auto_illustration': json['auto_illustration'] == null ? undefined : json['auto_illustration'],
         'process_task_trigger_type': json['process_task_trigger_type'] == null ? undefined : json['process_task_trigger_type'],
@@ -121,6 +128,7 @@ export function SectionUpdateRequestToJSONTyped(value?: SectionUpdateRequest | n
         'description': value['description'],
         'cover': value['cover'],
         'labels': value['labels'],
+        'is_public': value['is_public'],
         'auto_podcast': value['auto_podcast'],
         'auto_illustration': value['auto_illustration'],
         'process_task_trigger_type': value['process_task_trigger_type'],

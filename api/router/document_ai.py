@@ -31,7 +31,7 @@ from router.ai import (
     _normalize_chat_images,
     create_agent,
 )
-from router.logic_helpers import ensure_document_access
+from common.access_control import ensure_document_access
 
 document_ai_router = APIRouter()
 

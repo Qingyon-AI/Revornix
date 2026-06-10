@@ -25,7 +25,7 @@ def _build_notification_record(
     )
 
 
-@notification_record_manage_router.post('/record/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord])
+@notification_record_manage_router.post('/record/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationRecord])
 async def search_notification_record(
     search_notification_record_request: schemas.notification.SearchNotificationRecordRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -58,7 +58,7 @@ async def search_notification_record(
         _build_notification_record(notification_record=db_notification_record)
         for db_notification_record in db_notification_records
     ]
-    return schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationRecord](
+    return schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationRecord](
         start=search_notification_record_request.start,
         limit=search_notification_record_request.limit,
         has_more=has_more,

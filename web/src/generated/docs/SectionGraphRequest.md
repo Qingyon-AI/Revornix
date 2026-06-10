@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `section_id` | number
+`mode` | [GraphMode](GraphMode.md)
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { SectionGraphRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "section_id": null,
+  "mode": null,
 } satisfies SectionGraphRequest
 
 console.log(example)

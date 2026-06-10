@@ -31,6 +31,12 @@ export interface DocumentTranscribeRequest {
      * @memberof DocumentTranscribeRequest
      */
     engine_id?: number | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DocumentTranscribeRequest
+     */
+    audio_meeting_mode?: boolean | null;
 }
 
 /**
@@ -53,6 +59,7 @@ export function DocumentTranscribeRequestFromJSONTyped(json: any, ignoreDiscrimi
         
         'document_id': json['document_id'],
         'engine_id': json['engine_id'] == null ? undefined : json['engine_id'],
+        'audio_meeting_mode': json['audio_meeting_mode'] == null ? undefined : json['audio_meeting_mode'],
     };
 }
 
@@ -69,6 +76,7 @@ export function DocumentTranscribeRequestToJSONTyped(value?: DocumentTranscribeR
         
         'document_id': value['document_id'],
         'engine_id': value['engine_id'],
+        'audio_meeting_mode': value['audio_meeting_mode'],
     };
 }
 

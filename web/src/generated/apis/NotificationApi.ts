@@ -12,141 +12,222 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  AddNotificationSourceRequest,
-  AddNotificationTargetRequest,
-  AddNotificationTaskRequest,
-  DeleteNotificationRecordRequest,
-  DeleteNotificationSourceRequest,
-  DeleteNotificationTargetRequest,
-  DeleteNotificationTaskRequest,
-  EmailTargetSendCodeRequest,
-  GetNotificationSourceRelatedTaskRequest,
-  GetNotificationSourceRelatedTaskResponse,
-  GetNotificationTargetRelatedTaskRequest,
-  GetNotificationTargetRelatedTaskResponse,
-  HTTPValidationError,
-  IOSTargetChangeCodeStatusRequest,
-  InifiniteScrollPagnitionNotificationRecord,
-  InifiniteScrollPagnitionNotificationSource,
-  InifiniteScrollPagnitionNotificationTarget,
-  NormalResponse,
-  NotificationRecord,
-  NotificationRecordDetailRequest,
-  NotificationSourceDetail,
-  NotificationSourceDetailRequest,
-  NotificationSourceForkRequest,
-  NotificationSourcesProvidedResponse,
-  NotificationSourcesUsableResponse,
-  NotificationTargetDetail,
-  NotificationTargetDetailRequest,
-  NotificationTargetForkRequest,
-  NotificationTargetsProvidedResponse,
-  NotificationTargetsUsableResponse,
-  NotificationTask,
-  NotificationTaskDetailRequest,
-  NotificationTemplatesResponse,
-  PageableRequest,
-  PaginationNotificationTask,
-  ReadNotificationRecordRequest,
-  SearchNotificationRecordRequest,
-  SearchNotificationSourceRequest,
-  SearchNotificationTargetRequest,
-  TriggerEventsResponse,
-  UpdateNotificationSourceRequest,
-  UpdateNotificationTargetRequest,
-  UpdateNotificationTaskRequest,
-} from '../models/index';
 import {
+    type AddNotificationSourceRequest,
     AddNotificationSourceRequestFromJSON,
     AddNotificationSourceRequestToJSON,
+} from '../models/AddNotificationSourceRequest';
+import {
+    type AddNotificationTargetRequest,
     AddNotificationTargetRequestFromJSON,
     AddNotificationTargetRequestToJSON,
+} from '../models/AddNotificationTargetRequest';
+import {
+    type AddNotificationTaskRequest,
     AddNotificationTaskRequestFromJSON,
     AddNotificationTaskRequestToJSON,
+} from '../models/AddNotificationTaskRequest';
+import {
+    type DeleteNotificationRecordRequest,
     DeleteNotificationRecordRequestFromJSON,
     DeleteNotificationRecordRequestToJSON,
+} from '../models/DeleteNotificationRecordRequest';
+import {
+    type DeleteNotificationSourceRequest,
     DeleteNotificationSourceRequestFromJSON,
     DeleteNotificationSourceRequestToJSON,
+} from '../models/DeleteNotificationSourceRequest';
+import {
+    type DeleteNotificationTargetRequest,
     DeleteNotificationTargetRequestFromJSON,
     DeleteNotificationTargetRequestToJSON,
+} from '../models/DeleteNotificationTargetRequest';
+import {
+    type DeleteNotificationTaskRequest,
     DeleteNotificationTaskRequestFromJSON,
     DeleteNotificationTaskRequestToJSON,
+} from '../models/DeleteNotificationTaskRequest';
+import {
+    type EmailTargetSendCodeRequest,
     EmailTargetSendCodeRequestFromJSON,
     EmailTargetSendCodeRequestToJSON,
+} from '../models/EmailTargetSendCodeRequest';
+import {
+    type GetNotificationSourceRelatedTaskRequest,
     GetNotificationSourceRelatedTaskRequestFromJSON,
     GetNotificationSourceRelatedTaskRequestToJSON,
+} from '../models/GetNotificationSourceRelatedTaskRequest';
+import {
+    type GetNotificationSourceRelatedTaskResponse,
     GetNotificationSourceRelatedTaskResponseFromJSON,
     GetNotificationSourceRelatedTaskResponseToJSON,
+} from '../models/GetNotificationSourceRelatedTaskResponse';
+import {
+    type GetNotificationTargetRelatedTaskRequest,
     GetNotificationTargetRelatedTaskRequestFromJSON,
     GetNotificationTargetRelatedTaskRequestToJSON,
+} from '../models/GetNotificationTargetRelatedTaskRequest';
+import {
+    type GetNotificationTargetRelatedTaskResponse,
     GetNotificationTargetRelatedTaskResponseFromJSON,
     GetNotificationTargetRelatedTaskResponseToJSON,
+} from '../models/GetNotificationTargetRelatedTaskResponse';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type IOSTargetChangeCodeStatusRequest,
     IOSTargetChangeCodeStatusRequestFromJSON,
     IOSTargetChangeCodeStatusRequestToJSON,
-    InifiniteScrollPagnitionNotificationRecordFromJSON,
-    InifiniteScrollPagnitionNotificationRecordToJSON,
-    InifiniteScrollPagnitionNotificationSourceFromJSON,
-    InifiniteScrollPagnitionNotificationSourceToJSON,
-    InifiniteScrollPagnitionNotificationTargetFromJSON,
-    InifiniteScrollPagnitionNotificationTargetToJSON,
+} from '../models/IOSTargetChangeCodeStatusRequest';
+import {
+    type InfiniteScrollPaginationNotificationRecord,
+    InfiniteScrollPaginationNotificationRecordFromJSON,
+    InfiniteScrollPaginationNotificationRecordToJSON,
+} from '../models/InfiniteScrollPaginationNotificationRecord';
+import {
+    type InfiniteScrollPaginationNotificationSource,
+    InfiniteScrollPaginationNotificationSourceFromJSON,
+    InfiniteScrollPaginationNotificationSourceToJSON,
+} from '../models/InfiniteScrollPaginationNotificationSource';
+import {
+    type InfiniteScrollPaginationNotificationTarget,
+    InfiniteScrollPaginationNotificationTargetFromJSON,
+    InfiniteScrollPaginationNotificationTargetToJSON,
+} from '../models/InfiniteScrollPaginationNotificationTarget';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type NotificationRecord,
     NotificationRecordFromJSON,
     NotificationRecordToJSON,
+} from '../models/NotificationRecord';
+import {
+    type NotificationRecordDetailRequest,
     NotificationRecordDetailRequestFromJSON,
     NotificationRecordDetailRequestToJSON,
+} from '../models/NotificationRecordDetailRequest';
+import {
+    type NotificationSourceDetail,
     NotificationSourceDetailFromJSON,
     NotificationSourceDetailToJSON,
+} from '../models/NotificationSourceDetail';
+import {
+    type NotificationSourceDetailRequest,
     NotificationSourceDetailRequestFromJSON,
     NotificationSourceDetailRequestToJSON,
+} from '../models/NotificationSourceDetailRequest';
+import {
+    type NotificationSourceForkRequest,
     NotificationSourceForkRequestFromJSON,
     NotificationSourceForkRequestToJSON,
+} from '../models/NotificationSourceForkRequest';
+import {
+    type NotificationSourcesProvidedResponse,
     NotificationSourcesProvidedResponseFromJSON,
     NotificationSourcesProvidedResponseToJSON,
+} from '../models/NotificationSourcesProvidedResponse';
+import {
+    type NotificationSourcesUsableResponse,
     NotificationSourcesUsableResponseFromJSON,
     NotificationSourcesUsableResponseToJSON,
+} from '../models/NotificationSourcesUsableResponse';
+import {
+    type NotificationTargetDetail,
     NotificationTargetDetailFromJSON,
     NotificationTargetDetailToJSON,
+} from '../models/NotificationTargetDetail';
+import {
+    type NotificationTargetDetailRequest,
     NotificationTargetDetailRequestFromJSON,
     NotificationTargetDetailRequestToJSON,
+} from '../models/NotificationTargetDetailRequest';
+import {
+    type NotificationTargetForkRequest,
     NotificationTargetForkRequestFromJSON,
     NotificationTargetForkRequestToJSON,
+} from '../models/NotificationTargetForkRequest';
+import {
+    type NotificationTargetsProvidedResponse,
     NotificationTargetsProvidedResponseFromJSON,
     NotificationTargetsProvidedResponseToJSON,
+} from '../models/NotificationTargetsProvidedResponse';
+import {
+    type NotificationTargetsUsableResponse,
     NotificationTargetsUsableResponseFromJSON,
     NotificationTargetsUsableResponseToJSON,
+} from '../models/NotificationTargetsUsableResponse';
+import {
+    type NotificationTask,
     NotificationTaskFromJSON,
     NotificationTaskToJSON,
+} from '../models/NotificationTask';
+import {
+    type NotificationTaskDetailRequest,
     NotificationTaskDetailRequestFromJSON,
     NotificationTaskDetailRequestToJSON,
+} from '../models/NotificationTaskDetailRequest';
+import {
+    type NotificationTemplatesResponse,
     NotificationTemplatesResponseFromJSON,
     NotificationTemplatesResponseToJSON,
+} from '../models/NotificationTemplatesResponse';
+import {
+    type PageableRequest,
     PageableRequestFromJSON,
     PageableRequestToJSON,
+} from '../models/PageableRequest';
+import {
+    type PaginationNotificationTask,
     PaginationNotificationTaskFromJSON,
     PaginationNotificationTaskToJSON,
+} from '../models/PaginationNotificationTask';
+import {
+    type ReadNotificationRecordRequest,
     ReadNotificationRecordRequestFromJSON,
     ReadNotificationRecordRequestToJSON,
+} from '../models/ReadNotificationRecordRequest';
+import {
+    type SearchNotificationRecordRequest,
     SearchNotificationRecordRequestFromJSON,
     SearchNotificationRecordRequestToJSON,
+} from '../models/SearchNotificationRecordRequest';
+import {
+    type SearchNotificationSourceRequest,
     SearchNotificationSourceRequestFromJSON,
     SearchNotificationSourceRequestToJSON,
+} from '../models/SearchNotificationSourceRequest';
+import {
+    type SearchNotificationTargetRequest,
     SearchNotificationTargetRequestFromJSON,
     SearchNotificationTargetRequestToJSON,
+} from '../models/SearchNotificationTargetRequest';
+import {
+    type TriggerEventsResponse,
     TriggerEventsResponseFromJSON,
     TriggerEventsResponseToJSON,
+} from '../models/TriggerEventsResponse';
+import {
+    type UpdateNotificationSourceRequest,
     UpdateNotificationSourceRequestFromJSON,
     UpdateNotificationSourceRequestToJSON,
+} from '../models/UpdateNotificationSourceRequest';
+import {
+    type UpdateNotificationTargetRequest,
     UpdateNotificationTargetRequestFromJSON,
     UpdateNotificationTargetRequestToJSON,
+} from '../models/UpdateNotificationTargetRequest';
+import {
+    type UpdateNotificationTaskRequest,
     UpdateNotificationTaskRequestFromJSON,
     UpdateNotificationTaskRequestToJSON,
-} from '../models/index';
+} from '../models/UpdateNotificationTaskRequest';
 
 export interface AddNotificationSourceNotificationSourceAddPostRequest {
     addNotificationSourceRequest: AddNotificationSourceRequest;
@@ -1093,17 +1174,17 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Notification Sources
      */
-    async getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
+    async getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationNotificationSource>> {
         const requestOptions = await this.getNotificationSourcesNotificationSourceCommunityPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationSourceFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationNotificationSourceFromJSON(jsonValue));
     }
 
     /**
      * Get Notification Sources
      */
-    async getNotificationSourcesNotificationSourceCommunityPost(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationSource> {
+    async getNotificationSourcesNotificationSourceCommunityPost(requestParameters: GetNotificationSourcesNotificationSourceCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationNotificationSource> {
         const response = await this.getNotificationSourcesNotificationSourceCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1203,17 +1284,17 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Get Notification Target
      */
-    async getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
+    async getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationNotificationTarget>> {
         const requestOptions = await this.getNotificationTargetNotificationTargetCommunityPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationTargetFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationNotificationTargetFromJSON(jsonValue));
     }
 
     /**
      * Get Notification Target
      */
-    async getNotificationTargetNotificationTargetCommunityPost(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationTarget> {
+    async getNotificationTargetNotificationTargetCommunityPost(requestParameters: GetNotificationTargetNotificationTargetCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationNotificationTarget> {
         const response = await this.getNotificationTargetNotificationTargetCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1848,17 +1929,17 @@ export class NotificationApi extends runtime.BaseAPI {
     /**
      * Search Notification Record
      */
-    async searchNotificationRecordNotificationRecordSearchPostRaw(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationRecord>> {
+    async searchNotificationRecordNotificationRecordSearchPostRaw(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationNotificationRecord>> {
         const requestOptions = await this.searchNotificationRecordNotificationRecordSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationRecordFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationNotificationRecordFromJSON(jsonValue));
     }
 
     /**
      * Search Notification Record
      */
-    async searchNotificationRecordNotificationRecordSearchPost(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationRecord> {
+    async searchNotificationRecordNotificationRecordSearchPost(requestParameters: SearchNotificationRecordNotificationRecordSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationNotificationRecord> {
         const response = await this.searchNotificationRecordNotificationRecordSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

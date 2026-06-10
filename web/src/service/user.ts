@@ -1,5 +1,5 @@
 import userApi from '@/api/user'
-import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InifiniteScrollPagnitionUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
+import { BindEmailCodeVerifyRequest, BindEmailRequest, BindEmailVerifyRequest, BindPhoneCodeCreateRequest, BindPhoneCodeVerifyRequest, DefaultEngineUpdateRequest, DefaultFileSystemUpdateRequest, DefaultModelUpdateRequest, DefaultReadMarkReasonUpdateRequest, EmailCreateRequest, EmailUserCreateCodeVerifyRequest, EmailUserCreateVerifyRequest, FollowUserRequest, GithubUserBind, GithubUserCreate, GoogleUserBind, GoogleUserCreate, InfiniteScrollPaginationUserPublicInfo, InitialPasswordResponse, NormalResponse, PasswordUpdateRequest, PrivateUserInfo, SearchUserFansRequest, SearchUserFollowsRequest, SearchUserRequest, SmsUserCodeCreateRequest, SmsUserCodeVerifyCreate, TokenResponse, UserInfoRequest, UserInfoUpdateRequest, UserLoginRequest, UserPublicInfo, WeChatWebUserBindRequest, WeChatWebUserCreateRequest } from '@/generated';
 import { UserResponseDTO } from '@/generated-pay';
 import { request } from '@/lib/request';
 import { serverRequest } from '@/lib/request-server';
@@ -79,7 +79,7 @@ export const getUserComputeLedgerForPaySystem = async (data?: ComputeLedgerReque
     })
 }
 
-export const searchUser = async (data: SearchUserRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+export const searchUser = async (data: SearchUserRequest): Promise<InfiniteScrollPaginationUserPublicInfo> => {
     return await request(userApi.searchUser, {
         data
     })
@@ -91,19 +91,19 @@ export type SearchPublicUsersWithKeywordRequest = {
     keyword?: string | null
 }
 
-export const searchPublicUsers = async (data: SearchPublicUsersWithKeywordRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+export const searchPublicUsers = async (data: SearchPublicUsersWithKeywordRequest): Promise<InfiniteScrollPaginationUserPublicInfo> => {
     return await request(userApi.searchPublicUsers, {
         data
     })
 }
 
-export const getUserFans = async (data: SearchUserFansRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+export const getUserFans = async (data: SearchUserFansRequest): Promise<InfiniteScrollPaginationUserPublicInfo> => {
     return await request(userApi.getUserFans, {
         data
     })
 }
 
-export const getUserFollows = async (data: SearchUserFollowsRequest): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+export const getUserFollows = async (data: SearchUserFollowsRequest): Promise<InfiniteScrollPaginationUserPublicInfo> => {
     return await request(userApi.getUserFollows, {
         data
     })
@@ -134,7 +134,7 @@ export const getUserInfoServer = async (
 export const searchPublicUsersServer = async (data: {
     start?: number
     limit: number
-}): Promise<InifiniteScrollPagnitionUserPublicInfo> => {
+}): Promise<InfiniteScrollPaginationUserPublicInfo> => {
     return await serverRequest(userApi.searchPublicUsers, { data })
 }
 

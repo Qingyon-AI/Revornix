@@ -1,5 +1,5 @@
 import sectionApi from '@/api/section'
-import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InifiniteScrollPagnitionSectionDocumentInfo, InifiniteScrollPagnitionSectionInfo, InifiniteScrollPagnitionSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentDeleteRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse, UserPublicInfo } from '@/generated';
+import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InfiniteScrollPaginationSectionDocumentInfo, InfiniteScrollPaginationSectionInfo, InfiniteScrollPaginationSectionUserPublicInfo, MineSectionRoleAndAuthorityRequest, NormalResponse, SearchMineSectionsRequest, SearchSubscribedSectionRequest, SearchUserSectionsRequest, SectionCommentDeleteRequest, SectionCreateRequest, SectionCreateResponse, SectionDeleteRequest, SectionDetailRequest, SectionDocumentRequest, SectionInfo, SectionPublishGetRequest, SectionPublishGetResponse, SectionPublishRequest, SectionRePublishRequest, SectionSeoDetailRequest, SectionSubscribeRequest, SectionUpdateRequest, SectionUserAddRequest, SectionUserDeleteRequest, SectionUserModifyRequest, SectionUserRequest, SectionUserRoleAndAuthorityRequest, SectionUserRoleAndAuthorityResponse, UserPublicInfo } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
 import { LabelListResponse } from '@/generated/models/LabelListResponse';
@@ -147,19 +147,19 @@ export const getAllMineSections = async (): Promise<AllMySectionsResponse> => {
     return await request(sectionApi.getAllMineSections)
 }
 
-export const searchMineSection = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
+export const searchMineSection = async (data: SearchMineSectionsRequest): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await request(sectionApi.searchMySection, {
         data
     })
 }
 
-export const searchUserSection = async (data: SearchUserSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
+export const searchUserSection = async (data: SearchUserSectionsRequest): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await request(sectionApi.searchUserSection, {
         data
     })
 }
 
-export const searchPublicSection = async (data: SearchMineSectionsRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
+export const searchPublicSection = async (data: SearchMineSectionsRequest): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await request(sectionApi.searchPublicSection, {
         data
     })
@@ -222,7 +222,7 @@ export type SectionCommentInfo = {
     preview_replies: SectionCommentInfo[]
 }
 
-export type InifiniteScrollPagnitionSectionCommentInfo = {
+export type InfiniteScrollPaginationSectionCommentInfo = {
     total: number
     start?: number | null
     limit: number
@@ -268,13 +268,13 @@ export const deleteSectionComment = async (data: SectionCommentDeleteRequest): P
     })
 }
 
-export const searchSectionComment = async (data: SectionCommentSearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+export const searchSectionComment = async (data: SectionCommentSearchRequest): Promise<InfiniteScrollPaginationSectionCommentInfo> => {
     return await request(sectionApi.searchComment, {
         data
     })
 }
 
-export const searchSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+export const searchSectionCommentReplies = async (data: SectionCommentReplySearchRequest): Promise<InfiniteScrollPaginationSectionCommentInfo> => {
     return await request(sectionApi.searchCommentReplies, {
         data
     })
@@ -298,7 +298,7 @@ export const getSectionCommentDetail = async (data: { section_comment_id: number
     })
 }
 
-export const getMySubscribedSecitions = async (data: SearchSubscribedSectionRequest): Promise<InifiniteScrollPagnitionSectionInfo> => {
+export const getMySubscribedSecitions = async (data: SearchSubscribedSectionRequest): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await request(sectionApi.mySubscribedSecitions, {
         data
     })
@@ -322,7 +322,7 @@ export const deleteSectionUser = async (data: SectionUserDeleteRequest): Promise
     })
 }
 
-export const getSectionUser = async (data: SectionUserRequest): Promise<InifiniteScrollPagnitionSectionUserPublicInfo> => {
+export const getSectionUser = async (data: SectionUserRequest): Promise<InfiniteScrollPaginationSectionUserPublicInfo> => {
     return await request(sectionApi.getSectionUser, {
         data
     })
@@ -346,7 +346,7 @@ export const getSectionPublish = async (data: SectionPublishGetRequest): Promise
     })
 }
 
-export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
+export const searchSectionDocuments = async (data: SectionDocumentRequest): Promise<InfiniteScrollPaginationSectionDocumentInfo> => {
     return await request(sectionApi.searchSectionDocuments, {
         data
     })
@@ -368,7 +368,7 @@ type ServerFetchOptions = Pick<ServerRequestOptions, 'retries' | 'timeoutMs' | '
 export const searchPublicSectionServer = async (
     data: SearchMineSectionsRequest,
     options?: ServerFetchOptions,
-): Promise<InifiniteScrollPagnitionSectionInfo> => {
+): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await serverRequest(sectionApi.searchPublicSection, {
         data,
         retries: options?.retries,
@@ -379,7 +379,7 @@ export const searchPublicSectionServer = async (
 
 export const searchUserSectionServer = async (
     data: SearchUserSectionsRequest,
-): Promise<InifiniteScrollPagnitionSectionInfo> => {
+): Promise<InfiniteScrollPaginationSectionInfo> => {
     return await serverRequest(sectionApi.searchUserSection, { data })
 }
 
@@ -396,13 +396,13 @@ export const getPublicLabelsServer = async (
 
 export const searchSectionDocumentsServer = async (
     data: SectionDocumentRequest,
-): Promise<InifiniteScrollPagnitionSectionDocumentInfo> => {
+): Promise<InfiniteScrollPaginationSectionDocumentInfo> => {
     return await serverRequest(sectionApi.searchSectionDocuments, { data })
 }
 
 export const searchSectionCommentServer = async (
     data: SectionCommentSearchRequest,
-): Promise<InifiniteScrollPagnitionSectionCommentInfo> => {
+): Promise<InfiniteScrollPaginationSectionCommentInfo> => {
     return await serverRequest(sectionApi.searchComment, { data })
 }
 

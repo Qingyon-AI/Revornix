@@ -25,6 +25,18 @@ export interface VectorSearchRequest {
      * @memberof VectorSearchRequest
      */
     query: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof VectorSearchRequest
+     */
+    mode?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof VectorSearchRequest
+     */
+    limit?: number;
 }
 
 /**
@@ -46,6 +58,8 @@ export function VectorSearchRequestFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'query': json['query'],
+        'mode': json['mode'] == null ? undefined : json['mode'],
+        'limit': json['limit'] == null ? undefined : json['limit'],
     };
 }
 
@@ -61,6 +75,8 @@ export function VectorSearchRequestToJSONTyped(value?: VectorSearchRequest | nul
     return {
         
         'query': value['query'],
+        'mode': value['mode'],
+        'limit': value['limit'],
     };
 }
 

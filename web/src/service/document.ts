@@ -1,5 +1,5 @@
 import documentApi from '@/api/document'
-import { InifiniteScrollPagnitionDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InifiniteScrollPagnitionDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest, UserPublicInfo } from '@/generated'
+import { InfiniteScrollPaginationDocumentInfo, DocumentDetailResponse, NormalResponse, ReadRequest, StarRequest, DocumentDeleteRequest, DocumentCreateRequest, DocumentCreateResponse, SearchAllMyDocumentsRequest, SearchMyStarDocumentsRequest, SearchRecentReadRequest, VectorSearchRequest, VectorSearchResponse, DocumentMonthSummaryResponse, DocumentNoteCreateRequest, DocumentNoteDeleteRequest, InfiniteScrollPaginationDocumentNoteInfo, SearchDocumentNoteRequest, SearchUnreadListRequest, LabelSummaryResponse, DocumentUpdateRequest, DocumentMarkdownConvertRequest, DocumentEmbeddingRequest, UserPublicInfo } from '@/generated'
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
 import { LabelListResponse } from '@/generated/models/LabelListResponse'
 import { request } from '@/lib/request'
@@ -248,13 +248,13 @@ export const deleteDocumentNote = async (data: DocumentNoteDeleteRequest): Promi
     })
 }
 
-export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+export const searchDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InfiniteScrollPaginationDocumentNoteInfo> => {
     return await request(documentApi.searchDocumentNotes, {
         data
     })
 }
 
-export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+export const searchPublicDocumentNotes = async (data: SearchDocumentNoteRequest): Promise<InfiniteScrollPaginationDocumentNoteInfo> => {
     return await request(documentApi.searchPublicDocumentNotes, {
         data
     })
@@ -309,13 +309,13 @@ export const createLabel = async ({ name }: { name: string }): Promise<CreateLab
     })
 }
 
-export const searchUserUnreadDocument = async (data: SearchUnreadListRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchUserUnreadDocument = async (data: SearchUnreadListRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchUserUnreadDocument, {
         data
     })
 }
 
-export const searchAllMyDocument = async (data: SearchAllMyDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchAllMyDocument = async (data: SearchAllMyDocumentsRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchMyDocuments, { data })
 }
 
@@ -328,17 +328,17 @@ export type SearchPublicDocumentsRequest = {
     desc?: boolean
 }
 
-export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchPublicDocument = async (data: SearchPublicDocumentsRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchPublicDocument, { data })
 }
 
-export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchUserRecentReadDocument = async (data: SearchRecentReadRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchUserRecentReadDocument, {
         data
     })
 }
 
-export const searchUserStarDocument = async (data: SearchMyStarDocumentsRequest): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+export const searchUserStarDocument = async (data: SearchMyStarDocumentsRequest): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await request(documentApi.searchStarDocument, { data })
 }
 
@@ -417,7 +417,7 @@ export type DocumentCommentInfo = {
     preview_replies: DocumentCommentInfo[]
 }
 
-export type InifiniteScrollPagnitionDocumentCommentInfo = {
+export type InfiniteScrollPaginationDocumentCommentInfo = {
     total: number
     start?: number | null
     limit: number
@@ -463,11 +463,11 @@ export const deleteDocumentComment = async (data: DocumentCommentDeleteRequest):
     return await request(documentApi.deleteComment, { data })
 }
 
-export const searchDocumentComment = async (data: DocumentCommentSearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+export const searchDocumentComment = async (data: DocumentCommentSearchRequest): Promise<InfiniteScrollPaginationDocumentCommentInfo> => {
     return await request(documentApi.searchComment, { data })
 }
 
-export const searchDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+export const searchDocumentCommentReplies = async (data: DocumentCommentReplySearchRequest): Promise<InfiniteScrollPaginationDocumentCommentInfo> => {
     return await request(documentApi.searchCommentReplies, { data })
 }
 
@@ -493,7 +493,7 @@ type ServerFetchOptions = Pick<ServerRequestOptions, 'retries' | 'timeoutMs' | '
 export const searchPublicDocumentServer = async (
     data: SearchPublicDocumentsRequest,
     options?: ServerFetchOptions,
-): Promise<InifiniteScrollPagnitionDocumentInfo> => {
+): Promise<InfiniteScrollPaginationDocumentInfo> => {
     return await serverRequest(documentApi.searchPublicDocument, {
         data,
         retries: options?.retries,
@@ -515,13 +515,13 @@ export const getPublicLabelsServer = async (
 
 export const searchDocumentCommentServer = async (
     data: DocumentCommentSearchRequest,
-): Promise<InifiniteScrollPagnitionDocumentCommentInfo> => {
+): Promise<InfiniteScrollPaginationDocumentCommentInfo> => {
     return await serverRequest(documentApi.searchComment, { data })
 }
 
 export const searchPublicDocumentNotesServer = async (
     data: SearchDocumentNoteRequest,
-): Promise<InifiniteScrollPagnitionDocumentNoteInfo> => {
+): Promise<InfiniteScrollPaginationDocumentNoteInfo> => {
     return await serverRequest(documentApi.searchPublicDocumentNotes, { data })
 }
 

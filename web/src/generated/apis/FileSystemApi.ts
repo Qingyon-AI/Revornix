@@ -12,60 +12,117 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  FileSystemInfo,
-  FileSystemInfoRequest,
-  FileSystemInstallRequest,
-  FileSystemInstallResponse,
-  FileSystemSearchRequest,
-  GenericFileSystemUploadResponse,
-  HTTPValidationError,
-  MineFileSystemSearchResponse,
-  NormalResponse,
-  PresignUploadURLRequest,
-  PresignUploadURLResponse,
-  ProvideFileSystemSearchResponse,
-  UserFileSystemDeleteRequest,
-  UserFileSystemDetail,
-  UserFileSystemInfoRequest,
-  UserFileSystemUpdateRequest,
-} from '../models/index';
 import {
+    type FileSystemInfo,
     FileSystemInfoFromJSON,
     FileSystemInfoToJSON,
+} from '../models/FileSystemInfo';
+import {
+    type FileSystemInfoRequest,
     FileSystemInfoRequestFromJSON,
     FileSystemInfoRequestToJSON,
+} from '../models/FileSystemInfoRequest';
+import {
+    type FileSystemInstallRequest,
     FileSystemInstallRequestFromJSON,
     FileSystemInstallRequestToJSON,
+} from '../models/FileSystemInstallRequest';
+import {
+    type FileSystemInstallResponse,
     FileSystemInstallResponseFromJSON,
     FileSystemInstallResponseToJSON,
+} from '../models/FileSystemInstallResponse';
+import {
+    type FileSystemSearchRequest,
     FileSystemSearchRequestFromJSON,
     FileSystemSearchRequestToJSON,
+} from '../models/FileSystemSearchRequest';
+import {
+    type GenericFileSystemUploadResponse,
     GenericFileSystemUploadResponseFromJSON,
     GenericFileSystemUploadResponseToJSON,
+} from '../models/GenericFileSystemUploadResponse';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type MigrateFileSystemRequest,
+    MigrateFileSystemRequestFromJSON,
+    MigrateFileSystemRequestToJSON,
+} from '../models/MigrateFileSystemRequest';
+import {
+    type MineFileSystemSearchResponse,
     MineFileSystemSearchResponseFromJSON,
     MineFileSystemSearchResponseToJSON,
+} from '../models/MineFileSystemSearchResponse';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type PresignUploadURLRequest,
     PresignUploadURLRequestFromJSON,
     PresignUploadURLRequestToJSON,
+} from '../models/PresignUploadURLRequest';
+import {
+    type PresignUploadURLResponse,
     PresignUploadURLResponseFromJSON,
     PresignUploadURLResponseToJSON,
+} from '../models/PresignUploadURLResponse';
+import {
+    type ProvideFileSystemSearchResponse,
     ProvideFileSystemSearchResponseFromJSON,
     ProvideFileSystemSearchResponseToJSON,
+} from '../models/ProvideFileSystemSearchResponse';
+import {
+    type StoredFileMigrateResponse,
+    StoredFileMigrateResponseFromJSON,
+    StoredFileMigrateResponseToJSON,
+} from '../models/StoredFileMigrateResponse';
+import {
+    type StoredFileSearchRequest,
+    StoredFileSearchRequestFromJSON,
+    StoredFileSearchRequestToJSON,
+} from '../models/StoredFileSearchRequest';
+import {
+    type StoredFileSearchResponse,
+    StoredFileSearchResponseFromJSON,
+    StoredFileSearchResponseToJSON,
+} from '../models/StoredFileSearchResponse';
+import {
+    type StoredFileSyncRequest,
+    StoredFileSyncRequestFromJSON,
+    StoredFileSyncRequestToJSON,
+} from '../models/StoredFileSyncRequest';
+import {
+    type StoredFileSyncResponse,
+    StoredFileSyncResponseFromJSON,
+    StoredFileSyncResponseToJSON,
+} from '../models/StoredFileSyncResponse';
+import {
+    type UserFileSystemDeleteRequest,
     UserFileSystemDeleteRequestFromJSON,
     UserFileSystemDeleteRequestToJSON,
+} from '../models/UserFileSystemDeleteRequest';
+import {
+    type UserFileSystemDetail,
     UserFileSystemDetailFromJSON,
     UserFileSystemDetailToJSON,
+} from '../models/UserFileSystemDetail';
+import {
+    type UserFileSystemInfoRequest,
     UserFileSystemInfoRequestFromJSON,
     UserFileSystemInfoRequestToJSON,
+} from '../models/UserFileSystemInfoRequest';
+import {
+    type UserFileSystemUpdateRequest,
     UserFileSystemUpdateRequestFromJSON,
     UserFileSystemUpdateRequestToJSON,
-} from '../models/index';
+} from '../models/UserFileSystemUpdateRequest';
 
 export interface DeleteUserFileSystemFileSystemUserFileSystemDeletePostRequest {
     userFileSystemDeleteRequest: UserFileSystemDeleteRequest;
@@ -97,6 +154,12 @@ export interface InstallUserFileSystemFileSystemInstallPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface MigrateStoredFilesFileSystemFilesMigratePostRequest {
+    migrateFileSystemRequest: MigrateFileSystemRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface ProvideFileSystemFileSystemProvidePostRequest {
     fileSystemSearchRequest: FileSystemSearchRequest;
     authorization?: string | null;
@@ -109,6 +172,18 @@ export interface SearchMineFileSystemFileSystemMinePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface SearchStoredFilesFileSystemFilesSearchPostRequest {
+    storedFileSearchRequest: StoredFileSearchRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface SyncStoredFilesFileSystemFilesSyncPostRequest {
+    storedFileSyncRequest: StoredFileSyncRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface UpdateFileSystemFileSystemUpdatePostRequest {
     userFileSystemUpdateRequest: UserFileSystemUpdateRequest;
     authorization?: string | null;
@@ -116,7 +191,7 @@ export interface UpdateFileSystemFileSystemUpdatePostRequest {
 }
 
 export interface UploadFileSystemFileSystemGenericS3UploadPostRequest {
-    file: string;
+    file: Blob;
     filePath: string;
     contentType: string;
     authorization?: string | null;
@@ -404,6 +479,61 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for migrateStoredFilesFileSystemFilesMigratePost without sending the request
+     */
+    async migrateStoredFilesFileSystemFilesMigratePostRequestOpts(requestParameters: MigrateStoredFilesFileSystemFilesMigratePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['migrateFileSystemRequest'] == null) {
+            throw new runtime.RequiredError(
+                'migrateFileSystemRequest',
+                'Required parameter "migrateFileSystemRequest" was null or undefined when calling migrateStoredFilesFileSystemFilesMigratePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/file-system/files/migrate`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MigrateFileSystemRequestToJSON(requestParameters['migrateFileSystemRequest']),
+        };
+    }
+
+    /**
+     * Migrate Stored Files
+     */
+    async migrateStoredFilesFileSystemFilesMigratePostRaw(requestParameters: MigrateStoredFilesFileSystemFilesMigratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StoredFileMigrateResponse>> {
+        const requestOptions = await this.migrateStoredFilesFileSystemFilesMigratePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StoredFileMigrateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Migrate Stored Files
+     */
+    async migrateStoredFilesFileSystemFilesMigratePost(requestParameters: MigrateStoredFilesFileSystemFilesMigratePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StoredFileMigrateResponse> {
+        const response = await this.migrateStoredFilesFileSystemFilesMigratePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for provideFileSystemFileSystemProvidePost without sending the request
      */
     async provideFileSystemFileSystemProvidePostRequestOpts(requestParameters: ProvideFileSystemFileSystemProvidePostRequest): Promise<runtime.RequestOpts> {
@@ -514,6 +644,116 @@ export class FileSystemApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for searchStoredFilesFileSystemFilesSearchPost without sending the request
+     */
+    async searchStoredFilesFileSystemFilesSearchPostRequestOpts(requestParameters: SearchStoredFilesFileSystemFilesSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['storedFileSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'storedFileSearchRequest',
+                'Required parameter "storedFileSearchRequest" was null or undefined when calling searchStoredFilesFileSystemFilesSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/file-system/files/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: StoredFileSearchRequestToJSON(requestParameters['storedFileSearchRequest']),
+        };
+    }
+
+    /**
+     * Search Stored Files
+     */
+    async searchStoredFilesFileSystemFilesSearchPostRaw(requestParameters: SearchStoredFilesFileSystemFilesSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StoredFileSearchResponse>> {
+        const requestOptions = await this.searchStoredFilesFileSystemFilesSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StoredFileSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Stored Files
+     */
+    async searchStoredFilesFileSystemFilesSearchPost(requestParameters: SearchStoredFilesFileSystemFilesSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StoredFileSearchResponse> {
+        const response = await this.searchStoredFilesFileSystemFilesSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for syncStoredFilesFileSystemFilesSyncPost without sending the request
+     */
+    async syncStoredFilesFileSystemFilesSyncPostRequestOpts(requestParameters: SyncStoredFilesFileSystemFilesSyncPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['storedFileSyncRequest'] == null) {
+            throw new runtime.RequiredError(
+                'storedFileSyncRequest',
+                'Required parameter "storedFileSyncRequest" was null or undefined when calling syncStoredFilesFileSystemFilesSyncPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/file-system/files/sync`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: StoredFileSyncRequestToJSON(requestParameters['storedFileSyncRequest']),
+        };
+    }
+
+    /**
+     * Sync Stored Files
+     */
+    async syncStoredFilesFileSystemFilesSyncPostRaw(requestParameters: SyncStoredFilesFileSystemFilesSyncPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StoredFileSyncResponse>> {
+        const requestOptions = await this.syncStoredFilesFileSystemFilesSyncPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StoredFileSyncResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Sync Stored Files
+     */
+    async syncStoredFilesFileSystemFilesSyncPost(requestParameters: SyncStoredFilesFileSystemFilesSyncPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StoredFileSyncResponse> {
+        const response = await this.syncStoredFilesFileSystemFilesSyncPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for updateFileSystemFileSystemUpdatePost without sending the request
      */
     async updateFileSystemFileSystemUpdatePostRequestOpts(requestParameters: UpdateFileSystemFileSystemUpdatePostRequest): Promise<runtime.RequestOpts> {
@@ -613,6 +853,8 @@ export class FileSystemApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {

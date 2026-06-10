@@ -20,13 +20,13 @@ import { mapValues } from '../runtime';
  */
 export interface ApiKeyCreateResponse {
     /**
-     *
+     * 
      * @type {number}
      * @memberof ApiKeyCreateResponse
      */
     api_key_id: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof ApiKeyCreateResponse
      */
@@ -51,7 +51,7 @@ export function ApiKeyCreateResponseFromJSONTyped(json: any, ignoreDiscriminator
         return json;
     }
     return {
-
+        
         'api_key_id': json['api_key_id'],
         'api_key': json['api_key'],
     };
@@ -67,7 +67,7 @@ export function ApiKeyCreateResponseToJSONTyped(value?: ApiKeyCreateResponse | n
     }
 
     return {
-
+        
         'api_key_id': value['api_key_id'],
         'api_key': value['api_key'],
     };

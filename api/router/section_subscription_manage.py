@@ -13,7 +13,7 @@ from common.dependencies import (
 )
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionAuthority, UserSectionRole
-from router.logic_helpers import resolve_subscribe_action
+from common.resource_actions import resolve_subscribe_action
 
 section_subscription_manage_router = APIRouter()
 

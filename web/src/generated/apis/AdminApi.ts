@@ -12,126 +12,197 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  AdminAddNotificationTaskRequest,
-  AdminAntiScrapeStatsResponse,
-  AdminDeleteNotificationTaskRequest,
-  AdminDocumentDeleteRequest,
-  AdminDocumentDetailRequest,
-  AdminDocumentDetailResponse,
-  AdminDocumentSearchRequest,
-  AdminNotificationTaskDetailRequest,
-  AdminSectionDeleteRequest,
-  AdminSectionDetailRequest,
-  AdminSectionDetailResponse,
-  AdminSectionSearchRequest,
-  AdminUpdateNotificationTaskRequest,
-  AdminUserComputeInfoRequest,
-  AdminUserComputeInfoResponse,
-  AdminUserComputeLedgerRequest,
-  AdminUserComputeLedgerResponse,
-  AdminUserCreateRequest,
-  AdminUserDeleteRequest,
-  AdminUserDetail,
-  AdminUserDetailRequest,
-  AdminUserNotificationSourceSearchRequest,
-  AdminUserNotificationTargetSearchRequest,
-  AdminUserNotificationTaskPageRequest,
-  AdminUserSearchRequest,
-  AdminUserUpdateRequest,
-  GenericFileSystemUploadResponse,
-  HTTPValidationError,
-  InifiniteScrollPagnitionNotificationSource,
-  InifiniteScrollPagnitionNotificationTarget,
-  NormalResponse,
-  NotificationSourcesUsableResponse,
-  NotificationTargetsUsableResponse,
-  NotificationTask,
-  PaginationAdminDocumentSummary,
-  PaginationAdminSectionSummary,
-  PaginationAdminUserSummary,
-  PaginationNotificationTask,
-} from '../models/index';
 import {
+    type AdminAddNotificationTaskRequest,
     AdminAddNotificationTaskRequestFromJSON,
     AdminAddNotificationTaskRequestToJSON,
+} from '../models/AdminAddNotificationTaskRequest';
+import {
+    type AdminAntiScrapeStatsResponse,
     AdminAntiScrapeStatsResponseFromJSON,
     AdminAntiScrapeStatsResponseToJSON,
+} from '../models/AdminAntiScrapeStatsResponse';
+import {
+    type AdminDeleteNotificationTaskRequest,
     AdminDeleteNotificationTaskRequestFromJSON,
     AdminDeleteNotificationTaskRequestToJSON,
+} from '../models/AdminDeleteNotificationTaskRequest';
+import {
+    type AdminDocumentDeleteRequest,
     AdminDocumentDeleteRequestFromJSON,
     AdminDocumentDeleteRequestToJSON,
+} from '../models/AdminDocumentDeleteRequest';
+import {
+    type AdminDocumentDetailRequest,
     AdminDocumentDetailRequestFromJSON,
     AdminDocumentDetailRequestToJSON,
+} from '../models/AdminDocumentDetailRequest';
+import {
+    type AdminDocumentDetailResponse,
     AdminDocumentDetailResponseFromJSON,
     AdminDocumentDetailResponseToJSON,
+} from '../models/AdminDocumentDetailResponse';
+import {
+    type AdminDocumentSearchRequest,
     AdminDocumentSearchRequestFromJSON,
     AdminDocumentSearchRequestToJSON,
+} from '../models/AdminDocumentSearchRequest';
+import {
+    type AdminNotificationTaskDetailRequest,
     AdminNotificationTaskDetailRequestFromJSON,
     AdminNotificationTaskDetailRequestToJSON,
+} from '../models/AdminNotificationTaskDetailRequest';
+import {
+    type AdminSectionDeleteRequest,
     AdminSectionDeleteRequestFromJSON,
     AdminSectionDeleteRequestToJSON,
+} from '../models/AdminSectionDeleteRequest';
+import {
+    type AdminSectionDetailRequest,
     AdminSectionDetailRequestFromJSON,
     AdminSectionDetailRequestToJSON,
+} from '../models/AdminSectionDetailRequest';
+import {
+    type AdminSectionDetailResponse,
     AdminSectionDetailResponseFromJSON,
     AdminSectionDetailResponseToJSON,
+} from '../models/AdminSectionDetailResponse';
+import {
+    type AdminSectionSearchRequest,
     AdminSectionSearchRequestFromJSON,
     AdminSectionSearchRequestToJSON,
+} from '../models/AdminSectionSearchRequest';
+import {
+    type AdminUpdateNotificationTaskRequest,
     AdminUpdateNotificationTaskRequestFromJSON,
     AdminUpdateNotificationTaskRequestToJSON,
+} from '../models/AdminUpdateNotificationTaskRequest';
+import {
+    type AdminUserComputeInfoRequest,
     AdminUserComputeInfoRequestFromJSON,
     AdminUserComputeInfoRequestToJSON,
+} from '../models/AdminUserComputeInfoRequest';
+import {
+    type AdminUserComputeInfoResponse,
     AdminUserComputeInfoResponseFromJSON,
     AdminUserComputeInfoResponseToJSON,
+} from '../models/AdminUserComputeInfoResponse';
+import {
+    type AdminUserComputeLedgerRequest,
     AdminUserComputeLedgerRequestFromJSON,
     AdminUserComputeLedgerRequestToJSON,
+} from '../models/AdminUserComputeLedgerRequest';
+import {
+    type AdminUserComputeLedgerResponse,
     AdminUserComputeLedgerResponseFromJSON,
     AdminUserComputeLedgerResponseToJSON,
+} from '../models/AdminUserComputeLedgerResponse';
+import {
+    type AdminUserCreateRequest,
     AdminUserCreateRequestFromJSON,
     AdminUserCreateRequestToJSON,
+} from '../models/AdminUserCreateRequest';
+import {
+    type AdminUserDeleteRequest,
     AdminUserDeleteRequestFromJSON,
     AdminUserDeleteRequestToJSON,
+} from '../models/AdminUserDeleteRequest';
+import {
+    type AdminUserDetail,
     AdminUserDetailFromJSON,
     AdminUserDetailToJSON,
+} from '../models/AdminUserDetail';
+import {
+    type AdminUserDetailRequest,
     AdminUserDetailRequestFromJSON,
     AdminUserDetailRequestToJSON,
+} from '../models/AdminUserDetailRequest';
+import {
+    type AdminUserNotificationSourceSearchRequest,
     AdminUserNotificationSourceSearchRequestFromJSON,
     AdminUserNotificationSourceSearchRequestToJSON,
+} from '../models/AdminUserNotificationSourceSearchRequest';
+import {
+    type AdminUserNotificationTargetSearchRequest,
     AdminUserNotificationTargetSearchRequestFromJSON,
     AdminUserNotificationTargetSearchRequestToJSON,
+} from '../models/AdminUserNotificationTargetSearchRequest';
+import {
+    type AdminUserNotificationTaskPageRequest,
     AdminUserNotificationTaskPageRequestFromJSON,
     AdminUserNotificationTaskPageRequestToJSON,
+} from '../models/AdminUserNotificationTaskPageRequest';
+import {
+    type AdminUserSearchRequest,
     AdminUserSearchRequestFromJSON,
     AdminUserSearchRequestToJSON,
+} from '../models/AdminUserSearchRequest';
+import {
+    type AdminUserUpdateRequest,
     AdminUserUpdateRequestFromJSON,
     AdminUserUpdateRequestToJSON,
+} from '../models/AdminUserUpdateRequest';
+import {
+    type GenericFileSystemUploadResponse,
     GenericFileSystemUploadResponseFromJSON,
     GenericFileSystemUploadResponseToJSON,
+} from '../models/GenericFileSystemUploadResponse';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionNotificationSourceFromJSON,
-    InifiniteScrollPagnitionNotificationSourceToJSON,
-    InifiniteScrollPagnitionNotificationTargetFromJSON,
-    InifiniteScrollPagnitionNotificationTargetToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationNotificationSource,
+    InfiniteScrollPaginationNotificationSourceFromJSON,
+    InfiniteScrollPaginationNotificationSourceToJSON,
+} from '../models/InfiniteScrollPaginationNotificationSource';
+import {
+    type InfiniteScrollPaginationNotificationTarget,
+    InfiniteScrollPaginationNotificationTargetFromJSON,
+    InfiniteScrollPaginationNotificationTargetToJSON,
+} from '../models/InfiniteScrollPaginationNotificationTarget';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type NotificationSourcesUsableResponse,
     NotificationSourcesUsableResponseFromJSON,
     NotificationSourcesUsableResponseToJSON,
+} from '../models/NotificationSourcesUsableResponse';
+import {
+    type NotificationTargetsUsableResponse,
     NotificationTargetsUsableResponseFromJSON,
     NotificationTargetsUsableResponseToJSON,
+} from '../models/NotificationTargetsUsableResponse';
+import {
+    type NotificationTask,
     NotificationTaskFromJSON,
     NotificationTaskToJSON,
+} from '../models/NotificationTask';
+import {
+    type PaginationAdminDocumentSummary,
     PaginationAdminDocumentSummaryFromJSON,
     PaginationAdminDocumentSummaryToJSON,
+} from '../models/PaginationAdminDocumentSummary';
+import {
+    type PaginationAdminSectionSummary,
     PaginationAdminSectionSummaryFromJSON,
     PaginationAdminSectionSummaryToJSON,
+} from '../models/PaginationAdminSectionSummary';
+import {
+    type PaginationAdminUserSummary,
     PaginationAdminUserSummaryFromJSON,
     PaginationAdminUserSummaryToJSON,
+} from '../models/PaginationAdminUserSummary';
+import {
+    type PaginationNotificationTask,
     PaginationNotificationTaskFromJSON,
     PaginationNotificationTaskToJSON,
-} from '../models/index';
+} from '../models/PaginationNotificationTask';
 
 export interface AddAdminUserNotificationTaskAdminUsersNotificationsTaskAddPostRequest {
     adminAddNotificationTaskRequest: AdminAddNotificationTaskRequest;
@@ -273,14 +344,14 @@ export interface UpdateAdminUserNotificationTaskAdminUsersNotificationsTaskUpdat
 
 export interface UploadAdminUserAvatarAdminUsersAvatarUploadPostRequest {
     userId: number;
-    file: string;
+    file: Blob;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
 
 export interface UploadAdminUserNotificationCoverAdminUsersNotificationsCoverUploadPostRequest {
     userId: number;
-    file: string;
+    file: Blob;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -1320,17 +1391,17 @@ export class AdminApi extends runtime.BaseAPI {
     /**
      * Search Admin User Notification Sources
      */
-    async searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRaw(requestParameters: SearchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationSource>> {
+    async searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRaw(requestParameters: SearchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationNotificationSource>> {
         const requestOptions = await this.searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationSourceFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationNotificationSourceFromJSON(jsonValue));
     }
 
     /**
      * Search Admin User Notification Sources
      */
-    async searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPost(requestParameters: SearchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationSource> {
+    async searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPost(requestParameters: SearchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationNotificationSource> {
         const response = await this.searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1375,17 +1446,17 @@ export class AdminApi extends runtime.BaseAPI {
     /**
      * Search Admin User Notification Targets
      */
-    async searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRaw(requestParameters: SearchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionNotificationTarget>> {
+    async searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRaw(requestParameters: SearchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationNotificationTarget>> {
         const requestOptions = await this.searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionNotificationTargetFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationNotificationTargetFromJSON(jsonValue));
     }
 
     /**
      * Search Admin User Notification Targets
      */
-    async searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPost(requestParameters: SearchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionNotificationTarget> {
+    async searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPost(requestParameters: SearchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationNotificationTarget> {
         const response = await this.searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1593,6 +1664,8 @@ export class AdminApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {
@@ -1675,6 +1748,8 @@ export class AdminApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {

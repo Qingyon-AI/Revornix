@@ -44,7 +44,7 @@ export interface AdminAddNotificationTaskRequest {
      */
     title: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof AdminAddNotificationTaskRequest
      */
@@ -107,3 +107,4 @@ export function AdminAddNotificationTaskRequestToJSONTyped(value?: AdminAddNotif
         'user_id': value['user_id'],
     };
 }
+

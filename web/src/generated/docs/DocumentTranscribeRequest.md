@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `document_id` | number
 `engine_id` | number
+`audio_meeting_mode` | boolean
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { DocumentTranscribeRequest } from ''
 const example = {
   "document_id": null,
   "engine_id": null,
+  "audio_meeting_mode": null,
 } satisfies DocumentTranscribeRequest
 
 console.log(example)

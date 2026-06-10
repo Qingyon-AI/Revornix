@@ -15,24 +15,28 @@
 import { mapValues } from '../runtime';
 /**
  * Audio-domain STT engine capability declaration.
+ * 
+ * Lives under ``EngineCapabilities.stt`` so STT-specific fields never leak
+ * onto unrelated engine categories. Surfaced so clients can decide whether
+ * an STT engine is eligible for meeting-record mode.
  * @export
  * @interface STTCapabilityInfo
  */
 export interface STTCapabilityInfo {
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof STTCapabilityInfo
      */
     segments?: boolean;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof STTCapabilityInfo
      */
     diarization?: boolean;
     /**
-     *
+     * 
      * @type {number}
      * @memberof STTCapabilityInfo
      */
@@ -55,7 +59,7 @@ export function STTCapabilityInfoFromJSONTyped(json: any, ignoreDiscriminator: b
         return json;
     }
     return {
-
+        
         'segments': json['segments'] == null ? undefined : json['segments'],
         'diarization': json['diarization'] == null ? undefined : json['diarization'],
         'max_audio_seconds': json['max_audio_seconds'] == null ? undefined : json['max_audio_seconds'],
@@ -72,9 +76,10 @@ export function STTCapabilityInfoToJSONTyped(value?: STTCapabilityInfo | null, i
     }
 
     return {
-
+        
         'segments': value['segments'],
         'diarization': value['diarization'],
         'max_audio_seconds': value['max_audio_seconds'],
     };
 }
+

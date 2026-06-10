@@ -12,75 +12,112 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  BillingAuditResponse,
-  ChatMessages,
-  DeleteModelProviderRequest,
-  DeleteModelRequest,
-  HTTPValidationError,
-  InifiniteScrollPagnitionModelProvider,
-  Model,
-  ModelCreateRequest,
-  ModelCreateResponse,
-  ModelProviderCreateRequest,
-  ModelProviderCreateResponse,
-  ModelProviderDetail,
-  ModelProviderForkRequest,
-  ModelProviderRequest,
-  ModelProviderSearchRequest,
-  ModelProviderUpdateRequest,
-  ModelRequest,
-  ModelSearchRequest,
-  ModelSearchResponse,
-  ModelUpdateRequest,
-  NormalResponse,
-} from '../models/index';
 import {
+    type BillingAuditResponse,
     BillingAuditResponseFromJSON,
     BillingAuditResponseToJSON,
+} from '../models/BillingAuditResponse';
+import {
+    type ChatMessages,
     ChatMessagesFromJSON,
     ChatMessagesToJSON,
+} from '../models/ChatMessages';
+import {
+    type DeleteModelProviderRequest,
     DeleteModelProviderRequestFromJSON,
     DeleteModelProviderRequestToJSON,
+} from '../models/DeleteModelProviderRequest';
+import {
+    type DeleteModelRequest,
     DeleteModelRequestFromJSON,
     DeleteModelRequestToJSON,
+} from '../models/DeleteModelRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionModelProviderFromJSON,
-    InifiniteScrollPagnitionModelProviderToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationModelProvider,
+    InfiniteScrollPaginationModelProviderFromJSON,
+    InfiniteScrollPaginationModelProviderToJSON,
+} from '../models/InfiniteScrollPaginationModelProvider';
+import {
+    type Model,
     ModelFromJSON,
     ModelToJSON,
+} from '../models/Model';
+import {
+    type ModelCreateRequest,
     ModelCreateRequestFromJSON,
     ModelCreateRequestToJSON,
+} from '../models/ModelCreateRequest';
+import {
+    type ModelCreateResponse,
     ModelCreateResponseFromJSON,
     ModelCreateResponseToJSON,
+} from '../models/ModelCreateResponse';
+import {
+    type ModelProviderCreateRequest,
     ModelProviderCreateRequestFromJSON,
     ModelProviderCreateRequestToJSON,
+} from '../models/ModelProviderCreateRequest';
+import {
+    type ModelProviderCreateResponse,
     ModelProviderCreateResponseFromJSON,
     ModelProviderCreateResponseToJSON,
+} from '../models/ModelProviderCreateResponse';
+import {
+    type ModelProviderDetail,
     ModelProviderDetailFromJSON,
     ModelProviderDetailToJSON,
+} from '../models/ModelProviderDetail';
+import {
+    type ModelProviderForkRequest,
     ModelProviderForkRequestFromJSON,
     ModelProviderForkRequestToJSON,
+} from '../models/ModelProviderForkRequest';
+import {
+    type ModelProviderRequest,
     ModelProviderRequestFromJSON,
     ModelProviderRequestToJSON,
+} from '../models/ModelProviderRequest';
+import {
+    type ModelProviderSearchRequest,
     ModelProviderSearchRequestFromJSON,
     ModelProviderSearchRequestToJSON,
+} from '../models/ModelProviderSearchRequest';
+import {
+    type ModelProviderUpdateRequest,
     ModelProviderUpdateRequestFromJSON,
     ModelProviderUpdateRequestToJSON,
+} from '../models/ModelProviderUpdateRequest';
+import {
+    type ModelRequest,
     ModelRequestFromJSON,
     ModelRequestToJSON,
+} from '../models/ModelRequest';
+import {
+    type ModelSearchRequest,
     ModelSearchRequestFromJSON,
     ModelSearchRequestToJSON,
+} from '../models/ModelSearchRequest';
+import {
+    type ModelSearchResponse,
     ModelSearchResponseFromJSON,
     ModelSearchResponseToJSON,
+} from '../models/ModelSearchResponse';
+import {
+    type ModelUpdateRequest,
     ModelUpdateRequestFromJSON,
     ModelUpdateRequestToJSON,
+} from '../models/ModelUpdateRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
-} from '../models/index';
+} from '../models/NormalResponse';
 
 export interface AskAiAiAskPostRequest {
     chatMessages: ChatMessages;
@@ -751,18 +788,18 @@ export class AiApi extends runtime.BaseAPI {
      * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionModelProvider>> {
+    async listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationModelProvider>> {
         const requestOptions = await this.listAiModelProviderAiModelProviderCommunityPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionModelProviderFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationModelProviderFromJSON(jsonValue));
     }
 
     /**
      * 搜索当前所有我可以使用的模型供应商 包含我创建的和公开的
      * List Ai Model Provider
      */
-    async listAiModelProviderAiModelProviderCommunityPost(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionModelProvider> {
+    async listAiModelProviderAiModelProviderCommunityPost(requestParameters: ListAiModelProviderAiModelProviderCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationModelProvider> {
         const response = await this.listAiModelProviderAiModelProviderCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

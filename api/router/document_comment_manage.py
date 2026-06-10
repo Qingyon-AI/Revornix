@@ -13,7 +13,7 @@ from common.dependencies import (
     get_current_user_without_throw,
 )
 from enums.notification import NotificationTriggerEventUUID
-from router.logic_helpers import ensure_document_access
+from common.access_control import ensure_document_access
 
 document_comment_manage_router = APIRouter()
 
@@ -149,7 +149,7 @@ async def create_document_comment(
     return schemas.common.SuccessResponse()
 
 
-@document_comment_manage_router.post('/comment/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentCommentInfo])
+@document_comment_manage_router.post('/comment/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentCommentInfo])
 async def search_document_comment(
     request_data: schemas.document.DocumentCommentSearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -230,7 +230,7 @@ async def search_document_comment(
             preview_replies=preview_infos,
         ))
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total_parent,
         elements=elements,
         start=request_data.start,
@@ -240,7 +240,7 @@ async def search_document_comment(
     )
 
 
-@document_comment_manage_router.post('/comment/reply/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentCommentInfo])
+@document_comment_manage_router.post('/comment/reply/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentCommentInfo])
 async def search_document_comment_replies(
     request_data: schemas.document.DocumentCommentReplySearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -289,7 +289,7 @@ async def search_document_comment_replies(
         for r in db_replies
     ]
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=elements,
         start=request_data.start,

@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `file_path` | string
+`stored_file_id` | number
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { GenericFileSystemUploadResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "file_path": null,
+  "stored_file_id": null,
 } satisfies GenericFileSystemUploadResponse
 
 console.log(example)

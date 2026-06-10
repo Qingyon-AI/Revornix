@@ -11,6 +11,7 @@ Name | Type
 `default_podcast_user_engine_id` | number
 `default_image_generate_engine_id` | number
 `default_audio_transcribe_engine_id` | number
+`default_audio_meeting_mode` | boolean
 
 ## Example
 
@@ -24,6 +25,7 @@ const example = {
   "default_podcast_user_engine_id": null,
   "default_image_generate_engine_id": null,
   "default_audio_transcribe_engine_id": null,
+  "default_audio_meeting_mode": null,
 } satisfies DefaultEngineUpdateRequest
 
 console.log(example)

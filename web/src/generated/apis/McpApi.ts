@@ -12,39 +12,52 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  HTTPValidationError,
-  MCPServerCreateRequest,
-  MCPServerDeleteRequest,
-  MCPServerDetailRequest,
-  MCPServerInfo,
-  MCPServerSearchRequest,
-  MCPServerSearchResponse,
-  MCPServerUpdateRequest,
-  NormalResponse,
-} from '../models/index';
 import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type MCPServerCreateRequest,
     MCPServerCreateRequestFromJSON,
     MCPServerCreateRequestToJSON,
+} from '../models/MCPServerCreateRequest';
+import {
+    type MCPServerDeleteRequest,
     MCPServerDeleteRequestFromJSON,
     MCPServerDeleteRequestToJSON,
+} from '../models/MCPServerDeleteRequest';
+import {
+    type MCPServerDetailRequest,
     MCPServerDetailRequestFromJSON,
     MCPServerDetailRequestToJSON,
+} from '../models/MCPServerDetailRequest';
+import {
+    type MCPServerInfo,
     MCPServerInfoFromJSON,
     MCPServerInfoToJSON,
+} from '../models/MCPServerInfo';
+import {
+    type MCPServerSearchRequest,
     MCPServerSearchRequestFromJSON,
     MCPServerSearchRequestToJSON,
+} from '../models/MCPServerSearchRequest';
+import {
+    type MCPServerSearchResponse,
     MCPServerSearchResponseFromJSON,
     MCPServerSearchResponseToJSON,
+} from '../models/MCPServerSearchResponse';
+import {
+    type MCPServerUpdateRequest,
     MCPServerUpdateRequestFromJSON,
     MCPServerUpdateRequestToJSON,
+} from '../models/MCPServerUpdateRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
-} from '../models/index';
+} from '../models/NormalResponse';
 
 export interface CreateServerMcpServerCreatePostRequest {
     mCPServerCreateRequest: MCPServerCreateRequest;

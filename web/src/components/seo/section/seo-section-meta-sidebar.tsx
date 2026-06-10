@@ -45,7 +45,7 @@ import SeoSectionSubscribeButton from '@/components/seo/section/seo-section-subs
 import { SectionPodcastStatus } from '@/enums/section';
 import type {
 	GraphResponse,
-	InifiniteScrollPagnitionSectionDocumentInfo,
+	InfiniteScrollPaginationSectionDocumentInfo,
 	SectionInfo,
 } from '@/generated';
 import { formatAudioTime } from '@/lib/audio';
@@ -223,7 +223,7 @@ type SeoSectionMetaSidebarProps = {
 	createdAt: string;
 	creatorAvatar?: string;
 	sectionCover?: string | null;
-	initialDocuments?: InifiniteScrollPagnitionSectionDocumentInfo;
+	initialDocuments?: InfiniteScrollPaginationSectionDocumentInfo;
 	initialGraph?: GraphResponse;
 	hasRenderableGraph: boolean;
 	graphBadge: string;

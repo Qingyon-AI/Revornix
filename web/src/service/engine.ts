@@ -1,5 +1,5 @@
 import engineApi from '@/api/engine'
-import { CommunityEngineSearchRequest, EngineCreateRequest, EngineDeleteRequest, EngineDetail, EngineDetailRequest, EngineForkRequest, EngineProvidedSearchRequest, EngineProvidedSearchResponse, EngineUpdateRequest, InifiniteScrollPagnitionEngineInfo, NormalResponse, UsableEngineSearchRequest, UsableEnginesResponse } from '@/generated'
+import { CommunityEngineSearchRequest, EngineCreateRequest, EngineDeleteRequest, EngineDetail, EngineDetailRequest, EngineForkRequest, EngineProvidedSearchRequest, EngineProvidedSearchResponse, EngineUpdateRequest, InfiniteScrollPaginationEngineInfo, NormalResponse, UsableEngineSearchRequest, UsableEnginesResponse } from '@/generated'
 import { request } from '@/lib/request'
 
 export type BillingAuditIssueDTO = {
@@ -45,7 +45,7 @@ export const searchUableEngines = async (data: UsableEngineSearchRequest): Promi
     })
 }
 
-export const searchCommunityEngines = async (data: CommunityEngineSearchRequest): Promise<InifiniteScrollPagnitionEngineInfo> => {
+export const searchCommunityEngines = async (data: CommunityEngineSearchRequest): Promise<InfiniteScrollPaginationEngineInfo> => {
     return await request(engineApi.searchCommunityEngines, {
         data
     })

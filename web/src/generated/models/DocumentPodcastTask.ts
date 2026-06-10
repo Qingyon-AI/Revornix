@@ -32,7 +32,7 @@ export interface DocumentPodcastTask {
      */
     podcast_file_name: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof DocumentPodcastTask
      */
@@ -96,3 +96,4 @@ export function DocumentPodcastTaskToJSONTyped(value?: DocumentPodcastTask | nul
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

@@ -17,6 +17,7 @@ Name | Type
 `billing_mode` | number
 `billing_unit_price` | number
 `compute_point_multiplier` | number
+`max_concurrency` | number
 `subscription_required` | boolean
 `create_time` | Date
 `update_time` | Date
@@ -42,6 +43,7 @@ const example = {
   "billing_mode": null,
   "billing_unit_price": null,
   "compute_point_multiplier": null,
+  "max_concurrency": null,
   "subscription_required": null,
   "create_time": null,
   "update_time": null,

@@ -88,7 +88,7 @@ export interface EngineUpdateRequest {
      */
     compute_point_multiplier?: number | null;
     /**
-     *
+     * 
      * @type {number}
      * @memberof EngineUpdateRequest
      */
@@ -153,3 +153,4 @@ export function EngineUpdateRequestToJSONTyped(value?: EngineUpdateRequest | nul
         'max_concurrency': value['max_concurrency'],
     };
 }
+

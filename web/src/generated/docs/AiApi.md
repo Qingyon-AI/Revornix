@@ -741,7 +741,7 @@ No authorization required
 
 ## listAiModelProviderAiModelProviderCommunityPost
 
-> InifiniteScrollPagnitionModelProvider listAiModelProviderAiModelProviderCommunityPost(modelProviderSearchRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationModelProvider listAiModelProviderAiModelProviderCommunityPost(modelProviderSearchRequest, authorization, xUserTimezone)
 
 List Ai Model Provider
 
@@ -792,7 +792,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionModelProvider**](InifiniteScrollPagnitionModelProvider.md)
+[**InfiniteScrollPaginationModelProvider**](InfiniteScrollPaginationModelProvider.md)
 
 ### Authorization
 

@@ -10,14 +10,7 @@ Name | Type
 `creator_id` | number
 `title` | string
 `enable` | boolean
-`content_type` | number
-`trigger_type` | number
 `trigger_event` | [NotificationTriggerEvent](NotificationTriggerEvent.md)
-`trigger_scheduler` | [NotificationTriggerScheduler](NotificationTriggerScheduler.md)
-`notification_title` | string
-`notification_content` | string
-`notification_link` | string
-`notification_cover` | string
 `notification_template_id` | number
 `notification_source` | [NotificationSource](NotificationSource.md)
 `notification_target` | [NotificationTarget](NotificationTarget.md)
@@ -35,14 +28,7 @@ const example = {
   "creator_id": null,
   "title": null,
   "enable": null,
-  "content_type": null,
-  "trigger_type": null,
   "trigger_event": null,
-  "trigger_scheduler": null,
-  "notification_title": null,
-  "notification_content": null,
-  "notification_link": null,
-  "notification_cover": null,
   "notification_template_id": null,
   "notification_source": null,
   "notification_target": null,

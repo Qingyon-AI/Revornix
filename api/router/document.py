@@ -53,7 +53,7 @@ from router.document_user_query import document_user_query_router
 from router.document_query import document_query_router
 from router.document_comment_manage import document_comment_manage_router
 from router.document_note_public_query import document_note_public_query_router
-from router.logic_helpers import (
+from common.access_control import (
     ensure_document_access,
     ensure_document_manage_access,
     ensure_document_write_access,
@@ -237,7 +237,7 @@ async def delete_note(
     await db.commit()
     return schemas.common.SuccessResponse()
 
-@document_router.post('/note/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo])
+@document_router.post('/note/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentNoteInfo])
 async def search_note(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
     user: models.user.User = Depends(get_current_user),
@@ -274,7 +274,7 @@ async def search_note(
         keyword=search_note_request.keyword
     )
     next_start = next_note.id if next_note is not None else None
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=notes,
         start=search_note_request.start,

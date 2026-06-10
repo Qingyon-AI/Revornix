@@ -15,7 +15,7 @@ from notification.template.document_process_completed import DocumentProcessComp
 from notification.template.removed_from_section import RemovedFromSectionNotificationTemplate
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_content_updated import SectionContentUpdatedNotificationTemplate
-from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.template.section_process_completed import SectionProcessCompletedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
 from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
 from notification.template.section_join_request_handled import SectionJoinRequestHandledNotificationTemplate
@@ -138,7 +138,7 @@ class NotificationProxy:
         elif template_uuid == NotificationTemplate.DOCUMENT_COMMENTED.meta.uuid:
             notification_template = DocumentCommentedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_PROCESS_COMPLETED.meta.uuid:
-            notification_template = SectionUpdatedNotificationTemplate()
+            notification_template = SectionProcessCompletedNotificationTemplate()
         elif template_uuid == NotificationTemplate.SECTION_SUBSCRIBED.meta.uuid:
             notification_template = SectionSubscribedNotificationTemplate()
         elif template_uuid == NotificationTemplate.REMOVED_FROM_SECTION.meta.uuid:

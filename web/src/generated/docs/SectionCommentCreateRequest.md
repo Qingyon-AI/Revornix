@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `content` | string
 `section_id` | number
+`parent_id` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { SectionCommentCreateRequest } from ''
 const example = {
   "content": null,
   "section_id": null,
+  "parent_id": null,
 } satisfies SectionCommentCreateRequest
 
 console.log(example)

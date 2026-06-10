@@ -32,7 +32,7 @@ export interface SectionPodcastTask {
      */
     podcast_file_name: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof SectionPodcastTask
      */
@@ -96,3 +96,4 @@ export function SectionPodcastTaskToJSONTyped(value?: SectionPodcastTask | null,
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

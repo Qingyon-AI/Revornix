@@ -12,6 +12,9 @@ All URIs are relative to *http://localhost*
 | [**bindPhoneUserBindPhoneCodePost**](UserApi.md#bindphoneuserbindphonecodepost) | **POST** /user/bind/phone/code | Bind Phone |
 | [**bindPhoneVerifyUserBindPhoneVerifyPost**](UserApi.md#bindphoneverifyuserbindphoneverifypost) | **POST** /user/bind/phone/verify | Bind Phone Verify |
 | [**bindWechatUserBindWechatWebPost**](UserApi.md#bindwechatuserbindwechatwebpost) | **POST** /user/bind/wechat/web | Bind Wechat |
+| [**createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost**](UserApi.md#createpasskeyauthenticationoptionsusermfapasskeyauthoptionspost) | **POST** /user/mfa/passkey/auth/options | Create Passkey Authentication Options |
+| [**createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost**](UserApi.md#createpasskeyregistrationoptionsusermfapasskeyregisteroptionspost) | **POST** /user/mfa/passkey/register/options | Create Passkey Registration Options |
+| [**createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost**](UserApi.md#createtotpregistrationoptionsusermfatotpregisteroptionspost) | **POST** /user/mfa/totp/register/options | Create Totp Registration Options |
 | [**createUserByEmailCodeUserCreateEmailCodePost**](UserApi.md#createuserbyemailcodeusercreateemailcodepost) | **POST** /user/create/email/code | Create User By Email Code |
 | [**createUserByEmailUserCreateEmailPost**](UserApi.md#createuserbyemailusercreateemailpost) | **POST** /user/create/email | Create User By Email |
 | [**createUserByEmailVerifyUserCreateEmailVerifyPost**](UserApi.md#createuserbyemailverifyusercreateemailverifypost) | **POST** /user/create/email/verify | Create User By Email Verify |
@@ -21,11 +24,20 @@ All URIs are relative to *http://localhost*
 | [**createUserBySmsVerifyUserCreateSmsVerifyPost**](UserApi.md#createuserbysmsverifyusercreatesmsverifypost) | **POST** /user/create/sms/verify | Create User By Sms Verify |
 | [**createUserByWechatMiniUserCreateWechatMiniPost**](UserApi.md#createuserbywechatminiusercreatewechatminipost) | **POST** /user/create/wechat/mini | Create User By Wechat Mini |
 | [**createUserByWechatWebUserCreateWechatWebPost**](UserApi.md#createuserbywechatwebusercreatewechatwebpost) | **POST** /user/create/wechat/web | Create User By Wechat Web |
+| [**createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost**](UserApi.md#createwechatofficialbindqrcodeuserbindwechatofficialqrcodepost) | **POST** /user/bind/wechat/official/qrcode | Create Wechat Official Bind Qrcode |
+| [**createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost**](UserApi.md#createwechatofficialloginqrcodeusercreatewechatofficialqrcodepost) | **POST** /user/create/wechat/official/qrcode | Create Wechat Official Login Qrcode |
+| [**deletePasskeyUserMfaPasskeyDeletePost**](UserApi.md#deletepasskeyusermfapasskeydeletepost) | **POST** /user/mfa/passkey/delete | Delete Passkey |
+| [**deleteTotpUserMfaTotpDeletePost**](UserApi.md#deletetotpusermfatotpdeletepost) | **POST** /user/mfa/totp/delete | Delete Totp |
 | [**deleteUserUserDeletePost**](UserApi.md#deleteuseruserdeletepost) | **POST** /user/delete | Delete User |
 | [**followUserUserFollowPost**](UserApi.md#followuseruserfollowpost) | **POST** /user/follow | Follow User |
+| [**getTotpStatusUserMfaTotpStatusPost**](UserApi.md#gettotpstatususermfatotpstatuspost) | **POST** /user/mfa/totp/status | Get Totp Status |
 | [**initialSeePasswordUserPasswordInitialSeePost**](UserApi.md#initialseepassworduserpasswordinitialseepost) | **POST** /user/password/initial-see | Initial See Password |
+| [**listPasskeysUserMfaPasskeyListPost**](UserApi.md#listpasskeysusermfapasskeylistpost) | **POST** /user/mfa/passkey/list | List Passkeys |
 | [**loginUserLoginPost**](UserApi.md#loginuserloginpost) | **POST** /user/login | Login |
 | [**myInfoUserMineInfoPost**](UserApi.md#myinfousermineinfopost) | **POST** /user/mine/info | My Info |
+| [**queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost**](UserApi.md#querywechatofficialbindstatususerbindwechatofficialstatuspost) | **POST** /user/bind/wechat/official/status | Query Wechat Official Bind Status |
+| [**queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost**](UserApi.md#querywechatofficialloginstatususercreatewechatofficialstatuspost) | **POST** /user/create/wechat/official/status | Query Wechat Official Login Status |
+| [**searchPublicUsersUserPublicSearchPost**](UserApi.md#searchpublicusersuserpublicsearchpost) | **POST** /user/public/search | Search Public Users |
 | [**searchUserFansUserFansPost**](UserApi.md#searchuserfansuserfanspost) | **POST** /user/fans | Search User Fans |
 | [**searchUserFollowsUserFollowsPost**](UserApi.md#searchuserfollowsuserfollowspost) | **POST** /user/follows | Search User Follows |
 | [**searchUserUserSearchPost**](UserApi.md#searchuserusersearchpost) | **POST** /user/search | Search User |
@@ -36,11 +48,16 @@ All URIs are relative to *http://localhost*
 | [**updateDefaultEngineUserDefaultEngineUpdatePost**](UserApi.md#updatedefaultengineuserdefaultengineupdatepost) | **POST** /user/default-engine/update | Update Default Engine |
 | [**updateDefaultFileSystemUserDefaultFileSystemUpdatePost**](UserApi.md#updatedefaultfilesystemuserdefaultfilesystemupdatepost) | **POST** /user/default-file-system/update | Update Default File System |
 | [**updateDefaultModelUserDefaultModelUpdatePost**](UserApi.md#updatedefaultmodeluserdefaultmodelupdatepost) | **POST** /user/default-model/update | Update Default Model |
+| [**updateMfaStatusUserMfaStatusUpdatePost**](UserApi.md#updatemfastatususermfastatusupdatepost) | **POST** /user/mfa/status/update | Update Mfa Status |
 | [**updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost**](UserApi.md#updatemydefaultreadmarkreasonuserreadmarkreasonupdatepost) | **POST** /user/read-mark-reason/update | Update My Default Read Mark Reason |
 | [**updateMyInfoUserUpdatePost**](UserApi.md#updatemyinfouserupdatepost) | **POST** /user/update | Update My Info |
 | [**updatePasswordUserPasswordUpdatePost**](UserApi.md#updatepassworduserpasswordupdatepost) | **POST** /user/password/update | Update Password |
 | [**updateTokenUserTokenUpdatePost**](UserApi.md#updatetokenusertokenupdatepost) | **POST** /user/token/update | Update Token |
 | [**userInfoUserInfoPost**](UserApi.md#userinfouserinfopost) | **POST** /user/info | User Info |
+| [**verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost**](UserApi.md#verifypasskeyauthenticationendpointusermfapasskeyauthverifypost) | **POST** /user/mfa/passkey/auth/verify | Verify Passkey Authentication Endpoint |
+| [**verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost**](UserApi.md#verifypasskeyregistrationendpointusermfapasskeyregisterverifypost) | **POST** /user/mfa/passkey/register/verify | Verify Passkey Registration Endpoint |
+| [**verifyTotpAuthenticationUserMfaTotpAuthVerifyPost**](UserApi.md#verifytotpauthenticationusermfatotpauthverifypost) | **POST** /user/mfa/totp/auth/verify | Verify Totp Authentication |
+| [**verifyTotpRegistrationUserMfaTotpRegisterVerifyPost**](UserApi.md#verifytotpregistrationusermfatotpregisterverifypost) | **POST** /user/mfa/totp/register/verify | Verify Totp Registration |
 
 
 
@@ -622,6 +639,210 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost
+
+> PasskeyAuthenticationOptionsResponse createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost(passkeyAuthenticationOptionsRequest)
+
+Create Passkey Authentication Options
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // PasskeyAuthenticationOptionsRequest
+    passkeyAuthenticationOptionsRequest: ...,
+  } satisfies CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest;
+
+  try {
+    const data = await api.createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **passkeyAuthenticationOptionsRequest** | [PasskeyAuthenticationOptionsRequest](PasskeyAuthenticationOptionsRequest.md) |  | |
+
+### Return type
+
+[**PasskeyAuthenticationOptionsResponse**](PasskeyAuthenticationOptionsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost
+
+> PasskeyRegistrationOptionsResponse createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost(authorization, xUserTimezone)
+
+Create Passkey Registration Options
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest;
+
+  try {
+    const data = await api.createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**PasskeyRegistrationOptionsResponse**](PasskeyRegistrationOptionsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost
+
+> TotpRegistrationOptionsResponse createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost(authorization, xUserTimezone)
+
+Create Totp Registration Options
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest;
+
+  try {
+    const data = await api.createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TotpRegistrationOptionsResponse**](TotpRegistrationOptionsResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## createUserByEmailCodeUserCreateEmailCodePost
 
 > NormalResponse createUserByEmailCodeUserCreateEmailCodePost(emailCreateRequest)
@@ -830,7 +1051,7 @@ No authorization required
 
 ## createUserByGithubUserCreateGithubPost
 
-> TokenResponse createUserByGithubUserCreateGithubPost(githubUserCreate, xForwardedFor)
+> AuthResponse createUserByGithubUserCreateGithubPost(githubUserCreate, xForwardedFor)
 
 Create User By Github
 
@@ -876,7 +1097,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenResponse**](TokenResponse.md)
+[**AuthResponse**](AuthResponse.md)
 
 ### Authorization
 
@@ -899,7 +1120,7 @@ No authorization required
 
 ## createUserByGoogleUserCreateGooglePost
 
-> TokenResponse createUserByGoogleUserCreateGooglePost(googleUserCreate, xForwardedFor)
+> AuthResponse createUserByGoogleUserCreateGooglePost(googleUserCreate, xForwardedFor)
 
 Create User By Google
 
@@ -945,7 +1166,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenResponse**](TokenResponse.md)
+[**AuthResponse**](AuthResponse.md)
 
 ### Authorization
 
@@ -1034,7 +1255,7 @@ No authorization required
 
 ## createUserBySmsVerifyUserCreateSmsVerifyPost
 
-> TokenResponse createUserBySmsVerifyUserCreateSmsVerifyPost(smsUserCodeVerifyCreate, xForwardedFor)
+> AuthResponse createUserBySmsVerifyUserCreateSmsVerifyPost(smsUserCodeVerifyCreate, xForwardedFor)
 
 Create User By Sms Verify
 
@@ -1080,7 +1301,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenResponse**](TokenResponse.md)
+[**AuthResponse**](AuthResponse.md)
 
 ### Authorization
 
@@ -1103,7 +1324,7 @@ No authorization required
 
 ## createUserByWechatMiniUserCreateWechatMiniPost
 
-> TokenResponse createUserByWechatMiniUserCreateWechatMiniPost(weChatMiniUserCreateRequest, xForwardedFor)
+> AuthResponse createUserByWechatMiniUserCreateWechatMiniPost(weChatMiniUserCreateRequest, xForwardedFor)
 
 Create User By Wechat Mini
 
@@ -1149,7 +1370,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenResponse**](TokenResponse.md)
+[**AuthResponse**](AuthResponse.md)
 
 ### Authorization
 
@@ -1172,7 +1393,7 @@ No authorization required
 
 ## createUserByWechatWebUserCreateWechatWebPost
 
-> TokenResponse createUserByWechatWebUserCreateWechatWebPost(weChatWebUserCreateRequest, xForwardedFor)
+> AuthResponse createUserByWechatWebUserCreateWechatWebPost(weChatWebUserCreateRequest, xForwardedFor)
 
 Create User By Wechat Web
 
@@ -1218,6 +1439,204 @@ example().catch(console.error);
 
 ### Return type
 
+[**AuthResponse**](AuthResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost
+
+> WeChatOfficialBindQrCreateResponse createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost(authorization, xUserTimezone)
+
+Create Wechat Official Bind Qrcode
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest;
+
+  try {
+    const data = await api.createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**WeChatOfficialBindQrCreateResponse**](WeChatOfficialBindQrCreateResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost
+
+> WeChatOfficialQrCreateResponse createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost()
+
+Create Wechat Official Login Qrcode
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { CreateWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  try {
+    const data = await api.createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**WeChatOfficialQrCreateResponse**](WeChatOfficialQrCreateResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## deletePasskeyUserMfaPasskeyDeletePost
+
+> TokenResponse deletePasskeyUserMfaPasskeyDeletePost(passkeyDeleteRequest, authorization, xUserTimezone)
+
+Delete Passkey
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { DeletePasskeyUserMfaPasskeyDeletePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // PasskeyDeleteRequest
+    passkeyDeleteRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies DeletePasskeyUserMfaPasskeyDeletePostRequest;
+
+  try {
+    const data = await api.deletePasskeyUserMfaPasskeyDeletePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **passkeyDeleteRequest** | [PasskeyDeleteRequest](PasskeyDeleteRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
 [**TokenResponse**](TokenResponse.md)
 
 ### Authorization
@@ -1227,6 +1646,75 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## deleteTotpUserMfaTotpDeletePost
+
+> TokenResponse deleteTotpUserMfaTotpDeletePost(authorization, xUserTimezone)
+
+Delete Totp
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { DeleteTotpUserMfaTotpDeletePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies DeleteTotpUserMfaTotpDeletePostRequest;
+
+  try {
+    const data = await api.deleteTotpUserMfaTotpDeletePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 
@@ -1380,6 +1868,75 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getTotpStatusUserMfaTotpStatusPost
+
+> TotpInfo getTotpStatusUserMfaTotpStatusPost(authorization, xUserTimezone)
+
+Get Totp Status
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { GetTotpStatusUserMfaTotpStatusPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetTotpStatusUserMfaTotpStatusPostRequest;
+
+  try {
+    const data = await api.getTotpStatusUserMfaTotpStatusPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TotpInfo**](TotpInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## initialSeePasswordUserPasswordInitialSeePost
 
 > InitialPasswordResponse initialSeePasswordUserPasswordInitialSeePost(authorization, xUserTimezone)
@@ -1449,9 +2006,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## listPasskeysUserMfaPasskeyListPost
+
+> Array&lt;PasskeyInfo&gt; listPasskeysUserMfaPasskeyListPost(authorization, xUserTimezone)
+
+List Passkeys
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { ListPasskeysUserMfaPasskeyListPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies ListPasskeysUserMfaPasskeyListPostRequest;
+
+  try {
+    const data = await api.listPasskeysUserMfaPasskeyListPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;PasskeyInfo&gt;**](PasskeyInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## loginUserLoginPost
 
-> TokenResponse loginUserLoginPost(userLoginRequest, xForwardedFor)
+> AuthResponse loginUserLoginPost(userLoginRequest, xForwardedFor)
 
 Login
 
@@ -1497,7 +2123,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**TokenResponse**](TokenResponse.md)
+[**AuthResponse**](AuthResponse.md)
 
 ### Authorization
 
@@ -1587,9 +2213,216 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost
+
+> WeChatOfficialBindQrStatusResponse queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost(weChatOfficialBindQrStatusRequest, authorization, xUserTimezone)
+
+Query Wechat Official Bind Status
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // WeChatOfficialBindQrStatusRequest
+    weChatOfficialBindQrStatusRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest;
+
+  try {
+    const data = await api.queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **weChatOfficialBindQrStatusRequest** | [WeChatOfficialBindQrStatusRequest](WeChatOfficialBindQrStatusRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**WeChatOfficialBindQrStatusResponse**](WeChatOfficialBindQrStatusResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost
+
+> WeChatOfficialQrStatusResponse queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost(weChatOfficialQrStatusRequest, xForwardedFor)
+
+Query Wechat Official Login Status
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // WeChatOfficialQrStatusRequest
+    weChatOfficialQrStatusRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest;
+
+  try {
+    const data = await api.queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **weChatOfficialQrStatusRequest** | [WeChatOfficialQrStatusRequest](WeChatOfficialQrStatusRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**WeChatOfficialQrStatusResponse**](WeChatOfficialQrStatusResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchPublicUsersUserPublicSearchPost
+
+> InfiniteScrollPaginationUserPublicInfo searchPublicUsersUserPublicSearchPost(searchPublicUsersRequest)
+
+Search Public Users
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { SearchPublicUsersUserPublicSearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // SearchPublicUsersRequest
+    searchPublicUsersRequest: ...,
+  } satisfies SearchPublicUsersUserPublicSearchPostRequest;
+
+  try {
+    const data = await api.searchPublicUsersUserPublicSearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **searchPublicUsersRequest** | [SearchPublicUsersRequest](SearchPublicUsersRequest.md) |  | |
+
+### Return type
+
+[**InfiniteScrollPaginationUserPublicInfo**](InfiniteScrollPaginationUserPublicInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## searchUserFansUserFansPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationUserPublicInfo searchUserFansUserFansPost(searchUserFansRequest, authorization, xUserTimezone)
 
 Search User Fans
 
@@ -1638,7 +2471,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionUserPublicInfo**](InifiniteScrollPagnitionUserPublicInfo.md)
+[**InfiniteScrollPaginationUserPublicInfo**](InfiniteScrollPaginationUserPublicInfo.md)
 
 ### Authorization
 
@@ -1661,7 +2494,7 @@ No authorization required
 
 ## searchUserFollowsUserFollowsPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationUserPublicInfo searchUserFollowsUserFollowsPost(searchUserFollowsRequest, authorization, xUserTimezone)
 
 Search User Follows
 
@@ -1710,7 +2543,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionUserPublicInfo**](InifiniteScrollPagnitionUserPublicInfo.md)
+[**InfiniteScrollPaginationUserPublicInfo**](InfiniteScrollPaginationUserPublicInfo.md)
 
 ### Authorization
 
@@ -1733,7 +2566,7 @@ No authorization required
 
 ## searchUserUserSearchPost
 
-> InifiniteScrollPagnitionUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationUserPublicInfo searchUserUserSearchPost(searchUserRequest, authorization, xUserTimezone)
 
 Search User
 
@@ -1782,7 +2615,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionUserPublicInfo**](InifiniteScrollPagnitionUserPublicInfo.md)
+[**InfiniteScrollPaginationUserPublicInfo**](InfiniteScrollPaginationUserPublicInfo.md)
 
 ### Authorization
 
@@ -2295,6 +3128,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## updateMfaStatusUserMfaStatusUpdatePost
+
+> TokenResponse updateMfaStatusUserMfaStatusUpdatePost(mfaStatusUpdateRequest, authorization, xUserTimezone)
+
+Update Mfa Status
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { UpdateMfaStatusUserMfaStatusUpdatePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // MfaStatusUpdateRequest
+    mfaStatusUpdateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UpdateMfaStatusUserMfaStatusUpdatePostRequest;
+
+  try {
+    const data = await api.updateMfaStatusUserMfaStatusUpdatePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **mfaStatusUpdateRequest** | [MfaStatusUpdateRequest](MfaStatusUpdateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost
 
 > NormalResponse updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost(defaultReadMarkReasonUpdateRequest, authorization, xUserTimezone)
@@ -2632,6 +3537,288 @@ example().catch(console.error);
 ### Return type
 
 [**UserPublicInfo**](UserPublicInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost
+
+> TokenResponse verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost(passkeyAuthenticationVerifyRequest, xForwardedFor)
+
+Verify Passkey Authentication Endpoint
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // PasskeyAuthenticationVerifyRequest
+    passkeyAuthenticationVerifyRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest;
+
+  try {
+    const data = await api.verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **passkeyAuthenticationVerifyRequest** | [PasskeyAuthenticationVerifyRequest](PasskeyAuthenticationVerifyRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost
+
+> TokenResponse verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost(passkeyRegistrationVerifyRequest, authorization, xUserTimezone)
+
+Verify Passkey Registration Endpoint
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // PasskeyRegistrationVerifyRequest
+    passkeyRegistrationVerifyRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest;
+
+  try {
+    const data = await api.verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **passkeyRegistrationVerifyRequest** | [PasskeyRegistrationVerifyRequest](PasskeyRegistrationVerifyRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## verifyTotpAuthenticationUserMfaTotpAuthVerifyPost
+
+> TokenResponse verifyTotpAuthenticationUserMfaTotpAuthVerifyPost(totpAuthenticationVerifyRequest, xForwardedFor)
+
+Verify Totp Authentication
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // TotpAuthenticationVerifyRequest
+    totpAuthenticationVerifyRequest: ...,
+    // string (optional)
+    xForwardedFor: xForwardedFor_example,
+  } satisfies VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest;
+
+  try {
+    const data = await api.verifyTotpAuthenticationUserMfaTotpAuthVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **totpAuthenticationVerifyRequest** | [TotpAuthenticationVerifyRequest](TotpAuthenticationVerifyRequest.md) |  | |
+| **xForwardedFor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## verifyTotpRegistrationUserMfaTotpRegisterVerifyPost
+
+> TokenResponse verifyTotpRegistrationUserMfaTotpRegisterVerifyPost(totpRegistrationVerifyRequest, authorization, xUserTimezone)
+
+Verify Totp Registration
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UserApi,
+} from '';
+import type { VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UserApi();
+
+  const body = {
+    // TotpRegistrationVerifyRequest
+    totpRegistrationVerifyRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest;
+
+  try {
+    const data = await api.verifyTotpRegistrationUserMfaTotpRegisterVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **totpRegistrationVerifyRequest** | [TotpRegistrationVerifyRequest](TotpRegistrationVerifyRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**TokenResponse**](TokenResponse.md)
 
 ### Authorization
 

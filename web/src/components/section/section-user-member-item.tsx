@@ -11,7 +11,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import {
-	InifiniteScrollPagnitionSectionUserPublicInfo,
+	InfiniteScrollPaginationSectionUserPublicInfo,
 	SectionUserPublicInfo,
 } from '@/generated';
 import { InfiniteData, useMutation } from '@tanstack/react-query';
@@ -56,13 +56,13 @@ const SectionMemberItem = ({
 		mutationFn: modifySectionUser,
 		onMutate(variables) {
 			const previousMembers = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+				InfiniteData<InfiniteScrollPaginationSectionUserPublicInfo>
 			>({
 				queryKey: ['getSectionMembers', section_id],
 			});
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionSectionUserPublicInfo,
+				InfiniteScrollPaginationSectionUserPublicInfo,
 				SectionUserPublicInfo
 			>(queryClient, ['getSectionMembers', section_id], (item) => {
 				if (item.id !== user.id) return item;
@@ -87,13 +87,13 @@ const SectionMemberItem = ({
 		mutationFn: deleteSectionUser,
 		onMutate() {
 			const previousMembers = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+				InfiniteData<InfiniteScrollPaginationSectionUserPublicInfo>
 			>({
 				queryKey: ['getSectionMembers', section_id],
 			});
 
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionSectionUserPublicInfo,
+				InfiniteScrollPaginationSectionUserPublicInfo,
 				SectionUserPublicInfo
 			>(queryClient, ['getSectionMembers', section_id], (item) => {
 				return item.id !== user.id;

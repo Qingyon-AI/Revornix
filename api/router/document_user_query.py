@@ -7,7 +7,8 @@ import schemas
 from common.dependencies import get_async_db, get_current_user
 from common.file import get_remote_file_signed_urls
 from enums.document import UserDocumentAuthority
-from router.logic_helpers import has_document_full_access, resolve_infinite_scroll_meta
+from common.access_control import has_document_full_access
+from common.query_helpers import resolve_infinite_scroll_meta
 
 document_user_query_router = APIRouter()
 
@@ -47,7 +48,7 @@ async def get_mine_document_authority(
     )
 
 
-@document_user_query_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentCollaboratorPublicInfo])
+@document_user_query_router.post('/user', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentCollaboratorPublicInfo])
 async def document_user_request(
     document_user_request: schemas.document.DocumentUserRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -112,7 +113,7 @@ async def document_user_request(
         for item, signed_avatar_url in zip(collaborators_need_avatar_sign, signed_avatar_urls, strict=False):
             item.avatar = signed_avatar_url
 
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=collaborators,
         start=document_user_request.start,

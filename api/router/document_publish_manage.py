@@ -5,7 +5,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_async_db, get_current_user
-from router.logic_helpers import resolve_publish_action
+from common.resource_actions import resolve_publish_action
 
 document_publish_manage_router = APIRouter()
 

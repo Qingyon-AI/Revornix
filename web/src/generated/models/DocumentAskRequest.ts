@@ -51,6 +51,12 @@ export interface DocumentAskRequest {
      * @memberof DocumentAskRequest
      */
     model_id?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentAskRequest
+     */
+    assistant_chat_id?: string | null;
 }
 
 /**
@@ -76,6 +82,7 @@ export function DocumentAskRequestFromJSONTyped(json: any, ignoreDiscriminator: 
         'messages': ((json['messages'] as Array<any>).map(ChatItemFromJSON)),
         'enable_mcp': json['enable_mcp'] == null ? undefined : json['enable_mcp'],
         'model_id': json['model_id'] == null ? undefined : json['model_id'],
+        'assistant_chat_id': json['assistant_chat_id'] == null ? undefined : json['assistant_chat_id'],
     };
 }
 
@@ -94,6 +101,7 @@ export function DocumentAskRequestToJSONTyped(value?: DocumentAskRequest | null,
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
         'enable_mcp': value['enable_mcp'],
         'model_id': value['model_id'],
+        'assistant_chat_id': value['assistant_chat_id'],
     };
 }
 

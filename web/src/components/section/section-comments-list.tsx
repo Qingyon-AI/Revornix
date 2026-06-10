@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
 	searchSectionComment,
-	type InifiniteScrollPagnitionSectionCommentInfo,
+	type InfiniteScrollPaginationSectionCommentInfo,
 	type SectionCommentSortType,
 } from '@/service/section';
 import { useEffect, useState } from 'react';
@@ -34,7 +34,7 @@ const SectionCommentsList = ({
 	loginHref,
 }: {
 	section_id: number;
-	initialData?: InifiniteScrollPagnitionSectionCommentInfo;
+	initialData?: InfiniteScrollPaginationSectionCommentInfo;
 	publicMode?: boolean;
 	loginHref?: string;
 }) => {

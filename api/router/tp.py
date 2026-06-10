@@ -204,7 +204,7 @@ async def get_section_date(
 
 @tp_router.post(
     '/section/documents',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionDocumentInfo],
 )
 async def get_section_documents(
     section_document_request: schemas.section.SectionDocumentRequest,
@@ -233,7 +233,7 @@ async def create_section_comment(
 
 @tp_router.post(
     '/section/comment/search',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionCommentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionCommentInfo],
 )
 async def search_section_comment(
     section_comment_search_request: schemas.section.SectionCommentSearchRequest,
@@ -262,7 +262,7 @@ async def delete_section_comment(
 
 @tp_router.post(
     '/section/mine/search',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo],
 )
 async def search_mine_sections(
     search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
@@ -278,7 +278,7 @@ async def search_mine_sections(
 
 @tp_router.post(
     '/section/subscribed',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo],
 )
 async def get_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
@@ -294,7 +294,7 @@ async def get_subscribed_sections(
 
 @tp_router.post(
     '/section/public/search',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo],
 )
 async def search_public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
@@ -310,7 +310,7 @@ async def search_public_sections(
 
 @tp_router.post(
     '/section/user/search',
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo],
 )
 async def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
@@ -737,7 +737,7 @@ async def create_document_note(
 
 @tp_router.post(
     "/document/note/search",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentNoteInfo],
 )
 async def search_document_notes(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
@@ -770,7 +770,7 @@ async def search_document_notes(
         keyword=search_note_request.keyword,
     )
     next_start = next_note.id if next_note is not None else None
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=notes,
         start=search_note_request.start,
@@ -797,7 +797,7 @@ async def delete_document_note(
 
 @tp_router.post(
     "/document/unread/search",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo],
 )
 async def search_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest,
@@ -813,7 +813,7 @@ async def search_unread_documents(
 
 @tp_router.post(
     "/document/recent/search",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo],
 )
 async def search_recent_documents(
     search_recent_read_request: schemas.document.SearchRecentReadRequest,
@@ -894,7 +894,7 @@ async def delete_document(
 
 @tp_router.post(
     "/document/star/search",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo],
 )
 async def search_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
@@ -910,7 +910,7 @@ async def search_star_documents(
 
 @tp_router.post(
     "/document/search/mine",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo],
 )
 async def search_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,

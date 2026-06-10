@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**createApiKeyApiKeyCreatePost**](ApiKeyApi.md#createapikeyapikeycreatepost) | **POST** /api-key/create | Create Api Key |
 | [**deleteApiKeyApiKeyDeletePost**](ApiKeyApi.md#deleteapikeyapikeydeletepost) | **POST** /api-key/delete | Delete Api Key |
 | [**searchApiKeyApiKeySearchPost**](ApiKeyApi.md#searchapikeyapikeysearchpost) | **POST** /api-key/search | Search Api Key |
+| [**updateApiKeyApiKeyUpdatePost**](ApiKeyApi.md#updateapikeyapikeyupdatepost) | **POST** /api-key/update | Update Api Key |
 
 
 
@@ -206,6 +207,78 @@ example().catch(console.error);
 ### Return type
 
 [**PaginationApiKeyInfo**](PaginationApiKeyInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateApiKeyApiKeyUpdatePost
+
+> NormalResponse updateApiKeyApiKeyUpdatePost(apiKeyUpdateRequest, authorization, xUserTimezone)
+
+Update Api Key
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiKeyApi,
+} from '';
+import type { UpdateApiKeyApiKeyUpdatePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiKeyApi();
+
+  const body = {
+    // ApiKeyUpdateRequest
+    apiKeyUpdateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UpdateApiKeyApiKeyUpdatePostRequest;
+
+  try {
+    const data = await api.updateApiKeyApiKeyUpdatePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **apiKeyUpdateRequest** | [ApiKeyUpdateRequest](ApiKeyUpdateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 

@@ -13,6 +13,7 @@ Name | Type
 `slogan` | string
 `authority` | [UserSectionAuthority](UserSectionAuthority.md)
 `role` | number
+`managed_by` | number
 `create_time` | Date
 `update_time` | Date
 
@@ -30,6 +31,7 @@ const example = {
   "slogan": null,
   "authority": null,
   "role": null,
+  "managed_by": null,
   "create_time": null,
   "update_time": null,
 } satisfies SectionUserPublicInfo

@@ -23,7 +23,7 @@ import {
 	EmptyMedia,
 } from '@/components/ui/empty';
 import {
-	InifiniteScrollPagnitionNotificationRecord,
+	InfiniteScrollPaginationNotificationRecord,
 	NotificationRecord,
 } from '@/generated';
 import { mapInfiniteQueryElements } from '@/lib/infinite-query-cache';
@@ -74,7 +74,7 @@ const NotificationsPage = () => {
 		onSuccess: () => {
 			toast.success(t('notification_all_marked_read_done'));
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationRecord,
+				InfiniteScrollPaginationNotificationRecord,
 				NotificationRecord
 			>(queryClient, searchMyNotificationsQueryKey, (item) => {
 				if (item.read_at) return item;

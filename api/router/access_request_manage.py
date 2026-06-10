@@ -14,7 +14,7 @@ from enums.access_request import AccessRequestStatus, AccessRequestTargetType
 from enums.document import UserDocumentAuthority
 from enums.notification import NotificationTriggerEventUUID
 from enums.section import UserSectionAuthority, UserSectionRole
-from router.logic_helpers import has_document_full_access, has_section_full_access
+from common.access_control import has_document_full_access, has_section_full_access
 
 access_request_manage_router = APIRouter()
 

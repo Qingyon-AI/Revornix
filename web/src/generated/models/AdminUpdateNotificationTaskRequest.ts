@@ -38,7 +38,7 @@ export interface AdminUpdateNotificationTaskRequest {
      */
     enable?: boolean | null;
     /**
-     *
+     * 
      * @type {number}
      * @memberof AdminUpdateNotificationTaskRequest
      */
@@ -112,3 +112,4 @@ export function AdminUpdateNotificationTaskRequestToJSONTyped(value?: AdminUpdat
         'user_id': value['user_id'],
     };
 }
+
