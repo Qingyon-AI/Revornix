@@ -2695,7 +2695,8 @@ def delete_published_section_by_section_id(
 ):
     now = datetime.now(timezone.utc)
     query = db.query(models.section.PublishSection)
-    query = query.filter(models.section.PublishSection.section_id == section_id)
+    query = query.filter(models.section.PublishSection.section_id == section_id,
+                         models.section.PublishSection.delete_at.is_(None))
     query.update({models.section.PublishSection.delete_at: now})
     db.flush()
 
@@ -2705,9 +2706,12 @@ async def delete_published_section_by_section_id_async(
 ):
     now = datetime.now(timezone.utc)
     stmt = select(models.section.PublishSection).where(
-        models.section.PublishSection.section_id == section_id
+        models.section.PublishSection.section_id == section_id,
+        models.section.PublishSection.delete_at.is_(None),
     )
-    publish_section = (await db.execute(stmt)).scalar_one_or_none()
-    if publish_section is not None:
+    # Soft-delete every active row: republishing creates new rows over time
+    # and historical data may hold duplicates, so never assume a single row.
+    publish_sections = (await db.execute(stmt)).scalars().all()
+    for publish_section in publish_sections:
         publish_section.delete_at = now
     await db.flush()
