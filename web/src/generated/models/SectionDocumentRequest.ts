@@ -49,6 +49,12 @@ export interface SectionDocumentRequest {
      * @memberof SectionDocumentRequest
      */
     keyword?: string | null;
+    /**
+     *
+     * @type {string}
+     * @memberof SectionDocumentRequest
+     */
+    access_key?: string | null;
 }
 
 /**
@@ -74,6 +80,7 @@ export function SectionDocumentRequestFromJSONTyped(json: any, ignoreDiscriminat
         'limit': json['limit'] == null ? undefined : json['limit'],
         'desc': json['desc'] == null ? undefined : json['desc'],
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -93,6 +100,7 @@ export function SectionDocumentRequestToJSONTyped(value?: SectionDocumentRequest
         'limit': value['limit'],
         'desc': value['desc'],
         'keyword': value['keyword'],
+        'access_key': value['access_key'],
     };
 }
 

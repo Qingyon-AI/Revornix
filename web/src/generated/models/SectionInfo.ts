@@ -166,6 +166,12 @@ export interface SectionInfo {
      */
     publish_uuid?: string | null;
     /**
+     *
+     * @type {boolean}
+     * @memberof SectionInfo
+     */
+    has_access_key?: boolean;
+    /**
      * 
      * @type {SectionPodcastTask}
      * @memberof SectionInfo
@@ -273,6 +279,7 @@ export function SectionInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'is_day_section': json['is_day_section'] == null ? undefined : json['is_day_section'],
         'day_section_date': json['day_section_date'] == null ? undefined : json['day_section_date'],
         'ppt_preview': json['ppt_preview'] == null ? undefined : SectionPptPreviewFromJSON(json['ppt_preview']),
+        'has_access_key': json['has_access_key'] == null ? undefined : json['has_access_key'],
     };
 }
 
@@ -312,6 +319,7 @@ export function SectionInfoToJSONTyped(value?: SectionInfo | null, ignoreDiscrim
         'is_day_section': value['is_day_section'],
         'day_section_date': value['day_section_date'],
         'ppt_preview': SectionPptPreviewToJSON(value['ppt_preview']),
+        'has_access_key': value['has_access_key'],
     };
 }
 

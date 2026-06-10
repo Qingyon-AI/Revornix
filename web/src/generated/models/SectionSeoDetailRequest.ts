@@ -25,6 +25,12 @@ export interface SectionSeoDetailRequest {
      * @memberof SectionSeoDetailRequest
      */
     uuid: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SectionSeoDetailRequest
+     */
+    access_key?: string | null;
 }
 
 /**
@@ -46,6 +52,7 @@ export function SectionSeoDetailRequestFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'uuid': json['uuid'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -61,6 +68,7 @@ export function SectionSeoDetailRequestToJSONTyped(value?: SectionSeoDetailReque
     return {
         
         'uuid': value['uuid'],
+        'access_key': value['access_key'],
     };
 }
 

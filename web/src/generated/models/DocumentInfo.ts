@@ -97,6 +97,12 @@ export interface DocumentInfo {
      */
     id: number;
     /**
+     *
+     * @type {string}
+     * @memberof DocumentInfo
+     */
+    publish_uuid?: string | null;
+    /**
      * 
      * @type {number}
      * @memberof DocumentInfo
@@ -237,6 +243,7 @@ export function DocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'id': json['id'],
+        'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
         'creator_id': json['creator_id'],
         'creator': json['creator'] == null ? undefined : UserPublicInfoFromJSON(json['creator']),
         'category': json['category'],
@@ -271,6 +278,7 @@ export function DocumentInfoToJSONTyped(value?: DocumentInfo | null, ignoreDiscr
     return {
         
         'id': value['id'],
+        'publish_uuid': value['publish_uuid'],
         'creator_id': value['creator_id'],
         'creator': UserPublicInfoToJSON(value['creator']),
         'category': value['category'],
