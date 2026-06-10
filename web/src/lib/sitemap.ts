@@ -308,7 +308,7 @@ const buildSitemapEntries = async (): Promise<MetadataRoute.Sitemap> => {
 			);
 			addEntry(
 				entries,
-				`/document/${document.id}`,
+				`/document/${document.publish_uuid ?? document.id}`,
 				lastModified,
 				'monthly',
 				0.6,

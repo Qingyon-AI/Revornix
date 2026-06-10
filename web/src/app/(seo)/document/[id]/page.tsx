@@ -17,7 +17,13 @@ import AudioPlayer from '@/components/ui/audio-player';
 import { DocumentCategory, DocumentPodcastStatus } from '@/enums/document';
 import { getDocumentCoverSrc } from '@/lib/document-cover';
 import { getRenderableGraphData } from '@/lib/graph-render';
-import { getPublicSectionHref, isSeoNotFoundError } from '@/lib/seo';
+import {
+	getPublicSectionHref,
+	isAccessKeyError,
+	isAccessKeyIncorrectError,
+	isSeoNotFoundError,
+} from '@/lib/seo';
+import AccessKeyGate from '@/components/shared/access-key-gate';
 import {
 	getDocumentDetailServer,
 	getDocumentMarkdownContentServer,
@@ -48,6 +54,18 @@ import { DocumentGraphStatus } from '@/enums/document';
 import MobileAutoAudioTrack from '@/components/ui/mobile-auto-audio-track';
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+// The access key only ever travels in the URL (?key=...) — it is never
+// persisted locally; the gate navigates to the keyed URL on submit.
+const resolveAccessKey = async (searchParams?: SearchParams) => {
+	const params = searchParams ? await searchParams : undefined;
+	const keyParam = params?.key;
+	if (typeof keyParam === 'string' && keyParam.trim()) {
+		return keyParam.trim();
+	}
+	return undefined;
+};
 
 const getCategoryLabel = (
 	category: number,
@@ -68,8 +86,17 @@ const getCategoryLabel = (
 	return t('document_category_others');
 };
 
+// Share links use the publish uuid (/document/{publish_uuid}), mirroring
+// sections; legacy links with the numeric id keep working.
+const NUMERIC_ID_PATTERN = /^\d+$/;
+const buildDocumentDetailRequest = (id: string, accessKey?: string) =>
+	NUMERIC_ID_PATTERN.test(id)
+		? { document_id: Number(id), access_key: accessKey }
+		: { uuid: id, access_key: accessKey };
+
 const getDocumentMarkdown = async (
 	document: Awaited<ReturnType<typeof getDocumentDetailServer>>,
+	accessKey?: string,
 ) => {
 	if (
 		document.category === DocumentCategory.WEBSITE ||
@@ -80,6 +107,7 @@ const getDocumentMarkdown = async (
 		}
 		return await getDocumentMarkdownContentServer({
 			document_id: document.id,
+			access_key: accessKey,
 		});
 	}
 	if (document.category === DocumentCategory.QUICK_NOTE) {
@@ -88,6 +116,7 @@ const getDocumentMarkdown = async (
 		}
 		return await getDocumentMarkdownContentServer({
 			document_id: document.id,
+			access_key: accessKey,
 		});
 	}
 	if (document.category === DocumentCategory.AUDIO) {
@@ -96,6 +125,7 @@ const getDocumentMarkdown = async (
 		}
 		return await getDocumentMarkdownContentServer({
 			document_id: document.id,
+			access_key: accessKey,
 		});
 	}
 	return null;
@@ -118,13 +148,14 @@ const logOptionalDocumentDataError = ({
 
 export async function generateMetadata(props: {
 	params: Params;
+	searchParams: SearchParams;
 }): Promise<Metadata> {
 	const [{ id }, t] = await Promise.all([props.params, getTranslations()]);
 
 	try {
-		const document = await getDocumentDetailServer({
-			document_id: Number(id),
-		});
+		const document = await getDocumentDetailServer(
+			buildDocumentDetailRequest(id, await resolveAccessKey(props.searchParams)),
+		);
 		const coverSrc = getDocumentCoverSrc(document) ?? undefined;
 
 		return buildMetadata({
@@ -139,7 +170,7 @@ export async function generateMetadata(props: {
 						t,
 					)} published on Revornix with readable content, AI outputs, and related public sections.`,
 			),
-			path: `/document/${document.id}`,
+			path: `/document/${document.publish_uuid ?? document.id}`,
 			type: 'article',
 			images: [coverSrc],
 			socialCard: {
@@ -155,9 +186,12 @@ export async function generateMetadata(props: {
 				document.from_plat,
 				...(document.labels?.map((label) => label.name) ?? []),
 			],
+			// Key-protected content must never be indexed even when the
+			// visitor (or the creator) can currently see it.
+			noIndex: document.has_access_key === true,
 		});
 	} catch (error) {
-		if (isSeoNotFoundError(error)) {
+		if (isAccessKeyError(error) || isSeoNotFoundError(error)) {
 			return buildMetadata({
 				title: formatMetaTitle(t('seo_document_title_suffix')),
 				description: t('document_no_description'),
@@ -174,22 +208,23 @@ export async function generateMetadata(props: {
 	}
 }
 
-const SeoDocumentDetailPage = async (props: { params: Params }) => {
+const SeoDocumentDetailPage = async (props: {
+	params: Params;
+	searchParams: SearchParams;
+}) => {
 	const [{ id }, locale, t] = await Promise.all([
 		props.params,
 		getLocale(),
 		getTranslations(),
 	]);
 
-	const documentId = Number(id);
-	if (Number.isNaN(documentId)) {
-		notFound();
-	}
+	const accessKey = await resolveAccessKey(props.searchParams);
 
 	try {
-		const document = await getDocumentDetailServer({
-			document_id: documentId,
-		});
+		const document = await getDocumentDetailServer(
+			buildDocumentDetailRequest(id, accessKey),
+		);
+		const documentId = document.id;
 		const [initialGraph, initialComments, initialNotes, markdown] =
 			await Promise.all([
 				searchDocumentGraphServer({
@@ -226,7 +261,14 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 					});
 					return undefined;
 				}),
-				getDocumentMarkdown(document),
+				getDocumentMarkdown(document, accessKey).catch((error) => {
+					logOptionalDocumentDataError({
+						documentId,
+						source: 'markdown',
+						error,
+					});
+					return null;
+				}),
 			]);
 		const categoryLabel = getCategoryLabel(document.category, t);
 		const coverSrc = getDocumentCoverSrc(document);
@@ -249,7 +291,9 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			image: coverSrc,
 			datePublished: toIsoDate(document.create_time),
 			dateModified: toIsoDate(document.update_time ?? document.create_time),
-			mainEntityOfPage: createAbsoluteUrl(`/document/${document.id}`),
+			mainEntityOfPage: createAbsoluteUrl(
+				`/document/${document.publish_uuid ?? document.id}`,
+			),
 			author: {
 				'@type': 'Person',
 				name: document.creator.nickname,
@@ -673,6 +717,15 @@ const SeoDocumentDetailPage = async (props: { params: Params }) => {
 			</div>
 		);
 	} catch (error) {
+		if (isAccessKeyError(error)) {
+			return (
+				<AccessKeyGate
+					incorrect={
+						accessKey !== undefined && isAccessKeyIncorrectError(error)
+					}
+				/>
+			);
+		}
 		if (isSeoNotFoundError(error)) {
 			notFound();
 		}

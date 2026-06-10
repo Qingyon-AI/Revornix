@@ -131,6 +131,7 @@ const DocumentOperate = ({
 	): DocumentListItem => {
 		return {
 			id: documentDetail.id,
+			publish_uuid: documentDetail.publish_uuid,
 			creator_id: documentDetail.creator.id,
 			category: documentDetail.category,
 			title: documentDetail.title,
