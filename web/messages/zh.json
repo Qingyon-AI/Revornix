@@ -2388,5 +2388,8 @@
 	"access_key_gate_title": "此内容受密钥保护",
 	"access_key_gate_description": "请输入分享者提供的访问密钥以查看此页面",
 	"access_key_gate_submit": "解锁",
-	"access_key_incorrect": "访问密钥不正确"
+	"access_key_incorrect": "访问密钥不正确",
+	"document_create_auto_publish": "创建后立即公开",
+	"document_create_auto_publish_description": "创建完成后立即公开此文档,可选择用访问密钥保护链接",
+	"access_key_optional_placeholder": "访问密钥(可选)"
 }

@@ -2388,5 +2388,8 @@
 	"access_key_gate_title": "This content is protected",
 	"access_key_gate_description": "Enter the access key shared with you to view this page",
 	"access_key_gate_submit": "Unlock",
-	"access_key_incorrect": "The access key is incorrect"
+	"access_key_incorrect": "The access key is incorrect",
+	"document_create_auto_publish": "Publish right away",
+	"document_create_auto_publish_description": "Make this document public immediately after creation; optionally protect the link with an access key",
+	"access_key_optional_placeholder": "Access key (optional)"
 }
