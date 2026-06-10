@@ -2868,8 +2868,9 @@ async def delete_published_document_by_document_id_async(
         models.document.PublishDocument.document_id == document_id,
         models.document.PublishDocument.delete_at.is_(None),
     )
-    publish_document = (await db.execute(stmt)).scalar_one_or_none()
-    if publish_document is not None:
+    # Soft-delete every active row so duplicate rows never crash unpublish.
+    publish_documents = (await db.execute(stmt)).scalars().all()
+    for publish_document in publish_documents:
         publish_document.delete_at = now
     await db.flush()
 
