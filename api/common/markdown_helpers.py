@@ -1,3 +1,5 @@
+import re
+
 import crud
 
 from common.logger import exception_logger, format_log_message
@@ -5,6 +7,23 @@ from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus, DocumentAudioTranscribeStatus
 from proxy.file_system_proxy import FileSystemProxy
 from protocol.remote_file_service import RemoteFileServiceProtocol
+
+
+def extract_title_and_summary(
+    content: str
+):
+    # 提取第一个 Markdown 标题（# 开头）
+    title_match = re.search(r'^#\s+(.+)', content, re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else "Untitled"
+
+    # 去掉 Markdown 语法，提取正文前 200 个字符
+    text = re.sub(r'\!\[.*?\]\(.*?\)', '', content)  # 去掉图片
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)  # 去掉链接保留文字
+    text = re.sub(r'[#>*`~\-]+', '', text)  # 去掉标题符号、引用等
+    text = re.sub(r'\n+', ' ', text)  # 合并换行
+    summary = text.strip()[:200]
+
+    return title, summary
 
 
 def _coerce_markdown_text(content: str | bytes, *, source: str) -> str:

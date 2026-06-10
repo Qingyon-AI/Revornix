@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { replacePath } from '@/lib/utils';
 import {
-	InifiniteScrollPagnitionUserPublicInfo,
+	InfiniteScrollPaginationUserPublicInfo,
 	UserPublicInfo,
 } from '@/generated';
 import {
@@ -48,7 +48,7 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 		},
 		onSuccess() {
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionUserPublicInfo,
+				InfiniteScrollPaginationUserPublicInfo,
 				UserPublicInfo
 			>(
 				queryClient,
@@ -57,7 +57,7 @@ const UserFollowCard = ({ user }: { user: UserPublicInfo }) => {
 			);
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionUserPublicInfo,
+				InfiniteScrollPaginationUserPublicInfo,
 				UserPublicInfo
 			>(queryClient, ['getUserFans', mainUserInfo?.id], (item) => {
 				if (item.id !== user.id) return item;

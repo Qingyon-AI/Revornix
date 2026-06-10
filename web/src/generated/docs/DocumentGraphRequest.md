@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `document_id` | number
+`mode` | [GraphMode](GraphMode.md)
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { DocumentGraphRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "document_id": null,
+  "mode": null,
 } satisfies DocumentGraphRequest
 
 console.log(example)

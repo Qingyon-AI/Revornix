@@ -16,7 +16,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import {
 	DocumentDetailResponse,
 	DocumentInfo as DocumentListItem,
-	InifiniteScrollPagnitionDocumentInfo,
+	InfiniteScrollPaginationDocumentInfo,
 } from '@/generated';
 import { useEffect, useMemo, useState } from 'react';
 import { DocumentCategory, UserDocumentAuthority } from '@/enums/document';
@@ -268,7 +268,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 		},
 		onSuccess: () => {
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionDocumentInfo,
+				InfiniteScrollPaginationDocumentInfo,
 				DocumentListItem
 			>(queryClient, userUnreadDocumentQueryKey, (item) => item.id !== id);
 			queryClient.invalidateQueries({

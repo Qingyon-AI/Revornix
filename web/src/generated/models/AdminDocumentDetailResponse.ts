@@ -168,19 +168,19 @@ export interface AdminDocumentDetailResponse {
      */
     create_time: Date;
     /**
-     *
+     * 
      * @type {Date}
      * @memberof AdminDocumentDetailResponse
      */
     update_time: Date | null;
     /**
-     *
+     * 
      * @type {Date}
      * @memberof AdminDocumentDetailResponse
      */
     content_update_time?: Date | null;
     /**
-     *
+     * 
      * @type {Array<DocumentLabel>}
      * @memberof AdminDocumentDetailResponse
      */
@@ -321,7 +321,7 @@ export function AdminDocumentDetailResponseFromJSONTyped(json: any, ignoreDiscri
         'cover': json['cover'] == null ? undefined : json['cover'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
-        'content_update_time': (json['content_update_time'] == null ? null : new Date(json['content_update_time'])),
+        'content_update_time': json['content_update_time'] == null ? undefined : (new Date(json['content_update_time'])),
         'labels': json['labels'] == null ? undefined : ((json['labels'] as Array<any>).map(DocumentLabelFromJSON)),
         'creator': UserPublicInfoFromJSON(json['creator']),
         'sections': json['sections'] == null ? undefined : ((json['sections'] as Array<any>).map(SchemasDocumentBaseSectionInfoFromJSON)),

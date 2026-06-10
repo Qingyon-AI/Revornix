@@ -12,204 +12,342 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  AllMySectionsResponse,
-  ApiDocumentCreateRequest,
-  CreateLabelResponse,
-  DaySectionRequest,
-  DaySectionResponse,
-  DocumentAiSummaryRequest,
-  DocumentAskRequest,
-  DocumentCreateResponse,
-  DocumentDeleteRequest,
-  DocumentDetailRequest,
-  DocumentDetailResponse,
-  DocumentEmbeddingRequest,
-  DocumentGraphGenerateRequest,
-  DocumentGraphRequest,
-  DocumentMarkdownConvertRequest,
-  DocumentMonthSummaryResponse,
-  DocumentNoteCreateRequest,
-  DocumentNoteDeleteRequest,
-  DocumentTranscribeRequest,
-  DocumentUpdateRequest,
-  GenerateDocumentPodcastRequest,
-  GenerateSectionPodcastRequest,
-  GenerateSectionPptRequest,
-  GraphResponse,
-  HTTPValidationError,
-  InifiniteScrollPagnitionDocumentInfo,
-  InifiniteScrollPagnitionDocumentNoteInfo,
-  InifiniteScrollPagnitionSectionCommentInfo,
-  InifiniteScrollPagnitionSectionDocumentInfo,
-  InifiniteScrollPagnitionSectionInfo,
-  LabelAddRequest,
-  LabelDeleteRequest,
-  NormalResponse,
-  RetrySectionDocumentRequest,
-  SchemasDocumentLabelListResponse,
-  SchemasSectionLabelListResponse,
-  SearchAllMyDocumentsRequest,
-  SearchDocumentNoteRequest,
-  SearchMineSectionsRequest,
-  SearchMyStarDocumentsRequest,
-  SearchPublicSectionsRequest,
-  SearchRecentReadRequest,
-  SearchSubscribedSectionRequest,
-  SearchUnreadListRequest,
-  SearchUserSectionsRequest,
-  SectionAskRequest,
-  SectionCommentCreateRequest,
-  SectionCommentDeleteRequest,
-  SectionCommentSearchRequest,
-  SectionCreateRequest,
-  SectionCreateResponse,
-  SectionDeleteRequest,
-  SectionDetailRequest,
-  SectionDocumentRequest,
-  SectionGraphRequest,
-  SectionInfo,
-  SectionPublishGetRequest,
-  SectionPublishGetResponse,
-  SectionPublishRequest,
-  SectionRePublishRequest,
-  SectionUpdateRequest,
-  TriggerSectionProcessRequest,
-  VectorSearchRequest,
-  VectorSearchResponse,
-} from '../models/index';
 import {
+    type AllMySectionsResponse,
     AllMySectionsResponseFromJSON,
     AllMySectionsResponseToJSON,
+} from '../models/AllMySectionsResponse';
+import {
+    type ApiDocumentCreateRequest,
     ApiDocumentCreateRequestFromJSON,
     ApiDocumentCreateRequestToJSON,
+} from '../models/ApiDocumentCreateRequest';
+import {
+    type CreateLabelResponse,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
+} from '../models/CreateLabelResponse';
+import {
+    type DaySectionRequest,
     DaySectionRequestFromJSON,
     DaySectionRequestToJSON,
+} from '../models/DaySectionRequest';
+import {
+    type DaySectionResponse,
     DaySectionResponseFromJSON,
     DaySectionResponseToJSON,
+} from '../models/DaySectionResponse';
+import {
+    type DocumentAiSummaryRequest,
     DocumentAiSummaryRequestFromJSON,
     DocumentAiSummaryRequestToJSON,
+} from '../models/DocumentAiSummaryRequest';
+import {
+    type DocumentAskRequest,
     DocumentAskRequestFromJSON,
     DocumentAskRequestToJSON,
+} from '../models/DocumentAskRequest';
+import {
+    type DocumentCreateResponse,
     DocumentCreateResponseFromJSON,
     DocumentCreateResponseToJSON,
+} from '../models/DocumentCreateResponse';
+import {
+    type DocumentDeleteRequest,
     DocumentDeleteRequestFromJSON,
     DocumentDeleteRequestToJSON,
+} from '../models/DocumentDeleteRequest';
+import {
+    type DocumentDetailRequest,
     DocumentDetailRequestFromJSON,
     DocumentDetailRequestToJSON,
+} from '../models/DocumentDetailRequest';
+import {
+    type DocumentDetailResponse,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
+} from '../models/DocumentDetailResponse';
+import {
+    type DocumentEmbeddingRequest,
     DocumentEmbeddingRequestFromJSON,
     DocumentEmbeddingRequestToJSON,
+} from '../models/DocumentEmbeddingRequest';
+import {
+    type DocumentGraphGenerateRequest,
     DocumentGraphGenerateRequestFromJSON,
     DocumentGraphGenerateRequestToJSON,
+} from '../models/DocumentGraphGenerateRequest';
+import {
+    type DocumentGraphRequest,
     DocumentGraphRequestFromJSON,
     DocumentGraphRequestToJSON,
+} from '../models/DocumentGraphRequest';
+import {
+    type DocumentMarkdownConvertRequest,
     DocumentMarkdownConvertRequestFromJSON,
     DocumentMarkdownConvertRequestToJSON,
+} from '../models/DocumentMarkdownConvertRequest';
+import {
+    type DocumentMonthSummaryResponse,
     DocumentMonthSummaryResponseFromJSON,
     DocumentMonthSummaryResponseToJSON,
+} from '../models/DocumentMonthSummaryResponse';
+import {
+    type DocumentNoteCreateRequest,
     DocumentNoteCreateRequestFromJSON,
     DocumentNoteCreateRequestToJSON,
+} from '../models/DocumentNoteCreateRequest';
+import {
+    type DocumentNoteDeleteRequest,
     DocumentNoteDeleteRequestFromJSON,
     DocumentNoteDeleteRequestToJSON,
+} from '../models/DocumentNoteDeleteRequest';
+import {
+    type DocumentPublishGetRequest,
+    DocumentPublishGetRequestFromJSON,
+    DocumentPublishGetRequestToJSON,
+} from '../models/DocumentPublishGetRequest';
+import {
+    type DocumentPublishGetResponse,
+    DocumentPublishGetResponseFromJSON,
+    DocumentPublishGetResponseToJSON,
+} from '../models/DocumentPublishGetResponse';
+import {
+    type DocumentPublishRequest,
+    DocumentPublishRequestFromJSON,
+    DocumentPublishRequestToJSON,
+} from '../models/DocumentPublishRequest';
+import {
+    type DocumentTranscribeRequest,
     DocumentTranscribeRequestFromJSON,
     DocumentTranscribeRequestToJSON,
+} from '../models/DocumentTranscribeRequest';
+import {
+    type DocumentUpdateRequest,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
+} from '../models/DocumentUpdateRequest';
+import {
+    type GenerateDocumentPodcastRequest,
     GenerateDocumentPodcastRequestFromJSON,
     GenerateDocumentPodcastRequestToJSON,
+} from '../models/GenerateDocumentPodcastRequest';
+import {
+    type GenerateSectionPodcastRequest,
     GenerateSectionPodcastRequestFromJSON,
     GenerateSectionPodcastRequestToJSON,
+} from '../models/GenerateSectionPodcastRequest';
+import {
+    type GenerateSectionPptRequest,
     GenerateSectionPptRequestFromJSON,
     GenerateSectionPptRequestToJSON,
+} from '../models/GenerateSectionPptRequest';
+import {
+    type GraphResponse,
     GraphResponseFromJSON,
     GraphResponseToJSON,
+} from '../models/GraphResponse';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionDocumentInfoFromJSON,
-    InifiniteScrollPagnitionDocumentInfoToJSON,
-    InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
-    InifiniteScrollPagnitionDocumentNoteInfoToJSON,
-    InifiniteScrollPagnitionSectionCommentInfoFromJSON,
-    InifiniteScrollPagnitionSectionCommentInfoToJSON,
-    InifiniteScrollPagnitionSectionDocumentInfoFromJSON,
-    InifiniteScrollPagnitionSectionDocumentInfoToJSON,
-    InifiniteScrollPagnitionSectionInfoFromJSON,
-    InifiniteScrollPagnitionSectionInfoToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationDocumentInfo,
+    InfiniteScrollPaginationDocumentInfoFromJSON,
+    InfiniteScrollPaginationDocumentInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentInfo';
+import {
+    type InfiniteScrollPaginationDocumentNoteInfo,
+    InfiniteScrollPaginationDocumentNoteInfoFromJSON,
+    InfiniteScrollPaginationDocumentNoteInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentNoteInfo';
+import {
+    type InfiniteScrollPaginationSectionCommentInfo,
+    InfiniteScrollPaginationSectionCommentInfoFromJSON,
+    InfiniteScrollPaginationSectionCommentInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionCommentInfo';
+import {
+    type InfiniteScrollPaginationSectionDocumentInfo,
+    InfiniteScrollPaginationSectionDocumentInfoFromJSON,
+    InfiniteScrollPaginationSectionDocumentInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionDocumentInfo';
+import {
+    type InfiniteScrollPaginationSectionInfo,
+    InfiniteScrollPaginationSectionInfoFromJSON,
+    InfiniteScrollPaginationSectionInfoToJSON,
+} from '../models/InfiniteScrollPaginationSectionInfo';
+import {
+    type LabelAddRequest,
     LabelAddRequestFromJSON,
     LabelAddRequestToJSON,
+} from '../models/LabelAddRequest';
+import {
+    type LabelDeleteRequest,
     LabelDeleteRequestFromJSON,
     LabelDeleteRequestToJSON,
+} from '../models/LabelDeleteRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type RetrySectionDocumentRequest,
     RetrySectionDocumentRequestFromJSON,
     RetrySectionDocumentRequestToJSON,
+} from '../models/RetrySectionDocumentRequest';
+import {
+    type SchemasDocumentLabelListResponse,
     SchemasDocumentLabelListResponseFromJSON,
     SchemasDocumentLabelListResponseToJSON,
+} from '../models/SchemasDocumentLabelListResponse';
+import {
+    type SchemasSectionLabelListResponse,
     SchemasSectionLabelListResponseFromJSON,
     SchemasSectionLabelListResponseToJSON,
+} from '../models/SchemasSectionLabelListResponse';
+import {
+    type SearchAllMyDocumentsRequest,
     SearchAllMyDocumentsRequestFromJSON,
     SearchAllMyDocumentsRequestToJSON,
+} from '../models/SearchAllMyDocumentsRequest';
+import {
+    type SearchDocumentNoteRequest,
     SearchDocumentNoteRequestFromJSON,
     SearchDocumentNoteRequestToJSON,
+} from '../models/SearchDocumentNoteRequest';
+import {
+    type SearchMineSectionsRequest,
     SearchMineSectionsRequestFromJSON,
     SearchMineSectionsRequestToJSON,
+} from '../models/SearchMineSectionsRequest';
+import {
+    type SearchMyStarDocumentsRequest,
     SearchMyStarDocumentsRequestFromJSON,
     SearchMyStarDocumentsRequestToJSON,
+} from '../models/SearchMyStarDocumentsRequest';
+import {
+    type SearchPublicSectionsRequest,
     SearchPublicSectionsRequestFromJSON,
     SearchPublicSectionsRequestToJSON,
+} from '../models/SearchPublicSectionsRequest';
+import {
+    type SearchRecentReadRequest,
     SearchRecentReadRequestFromJSON,
     SearchRecentReadRequestToJSON,
+} from '../models/SearchRecentReadRequest';
+import {
+    type SearchSubscribedSectionRequest,
     SearchSubscribedSectionRequestFromJSON,
     SearchSubscribedSectionRequestToJSON,
+} from '../models/SearchSubscribedSectionRequest';
+import {
+    type SearchUnreadListRequest,
     SearchUnreadListRequestFromJSON,
     SearchUnreadListRequestToJSON,
+} from '../models/SearchUnreadListRequest';
+import {
+    type SearchUserSectionsRequest,
     SearchUserSectionsRequestFromJSON,
     SearchUserSectionsRequestToJSON,
+} from '../models/SearchUserSectionsRequest';
+import {
+    type SectionAskRequest,
     SectionAskRequestFromJSON,
     SectionAskRequestToJSON,
+} from '../models/SectionAskRequest';
+import {
+    type SectionCommentCreateRequest,
     SectionCommentCreateRequestFromJSON,
     SectionCommentCreateRequestToJSON,
+} from '../models/SectionCommentCreateRequest';
+import {
+    type SectionCommentDeleteRequest,
     SectionCommentDeleteRequestFromJSON,
     SectionCommentDeleteRequestToJSON,
+} from '../models/SectionCommentDeleteRequest';
+import {
+    type SectionCommentSearchRequest,
     SectionCommentSearchRequestFromJSON,
     SectionCommentSearchRequestToJSON,
+} from '../models/SectionCommentSearchRequest';
+import {
+    type SectionCreateRequest,
     SectionCreateRequestFromJSON,
     SectionCreateRequestToJSON,
+} from '../models/SectionCreateRequest';
+import {
+    type SectionCreateResponse,
     SectionCreateResponseFromJSON,
     SectionCreateResponseToJSON,
+} from '../models/SectionCreateResponse';
+import {
+    type SectionDeleteRequest,
     SectionDeleteRequestFromJSON,
     SectionDeleteRequestToJSON,
+} from '../models/SectionDeleteRequest';
+import {
+    type SectionDetailRequest,
     SectionDetailRequestFromJSON,
     SectionDetailRequestToJSON,
+} from '../models/SectionDetailRequest';
+import {
+    type SectionDocumentRequest,
     SectionDocumentRequestFromJSON,
     SectionDocumentRequestToJSON,
+} from '../models/SectionDocumentRequest';
+import {
+    type SectionGraphRequest,
     SectionGraphRequestFromJSON,
     SectionGraphRequestToJSON,
+} from '../models/SectionGraphRequest';
+import {
+    type SectionInfo,
     SectionInfoFromJSON,
     SectionInfoToJSON,
+} from '../models/SectionInfo';
+import {
+    type SectionPublishGetRequest,
     SectionPublishGetRequestFromJSON,
     SectionPublishGetRequestToJSON,
+} from '../models/SectionPublishGetRequest';
+import {
+    type SectionPublishGetResponse,
     SectionPublishGetResponseFromJSON,
     SectionPublishGetResponseToJSON,
+} from '../models/SectionPublishGetResponse';
+import {
+    type SectionPublishRequest,
     SectionPublishRequestFromJSON,
     SectionPublishRequestToJSON,
+} from '../models/SectionPublishRequest';
+import {
+    type SectionRePublishRequest,
     SectionRePublishRequestFromJSON,
     SectionRePublishRequestToJSON,
+} from '../models/SectionRePublishRequest';
+import {
+    type SectionUpdateRequest,
     SectionUpdateRequestFromJSON,
     SectionUpdateRequestToJSON,
+} from '../models/SectionUpdateRequest';
+import {
+    type TriggerSectionProcessRequest,
     TriggerSectionProcessRequestFromJSON,
     TriggerSectionProcessRequestToJSON,
+} from '../models/TriggerSectionProcessRequest';
+import {
+    type VectorSearchRequest,
     VectorSearchRequestFromJSON,
     VectorSearchRequestToJSON,
+} from '../models/VectorSearchRequest';
+import {
+    type VectorSearchResponse,
     VectorSearchResponseFromJSON,
     VectorSearchResponseToJSON,
-} from '../models/index';
+} from '../models/VectorSearchResponse';
 
 export interface AddLabelTpSectionLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
@@ -353,6 +491,12 @@ export interface GetDocumentMonthSummaryTpDocumentMonthSummaryPostRequest {
     apiKey?: string | null;
 }
 
+export interface GetDocumentPublishTpDocumentPublishGetPostRequest {
+    documentPublishGetRequest: DocumentPublishGetRequest;
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
 export interface GetSectionDateTpSectionDatePostRequest {
     daySectionRequest: DaySectionRequest;
     xUserTimezone?: string | null;
@@ -389,6 +533,12 @@ export interface ListLabelTpDocumentLabelListPostRequest {
 }
 
 export interface ListSectionLabelTpSectionLabelListPostRequest {
+    xUserTimezone?: string | null;
+    apiKey?: string | null;
+}
+
+export interface PublishDocumentTpDocumentPublishPostRequest {
+    documentPublishRequest: DocumentPublishRequest;
     xUserTimezone?: string | null;
     apiKey?: string | null;
 }
@@ -513,7 +663,7 @@ export interface UpdateSectionTpSectionUpdatePostRequest {
 }
 
 export interface UploadFileSystemTpFileUploadPostRequest {
-    file: string;
+    file: Blob;
     filePath: string;
     contentType: string;
     xUserTimezone?: string | null;
@@ -1834,6 +1984,61 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getDocumentPublishTpDocumentPublishGetPost without sending the request
+     */
+    async getDocumentPublishTpDocumentPublishGetPostRequestOpts(requestParameters: GetDocumentPublishTpDocumentPublishGetPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentPublishGetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentPublishGetRequest',
+                'Required parameter "documentPublishGetRequest" was null or undefined when calling getDocumentPublishTpDocumentPublishGetPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/publish/get`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentPublishGetRequestToJSON(requestParameters['documentPublishGetRequest']),
+        };
+    }
+
+    /**
+     * Get Document Publish
+     */
+    async getDocumentPublishTpDocumentPublishGetPostRaw(requestParameters: GetDocumentPublishTpDocumentPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentPublishGetResponse>> {
+        const requestOptions = await this.getDocumentPublishTpDocumentPublishGetPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentPublishGetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Document Publish
+     */
+    async getDocumentPublishTpDocumentPublishGetPost(requestParameters: GetDocumentPublishTpDocumentPublishGetPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentPublishGetResponse> {
+        const response = await this.getDocumentPublishTpDocumentPublishGetPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getSectionDateTpSectionDatePost without sending the request
      */
     async getSectionDateTpSectionDatePostRequestOpts(requestParameters: GetSectionDateTpSectionDatePostRequest): Promise<runtime.RequestOpts> {
@@ -1983,17 +2188,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Get Section Documents
      */
-    async getSectionDocumentsTpSectionDocumentsPostRaw(requestParameters: GetSectionDocumentsTpSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionDocumentInfo>> {
+    async getSectionDocumentsTpSectionDocumentsPostRaw(requestParameters: GetSectionDocumentsTpSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionDocumentInfo>> {
         const requestOptions = await this.getSectionDocumentsTpSectionDocumentsPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Get Section Documents
      */
-    async getSectionDocumentsTpSectionDocumentsPost(requestParameters: GetSectionDocumentsTpSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionDocumentInfo> {
+    async getSectionDocumentsTpSectionDocumentsPost(requestParameters: GetSectionDocumentsTpSectionDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionDocumentInfo> {
         const response = await this.getSectionDocumentsTpSectionDocumentsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2093,17 +2298,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Get Subscribed Sections
      */
-    async getSubscribedSectionsTpSectionSubscribedPostRaw(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async getSubscribedSectionsTpSectionSubscribedPostRaw(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.getSubscribedSectionsTpSectionSubscribedPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Get Subscribed Sections
      */
-    async getSubscribedSectionsTpSectionSubscribedPost(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async getSubscribedSectionsTpSectionSubscribedPost(requestParameters: GetSubscribedSectionsTpSectionSubscribedPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.getSubscribedSectionsTpSectionSubscribedPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2195,6 +2400,61 @@ export class TpApi extends runtime.BaseAPI {
      */
     async listSectionLabelTpSectionLabelListPost(requestParameters: ListSectionLabelTpSectionLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasSectionLabelListResponse> {
         const response = await this.listSectionLabelTpSectionLabelListPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for publishDocumentTpDocumentPublishPost without sending the request
+     */
+    async publishDocumentTpDocumentPublishPostRequestOpts(requestParameters: PublishDocumentTpDocumentPublishPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentPublishRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentPublishRequest',
+                'Required parameter "documentPublishRequest" was null or undefined when calling publishDocumentTpDocumentPublishPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+        if (requestParameters['apiKey'] != null) {
+            headerParameters['api-key'] = String(requestParameters['apiKey']);
+        }
+
+
+        let urlPath = `/tp/document/publish`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentPublishRequestToJSON(requestParameters['documentPublishRequest']),
+        };
+    }
+
+    /**
+     * Publish Document
+     */
+    async publishDocumentTpDocumentPublishPostRaw(requestParameters: PublishDocumentTpDocumentPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.publishDocumentTpDocumentPublishPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Publish Document
+     */
+    async publishDocumentTpDocumentPublishPost(requestParameters: PublishDocumentTpDocumentPublishPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.publishDocumentTpDocumentPublishPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2403,17 +2663,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Document Notes
      */
-    async searchDocumentNotesTpDocumentNoteSearchPostRaw(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+    async searchDocumentNotesTpDocumentNoteSearchPostRaw(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentNoteInfo>> {
         const requestOptions = await this.searchDocumentNotesTpDocumentNoteSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentNoteInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Document Notes
      */
-    async searchDocumentNotesTpDocumentNoteSearchPost(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
+    async searchDocumentNotesTpDocumentNoteSearchPost(requestParameters: SearchDocumentNotesTpDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentNoteInfo> {
         const response = await this.searchDocumentNotesTpDocumentNoteSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2558,17 +2818,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Mine Documents
      */
-    async searchMineDocumentsTpDocumentSearchMinePostRaw(requestParameters: SearchMineDocumentsTpDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchMineDocumentsTpDocumentSearchMinePostRaw(requestParameters: SearchMineDocumentsTpDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchMineDocumentsTpDocumentSearchMinePostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Mine Documents
      */
-    async searchMineDocumentsTpDocumentSearchMinePost(requestParameters: SearchMineDocumentsTpDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchMineDocumentsTpDocumentSearchMinePost(requestParameters: SearchMineDocumentsTpDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchMineDocumentsTpDocumentSearchMinePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2613,17 +2873,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Mine Sections
      */
-    async searchMineSectionsTpSectionMineSearchPostRaw(requestParameters: SearchMineSectionsTpSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchMineSectionsTpSectionMineSearchPostRaw(requestParameters: SearchMineSectionsTpSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.searchMineSectionsTpSectionMineSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Mine Sections
      */
-    async searchMineSectionsTpSectionMineSearchPost(requestParameters: SearchMineSectionsTpSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async searchMineSectionsTpSectionMineSearchPost(requestParameters: SearchMineSectionsTpSectionMineSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.searchMineSectionsTpSectionMineSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2668,17 +2928,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Public Sections
      */
-    async searchPublicSectionsTpSectionPublicSearchPostRaw(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchPublicSectionsTpSectionPublicSearchPostRaw(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.searchPublicSectionsTpSectionPublicSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Public Sections
      */
-    async searchPublicSectionsTpSectionPublicSearchPost(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async searchPublicSectionsTpSectionPublicSearchPost(requestParameters: SearchPublicSectionsTpSectionPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.searchPublicSectionsTpSectionPublicSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2723,17 +2983,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Recent Documents
      */
-    async searchRecentDocumentsTpDocumentRecentSearchPostRaw(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchRecentDocumentsTpDocumentRecentSearchPostRaw(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchRecentDocumentsTpDocumentRecentSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Recent Documents
      */
-    async searchRecentDocumentsTpDocumentRecentSearchPost(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchRecentDocumentsTpDocumentRecentSearchPost(requestParameters: SearchRecentDocumentsTpDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchRecentDocumentsTpDocumentRecentSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2778,17 +3038,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Section Comment
      */
-    async searchSectionCommentTpSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionCommentInfo>> {
+    async searchSectionCommentTpSectionCommentSearchPostRaw(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionCommentInfo>> {
         const requestOptions = await this.searchSectionCommentTpSectionCommentSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionCommentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionCommentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Section Comment
      */
-    async searchSectionCommentTpSectionCommentSearchPost(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionCommentInfo> {
+    async searchSectionCommentTpSectionCommentSearchPost(requestParameters: SearchSectionCommentTpSectionCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionCommentInfo> {
         const response = await this.searchSectionCommentTpSectionCommentSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2833,17 +3093,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Star Documents
      */
-    async searchStarDocumentsTpDocumentStarSearchPostRaw(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchStarDocumentsTpDocumentStarSearchPostRaw(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchStarDocumentsTpDocumentStarSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Star Documents
      */
-    async searchStarDocumentsTpDocumentStarSearchPost(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchStarDocumentsTpDocumentStarSearchPost(requestParameters: SearchStarDocumentsTpDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchStarDocumentsTpDocumentStarSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2888,17 +3148,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search Unread Documents
      */
-    async searchUnreadDocumentsTpDocumentUnreadSearchPostRaw(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchUnreadDocumentsTpDocumentUnreadSearchPostRaw(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchUnreadDocumentsTpDocumentUnreadSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Unread Documents
      */
-    async searchUnreadDocumentsTpDocumentUnreadSearchPost(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchUnreadDocumentsTpDocumentUnreadSearchPost(requestParameters: SearchUnreadDocumentsTpDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchUnreadDocumentsTpDocumentUnreadSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2943,17 +3203,17 @@ export class TpApi extends runtime.BaseAPI {
     /**
      * Search User Sections
      */
-    async searchUserSectionsTpSectionUserSearchPostRaw(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionSectionInfo>> {
+    async searchUserSectionsTpSectionUserSearchPostRaw(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationSectionInfo>> {
         const requestOptions = await this.searchUserSectionsTpSectionUserSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionSectionInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationSectionInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User Sections
      */
-    async searchUserSectionsTpSectionUserSearchPost(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionSectionInfo> {
+    async searchUserSectionsTpSectionUserSearchPost(requestParameters: SearchUserSectionsTpSectionUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationSectionInfo> {
         const response = await this.searchUserSectionsTpSectionUserSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -3333,6 +3593,8 @@ export class TpApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {

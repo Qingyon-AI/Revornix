@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `code` | string
+`redirect_uri` | string
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { GithubUserCreate } from ''
 // TODO: Update the object below with actual values
 const example = {
   "code": null,
+  "redirect_uri": null,
 } satisfies GithubUserCreate
 
 console.log(example)

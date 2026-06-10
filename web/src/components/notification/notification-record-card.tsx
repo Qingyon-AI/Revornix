@@ -15,7 +15,7 @@ import {
 import { InfiniteData, QueryKey, useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
-	InifiniteScrollPagnitionNotificationRecord,
+	InfiniteScrollPaginationNotificationRecord,
 	NotificationRecord,
 } from '@/generated';
 import { Separator } from '../ui/separator';
@@ -129,13 +129,13 @@ const NotificationRecordCard = ({
 		mutationFn: readNotificationRecords,
 		onMutate: async (variables) => {
 			const previousNotifications = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionNotificationRecord>
+				InfiniteData<InfiniteScrollPaginationNotificationRecord>
 			>({
 				queryKey: searchMyNotificationsQueryKey,
 			});
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationRecord,
+				InfiniteScrollPaginationNotificationRecord,
 				NotificationRecord
 			>(queryClient, searchMyNotificationsQueryKey, (item) => {
 				if (item.id !== notification.id) return item;
@@ -168,7 +168,7 @@ const NotificationRecordCard = ({
 		onSuccess: () => {
 			const deletedId = notification.id;
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationRecord,
+				InfiniteScrollPaginationNotificationRecord,
 				NotificationRecord
 			>(
 				queryClient,

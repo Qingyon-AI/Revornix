@@ -977,7 +977,7 @@ No authorization required
 
 ## getNotificationSourcesNotificationSourceCommunityPost
 
-> InifiniteScrollPagnitionNotificationSource getNotificationSourcesNotificationSourceCommunityPost(searchNotificationSourceRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationNotificationSource getNotificationSourcesNotificationSourceCommunityPost(searchNotificationSourceRequest, authorization, xUserTimezone)
 
 Get Notification Sources
 
@@ -1026,7 +1026,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionNotificationSource**](InifiniteScrollPagnitionNotificationSource.md)
+[**InfiniteScrollPaginationNotificationSource**](InfiniteScrollPaginationNotificationSource.md)
 
 ### Authorization
 
@@ -1121,7 +1121,7 @@ No authorization required
 
 ## getNotificationTargetNotificationTargetCommunityPost
 
-> InifiniteScrollPagnitionNotificationTarget getNotificationTargetNotificationTargetCommunityPost(searchNotificationTargetRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationNotificationTarget getNotificationTargetNotificationTargetCommunityPost(searchNotificationTargetRequest, authorization, xUserTimezone)
 
 Get Notification Target
 
@@ -1170,7 +1170,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionNotificationTarget**](InifiniteScrollPagnitionNotificationTarget.md)
+[**InfiniteScrollPaginationNotificationTarget**](InfiniteScrollPaginationNotificationTarget.md)
 
 ### Authorization
 
@@ -2036,7 +2036,7 @@ No authorization required
 
 ## searchNotificationRecordNotificationRecordSearchPost
 
-> InifiniteScrollPagnitionNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationNotificationRecord searchNotificationRecordNotificationRecordSearchPost(searchNotificationRecordRequest, authorization, xUserTimezone)
 
 Search Notification Record
 
@@ -2085,7 +2085,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionNotificationRecord**](InifiniteScrollPagnitionNotificationRecord.md)
+[**InfiniteScrollPaginationNotificationRecord**](InfiniteScrollPaginationNotificationRecord.md)
 
 ### Authorization
 

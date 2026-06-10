@@ -33,6 +33,12 @@ export interface VectorSearchResponse {
      * @memberof VectorSearchResponse
      */
     documents: Array<DocumentInfo>;
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof VectorSearchResponse
+     */
+    snippets?: { [key: string]: string; };
 }
 
 /**
@@ -54,6 +60,7 @@ export function VectorSearchResponseFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'documents': ((json['documents'] as Array<any>).map(DocumentInfoFromJSON)),
+        'snippets': json['snippets'] == null ? undefined : json['snippets'],
     };
 }
 
@@ -69,6 +76,7 @@ export function VectorSearchResponseToJSONTyped(value?: VectorSearchResponse | n
     return {
         
         'documents': ((value['documents'] as Array<any>).map(DocumentInfoToJSON)),
+        'snippets': value['snippets'],
     };
 }
 

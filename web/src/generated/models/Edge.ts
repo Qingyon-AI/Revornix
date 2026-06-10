@@ -26,13 +26,13 @@ export interface Edge {
      */
     src_node: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof Edge
      */
     tgt_node: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof Edge
      */

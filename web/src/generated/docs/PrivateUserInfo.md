@@ -20,6 +20,9 @@ Name | Type
 `github_info` | [GithubInfo](GithubInfo.md)
 `google_info` | [GoogleInfo](GoogleInfo.md)
 `wechat_infos` | [Array&lt;WeChatInfo&gt;](WeChatInfo.md)
+`mfa_enabled` | boolean
+`passkeys` | [Array&lt;PasskeyInfo&gt;](PasskeyInfo.md)
+`totp` | [TotpInfo](TotpInfo.md)
 `default_user_file_system` | number
 `default_read_mark_reason` | number
 `default_document_reader_model_id` | number
@@ -28,6 +31,7 @@ Name | Type
 `default_file_document_parse_user_engine_id` | number
 `default_podcast_user_engine_id` | number
 `default_audio_transcribe_engine_id` | number
+`default_audio_meeting_mode` | boolean
 `default_image_generate_engine_id` | number
 `default_ai_interaction_language` | number
 
@@ -52,6 +56,9 @@ const example = {
   "github_info": null,
   "google_info": null,
   "wechat_infos": null,
+  "mfa_enabled": null,
+  "passkeys": null,
+  "totp": null,
   "default_user_file_system": null,
   "default_read_mark_reason": null,
   "default_document_reader_model_id": null,
@@ -60,6 +67,7 @@ const example = {
   "default_file_document_parse_user_engine_id": null,
   "default_podcast_user_engine_id": null,
   "default_audio_transcribe_engine_id": null,
+  "default_audio_meeting_mode": null,
   "default_image_generate_engine_id": null,
   "default_ai_interaction_language": null,
 } satisfies PrivateUserInfo

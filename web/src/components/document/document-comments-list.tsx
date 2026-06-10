@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import {
 	searchDocumentComment,
 	type DocumentCommentSortType,
-	type InifiniteScrollPagnitionDocumentCommentInfo,
+	type InfiniteScrollPaginationDocumentCommentInfo,
 } from '@/service/document';
 import { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -30,7 +30,7 @@ const DocumentCommentsList = ({
 	loginHref,
 }: {
 	document_id: number;
-	initialData?: InifiniteScrollPagnitionDocumentCommentInfo;
+	initialData?: InfiniteScrollPaginationDocumentCommentInfo;
 	publicMode?: boolean;
 	loginHref?: string;
 }) => {

@@ -66,7 +66,7 @@ export interface NotificationTask {
      */
     enable: boolean;
     /**
-     *
+     * 
      * @type {NotificationTriggerEvent}
      * @memberof NotificationTask
      */
@@ -162,3 +162,4 @@ export function NotificationTaskToJSONTyped(value?: NotificationTask | null, ign
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

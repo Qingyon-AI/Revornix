@@ -9,6 +9,7 @@ Name | Type
 `id` | string
 `text` | string
 `degree` | number
+`kind` | string
 `sources` | [Array&lt;NodeSource&gt;](NodeSource.md)
 
 ## Example
@@ -21,6 +22,7 @@ const example = {
   "id": null,
   "text": null,
   "degree": null,
+  "kind": null,
   "sources": null,
 } satisfies Node
 

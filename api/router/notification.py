@@ -121,7 +121,7 @@ async def get_usable_notification_target(
     ]
     return schemas.notification.NotificationTargetsUsableResponse(data=notification_targets)
 
-@notification_router.post('/source/community', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationSource])
+@notification_router.post('/source/community', response_model=schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationSource])
 async def get_notification_sources(
     notification_source_search_request: schemas.notification.SearchNotificationSourceRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -181,7 +181,7 @@ async def get_notification_sources(
     data = []
     for item in db_notification_sources:
         data.append(await get_notification_source_info(item[0]))
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=notification_source_search_request.start,
@@ -231,7 +231,7 @@ async def get_notification_source_detail(
             res.config_json = decrypt_notification_source_config(res.config_json)
         return res
 
-@notification_router.post('/target/community', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationTarget])
+@notification_router.post('/target/community', response_model=schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationTarget])
 async def get_notification_target(
     notification_target_search_request: schemas.notification.SearchNotificationTargetRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -289,7 +289,7 @@ async def get_notification_target(
     data = []
     for item in db_notification_targets:
         data.append(await get_notification_target_info(item[0]))
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=notification_target_search_request.start,

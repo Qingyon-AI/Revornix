@@ -1,6 +1,6 @@
 'use client';
 
-import type { InifiniteScrollPagnitionSectionDocumentInfo } from '@/generated';
+import type { InfiniteScrollPaginationSectionDocumentInfo } from '@/generated';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchSectionDocuments } from '@/service/section';
 import SectionDocumentCard from './section-document-card';
@@ -18,7 +18,7 @@ const SectionDocumentsList = ({
 }: {
 	section_id: number;
 	publicMode?: boolean;
-	initialData?: InifiniteScrollPagnitionSectionDocumentInfo;
+	initialData?: InfiniteScrollPaginationSectionDocumentInfo;
 }) => {
 	const t = useTranslations();
 	const { ref: bottomRef, inView } = useInView();

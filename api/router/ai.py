@@ -556,7 +556,7 @@ async def delete_ai_model_provider(
     await db.commit()
     return schemas.common.SuccessResponse()
 
-@ai_router.post("/model-provider/community", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.ai.ModelProvider])
+@ai_router.post("/model-provider/community", response_model=schemas.pagination.InfiniteScrollPagination[schemas.ai.ModelProvider])
 async def list_ai_model_provider(
     model_provider_search_request: schemas.ai.ModelProviderSearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -598,7 +598,7 @@ async def list_ai_model_provider(
         )
         for item in db_ai_model_providers
     ]
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=model_provider_search_request.start,

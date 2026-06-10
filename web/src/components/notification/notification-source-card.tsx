@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import { replacePath } from '@/lib/utils';
 import {
-	InifiniteScrollPagnitionNotificationSource,
+	InfiniteScrollPaginationNotificationSource,
 	NotificationSource,
 } from '@/generated';
 import { Badge } from '../ui/badge';
@@ -58,12 +58,12 @@ const NotificationSourceCard = ({
 		mutationFn: deleteNotificationSource,
 		onMutate() {
 			const previousSources = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionNotificationSource>
+				InfiniteData<InfiniteScrollPaginationNotificationSource>
 			>({
 				queryKey: ['searchNotificationSources'],
 			});
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationSource,
+				InfiniteScrollPaginationNotificationSource,
 				NotificationSource
 			>(queryClient, ['searchNotificationSources'], (item) => {
 				return item.id !== notification_source.id;
@@ -90,13 +90,13 @@ const NotificationSourceCard = ({
 		mutationFn: forkNotificationSource,
 		onMutate(variables) {
 			const previousSources = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionNotificationSource>
+				InfiniteData<InfiniteScrollPaginationNotificationSource>
 			>({
 				queryKey: ['searchNotificationSources'],
 			});
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationSource,
+				InfiniteScrollPaginationNotificationSource,
 				NotificationSource
 			>(queryClient, ['searchNotificationSources'], (item) => {
 				if (item.id !== notification_source.id) return item;

@@ -43,6 +43,18 @@ export interface SectionCommentSearchRequest {
      * @memberof SectionCommentSearchRequest
      */
     keyword?: string | null;
+    /**
+     * time | hot
+     * @type {string}
+     * @memberof SectionCommentSearchRequest
+     */
+    sort?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentSearchRequest
+     */
+    preview_reply_limit?: number;
 }
 
 /**
@@ -67,6 +79,8 @@ export function SectionCommentSearchRequestFromJSONTyped(json: any, ignoreDiscri
         'start': json['start'] == null ? undefined : json['start'],
         'limit': json['limit'] == null ? undefined : json['limit'],
         'keyword': json['keyword'] == null ? undefined : json['keyword'],
+        'sort': json['sort'] == null ? undefined : json['sort'],
+        'preview_reply_limit': json['preview_reply_limit'] == null ? undefined : json['preview_reply_limit'],
     };
 }
 
@@ -85,6 +99,8 @@ export function SectionCommentSearchRequestToJSONTyped(value?: SectionCommentSea
         'start': value['start'],
         'limit': value['limit'],
         'keyword': value['keyword'],
+        'sort': value['sort'],
+        'preview_reply_limit': value['preview_reply_limit'],
     };
 }
 

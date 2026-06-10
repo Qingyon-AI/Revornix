@@ -46,13 +46,13 @@ export interface Node {
      */
     degree: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof Node
      */
     kind?: string;
     /**
-     *
+     * 
      * @type {Array<NodeSource>}
      * @memberof Node
      */

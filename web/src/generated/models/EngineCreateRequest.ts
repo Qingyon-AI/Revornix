@@ -82,13 +82,13 @@ export interface EngineCreateRequest {
      */
     compute_point_multiplier?: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof EngineCreateRequest
      */
     max_concurrency?: number;
     /**
-     *
+     * 
      * @type {string}
      * @memberof EngineCreateRequest
      */
@@ -155,3 +155,4 @@ export function EngineCreateRequestToJSONTyped(value?: EngineCreateRequest | nul
         'config_json': value['config_json'],
     };
 }
+

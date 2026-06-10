@@ -28,6 +28,7 @@ All URIs are relative to *http://localhost*
 | [**getAllMineSectionsTpSectionMineAllPost**](TpApi.md#getallminesectionstpsectionmineallpost) | **POST** /tp/section/mine/all | Get All Mine Sections |
 | [**getDocumentDetailTpDocumentDetailPost**](TpApi.md#getdocumentdetailtpdocumentdetailpost) | **POST** /tp/document/detail | Get Document Detail |
 | [**getDocumentMonthSummaryTpDocumentMonthSummaryPost**](TpApi.md#getdocumentmonthsummarytpdocumentmonthsummarypost) | **POST** /tp/document/month/summary | Get Document Month Summary |
+| [**getDocumentPublishTpDocumentPublishGetPost**](TpApi.md#getdocumentpublishtpdocumentpublishgetpost) | **POST** /tp/document/publish/get | Get Document Publish |
 | [**getSectionDateTpSectionDatePost**](TpApi.md#getsectiondatetpsectiondatepost) | **POST** /tp/section/date | Get Section Date |
 | [**getSectionDetailTpSectionDetailPost**](TpApi.md#getsectiondetailtpsectiondetailpost) | **POST** /tp/section/detail | Get Section Detail |
 | [**getSectionDocumentsTpSectionDocumentsPost**](TpApi.md#getsectiondocumentstpsectiondocumentspost) | **POST** /tp/section/documents | Get Section Documents |
@@ -35,6 +36,7 @@ All URIs are relative to *http://localhost*
 | [**getSubscribedSectionsTpSectionSubscribedPost**](TpApi.md#getsubscribedsectionstpsectionsubscribedpost) | **POST** /tp/section/subscribed | Get Subscribed Sections |
 | [**listLabelTpDocumentLabelListPost**](TpApi.md#listlabeltpdocumentlabellistpost) | **POST** /tp/document/label/list | List Label |
 | [**listSectionLabelTpSectionLabelListPost**](TpApi.md#listsectionlabeltpsectionlabellistpost) | **POST** /tp/section/label/list | List Section Label |
+| [**publishDocumentTpDocumentPublishPost**](TpApi.md#publishdocumenttpdocumentpublishpost) | **POST** /tp/document/publish | Publish Document |
 | [**publishSectionTpSectionPublishPost**](TpApi.md#publishsectiontpsectionpublishpost) | **POST** /tp/section/publish | Publish Section |
 | [**republishSectionTpSectionRepublishPost**](TpApi.md#republishsectiontpsectionrepublishpost) | **POST** /tp/section/republish | Republish Section |
 | [**retrySectionDocumentTpSectionDocumentRetryPost**](TpApi.md#retrysectiondocumenttpsectiondocumentretrypost) | **POST** /tp/section/document/retry | Retry Section Document |
@@ -1781,6 +1783,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getDocumentPublishTpDocumentPublishGetPost
+
+> DocumentPublishGetResponse getDocumentPublishTpDocumentPublishGetPost(documentPublishGetRequest, xUserTimezone, apiKey)
+
+Get Document Publish
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TpApi,
+} from '';
+import type { GetDocumentPublishTpDocumentPublishGetPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new TpApi();
+
+  const body = {
+    // DocumentPublishGetRequest
+    documentPublishGetRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
+    apiKey: apiKey_example,
+  } satisfies GetDocumentPublishTpDocumentPublishGetPostRequest;
+
+  try {
+    const data = await api.getDocumentPublishTpDocumentPublishGetPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentPublishGetRequest** | [DocumentPublishGetRequest](DocumentPublishGetRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**DocumentPublishGetResponse**](DocumentPublishGetResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getSectionDateTpSectionDatePost
 
 > DaySectionResponse getSectionDateTpSectionDatePost(daySectionRequest, xUserTimezone, apiKey)
@@ -1927,7 +2001,7 @@ No authorization required
 
 ## getSectionDocumentsTpSectionDocumentsPost
 
-> InifiniteScrollPagnitionSectionDocumentInfo getSectionDocumentsTpSectionDocumentsPost(sectionDocumentRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionDocumentInfo getSectionDocumentsTpSectionDocumentsPost(sectionDocumentRequest, xUserTimezone, apiKey)
 
 Get Section Documents
 
@@ -1976,7 +2050,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionDocumentInfo**](InifiniteScrollPagnitionSectionDocumentInfo.md)
+[**InfiniteScrollPaginationSectionDocumentInfo**](InfiniteScrollPaginationSectionDocumentInfo.md)
 
 ### Authorization
 
@@ -2071,7 +2145,7 @@ No authorization required
 
 ## getSubscribedSectionsTpSectionSubscribedPost
 
-> InifiniteScrollPagnitionSectionInfo getSubscribedSectionsTpSectionSubscribedPost(searchSubscribedSectionRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionInfo getSubscribedSectionsTpSectionSubscribedPost(searchSubscribedSectionRequest, xUserTimezone, apiKey)
 
 Get Subscribed Sections
 
@@ -2120,7 +2194,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -2267,6 +2341,78 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## publishDocumentTpDocumentPublishPost
+
+> NormalResponse publishDocumentTpDocumentPublishPost(documentPublishRequest, xUserTimezone, apiKey)
+
+Publish Document
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TpApi,
+} from '';
+import type { PublishDocumentTpDocumentPublishPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new TpApi();
+
+  const body = {
+    // DocumentPublishRequest
+    documentPublishRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
+    apiKey: apiKey_example,
+  } satisfies PublishDocumentTpDocumentPublishPostRequest;
+
+  try {
+    const data = await api.publishDocumentTpDocumentPublishPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentPublishRequest** | [DocumentPublishRequest](DocumentPublishRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 
@@ -2497,7 +2643,7 @@ No authorization required
 
 ## searchDocumentNotesTpDocumentNoteSearchPost
 
-> InifiniteScrollPagnitionDocumentNoteInfo searchDocumentNotesTpDocumentNoteSearchPost(searchDocumentNoteRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationDocumentNoteInfo searchDocumentNotesTpDocumentNoteSearchPost(searchDocumentNoteRequest, xUserTimezone, apiKey)
 
 Search Document Notes
 
@@ -2546,7 +2692,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentNoteInfo**](InifiniteScrollPagnitionDocumentNoteInfo.md)
+[**InfiniteScrollPaginationDocumentNoteInfo**](InfiniteScrollPaginationDocumentNoteInfo.md)
 
 ### Authorization
 
@@ -2710,7 +2856,7 @@ No authorization required
 
 ## searchMineDocumentsTpDocumentSearchMinePost
 
-> InifiniteScrollPagnitionDocumentInfo searchMineDocumentsTpDocumentSearchMinePost(searchAllMyDocumentsRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationDocumentInfo searchMineDocumentsTpDocumentSearchMinePost(searchAllMyDocumentsRequest, xUserTimezone, apiKey)
 
 Search Mine Documents
 
@@ -2759,7 +2905,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -2782,7 +2928,7 @@ No authorization required
 
 ## searchMineSectionsTpSectionMineSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchMineSectionsTpSectionMineSearchPost(searchMineSectionsRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionInfo searchMineSectionsTpSectionMineSearchPost(searchMineSectionsRequest, xUserTimezone, apiKey)
 
 Search Mine Sections
 
@@ -2831,7 +2977,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -2854,7 +3000,7 @@ No authorization required
 
 ## searchPublicSectionsTpSectionPublicSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchPublicSectionsTpSectionPublicSearchPost(searchPublicSectionsRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionInfo searchPublicSectionsTpSectionPublicSearchPost(searchPublicSectionsRequest, xUserTimezone, apiKey)
 
 Search Public Sections
 
@@ -2903,7 +3049,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -2926,7 +3072,7 @@ No authorization required
 
 ## searchRecentDocumentsTpDocumentRecentSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchRecentDocumentsTpDocumentRecentSearchPost(searchRecentReadRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationDocumentInfo searchRecentDocumentsTpDocumentRecentSearchPost(searchRecentReadRequest, xUserTimezone, apiKey)
 
 Search Recent Documents
 
@@ -2975,7 +3121,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -2998,7 +3144,7 @@ No authorization required
 
 ## searchSectionCommentTpSectionCommentSearchPost
 
-> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentTpSectionCommentSearchPost(sectionCommentSearchRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionCommentInfo searchSectionCommentTpSectionCommentSearchPost(sectionCommentSearchRequest, xUserTimezone, apiKey)
 
 Search Section Comment
 
@@ -3047,7 +3193,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionCommentInfo**](InifiniteScrollPagnitionSectionCommentInfo.md)
+[**InfiniteScrollPaginationSectionCommentInfo**](InfiniteScrollPaginationSectionCommentInfo.md)
 
 ### Authorization
 
@@ -3070,7 +3216,7 @@ No authorization required
 
 ## searchStarDocumentsTpDocumentStarSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchStarDocumentsTpDocumentStarSearchPost(searchMyStarDocumentsRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationDocumentInfo searchStarDocumentsTpDocumentStarSearchPost(searchMyStarDocumentsRequest, xUserTimezone, apiKey)
 
 Search Star Documents
 
@@ -3119,7 +3265,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -3142,7 +3288,7 @@ No authorization required
 
 ## searchUnreadDocumentsTpDocumentUnreadSearchPost
 
-> InifiniteScrollPagnitionDocumentInfo searchUnreadDocumentsTpDocumentUnreadSearchPost(searchUnreadListRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationDocumentInfo searchUnreadDocumentsTpDocumentUnreadSearchPost(searchUnreadListRequest, xUserTimezone, apiKey)
 
 Search Unread Documents
 
@@ -3191,7 +3337,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionDocumentInfo**](InifiniteScrollPagnitionDocumentInfo.md)
+[**InfiniteScrollPaginationDocumentInfo**](InfiniteScrollPaginationDocumentInfo.md)
 
 ### Authorization
 
@@ -3214,7 +3360,7 @@ No authorization required
 
 ## searchUserSectionsTpSectionUserSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchUserSectionsTpSectionUserSearchPost(searchUserSectionsRequest, xUserTimezone, apiKey)
+> InfiniteScrollPaginationSectionInfo searchUserSectionsTpSectionUserSearchPost(searchUserSectionsRequest, xUserTimezone, apiKey)
 
 Search User Sections
 
@@ -3263,7 +3409,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -3736,8 +3882,8 @@ async function example() {
   const api = new TpApi();
 
   const body = {
-    // string
-    file: file_example,
+    // Blob
+    file: BINARY_DATA_HERE,
     // string
     filePath: filePath_example,
     // string
@@ -3765,7 +3911,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **file** | `string` |  | [Defaults to `undefined`] |
+| **file** | `Blob` |  | [Defaults to `undefined`] |
 | **filePath** | `string` |  | [Defaults to `undefined`] |
 | **contentType** | `string` |  | [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |

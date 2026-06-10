@@ -315,7 +315,7 @@ async def create_engine(
     await db.commit()
     return schemas.common.SuccessResponse()
 
-@engine_router.post("/community", response_model=schemas.pagination.InifiniteScrollPagnition[schemas.engine.EngineInfo])
+@engine_router.post("/community", response_model=schemas.pagination.InfiniteScrollPagination[schemas.engine.EngineInfo])
 async def search_document_parse_engine(
     engine_search_request: schemas.engine.CommunityEngineSearchRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -360,7 +360,7 @@ async def search_document_parse_engine(
                 ) is not None,
             )
         )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=engine_search_request.start,

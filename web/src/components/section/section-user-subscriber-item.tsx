@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'nextjs-toploader/app';
 import {
-	InifiniteScrollPagnitionSectionUserPublicInfo,
+	InfiniteScrollPaginationSectionUserPublicInfo,
 	SectionUserPublicInfo,
 } from '@/generated';
 import { InfiniteData, useMutation } from '@tanstack/react-query';
@@ -44,13 +44,13 @@ const SectionSubscriberItem = ({
 		mutationFn: deleteSectionUser,
 		onMutate() {
 			const previousSubscribers = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionSectionUserPublicInfo>
+				InfiniteData<InfiniteScrollPaginationSectionUserPublicInfo>
 			>({
 				queryKey: ['getSectionSubscriber', section_id],
 			});
 
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionSectionUserPublicInfo,
+				InfiniteScrollPaginationSectionUserPublicInfo,
 				SectionUserPublicInfo
 			>(queryClient, ['getSectionSubscriber', section_id], (item) => {
 				return item.id !== user.id;

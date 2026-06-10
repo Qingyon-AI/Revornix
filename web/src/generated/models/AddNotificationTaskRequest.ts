@@ -44,14 +44,11 @@ export interface AddNotificationTaskRequest {
      */
     title: string;
     /**
-     *
+     * 
      * @type {number}
      * @memberof AddNotificationTaskRequest
      */
     trigger_event_id?: number | null;
-    /**
-     * 
-     */
 }
 
 /**
@@ -101,3 +98,4 @@ export function AddNotificationTaskRequestToJSONTyped(value?: AddNotificationTas
         'trigger_event_id': value['trigger_event_id'],
     };
 }
+

@@ -19,6 +19,7 @@ Name | Type
 `auto_podcast` | boolean
 `auto_transcribe` | boolean
 `auto_tag` | boolean
+`audio_meeting_mode` | boolean
 
 ## Example
 
@@ -40,6 +41,7 @@ const example = {
   "auto_podcast": null,
   "auto_transcribe": null,
   "auto_tag": null,
+  "audio_meeting_mode": null,
 } satisfies ApiDocumentCreateRequest
 
 console.log(example)

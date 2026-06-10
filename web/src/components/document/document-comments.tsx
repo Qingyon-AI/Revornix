@@ -1,6 +1,6 @@
 'use client';
 
-import type { InifiniteScrollPagnitionDocumentCommentInfo } from '@/service/document';
+import type { InfiniteScrollPaginationDocumentCommentInfo } from '@/service/document';
 import DocumentCommentInput from './document-comment-input';
 import DocumentCommentsList from './document-comments-list';
 import DocumentCommentAnchor from './document-comment-anchor';
@@ -15,7 +15,7 @@ const DocumentComments = ({
 }: {
 	document_id: number;
 	anchorCommentId?: number;
-	initialData?: InifiniteScrollPagnitionDocumentCommentInfo;
+	initialData?: InfiniteScrollPaginationDocumentCommentInfo;
 	publicMode?: boolean;
 	loginHref?: string;
 }) => {

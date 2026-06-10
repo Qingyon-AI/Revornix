@@ -29,7 +29,7 @@ from router.notification_task_manage import (
     _sync_notification_task_event_configuration,
     _validate_notification_source_target_pair,
 )
-from router.logic_helpers import group_document_ids_by_category
+from common.query_helpers import group_document_ids_by_category
 from router.section_detail_query import _build_section_info_response
 from router.user import _batch_sign_user_avatars
 from router.user_shared import (
@@ -770,7 +770,7 @@ async def get_admin_user_compute_ledger(
 
 @admin_router.post(
     "/users/notifications/sources",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationSource],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationSource],
 )
 async def search_admin_user_notification_sources(
     search_request: schemas.admin.AdminUserNotificationSourceSearchRequest,
@@ -815,7 +815,7 @@ async def search_admin_user_notification_sources(
         )
         for item in db_notification_sources
     ]
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=search_request.start,
@@ -827,7 +827,7 @@ async def search_admin_user_notification_sources(
 
 @admin_router.post(
     "/users/notifications/targets",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.notification.NotificationTarget],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.notification.NotificationTarget],
 )
 async def search_admin_user_notification_targets(
     search_request: schemas.admin.AdminUserNotificationTargetSearchRequest,
@@ -872,7 +872,7 @@ async def search_admin_user_notification_targets(
         )
         for item in db_notification_targets
     ]
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=data,
         start=search_request.start,

@@ -38,19 +38,19 @@ export interface NotificationTargetProvided {
      */
     name: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NotificationTargetProvided
      */
     name_zh: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NotificationTargetProvided
      */
     category: string | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof NotificationTargetProvided
      */
@@ -83,6 +83,7 @@ export function instanceOfNotificationTargetProvided(value: object): value is No
     if (!('uuid' in value) || value['uuid'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('name_zh' in value) || value['name_zh'] === undefined) return false;
+    if (!('category' in value) || value['category'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('description_zh' in value) || value['description_zh'] === undefined) return false;
     if (!('create_time' in value) || value['create_time'] === undefined) return false;
@@ -104,7 +105,7 @@ export function NotificationTargetProvidedFromJSONTyped(json: any, ignoreDiscrim
         'uuid': json['uuid'],
         'name': json['name'],
         'name_zh': json['name_zh'],
-        'category': json['category'] ?? null,
+        'category': json['category'],
         'description': json['description'],
         'description_zh': json['description_zh'],
         'create_time': (new Date(json['create_time'])),

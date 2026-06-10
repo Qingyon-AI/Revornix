@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `status` | number
 `podcast_file_name` | string
+`podcast_script_file_name` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -20,6 +21,7 @@ import type { DocumentPodcastTask } from ''
 const example = {
   "status": null,
   "podcast_file_name": null,
+  "podcast_script_file_name": null,
   "create_time": null,
   "update_time": null,
 } satisfies DocumentPodcastTask

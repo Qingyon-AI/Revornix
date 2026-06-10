@@ -57,6 +57,48 @@ export interface SectionCommentInfo {
      * @memberof SectionCommentInfo
      */
     creator: UserPublicInfo;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentInfo
+     */
+    parent_id?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentInfo
+     */
+    root_id?: number | null;
+    /**
+     * 
+     * @type {UserPublicInfo}
+     * @memberof SectionCommentInfo
+     */
+    reply_user?: UserPublicInfo | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentInfo
+     */
+    like_count?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SectionCommentInfo
+     */
+    liked?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentInfo
+     */
+    reply_count?: number;
+    /**
+     * 
+     * @type {Array<SectionCommentInfo>}
+     * @memberof SectionCommentInfo
+     */
+    preview_replies?: Array<SectionCommentInfo>;
 }
 
 /**
@@ -86,6 +128,13 @@ export function SectionCommentInfoFromJSONTyped(json: any, ignoreDiscriminator: 
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
         'creator': UserPublicInfoFromJSON(json['creator']),
+        'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
+        'root_id': json['root_id'] == null ? undefined : json['root_id'],
+        'reply_user': json['reply_user'] == null ? undefined : UserPublicInfoFromJSON(json['reply_user']),
+        'like_count': json['like_count'] == null ? undefined : json['like_count'],
+        'liked': json['liked'] == null ? undefined : json['liked'],
+        'reply_count': json['reply_count'] == null ? undefined : json['reply_count'],
+        'preview_replies': json['preview_replies'] == null ? undefined : ((json['preview_replies'] as Array<any>).map(SectionCommentInfoFromJSON)),
     };
 }
 
@@ -105,6 +154,13 @@ export function SectionCommentInfoToJSONTyped(value?: SectionCommentInfo | null,
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
         'creator': UserPublicInfoToJSON(value['creator']),
+        'parent_id': value['parent_id'],
+        'root_id': value['root_id'],
+        'reply_user': UserPublicInfoToJSON(value['reply_user']),
+        'like_count': value['like_count'],
+        'liked': value['liked'],
+        'reply_count': value['reply_count'],
+        'preview_replies': value['preview_replies'] == null ? undefined : ((value['preview_replies'] as Array<any>).map(SectionCommentInfoToJSON)),
     };
 }
 

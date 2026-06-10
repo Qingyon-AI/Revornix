@@ -1330,7 +1330,7 @@ No authorization required
 
 ## searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPost
 
-> InifiniteScrollPagnitionNotificationSource searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPost(adminUserNotificationSourceSearchRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationNotificationSource searchAdminUserNotificationSourcesAdminUsersNotificationsSourcesPost(adminUserNotificationSourceSearchRequest, authorization, xUserTimezone)
 
 Search Admin User Notification Sources
 
@@ -1379,7 +1379,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionNotificationSource**](InifiniteScrollPagnitionNotificationSource.md)
+[**InfiniteScrollPaginationNotificationSource**](InfiniteScrollPaginationNotificationSource.md)
 
 ### Authorization
 
@@ -1402,7 +1402,7 @@ No authorization required
 
 ## searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPost
 
-> InifiniteScrollPagnitionNotificationTarget searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPost(adminUserNotificationTargetSearchRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationNotificationTarget searchAdminUserNotificationTargetsAdminUsersNotificationsTargetsPost(adminUserNotificationTargetSearchRequest, authorization, xUserTimezone)
 
 Search Admin User Notification Targets
 
@@ -1451,7 +1451,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionNotificationTarget**](InifiniteScrollPagnitionNotificationTarget.md)
+[**InfiniteScrollPaginationNotificationTarget**](InfiniteScrollPaginationNotificationTarget.md)
 
 ### Authorization
 
@@ -1710,8 +1710,8 @@ async function example() {
   const body = {
     // number
     userId: 56,
-    // string
-    file: file_example,
+    // Blob
+    file: BINARY_DATA_HERE,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -1736,7 +1736,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **userId** | `number` |  | [Defaults to `undefined`] |
-| **file** | `string` |  | [Defaults to `undefined`] |
+| **file** | `Blob` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -1785,8 +1785,8 @@ async function example() {
   const body = {
     // number
     userId: 56,
-    // string
-    file: file_example,
+    // Blob
+    file: BINARY_DATA_HERE,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
@@ -1811,7 +1811,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **userId** | `number` |  | [Defaults to `undefined`] |
-| **file** | `string` |  | [Defaults to `undefined`] |
+| **file** | `Blob` |  | [Defaults to `undefined`] |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

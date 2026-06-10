@@ -55,7 +55,7 @@ from notification.template.removed_from_section import RemovedFromSectionNotific
 from notification.template.section_commented import SectionCommentedNotificationTemplate
 from notification.template.section_content_updated import SectionContentUpdatedNotificationTemplate
 from notification.template.section_subscribed import SectionSubscribedNotificationTemplate
-from notification.template.section_updated import SectionUpdatedNotificationTemplate
+from notification.template.section_process_completed import SectionProcessCompletedNotificationTemplate
 from notification.template.section_join_requested import SectionJoinRequestedNotificationTemplate
 from notification.template.section_join_request_handled import SectionJoinRequestHandledNotificationTemplate
 from notification.template.document_join_requested import DocumentJoinRequestedNotificationTemplate
@@ -66,7 +66,7 @@ from notification.trigger_event.removed_from_section import RemovedFromSectionNo
 from notification.trigger_event.section_commented import SectionCommentedNotificationTriggerEvent
 from notification.trigger_event.section_content_updated import SectionContentUpdatedNotificationTriggerEvent
 from notification.trigger_event.section_subscribed import SectionSubscribedNotificationTriggerEvent
-from notification.trigger_event.section_updated import SectionUpdatedNotificationTriggerEvent
+from notification.trigger_event.section_process_completed import SectionProcessCompletedNotificationTriggerEvent
 from notification.trigger_event.section_join_requested import SectionJoinRequestedNotificationTriggerEvent
 from notification.trigger_event.section_join_request_handled import SectionJoinRequestHandledNotificationTriggerEvent
 from notification.trigger_event.document_join_requested import DocumentJoinRequestedNotificationTriggerEvent
@@ -171,7 +171,7 @@ async def seed_database(db: AsyncSession):
     # -------- Notification Templates --------
     templates: list[NotificationTemplate] = [
         SectionCommentedNotificationTemplate(),
-        SectionUpdatedNotificationTemplate(),
+        SectionProcessCompletedNotificationTemplate(),
         SectionSubscribedNotificationTemplate(),
         RemovedFromSectionNotificationTemplate(),
         SectionContentUpdatedNotificationTemplate(),
@@ -196,7 +196,7 @@ async def seed_database(db: AsyncSession):
     # -------- Trigger Events --------
     triggers: list[NotificationTriggerEventProtocol] = [
         RemovedFromSectionNotificationTriggerEvent(),
-        SectionUpdatedNotificationTriggerEvent(),
+        SectionProcessCompletedNotificationTriggerEvent(),
         SectionCommentedNotificationTriggerEvent(),
         SectionSubscribedNotificationTriggerEvent(),
         SectionContentUpdatedNotificationTriggerEvent(),

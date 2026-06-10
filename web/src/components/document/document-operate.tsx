@@ -46,8 +46,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import {
 	DocumentDetailResponse,
 	DocumentInfo as DocumentListItem,
-	InifiniteScrollPagnitionDocumentInfo,
-	InifiniteScrollPagnitionSectionDocumentInfo,
+	InfiniteScrollPaginationDocumentInfo,
+	InfiniteScrollPaginationSectionDocumentInfo,
 	SectionDocumentInfo,
 } from '@/generated';
 import { toast } from 'sonner';
@@ -154,10 +154,10 @@ const DocumentOperate = ({
 
 	const isDocumentInfiniteData = (
 		value: unknown,
-	): value is InfiniteData<InifiniteScrollPagnitionDocumentInfo> => {
+	): value is InfiniteData<InfiniteScrollPaginationDocumentInfo> => {
 		if (!value || typeof value !== 'object') return false;
 		return Array.isArray(
-			(value as InfiniteData<InifiniteScrollPagnitionDocumentInfo>).pages,
+			(value as InfiniteData<InfiniteScrollPaginationDocumentInfo>).pages,
 		);
 	};
 
@@ -209,7 +209,7 @@ const DocumentOperate = ({
 		documentItem: DocumentListItem,
 	) => {
 		const queryCaches = queryClient.getQueriesData<
-			InfiniteData<InifiniteScrollPagnitionDocumentInfo>
+			InfiniteData<InfiniteScrollPaginationDocumentInfo>
 		>({
 			queryKey: [baseQueryKey, mainUserInfo?.id],
 		});
@@ -219,7 +219,7 @@ const DocumentOperate = ({
 
 			const normalizedQueryKey = queryKey as readonly unknown[];
 			const removedData = filterInfiniteDataElements<
-				InifiniteScrollPagnitionDocumentInfo,
+				InfiniteScrollPaginationDocumentInfo,
 				DocumentListItem
 			>(oldData, (item) => item.id !== documentItem.id);
 			const dataWithoutTarget = removedData ?? oldData;
@@ -269,13 +269,13 @@ const DocumentOperate = ({
 
 		queryKeys.forEach((queryKey) => {
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionDocumentInfo,
+				InfiniteScrollPaginationDocumentInfo,
 				DocumentListItem
 			>(queryClient, queryKey, (item) => item.id !== id);
 		});
 
 		filterInfiniteQueryElements<
-			InifiniteScrollPagnitionSectionDocumentInfo,
+			InfiniteScrollPaginationSectionDocumentInfo,
 			SectionDocumentInfo
 		>(queryClient, ['searchSectionDocument'], (item) => item.id !== id);
 	};
@@ -352,7 +352,7 @@ const DocumentOperate = ({
 
 			if (nextReadStatus) {
 				filterInfiniteQueryElements<
-					InifiniteScrollPagnitionDocumentInfo,
+					InfiniteScrollPaginationDocumentInfo,
 					DocumentListItem
 				>(queryClient, userUnreadDocumentQueryKey, (item) => item.id !== id);
 				upsertDocumentInInfiniteCache(
@@ -364,7 +364,7 @@ const DocumentOperate = ({
 			}
 
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionDocumentInfo,
+				InfiniteScrollPaginationDocumentInfo,
 				DocumentListItem
 			>(queryClient, userRecentReadDocumentQueryKey, (item) => item.id !== id);
 			upsertDocumentInInfiniteCache(
@@ -408,7 +408,7 @@ const DocumentOperate = ({
 			]);
 			if (!currentDocument?.is_star) {
 				filterInfiniteQueryElements<
-					InifiniteScrollPagnitionDocumentInfo,
+					InfiniteScrollPaginationDocumentInfo,
 					DocumentListItem
 				>(queryClient, userMyStarDocumentQueryKey, (item) => item.id !== id);
 			}

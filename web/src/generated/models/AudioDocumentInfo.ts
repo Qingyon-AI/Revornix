@@ -25,6 +25,18 @@ export interface AudioDocumentInfo {
      * @memberof AudioDocumentInfo
      */
     audio_file_name: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AudioDocumentInfo
+     */
+    meeting_mode?: boolean;
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof AudioDocumentInfo
+     */
+    speaker_map?: { [key: string]: string; } | null;
 }
 
 /**
@@ -46,6 +58,8 @@ export function AudioDocumentInfoFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'audio_file_name': json['audio_file_name'],
+        'meeting_mode': json['meeting_mode'] == null ? undefined : json['meeting_mode'],
+        'speaker_map': json['speaker_map'] == null ? undefined : json['speaker_map'],
     };
 }
 
@@ -61,6 +75,8 @@ export function AudioDocumentInfoToJSONTyped(value?: AudioDocumentInfo | null, i
     return {
         
         'audio_file_name': value['audio_file_name'],
+        'meeting_mode': value['meeting_mode'],
+        'speaker_map': value['speaker_map'],
     };
 }
 

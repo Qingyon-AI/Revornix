@@ -38,7 +38,7 @@ export interface UpdateNotificationTaskRequest {
      */
     enable?: boolean | null;
     /**
-     *
+     * 
      * @type {number}
      * @memberof UpdateNotificationTaskRequest
      */
@@ -103,3 +103,4 @@ export function UpdateNotificationTaskRequestToJSONTyped(value?: UpdateNotificat
         'notification_target_id': value['notification_target_id'],
     };
 }
+

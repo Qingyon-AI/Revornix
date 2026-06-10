@@ -98,13 +98,13 @@ export interface DocumentCreateRequest {
      */
     auto_tag?: boolean;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof DocumentCreateRequest
      */
     audio_meeting_mode?: boolean | null;
     /**
-     *
+     * 
      * @type {string}
      * @memberof DocumentCreateRequest
      */

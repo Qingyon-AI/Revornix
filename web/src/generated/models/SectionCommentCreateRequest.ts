@@ -31,6 +31,12 @@ export interface SectionCommentCreateRequest {
      * @memberof SectionCommentCreateRequest
      */
     section_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SectionCommentCreateRequest
+     */
+    parent_id?: number | null;
 }
 
 /**
@@ -54,6 +60,7 @@ export function SectionCommentCreateRequestFromJSONTyped(json: any, ignoreDiscri
         
         'content': json['content'],
         'section_id': json['section_id'],
+        'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
     };
 }
 
@@ -70,6 +77,7 @@ export function SectionCommentCreateRequestToJSONTyped(value?: SectionCommentCre
         
         'content': value['content'],
         'section_id': value['section_id'],
+        'parent_id': value['parent_id'],
     };
 }
 

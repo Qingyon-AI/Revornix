@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`content` | string
+`md_file_name` | string
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { QuickNoteDocumentInfo } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "content": null,
+  "md_file_name": null,
 } satisfies QuickNoteDocumentInfo
 
 console.log(example)

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'nextjs-toploader/app';
 import { Clock3, StickyNote } from 'lucide-react';
 
-import type { InifiniteScrollPagnitionDocumentNoteInfo } from '@/generated';
+import type { InfiniteScrollPaginationDocumentNoteInfo } from '@/generated';
 import { searchPublicDocumentNotes } from '@/service/document';
 import { replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
@@ -24,7 +24,7 @@ import {
 
 type Props = {
 	document_id: number;
-	initialData?: InifiniteScrollPagnitionDocumentNoteInfo;
+	initialData?: InfiniteScrollPaginationDocumentNoteInfo;
 };
 
 const DocumentNotesPublicList = ({ document_id, initialData }: Props) => {

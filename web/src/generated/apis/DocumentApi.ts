@@ -12,150 +12,292 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  CreateLabelResponse,
-  DocumentAiSummaryRequest,
-  DocumentAskRequest,
-  DocumentCreateRequest,
-  DocumentCreateResponse,
-  DocumentDeleteRequest,
-  DocumentDetailRequest,
-  DocumentDetailResponse,
-  DocumentEmbeddingRequest,
-  DocumentGraphGenerateRequest,
-  DocumentMarkdownConvertRequest,
-  DocumentMonthSummaryResponse,
-  DocumentNoteCreateRequest,
-  DocumentNoteDeleteRequest,
-  DocumentPublishGetRequest,
-  DocumentPublishGetResponse,
-  DocumentPublishRequest,
-  DocumentTranscribeRequest,
-  DocumentUpdateRequest,
-  DocumentUserAddRequest,
-  DocumentUserAuthorityResponse,
-  DocumentUserDeleteRequest,
-  DocumentUserModifyRequest,
-  DocumentUserRequest,
-  GenerateDocumentPodcastRequest,
-  HTTPValidationError,
-  InifiniteScrollPagnitionDocumentCollaboratorPublicInfo,
-  InifiniteScrollPagnitionDocumentInfo,
-  InifiniteScrollPagnitionDocumentNoteInfo,
-  LabelAddRequest,
-  LabelDeleteRequest,
-  LabelSummaryResponse,
-  MineDocumentAuthorityRequest,
-  NormalResponse,
-  ReadRequest,
-  SchemasDocumentLabelListResponse,
-  SearchAllMyDocumentsRequest,
-  SearchDocumentNoteRequest,
-  SearchMyStarDocumentsRequest,
-  SearchPublicDocumentsRequest,
-  SearchRecentReadRequest,
-  SearchUnreadListRequest,
-  StarRequest,
-  SuccessResponse,
-  VectorSearchRequest,
-  VectorSearchResponse,
-} from '../models/index';
 import {
+    type CancelDocumentTaskRequest,
+    CancelDocumentTaskRequestFromJSON,
+    CancelDocumentTaskRequestToJSON,
+} from '../models/CancelDocumentTaskRequest';
+import {
+    type CreateLabelResponse,
     CreateLabelResponseFromJSON,
     CreateLabelResponseToJSON,
+} from '../models/CreateLabelResponse';
+import {
+    type DocumentAiSummaryRequest,
     DocumentAiSummaryRequestFromJSON,
     DocumentAiSummaryRequestToJSON,
+} from '../models/DocumentAiSummaryRequest';
+import {
+    type DocumentAskRequest,
     DocumentAskRequestFromJSON,
     DocumentAskRequestToJSON,
+} from '../models/DocumentAskRequest';
+import {
+    type DocumentAudioSpeakerRenameRequest,
+    DocumentAudioSpeakerRenameRequestFromJSON,
+    DocumentAudioSpeakerRenameRequestToJSON,
+} from '../models/DocumentAudioSpeakerRenameRequest';
+import {
+    type DocumentCommentCreateRequest,
+    DocumentCommentCreateRequestFromJSON,
+    DocumentCommentCreateRequestToJSON,
+} from '../models/DocumentCommentCreateRequest';
+import {
+    type DocumentCommentDeleteRequest,
+    DocumentCommentDeleteRequestFromJSON,
+    DocumentCommentDeleteRequestToJSON,
+} from '../models/DocumentCommentDeleteRequest';
+import {
+    type DocumentCommentDetailRequest,
+    DocumentCommentDetailRequestFromJSON,
+    DocumentCommentDetailRequestToJSON,
+} from '../models/DocumentCommentDetailRequest';
+import {
+    type DocumentCommentInfo,
+    DocumentCommentInfoFromJSON,
+    DocumentCommentInfoToJSON,
+} from '../models/DocumentCommentInfo';
+import {
+    type DocumentCommentLikeRequest,
+    DocumentCommentLikeRequestFromJSON,
+    DocumentCommentLikeRequestToJSON,
+} from '../models/DocumentCommentLikeRequest';
+import {
+    type DocumentCommentReplySearchRequest,
+    DocumentCommentReplySearchRequestFromJSON,
+    DocumentCommentReplySearchRequestToJSON,
+} from '../models/DocumentCommentReplySearchRequest';
+import {
+    type DocumentCommentSearchRequest,
+    DocumentCommentSearchRequestFromJSON,
+    DocumentCommentSearchRequestToJSON,
+} from '../models/DocumentCommentSearchRequest';
+import {
+    type DocumentCreateRequest,
     DocumentCreateRequestFromJSON,
     DocumentCreateRequestToJSON,
+} from '../models/DocumentCreateRequest';
+import {
+    type DocumentCreateResponse,
     DocumentCreateResponseFromJSON,
     DocumentCreateResponseToJSON,
+} from '../models/DocumentCreateResponse';
+import {
+    type DocumentDeleteRequest,
     DocumentDeleteRequestFromJSON,
     DocumentDeleteRequestToJSON,
+} from '../models/DocumentDeleteRequest';
+import {
+    type DocumentDetailRequest,
     DocumentDetailRequestFromJSON,
     DocumentDetailRequestToJSON,
+} from '../models/DocumentDetailRequest';
+import {
+    type DocumentDetailResponse,
     DocumentDetailResponseFromJSON,
     DocumentDetailResponseToJSON,
+} from '../models/DocumentDetailResponse';
+import {
+    type DocumentEmbeddingRequest,
     DocumentEmbeddingRequestFromJSON,
     DocumentEmbeddingRequestToJSON,
+} from '../models/DocumentEmbeddingRequest';
+import {
+    type DocumentGraphGenerateRequest,
     DocumentGraphGenerateRequestFromJSON,
     DocumentGraphGenerateRequestToJSON,
+} from '../models/DocumentGraphGenerateRequest';
+import {
+    type DocumentMarkdownContentRequest,
+    DocumentMarkdownContentRequestFromJSON,
+    DocumentMarkdownContentRequestToJSON,
+} from '../models/DocumentMarkdownContentRequest';
+import {
+    type DocumentMarkdownConvertRequest,
     DocumentMarkdownConvertRequestFromJSON,
     DocumentMarkdownConvertRequestToJSON,
+} from '../models/DocumentMarkdownConvertRequest';
+import {
+    type DocumentMonthSummaryResponse,
     DocumentMonthSummaryResponseFromJSON,
     DocumentMonthSummaryResponseToJSON,
+} from '../models/DocumentMonthSummaryResponse';
+import {
+    type DocumentNoteCreateRequest,
     DocumentNoteCreateRequestFromJSON,
     DocumentNoteCreateRequestToJSON,
+} from '../models/DocumentNoteCreateRequest';
+import {
+    type DocumentNoteDeleteRequest,
     DocumentNoteDeleteRequestFromJSON,
     DocumentNoteDeleteRequestToJSON,
+} from '../models/DocumentNoteDeleteRequest';
+import {
+    type DocumentPublishGetRequest,
     DocumentPublishGetRequestFromJSON,
     DocumentPublishGetRequestToJSON,
+} from '../models/DocumentPublishGetRequest';
+import {
+    type DocumentPublishGetResponse,
     DocumentPublishGetResponseFromJSON,
     DocumentPublishGetResponseToJSON,
+} from '../models/DocumentPublishGetResponse';
+import {
+    type DocumentPublishRequest,
     DocumentPublishRequestFromJSON,
     DocumentPublishRequestToJSON,
+} from '../models/DocumentPublishRequest';
+import {
+    type DocumentTranscribeRequest,
     DocumentTranscribeRequestFromJSON,
     DocumentTranscribeRequestToJSON,
+} from '../models/DocumentTranscribeRequest';
+import {
+    type DocumentUpdateRequest,
     DocumentUpdateRequestFromJSON,
     DocumentUpdateRequestToJSON,
+} from '../models/DocumentUpdateRequest';
+import {
+    type DocumentUserAddRequest,
     DocumentUserAddRequestFromJSON,
     DocumentUserAddRequestToJSON,
+} from '../models/DocumentUserAddRequest';
+import {
+    type DocumentUserAuthorityResponse,
     DocumentUserAuthorityResponseFromJSON,
     DocumentUserAuthorityResponseToJSON,
+} from '../models/DocumentUserAuthorityResponse';
+import {
+    type DocumentUserDeleteRequest,
     DocumentUserDeleteRequestFromJSON,
     DocumentUserDeleteRequestToJSON,
+} from '../models/DocumentUserDeleteRequest';
+import {
+    type DocumentUserModifyRequest,
     DocumentUserModifyRequestFromJSON,
     DocumentUserModifyRequestToJSON,
+} from '../models/DocumentUserModifyRequest';
+import {
+    type DocumentUserRequest,
     DocumentUserRequestFromJSON,
     DocumentUserRequestToJSON,
+} from '../models/DocumentUserRequest';
+import {
+    type GenerateDocumentPodcastRequest,
     GenerateDocumentPodcastRequestFromJSON,
     GenerateDocumentPodcastRequestToJSON,
+} from '../models/GenerateDocumentPodcastRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionDocumentCollaboratorPublicInfoFromJSON,
-    InifiniteScrollPagnitionDocumentCollaboratorPublicInfoToJSON,
-    InifiniteScrollPagnitionDocumentInfoFromJSON,
-    InifiniteScrollPagnitionDocumentInfoToJSON,
-    InifiniteScrollPagnitionDocumentNoteInfoFromJSON,
-    InifiniteScrollPagnitionDocumentNoteInfoToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationDocumentCollaboratorPublicInfo,
+    InfiniteScrollPaginationDocumentCollaboratorPublicInfoFromJSON,
+    InfiniteScrollPaginationDocumentCollaboratorPublicInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentCollaboratorPublicInfo';
+import {
+    type InfiniteScrollPaginationDocumentCommentInfo,
+    InfiniteScrollPaginationDocumentCommentInfoFromJSON,
+    InfiniteScrollPaginationDocumentCommentInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentCommentInfo';
+import {
+    type InfiniteScrollPaginationDocumentInfo,
+    InfiniteScrollPaginationDocumentInfoFromJSON,
+    InfiniteScrollPaginationDocumentInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentInfo';
+import {
+    type InfiniteScrollPaginationDocumentNoteInfo,
+    InfiniteScrollPaginationDocumentNoteInfoFromJSON,
+    InfiniteScrollPaginationDocumentNoteInfoToJSON,
+} from '../models/InfiniteScrollPaginationDocumentNoteInfo';
+import {
+    type LabelAddRequest,
     LabelAddRequestFromJSON,
     LabelAddRequestToJSON,
+} from '../models/LabelAddRequest';
+import {
+    type LabelDeleteRequest,
     LabelDeleteRequestFromJSON,
     LabelDeleteRequestToJSON,
+} from '../models/LabelDeleteRequest';
+import {
+    type LabelSummaryResponse,
     LabelSummaryResponseFromJSON,
     LabelSummaryResponseToJSON,
+} from '../models/LabelSummaryResponse';
+import {
+    type MineDocumentAuthorityRequest,
     MineDocumentAuthorityRequestFromJSON,
     MineDocumentAuthorityRequestToJSON,
+} from '../models/MineDocumentAuthorityRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type ReadRequest,
     ReadRequestFromJSON,
     ReadRequestToJSON,
+} from '../models/ReadRequest';
+import {
+    type SchemasDocumentLabelListResponse,
     SchemasDocumentLabelListResponseFromJSON,
     SchemasDocumentLabelListResponseToJSON,
+} from '../models/SchemasDocumentLabelListResponse';
+import {
+    type SearchAllMyDocumentsRequest,
     SearchAllMyDocumentsRequestFromJSON,
     SearchAllMyDocumentsRequestToJSON,
+} from '../models/SearchAllMyDocumentsRequest';
+import {
+    type SearchDocumentNoteRequest,
     SearchDocumentNoteRequestFromJSON,
     SearchDocumentNoteRequestToJSON,
+} from '../models/SearchDocumentNoteRequest';
+import {
+    type SearchMyStarDocumentsRequest,
     SearchMyStarDocumentsRequestFromJSON,
     SearchMyStarDocumentsRequestToJSON,
+} from '../models/SearchMyStarDocumentsRequest';
+import {
+    type SearchPublicDocumentsRequest,
     SearchPublicDocumentsRequestFromJSON,
     SearchPublicDocumentsRequestToJSON,
+} from '../models/SearchPublicDocumentsRequest';
+import {
+    type SearchRecentReadRequest,
     SearchRecentReadRequestFromJSON,
     SearchRecentReadRequestToJSON,
+} from '../models/SearchRecentReadRequest';
+import {
+    type SearchUnreadListRequest,
     SearchUnreadListRequestFromJSON,
     SearchUnreadListRequestToJSON,
+} from '../models/SearchUnreadListRequest';
+import {
+    type StarRequest,
     StarRequestFromJSON,
     StarRequestToJSON,
+} from '../models/StarRequest';
+import {
+    type SuccessResponse,
     SuccessResponseFromJSON,
     SuccessResponseToJSON,
+} from '../models/SuccessResponse';
+import {
+    type VectorSearchRequest,
     VectorSearchRequestFromJSON,
     VectorSearchRequestToJSON,
+} from '../models/VectorSearchRequest';
+import {
+    type VectorSearchResponse,
     VectorSearchResponseFromJSON,
     VectorSearchResponseToJSON,
-} from '../models/index';
+} from '../models/VectorSearchResponse';
 
 export interface AddLabelDocumentLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
@@ -169,8 +311,44 @@ export interface AskDocumentAiDocumentAskPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface CancelAiSummaryDocumentAiSummaryCancelPostRequest {
+    cancelDocumentTaskRequest: CancelDocumentTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelEmbeddingDocumentEmbeddingCancelPostRequest {
+    cancelDocumentTaskRequest: CancelDocumentTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelGraphDocumentGraphCancelPostRequest {
+    cancelDocumentTaskRequest: CancelDocumentTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelPodcastDocumentPodcastCancelPostRequest {
+    cancelDocumentTaskRequest: CancelDocumentTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CancelTranscribeDocumentTranscribeCancelPostRequest {
+    cancelDocumentTaskRequest: CancelDocumentTaskRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface CreateAiSummaryDocumentAiSummaryPostRequest {
     documentAiSummaryRequest: DocumentAiSummaryRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CreateDocumentCommentDocumentCommentCreatePostRequest {
+    documentCommentCreateRequest: DocumentCommentCreateRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -189,6 +367,12 @@ export interface CreateEmbeddingDocumentEmbeddingPostRequest {
 
 export interface CreateNoteDocumentNoteCreatePostRequest {
     documentNoteCreateRequest: DocumentNoteCreateRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DeleteDocumentCommentDocumentCommentDeletePostRequest {
+    documentCommentDeleteRequest: DocumentCommentDeleteRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -259,8 +443,20 @@ export interface GeneratePodcastDocumentPodcastGeneratePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface GetDocumentCommentDetailDocumentCommentDetailPostRequest {
+    documentCommentDetailRequest: DocumentCommentDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface GetDocumentDetailDocumentDetailPostRequest {
     documentDetailRequest: DocumentDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface GetDocumentMarkdownContentDocumentMarkdownContentPostRequest {
+    documentMarkdownContentRequest: DocumentMarkdownContentRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -277,6 +473,12 @@ export interface GetMineDocumentAuthorityDocumentMineAuthorityPostRequest {
 }
 
 export interface GetMonthSummaryDocumentMonthSummaryPostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface LikeDocumentCommentDocumentCommentLikePostRequest {
+    documentCommentLikeRequest: DocumentCommentLikeRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -298,8 +500,26 @@ export interface RecentReadDocumentDocumentRecentSearchPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest {
+    documentAudioSpeakerRenameRequest: DocumentAudioSpeakerRenameRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface SearchAllMineDocumentsDocumentSearchMinePostRequest {
     searchAllMyDocumentsRequest: SearchAllMyDocumentsRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface SearchDocumentCommentDocumentCommentSearchPostRequest {
+    documentCommentSearchRequest: DocumentCommentSearchRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest {
+    documentCommentReplySearchRequest: DocumentCommentReplySearchRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -322,8 +542,20 @@ export interface SearchNoteDocumentNoteSearchPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest {
+    searchDocumentNoteRequest: SearchDocumentNoteRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface SearchPublicDocumentsDocumentPublicSearchPostRequest {
     searchPublicDocumentsRequest: SearchPublicDocumentsRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest {
+    vectorSearchRequest: VectorSearchRequest;
 }
 
 export interface SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest {
@@ -338,6 +570,12 @@ export interface StarDocumentDocumentStarPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface TouchDocumentContentDocumentTouchContentPostRequest {
+    documentDetailRequest: DocumentDetailRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface TranscribeAudioDocumentDocumentTranscribePostRequest {
     documentTranscribeRequest: DocumentTranscribeRequest;
     authorization?: string | null;
@@ -346,6 +584,12 @@ export interface TranscribeAudioDocumentDocumentTranscribePostRequest {
 
 export interface TransformMarkdownDocumentMarkdownTransformPostRequest {
     documentMarkdownConvertRequest: DocumentMarkdownConvertRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface UnlikeDocumentCommentDocumentCommentUnlikePostRequest {
+    documentCommentLikeRequest: DocumentCommentLikeRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -476,6 +720,281 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for cancelAiSummaryDocumentAiSummaryCancelPost without sending the request
+     */
+    async cancelAiSummaryDocumentAiSummaryCancelPostRequestOpts(requestParameters: CancelAiSummaryDocumentAiSummaryCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelDocumentTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelDocumentTaskRequest',
+                'Required parameter "cancelDocumentTaskRequest" was null or undefined when calling cancelAiSummaryDocumentAiSummaryCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/ai/summary/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelDocumentTaskRequestToJSON(requestParameters['cancelDocumentTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Ai Summary
+     */
+    async cancelAiSummaryDocumentAiSummaryCancelPostRaw(requestParameters: CancelAiSummaryDocumentAiSummaryCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelAiSummaryDocumentAiSummaryCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Ai Summary
+     */
+    async cancelAiSummaryDocumentAiSummaryCancelPost(requestParameters: CancelAiSummaryDocumentAiSummaryCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelAiSummaryDocumentAiSummaryCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelEmbeddingDocumentEmbeddingCancelPost without sending the request
+     */
+    async cancelEmbeddingDocumentEmbeddingCancelPostRequestOpts(requestParameters: CancelEmbeddingDocumentEmbeddingCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelDocumentTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelDocumentTaskRequest',
+                'Required parameter "cancelDocumentTaskRequest" was null or undefined when calling cancelEmbeddingDocumentEmbeddingCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/embedding/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelDocumentTaskRequestToJSON(requestParameters['cancelDocumentTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Embedding
+     */
+    async cancelEmbeddingDocumentEmbeddingCancelPostRaw(requestParameters: CancelEmbeddingDocumentEmbeddingCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelEmbeddingDocumentEmbeddingCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Embedding
+     */
+    async cancelEmbeddingDocumentEmbeddingCancelPost(requestParameters: CancelEmbeddingDocumentEmbeddingCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelEmbeddingDocumentEmbeddingCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelGraphDocumentGraphCancelPost without sending the request
+     */
+    async cancelGraphDocumentGraphCancelPostRequestOpts(requestParameters: CancelGraphDocumentGraphCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelDocumentTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelDocumentTaskRequest',
+                'Required parameter "cancelDocumentTaskRequest" was null or undefined when calling cancelGraphDocumentGraphCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/graph/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelDocumentTaskRequestToJSON(requestParameters['cancelDocumentTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Graph
+     */
+    async cancelGraphDocumentGraphCancelPostRaw(requestParameters: CancelGraphDocumentGraphCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelGraphDocumentGraphCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Graph
+     */
+    async cancelGraphDocumentGraphCancelPost(requestParameters: CancelGraphDocumentGraphCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelGraphDocumentGraphCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelPodcastDocumentPodcastCancelPost without sending the request
+     */
+    async cancelPodcastDocumentPodcastCancelPostRequestOpts(requestParameters: CancelPodcastDocumentPodcastCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelDocumentTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelDocumentTaskRequest',
+                'Required parameter "cancelDocumentTaskRequest" was null or undefined when calling cancelPodcastDocumentPodcastCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/podcast/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelDocumentTaskRequestToJSON(requestParameters['cancelDocumentTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Podcast
+     */
+    async cancelPodcastDocumentPodcastCancelPostRaw(requestParameters: CancelPodcastDocumentPodcastCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelPodcastDocumentPodcastCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Podcast
+     */
+    async cancelPodcastDocumentPodcastCancelPost(requestParameters: CancelPodcastDocumentPodcastCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelPodcastDocumentPodcastCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for cancelTranscribeDocumentTranscribeCancelPost without sending the request
+     */
+    async cancelTranscribeDocumentTranscribeCancelPostRequestOpts(requestParameters: CancelTranscribeDocumentTranscribeCancelPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['cancelDocumentTaskRequest'] == null) {
+            throw new runtime.RequiredError(
+                'cancelDocumentTaskRequest',
+                'Required parameter "cancelDocumentTaskRequest" was null or undefined when calling cancelTranscribeDocumentTranscribeCancelPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/transcribe/cancel`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CancelDocumentTaskRequestToJSON(requestParameters['cancelDocumentTaskRequest']),
+        };
+    }
+
+    /**
+     * Cancel Transcribe
+     */
+    async cancelTranscribeDocumentTranscribeCancelPostRaw(requestParameters: CancelTranscribeDocumentTranscribeCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.cancelTranscribeDocumentTranscribeCancelPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Cancel Transcribe
+     */
+    async cancelTranscribeDocumentTranscribeCancelPost(requestParameters: CancelTranscribeDocumentTranscribeCancelPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.cancelTranscribeDocumentTranscribeCancelPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createAiSummaryDocumentAiSummaryPost without sending the request
      */
     async createAiSummaryDocumentAiSummaryPostRequestOpts(requestParameters: CreateAiSummaryDocumentAiSummaryPostRequest): Promise<runtime.RequestOpts> {
@@ -527,6 +1046,61 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async createAiSummaryDocumentAiSummaryPost(requestParameters: CreateAiSummaryDocumentAiSummaryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.createAiSummaryDocumentAiSummaryPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createDocumentCommentDocumentCommentCreatePost without sending the request
+     */
+    async createDocumentCommentDocumentCommentCreatePostRequestOpts(requestParameters: CreateDocumentCommentDocumentCommentCreatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentCreateRequest',
+                'Required parameter "documentCommentCreateRequest" was null or undefined when calling createDocumentCommentDocumentCommentCreatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/create`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentCreateRequestToJSON(requestParameters['documentCommentCreateRequest']),
+        };
+    }
+
+    /**
+     * Create Document Comment
+     */
+    async createDocumentCommentDocumentCommentCreatePostRaw(requestParameters: CreateDocumentCommentDocumentCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.createDocumentCommentDocumentCommentCreatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Document Comment
+     */
+    async createDocumentCommentDocumentCommentCreatePost(requestParameters: CreateDocumentCommentDocumentCommentCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.createDocumentCommentDocumentCommentCreatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -692,6 +1266,61 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async createNoteDocumentNoteCreatePost(requestParameters: CreateNoteDocumentNoteCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.createNoteDocumentNoteCreatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deleteDocumentCommentDocumentCommentDeletePost without sending the request
+     */
+    async deleteDocumentCommentDocumentCommentDeletePostRequestOpts(requestParameters: DeleteDocumentCommentDocumentCommentDeletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentDeleteRequest',
+                'Required parameter "documentCommentDeleteRequest" was null or undefined when calling deleteDocumentCommentDocumentCommentDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentDeleteRequestToJSON(requestParameters['documentCommentDeleteRequest']),
+        };
+    }
+
+    /**
+     * Delete Document Comment
+     */
+    async deleteDocumentCommentDocumentCommentDeletePostRaw(requestParameters: DeleteDocumentCommentDocumentCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.deleteDocumentCommentDocumentCommentDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Document Comment
+     */
+    async deleteDocumentCommentDocumentCommentDeletePost(requestParameters: DeleteDocumentCommentDocumentCommentDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.deleteDocumentCommentDocumentCommentDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1175,17 +1804,17 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Document User Request
      */
-    async documentUserRequestDocumentUserPostRaw(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentCollaboratorPublicInfo>> {
+    async documentUserRequestDocumentUserPostRaw(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentCollaboratorPublicInfo>> {
         const requestOptions = await this.documentUserRequestDocumentUserPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentCollaboratorPublicInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentCollaboratorPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Document User Request
      */
-    async documentUserRequestDocumentUserPost(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentCollaboratorPublicInfo> {
+    async documentUserRequestDocumentUserPost(requestParameters: DocumentUserRequestDocumentUserPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentCollaboratorPublicInfo> {
         const response = await this.documentUserRequestDocumentUserPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1301,6 +1930,61 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getDocumentCommentDetailDocumentCommentDetailPost without sending the request
+     */
+    async getDocumentCommentDetailDocumentCommentDetailPostRequestOpts(requestParameters: GetDocumentCommentDetailDocumentCommentDetailPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentDetailRequest',
+                'Required parameter "documentCommentDetailRequest" was null or undefined when calling getDocumentCommentDetailDocumentCommentDetailPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/detail`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentDetailRequestToJSON(requestParameters['documentCommentDetailRequest']),
+        };
+    }
+
+    /**
+     * Get Document Comment Detail
+     */
+    async getDocumentCommentDetailDocumentCommentDetailPostRaw(requestParameters: GetDocumentCommentDetailDocumentCommentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DocumentCommentInfo>> {
+        const requestOptions = await this.getDocumentCommentDetailDocumentCommentDetailPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DocumentCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Document Comment Detail
+     */
+    async getDocumentCommentDetailDocumentCommentDetailPost(requestParameters: GetDocumentCommentDetailDocumentCommentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentCommentInfo> {
+        const response = await this.getDocumentCommentDetailDocumentCommentDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getDocumentDetailDocumentDetailPost without sending the request
      */
     async getDocumentDetailDocumentDetailPostRequestOpts(requestParameters: GetDocumentDetailDocumentDetailPostRequest): Promise<runtime.RequestOpts> {
@@ -1352,6 +2036,65 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async getDocumentDetailDocumentDetailPost(requestParameters: GetDocumentDetailDocumentDetailPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DocumentDetailResponse> {
         const response = await this.getDocumentDetailDocumentDetailPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getDocumentMarkdownContentDocumentMarkdownContentPost without sending the request
+     */
+    async getDocumentMarkdownContentDocumentMarkdownContentPostRequestOpts(requestParameters: GetDocumentMarkdownContentDocumentMarkdownContentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentMarkdownContentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentMarkdownContentRequest',
+                'Required parameter "documentMarkdownContentRequest" was null or undefined when calling getDocumentMarkdownContentDocumentMarkdownContentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/markdown/content`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentMarkdownContentRequestToJSON(requestParameters['documentMarkdownContentRequest']),
+        };
+    }
+
+    /**
+     * Get Document Markdown Content
+     */
+    async getDocumentMarkdownContentDocumentMarkdownContentPostRaw(requestParameters: GetDocumentMarkdownContentDocumentMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        const requestOptions = await this.getDocumentMarkdownContentDocumentMarkdownContentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Get Document Markdown Content
+     */
+    async getDocumentMarkdownContentDocumentMarkdownContentPost(requestParameters: GetDocumentMarkdownContentDocumentMarkdownContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.getDocumentMarkdownContentDocumentMarkdownContentPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1501,6 +2244,61 @@ export class DocumentApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for likeDocumentCommentDocumentCommentLikePost without sending the request
+     */
+    async likeDocumentCommentDocumentCommentLikePostRequestOpts(requestParameters: LikeDocumentCommentDocumentCommentLikePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentLikeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentLikeRequest',
+                'Required parameter "documentCommentLikeRequest" was null or undefined when calling likeDocumentCommentDocumentCommentLikePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/like`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentLikeRequestToJSON(requestParameters['documentCommentLikeRequest']),
+        };
+    }
+
+    /**
+     * Like Document Comment
+     */
+    async likeDocumentCommentDocumentCommentLikePostRaw(requestParameters: LikeDocumentCommentDocumentCommentLikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.likeDocumentCommentDocumentCommentLikePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Like Document Comment
+     */
+    async likeDocumentCommentDocumentCommentLikePost(requestParameters: LikeDocumentCommentDocumentCommentLikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.likeDocumentCommentDocumentCommentLikePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for listLabelDocumentLabelListPost without sending the request
      */
     async listLabelDocumentLabelListPostRequestOpts(requestParameters: ListLabelDocumentLabelListPostRequest): Promise<runtime.RequestOpts> {
@@ -1542,6 +2340,43 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async listLabelDocumentLabelListPost(requestParameters: ListLabelDocumentLabelListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentLabelListResponse> {
         const response = await this.listLabelDocumentLabelListPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for listPublicLabelDocumentLabelPublicListPost without sending the request
+     */
+    async listPublicLabelDocumentLabelPublicListPostRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/document/label/public/list`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * List Public Label
+     */
+    async listPublicLabelDocumentLabelPublicListPostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SchemasDocumentLabelListResponse>> {
+        const requestOptions = await this.listPublicLabelDocumentLabelPublicListPostRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SchemasDocumentLabelListResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * List Public Label
+     */
+    async listPublicLabelDocumentLabelPublicListPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SchemasDocumentLabelListResponse> {
+        const response = await this.listPublicLabelDocumentLabelPublicListPostRaw(initOverrides);
         return await response.value();
     }
 
@@ -1640,18 +2475,75 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Recent Read Document
      */
-    async recentReadDocumentDocumentRecentSearchPostRaw(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async recentReadDocumentDocumentRecentSearchPostRaw(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.recentReadDocumentDocumentRecentSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Recent Read Document
      */
-    async recentReadDocumentDocumentRecentSearchPost(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async recentReadDocumentDocumentRecentSearchPost(requestParameters: RecentReadDocumentDocumentRecentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.recentReadDocumentDocumentRecentSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for renameAudioSpeakersDocumentAudioSpeakerRenamePost without sending the request
+     */
+    async renameAudioSpeakersDocumentAudioSpeakerRenamePostRequestOpts(requestParameters: RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentAudioSpeakerRenameRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentAudioSpeakerRenameRequest',
+                'Required parameter "documentAudioSpeakerRenameRequest" was null or undefined when calling renameAudioSpeakersDocumentAudioSpeakerRenamePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/audio/speaker/rename`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentAudioSpeakerRenameRequestToJSON(requestParameters['documentAudioSpeakerRenameRequest']),
+        };
+    }
+
+    /**
+     * Rename diarized speakers for a meeting-record audio document.  P0 scope: this only persists the raw-label -> display-name map on the audio document. The stored transcript markdown / segments JSON are not re-rendered; clients apply the map when presenting the transcript.
+     * Rename Audio Speakers
+     */
+    async renameAudioSpeakersDocumentAudioSpeakerRenamePostRaw(requestParameters: RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.renameAudioSpeakersDocumentAudioSpeakerRenamePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Rename diarized speakers for a meeting-record audio document.  P0 scope: this only persists the raw-label -> display-name map on the audio document. The stored transcript markdown / segments JSON are not re-rendered; clients apply the map when presenting the transcript.
+     * Rename Audio Speakers
+     */
+    async renameAudioSpeakersDocumentAudioSpeakerRenamePost(requestParameters: RenameAudioSpeakersDocumentAudioSpeakerRenamePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.renameAudioSpeakersDocumentAudioSpeakerRenamePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1695,18 +2587,128 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Search All Mine Documents
      */
-    async searchAllMineDocumentsDocumentSearchMinePostRaw(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchAllMineDocumentsDocumentSearchMinePostRaw(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchAllMineDocumentsDocumentSearchMinePostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search All Mine Documents
      */
-    async searchAllMineDocumentsDocumentSearchMinePost(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchAllMineDocumentsDocumentSearchMinePost(requestParameters: SearchAllMineDocumentsDocumentSearchMinePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchAllMineDocumentsDocumentSearchMinePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchDocumentCommentDocumentCommentSearchPost without sending the request
+     */
+    async searchDocumentCommentDocumentCommentSearchPostRequestOpts(requestParameters: SearchDocumentCommentDocumentCommentSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentSearchRequest',
+                'Required parameter "documentCommentSearchRequest" was null or undefined when calling searchDocumentCommentDocumentCommentSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentSearchRequestToJSON(requestParameters['documentCommentSearchRequest']),
+        };
+    }
+
+    /**
+     * Search Document Comment
+     */
+    async searchDocumentCommentDocumentCommentSearchPostRaw(requestParameters: SearchDocumentCommentDocumentCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentCommentInfo>> {
+        const requestOptions = await this.searchDocumentCommentDocumentCommentSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Document Comment
+     */
+    async searchDocumentCommentDocumentCommentSearchPost(requestParameters: SearchDocumentCommentDocumentCommentSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentCommentInfo> {
+        const response = await this.searchDocumentCommentDocumentCommentSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchDocumentCommentRepliesDocumentCommentReplySearchPost without sending the request
+     */
+    async searchDocumentCommentRepliesDocumentCommentReplySearchPostRequestOpts(requestParameters: SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentReplySearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentReplySearchRequest',
+                'Required parameter "documentCommentReplySearchRequest" was null or undefined when calling searchDocumentCommentRepliesDocumentCommentReplySearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/reply/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentReplySearchRequestToJSON(requestParameters['documentCommentReplySearchRequest']),
+        };
+    }
+
+    /**
+     * Search Document Comment Replies
+     */
+    async searchDocumentCommentRepliesDocumentCommentReplySearchPostRaw(requestParameters: SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentCommentInfo>> {
+        const requestOptions = await this.searchDocumentCommentRepliesDocumentCommentReplySearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentCommentInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Document Comment Replies
+     */
+    async searchDocumentCommentRepliesDocumentCommentReplySearchPost(requestParameters: SearchDocumentCommentRepliesDocumentCommentReplySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentCommentInfo> {
+        const response = await this.searchDocumentCommentRepliesDocumentCommentReplySearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1805,17 +2807,17 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Search My Star Documents
      */
-    async searchMyStarDocumentsDocumentStarSearchPostRaw(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchMyStarDocumentsDocumentStarSearchPostRaw(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchMyStarDocumentsDocumentStarSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search My Star Documents
      */
-    async searchMyStarDocumentsDocumentStarSearchPost(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchMyStarDocumentsDocumentStarSearchPost(requestParameters: SearchMyStarDocumentsDocumentStarSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchMyStarDocumentsDocumentStarSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1860,18 +2862,75 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Search Note
      */
-    async searchNoteDocumentNoteSearchPostRaw(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentNoteInfo>> {
+    async searchNoteDocumentNoteSearchPostRaw(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentNoteInfo>> {
         const requestOptions = await this.searchNoteDocumentNoteSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentNoteInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentNoteInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Note
      */
-    async searchNoteDocumentNoteSearchPost(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentNoteInfo> {
+    async searchNoteDocumentNoteSearchPost(requestParameters: SearchNoteDocumentNoteSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentNoteInfo> {
         const response = await this.searchNoteDocumentNoteSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchPublicDocumentNotesDocumentNotePublicSearchPost without sending the request
+     */
+    async searchPublicDocumentNotesDocumentNotePublicSearchPostRequestOpts(requestParameters: SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchDocumentNoteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchDocumentNoteRequest',
+                'Required parameter "searchDocumentNoteRequest" was null or undefined when calling searchPublicDocumentNotesDocumentNotePublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/note/public/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchDocumentNoteRequestToJSON(requestParameters['searchDocumentNoteRequest']),
+        };
+    }
+
+    /**
+     * Public-readable note search.  Notes are listed read-only; gated by published-or-collaborator access. Mirrors the public access pattern used by document comments.
+     * Search Public Document Notes
+     */
+    async searchPublicDocumentNotesDocumentNotePublicSearchPostRaw(requestParameters: SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentNoteInfo>> {
+        const requestOptions = await this.searchPublicDocumentNotesDocumentNotePublicSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentNoteInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Public-readable note search.  Notes are listed read-only; gated by published-or-collaborator access. Mirrors the public access pattern used by document comments.
+     * Search Public Document Notes
+     */
+    async searchPublicDocumentNotesDocumentNotePublicSearchPost(requestParameters: SearchPublicDocumentNotesDocumentNotePublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentNoteInfo> {
+        const response = await this.searchPublicDocumentNotesDocumentNotePublicSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1892,6 +2951,14 @@ export class DocumentApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
 
         let urlPath = `/document/public/search`;
 
@@ -1907,18 +2974,65 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Search Public Documents
      */
-    async searchPublicDocumentsDocumentPublicSearchPostRaw(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchPublicDocumentsDocumentPublicSearchPostRaw(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchPublicDocumentsDocumentPublicSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search Public Documents
      */
-    async searchPublicDocumentsDocumentPublicSearchPost(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchPublicDocumentsDocumentPublicSearchPost(requestParameters: SearchPublicDocumentsDocumentPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchPublicDocumentsDocumentPublicSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchPublicKnowledgeVectorDocumentPublicVectorSearchPost without sending the request
+     */
+    async searchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequestOpts(requestParameters: SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['vectorSearchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'vectorSearchRequest',
+                'Required parameter "vectorSearchRequest" was null or undefined when calling searchPublicKnowledgeVectorDocumentPublicVectorSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/document/public/vector/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: VectorSearchRequestToJSON(requestParameters['vectorSearchRequest']),
+        };
+    }
+
+    /**
+     * Search Public Knowledge Vector
+     */
+    async searchPublicKnowledgeVectorDocumentPublicVectorSearchPostRaw(requestParameters: SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VectorSearchResponse>> {
+        const requestOptions = await this.searchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VectorSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Public Knowledge Vector
+     */
+    async searchPublicKnowledgeVectorDocumentPublicVectorSearchPost(requestParameters: SearchPublicKnowledgeVectorDocumentPublicVectorSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VectorSearchResponse> {
+        const response = await this.searchPublicKnowledgeVectorDocumentPublicVectorSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1962,17 +3076,17 @@ export class DocumentApi extends runtime.BaseAPI {
     /**
      * Search User Unread Documents
      */
-    async searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionDocumentInfo>> {
+    async searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationDocumentInfo>> {
         const requestOptions = await this.searchUserUnreadDocumentsDocumentUnreadSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionDocumentInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationDocumentInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User Unread Documents
      */
-    async searchUserUnreadDocumentsDocumentUnreadSearchPost(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionDocumentInfo> {
+    async searchUserUnreadDocumentsDocumentUnreadSearchPost(requestParameters: SearchUserUnreadDocumentsDocumentUnreadSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationDocumentInfo> {
         const response = await this.searchUserUnreadDocumentsDocumentUnreadSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -2029,6 +3143,61 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async starDocumentDocumentStarPost(requestParameters: StarDocumentDocumentStarPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessResponse> {
         const response = await this.starDocumentDocumentStarPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for touchDocumentContentDocumentTouchContentPost without sending the request
+     */
+    async touchDocumentContentDocumentTouchContentPostRequestOpts(requestParameters: TouchDocumentContentDocumentTouchContentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentDetailRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentDetailRequest',
+                'Required parameter "documentDetailRequest" was null or undefined when calling touchDocumentContentDocumentTouchContentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/touch-content`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentDetailRequestToJSON(requestParameters['documentDetailRequest']),
+        };
+    }
+
+    /**
+     * Touch Document Content
+     */
+    async touchDocumentContentDocumentTouchContentPostRaw(requestParameters: TouchDocumentContentDocumentTouchContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.touchDocumentContentDocumentTouchContentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Touch Document Content
+     */
+    async touchDocumentContentDocumentTouchContentPost(requestParameters: TouchDocumentContentDocumentTouchContentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.touchDocumentContentDocumentTouchContentPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2139,6 +3308,61 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async transformMarkdownDocumentMarkdownTransformPost(requestParameters: TransformMarkdownDocumentMarkdownTransformPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
         const response = await this.transformMarkdownDocumentMarkdownTransformPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for unlikeDocumentCommentDocumentCommentUnlikePost without sending the request
+     */
+    async unlikeDocumentCommentDocumentCommentUnlikePostRequestOpts(requestParameters: UnlikeDocumentCommentDocumentCommentUnlikePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['documentCommentLikeRequest'] == null) {
+            throw new runtime.RequiredError(
+                'documentCommentLikeRequest',
+                'Required parameter "documentCommentLikeRequest" was null or undefined when calling unlikeDocumentCommentDocumentCommentUnlikePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/document/comment/unlike`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DocumentCommentLikeRequestToJSON(requestParameters['documentCommentLikeRequest']),
+        };
+    }
+
+    /**
+     * Unlike Document Comment
+     */
+    async unlikeDocumentCommentDocumentCommentUnlikePostRaw(requestParameters: UnlikeDocumentCommentDocumentCommentUnlikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.unlikeDocumentCommentDocumentCommentUnlikePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Unlike Document Comment
+     */
+    async unlikeDocumentCommentDocumentCommentUnlikePost(requestParameters: UnlikeDocumentCommentDocumentCommentUnlikePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.unlikeDocumentCommentDocumentCommentUnlikePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

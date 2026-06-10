@@ -10,6 +10,7 @@ Name | Type
 `uuid` | string
 `name` | string
 `name_zh` | string
+`category` | string
 `description` | string
 `description_zh` | string
 `create_time` | Date
@@ -26,6 +27,7 @@ const example = {
   "uuid": null,
   "name": null,
   "name_zh": null,
+  "category": null,
   "description": null,
   "description_zh": null,
   "create_time": null,

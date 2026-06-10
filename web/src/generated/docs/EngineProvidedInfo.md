@@ -7,11 +7,13 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`uuid` | string
 `category` | number
 `name` | string
 `name_zh` | string
 `description` | string
 `description_zh` | string
+`capabilities` | [EngineCapabilities](EngineCapabilities.md)
 
 ## Example
 
@@ -21,11 +23,13 @@ import type { EngineProvidedInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "uuid": null,
   "category": null,
   "name": null,
   "name_zh": null,
   "description": null,
   "description_zh": null,
+  "capabilities": null,
 } satisfies EngineProvidedInfo
 
 console.log(example)

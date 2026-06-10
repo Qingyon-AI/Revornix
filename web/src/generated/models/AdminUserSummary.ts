@@ -33,6 +33,12 @@ export interface AdminUserSummary {
     uuid: string;
     /**
      * 
+     * @type {string}
+     * @memberof AdminUserSummary
+     */
+    cover?: string | null;
+    /**
+     * 
      * @type {number}
      * @memberof AdminUserSummary
      */
@@ -137,6 +143,7 @@ export function AdminUserSummaryFromJSONTyped(json: any, ignoreDiscriminator: bo
         
         'id': json['id'],
         'uuid': json['uuid'],
+        'cover': json['cover'] == null ? undefined : json['cover'],
         'role': json['role'],
         'avatar': json['avatar'],
         'nickname': json['nickname'],
@@ -166,6 +173,7 @@ export function AdminUserSummaryToJSONTyped(value?: AdminUserSummary | null, ign
         
         'id': value['id'],
         'uuid': value['uuid'],
+        'cover': value['cover'],
         'role': value['role'],
         'avatar': value['avatar'],
         'nickname': value['nickname'],
@@ -181,3 +189,4 @@ export function AdminUserSummaryToJSONTyped(value?: AdminUserSummary | null, ign
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };
 }
+

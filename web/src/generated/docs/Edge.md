@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `src_node` | string
 `tgt_node` | string
+`weight` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { Edge } from ''
 const example = {
   "src_node": null,
   "tgt_node": null,
+  "weight": null,
 } satisfies Edge
 
 console.log(example)

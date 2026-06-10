@@ -11,6 +11,13 @@ Name | Type
 `create_time` | Date
 `update_time` | Date
 `creator` | [UserPublicInfo](UserPublicInfo.md)
+`parent_id` | number
+`root_id` | number
+`reply_user` | [UserPublicInfo](UserPublicInfo.md)
+`like_count` | number
+`liked` | boolean
+`reply_count` | number
+`preview_replies` | [Array&lt;SectionCommentInfo&gt;](SectionCommentInfo.md)
 
 ## Example
 
@@ -24,6 +31,13 @@ const example = {
   "create_time": null,
   "update_time": null,
   "creator": null,
+  "parent_id": null,
+  "root_id": null,
+  "reply_user": null,
+  "like_count": null,
+  "liked": null,
+  "reply_count": null,
+  "preview_replies": null,
 } satisfies SectionCommentInfo
 
 console.log(example)

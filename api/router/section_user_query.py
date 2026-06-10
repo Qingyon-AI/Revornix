@@ -50,7 +50,7 @@ async def get_section_user_role_and_authority(
         authority=UserSectionAuthority(db_section_user.authority)
     )
 
-@section_user_query_router.post('/user', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionUserPublicInfo])
+@section_user_query_router.post('/user', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionUserPublicInfo])
 async def section_user_request(
     section_user_request: schemas.section.SectionUserRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -121,7 +121,7 @@ async def section_user_request(
         )
         for item, signed_avatar_url in zip(users_need_avatar_sign, signed_avatar_urls, strict=False):
             item.avatar = signed_avatar_url
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=users,
         start=section_user_request.start,

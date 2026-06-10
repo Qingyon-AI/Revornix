@@ -114,7 +114,7 @@ async def _build_section_infos(
     return data
 
 
-@section_search_query_router.post('/subscribed', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
+@section_search_query_router.post('/subscribed', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo])
 async def get_my_subscribed_sections(
     search_subscribed_section_request: schemas.section.SearchSubscribedSectionRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -156,7 +156,7 @@ async def get_my_subscribed_sections(
         keyword=search_subscribed_section_request.keyword,
         label_ids=search_subscribed_section_request.label_ids,
     )
-    return schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo](
+    return schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo](
         total=total,
         elements=sections,
         start=search_subscribed_section_request.start,
@@ -166,7 +166,7 @@ async def get_my_subscribed_sections(
     )
 
 
-@section_search_query_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
+@section_search_query_router.post('/public/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo])
 async def public_sections(
     search_public_sections_request: schemas.section.SearchPublicSectionsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -204,7 +204,7 @@ async def public_sections(
         keyword=search_public_sections_request.keyword,
         label_ids=search_public_sections_request.label_ids,
     )
-    return schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo](
+    return schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo](
         total=total,
         elements=sections,
         start=search_public_sections_request.start,
@@ -254,7 +254,7 @@ async def get_all_mine_sections(
     return schemas.section.AllMySectionsResponse(data=sections)
 
 
-@section_search_query_router.post('/user/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
+@section_search_query_router.post('/user/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo])
 async def search_user_sections(
     search_user_sections_request: schemas.section.SearchUserSectionsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -302,7 +302,7 @@ async def search_user_sections(
         keyword=search_user_sections_request.keyword,
         label_ids=search_user_sections_request.label_ids,
     )
-    return schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo](
+    return schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo](
         total=total,
         elements=sections,
         start=search_user_sections_request.start,
@@ -312,7 +312,7 @@ async def search_user_sections(
     )
 
 
-@section_search_query_router.post('/mine/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionInfo])
+@section_search_query_router.post('/mine/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionInfo])
 async def search_mine_sections(
     search_mine_sections_request: schemas.section.SearchMineSectionsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -354,7 +354,7 @@ async def search_mine_sections(
         keyword=search_mine_sections_request.keyword,
         label_ids=search_mine_sections_request.label_ids,
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=sections,
         start=search_mine_sections_request.start,

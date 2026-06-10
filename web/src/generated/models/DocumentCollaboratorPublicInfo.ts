@@ -59,6 +59,12 @@ export interface DocumentCollaboratorPublicInfo {
     authority?: UserDocumentAuthority | null;
     /**
      * 
+     * @type {number}
+     * @memberof DocumentCollaboratorPublicInfo
+     */
+    managed_by?: number | null;
+    /**
+     * 
      * @type {Date}
      * @memberof DocumentCollaboratorPublicInfo
      */
@@ -100,6 +106,7 @@ export function DocumentCollaboratorPublicInfoFromJSONTyped(json: any, ignoreDis
         'nickname': json['nickname'],
         'slogan': json['slogan'] == null ? undefined : json['slogan'],
         'authority': json['authority'] == null ? undefined : UserDocumentAuthorityFromJSON(json['authority']),
+        'managed_by': json['managed_by'] == null ? undefined : json['managed_by'],
         'create_time': (new Date(json['create_time'])),
         'update_time': (json['update_time'] == null ? null : new Date(json['update_time'])),
     };
@@ -121,6 +128,7 @@ export function DocumentCollaboratorPublicInfoToJSONTyped(value?: DocumentCollab
         'nickname': value['nickname'],
         'slogan': value['slogan'],
         'authority': UserDocumentAuthorityToJSON(value['authority']),
+        'managed_by': value['managed_by'],
         'create_time': value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
     };

@@ -12,123 +12,292 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  BindEmailCodeVerifyRequest,
-  BindEmailRequest,
-  BindEmailVerifyRequest,
-  BindPhoneCodeCreateRequest,
-  BindPhoneCodeVerifyRequest,
-  DefaultEngineUpdateRequest,
-  DefaultFileSystemUpdateRequest,
-  DefaultModelUpdateRequest,
-  DefaultReadMarkReasonUpdateRequest,
-  EmailCreateRequest,
-  EmailUserCreateCodeVerifyRequest,
-  EmailUserCreateVerifyRequest,
-  FollowUserRequest,
-  GithubUserBind,
-  GithubUserCreate,
-  GoogleUserBind,
-  GoogleUserCreate,
-  HTTPValidationError,
-  InifiniteScrollPagnitionUserPublicInfo,
-  InitialPasswordResponse,
-  NormalResponse,
-  PasswordUpdateRequest,
-  PrivateUserInfo,
-  SearchUserFansRequest,
-  SearchUserFollowsRequest,
-  SearchUserRequest,
-  SmsUserCodeCreateRequest,
-  SmsUserCodeVerifyCreate,
-  TokenResponse,
-  TokenUpdateRequest,
-  UserInfoRequest,
-  UserInfoUpdateRequest,
-  UserLoginRequest,
-  UserPublicInfo,
-  WeChatMiniUserCreateRequest,
-  WeChatWebUserBindRequest,
-  WeChatWebUserCreateRequest,
-} from '../models/index';
 import {
+    type AuthResponse,
+    AuthResponseFromJSON,
+    AuthResponseToJSON,
+} from '../models/AuthResponse';
+import {
+    type BindEmailCodeVerifyRequest,
     BindEmailCodeVerifyRequestFromJSON,
     BindEmailCodeVerifyRequestToJSON,
+} from '../models/BindEmailCodeVerifyRequest';
+import {
+    type BindEmailRequest,
     BindEmailRequestFromJSON,
     BindEmailRequestToJSON,
+} from '../models/BindEmailRequest';
+import {
+    type BindEmailVerifyRequest,
     BindEmailVerifyRequestFromJSON,
     BindEmailVerifyRequestToJSON,
+} from '../models/BindEmailVerifyRequest';
+import {
+    type BindPhoneCodeCreateRequest,
     BindPhoneCodeCreateRequestFromJSON,
     BindPhoneCodeCreateRequestToJSON,
+} from '../models/BindPhoneCodeCreateRequest';
+import {
+    type BindPhoneCodeVerifyRequest,
     BindPhoneCodeVerifyRequestFromJSON,
     BindPhoneCodeVerifyRequestToJSON,
+} from '../models/BindPhoneCodeVerifyRequest';
+import {
+    type DefaultEngineUpdateRequest,
     DefaultEngineUpdateRequestFromJSON,
     DefaultEngineUpdateRequestToJSON,
+} from '../models/DefaultEngineUpdateRequest';
+import {
+    type DefaultFileSystemUpdateRequest,
     DefaultFileSystemUpdateRequestFromJSON,
     DefaultFileSystemUpdateRequestToJSON,
+} from '../models/DefaultFileSystemUpdateRequest';
+import {
+    type DefaultModelUpdateRequest,
     DefaultModelUpdateRequestFromJSON,
     DefaultModelUpdateRequestToJSON,
+} from '../models/DefaultModelUpdateRequest';
+import {
+    type DefaultReadMarkReasonUpdateRequest,
     DefaultReadMarkReasonUpdateRequestFromJSON,
     DefaultReadMarkReasonUpdateRequestToJSON,
+} from '../models/DefaultReadMarkReasonUpdateRequest';
+import {
+    type EmailCreateRequest,
     EmailCreateRequestFromJSON,
     EmailCreateRequestToJSON,
+} from '../models/EmailCreateRequest';
+import {
+    type EmailUserCreateCodeVerifyRequest,
     EmailUserCreateCodeVerifyRequestFromJSON,
     EmailUserCreateCodeVerifyRequestToJSON,
+} from '../models/EmailUserCreateCodeVerifyRequest';
+import {
+    type EmailUserCreateVerifyRequest,
     EmailUserCreateVerifyRequestFromJSON,
     EmailUserCreateVerifyRequestToJSON,
+} from '../models/EmailUserCreateVerifyRequest';
+import {
+    type FollowUserRequest,
     FollowUserRequestFromJSON,
     FollowUserRequestToJSON,
+} from '../models/FollowUserRequest';
+import {
+    type GithubUserBind,
     GithubUserBindFromJSON,
     GithubUserBindToJSON,
+} from '../models/GithubUserBind';
+import {
+    type GithubUserCreate,
     GithubUserCreateFromJSON,
     GithubUserCreateToJSON,
+} from '../models/GithubUserCreate';
+import {
+    type GoogleUserBind,
     GoogleUserBindFromJSON,
     GoogleUserBindToJSON,
+} from '../models/GoogleUserBind';
+import {
+    type GoogleUserCreate,
     GoogleUserCreateFromJSON,
     GoogleUserCreateToJSON,
+} from '../models/GoogleUserCreate';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    InifiniteScrollPagnitionUserPublicInfoFromJSON,
-    InifiniteScrollPagnitionUserPublicInfoToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type InfiniteScrollPaginationUserPublicInfo,
+    InfiniteScrollPaginationUserPublicInfoFromJSON,
+    InfiniteScrollPaginationUserPublicInfoToJSON,
+} from '../models/InfiniteScrollPaginationUserPublicInfo';
+import {
+    type InitialPasswordResponse,
     InitialPasswordResponseFromJSON,
     InitialPasswordResponseToJSON,
+} from '../models/InitialPasswordResponse';
+import {
+    type MfaStatusUpdateRequest,
+    MfaStatusUpdateRequestFromJSON,
+    MfaStatusUpdateRequestToJSON,
+} from '../models/MfaStatusUpdateRequest';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type PasskeyAuthenticationOptionsRequest,
+    PasskeyAuthenticationOptionsRequestFromJSON,
+    PasskeyAuthenticationOptionsRequestToJSON,
+} from '../models/PasskeyAuthenticationOptionsRequest';
+import {
+    type PasskeyAuthenticationOptionsResponse,
+    PasskeyAuthenticationOptionsResponseFromJSON,
+    PasskeyAuthenticationOptionsResponseToJSON,
+} from '../models/PasskeyAuthenticationOptionsResponse';
+import {
+    type PasskeyAuthenticationVerifyRequest,
+    PasskeyAuthenticationVerifyRequestFromJSON,
+    PasskeyAuthenticationVerifyRequestToJSON,
+} from '../models/PasskeyAuthenticationVerifyRequest';
+import {
+    type PasskeyDeleteRequest,
+    PasskeyDeleteRequestFromJSON,
+    PasskeyDeleteRequestToJSON,
+} from '../models/PasskeyDeleteRequest';
+import {
+    type PasskeyInfo,
+    PasskeyInfoFromJSON,
+    PasskeyInfoToJSON,
+} from '../models/PasskeyInfo';
+import {
+    type PasskeyRegistrationOptionsResponse,
+    PasskeyRegistrationOptionsResponseFromJSON,
+    PasskeyRegistrationOptionsResponseToJSON,
+} from '../models/PasskeyRegistrationOptionsResponse';
+import {
+    type PasskeyRegistrationVerifyRequest,
+    PasskeyRegistrationVerifyRequestFromJSON,
+    PasskeyRegistrationVerifyRequestToJSON,
+} from '../models/PasskeyRegistrationVerifyRequest';
+import {
+    type PasswordUpdateRequest,
     PasswordUpdateRequestFromJSON,
     PasswordUpdateRequestToJSON,
+} from '../models/PasswordUpdateRequest';
+import {
+    type PrivateUserInfo,
     PrivateUserInfoFromJSON,
     PrivateUserInfoToJSON,
+} from '../models/PrivateUserInfo';
+import {
+    type SearchPublicUsersRequest,
+    SearchPublicUsersRequestFromJSON,
+    SearchPublicUsersRequestToJSON,
+} from '../models/SearchPublicUsersRequest';
+import {
+    type SearchUserFansRequest,
     SearchUserFansRequestFromJSON,
     SearchUserFansRequestToJSON,
+} from '../models/SearchUserFansRequest';
+import {
+    type SearchUserFollowsRequest,
     SearchUserFollowsRequestFromJSON,
     SearchUserFollowsRequestToJSON,
+} from '../models/SearchUserFollowsRequest';
+import {
+    type SearchUserRequest,
     SearchUserRequestFromJSON,
     SearchUserRequestToJSON,
+} from '../models/SearchUserRequest';
+import {
+    type SmsUserCodeCreateRequest,
     SmsUserCodeCreateRequestFromJSON,
     SmsUserCodeCreateRequestToJSON,
+} from '../models/SmsUserCodeCreateRequest';
+import {
+    type SmsUserCodeVerifyCreate,
     SmsUserCodeVerifyCreateFromJSON,
     SmsUserCodeVerifyCreateToJSON,
+} from '../models/SmsUserCodeVerifyCreate';
+import {
+    type TokenResponse,
     TokenResponseFromJSON,
     TokenResponseToJSON,
+} from '../models/TokenResponse';
+import {
+    type TokenUpdateRequest,
     TokenUpdateRequestFromJSON,
     TokenUpdateRequestToJSON,
+} from '../models/TokenUpdateRequest';
+import {
+    type TotpAuthenticationVerifyRequest,
+    TotpAuthenticationVerifyRequestFromJSON,
+    TotpAuthenticationVerifyRequestToJSON,
+} from '../models/TotpAuthenticationVerifyRequest';
+import {
+    type TotpInfo,
+    TotpInfoFromJSON,
+    TotpInfoToJSON,
+} from '../models/TotpInfo';
+import {
+    type TotpRegistrationOptionsResponse,
+    TotpRegistrationOptionsResponseFromJSON,
+    TotpRegistrationOptionsResponseToJSON,
+} from '../models/TotpRegistrationOptionsResponse';
+import {
+    type TotpRegistrationVerifyRequest,
+    TotpRegistrationVerifyRequestFromJSON,
+    TotpRegistrationVerifyRequestToJSON,
+} from '../models/TotpRegistrationVerifyRequest';
+import {
+    type UserInfoRequest,
     UserInfoRequestFromJSON,
     UserInfoRequestToJSON,
+} from '../models/UserInfoRequest';
+import {
+    type UserInfoUpdateRequest,
     UserInfoUpdateRequestFromJSON,
     UserInfoUpdateRequestToJSON,
+} from '../models/UserInfoUpdateRequest';
+import {
+    type UserLoginRequest,
     UserLoginRequestFromJSON,
     UserLoginRequestToJSON,
+} from '../models/UserLoginRequest';
+import {
+    type UserPublicInfo,
     UserPublicInfoFromJSON,
     UserPublicInfoToJSON,
+} from '../models/UserPublicInfo';
+import {
+    type WeChatMiniUserCreateRequest,
     WeChatMiniUserCreateRequestFromJSON,
     WeChatMiniUserCreateRequestToJSON,
+} from '../models/WeChatMiniUserCreateRequest';
+import {
+    type WeChatOfficialBindQrCreateResponse,
+    WeChatOfficialBindQrCreateResponseFromJSON,
+    WeChatOfficialBindQrCreateResponseToJSON,
+} from '../models/WeChatOfficialBindQrCreateResponse';
+import {
+    type WeChatOfficialBindQrStatusRequest,
+    WeChatOfficialBindQrStatusRequestFromJSON,
+    WeChatOfficialBindQrStatusRequestToJSON,
+} from '../models/WeChatOfficialBindQrStatusRequest';
+import {
+    type WeChatOfficialBindQrStatusResponse,
+    WeChatOfficialBindQrStatusResponseFromJSON,
+    WeChatOfficialBindQrStatusResponseToJSON,
+} from '../models/WeChatOfficialBindQrStatusResponse';
+import {
+    type WeChatOfficialQrCreateResponse,
+    WeChatOfficialQrCreateResponseFromJSON,
+    WeChatOfficialQrCreateResponseToJSON,
+} from '../models/WeChatOfficialQrCreateResponse';
+import {
+    type WeChatOfficialQrStatusRequest,
+    WeChatOfficialQrStatusRequestFromJSON,
+    WeChatOfficialQrStatusRequestToJSON,
+} from '../models/WeChatOfficialQrStatusRequest';
+import {
+    type WeChatOfficialQrStatusResponse,
+    WeChatOfficialQrStatusResponseFromJSON,
+    WeChatOfficialQrStatusResponseToJSON,
+} from '../models/WeChatOfficialQrStatusResponse';
+import {
+    type WeChatWebUserBindRequest,
     WeChatWebUserBindRequestFromJSON,
     WeChatWebUserBindRequestToJSON,
+} from '../models/WeChatWebUserBindRequest';
+import {
+    type WeChatWebUserCreateRequest,
     WeChatWebUserCreateRequestFromJSON,
     WeChatWebUserCreateRequestToJSON,
-} from '../models/index';
+} from '../models/WeChatWebUserCreateRequest';
 
 export interface BindEmailCodeUserBindEmailCodePostRequest {
     bindEmailRequest: BindEmailRequest;
@@ -178,6 +347,20 @@ export interface BindWechatUserBindWechatWebPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest {
+    passkeyAuthenticationOptionsRequest: PasskeyAuthenticationOptionsRequest;
+}
+
+export interface CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface CreateUserByEmailCodeUserCreateEmailCodePostRequest {
     emailCreateRequest: EmailCreateRequest;
 }
@@ -221,6 +404,22 @@ export interface CreateUserByWechatWebUserCreateWechatWebPostRequest {
     xForwardedFor?: string | null;
 }
 
+export interface CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DeletePasskeyUserMfaPasskeyDeletePostRequest {
+    passkeyDeleteRequest: PasskeyDeleteRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface DeleteTotpUserMfaTotpDeletePostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface DeleteUserUserDeletePostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
@@ -232,7 +431,17 @@ export interface FollowUserUserFollowPostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface GetTotpStatusUserMfaTotpStatusPostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface InitialSeePasswordUserPasswordInitialSeePostRequest {
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface ListPasskeysUserMfaPasskeyListPostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -245,6 +454,21 @@ export interface LoginUserLoginPostRequest {
 export interface MyInfoUserMineInfoPostRequest {
     authorization?: string | null;
     xUserTimezone?: string | null;
+}
+
+export interface QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest {
+    weChatOfficialBindQrStatusRequest: WeChatOfficialBindQrStatusRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest {
+    weChatOfficialQrStatusRequest: WeChatOfficialQrStatusRequest;
+    xForwardedFor?: string | null;
+}
+
+export interface SearchPublicUsersUserPublicSearchPostRequest {
+    searchPublicUsersRequest: SearchPublicUsersRequest;
 }
 
 export interface SearchUserFansUserFansPostRequest {
@@ -303,6 +527,12 @@ export interface UpdateDefaultModelUserDefaultModelUpdatePostRequest {
     xUserTimezone?: string | null;
 }
 
+export interface UpdateMfaStatusUserMfaStatusUpdatePostRequest {
+    mfaStatusUpdateRequest: MfaStatusUpdateRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
 export interface UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest {
     defaultReadMarkReasonUpdateRequest: DefaultReadMarkReasonUpdateRequest;
     authorization?: string | null;
@@ -328,6 +558,28 @@ export interface UpdateTokenUserTokenUpdatePostRequest {
 
 export interface UserInfoUserInfoPostRequest {
     userInfoRequest: UserInfoRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest {
+    passkeyAuthenticationVerifyRequest: PasskeyAuthenticationVerifyRequest;
+    xForwardedFor?: string | null;
+}
+
+export interface VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest {
+    passkeyRegistrationVerifyRequest: PasskeyRegistrationVerifyRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest {
+    totpAuthenticationVerifyRequest: TotpAuthenticationVerifyRequest;
+    xForwardedFor?: string | null;
+}
+
+export interface VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest {
+    totpRegistrationVerifyRequest: TotpRegistrationVerifyRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -780,6 +1032,143 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost without sending the request
+     */
+    async createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequestOpts(requestParameters: CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['passkeyAuthenticationOptionsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'passkeyAuthenticationOptionsRequest',
+                'Required parameter "passkeyAuthenticationOptionsRequest" was null or undefined when calling createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/mfa/passkey/auth/options`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasskeyAuthenticationOptionsRequestToJSON(requestParameters['passkeyAuthenticationOptionsRequest']),
+        };
+    }
+
+    /**
+     * Create Passkey Authentication Options
+     */
+    async createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRaw(requestParameters: CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PasskeyAuthenticationOptionsResponse>> {
+        const requestOptions = await this.createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PasskeyAuthenticationOptionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Passkey Authentication Options
+     */
+    async createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPost(requestParameters: CreatePasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PasskeyAuthenticationOptionsResponse> {
+        const response = await this.createPasskeyAuthenticationOptionsUserMfaPasskeyAuthOptionsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost without sending the request
+     */
+    async createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequestOpts(requestParameters: CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/passkey/register/options`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Create Passkey Registration Options
+     */
+    async createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRaw(requestParameters: CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PasskeyRegistrationOptionsResponse>> {
+        const requestOptions = await this.createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PasskeyRegistrationOptionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Passkey Registration Options
+     */
+    async createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPost(requestParameters: CreatePasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PasskeyRegistrationOptionsResponse> {
+        const response = await this.createPasskeyRegistrationOptionsUserMfaPasskeyRegisterOptionsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost without sending the request
+     */
+    async createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequestOpts(requestParameters: CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/totp/register/options`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Create Totp Registration Options
+     */
+    async createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRaw(requestParameters: CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TotpRegistrationOptionsResponse>> {
+        const requestOptions = await this.createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TotpRegistrationOptionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Totp Registration Options
+     */
+    async createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPost(requestParameters: CreateTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TotpRegistrationOptionsResponse> {
+        const response = await this.createTotpRegistrationOptionsUserMfaTotpRegisterOptionsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createUserByEmailCodeUserCreateEmailCodePost without sending the request
      */
     async createUserByEmailCodeUserCreateEmailCodePostRequestOpts(requestParameters: CreateUserByEmailCodeUserCreateEmailCodePostRequest): Promise<runtime.RequestOpts> {
@@ -966,17 +1355,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Create User By Github
      */
-    async createUserByGithubUserCreateGithubPostRaw(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByGithubUserCreateGithubPostRaw(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.createUserByGithubUserCreateGithubPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
     }
 
     /**
      * Create User By Github
      */
-    async createUserByGithubUserCreateGithubPost(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+    async createUserByGithubUserCreateGithubPost(requestParameters: CreateUserByGithubUserCreateGithubPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
         const response = await this.createUserByGithubUserCreateGithubPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1017,17 +1406,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Create User By Google
      */
-    async createUserByGoogleUserCreateGooglePostRaw(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByGoogleUserCreateGooglePostRaw(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.createUserByGoogleUserCreateGooglePostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
     }
 
     /**
      * Create User By Google
      */
-    async createUserByGoogleUserCreateGooglePost(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+    async createUserByGoogleUserCreateGooglePost(requestParameters: CreateUserByGoogleUserCreateGooglePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
         const response = await this.createUserByGoogleUserCreateGooglePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1115,17 +1504,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Create User By Sms Verify
      */
-    async createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.createUserBySmsVerifyUserCreateSmsVerifyPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
     }
 
     /**
      * Create User By Sms Verify
      */
-    async createUserBySmsVerifyUserCreateSmsVerifyPost(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+    async createUserBySmsVerifyUserCreateSmsVerifyPost(requestParameters: CreateUserBySmsVerifyUserCreateSmsVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
         const response = await this.createUserBySmsVerifyUserCreateSmsVerifyPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1166,17 +1555,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Create User By Wechat Mini
      */
-    async createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.createUserByWechatMiniUserCreateWechatMiniPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
     }
 
     /**
      * Create User By Wechat Mini
      */
-    async createUserByWechatMiniUserCreateWechatMiniPost(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+    async createUserByWechatMiniUserCreateWechatMiniPost(requestParameters: CreateUserByWechatMiniUserCreateWechatMiniPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
         const response = await this.createUserByWechatMiniUserCreateWechatMiniPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1217,18 +1606,200 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Create User By Wechat Web
      */
-    async createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.createUserByWechatWebUserCreateWechatWebPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create User By Wechat Web
+     */
+    async createUserByWechatWebUserCreateWechatWebPost(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
+        const response = await this.createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost without sending the request
+     */
+    async createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequestOpts(requestParameters: CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/bind/wechat/official/qrcode`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Create Wechat Official Bind Qrcode
+     */
+    async createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRaw(requestParameters: CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WeChatOfficialBindQrCreateResponse>> {
+        const requestOptions = await this.createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WeChatOfficialBindQrCreateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Wechat Official Bind Qrcode
+     */
+    async createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePost(requestParameters: CreateWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WeChatOfficialBindQrCreateResponse> {
+        const response = await this.createWechatOfficialBindQrcodeUserBindWechatOfficialQrcodePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost without sending the request
+     */
+    async createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePostRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/user/create/wechat/official/qrcode`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Create Wechat Official Login Qrcode
+     */
+    async createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WeChatOfficialQrCreateResponse>> {
+        const requestOptions = await this.createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePostRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WeChatOfficialQrCreateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create Wechat Official Login Qrcode
+     */
+    async createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WeChatOfficialQrCreateResponse> {
+        const response = await this.createWechatOfficialLoginQrcodeUserCreateWechatOfficialQrcodePostRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deletePasskeyUserMfaPasskeyDeletePost without sending the request
+     */
+    async deletePasskeyUserMfaPasskeyDeletePostRequestOpts(requestParameters: DeletePasskeyUserMfaPasskeyDeletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['passkeyDeleteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'passkeyDeleteRequest',
+                'Required parameter "passkeyDeleteRequest" was null or undefined when calling deletePasskeyUserMfaPasskeyDeletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/passkey/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasskeyDeleteRequestToJSON(requestParameters['passkeyDeleteRequest']),
+        };
+    }
+
+    /**
+     * Delete Passkey
+     */
+    async deletePasskeyUserMfaPasskeyDeletePostRaw(requestParameters: DeletePasskeyUserMfaPasskeyDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.deletePasskeyUserMfaPasskeyDeletePostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
     }
 
     /**
-     * Create User By Wechat Web
+     * Delete Passkey
      */
-    async createUserByWechatWebUserCreateWechatWebPost(requestParameters: CreateUserByWechatWebUserCreateWechatWebPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
-        const response = await this.createUserByWechatWebUserCreateWechatWebPostRaw(requestParameters, initOverrides);
+    async deletePasskeyUserMfaPasskeyDeletePost(requestParameters: DeletePasskeyUserMfaPasskeyDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.deletePasskeyUserMfaPasskeyDeletePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deleteTotpUserMfaTotpDeletePost without sending the request
+     */
+    async deleteTotpUserMfaTotpDeletePostRequestOpts(requestParameters: DeleteTotpUserMfaTotpDeletePostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/totp/delete`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Delete Totp
+     */
+    async deleteTotpUserMfaTotpDeletePostRaw(requestParameters: DeleteTotpUserMfaTotpDeletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.deleteTotpUserMfaTotpDeletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete Totp
+     */
+    async deleteTotpUserMfaTotpDeletePost(requestParameters: DeleteTotpUserMfaTotpDeletePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.deleteTotpUserMfaTotpDeletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1333,6 +1904,51 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getTotpStatusUserMfaTotpStatusPost without sending the request
+     */
+    async getTotpStatusUserMfaTotpStatusPostRequestOpts(requestParameters: GetTotpStatusUserMfaTotpStatusPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/totp/status`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Get Totp Status
+     */
+    async getTotpStatusUserMfaTotpStatusPostRaw(requestParameters: GetTotpStatusUserMfaTotpStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TotpInfo>> {
+        const requestOptions = await this.getTotpStatusUserMfaTotpStatusPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TotpInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Totp Status
+     */
+    async getTotpStatusUserMfaTotpStatusPost(requestParameters: GetTotpStatusUserMfaTotpStatusPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TotpInfo> {
+        const response = await this.getTotpStatusUserMfaTotpStatusPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for initialSeePasswordUserPasswordInitialSeePost without sending the request
      */
     async initialSeePasswordUserPasswordInitialSeePostRequestOpts(requestParameters: InitialSeePasswordUserPasswordInitialSeePostRequest): Promise<runtime.RequestOpts> {
@@ -1378,6 +1994,51 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for listPasskeysUserMfaPasskeyListPost without sending the request
+     */
+    async listPasskeysUserMfaPasskeyListPostRequestOpts(requestParameters: ListPasskeysUserMfaPasskeyListPostRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/passkey/list`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * List Passkeys
+     */
+    async listPasskeysUserMfaPasskeyListPostRaw(requestParameters: ListPasskeysUserMfaPasskeyListPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PasskeyInfo>>> {
+        const requestOptions = await this.listPasskeysUserMfaPasskeyListPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PasskeyInfoFromJSON));
+    }
+
+    /**
+     * List Passkeys
+     */
+    async listPasskeysUserMfaPasskeyListPost(requestParameters: ListPasskeysUserMfaPasskeyListPostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PasskeyInfo>> {
+        const response = await this.listPasskeysUserMfaPasskeyListPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for loginUserLoginPost without sending the request
      */
     async loginUserLoginPostRequestOpts(requestParameters: LoginUserLoginPostRequest): Promise<runtime.RequestOpts> {
@@ -1413,17 +2074,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Login
      */
-    async loginUserLoginPostRaw(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+    async loginUserLoginPostRaw(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthResponse>> {
         const requestOptions = await this.loginUserLoginPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthResponseFromJSON(jsonValue));
     }
 
     /**
      * Login
      */
-    async loginUserLoginPost(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+    async loginUserLoginPost(requestParameters: LoginUserLoginPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthResponse> {
         const response = await this.loginUserLoginPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1474,6 +2135,159 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost without sending the request
+     */
+    async queryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequestOpts(requestParameters: QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['weChatOfficialBindQrStatusRequest'] == null) {
+            throw new runtime.RequiredError(
+                'weChatOfficialBindQrStatusRequest',
+                'Required parameter "weChatOfficialBindQrStatusRequest" was null or undefined when calling queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/bind/wechat/official/status`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WeChatOfficialBindQrStatusRequestToJSON(requestParameters['weChatOfficialBindQrStatusRequest']),
+        };
+    }
+
+    /**
+     * Query Wechat Official Bind Status
+     */
+    async queryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRaw(requestParameters: QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WeChatOfficialBindQrStatusResponse>> {
+        const requestOptions = await this.queryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WeChatOfficialBindQrStatusResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Query Wechat Official Bind Status
+     */
+    async queryWechatOfficialBindStatusUserBindWechatOfficialStatusPost(requestParameters: QueryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WeChatOfficialBindQrStatusResponse> {
+        const response = await this.queryWechatOfficialBindStatusUserBindWechatOfficialStatusPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost without sending the request
+     */
+    async queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequestOpts(requestParameters: QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['weChatOfficialQrStatusRequest'] == null) {
+            throw new runtime.RequiredError(
+                'weChatOfficialQrStatusRequest',
+                'Required parameter "weChatOfficialQrStatusRequest" was null or undefined when calling queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/create/wechat/official/status`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WeChatOfficialQrStatusRequestToJSON(requestParameters['weChatOfficialQrStatusRequest']),
+        };
+    }
+
+    /**
+     * Query Wechat Official Login Status
+     */
+    async queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRaw(requestParameters: QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WeChatOfficialQrStatusResponse>> {
+        const requestOptions = await this.queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WeChatOfficialQrStatusResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Query Wechat Official Login Status
+     */
+    async queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPost(requestParameters: QueryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WeChatOfficialQrStatusResponse> {
+        const response = await this.queryWechatOfficialLoginStatusUserCreateWechatOfficialStatusPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for searchPublicUsersUserPublicSearchPost without sending the request
+     */
+    async searchPublicUsersUserPublicSearchPostRequestOpts(requestParameters: SearchPublicUsersUserPublicSearchPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['searchPublicUsersRequest'] == null) {
+            throw new runtime.RequiredError(
+                'searchPublicUsersRequest',
+                'Required parameter "searchPublicUsersRequest" was null or undefined when calling searchPublicUsersUserPublicSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user/public/search`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchPublicUsersRequestToJSON(requestParameters['searchPublicUsersRequest']),
+        };
+    }
+
+    /**
+     * Search Public Users
+     */
+    async searchPublicUsersUserPublicSearchPostRaw(requestParameters: SearchPublicUsersUserPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationUserPublicInfo>> {
+        const requestOptions = await this.searchPublicUsersUserPublicSearchPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationUserPublicInfoFromJSON(jsonValue));
+    }
+
+    /**
+     * Search Public Users
+     */
+    async searchPublicUsersUserPublicSearchPost(requestParameters: SearchPublicUsersUserPublicSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationUserPublicInfo> {
+        const response = await this.searchPublicUsersUserPublicSearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for searchUserFansUserFansPost without sending the request
      */
     async searchUserFansUserFansPostRequestOpts(requestParameters: SearchUserFansUserFansPostRequest): Promise<runtime.RequestOpts> {
@@ -1513,17 +2327,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Search User Fans
      */
-    async searchUserFansUserFansPostRaw(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserFansUserFansPostRaw(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationUserPublicInfo>> {
         const requestOptions = await this.searchUserFansUserFansPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationUserPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User Fans
      */
-    async searchUserFansUserFansPost(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
+    async searchUserFansUserFansPost(requestParameters: SearchUserFansUserFansPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationUserPublicInfo> {
         const response = await this.searchUserFansUserFansPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1568,17 +2382,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Search User Follows
      */
-    async searchUserFollowsUserFollowsPostRaw(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserFollowsUserFollowsPostRaw(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationUserPublicInfo>> {
         const requestOptions = await this.searchUserFollowsUserFollowsPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationUserPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User Follows
      */
-    async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
+    async searchUserFollowsUserFollowsPost(requestParameters: SearchUserFollowsUserFollowsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationUserPublicInfo> {
         const response = await this.searchUserFollowsUserFollowsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1623,17 +2437,17 @@ export class UserApi extends runtime.BaseAPI {
     /**
      * Search User
      */
-    async searchUserUserSearchPostRaw(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionUserPublicInfo>> {
+    async searchUserUserSearchPostRaw(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationUserPublicInfo>> {
         const requestOptions = await this.searchUserUserSearchPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionUserPublicInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationUserPublicInfoFromJSON(jsonValue));
     }
 
     /**
      * Search User
      */
-    async searchUserUserSearchPost(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionUserPublicInfo> {
+    async searchUserUserSearchPost(requestParameters: SearchUserUserSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationUserPublicInfo> {
         const response = await this.searchUserUserSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1984,6 +2798,61 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for updateMfaStatusUserMfaStatusUpdatePost without sending the request
+     */
+    async updateMfaStatusUserMfaStatusUpdatePostRequestOpts(requestParameters: UpdateMfaStatusUserMfaStatusUpdatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['mfaStatusUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'mfaStatusUpdateRequest',
+                'Required parameter "mfaStatusUpdateRequest" was null or undefined when calling updateMfaStatusUserMfaStatusUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/status/update`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaStatusUpdateRequestToJSON(requestParameters['mfaStatusUpdateRequest']),
+        };
+    }
+
+    /**
+     * Update Mfa Status
+     */
+    async updateMfaStatusUserMfaStatusUpdatePostRaw(requestParameters: UpdateMfaStatusUserMfaStatusUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.updateMfaStatusUserMfaStatusUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Mfa Status
+     */
+    async updateMfaStatusUserMfaStatusUpdatePost(requestParameters: UpdateMfaStatusUserMfaStatusUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.updateMfaStatusUserMfaStatusUpdatePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePost without sending the request
      */
     async updateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequestOpts(requestParameters: UpdateMyDefaultReadMarkReasonUserReadMarkReasonUpdatePostRequest): Promise<runtime.RequestOpts> {
@@ -2251,6 +3120,218 @@ export class UserApi extends runtime.BaseAPI {
      */
     async userInfoUserInfoPost(requestParameters: UserInfoUserInfoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserPublicInfo> {
         const response = await this.userInfoUserInfoPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost without sending the request
+     */
+    async verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequestOpts(requestParameters: VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['passkeyAuthenticationVerifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'passkeyAuthenticationVerifyRequest',
+                'Required parameter "passkeyAuthenticationVerifyRequest" was null or undefined when calling verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/mfa/passkey/auth/verify`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasskeyAuthenticationVerifyRequestToJSON(requestParameters['passkeyAuthenticationVerifyRequest']),
+        };
+    }
+
+    /**
+     * Verify Passkey Authentication Endpoint
+     */
+    async verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRaw(requestParameters: VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Verify Passkey Authentication Endpoint
+     */
+    async verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPost(requestParameters: VerifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.verifyPasskeyAuthenticationEndpointUserMfaPasskeyAuthVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost without sending the request
+     */
+    async verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequestOpts(requestParameters: VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['passkeyRegistrationVerifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'passkeyRegistrationVerifyRequest',
+                'Required parameter "passkeyRegistrationVerifyRequest" was null or undefined when calling verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/passkey/register/verify`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasskeyRegistrationVerifyRequestToJSON(requestParameters['passkeyRegistrationVerifyRequest']),
+        };
+    }
+
+    /**
+     * Verify Passkey Registration Endpoint
+     */
+    async verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRaw(requestParameters: VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Verify Passkey Registration Endpoint
+     */
+    async verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPost(requestParameters: VerifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.verifyPasskeyRegistrationEndpointUserMfaPasskeyRegisterVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for verifyTotpAuthenticationUserMfaTotpAuthVerifyPost without sending the request
+     */
+    async verifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequestOpts(requestParameters: VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['totpAuthenticationVerifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'totpAuthenticationVerifyRequest',
+                'Required parameter "totpAuthenticationVerifyRequest" was null or undefined when calling verifyTotpAuthenticationUserMfaTotpAuthVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xForwardedFor'] != null) {
+            headerParameters['x-forwarded-for'] = String(requestParameters['xForwardedFor']);
+        }
+
+
+        let urlPath = `/user/mfa/totp/auth/verify`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TotpAuthenticationVerifyRequestToJSON(requestParameters['totpAuthenticationVerifyRequest']),
+        };
+    }
+
+    /**
+     * Verify Totp Authentication
+     */
+    async verifyTotpAuthenticationUserMfaTotpAuthVerifyPostRaw(requestParameters: VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.verifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Verify Totp Authentication
+     */
+    async verifyTotpAuthenticationUserMfaTotpAuthVerifyPost(requestParameters: VerifyTotpAuthenticationUserMfaTotpAuthVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.verifyTotpAuthenticationUserMfaTotpAuthVerifyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for verifyTotpRegistrationUserMfaTotpRegisterVerifyPost without sending the request
+     */
+    async verifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequestOpts(requestParameters: VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['totpRegistrationVerifyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'totpRegistrationVerifyRequest',
+                'Required parameter "totpRegistrationVerifyRequest" was null or undefined when calling verifyTotpRegistrationUserMfaTotpRegisterVerifyPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/user/mfa/totp/register/verify`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TotpRegistrationVerifyRequestToJSON(requestParameters['totpRegistrationVerifyRequest']),
+        };
+    }
+
+    /**
+     * Verify Totp Registration
+     */
+    async verifyTotpRegistrationUserMfaTotpRegisterVerifyPostRaw(requestParameters: VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenResponse>> {
+        const requestOptions = await this.verifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Verify Totp Registration
+     */
+    async verifyTotpRegistrationUserMfaTotpRegisterVerifyPost(requestParameters: VerifyTotpRegistrationUserMfaTotpRegisterVerifyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenResponse> {
+        const response = await this.verifyTotpRegistrationUserMfaTotpRegisterVerifyPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -46,7 +46,7 @@ from router.section_search_query import section_search_query_router
 from router.section_subscription_manage import section_subscription_manage_router
 from router.section_user_manage import section_user_manage_router
 from router.section_user_query import section_user_query_router
-from router.logic_helpers import has_section_write_access
+from common.access_control import has_section_write_access
 
 section_router = APIRouter()
 section_router.include_router(section_comment_manage_router)

@@ -28,7 +28,7 @@ from enums.section import (
     UserSectionAuthority,
     UserSectionRole,
 )
-from router.logic_helpers import ensure_private_section_access
+from common.access_control import ensure_private_section_access
 
 section_detail_query_router = APIRouter()
 
@@ -313,7 +313,7 @@ async def _build_section_info_response(
     return res
 
 
-@section_detail_query_router.post('/documents', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.section.SectionDocumentInfo])
+@section_detail_query_router.post('/documents', response_model=schemas.pagination.InfiniteScrollPagination[schemas.section.SectionDocumentInfo])
 async def section_document_request(
     section_document_request: schemas.section.SectionDocumentRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -406,7 +406,7 @@ async def section_document_request(
         keyword=section_document_request.keyword,
         published_only=published_only,
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=section_document_request.start,

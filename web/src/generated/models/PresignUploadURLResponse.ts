@@ -43,6 +43,12 @@ export interface PresignUploadURLResponse {
      * @memberof PresignUploadURLResponse
      */
     fields?: { [key: string]: any; } | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PresignUploadURLResponse
+     */
+    stored_file_id?: number | null;
 }
 
 /**
@@ -69,6 +75,7 @@ export function PresignUploadURLResponseFromJSONTyped(json: any, ignoreDiscrimin
         'file_path': json['file_path'],
         'expiration': (new Date(json['expiration'])),
         'fields': json['fields'] == null ? undefined : json['fields'],
+        'stored_file_id': json['stored_file_id'] == null ? undefined : json['stored_file_id'],
     };
 }
 
@@ -87,6 +94,7 @@ export function PresignUploadURLResponseToJSONTyped(value?: PresignUploadURLResp
         'file_path': value['file_path'],
         'expiration': value['expiration'].toISOString(),
         'fields': value['fields'],
+        'stored_file_id': value['stored_file_id'],
     };
 }
 

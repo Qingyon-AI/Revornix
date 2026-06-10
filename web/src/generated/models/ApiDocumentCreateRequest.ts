@@ -97,6 +97,12 @@ export interface ApiDocumentCreateRequest {
      * @memberof ApiDocumentCreateRequest
      */
     auto_tag?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ApiDocumentCreateRequest
+     */
+    audio_meeting_mode?: boolean | null;
 }
 
 /**
@@ -130,6 +136,7 @@ export function ApiDocumentCreateRequestFromJSONTyped(json: any, ignoreDiscrimin
         'auto_podcast': json['auto_podcast'] == null ? undefined : json['auto_podcast'],
         'auto_transcribe': json['auto_transcribe'] == null ? undefined : json['auto_transcribe'],
         'auto_tag': json['auto_tag'] == null ? undefined : json['auto_tag'],
+        'audio_meeting_mode': json['audio_meeting_mode'] == null ? undefined : json['audio_meeting_mode'],
     };
 }
 
@@ -157,6 +164,7 @@ export function ApiDocumentCreateRequestToJSONTyped(value?: ApiDocumentCreateReq
         'auto_podcast': value['auto_podcast'],
         'auto_transcribe': value['auto_transcribe'],
         'auto_tag': value['auto_tag'],
+        'audio_meeting_mode': value['audio_meeting_mode'],
     };
 }
 

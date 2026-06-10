@@ -9,8 +9,8 @@ import type {
 	PaginationNotificationTask,
 	TriggerEventsResponse,
 	NotificationTemplatesResponse,
-	InifiniteScrollPagnitionNotificationSource,
-	InifiniteScrollPagnitionNotificationTarget,
+	InfiniteScrollPaginationNotificationSource,
+	InfiniteScrollPaginationNotificationTarget,
 	NotificationSource,
 	NotificationTarget,
 	SectionInfo,
@@ -226,7 +226,7 @@ export const searchAdminUserNotificationSources = async (data: {
 	keyword?: string;
 	start?: number;
 	limit?: number;
-}): Promise<InifiniteScrollPagnitionNotificationSource> => {
+}): Promise<InfiniteScrollPaginationNotificationSource> => {
 	return await request(adminApi.searchUserNotificationSources, { data });
 };
 
@@ -235,7 +235,7 @@ export const searchAdminUserNotificationTargets = async (data: {
 	keyword?: string;
 	start?: number;
 	limit?: number;
-}): Promise<InifiniteScrollPagnitionNotificationTarget> => {
+}): Promise<InfiniteScrollPaginationNotificationTarget> => {
 	return await request(adminApi.searchUserNotificationTargets, { data });
 };
 

@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { GraphMode } from './GraphMode';
+import {
+    GraphModeFromJSON,
+    GraphModeFromJSONTyped,
+    GraphModeToJSON,
+    GraphModeToJSONTyped,
+} from './GraphMode';
+
 /**
  * 
  * @export
@@ -26,12 +34,14 @@ export interface DocumentGraphRequest {
      */
     document_id: number;
     /**
-     *
-     * @type {string}
+     * 
+     * @type {GraphMode}
      * @memberof DocumentGraphRequest
      */
-    mode?: string;
+    mode?: GraphMode;
 }
+
+
 
 /**
  * Check if a given object implements the DocumentGraphRequest interface.
@@ -52,7 +62,7 @@ export function DocumentGraphRequestFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'document_id': json['document_id'],
-        'mode': json['mode'] == null ? undefined : json['mode'],
+        'mode': json['mode'] == null ? undefined : GraphModeFromJSON(json['mode']),
     };
 }
 
@@ -68,7 +78,7 @@ export function DocumentGraphRequestToJSONTyped(value?: DocumentGraphRequest | n
     return {
         
         'document_id': value['document_id'],
-        'mode': value['mode'],
+        'mode': GraphModeToJSON(value['mode']),
     };
 }
 

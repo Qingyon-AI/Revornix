@@ -15,6 +15,7 @@ Name | Type
 `billing_mode` | [EngineBillingMode](EngineBillingMode.md)
 `billing_unit_price` | number
 `compute_point_multiplier` | number
+`max_concurrency` | number
 `config_json` | string
 
 ## Example
@@ -33,6 +34,7 @@ const example = {
   "billing_mode": null,
   "billing_unit_price": null,
   "compute_point_multiplier": null,
+  "max_concurrency": null,
   "config_json": null,
 } satisfies EngineCreateRequest
 

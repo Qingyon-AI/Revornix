@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { GraphMode } from './GraphMode';
+import {
+    GraphModeFromJSON,
+    GraphModeFromJSONTyped,
+    GraphModeToJSON,
+    GraphModeToJSONTyped,
+} from './GraphMode';
+
 /**
  * 
  * @export
@@ -26,12 +34,14 @@ export interface SectionGraphRequest {
      */
     section_id: number;
     /**
-     *
-     * @type {string}
+     * 
+     * @type {GraphMode}
      * @memberof SectionGraphRequest
      */
-    mode?: string;
+    mode?: GraphMode;
 }
+
+
 
 /**
  * Check if a given object implements the SectionGraphRequest interface.
@@ -52,7 +62,7 @@ export function SectionGraphRequestFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'section_id': json['section_id'],
-        'mode': json['mode'] == null ? undefined : json['mode'],
+        'mode': json['mode'] == null ? undefined : GraphModeFromJSON(json['mode']),
     };
 }
 
@@ -68,7 +78,7 @@ export function SectionGraphRequestToJSONTyped(value?: SectionGraphRequest | nul
     return {
         
         'section_id': value['section_id'],
-        'mode': value['mode'],
+        'mode': GraphModeToJSON(value['mode']),
     };
 }
 

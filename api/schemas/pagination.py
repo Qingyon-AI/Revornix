@@ -5,7 +5,7 @@ from .base import BaseModel
 # 定义一个泛型类型变量
 T = TypeVar("T")
 
-class NormalInifiniteScrollPagnitionSearch(BaseModel):
+class NormalInfiniteScrollPaginationSearch(BaseModel):
     keyword: str | None = None
     start: int | None = None
     limit: int = 10
@@ -22,7 +22,7 @@ class PageableRequest(BaseModel):
     page_num: int
     page_size: int
 
-class InifiniteScrollPagnition(BaseModel, Generic[T]):
+class InfiniteScrollPagination(BaseModel, Generic[T]):
     total: int
     start: int | None = None
     limit: int

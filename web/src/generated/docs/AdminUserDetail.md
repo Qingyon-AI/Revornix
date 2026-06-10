@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | number
 `uuid` | string
+`cover` | string
 `role` | number
 `avatar` | string
 `nickname` | string
@@ -17,6 +18,8 @@ Name | Type
 `is_forbidden` | boolean
 `fans` | number
 `follows` | number
+`last_login_ip` | string
+`last_login_time` | Date
 `create_time` | Date
 `update_time` | Date
 `default_user_file_system` | number
@@ -39,6 +42,7 @@ import type { AdminUserDetail } from ''
 const example = {
   "id": null,
   "uuid": null,
+  "cover": null,
   "role": null,
   "avatar": null,
   "nickname": null,
@@ -48,6 +52,8 @@ const example = {
   "is_forbidden": null,
   "fans": null,
   "follows": null,
+  "last_login_ip": null,
+  "last_login_time": null,
   "create_time": null,
   "update_time": null,
   "default_user_file_system": null,

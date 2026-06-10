@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `documents` | [Array&lt;DocumentInfo&gt;](DocumentInfo.md)
+`snippets` | { [key: string]: string; }
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { VectorSearchResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "documents": null,
+  "snippets": null,
 } satisfies VectorSearchResponse
 
 console.log(example)

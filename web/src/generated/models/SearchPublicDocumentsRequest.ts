@@ -102,3 +102,4 @@ export function SearchPublicDocumentsRequestToJSONTyped(value?: SearchPublicDocu
         'desc': value['desc'],
     };
 }
+

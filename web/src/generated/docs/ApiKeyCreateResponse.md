@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `api_key_id` | number
+`api_key` | string
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { ApiKeyCreateResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "api_key_id": null,
+  "api_key": null,
 } satisfies ApiKeyCreateResponse
 
 console.log(example)

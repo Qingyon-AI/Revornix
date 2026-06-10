@@ -101,13 +101,13 @@ export interface EngineDetail {
      */
     compute_point_multiplier?: number;
     /**
-     *
+     * 
      * @type {number}
      * @memberof EngineDetail
      */
     max_concurrency?: number;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof EngineDetail
      */
@@ -221,3 +221,4 @@ export function EngineDetailToJSONTyped(value?: EngineDetail | null, ignoreDiscr
         'engine_provided': EngineProvidedInfoToJSON(value['engine_provided']),
     };
 }
+

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './AccessRequestApi';
 export * from './AdminApi';
 export * from './AiApi';
 export * from './ApiKeyApi';

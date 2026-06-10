@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TotpInfo } from './TotpInfo';
+import {
+    TotpInfoFromJSON,
+    TotpInfoFromJSONTyped,
+    TotpInfoToJSON,
+    TotpInfoToJSONTyped,
+} from './TotpInfo';
 import type { WeChatInfo } from './WeChatInfo';
 import {
     WeChatInfoFromJSON,
@@ -41,6 +48,13 @@ import {
     PhoneInfoToJSON,
     PhoneInfoToJSONTyped,
 } from './PhoneInfo';
+import type { PasskeyInfo } from './PasskeyInfo';
+import {
+    PasskeyInfoFromJSON,
+    PasskeyInfoFromJSONTyped,
+    PasskeyInfoToJSON,
+    PasskeyInfoToJSONTyped,
+} from './PasskeyInfo';
 import type { GithubInfo } from './GithubInfo';
 import {
     GithubInfoFromJSON,
@@ -147,6 +161,18 @@ export interface PrivateUserInfo {
     mfa_enabled?: boolean;
     /**
      * 
+     * @type {Array<PasskeyInfo>}
+     * @memberof PrivateUserInfo
+     */
+    passkeys?: Array<PasskeyInfo> | null;
+    /**
+     * 
+     * @type {TotpInfo}
+     * @memberof PrivateUserInfo
+     */
+    totp?: TotpInfo | null;
+    /**
+     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -194,13 +220,13 @@ export interface PrivateUserInfo {
      */
     default_audio_transcribe_engine_id?: number | null;
     /**
-     *
+     * 
      * @type {boolean}
      * @memberof PrivateUserInfo
      */
     default_audio_meeting_mode?: boolean | null;
     /**
-     *
+     * 
      * @type {number}
      * @memberof PrivateUserInfo
      */
@@ -250,6 +276,8 @@ export function PrivateUserInfoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'google_info': json['google_info'] == null ? undefined : GoogleInfoFromJSON(json['google_info']),
         'wechat_infos': json['wechat_infos'] == null ? undefined : ((json['wechat_infos'] as Array<any>).map(WeChatInfoFromJSON)),
         'mfa_enabled': json['mfa_enabled'] == null ? undefined : json['mfa_enabled'],
+        'passkeys': json['passkeys'] == null ? undefined : ((json['passkeys'] as Array<any>).map(PasskeyInfoFromJSON)),
+        'totp': json['totp'] == null ? undefined : TotpInfoFromJSON(json['totp']),
         'default_user_file_system': json['default_user_file_system'] == null ? undefined : json['default_user_file_system'],
         'default_read_mark_reason': json['default_read_mark_reason'] == null ? undefined : json['default_read_mark_reason'],
         'default_document_reader_model_id': json['default_document_reader_model_id'] == null ? undefined : json['default_document_reader_model_id'],
@@ -290,6 +318,8 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'google_info': GoogleInfoToJSON(value['google_info']),
         'wechat_infos': value['wechat_infos'] == null ? undefined : ((value['wechat_infos'] as Array<any>).map(WeChatInfoToJSON)),
         'mfa_enabled': value['mfa_enabled'],
+        'passkeys': value['passkeys'] == null ? undefined : ((value['passkeys'] as Array<any>).map(PasskeyInfoToJSON)),
+        'totp': TotpInfoToJSON(value['totp']),
         'default_user_file_system': value['default_user_file_system'],
         'default_read_mark_reason': value['default_read_mark_reason'],
         'default_document_reader_model_id': value['default_document_reader_model_id'],
@@ -303,3 +333,4 @@ export function PrivateUserInfoToJSONTyped(value?: PrivateUserInfo | null, ignor
         'default_ai_interaction_language': value['default_ai_interaction_language'],
     };
 }
+

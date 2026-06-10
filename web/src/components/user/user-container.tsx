@@ -30,7 +30,7 @@ import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import CoverUpdate from './cover-update';
 import {
-	InifiniteScrollPagnitionUserPublicInfo,
+	InfiniteScrollPaginationUserPublicInfo,
 	UserPublicInfo,
 } from '@/generated';
 import {
@@ -149,12 +149,12 @@ const UserContainer = ({ id }: { id: number }) => {
 				id,
 			]);
 			const previousUserFollows = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionUserPublicInfo>
+				InfiniteData<InfiniteScrollPaginationUserPublicInfo>
 			>({
 				queryKey: userFollowsQueryKey,
 			});
 			const previousUserFans = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionUserPublicInfo>
+				InfiniteData<InfiniteScrollPaginationUserPublicInfo>
 			>({
 				queryKey: userFansQueryKey,
 			});
@@ -172,12 +172,12 @@ const UserContainer = ({ id }: { id: number }) => {
 
 			if (!nextFollowStatus) {
 				filterInfiniteQueryElements<
-					InifiniteScrollPagnitionUserPublicInfo,
+					InfiniteScrollPaginationUserPublicInfo,
 					UserPublicInfo
 				>(queryClient, userFollowsQueryKey, (item) => item.id !== id);
 			} else {
 				mapInfiniteQueryElements<
-					InifiniteScrollPagnitionUserPublicInfo,
+					InfiniteScrollPaginationUserPublicInfo,
 					UserPublicInfo
 				>(queryClient, userFollowsQueryKey, (item) => {
 					if (item.id !== id) return item;
@@ -189,7 +189,7 @@ const UserContainer = ({ id }: { id: number }) => {
 			}
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionUserPublicInfo,
+				InfiniteScrollPaginationUserPublicInfo,
 				UserPublicInfo
 			>(queryClient, userFansQueryKey, (item) => {
 				if (item.id !== id) return item;

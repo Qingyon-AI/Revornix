@@ -10,15 +10,7 @@ Name | Type
 `notification_target_id` | number
 `enable` | boolean
 `title` | string
-`content_type` | number
-`notification_template_id` | number
-`notification_title` | string
-`notification_content` | string
-`notification_cover` | string
-`notification_link` | string
-`trigger_type` | number
 `trigger_event_id` | number
-`trigger_scheduler_cron` | string
 
 ## Example
 
@@ -31,15 +23,7 @@ const example = {
   "notification_target_id": null,
   "enable": null,
   "title": null,
-  "content_type": null,
-  "notification_template_id": null,
-  "notification_title": null,
-  "notification_content": null,
-  "notification_cover": null,
-  "notification_link": null,
-  "trigger_type": null,
   "trigger_event_id": null,
-  "trigger_scheduler_cron": null,
 } satisfies AddNotificationTaskRequest
 
 console.log(example)

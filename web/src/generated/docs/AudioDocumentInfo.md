@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `audio_file_name` | string
+`meeting_mode` | boolean
+`speaker_map` | { [key: string]: string; }
 
 ## Example
 
@@ -16,6 +18,8 @@ import type { AudioDocumentInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "audio_file_name": null,
+  "meeting_mode": null,
+  "speaker_map": null,
 } satisfies AudioDocumentInfo
 
 console.log(example)

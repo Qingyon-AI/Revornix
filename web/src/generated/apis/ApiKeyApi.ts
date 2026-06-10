@@ -12,33 +12,47 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  ApiKeyCreateRequest,
-  ApiKeyCreateResponse,
-  ApiKeysDeleteRequest,
-  HTTPValidationError,
-  NormalResponse,
-  PaginationApiKeyInfo,
-  SearchApiKeysRequest,
-} from '../models/index';
 import {
+    type ApiKeyCreateRequest,
     ApiKeyCreateRequestFromJSON,
     ApiKeyCreateRequestToJSON,
+} from '../models/ApiKeyCreateRequest';
+import {
+    type ApiKeyCreateResponse,
     ApiKeyCreateResponseFromJSON,
     ApiKeyCreateResponseToJSON,
+} from '../models/ApiKeyCreateResponse';
+import {
+    type ApiKeyUpdateRequest,
+    ApiKeyUpdateRequestFromJSON,
+    ApiKeyUpdateRequestToJSON,
+} from '../models/ApiKeyUpdateRequest';
+import {
+    type ApiKeysDeleteRequest,
     ApiKeysDeleteRequestFromJSON,
     ApiKeysDeleteRequestToJSON,
+} from '../models/ApiKeysDeleteRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type PaginationApiKeyInfo,
     PaginationApiKeyInfoFromJSON,
     PaginationApiKeyInfoToJSON,
+} from '../models/PaginationApiKeyInfo';
+import {
+    type SearchApiKeysRequest,
     SearchApiKeysRequestFromJSON,
     SearchApiKeysRequestToJSON,
-} from '../models/index';
+} from '../models/SearchApiKeysRequest';
 
 export interface CreateApiKeyApiKeyCreatePostRequest {
     apiKeyCreateRequest: ApiKeyCreateRequest;
@@ -54,6 +68,12 @@ export interface DeleteApiKeyApiKeyDeletePostRequest {
 
 export interface SearchApiKeyApiKeySearchPostRequest {
     searchApiKeysRequest: SearchApiKeysRequest;
+    authorization?: string | null;
+    xUserTimezone?: string | null;
+}
+
+export interface UpdateApiKeyApiKeyUpdatePostRequest {
+    apiKeyUpdateRequest: ApiKeyUpdateRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -225,6 +245,61 @@ export class ApiKeyApi extends runtime.BaseAPI {
      */
     async searchApiKeyApiKeySearchPost(requestParameters: SearchApiKeyApiKeySearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PaginationApiKeyInfo> {
         const response = await this.searchApiKeyApiKeySearchPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateApiKeyApiKeyUpdatePost without sending the request
+     */
+    async updateApiKeyApiKeyUpdatePostRequestOpts(requestParameters: UpdateApiKeyApiKeyUpdatePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['apiKeyUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'apiKeyUpdateRequest',
+                'Required parameter "apiKeyUpdateRequest" was null or undefined when calling updateApiKeyApiKeyUpdatePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+
+        if (requestParameters['xUserTimezone'] != null) {
+            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
+        }
+
+
+        let urlPath = `/api-key/update`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ApiKeyUpdateRequestToJSON(requestParameters['apiKeyUpdateRequest']),
+        };
+    }
+
+    /**
+     * Update Api Key
+     */
+    async updateApiKeyApiKeyUpdatePostRaw(requestParameters: UpdateApiKeyApiKeyUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NormalResponse>> {
+        const requestOptions = await this.updateApiKeyApiKeyUpdatePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NormalResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update Api Key
+     */
+    async updateApiKeyApiKeyUpdatePost(requestParameters: UpdateApiKeyApiKeyUpdatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NormalResponse> {
+        const response = await this.updateApiKeyApiKeyUpdatePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

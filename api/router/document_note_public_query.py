@@ -8,7 +8,7 @@ from common.dependencies import (
     get_async_db,
     get_current_user_without_throw,
 )
-from router.logic_helpers import ensure_document_access
+from common.access_control import ensure_document_access
 
 document_note_public_query_router = APIRouter()
 
@@ -57,7 +57,7 @@ async def _ensure_document_note_read_access(
 
 @document_note_public_query_router.post(
     "/note/public/search",
-    response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentNoteInfo],
+    response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentNoteInfo],
 )
 async def search_public_document_notes(
     search_note_request: schemas.document.SearchDocumentNoteRequest,
@@ -99,7 +99,7 @@ async def search_public_document_notes(
         document_id=search_note_request.document_id,
         keyword=search_note_request.keyword,
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=notes,
         start=search_note_request.start,

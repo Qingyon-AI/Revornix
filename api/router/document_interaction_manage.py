@@ -11,7 +11,8 @@ from common.dependencies import get_async_db, get_current_user
 from data.milvus.delete import delete_documents_from_milvus
 from data.neo4j.delete import delete_documents_and_related_from_neo4j
 from enums.document import DocumentCategory
-from router.logic_helpers import ensure_document_access, group_document_ids_by_category
+from common.access_control import ensure_document_access
+from common.query_helpers import group_document_ids_by_category
 from schemas.common import SuccessResponse
 
 document_interaction_manage_router = APIRouter()

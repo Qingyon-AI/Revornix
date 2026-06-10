@@ -26,6 +26,7 @@ export interface GithubUserCreate {
      */
     code: string;
     /**
+     * 
      * @type {string}
      * @memberof GithubUserCreate
      */
@@ -48,7 +49,7 @@ export function GithubUserCreateFromJSONTyped(json: any, ignoreDiscriminator: bo
     if (json == null) {
         return json;
     }
-        return {
+    return {
         
         'code': json['code'],
         'redirect_uri': json['redirect_uri'] == null ? undefined : json['redirect_uri'],
@@ -70,3 +71,4 @@ export function GithubUserCreateToJSONTyped(value?: GithubUserCreate | null, ign
         'redirect_uri': value['redirect_uri'],
     };
 }
+

@@ -10,6 +10,8 @@ Name | Type
 `start` | number
 `limit` | number
 `keyword` | string
+`sort` | string
+`preview_reply_limit` | number
 
 ## Example
 
@@ -22,6 +24,8 @@ const example = {
   "start": null,
   "limit": null,
   "keyword": null,
+  "sort": null,
+  "preview_reply_limit": null,
 } satisfies SectionCommentSearchRequest
 
 console.log(example)

@@ -61,6 +61,12 @@ export interface DocumentUpdateRequest {
      * @memberof DocumentUpdateRequest
      */
     content?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DocumentUpdateRequest
+     */
+    is_public?: boolean | null;
 }
 
 /**
@@ -88,6 +94,7 @@ export function DocumentUpdateRequestFromJSONTyped(json: any, ignoreDiscriminato
         'labels': json['labels'] == null ? undefined : json['labels'],
         'sections': json['sections'] == null ? undefined : json['sections'],
         'content': json['content'] == null ? undefined : json['content'],
+        'is_public': json['is_public'] == null ? undefined : json['is_public'],
     };
 }
 
@@ -109,6 +116,7 @@ export function DocumentUpdateRequestToJSONTyped(value?: DocumentUpdateRequest |
         'labels': value['labels'],
         'sections': value['sections'],
         'content': value['content'],
+        'is_public': value['is_public'],
     };
 }
 

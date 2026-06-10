@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `keyword` | string
+`creator_id` | number
 `start` | number
 `limit` | number
 `label_ids` | Array&lt;number&gt;
@@ -20,6 +21,7 @@ import type { SearchPublicDocumentsRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "keyword": null,
+  "creator_id": null,
   "start": null,
   "limit": null,
   "label_ids": null,

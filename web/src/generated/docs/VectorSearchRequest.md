@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `query` | string
+`mode` | string
+`limit` | number
 
 ## Example
 
@@ -16,6 +18,8 @@ import type { VectorSearchRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "query": null,
+  "mode": null,
+  "limit": null,
 } satisfies VectorSearchRequest
 
 console.log(example)

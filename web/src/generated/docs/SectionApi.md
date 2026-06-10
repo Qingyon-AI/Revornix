@@ -6,6 +6,9 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 | [**addLabelSectionLabelCreatePost**](SectionApi.md#addlabelsectionlabelcreatepost) | **POST** /section/label/create | Add Label |
 | [**askSectionAiSectionAskPost**](SectionApi.md#asksectionaisectionaskpost) | **POST** /section/ask | Ask Section Ai |
+| [**cancelPodcastSectionPodcastCancelPost**](SectionApi.md#cancelpodcastsectionpodcastcancelpost) | **POST** /section/podcast/cancel | Cancel Podcast |
+| [**cancelPptSectionPptCancelPost**](SectionApi.md#cancelpptsectionpptcancelpost) | **POST** /section/ppt/cancel | Cancel Ppt |
+| [**cancelProcessSectionProcessCancelPost**](SectionApi.md#cancelprocesssectionprocesscancelpost) | **POST** /section/process/cancel | Cancel Process |
 | [**createSectionCommentSectionCommentCreatePost**](SectionApi.md#createsectioncommentsectioncommentcreatepost) | **POST** /section/comment/create | Create Section Comment |
 | [**createSectionSectionCreatePost**](SectionApi.md#createsectionsectioncreatepost) | **POST** /section/create | Create Section |
 | [**deleteLabelSectionLabelDeletePost**](SectionApi.md#deletelabelsectionlabeldeletepost) | **POST** /section/label/delete | Delete Label |
@@ -18,12 +21,18 @@ All URIs are relative to *http://localhost*
 | [**getDateSectionInfoSectionDatePost**](SectionApi.md#getdatesectioninfosectiondatepost) | **POST** /section/date | Get Date Section Info |
 | [**getMineSectionRoleAndAuthoritySectionMineRoleAndAuthorityPost**](SectionApi.md#getminesectionroleandauthoritysectionmineroleandauthoritypost) | **POST** /section/mine/role-and-authority | Get Mine Section Role And Authority |
 | [**getMySubscribedSectionsSectionSubscribedPost**](SectionApi.md#getmysubscribedsectionssectionsubscribedpost) | **POST** /section/subscribed | Get My Subscribed Sections |
+| [**getSectionCommentDetailSectionCommentDetailPost**](SectionApi.md#getsectioncommentdetailsectioncommentdetailpost) | **POST** /section/comment/detail | Get Section Comment Detail |
 | [**getSectionDetailSectionDetailPost**](SectionApi.md#getsectiondetailsectiondetailpost) | **POST** /section/detail | Get Section Detail |
+| [**getSectionMarkdownContentSectionMarkdownContentPost**](SectionApi.md#getsectionmarkdowncontentsectionmarkdowncontentpost) | **POST** /section/markdown/content | Get Section Markdown Content |
 | [**getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost**](SectionApi.md#getsectionuserroleandauthoritysectionuserroleandauthoritypost) | **POST** /section/user/role-and-authority | Get Section User Role And Authority |
+| [**getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost**](SectionApi.md#getseosectionmarkdowncontentsectiondetailseomarkdowncontentpost) | **POST** /section/detail/seo/markdown/content | Get Seo Section Markdown Content |
+| [**likeSectionCommentSectionCommentLikePost**](SectionApi.md#likesectioncommentsectioncommentlikepost) | **POST** /section/comment/like | Like Section Comment |
 | [**listLabelSectionLabelListPost**](SectionApi.md#listlabelsectionlabellistpost) | **POST** /section/label/list | List Label |
+| [**listPublicLabelSectionLabelPublicListPost**](SectionApi.md#listpubliclabelsectionlabelpubliclistpost) | **POST** /section/label/public/list | List Public Label |
 | [**publicSectionsSectionPublicSearchPost**](SectionApi.md#publicsectionssectionpublicsearchpost) | **POST** /section/public/search | Public Sections |
 | [**retrySectionDocumentIntegrationSectionDocumentRetryPost**](SectionApi.md#retrysectiondocumentintegrationsectiondocumentretrypost) | **POST** /section/document/retry | Retry Section Document Integration |
 | [**searchMineSectionsSectionMineSearchPost**](SectionApi.md#searchminesectionssectionminesearchpost) | **POST** /section/mine/search | Search Mine Sections |
+| [**searchSectionCommentRepliesSectionCommentReplySearchPost**](SectionApi.md#searchsectioncommentrepliessectioncommentreplysearchpost) | **POST** /section/comment/reply/search | Search Section Comment Replies |
 | [**searchSectionCommentSectionCommentSearchPost**](SectionApi.md#searchsectioncommentsectioncommentsearchpost) | **POST** /section/comment/search | Search Section Comment |
 | [**searchUserSectionsSectionUserSearchPost**](SectionApi.md#searchusersectionssectionusersearchpost) | **POST** /section/user/search | Search User Sections |
 | [**sectionDocumentRequestSectionDocumentsPost**](SectionApi.md#sectiondocumentrequestsectiondocumentspost) | **POST** /section/documents | Section Document Request |
@@ -36,6 +45,7 @@ All URIs are relative to *http://localhost*
 | [**sectionUserRequestSectionUserPost**](SectionApi.md#sectionuserrequestsectionuserpost) | **POST** /section/user | Section User Request |
 | [**subscribeSectionSectionSubscribePost**](SectionApi.md#subscribesectionsectionsubscribepost) | **POST** /section/subscribe | Subscribe Section |
 | [**triggerSectionProcessSectionProcessTriggerPost**](SectionApi.md#triggersectionprocesssectionprocesstriggerpost) | **POST** /section/process/trigger | Trigger Section Process |
+| [**unlikeSectionCommentSectionCommentUnlikePost**](SectionApi.md#unlikesectioncommentsectioncommentunlikepost) | **POST** /section/comment/unlike | Unlike Section Comment |
 | [**updateSectionSectionUpdatePost**](SectionApi.md#updatesectionsectionupdatepost) | **POST** /section/update | Update Section |
 
 
@@ -166,6 +176,222 @@ example().catch(console.error);
 ### Return type
 
 **any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelPodcastSectionPodcastCancelPost
+
+> NormalResponse cancelPodcastSectionPodcastCancelPost(cancelSectionTaskRequest, authorization, xUserTimezone)
+
+Cancel Podcast
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { CancelPodcastSectionPodcastCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // CancelSectionTaskRequest
+    cancelSectionTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelPodcastSectionPodcastCancelPostRequest;
+
+  try {
+    const data = await api.cancelPodcastSectionPodcastCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelSectionTaskRequest** | [CancelSectionTaskRequest](CancelSectionTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelPptSectionPptCancelPost
+
+> NormalResponse cancelPptSectionPptCancelPost(cancelSectionTaskRequest, authorization, xUserTimezone)
+
+Cancel Ppt
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { CancelPptSectionPptCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // CancelSectionTaskRequest
+    cancelSectionTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelPptSectionPptCancelPostRequest;
+
+  try {
+    const data = await api.cancelPptSectionPptCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelSectionTaskRequest** | [CancelSectionTaskRequest](CancelSectionTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## cancelProcessSectionProcessCancelPost
+
+> NormalResponse cancelProcessSectionProcessCancelPost(cancelSectionTaskRequest, authorization, xUserTimezone)
+
+Cancel Process
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { CancelProcessSectionProcessCancelPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // CancelSectionTaskRequest
+    cancelSectionTaskRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies CancelProcessSectionProcessCancelPostRequest;
+
+  try {
+    const data = await api.cancelProcessSectionProcessCancelPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **cancelSectionTaskRequest** | [CancelSectionTaskRequest](CancelSectionTaskRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -977,7 +1203,7 @@ No authorization required
 
 ## getMySubscribedSectionsSectionSubscribedPost
 
-> InifiniteScrollPagnitionSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionInfo getMySubscribedSectionsSectionSubscribedPost(searchSubscribedSectionRequest, authorization, xUserTimezone)
 
 Get My Subscribed Sections
 
@@ -1026,7 +1252,79 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getSectionCommentDetailSectionCommentDetailPost
+
+> SectionCommentInfo getSectionCommentDetailSectionCommentDetailPost(sectionCommentDetailRequest, authorization, xUserTimezone)
+
+Get Section Comment Detail
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { GetSectionCommentDetailSectionCommentDetailPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionCommentDetailRequest
+    sectionCommentDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetSectionCommentDetailSectionCommentDetailPostRequest;
+
+  try {
+    const data = await api.getSectionCommentDetailSectionCommentDetailPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionCommentDetailRequest** | [SectionCommentDetailRequest](SectionCommentDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**SectionCommentInfo**](SectionCommentInfo.md)
 
 ### Authorization
 
@@ -1119,6 +1417,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## getSectionMarkdownContentSectionMarkdownContentPost
+
+> string getSectionMarkdownContentSectionMarkdownContentPost(sectionDetailRequest, authorization, xUserTimezone)
+
+Get Section Markdown Content
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { GetSectionMarkdownContentSectionMarkdownContentPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionDetailRequest
+    sectionDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetSectionMarkdownContentSectionMarkdownContentPostRequest;
+
+  try {
+    const data = await api.getSectionMarkdownContentSectionMarkdownContentPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionDetailRequest** | [SectionDetailRequest](SectionDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `text/plain`, `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost
 
 > SectionUserRoleAndAuthorityResponse getSectionUserRoleAndAuthoritySectionUserRoleAndAuthorityPost(sectionUserRoleAndAuthorityRequest, authorization, xUserTimezone)
@@ -1171,6 +1541,150 @@ example().catch(console.error);
 ### Return type
 
 [**SectionUserRoleAndAuthorityResponse**](SectionUserRoleAndAuthorityResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost
+
+> string getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost(sectionSeoDetailRequest, authorization, xUserTimezone)
+
+Get Seo Section Markdown Content
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionSeoDetailRequest
+    sectionSeoDetailRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPostRequest;
+
+  try {
+    const data = await api.getSeoSectionMarkdownContentSectionDetailSeoMarkdownContentPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionSeoDetailRequest** | [SectionSeoDetailRequest](SectionSeoDetailRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `text/plain`, `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## likeSectionCommentSectionCommentLikePost
+
+> NormalResponse likeSectionCommentSectionCommentLikePost(sectionCommentLikeRequest, authorization, xUserTimezone)
+
+Like Section Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { LikeSectionCommentSectionCommentLikePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionCommentLikeRequest
+    sectionCommentLikeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies LikeSectionCommentSectionCommentLikePostRequest;
+
+  try {
+    const data = await api.likeSectionCommentSectionCommentLikePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionCommentLikeRequest** | [SectionCommentLikeRequest](SectionCommentLikeRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 
@@ -1260,9 +1774,66 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## listPublicLabelSectionLabelPublicListPost
+
+> SchemasSectionLabelListResponse listPublicLabelSectionLabelPublicListPost()
+
+List Public Label
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { ListPublicLabelSectionLabelPublicListPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  try {
+    const data = await api.listPublicLabelSectionLabelPublicListPost();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SchemasSectionLabelListResponse**](SchemasSectionLabelListResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## publicSectionsSectionPublicSearchPost
 
-> InifiniteScrollPagnitionSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionInfo publicSectionsSectionPublicSearchPost(searchPublicSectionsRequest, authorization, xUserTimezone)
 
 Public Sections
 
@@ -1311,7 +1882,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -1406,7 +1977,7 @@ No authorization required
 
 ## searchMineSectionsSectionMineSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionInfo searchMineSectionsSectionMineSearchPost(searchMineSectionsRequest, authorization, xUserTimezone)
 
 Search Mine Sections
 
@@ -1455,7 +2026,79 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchSectionCommentRepliesSectionCommentReplySearchPost
+
+> InfiniteScrollPaginationSectionCommentInfo searchSectionCommentRepliesSectionCommentReplySearchPost(sectionCommentReplySearchRequest, authorization, xUserTimezone)
+
+Search Section Comment Replies
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { SearchSectionCommentRepliesSectionCommentReplySearchPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionCommentReplySearchRequest
+    sectionCommentReplySearchRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies SearchSectionCommentRepliesSectionCommentReplySearchPostRequest;
+
+  try {
+    const data = await api.searchSectionCommentRepliesSectionCommentReplySearchPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionCommentReplySearchRequest** | [SectionCommentReplySearchRequest](SectionCommentReplySearchRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**InfiniteScrollPaginationSectionCommentInfo**](InfiniteScrollPaginationSectionCommentInfo.md)
 
 ### Authorization
 
@@ -1478,7 +2121,7 @@ No authorization required
 
 ## searchSectionCommentSectionCommentSearchPost
 
-> InifiniteScrollPagnitionSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionCommentInfo searchSectionCommentSectionCommentSearchPost(sectionCommentSearchRequest, authorization, xUserTimezone)
 
 Search Section Comment
 
@@ -1527,7 +2170,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionCommentInfo**](InifiniteScrollPagnitionSectionCommentInfo.md)
+[**InfiniteScrollPaginationSectionCommentInfo**](InfiniteScrollPaginationSectionCommentInfo.md)
 
 ### Authorization
 
@@ -1550,7 +2193,7 @@ No authorization required
 
 ## searchUserSectionsSectionUserSearchPost
 
-> InifiniteScrollPagnitionSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionInfo searchUserSectionsSectionUserSearchPost(searchUserSectionsRequest, authorization, xUserTimezone)
 
 Search User Sections
 
@@ -1599,7 +2242,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionInfo**](InifiniteScrollPagnitionSectionInfo.md)
+[**InfiniteScrollPaginationSectionInfo**](InfiniteScrollPaginationSectionInfo.md)
 
 ### Authorization
 
@@ -1622,7 +2265,7 @@ No authorization required
 
 ## sectionDocumentRequestSectionDocumentsPost
 
-> InifiniteScrollPagnitionSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionDocumentInfo sectionDocumentRequestSectionDocumentsPost(sectionDocumentRequest, authorization, xUserTimezone)
 
 Section Document Request
 
@@ -1671,7 +2314,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionDocumentInfo**](InifiniteScrollPagnitionSectionDocumentInfo.md)
+[**InfiniteScrollPaginationSectionDocumentInfo**](InfiniteScrollPaginationSectionDocumentInfo.md)
 
 ### Authorization
 
@@ -2126,7 +2769,7 @@ No authorization required
 
 ## sectionUserRequestSectionUserPost
 
-> InifiniteScrollPagnitionSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xUserTimezone)
+> InfiniteScrollPaginationSectionUserPublicInfo sectionUserRequestSectionUserPost(sectionUserRequest, authorization, xUserTimezone)
 
 Section User Request
 
@@ -2175,7 +2818,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**InifiniteScrollPagnitionSectionUserPublicInfo**](InifiniteScrollPagnitionSectionUserPublicInfo.md)
+[**InfiniteScrollPaginationSectionUserPublicInfo**](InfiniteScrollPaginationSectionUserPublicInfo.md)
 
 ### Authorization
 
@@ -2314,6 +2957,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **triggerSectionProcessRequest** | [TriggerSectionProcessRequest](TriggerSectionProcessRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## unlikeSectionCommentSectionCommentUnlikePost
+
+> NormalResponse unlikeSectionCommentSectionCommentUnlikePost(sectionCommentLikeRequest, authorization, xUserTimezone)
+
+Unlike Section Comment
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SectionApi,
+} from '';
+import type { UnlikeSectionCommentSectionCommentUnlikePostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new SectionApi();
+
+  const body = {
+    // SectionCommentLikeRequest
+    sectionCommentLikeRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UnlikeSectionCommentSectionCommentUnlikePostRequest;
+
+  try {
+    const data = await api.unlikeSectionCommentSectionCommentUnlikePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionCommentLikeRequest** | [SectionCommentLikeRequest](SectionCommentLikeRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

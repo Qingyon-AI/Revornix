@@ -12,63 +12,92 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  BillingAuditResponse,
-  CommunityEngineSearchRequest,
-  EngineCreateRequest,
-  EngineDeleteRequest,
-  EngineDetail,
-  EngineDetailRequest,
-  EngineForkRequest,
-  EngineProvidedSearchRequest,
-  EngineProvidedSearchResponse,
-  EngineUpdateRequest,
-  HTTPValidationError,
-  ImageGenerateRequest,
-  ImageGenerateResponse,
-  InifiniteScrollPagnitionEngineInfo,
-  NormalResponse,
-  UsableEngineSearchRequest,
-  UsableEnginesResponse,
-} from '../models/index';
 import {
+    type BillingAuditResponse,
     BillingAuditResponseFromJSON,
     BillingAuditResponseToJSON,
+} from '../models/BillingAuditResponse';
+import {
+    type CommunityEngineSearchRequest,
     CommunityEngineSearchRequestFromJSON,
     CommunityEngineSearchRequestToJSON,
+} from '../models/CommunityEngineSearchRequest';
+import {
+    type EngineCreateRequest,
     EngineCreateRequestFromJSON,
     EngineCreateRequestToJSON,
+} from '../models/EngineCreateRequest';
+import {
+    type EngineDeleteRequest,
     EngineDeleteRequestFromJSON,
     EngineDeleteRequestToJSON,
+} from '../models/EngineDeleteRequest';
+import {
+    type EngineDetail,
     EngineDetailFromJSON,
     EngineDetailToJSON,
+} from '../models/EngineDetail';
+import {
+    type EngineDetailRequest,
     EngineDetailRequestFromJSON,
     EngineDetailRequestToJSON,
+} from '../models/EngineDetailRequest';
+import {
+    type EngineForkRequest,
     EngineForkRequestFromJSON,
     EngineForkRequestToJSON,
+} from '../models/EngineForkRequest';
+import {
+    type EngineProvidedSearchRequest,
     EngineProvidedSearchRequestFromJSON,
     EngineProvidedSearchRequestToJSON,
+} from '../models/EngineProvidedSearchRequest';
+import {
+    type EngineProvidedSearchResponse,
     EngineProvidedSearchResponseFromJSON,
     EngineProvidedSearchResponseToJSON,
+} from '../models/EngineProvidedSearchResponse';
+import {
+    type EngineUpdateRequest,
     EngineUpdateRequestFromJSON,
     EngineUpdateRequestToJSON,
+} from '../models/EngineUpdateRequest';
+import {
+    type HTTPValidationError,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+} from '../models/HTTPValidationError';
+import {
+    type ImageGenerateRequest,
     ImageGenerateRequestFromJSON,
     ImageGenerateRequestToJSON,
+} from '../models/ImageGenerateRequest';
+import {
+    type ImageGenerateResponse,
     ImageGenerateResponseFromJSON,
     ImageGenerateResponseToJSON,
-    InifiniteScrollPagnitionEngineInfoFromJSON,
-    InifiniteScrollPagnitionEngineInfoToJSON,
+} from '../models/ImageGenerateResponse';
+import {
+    type InfiniteScrollPaginationEngineInfo,
+    InfiniteScrollPaginationEngineInfoFromJSON,
+    InfiniteScrollPaginationEngineInfoToJSON,
+} from '../models/InfiniteScrollPaginationEngineInfo';
+import {
+    type NormalResponse,
     NormalResponseFromJSON,
     NormalResponseToJSON,
+} from '../models/NormalResponse';
+import {
+    type UsableEngineSearchRequest,
     UsableEngineSearchRequestFromJSON,
     UsableEngineSearchRequestToJSON,
+} from '../models/UsableEngineSearchRequest';
+import {
+    type UsableEnginesResponse,
     UsableEnginesResponseFromJSON,
     UsableEnginesResponseToJSON,
-} from '../models/index';
+} from '../models/UsableEnginesResponse';
 
 export interface CreateEngineEngineCreatePostRequest {
     engineCreateRequest: EngineCreateRequest;
@@ -552,18 +581,18 @@ export class EngineApi extends runtime.BaseAPI {
      * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
      * Search Document Parse Engine
      */
-    async searchDocumentParseEngineEngineCommunityPostRaw(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InifiniteScrollPagnitionEngineInfo>> {
+    async searchDocumentParseEngineEngineCommunityPostRaw(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InfiniteScrollPaginationEngineInfo>> {
         const requestOptions = await this.searchDocumentParseEngineEngineCommunityPostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => InifiniteScrollPagnitionEngineInfoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => InfiniteScrollPaginationEngineInfoFromJSON(jsonValue));
     }
 
     /**
      * 搜索当前所有我可以使用的引擎 包含我创建的和公开的
      * Search Document Parse Engine
      */
-    async searchDocumentParseEngineEngineCommunityPost(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InifiniteScrollPagnitionEngineInfo> {
+    async searchDocumentParseEngineEngineCommunityPost(requestParameters: SearchDocumentParseEngineEngineCommunityPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InfiniteScrollPaginationEngineInfo> {
         const response = await this.searchDocumentParseEngineEngineCommunityPostRaw(requestParameters, initOverrides);
         return await response.value();
     }

@@ -18,7 +18,8 @@ from data.milvus.search import (
 )
 from enums.document import DocumentCategory
 from proxy.file_system_proxy import FileSystemProxy
-from router.logic_helpers import ensure_document_access, resolve_infinite_scroll_meta
+from common.access_control import ensure_document_access
+from common.query_helpers import resolve_infinite_scroll_meta
 
 document_query_router = APIRouter()
 
@@ -602,7 +603,7 @@ async def get_document_markdown_content(
         return PlainTextResponse(content=raw_content.decode("utf-8"))
     return PlainTextResponse(content=raw_content)
 
-@document_query_router.post('/unread/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@document_query_router.post('/unread/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo])
 async def search_user_unread_documents(
     search_unread_list_request: schemas.document.SearchUnreadListRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -642,7 +643,7 @@ async def search_user_unread_documents(
         keyword=search_unread_list_request.keyword,
         label_ids=search_unread_list_request.label_ids
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=search_unread_list_request.start,
@@ -651,7 +652,7 @@ async def search_user_unread_documents(
         next_start=next_start
     )
 
-@document_query_router.post('/recent/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@document_query_router.post('/recent/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo])
 async def recent_read_document(
     search_recent_read_request: schemas.document.SearchRecentReadRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -690,7 +691,7 @@ async def recent_read_document(
         keyword=search_recent_read_request.keyword,
         label_ids=search_recent_read_request.label_ids
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=search_recent_read_request.start,
@@ -699,7 +700,7 @@ async def recent_read_document(
         next_start=next_start
     )
 
-@document_query_router.post('/search/mine', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@document_query_router.post('/search/mine', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo])
 async def search_all_mine_documents(
     search_all_my_document_request: schemas.document.SearchAllMyDocumentsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -738,7 +739,7 @@ async def search_all_mine_documents(
         keyword=search_all_my_document_request.keyword,
         label_ids=search_all_my_document_request.label_ids
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=search_all_my_document_request.start,
@@ -747,7 +748,7 @@ async def search_all_mine_documents(
         next_start=next_start
     )
 
-@document_query_router.post('/star/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@document_query_router.post('/star/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo])
 async def search_my_star_documents(
     search_my_star_documents_request: schemas.document.SearchMyStarDocumentsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -786,7 +787,7 @@ async def search_my_star_documents(
         keyword=search_my_star_documents_request.keyword,
         label_ids=search_my_star_documents_request.label_ids
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=search_my_star_documents_request.start,
@@ -795,7 +796,7 @@ async def search_my_star_documents(
         next_start=next_start
     )
 
-@document_query_router.post('/public/search', response_model=schemas.pagination.InifiniteScrollPagnition[schemas.document.DocumentInfo])
+@document_query_router.post('/public/search', response_model=schemas.pagination.InfiniteScrollPagination[schemas.document.DocumentInfo])
 async def search_public_documents(
     search_public_documents_request: schemas.document.SearchPublicDocumentsRequest,
     db: AsyncSession = Depends(get_async_db),
@@ -845,7 +846,7 @@ async def search_public_documents(
         label_ids=search_public_documents_request.label_ids,
         only_published=only_published,
     )
-    return schemas.pagination.InifiniteScrollPagnition(
+    return schemas.pagination.InfiniteScrollPagination(
         total=total,
         elements=documents,
         start=search_public_documents_request.start,

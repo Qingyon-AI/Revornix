@@ -32,7 +32,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
-	InifiniteScrollPagnitionNotificationTarget,
+	InfiniteScrollPaginationNotificationTarget,
 	NotificationTarget,
 } from '@/generated';
 import { replacePath } from '@/lib/utils';
@@ -59,13 +59,13 @@ const NotificationTargetCard = ({
 		mutationFn: deleteNotificationTarget,
 		onMutate() {
 			const previousTargets = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionNotificationTarget>
+				InfiniteData<InfiniteScrollPaginationNotificationTarget>
 			>({
 				queryKey: ['searchNotificationTargets'],
 			});
 
 			filterInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationTarget,
+				InfiniteScrollPaginationNotificationTarget,
 				NotificationTarget
 			>(queryClient, ['searchNotificationTargets'], (item) => {
 				return item.id !== notification_target.id;
@@ -92,13 +92,13 @@ const NotificationTargetCard = ({
 		mutationFn: forkNotificationTarget,
 		onMutate(variables) {
 			const previousTargets = queryClient.getQueriesData<
-				InfiniteData<InifiniteScrollPagnitionNotificationTarget>
+				InfiniteData<InfiniteScrollPaginationNotificationTarget>
 			>({
 				queryKey: ['searchNotificationTargets'],
 			});
 
 			mapInfiniteQueryElements<
-				InifiniteScrollPagnitionNotificationTarget,
+				InfiniteScrollPaginationNotificationTarget,
 				NotificationTarget
 			>(queryClient, ['searchNotificationTargets'], (item) => {
 				if (item.id !== notification_target.id) return item;

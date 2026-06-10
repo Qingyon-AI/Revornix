@@ -45,6 +45,12 @@ export interface ChatMessages {
      * @memberof ChatMessages
      */
     model_id?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ChatMessages
+     */
+    assistant_chat_id?: string | null;
 }
 
 /**
@@ -68,6 +74,7 @@ export function ChatMessagesFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'messages': ((json['messages'] as Array<any>).map(ChatItemFromJSON)),
         'enable_mcp': json['enable_mcp'] == null ? undefined : json['enable_mcp'],
         'model_id': json['model_id'] == null ? undefined : json['model_id'],
+        'assistant_chat_id': json['assistant_chat_id'] == null ? undefined : json['assistant_chat_id'],
     };
 }
 
@@ -85,6 +92,7 @@ export function ChatMessagesToJSONTyped(value?: ChatMessages | null, ignoreDiscr
         'messages': ((value['messages'] as Array<any>).map(ChatItemToJSON)),
         'enable_mcp': value['enable_mcp'],
         'model_id': value['model_id'],
+        'assistant_chat_id': value['assistant_chat_id'],
     };
 }
 

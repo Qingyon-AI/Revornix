@@ -1,5 +1,5 @@
 import aiApi from '@/api/ai'
-import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InifiniteScrollPagnitionModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
+import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InfiniteScrollPaginationModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
 export type BillingAuditIssueDTO = {
@@ -43,7 +43,7 @@ export const searchAiModel = async (data: ModelSearchRequest): Promise<ModelSear
     })
 }
 
-export const searchAiModelProvider = async (data: ModelProviderSearchRequest): Promise<InifiniteScrollPagnitionModelProvider> => {
+export const searchAiModelProvider = async (data: ModelProviderSearchRequest): Promise<InfiniteScrollPaginationModelProvider> => {
     return await request(aiApi.searchAiModelProvider, {
         data: data
     })

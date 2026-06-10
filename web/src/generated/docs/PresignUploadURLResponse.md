@@ -10,6 +10,7 @@ Name | Type
 `file_path` | string
 `expiration` | Date
 `fields` | { [key: string]: any; }
+`stored_file_id` | number
 
 ## Example
 
@@ -22,6 +23,7 @@ const example = {
   "file_path": null,
   "expiration": null,
   "fields": null,
+  "stored_file_id": null,
 } satisfies PresignUploadURLResponse
 
 console.log(example)
