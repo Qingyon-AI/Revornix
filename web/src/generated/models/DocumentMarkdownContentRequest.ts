@@ -37,6 +37,12 @@ export interface DocumentMarkdownContentRequest {
      * @memberof DocumentMarkdownContentRequest
      */
     snapshot_id?: number | null;
+    /**
+     *
+     * @type {string}
+     * @memberof DocumentMarkdownContentRequest
+     */
+    access_key?: string | null;
 }
 
 /**
@@ -59,6 +65,7 @@ export function DocumentMarkdownContentRequestFromJSONTyped(json: any, ignoreDis
         'document_id': json['document_id'] == null ? undefined : json['document_id'],
         'url': json['url'] == null ? undefined : json['url'],
         'snapshot_id': json['snapshot_id'] == null ? undefined : json['snapshot_id'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -76,6 +83,7 @@ export function DocumentMarkdownContentRequestToJSONTyped(value?: DocumentMarkdo
         'document_id': value['document_id'],
         'url': value['url'],
         'snapshot_id': value['snapshot_id'],
+        'access_key': value['access_key'],
     };
 }
 

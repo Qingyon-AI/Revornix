@@ -26,11 +26,23 @@ export interface DocumentDetailRequest {
      */
     document_id?: number | null;
     /**
-     * 
+     *
+     * @type {string}
+     * @memberof DocumentDetailRequest
+     */
+    uuid?: string | null;
+    /**
+     *
      * @type {string}
      * @memberof DocumentDetailRequest
      */
     url?: string | null;
+    /**
+     *
+     * @type {string}
+     * @memberof DocumentDetailRequest
+     */
+    access_key?: string | null;
 }
 
 /**
@@ -51,7 +63,9 @@ export function DocumentDetailRequestFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'document_id': json['document_id'] == null ? undefined : json['document_id'],
+        'uuid': json['uuid'] == null ? undefined : json['uuid'],
         'url': json['url'] == null ? undefined : json['url'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -67,7 +81,9 @@ export function DocumentDetailRequestToJSONTyped(value?: DocumentDetailRequest |
     return {
         
         'document_id': value['document_id'],
+        'uuid': value['uuid'],
         'url': value['url'],
+        'access_key': value['access_key'],
     };
 }
 

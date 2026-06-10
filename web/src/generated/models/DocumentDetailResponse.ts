@@ -132,6 +132,18 @@ export interface DocumentDetailResponse {
      */
     id: number;
     /**
+     *
+     * @type {string}
+     * @memberof DocumentDetailResponse
+     */
+    publish_uuid?: string | null;
+    /**
+     *
+     * @type {boolean}
+     * @memberof DocumentDetailResponse
+     */
+    has_access_key?: boolean;
+    /**
      * 
      * @type {number}
      * @memberof DocumentDetailResponse
@@ -314,6 +326,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'id': json['id'],
+        'publish_uuid': json['publish_uuid'] == null ? undefined : json['publish_uuid'],
         'category': json['category'],
         'title': json['title'],
         'from_plat': json['from_plat'],
@@ -340,6 +353,7 @@ export function DocumentDetailResponseFromJSONTyped(json: any, ignoreDiscriminat
         'summarize_task': json['summarize_task'] == null ? undefined : DocumentSummarizeTaskFromJSON(json['summarize_task']),
         'transcribe_task': json['transcribe_task'] == null ? undefined : DocumentTranscribeTaskFromJSON(json['transcribe_task']),
         'process_task': json['process_task'] == null ? undefined : DocumentProcessTaskFromJSON(json['process_task']),
+        'has_access_key': json['has_access_key'] == null ? undefined : json['has_access_key'],
     };
 }
 
@@ -355,6 +369,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
     return {
         
         'id': value['id'],
+        'publish_uuid': value['publish_uuid'],
         'category': value['category'],
         'title': value['title'],
         'from_plat': value['from_plat'],
@@ -381,6 +396,7 @@ export function DocumentDetailResponseToJSONTyped(value?: DocumentDetailResponse
         'summarize_task': DocumentSummarizeTaskToJSON(value['summarize_task']),
         'transcribe_task': DocumentTranscribeTaskToJSON(value['transcribe_task']),
         'process_task': DocumentProcessTaskToJSON(value['process_task']),
+        'has_access_key': value['has_access_key'],
     };
 }
 

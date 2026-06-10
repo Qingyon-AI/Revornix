@@ -32,6 +32,18 @@ export interface SectionPublishGetResponse {
      */
     uuid?: string | null;
     /**
+     *
+     * @type {boolean}
+     * @memberof SectionPublishGetResponse
+     */
+    has_access_key?: boolean;
+    /**
+     *
+     * @type {string}
+     * @memberof SectionPublishGetResponse
+     */
+    access_key?: string | null;
+    /**
      * 
      * @type {Date}
      * @memberof SectionPublishGetResponse
@@ -67,6 +79,8 @@ export function SectionPublishGetResponseFromJSONTyped(json: any, ignoreDiscrimi
         'uuid': json['uuid'] == null ? undefined : json['uuid'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
+        'has_access_key': json['has_access_key'] == null ? undefined : json['has_access_key'],
+        'access_key': json['access_key'] == null ? undefined : json['access_key'],
     };
 }
 
@@ -85,6 +99,8 @@ export function SectionPublishGetResponseToJSONTyped(value?: SectionPublishGetRe
         'uuid': value['uuid'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),
+        'has_access_key': value['has_access_key'],
+        'access_key': value['access_key'],
     };
 }
 
