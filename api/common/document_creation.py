@@ -11,6 +11,7 @@ import schemas
 from proxy.file_system_proxy import FileSystemProxy
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
+from common.encrypt import encrypt_share_access_key
 from common.file import register_remote_file
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.stt_capability import engine_supports_meeting_mode
@@ -541,6 +542,15 @@ async def create_document_for_user(
             section_id=section_id,
             status=SectionDocumentIntegration.WAIT_TO,
         )
+
+    if document_create_request.auto_publish:
+        db_publish_document = await crud.document.create_publish_document_async(
+            db=db,
+            document_id=db_document.id,
+        )
+        access_key = (document_create_request.access_key or "").strip()
+        if access_key:
+            db_publish_document.access_key_encrypted = encrypt_share_access_key(access_key)
 
     await db.commit()
     _schedule_section_process_for_today_section(
