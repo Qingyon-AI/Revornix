@@ -2385,6 +2385,8 @@
 	"access_key_updated": "Access key updated",
 	"access_key_cleared": "Access key removed",
 	"access_key_enabled_hint": "Visitors must enter the key to view this link",
+	"access_key_include_in_link": "Include key in link",
+	"access_key_include_in_link_hint": "Links with the key unlock directly without prompting visitors",
 	"access_key_gate_title": "This content is protected",
 	"access_key_gate_description": "Enter the access key shared with you to view this page",
 	"access_key_gate_submit": "Unlock",
