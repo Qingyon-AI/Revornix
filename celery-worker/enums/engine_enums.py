@@ -11,7 +11,6 @@ class EngineCategory(IntEnum):
     IMAGE_GENERATE = 2
     STT = 3
     IMAGE_UNDERSTAND = 4
-    
 
 class EngineProvidedMeta(NamedTuple):
     uuid: str

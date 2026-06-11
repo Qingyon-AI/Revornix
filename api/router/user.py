@@ -25,7 +25,7 @@ from common.dependencies import (
     reject_if_official,
 )
 from common.file import get_remote_file_signed_url, get_remote_file_signed_urls
-from common.hash import verify_password
+from common.hash import hash_password, password_needs_rehash, verify_password
 from common.jwt_utils import REFRESH_TOKEN_TYPE, create_token
 from common.logger import exception_logger, format_log_message
 from common.passkey import get_webauthn_context
@@ -949,6 +949,11 @@ async def login(
         provided_password=user_login_request.password
     ):
         raise invalid_credentials
+    # Transparent upgrade: legacy (salted SHA-256) or weaker-parameter hashes
+    # are rewritten with the current scrypt scheme on successful login.
+    # issue_tokens_or_create_mfa_challenge commits the session.
+    if password_needs_rehash(email_user.hashed_password):
+        email_user.hashed_password = hash_password(user_login_request.password)
     return await issue_tokens_or_create_mfa_challenge(
         db=db,
         cache=cache,

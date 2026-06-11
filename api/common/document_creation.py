@@ -35,6 +35,40 @@ from enums.section import (
     UserSectionRole,
 )
 from schemas.error import CustomException
+from common.access_control import has_section_write_access
+
+
+async def ensure_sections_attachable(
+    *,
+    db: AsyncSession,
+    user_id: int,
+    section_ids: list[int],
+) -> None:
+    """Authorize attaching documents to the given sections.
+
+    Why: section ids come straight from the request body; without this check
+    any user could inject their documents into arbitrary sections (IDOR),
+    which would also trigger reprocessing/notifications for the section owner.
+    """
+    for section_id in section_ids:
+        db_section = await crud.section.get_section_by_section_id_async(
+            db=db,
+            section_id=section_id,
+        )
+        if db_section is None:
+            raise CustomException(f"Section {section_id} not found", code=404)
+        if db_section.creator_id == user_id:
+            continue
+        db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+            db=db,
+            section_id=section_id,
+            user_id=user_id,
+        )
+        if not has_section_write_access(db_section_user):
+            raise CustomException(
+                f"You don't have permission to add documents to section {section_id}",
+                code=403,
+            )
 
 
 def _schedule_section_process_for_today_section(
@@ -294,6 +328,12 @@ async def create_document_for_user(
         user=user,
         document_create_request=document_create_request,
     )
+    if document_create_request.sections:
+        await ensure_sections_attachable(
+            db=db,
+            user_id=user.id,
+            section_ids=document_create_request.sections,
+        )
     now = datetime.now(timezone.utc)
     if summary_timezone is None:
         summary_timezone = await get_cached_user_timezone(user.id)

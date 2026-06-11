@@ -153,6 +153,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _cors_headers_for(request: Request) -> dict[str, str]:
+    """CORS headers for responses that bypass CORSMiddleware.
+
+    The generic ``Exception`` handler runs inside Starlette's
+    ServerErrorMiddleware, which sits *outside* the user middleware stack, so
+    its responses never pass through CORSMiddleware. A hardcoded ``*`` breaks
+    credentialed requests (browsers reject ``*`` with credentials) and would
+    bypass the configured origin whitelist, so mirror the real config instead.
+    """
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    if allow_credentials:
+        if origin in origins:
+            return {
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Credentials": "true",
+                "Vary": "Origin",
+            }
+        return {}
+    return {"Access-Control-Allow-Origin": "*"}
+
 app.include_router(user_router, prefix="/user", tags=["user"])
 app.include_router(user_auth_router, prefix="/user", tags=["user"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
@@ -179,13 +201,19 @@ app.mount("/mcp-server/section", section_mcp_app)
 async def health():
     return {"status": "ok"}
 
-@app.get('/openapi.yaml', include_in_schema=False)
+# Cache the serialized YAML, not the Response: middleware mutates
+# response.headers (Process-Time / Trace-Id), so a cached Response instance
+# would share one headers dict across concurrent requests.
 @functools.lru_cache
-def read_openapi_yaml() -> Response:
-    openapi_json= app.openapi()
+def _openapi_yaml_payload() -> str:
+    openapi_json = app.openapi()
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s)
-    return Response(yaml_s.getvalue(), media_type='text/yaml')
+    return yaml_s.getvalue()
+
+@app.get('/openapi.yaml', include_in_schema=False)
+def read_openapi_yaml() -> Response:
+    return Response(_openapi_yaml_payload(), media_type='text/yaml')
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
@@ -237,9 +265,7 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=res.model_dump(),
-        headers={
-            'Access-Control-Allow-Origin': '*',
-        }
+        headers=_cors_headers_for(request),
     )
 
 @app.exception_handler(schemas.error.CustomException)
@@ -258,10 +284,10 @@ async def unicorn_custom_exception_handler(request: Request, exc: schemas.error.
         message=normalize_error_message(exc.message),
         code=exc.code,
     )
+    # Runs inside ExceptionMiddleware (within the user middleware stack), so
+    # CORSMiddleware adds the proper CORS headers on the way out — no manual
+    # header needed here.
     return JSONResponse(
         status_code=exc.code,
         content=res.model_dump(),
-        headers={
-            'Access-Control-Allow-Origin': '*',
-        }
     )

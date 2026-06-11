@@ -17,7 +17,10 @@ from common.celery.app import (
     start_process_document_transcribe,
     start_process_section,
 )
-from common.document_creation import create_document_for_user
+from common.document_creation import (
+    create_document_for_user,
+    ensure_sections_attachable,
+)
 from common.file import register_remote_file
 from proxy.file_system_proxy import FileSystemProxy
 from common.dependencies import (
@@ -81,6 +84,33 @@ async def _get_document_collaborator(
         user_id=user_id,
         document_id=document_id,
     )
+
+
+async def _commit_then_enqueue(
+    *,
+    db: AsyncSession,
+    db_task,
+    enqueue,
+    failed_status,
+) -> None:
+    """Commit the WAIT_TO state before enqueueing the celery task.
+
+    Why this order: enqueue-before-commit lets the worker pick the task up and
+    read the row before our transaction lands (stale status / fields), and a
+    failed commit would leave a ghost celery task running. If enqueueing
+    itself fails we mark the row FAILED — leaving it WAIT_TO would make every
+    retry 409 ("already queued") forever.
+    """
+    await db.commit()
+    try:
+        task_result = enqueue()
+    except Exception:
+        db_task.status = failed_status
+        db_task.update_time = datetime.now(timezone.utc)
+        await db.commit()
+        raise
+    db_task.celery_task_id = task_result.id
+    await db.commit()
 
 
 def _has_document_write_access(authority: int | None) -> bool:
@@ -345,15 +375,18 @@ async def create_ai_summary(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a summary", code=400)
-    task_result = start_process_document_summarize.apply_async(
-        kwargs={
-            "document_id": db_document.id,
-            "user_id": user.id,
-            "model_id": selected_model_id,
-        },
+    await _commit_then_enqueue(
+        db=db,
+        db_task=db_exist_summarize_task,
+        enqueue=lambda: start_process_document_summarize.apply_async(
+            kwargs={
+                "document_id": db_document.id,
+                "user_id": user.id,
+                "model_id": selected_model_id,
+            },
+        ),
+        failed_status=DocumentSummarizeStatus.FAILED,
     )
-    db_exist_summarize_task.celery_task_id = task_result.id
-    await db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -410,14 +443,17 @@ async def create_embedding(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating embeddings", code=400)
-    task_result = start_process_document_embedding.apply_async(
-        kwargs={
-            "document_id": db_document.id,
-            "user_id": user.id,
-        },
+    await _commit_then_enqueue(
+        db=db,
+        db_task=db_embedding_task,
+        enqueue=lambda: start_process_document_embedding.apply_async(
+            kwargs={
+                "document_id": db_document.id,
+                "user_id": user.id,
+            },
+        ),
+        failed_status=DocumentEmbeddingStatus.FAILED,
     )
-    db_embedding_task.celery_task_id = task_result.id
-    await db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -520,15 +556,18 @@ async def transcribe_audio_document(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before transcription", code=400)
-    task_result = start_process_document_transcribe.apply_async(
-        kwargs={
-            "document_id": db_document.id,
-            "user_id": user.id,
-            "engine_id": selected_engine_id,
-        },
+    await _commit_then_enqueue(
+        db=db,
+        db_task=db_transcribe_task,
+        enqueue=lambda: start_process_document_transcribe.apply_async(
+            kwargs={
+                "document_id": db_document.id,
+                "user_id": user.id,
+                "engine_id": selected_engine_id,
+            },
+        ),
+        failed_status=DocumentAudioTranscribeStatus.FAILED,
     )
-    db_transcribe_task.celery_task_id = task_result.id
-    await db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -645,15 +684,18 @@ async def generate_graph(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a graph", code=400)
-    task_result = start_process_document_graph.apply_async(
-        kwargs={
-            "document_id": db_document.id,
-            "user_id": user.id,
-            "model_id": selected_model_id,
-        },
+    await _commit_then_enqueue(
+        db=db,
+        db_task=db_graph_generate_task,
+        enqueue=lambda: start_process_document_graph.apply_async(
+            kwargs={
+                "document_id": db_document.id,
+                "user_id": user.id,
+                "model_id": selected_model_id,
+            },
+        ),
+        failed_status=DocumentGraphStatus.FAILED,
     )
-    db_graph_generate_task.celery_task_id = task_result.id
-    await db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -727,15 +769,18 @@ async def generate_podcast(
     )
     if db_process_task is None:
         raise schemas.error.CustomException("Document must be processed before generating a podcast", code=400)
-    task_result = start_process_document_podcast.apply_async(
-        kwargs={
-            "document_id": db_document.id,
-            "user_id": user.id,
-            "engine_id": selected_engine_id,
-        },
+    await _commit_then_enqueue(
+        db=db,
+        db_task=db_exist_podcast_task,
+        enqueue=lambda: start_process_document_podcast.apply_async(
+            kwargs={
+                "document_id": db_document.id,
+                "user_id": user.id,
+                "engine_id": selected_engine_id,
+            },
+        ),
+        failed_status=DocumentPodcastStatus.FAILED,
     )
-    db_exist_podcast_task.celery_task_id = task_result.id
-    await db.commit()
 
     return schemas.common.SuccessResponse()
 
@@ -992,13 +1037,20 @@ async def transform_markdown(
         )
     await db.commit()
 
-    # Background tasks
-    start_process_document.delay(
-        document_id=db_document.id,
-        user_id=user.id,
-        auto_summary=False,
-        auto_podcast=True
-    )
+    # Background tasks. If enqueueing fails, mark the convert task FAILED —
+    # leaving it WAIT_TO would make every retry 409 ("already queued").
+    try:
+        start_process_document.delay(
+            document_id=db_document.id,
+            user_id=user.id,
+            auto_summary=False,
+            auto_podcast=True
+        )
+    except Exception:
+        db_convert_task.status = DocumentMdConvertStatus.FAILED
+        db_convert_task.update_time = datetime.now(timezone.utc)
+        await db.commit()
+        raise
 
     return schemas.common.SuccessResponse()
 
@@ -1116,6 +1168,13 @@ async def update_document(
         )
         exist_document_section_ids = [section.id for section in exist_document_sections]
         new_section_label_ids = [section_id for section_id in document_update_request.sections if section_id not in exist_document_section_ids]
+        # Newly attached sections must be writable by the caller; section ids
+        # come from the request body and are otherwise unchecked (IDOR).
+        await ensure_sections_attachable(
+            db=db,
+            user_id=user.id,
+            section_ids=new_section_label_ids,
+        )
         for section_id in new_section_label_ids:
             await crud.section.create_or_update_section_document_async(
                 db=db,
