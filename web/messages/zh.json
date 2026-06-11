@@ -2385,6 +2385,8 @@
 	"access_key_updated": "访问密钥已更新",
 	"access_key_cleared": "访问密钥已移除",
 	"access_key_enabled_hint": "访客需输入密钥才能查看此链接",
+	"access_key_include_in_link": "链接附带密钥",
+	"access_key_include_in_link_hint": "附带密钥的链接无需访客输入即可直接解锁",
 	"access_key_gate_title": "此内容受密钥保护",
 	"access_key_gate_description": "请输入分享者提供的访问密钥以查看此页面",
 	"access_key_gate_submit": "解锁",

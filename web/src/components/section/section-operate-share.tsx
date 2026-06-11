@@ -1,4 +1,5 @@
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
 import { Input } from '../ui/input';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -67,9 +68,11 @@ const SectionOperateShare = ({
 	});
 	const isPublished = Boolean(sectionPublish?.status);
 	const currentAccessKey = sectionPublish?.access_key ?? null;
-	// Keyed links unlock directly without prompting visitors for the key.
+	// Keyed links unlock directly without prompting visitors for the key;
+	// the checkbox lets the sharer choose which flavour gets copied.
+	const [includeKeyInLink, setIncludeKeyInLink] = useState(true);
 	const publicSectionUrl = sectionPublish?.uuid
-		? currentAccessKey
+		? currentAccessKey && includeKeyInLink
 			? `${getSiteOrigin()}/section/${sectionPublish.uuid}?key=${encodeURIComponent(currentAccessKey)}`
 			: `${getSiteOrigin()}/section/${sectionPublish.uuid}`
 		: '';
@@ -243,14 +246,24 @@ const SectionOperateShare = ({
 								) : null}
 								{isPublished ? (
 									<div className='mt-3 space-y-2'>
-										<p className='text-sm font-semibold text-foreground'>
-											{t('access_key_label')}
-										</p>
-										{sectionPublish?.has_access_key ? (
-											<p className='text-xs leading-5 text-muted-foreground'>
-												{t('access_key_enabled_hint')}
+										<div className='flex flex-wrap items-center justify-between gap-2'>
+											<p className='text-sm font-semibold text-foreground'>
+												{t('access_key_label')}
 											</p>
-										) : null}
+											{currentAccessKey ? (
+												<label
+													className='flex cursor-pointer items-center gap-2 text-xs text-muted-foreground'
+													title={t('access_key_include_in_link_hint')}>
+													<Checkbox
+														checked={includeKeyInLink}
+														onCheckedChange={(checked) =>
+															setIncludeKeyInLink(checked === true)
+														}
+													/>
+													{t('access_key_include_in_link')}
+												</label>
+											) : null}
+										</div>
 										<div className='flex flex-wrap items-center gap-2'>
 											<Input
 												className='min-w-40 flex-1 font-mono'
