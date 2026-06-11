@@ -85,7 +85,7 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
         base_title = "Removed from Section"
         plain_content = (
             f"You have been removed from section \"{section_title}\". {consequence} "
-            "If you have any questions, please contact the section owner."
+            "If you have any questions, please contact the section creator."
         )
 
         email_title = f"[{APP_BRAND}] You were removed from \"{section_title}\""
@@ -93,12 +93,12 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
             f"<h2 style='margin:0 0 12px'>Section access change</h2>"
             f"<p>You have been removed from <strong>{section_title}</strong>.</p>"
             f"<p>{consequence}</p>"
-            f"<p>If you have any questions, please contact the section owner.</p>"
+            f"<p>If you have any questions, please contact the section creator.</p>"
         )
         email_plain = (
             f"Section access change.\n\n"
             f"You have been removed from \"{section_title}\". {consequence} "
-            "If you have any questions, please contact the section owner."
+            "If you have any questions, please contact the section creator."
         )
 
         apple_title = "Section access removed"
@@ -114,14 +114,14 @@ class RemovedFromSectionNotificationTemplate(NotificationTemplate):
         feishu_markdown = (
             f"You have been removed from **{section_title}**.\n\n"
             f"{consequence}\n\n"
-            f"If you have any questions, please contact the section owner."
+            f"If you have any questions, please contact the section creator."
         )
         dingtalk_title = feishu_title
         dingtalk_markdown = (
             f"### 🚪 Removed from Section\n\n"
             f"You have been removed from **{section_title}**.\n\n"
             f"{consequence}\n\n"
-            f"If you have any questions, please contact the section owner."
+            f"If you have any questions, please contact the section creator."
         )
 
         return build_multi_platform_message(

@@ -1,7 +1,8 @@
 from protocol.notification_trigger import NotificationTriggerEventProtocol
 
+
 class SectionCommentedNotificationTriggerEvent(NotificationTriggerEventProtocol):
-    
+
     def __init__(
         self
     ):

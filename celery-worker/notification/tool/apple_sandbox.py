@@ -261,6 +261,7 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
             response.raise_for_status()
             return response.json()["keys"]
         except httpx.HTTPError as e:
+            exception_logger.error(f"HTTP error occurred: {e}")
             raise Exception(f"Failed to fetch Apple public keys: {e}") from e
 
     def _get_public_key(
@@ -287,6 +288,7 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
             key = jwk.JWK.from_json(json.dumps(jwk_data))
             return key.export_to_pem().decode('utf-8')
         except Exception as e:
+            exception_logger.error(f"Failed to convert JWK to PEM: {e}")
             raise Exception(f"Failed to convert JWK to PEM: {e}") from e
 
     def _verify_jwt(
@@ -321,6 +323,7 @@ class AppleSandboxNotificationTool(NotificationToolProtocol):
             header = jwt.get_unverified_header(identity_token)
             kid = header["kid"]
         except Exception as e:
+            exception_logger.error(f"Failed to decode JWT header: {e}")
             raise Exception(f"Invalid ID token header: {e}") from e
 
         # Step 3: 根据 kid 获取对应的公钥
