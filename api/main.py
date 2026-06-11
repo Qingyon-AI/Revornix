@@ -117,7 +117,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
         title="Revornix Main Backend",
-        version="0.6.4",
+        version="1.0.0-beta1",
         contact={
             "name": "Kinda Hall",
             "url": "https://alndaly.github.io",

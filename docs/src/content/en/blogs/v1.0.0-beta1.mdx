@@ -1,0 +1,49 @@
+---
+title: v1.0.0-beta1
+description: First 1.0 beta — share access keys, publish-on-create, scrypt password hashing upgrade, and a round of permission & concurrency hardening.
+---
+
+# Revornix-v1.0.0-beta1
+
+This is the first public beta on the road to 1.0. The release follows two threads: completing the public-sharing story (the access-key system), and a round of security and stability hardening before 1.0.
+
+## Highlights
+
+### Sharing & Access Keys
+
+- **Access keys for public links**: published documents and sections can now be protected with an access key — visitors must enter the key (or use a keyed link) to view, similar to Feishu-style share passwords.
+- **Publish on create**: document / section creation forms now offer "publish immediately after creation", with an optional access key set in the same step.
+- **Choose whether copied links carry the key**: share dialogs gained an "include key in link" toggle — keyed links unlock directly without prompting, plain links route visitors to the key-entry gate.
+- The share dialogs, the SEO access gate and keyed links now work as one coherent flow.
+
+### Security Hardening
+
+- **Password hashing upgraded to scrypt**: replaces the previous single-round SHA-256 with a memory-hard KDF (self-describing parameters for future upgrades); existing users are migrated transparently on their next successful login — no action needed.
+- **Fixed a section-attachment authorization gap**: attaching a document to a section now verifies your write access to the target section.
+- **Fixed CORS headers on error responses**: error responses no longer hardcode `Access-Control-Allow-Origin: *`, so the frontend can read error payloads correctly in credentialed mode.
+
+### Stability
+
+- **Unified background-task enqueueing order**: summarize / embedding / transcribe / graph / podcast tasks now commit to the database before enqueueing, eliminating races where the worker read stale state, plus ghost tasks; failed enqueues are marked failed instead of staying "queued" forever.
+- **Fixed worker database connections being reused across event loops**, resolving intermittent hangs and "attached to a different loop" errors.
+- **Fixed a crash when unpublishing a section that had publish history.**
+- Mirrored code between api and celery-worker (enums / notification templates / Apple push tooling) was re-synchronized to eliminate drift.
+
+### Fixes & Polish
+
+- A batch of UI refinements; share-dialog layout was decluttered.
+- Removed dead code.
+
+## Beta Notes
+
+This is the first beta of 1.0 — we encourage trying it in a staging environment first. If you hit issues, please file them in Issues with reproduction steps; we will address them before the stable release.
+
+## Contact Us
+
+Join our [Discord](https://discord.com/invite/3XZfz84aPN) community to share ideas and collaborate!
+
+You can raise new issues in this project's Issues area.
+
+## Contributing
+
+See our [contributor guide](https://revornix.com/docs/developer/contribute) for more information.
