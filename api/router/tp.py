@@ -42,6 +42,7 @@ from router.document_interaction_manage import delete_document as delete_documen
 from router.document_publish_manage import (
     document_publish_get_request as document_publish_get_request_impl,
     document_publish_request as document_publish_request_impl,
+    update_document_publish_access_key as update_document_publish_access_key_impl,
 )
 from router.document_query import (
     get_document_detail as get_document_detail_impl,
@@ -80,6 +81,7 @@ from router.section_publish_manage import (
     section_publish_get_request as section_publish_get_request_impl,
     section_publish_request as section_publish_request_impl,
     section_republish as section_republish_impl,
+    update_section_publish_access_key as update_section_publish_access_key_impl,
 )
 from router.section_search_query import (
     get_my_subscribed_sections as get_my_subscribed_sections_impl,
@@ -461,6 +463,19 @@ async def get_section_publish(
 ):
     return await section_publish_get_request_impl(
         section_publish_get_request=section_publish_get_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post('/section/publish/access-key', response_model=schemas.common.NormalResponse)
+async def set_section_publish_access_key(
+    access_key_update_request: schemas.section.SectionAccessKeyUpdateRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await update_section_publish_access_key_impl(
+        access_key_update_request=access_key_update_request,
         db=db,
         user=user,
     )
@@ -861,6 +876,19 @@ async def get_document_publish(
 ):
     return await document_publish_get_request_impl(
         document_publish_get_request=document_publish_get_request,
+        db=db,
+        user=user,
+    )
+
+
+@tp_router.post("/document/publish/access-key", response_model=schemas.common.NormalResponse)
+async def set_document_publish_access_key(
+    access_key_update_request: schemas.document.DocumentAccessKeyUpdateRequest,
+    db: AsyncSession = Depends(get_async_db),
+    user: models.user.User = Depends(get_current_user_with_api_key),
+):
+    return await update_document_publish_access_key_impl(
+        access_key_update_request=access_key_update_request,
         db=db,
         user=user,
     )
