@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
-from common.passkey import get_webauthn_context, new_challenge_id
+from common.passkey import get_optional_webauthn_context, new_challenge_id
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message
 from enums.file import RemoteFileService
@@ -83,10 +83,11 @@ async def issue_tokens_or_create_mfa_challenge(
     user.last_login_ip = ip
     user.last_login_time = datetime.now(timezone.utc)
 
+    webauthn_context = get_optional_webauthn_context(request)
     passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
-        rp_id=get_webauthn_context(request).rp_id if request is not None else None,
+        rp_id=webauthn_context.rp_id if webauthn_context is not None else None,
     )
     totp_credential = await crud.user.get_totp_credential_by_user_id_async(
         db=db,

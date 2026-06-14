@@ -28,7 +28,7 @@ from common.file import get_remote_file_signed_url, get_remote_file_signed_urls
 from common.hash import hash_password, password_needs_rehash, verify_password
 from common.jwt_utils import REFRESH_TOKEN_TYPE, create_token
 from common.logger import exception_logger, format_log_message
-from common.passkey import get_webauthn_context
+from common.passkey import get_optional_webauthn_context
 from common.resource_plan_access import (
     ensure_default_resources_access,
     is_privileged_user,
@@ -844,10 +844,11 @@ async def my_info(
                                                     platform=wechat_user.wechat_platform) for wechat_user in wechat_users]
 
     res.mfa_enabled = user.mfa_enabled
+    webauthn_context = get_optional_webauthn_context(request)
     passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
         db=db,
         user_id=user.id,
-        rp_id=get_webauthn_context(request).rp_id,
+        rp_id=webauthn_context.rp_id if webauthn_context is not None else None,
     )
     res.passkeys = [schemas.user.PasskeyInfo.model_validate(passkey) for passkey in passkeys]
     totp_credential = await crud.user.get_totp_credential_by_user_id_async(
@@ -888,10 +889,11 @@ async def update_mfa_status(
     if db_user is None:
         raise CustomException(message="User not found", code=404)
     if request_body.enabled:
+        webauthn_context = get_optional_webauthn_context(request)
         passkeys = await crud.user.get_webauthn_credentials_by_user_id_async(
             db=db,
             user_id=db_user.id,
-            rp_id=get_webauthn_context(request).rp_id,
+            rp_id=webauthn_context.rp_id if webauthn_context is not None else None,
         )
         totp_credential = await crud.user.get_totp_credential_by_user_id_async(
             db=db,
