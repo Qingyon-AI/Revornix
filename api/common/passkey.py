@@ -92,6 +92,22 @@ def get_webauthn_context(request: Request) -> WebAuthnContext:
     )
 
 
+def get_optional_webauthn_context(request: Request | None) -> WebAuthnContext | None:
+    if request is None:
+        return None
+
+    try:
+        return get_webauthn_context(request)
+    except CustomException as exc:
+        if exc.message in {
+            "Invalid WebAuthn origin",
+            "WebAuthn origin is not allowed",
+            "Invalid WebAuthn RP ID",
+        }:
+            return None
+        raise
+
+
 def generate_passkey_registration_options(
     *,
     request: Request,
