@@ -571,6 +571,16 @@ const SEOSectionDetail = async (props: {
 					]}
 				/>
 				<div className='space-y-5'>
+					{sectionCover ? (
+						<ImageWithFallback
+							src={sectionCover}
+							alt={sectionTitle}
+							preview
+							className='mx-auto h-[220px] w-full max-w-[920px] rounded-xl object-cover object-center sm:h-[300px]'
+							fallbackClassName='mx-auto h-[220px] w-full max-w-[920px] sm:h-[300px]'
+							fallbackSvgClassName='max-w-[220px] p-6'
+						/>
+					) : null}
 					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground max-w-[920px] mx-auto'>
 						{section?.creator ? (
 							<Link
@@ -618,17 +628,6 @@ const SEOSectionDetail = async (props: {
 									className='shrink-0'
 								/>
 							</div>
-						) : null}
-
-						{sectionCover ? (
-							<ImageWithFallback
-								src={sectionCover}
-								alt={sectionTitle}
-								preview
-								className='h-[220px] w-full rounded-xl object-cover object-center sm:h-[300px]'
-								fallbackClassName='h-[220px] w-full sm:h-[300px]'
-								fallbackSvgClassName='max-w-[220px] p-6'
-							/>
 						) : null}
 
 						<div>

@@ -580,50 +580,60 @@ const SeoDocumentDetailPage = async (props: {
 						},
 					]}
 				/>
-					<div className='mx-auto w-full max-w-[920px] space-y-5'>
-						<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
-							<Link
-								href={`/user/${document.creator.id}`}
-								className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
-								<Avatar className='size-7'>
-									<AvatarImage
-										src={creatorAvatar}
-										alt={document.creator.nickname}
-										className='object-cover'
-									/>
-									<AvatarFallback className='text-[11px] font-semibold'>
-										{document.creator.nickname.slice(0, 1)}
-									</AvatarFallback>
-								</Avatar>
-								<span>{document.creator.nickname}</span>
-							</Link>
-							<Badge
-								variant='outline'
-								className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
-								{categoryLabel}
-							</Badge>
-							<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
-								<CalendarClock className='size-3.5' />
-								<span>{t('seo_document_updated_at')}</span>
-								<span className='text-foreground/85'>
-									{new Intl.DateTimeFormat(locale, {
-										dateStyle: 'medium',
-									}).format(
-										new Date(document.update_time ?? document.create_time),
-									)}
-								</span>
-							</div>
-						</div>
-
-						<div className='space-y-3'>
-							<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
-								{document.title || t('document_no_title')}
-							</h1>
-							<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
-								{document.description || t('document_no_description')}
-							</p>
+				<div className='mx-auto w-full max-w-[920px] space-y-5'>
+					{coverSrc ? (
+						<ImageWithFallback
+							src={coverSrc}
+							alt={document.title}
+							preview
+							className='h-[220px] w-full rounded-xl object-cover object-center sm:h-[300px]'
+							fallbackClassName='h-[220px] w-full sm:h-[300px]'
+							fallbackSvgClassName='max-w-[220px] p-6'
+						/>
+					) : null}
+					<div className='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+						<Link
+							href={`/user/${document.creator.id}`}
+							className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-3 transition-colors hover:bg-background/70'>
+							<Avatar className='size-7'>
+								<AvatarImage
+									src={creatorAvatar}
+									alt={document.creator.nickname}
+									className='object-cover'
+								/>
+								<AvatarFallback className='text-[11px] font-semibold'>
+									{document.creator.nickname.slice(0, 1)}
+								</AvatarFallback>
+							</Avatar>
+							<span>{document.creator.nickname}</span>
+						</Link>
+						<Badge
+							variant='outline'
+							className='inline-flex h-12 items-center rounded-full border border-border/50 bg-background/45 px-4 text-sm font-normal text-muted-foreground shadow-none'>
+							{categoryLabel}
+						</Badge>
+						<div className='inline-flex h-12 items-center gap-2 rounded-full border border-border/50 bg-background/45 px-4 text-sm'>
+							<CalendarClock className='size-3.5' />
+							<span>{t('seo_document_updated_at')}</span>
+							<span className='text-foreground/85'>
+								{new Intl.DateTimeFormat(locale, {
+									dateStyle: 'medium',
+								}).format(
+									new Date(document.update_time ?? document.create_time),
+								)}
+							</span>
 						</div>
 					</div>
+
+					<div className='space-y-3'>
+						<h1 className='break-words text-3xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl'>
+							{document.title || t('document_no_title')}
+						</h1>
+						<p className='break-words text-sm leading-7 text-muted-foreground [overflow-wrap:anywhere] sm:text-base'>
+							{document.description || t('document_no_description')}
+						</p>
+					</div>
+				</div>
 
 					<div className='mx-auto w-full space-y-6'>
 						<SeoDocumentAiSummaryPanel
@@ -662,17 +672,6 @@ const SeoDocumentDetailPage = async (props: {
 									</div>
 								))}
 						</MarkdownContentShell>
-
-						{coverSrc ? (
-							<ImageWithFallback
-								src={coverSrc}
-								alt={document.title}
-								preview
-								className='mx-auto h-[220px] w-full max-w-[920px] rounded-xl object-cover object-center sm:h-[300px]'
-								fallbackClassName='mx-auto h-[220px] w-full max-w-[920px] sm:h-[300px]'
-								fallbackSvgClassName='max-w-[220px] p-6'
-							/>
-						) : null}
 					</div>
 
 					<section className='mx-auto w-full max-w-[920px] space-y-5 border-t border-border/50 pt-6'>
