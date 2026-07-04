@@ -19,6 +19,7 @@ import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
 import CalloutNode from './extensions/callout-node';
 import FileAttachmentNode from './extensions/file-attachment-node';
+import AudioNode from './extensions/audio-node';
 import { ImagePreviewGroup } from '../ui/image-with-fallback';
 
 const TipTapMarkdownViewer = ({
@@ -55,6 +56,9 @@ const TipTapMarkdownViewer = ({
 				MermaidCodeBlock,
 				CalloutNode,
 				FileAttachmentNode.configure({
+					ownerId: creatorId,
+				}),
+				AudioNode.configure({
 					ownerId: creatorId,
 				}),
 				Markdown,

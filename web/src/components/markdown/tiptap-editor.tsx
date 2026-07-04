@@ -26,6 +26,7 @@ import {
 	MapPinned,
 	MessageSquarePlus,
 	Minus,
+	Music,
 	PencilRuler,
 	Quote,
 	Sparkles,
@@ -77,6 +78,7 @@ import TextColorMark from './extensions/text-color-mark';
 import TextHighlightMark from './extensions/text-highlight-mark';
 import CalloutNode from './extensions/callout-node';
 import FileAttachmentNode from './extensions/file-attachment-node';
+import AudioNode from './extensions/audio-node';
 import aiApi from '@/api/ai';
 import { getUserTimeZone } from '@/lib/time';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
@@ -363,6 +365,7 @@ const TipTapEditor = ({
 	const { revornixModel, imageGenerateEngine } = useDefaultResourceAccess();
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
 	const fileAttachmentInputRef = useRef<HTMLInputElement | null>(null);
+	const audioInputRef = useRef<HTMLInputElement | null>(null);
 	const aiSelectionRef = useRef<ContinueSelectionSnapshot | null>(null);
 	const hasNotifiedInitialParseRef = useRef(false);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -378,6 +381,7 @@ const TipTapEditor = ({
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const [isUploadingFileAttachment, setIsUploadingFileAttachment] =
 		useState(false);
+	const [isUploadingAudio, setIsUploadingAudio] = useState(false);
 	const [isContinueDialogOpen, setIsContinueDialogOpen] = useState(false);
 	const [isIllustrationDialogOpen, setIsIllustrationDialogOpen] =
 		useState(false);
@@ -578,6 +582,9 @@ const TipTapEditor = ({
 				MermaidCodeBlock,
 				CalloutNode,
 				FileAttachmentNode.configure({
+					ownerId: imageFileOwnerId,
+				}),
+				AudioNode.configure({
 					ownerId: imageFileOwnerId,
 				}),
 				Markdown,
@@ -2054,6 +2061,82 @@ const TipTapEditor = ({
 		}
 	};
 
+	const triggerAudioPicker = () => {
+		audioInputRef.current?.click();
+	};
+
+	const handleAudioUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.target.files?.[0];
+		if (!file) {
+			return;
+		}
+
+		const dotIndex = file.name.lastIndexOf('.');
+		const suffix =
+			dotIndex > 0 && dotIndex < file.name.length - 1
+				? file.name.slice(dotIndex + 1).toLowerCase()
+				: '';
+		const isAudioFile =
+			file.type.startsWith('audio/') ||
+			['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'opus', 'wma'].includes(
+				suffix,
+			);
+		if (!isAudioFile) {
+			toast.error(t('editor_audio_invalid_type'));
+			event.target.value = '';
+			return;
+		}
+
+		if (file.size > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+			toast.error(
+				t('file_upload_size_exceeded', {
+					size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+				}),
+			);
+			event.target.value = '';
+			return;
+		}
+
+		if (
+			!mainUserInfo?.default_user_file_system ||
+			!userFileSystemDetail?.file_system_id
+		) {
+			toast.error(t('error_default_file_system_not_found'));
+			event.target.value = '';
+			return;
+		}
+
+		setIsUploadingAudio(true);
+		try {
+			const filePath = suffix
+				? `files/quick-note/${generateUUID()}.${suffix}`
+				: `files/quick-note/${generateUUID()}`;
+			const fileService = new FileService(userFileSystemDetail.file_system_id);
+			await fileService.uploadFile(filePath, file);
+			editor
+				?.chain()
+				.focus()
+				.insertContent({
+					type: 'audioAttachment',
+					attrs: {
+						src: filePath,
+						name: file.name,
+						mime: file.type || '',
+						size: file.size,
+					},
+				})
+				.run();
+		} catch (error) {
+			console.error(error);
+			toast.error(t('editor_audio_upload_failed'));
+		} finally {
+			setIsUploadingAudio(false);
+			event.target.value = '';
+		}
+	};
+
 	const showFullscreen = fullscreen ?? isFallbackFullscreen;
 	const fullscreenLabel = showFullscreen
 		? t('exit_fullscreen')
@@ -2293,6 +2376,23 @@ const TipTapEditor = ({
 				},
 			},
 			{
+				id: 'audio',
+				label: t('editor_toolbar_label_audio'),
+				description: t('editor_slash_audio_description'),
+				keywords: ['audio', 'music', 'sound', 'song', '音频', '音乐'],
+				icon: Music,
+				disabled: isUploadingAudio,
+				run: ({ editor, match }) => {
+					editor
+						.chain()
+						.focus()
+						.deleteRange(match.range)
+						.setTextSelection(match.range.from)
+						.run();
+					triggerAudioPicker();
+				},
+			},
+			{
 				id: 'formula',
 				label: t('editor_toolbar_label_formula'),
 				description: t('editor_slash_formula_description'),
@@ -2369,6 +2469,7 @@ const TipTapEditor = ({
 			isContinuing,
 			isGeneratingDocumentIllustration,
 			isOptimizingDocument,
+			isUploadingAudio,
 			isUploadingFileAttachment,
 			isUploadingImage,
 			t,
@@ -2743,6 +2844,30 @@ const TipTapEditor = ({
 								})}
 							</TooltipContent>
 						</Tooltip>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type='button'
+									variant='ghost'
+									className={getToolbarActionButtonClassName()}
+									title={t('editor_toolbar_label_audio')}
+									onMouseDown={preserveEditorSelection}
+									onClick={triggerAudioPicker}
+									disabled={isUploadingAudio}>
+									{isUploadingAudio ? (
+										<Loader2 className='size-4 animate-spin' />
+									) : (
+										<Music className='size-4' />
+									)}
+									<span>{t('editor_toolbar_label_audio')}</span>
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								{t('upload_limit_hint', {
+									size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+								})}
+							</TooltipContent>
+						</Tooltip>
 						<Button
 							type='button'
 							variant='ghost'
@@ -2943,6 +3068,13 @@ const TipTapEditor = ({
 					type='file'
 					className='hidden'
 					onChange={handleFileAttachmentUpload}
+				/>
+				<input
+					ref={audioInputRef}
+					type='file'
+					accept='audio/*'
+					className='hidden'
+					onChange={handleAudioUpload}
 				/>
 			</div>
 			<EditorContent
