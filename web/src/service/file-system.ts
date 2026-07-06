@@ -80,7 +80,7 @@ export const getUserFileSystemDetail = async (data: UserFileSystemInfoRequest): 
     })
 }
 
-export const getPresignUploadURL = async (data: PresignUploadURLRequest): Promise<PresignUploadURLResponse> => {
+export const getPresignUploadURL = async (data: PresignUploadURLRequest & { size?: number }): Promise<PresignUploadURLResponse> => {
     return await request(fileSystemApi.getPresignUploadURL, {
         data
     })

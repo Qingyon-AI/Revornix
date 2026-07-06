@@ -72,6 +72,14 @@ async def get_presigned_url(
         bucket=getattr(file_service, "bucket", None),
     )
     user_plan_level = await resolve_user_plan_level(current_user)
+    # Validate the size up-front so an over-limit upload fails with a readable
+    # error from our API (with proper CORS) instead of an opaque S3/MinIO 413.
+    if presign_upload_url_request.size is not None:
+        validate_file_upload_size(
+            file_path=normalized_file_path,
+            size=presign_upload_url_request.size,
+            plan_level=user_plan_level,
+        )
     response = file_service.presign_put_url(
         file_path=normalized_file_path,
         content_type=presign_upload_url_request.content_type,

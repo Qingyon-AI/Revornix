@@ -14,6 +14,7 @@ class DocumentUploadLimitResponse(BaseModel):
 class PresignUploadURLRequest(BaseModel):
     file_path: str
     content_type: str
+    size: int | None = None
 
 class PresignUploadURLResponse(BaseModel):
     upload_url: str

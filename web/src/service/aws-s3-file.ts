@@ -39,7 +39,8 @@ export class AWSS3FileService implements FileServiceProtocol {
         const finalContentType = content_type || file.type || 'application/octet-stream';
         const [res_presign_url, err_presign_url] = await utils.to(getPresignUploadURL({
             file_path: file_path,
-            content_type: finalContentType
+            content_type: finalContentType,
+            size: file.size
         }));
         if (err_presign_url || !res_presign_url) {
             throw err_presign_url || new Error("get presign url failed");

@@ -59,5 +59,5 @@ def validate_file_upload_size(
     if size > limit:
         raise CustomException(
             message=f"File upload size must not exceed {format_upload_limit_label(limit)}",
-            code=400,
+            code=413,
         )
