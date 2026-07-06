@@ -6,6 +6,25 @@ const MB = 1024 * 1024;
 // the backend config. Images/attachments keep a fixed client cap.
 export const IMAGE_MAX_UPLOAD_BYTES = 10 * MB;
 
+// The API answers over-limit uploads (both direct and presign-time) with HTTP
+// 413, so a failed upload can be recognised as "too large" regardless of which
+// storage backend rejected it.
+export const UPLOAD_TOO_LARGE_CODE = 413;
+
+export const isUploadTooLargeError = (error: unknown): boolean =>
+	typeof error === 'object' &&
+	error !== null &&
+	(error as { code?: number }).code === UPLOAD_TOO_LARGE_CODE;
+
+export const getUploadErrorMessage = (error: unknown): string | undefined => {
+	if (error instanceof Error) return error.message;
+	if (typeof error === 'object' && error !== null) {
+		const message = (error as { message?: unknown }).message;
+		if (typeof message === 'string') return message;
+	}
+	return undefined;
+};
+
 export const formatUploadSize = (bytes: number) => {
 	const mb = bytes / 1024 / 1024;
 	return Number.isInteger(mb) ? `${mb}MB` : `${mb.toFixed(1)}MB`;

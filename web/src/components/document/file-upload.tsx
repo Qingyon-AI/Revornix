@@ -9,7 +9,11 @@ import { useUserContext } from '@/provider/user-provider';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
-import { formatUploadSize } from '@/lib/upload';
+import {
+	formatUploadSize,
+	getUploadErrorMessage,
+	isUploadTooLargeError,
+} from '@/lib/upload';
 import { useDocumentUploadLimits } from '@/hooks/use-document-upload-limits';
 import { useRouter } from 'next/navigation';
 import { generateUUID } from '@/lib/uuid';
@@ -121,12 +125,33 @@ const FileUpload = ({
 				if (upload.current) {
 					upload.current.value = '';
 				}
-				toast.error(error instanceof Error ? error.message : t('upload_failed'));
+				if (isUploadTooLargeError(error)) {
+					toast.error(
+						maxSizeBytes
+							? t('file_upload_size_exceeded', {
+									size: formatUploadSize(maxSizeBytes),
+								})
+							: getUploadErrorMessage(error) ?? t('upload_failed'),
+						canUpgradeDocumentUpload
+							? {
+									description: t('upload_limit_upgrade_description'),
+									action: {
+										label: t('upload_limit_upgrade_cta'),
+										onClick: () => router.push('/account/plan'),
+									},
+								}
+							: undefined,
+					);
+				} else {
+					toast.error(getUploadErrorMessage(error) ?? t('upload_failed'));
+				}
 			}
 		},
 		[
 			mainUserInfo?.default_user_file_system,
 			maxSizeBytes,
+			canUpgradeDocumentUpload,
+			router,
 			onSuccess,
 			t,
 			userFileSystemDetail?.file_system_id,

@@ -92,7 +92,12 @@ import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
-import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import {
+	formatUploadSize,
+	getUploadErrorMessage,
+	isUploadTooLargeError,
+	IMAGE_MAX_UPLOAD_BYTES,
+} from '@/lib/upload';
 import { useDocumentUploadLimits } from '@/hooks/use-document-upload-limits';
 import { useRouter } from 'next/navigation';
 import { generateUUID } from '@/lib/uuid';
@@ -2069,7 +2074,27 @@ const TipTapEditor = ({
 				.run();
 		} catch (error) {
 			console.error(error);
-			toast.error(t('editor_file_attachment_upload_failed'));
+			if (isUploadTooLargeError(error)) {
+				toast.error(
+					fileAttachmentUploadLimitBytes
+						? t('file_upload_size_exceeded', {
+								size: formatUploadSize(fileAttachmentUploadLimitBytes),
+							})
+						: getUploadErrorMessage(error) ??
+								t('editor_file_attachment_upload_failed'),
+					canUpgradeFileAttachment
+						? {
+								description: t('upload_limit_upgrade_description'),
+								action: {
+									label: t('upload_limit_upgrade_cta'),
+									onClick: () => router.push('/account/plan'),
+								},
+							}
+						: undefined,
+				);
+			} else {
+				toast.error(t('editor_file_attachment_upload_failed'));
+			}
 		} finally {
 			setIsUploadingFileAttachment(false);
 			event.target.value = '';
@@ -2157,7 +2182,26 @@ const TipTapEditor = ({
 				.run();
 		} catch (error) {
 			console.error(error);
-			toast.error(t('editor_audio_upload_failed'));
+			if (isUploadTooLargeError(error)) {
+				toast.error(
+					fileAttachmentUploadLimitBytes
+						? t('file_upload_size_exceeded', {
+								size: formatUploadSize(fileAttachmentUploadLimitBytes),
+							})
+						: getUploadErrorMessage(error) ?? t('editor_audio_upload_failed'),
+					canUpgradeFileAttachment
+						? {
+								description: t('upload_limit_upgrade_description'),
+								action: {
+									label: t('upload_limit_upgrade_cta'),
+									onClick: () => router.push('/account/plan'),
+								},
+							}
+						: undefined,
+				);
+			} else {
+				toast.error(t('editor_audio_upload_failed'));
+			}
 		} finally {
 			setIsUploadingAudio(false);
 			event.target.value = '';
