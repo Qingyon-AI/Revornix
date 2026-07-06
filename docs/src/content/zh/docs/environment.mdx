@@ -213,7 +213,19 @@
 | `NEXT_PUBLIC_DEPLOY_HOSTS` | 可选 | 官方域名列表示例 | `web/src/lib/utils.ts`, `account/page.tsx` | 判断是否显示官方订阅能力 |
 | `NEXT_PUBLIC_GA_ID` | 可选 | 空 | `web/src/app/layout.tsx` | Google Analytics |
 
-### 4.7 Gateway 变量
+### 4.7 文档上传限额（按订阅分级）
+
+文档（`files/` 前缀）单文件上传大小上限按用户订阅等级区分，**仅在 API 侧通过下列环境变量配置（单位 MB）**，缺省或非法时回退到默认值。API 侧为强制校验（含预签名 URL 的 `content-length-range`）。Web 前端不再内置任何数值，而是在运行时通过接口 `POST /file-system/upload-limits` 读取「当前用户的上限 + 是否可升级」，因此前端与后端配置零漂移。管理员 / Root 以及未接入支付系统时按对应逻辑处理（默认落到免费档，管理员为 Max）。
+
+| 变量 | 服务 | 必填级别 | 默认值 | 主要读取点 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_FREE` | api | 可选 | `10` | `api/config/upload.py` | 免费档单文件上传上限（MB） |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_PRO` | api | 可选 | `50` | 同上 | Pro 档单文件上传上限（MB） |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_MAX` | api | 可选 | `100` | 同上 | Max 档单文件上传上限（MB） |
+
+> 阿里云 OSS 走 PUT 预签名，无法携带大小策略，其分级限额仅由服务端直传校验兜底。
+
+### 4.8 Gateway 变量
 
 | 变量 | 必填级别 | 默认值 / 样例 | 主要读取点 | 用途 |
 | --- | --- | --- | --- | --- |

@@ -12,9 +12,13 @@ import crud
 import models
 import schemas
 from common.encrypt import encrypt_file_system_config, decrypt_file_system_config
-from common.upload_limits import validate_file_upload_size
+from common.upload_limits import (
+    can_upgrade_document_upload,
+    get_document_upload_limit_bytes,
+    validate_file_upload_size,
+)
 from enums.file import RemoteFileService
-from common.dependencies import get_async_db, get_current_user
+from common.dependencies import get_async_db, get_current_user, resolve_user_plan_level
 from proxy.file_system_proxy import FileSystemProxy
 from data.sql.base import async_session_context
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
@@ -41,6 +45,16 @@ def _normalize_presign_file_path(path: str, bucket: str | None = None) -> str:
     return _normalize_and_validate_path(path)
 
 
+@file_system_router.post("/upload-limits", response_model=schemas.file_system.DocumentUploadLimitResponse)
+async def get_document_upload_limits(
+    current_user: models.user.User = Depends(get_current_user),
+):
+    plan_level = await resolve_user_plan_level(current_user)
+    return schemas.file_system.DocumentUploadLimitResponse(
+        document_max_upload_bytes=get_document_upload_limit_bytes(plan_level),
+        can_upgrade=can_upgrade_document_upload(plan_level),
+    )
+
 @file_system_router.post("/presign-upload-url", response_model=schemas.file_system.PresignUploadURLResponse)
 async def get_presigned_url(
     presign_upload_url_request: schemas.file_system.PresignUploadURLRequest,
@@ -57,10 +71,12 @@ async def get_presigned_url(
         presign_upload_url_request.file_path,
         bucket=getattr(file_service, "bucket", None),
     )
+    user_plan_level = await resolve_user_plan_level(current_user)
     response = file_service.presign_put_url(
         file_path=normalized_file_path,
         content_type=presign_upload_url_request.content_type,
-        expires_in=3600
+        expires_in=3600,
+        max_upload_bytes=get_document_upload_limit_bytes(user_plan_level),
     )
     stored_file = await crud.file_system.upsert_stored_file_async(
         db=db,
@@ -635,7 +651,12 @@ async def upload_file_system(
         raise schemas.error.CustomException(code=404, message="User file system not found")
 
     content = await file.read()
-    validate_file_upload_size(file_path=file_path, size=len(content))
+    user_plan_level = await resolve_user_plan_level(current_user)
+    validate_file_upload_size(
+        file_path=file_path,
+        size=len(content),
+        plan_level=user_plan_level,
+    )
     user_file_system = await crud.file_system.get_user_file_system_by_id_async(
         db=db,
         user_file_system_id=default_user_file_system

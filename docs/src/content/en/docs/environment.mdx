@@ -213,7 +213,19 @@ Additional note:
 | `NEXT_PUBLIC_DEPLOY_HOSTS` | Optional | Sample official domain list | `web/src/lib/utils.ts`, `account/page.tsx` | Determines whether official subscription features are shown |
 | `NEXT_PUBLIC_GA_ID` | Optional | Empty | `web/src/app/layout.tsx` | Google Analytics |
 
-### 4.7 Gateway variables
+### 4.7 Document upload limits (per subscription tier)
+
+The per-file upload size cap for documents (the `files/` prefix) varies by the user's subscription tier and is **configured only on the API side** via the environment variables below (in MB), falling back to defaults when unset or invalid. The API enforces the limit (including the `content-length-range` on presigned URLs). The Web frontend no longer hardcodes any values — it reads the current user's limit and upgrade eligibility at runtime via the `POST /file-system/upload-limits` endpoint, so the frontend never drifts from the backend config. Admin / Root users and deployments without the payment system are handled accordingly (falling back to the free tier by default, with admins treated as Max).
+
+| Variable | Service | Required level | Default | Main read points | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_FREE` | api | Optional | `10` | `api/config/upload.py` | Free-tier per-file upload limit (MB) |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_PRO` | api | Optional | `50` | Same as above | Pro-tier per-file upload limit (MB) |
+| `FILE_DOCUMENT_MAX_UPLOAD_MB_MAX` | api | Optional | `100` | Same as above | Max-tier per-file upload limit (MB) |
+
+> Aliyun OSS uses a presigned PUT URL, which cannot carry a size policy, so its tier-based limit is only backstopped by the server-mediated upload check.
+
+### 4.8 Gateway variables
 
 | Variable | Required level | Default / example | Main read points | Purpose |
 | --- | --- | --- | --- | --- |

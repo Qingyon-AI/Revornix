@@ -53,7 +53,13 @@ class AliyunOSSRemoteFileService(RemoteFileServiceProtocol):
         self,
         file_path: str,
         content_type: str | None = None,
-        expires_in: int = 3600
+        expires_in: int = 3600,
+        # Aliyun OSS v2 presigns a PUT URL, which cannot carry an S3-style
+        # `content-length-range` policy, so the tier-based size cap cannot be
+        # enforced at presign time here. Accepted for interface parity; the
+        # server-mediated upload path still enforces it via
+        # `validate_file_upload_size`.
+        max_upload_bytes: int | None = None
     ):
         if self.oss_client is None:
             raise Exception("OSS v2 client not initialized")

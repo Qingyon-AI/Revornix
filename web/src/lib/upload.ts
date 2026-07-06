@@ -1,8 +1,10 @@
-export const FILE_DOCUMENT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-export const IMAGE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-// Inline attachments inside the markdown editor share the API-side
-// `files/` prefix size cap (currently 10MB).
-export const FILE_ATTACHMENT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const MB = 1024 * 1024;
+
+// Document (`files/` prefix) upload size caps are tier-based and enforced by the
+// API. The frontend does not hardcode the per-tier values — it reads the current
+// user's limit at runtime via `useDocumentUploadLimits` so there is no drift with
+// the backend config. Images/attachments keep a fixed client cap.
+export const IMAGE_MAX_UPLOAD_BYTES = 10 * MB;
 
 export const formatUploadSize = (bytes: number) => {
 	const mb = bytes / 1024 / 1024;

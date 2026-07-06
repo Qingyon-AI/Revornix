@@ -78,6 +78,7 @@ const contentMap: Record<
 					{ text: '收录链接、文件', badge: '20 each' },
 					{ text: '收录速记' },
 					{ text: '文档待读记录' },
+					{ text: '文档单文件上传上限', badge: '10 MB' },
 					{ text: '多端同步' },
 					{ text: 'AI智能总结（需要自行配置模型）' },
 					{ text: '专栏插图生成（需要自行配置模型）' },
@@ -102,6 +103,7 @@ const contentMap: Record<
 				buttonHref: 'https://app.revornix.com/account/plan',
 				features: [
 					{ text: '包含 Free 全部能力，并可使用官方托管 AI' },
+					{ text: '更大的文档单文件上传上限', badge: '50 MB' },
 					{ text: '文档与专栏知识图谱' },
 					{ text: '每月包含可共享使用的官方总积分额度', badge: '4.3M pts' },
 					{ text: '按当前默认官方组合计费，约等于 1 份标准月组合额度，可覆盖 Revornix AI、Banana Image 与豆包播客引擎的常见使用' },
@@ -124,6 +126,7 @@ const contentMap: Record<
 				buttonHref: 'https://app.revornix.com/account/plan',
 				features: [
 					{ text: '包含 Pro 全部能力，面向创作者与重度用户' },
+					{ text: '更大的文档单文件上传上限', badge: '100 MB' },
 					{ text: '更多的每月官方总积分额度', badge: '17.2M pts' },
 					{ text: '按当前默认官方组合计费，约等于 4 份标准月组合额度，可覆盖更高频的 Revornix AI、Banana Image 与豆包播客引擎使用' },
 					{ text: '更适合高频使用 Revornix AI、插图生成与播客生成' },
@@ -220,6 +223,7 @@ const contentMap: Record<
 					{ text: 'Capture links, files.', badge: '20 each' },
 					{ text: 'Capture quick notes.' },
 					{ text: 'Document reading queue.' },
+					{ text: 'Per-file document upload limit.', badge: '10 MB' },
 					{ text: 'Multi-device sync.' },
 					{ text: 'AI-powered summarization (requires self-configured model).' },
 					{ text: 'Section illustration generation (requires self-configured model).' },
@@ -244,6 +248,7 @@ const contentMap: Record<
 				buttonHref: 'https://app.revornix.com/account/plan',
 				features: [
 					{ text: 'Everything in Free, with access to official hosted capabilities.' },
+					{ text: 'Larger per-file document upload limit.', badge: '50 MB' },
 					{ text: 'Document and section knowledge graph.' },
 					{ text: 'Monthly hosted point allowance shared across official AI features.', badge: '4.3M pts' },
 					{ text: 'Based on the current default hosted stack, roughly equal to one standard monthly mix across Revornix AI, Banana Image, and Volc Podcast Engine.' },
@@ -266,6 +271,7 @@ const contentMap: Record<
 				buttonHref: 'https://app.revornix.com/account/plan',
 				features: [
 					{ text: 'Everything in Pro, tuned for creators and heavy users.' },
+					{ text: 'Larger per-file document upload limit.', badge: '100 MB' },
 					{ text: 'Larger monthly hosted point allowance shared across official AI features.', badge: '17.2M pts' },
 					{ text: 'Based on the current default hosted stack, roughly equal to four standard monthly mixes across Revornix AI, Banana Image, and Volc Podcast Engine.' },
 					{ text: 'Better suited for heavier use of Revornix AI, illustration generation, and podcast generation.' },

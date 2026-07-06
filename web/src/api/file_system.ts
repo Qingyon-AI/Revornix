@@ -8,6 +8,7 @@ export default {
     getFileSystemDetail: API_PREFIX + '/file-system/detail',
     getUserFileSystemDetail: API_PREFIX + '/file-system/user-file-system/detail',
     getPresignUploadURL: API_PREFIX + "/file-system/presign-upload-url",
+    getDocumentUploadLimits: API_PREFIX + "/file-system/upload-limits",
     deleteUserFileSystem: API_PREFIX + "/file-system/user-file-system/delete",
     uploadFileToGenericFileSystem: API_PREFIX + "/file-system/generic-s3/upload",
     searchStoredFiles: API_PREFIX + "/file-system/files/search",

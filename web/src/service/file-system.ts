@@ -86,6 +86,18 @@ export const getPresignUploadURL = async (data: PresignUploadURLRequest): Promis
     })
 }
 
+// Current user's document (files/ prefix) upload limit, resolved server-side from
+// their subscription tier. Authoritative source — the frontend must not hardcode
+// per-tier values, to stay in sync with the API config.
+export type DocumentUploadLimitResponse = {
+    document_max_upload_bytes: number;
+    can_upgrade: boolean;
+}
+
+export const getDocumentUploadLimits = async (): Promise<DocumentUploadLimitResponse> => {
+    return await request(fileSystemApi.getDocumentUploadLimits)
+}
+
 export const searchStoredFiles = async (data: StoredFileSearchRequest): Promise<StoredFileSearchResponse> => {
     return await request(fileSystemApi.searchStoredFiles, {
         data
