@@ -7,6 +7,10 @@ class GenericFileSystemUploadResponse(BaseModel):
     file_path: str
     stored_file_id: int | None = None
 
+class DocumentUploadLimitResponse(BaseModel):
+    document_max_upload_bytes: int
+    can_upgrade: bool
+
 class PresignUploadURLRequest(BaseModel):
     file_path: str
     content_type: str

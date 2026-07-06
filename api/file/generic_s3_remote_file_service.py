@@ -7,6 +7,10 @@ from botocore.config import Config
 from datetime import datetime, timedelta, timezone
 
 from common.logger import exception_logger, info_logger
+from common.upload_limits import (
+    FILE_DOCUMENT_MAX_UPLOAD_BYTES,
+    FILE_DOCUMENT_UPLOAD_PATH_PREFIX,
+)
 from enums.file import RemoteFileService
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from botocore.exceptions import ClientError
@@ -45,7 +49,8 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
         self,
         file_path: str,
         content_type: str | None = None,
-        expires_in: int = 3600
+        expires_in: int = 3600,
+        max_upload_bytes: int | None = None
     ):
         if self.s3_client is None:
             raise Exception("S3 client not specified")
@@ -53,17 +58,25 @@ class GenericS3RemoteFileService(RemoteFileServiceProtocol):
             raise Exception("Bucket not specified")
         now = datetime.now(timezone.utc)
         expiration = now + timedelta(seconds=expires_in)
+        conditions: list[Any] = [
+            {"Content-Type": content_type},
+            {"bucket": self.bucket},
+            ["eq", "$key", file_path]
+        ]
+        if file_path.startswith(FILE_DOCUMENT_UPLOAD_PATH_PREFIX):
+            size_limit = (
+                max_upload_bytes
+                if max_upload_bytes is not None
+                else FILE_DOCUMENT_MAX_UPLOAD_BYTES
+            )
+            conditions.append(["content-length-range", 0, size_limit])
         response = self.s3_client.generate_presigned_post(
             Bucket=self.bucket,
             Key=file_path,
             Fields={
                 "Content-Type": content_type
             },
-            Conditions=[
-                {"Content-Type": content_type},
-                {"bucket": self.bucket},
-                ["eq", "$key", file_path]
-            ],
+            Conditions=conditions,
             ExpiresIn=expires_in,
         )
         return schemas.file_system.PresignUploadURLResponse(

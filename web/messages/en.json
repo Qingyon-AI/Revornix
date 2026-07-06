@@ -68,6 +68,8 @@
 	"error_audio_result_not_found": "No audio recording available to upload",
 	"upload_failed": "Upload failed, please try again later",
 	"file_upload_size_exceeded": "File size must not exceed {size}",
+	"upload_limit_upgrade_cta": "Upgrade plan",
+	"upload_limit_upgrade_description": "Upgrade your plan to raise the per-file upload size limit",
 	"upload_limit_hint": "Single file max {size}",
 	"form_validate_failed": "Form validation failed",
 	"form_no_change": "No changes made",

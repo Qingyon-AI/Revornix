@@ -92,11 +92,9 @@ import type { AIEvent } from '@/types/ai';
 import AIModelSelect from '@/components/ai/model-select';
 import ImageEngineSelect from '@/components/ai/image-engine-select';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
-import {
-	FILE_ATTACHMENT_MAX_UPLOAD_BYTES,
-	formatUploadSize,
-	IMAGE_MAX_UPLOAD_BYTES,
-} from '@/lib/upload';
+import { formatUploadSize, IMAGE_MAX_UPLOAD_BYTES } from '@/lib/upload';
+import { useDocumentUploadLimits } from '@/hooks/use-document-upload-limits';
+import { useRouter } from 'next/navigation';
 import { generateUUID } from '@/lib/uuid';
 
 type TipTapEditorProps = {
@@ -361,7 +359,12 @@ const TipTapEditor = ({
 		'#e9d5ff',
 	];
 	const t = useTranslations();
+	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
+	const {
+		limitBytes: fileAttachmentUploadLimitBytes,
+		canUpgrade: canUpgradeFileAttachment,
+	} = useDocumentUploadLimits();
 	const { revornixModel, imageGenerateEngine } = useDefaultResourceAccess();
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
 	const fileAttachmentInputRef = useRef<HTMLInputElement | null>(null);
@@ -2008,11 +2011,23 @@ const TipTapEditor = ({
 			return;
 		}
 
-		if (file.size > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+		if (
+			fileAttachmentUploadLimitBytes &&
+			file.size > fileAttachmentUploadLimitBytes
+		) {
 			toast.error(
 				t('file_upload_size_exceeded', {
-					size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+					size: formatUploadSize(fileAttachmentUploadLimitBytes),
 				}),
+				canUpgradeFileAttachment
+					? {
+							description: t('upload_limit_upgrade_description'),
+							action: {
+								label: t('upload_limit_upgrade_cta'),
+								onClick: () => router.push('/account/plan'),
+							},
+						}
+					: undefined,
 			);
 			event.target.value = '';
 			return;
@@ -2089,11 +2104,23 @@ const TipTapEditor = ({
 			return;
 		}
 
-		if (file.size > FILE_ATTACHMENT_MAX_UPLOAD_BYTES) {
+		if (
+			fileAttachmentUploadLimitBytes &&
+			file.size > fileAttachmentUploadLimitBytes
+		) {
 			toast.error(
 				t('file_upload_size_exceeded', {
-					size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+					size: formatUploadSize(fileAttachmentUploadLimitBytes),
 				}),
+				canUpgradeFileAttachment
+					? {
+							description: t('upload_limit_upgrade_description'),
+							action: {
+								label: t('upload_limit_upgrade_cta'),
+								onClick: () => router.push('/account/plan'),
+							},
+						}
+					: undefined,
 			);
 			event.target.value = '';
 			return;
@@ -2840,7 +2867,9 @@ const TipTapEditor = ({
 							</TooltipTrigger>
 							<TooltipContent>
 								{t('upload_limit_hint', {
-									size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+									size: fileAttachmentUploadLimitBytes
+										? formatUploadSize(fileAttachmentUploadLimitBytes)
+										: '—',
 								})}
 							</TooltipContent>
 						</Tooltip>
@@ -2864,7 +2893,9 @@ const TipTapEditor = ({
 							</TooltipTrigger>
 							<TooltipContent>
 								{t('upload_limit_hint', {
-									size: formatUploadSize(FILE_ATTACHMENT_MAX_UPLOAD_BYTES),
+									size: fileAttachmentUploadLimitBytes
+										? formatUploadSize(fileAttachmentUploadLimitBytes)
+										: '—',
 								})}
 							</TooltipContent>
 						</Tooltip>

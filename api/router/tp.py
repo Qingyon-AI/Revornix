@@ -14,6 +14,7 @@ from common.dependencies import (
     get_current_user_with_api_key,
     get_request_timezone,
     plan_ability_checked_in_func,
+    resolve_user_plan_level,
 )
 from common.document_creation import create_document_for_user
 from common.jwt_utils import create_token
@@ -114,7 +115,12 @@ async def upload_file_system(
     )
     content = await file.read()
     normalized_file_path = file_path.lstrip("/")
-    validate_file_upload_size(file_path=normalized_file_path, size=len(content))
+    user_plan_level = await resolve_user_plan_level(user)
+    validate_file_upload_size(
+        file_path=normalized_file_path,
+        size=len(content),
+        plan_level=user_plan_level,
+    )
     await remote_file_service.upload_raw_content_to_path(
         file_path=normalized_file_path,
         content=content,

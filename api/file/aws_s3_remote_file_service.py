@@ -49,7 +49,8 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
         self,
         file_path: str,
         content_type: str | None = None,
-        expires_in: int = 3600
+        expires_in: int = 3600,
+        max_upload_bytes: int | None = None
     ):
         if self.s3_client is None:
             raise Exception("S3 client not specified")
@@ -63,7 +64,12 @@ class AWSS3RemoteFileService(RemoteFileServiceProtocol):
             ["eq", "$key", file_path],
         ]
         if file_path.startswith(FILE_DOCUMENT_UPLOAD_PATH_PREFIX):
-            conditions.append(["content-length-range", 0, FILE_DOCUMENT_MAX_UPLOAD_BYTES])
+            size_limit = (
+                max_upload_bytes
+                if max_upload_bytes is not None
+                else FILE_DOCUMENT_MAX_UPLOAD_BYTES
+            )
+            conditions.append(["content-length-range", 0, size_limit])
         response = self.s3_client.generate_presigned_post(
             Bucket=self.bucket,
             Key=file_path,

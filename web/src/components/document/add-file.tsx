@@ -44,7 +44,8 @@ import { useSearchParams } from 'next/navigation';
 import { getQueryClient } from '@/lib/get-query-client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/hybrid-tooltip';
 import { invalidateDocumentListQueries } from '@/lib/document-cache';
-import { FILE_DOCUMENT_MAX_UPLOAD_BYTES, formatUploadSize } from '@/lib/upload';
+import { formatUploadSize } from '@/lib/upload';
+import { useDocumentUploadLimits } from '@/hooks/use-document-upload-limits';
 import SelectorSkeleton from './selector-skeleton';
 import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Input } from '../ui/input';
@@ -56,6 +57,7 @@ const AddFile = () => {
 	const sectionId = searchParams.get('section_id');
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
+	const { limitBytes: documentUploadLimitBytes } = useDocumentUploadLimits();
 	const { documentReaderModel, fileParseEngine, podcastEngine } =
 		useDefaultResourceAccess();
 	const formSchema = z.object({
@@ -187,7 +189,7 @@ const AddFile = () => {
 													<FileUpload
 														accept='.jpg, .jpeg, .png, .pdf, .doc, .docx, .ppt, .pptx'
 														className='min-h-[320px] flex-1 rounded-2xl border-border/70 bg-muted/10 lg:min-h-0'
-														maxSizeBytes={FILE_DOCUMENT_MAX_UPLOAD_BYTES}
+														maxSizeBytes={documentUploadLimitBytes}
 														onSuccess={(file_name) => {
 															field.onChange(file_name);
 														}}
@@ -216,9 +218,9 @@ const AddFile = () => {
 															</p>
 															<p className='mt-1 text-xs leading-5 text-muted-foreground'>
 																{t('document_create_file_upload_limit_hint', {
-																	size: formatUploadSize(
-																		FILE_DOCUMENT_MAX_UPLOAD_BYTES,
-																	),
+																	size: documentUploadLimitBytes
+																		? formatUploadSize(documentUploadLimitBytes)
+																		: '—',
 																})}
 															</p>
 														</div>

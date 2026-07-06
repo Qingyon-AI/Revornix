@@ -609,6 +609,22 @@ async def get_user_plan_level_in_func(
     return get_plan_access_level_from_product_uuid(product_uuid)
 
 
+async def resolve_user_plan_level(
+    user: models.user.User,
+) -> PlanAccessLevel:
+    """Resolve a user's current subscription tier from a user object.
+
+    Works regardless of how the request authenticated (session bearer token or
+    API key) by minting a short-lived access token for the pay-system lookup.
+    """
+    from common.jwt_utils import create_token
+
+    access_token, _ = create_token(user=user)
+    return await get_user_plan_level_in_func(
+        authorization=f"Bearer {access_token}",
+    )
+
+
 async def is_paid_subscription_user_in_func(
     authorization: str | None,
 ) -> bool:

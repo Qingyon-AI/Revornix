@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { getUserFileSystemDetail } from '@/service/file-system';
 import { formatUploadSize } from '@/lib/upload';
+import { useDocumentUploadLimits } from '@/hooks/use-document-upload-limits';
+import { useRouter } from 'next/navigation';
 import { generateUUID } from '@/lib/uuid';
 
 const FileUpload = ({
@@ -28,7 +30,9 @@ const FileUpload = ({
 	className?: string;
 }) => {
 	const t = useTranslations();
+	const router = useRouter();
 	const { mainUserInfo } = useUserContext();
+	const { canUpgrade: canUpgradeDocumentUpload } = useDocumentUploadLimits();
 	const [file, setFile] = useState<File | null>(null);
 	const [fileName, setFileName] = useState<string | null>(null); // ⭐保存文件路径
 	const upload = useRef<HTMLInputElement>(null);
@@ -73,6 +77,15 @@ const FileUpload = ({
 					t('file_upload_size_exceeded', {
 						size: formatUploadSize(maxSizeBytes),
 					}),
+					canUpgradeDocumentUpload
+						? {
+								description: t('upload_limit_upgrade_description'),
+								action: {
+									label: t('upload_limit_upgrade_cta'),
+									onClick: () => router.push('/account/plan'),
+								},
+							}
+						: undefined,
 				);
 				if (upload.current) {
 					upload.current.value = '';
