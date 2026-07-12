@@ -52,7 +52,7 @@ Revornix/
 ├── gateway/                   # Go 公网入口网关（路由、反爬、上游容错）
 ├── hot-news/                  # 热搜聚合服务（基于 DailyHotApi）
 ├── docs/                      # 公开文档站（revornix.com/docs）— 独立 Next.js + Nextra
-├── desktop/                   # 规划中的桌面应用（Tauri/Electron）— 目前是占位目录
+├── desktop/                   # Electron 桌面壳（macOS + Windows）— 见 desktop/README.md
 ├── assets/                    # 仓库级图片与品牌资源
 └── docker-compose-local.yaml  # 本地依赖一键拉起（Postgres、Redis、Neo4j、MinIO、Milvus）
 ```
@@ -210,7 +210,7 @@ pnpm start
 - **想用产品？** 从 <https://revornix.com/docs/start> 开始，然后进入 <https://app.revornix.com>。
 - **想扩展功能？** 每个服务有自己的 README：[`web/`](./web/README.md)、[`api/`](./api/README.md)、[`celery-worker/`](./celery-worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
 - **想为文档贡献内容？** 在 [`docs/src/content/`](./docs/README.md) 下增加 MDX。
-- **关心桌面端？** 还在规划中，见 [`desktop/`](./desktop/README.md)。
+- **关心桌面端？** macOS 与 Windows 的 Electron 薄壳已在 [`desktop/`](./desktop/README.md)，文档见 [开发者 → 桌面应用](https://revornix.com/docs/developer/desktop)。
 - **想了解架构细节？** <https://revornix.com/docs/developer/structure>。
 
 ## 贡献者

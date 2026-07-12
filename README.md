@@ -52,7 +52,7 @@ Revornix/
 ├── gateway/                   # Go public-entry gateway (routing, anti-scraping, upstream failover)
 ├── hot-news/                  # Trending aggregation service (based on DailyHotApi)
 ├── docs/                      # Public docs site (revornix.com/docs) — separate Next.js + Nextra
-├── desktop/                   # Planned desktop app (Tauri/Electron) — placeholder for now
+├── desktop/                   # Electron desktop shell (macOS + Windows) — see desktop/README.md
 ├── assets/                    # Repo-level images and brand assets
 └── docker-compose-local.yaml  # Local dependency bootstrap (Postgres, Redis, Neo4j, MinIO, Milvus)
 ```
@@ -210,7 +210,7 @@ After all services are running, open <http://localhost:3000>.
 - **Want to use the product?** Start at <https://revornix.com/docs/start>, then jump into the workspace at <https://app.revornix.com>.
 - **Want to extend it?** Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`celery-worker/`](./celery-worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
 - **Want to contribute docs?** Add an MDX file under [`docs/src/content/`](./docs/README.md).
-- **Curious about the desktop app?** It's planned but not built yet — see [`desktop/`](./desktop/README.md).
+- **Curious about the desktop app?** An Electron thin-shell for macOS and Windows lives in [`desktop/`](./desktop/README.md); docs at [Developer → Desktop App](https://revornix.com/docs/developer/desktop).
 - **Architecture deep dive?** <https://revornix.com/docs/developer/structure>.
 
 ## Contributors
