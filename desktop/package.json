@@ -10,6 +10,7 @@
     "copy:assets": "node scripts/copy-assets.mjs",
     "dev": "npm run build && electron .",
     "test": "tsx --test src/**/*.test.ts",
+    "test:e2e": "npm run build && playwright test",
     "package:mac": "npm run build && electron-builder --mac",
     "package:win": "npm run build && electron-builder --win"
   },

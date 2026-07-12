@@ -3,3 +3,6 @@ dist/
 release/
 *.log
 
+
+playwright-report/
+test-results/
