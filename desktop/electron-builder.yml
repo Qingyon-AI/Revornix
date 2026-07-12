@@ -6,6 +6,7 @@ directories:
 files:
   - dist/**/*
   - package.json
+afterPack: ./scripts/adhoc-sign.js
 mac:
   category: public.app-category.productivity
   target:
@@ -13,10 +14,14 @@ mac:
       arch: [arm64, x64]
     - target: zip
       arch: [arm64, x64]
-  hardenedRuntime: true
-  entitlements: build/entitlements.mac.plist
-  entitlementsInherit: build/entitlements.mac.plist
-  # Unsigned by default. Signing auto-enables when CSC_LINK / APPLE_ID env vars are set.
+  # v1 ships UNSIGNED. `identity: null` forces ad-hoc signing so a stray
+  # Developer ID cert in the build machine's keychain is NOT used — signing
+  # with Developer ID but skipping notarization produces an app Gatekeeper
+  # rejects ("Unnotarized Developer ID"), which is worse than ad-hoc.
+  # To sign + notarize later: set identity to the cert name, hardenedRuntime
+  # to true, and provide APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID.
+  identity: null
+  hardenedRuntime: false
 win:
   target:
     - target: nsis
