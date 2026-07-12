@@ -52,7 +52,7 @@ Revornix/
 ├── gateway/                   # Go 製の公開エントリゲートウェイ（ルーティング、アンチスクレイピング、上流フェイルオーバー）
 ├── hot-news/                  # トレンド集約サービス（DailyHotApi ベース）
 ├── docs/                      # 公開ドキュメントサイト（revornix.com/docs）— 独立した Next.js + Nextra
-├── desktop/                   # デスクトップアプリ（Tauri/Electron）の予定地 — 現状はプレースホルダ
+├── desktop/                   # Electron デスクトップシェル（macOS + Windows）— desktop/README.md を参照
 ├── assets/                    # リポジトリ全体で使用する画像/ブランド素材
 └── docker-compose-local.yaml  # ローカル依存（Postgres、Redis、Neo4j、MinIO、Milvus）の起動
 ```
@@ -210,7 +210,7 @@ pnpm start
 - **製品を使いたい?** <https://revornix.com/docs/start> から始め、<https://app.revornix.com> にアクセスしてください。
 - **拡張したい?** 各サービスに個別の README があります: [`web/`](./web/README.md)、[`api/`](./api/README.md)、[`celery-worker/`](./celery-worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
 - **ドキュメントに貢献したい?** [`docs/src/content/`](./docs/README.md) に MDX を追加してください。
-- **デスクトップ版が気になる?** まだ計画段階です。[`desktop/`](./desktop/README.md) を参照。
+- **デスクトップ版が気になる?** macOS と Windows 向けの Electron 薄型シェルが [`desktop/`](./desktop/README.md) にあります。ドキュメントは [開発者 → デスクトップアプリ](https://revornix.com/docs/developer/desktop) を参照。
 - **アーキテクチャを深く知りたい?** <https://revornix.com/docs/developer/structure>。
 
 ## コントリビューター

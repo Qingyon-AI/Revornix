@@ -1,0 +1,82 @@
+import { Callout } from 'nextra/components';
+
+# 桌面应用
+
+Revornix 提供一个轻量的桌面应用，把远程 Web 客户端包装成 macOS 与 Windows 的原生应用。代码位于 `desktop/`，基于 Electron 构建。
+
+桌面应用是一个**薄壳**：它不打包 Next.js 服务器，也不打包后端，而是打开一个原生窗口，加载你选择的远程 Revornix 服务器。这样 Web 客户端可以独立更新，无需重新发布桌面版。
+
+## 能做什么
+
+- 在原生窗口中打开 Revornix 工作区。
+- 首次启动可选择服务器：`app.revornix.com`（国际）、`app.revornix.cn`（大陆镜像），或自定义的自托管地址。
+- 记住你的选择，之后可随时通过 **服务器** 菜单切换。
+- 登录流程（含 Google / GitHub OAuth）留在窗口内完成，而与登录无关的外部链接会交给系统浏览器打开。
+
+<Callout type="info">
+后端 API、数据库、向量库与图数据库始终运行在远程。桌面应用只改变你**连接**某个 Revornix 服务器的方式，它本身不运行服务器。
+</Callout>
+
+## 服务器选择
+
+首次启动时，应用显示一个本地选择页，列出两个官方镜像并提供自定义地址输入框。
+
+- 内置服务器：`https://app.revornix.com`、`https://app.revornix.cn`。
+- 自定义服务器：接受任意 `https://` 地址；仅对 `localhost` / `127.0.0.1` 接受 `http://`，方便自托管调试。其余一律拒绝。
+
+选中的地址会保存到应用用户数据目录下的 `config.json`。通过 **服务器 → 重新选择服务器…** 可回到选择页。
+
+## 导航与安全
+
+窗口以 `contextIsolation: true`、`nodeIntegration: false`、`sandbox: true` 运行。preload 脚本仅通过 `contextBridge` 暴露两个方法（列出内置服务器、选择服务器），远程页面拿不到任何 Node 能力。
+
+链接处理：
+
+- 同源导航和 OAuth 提供商域名（`accounts.google.com`、`github.com`、`open.weixin.qq.com`）留在窗口内，因此登录体验与网页版完全一致。
+- 其余外链在系统浏览器中打开，壳窗口始终停留在工作区。
+
+单实例锁保证只有一个窗口；再次启动会聚焦已有窗口。
+
+## 开发
+
+```bash
+cd desktop
+npm install
+npm run dev      # 构建并启动
+npm test         # 单元测试（服务器逻辑、配置存储）
+npm run test:e2e # Playwright-Electron 冒烟测试
+```
+
+源码结构：
+
+```text
+desktop/
+├── src/
+│   ├── main/        # 主进程：窗口、服务器、存储、菜单、入口
+│   ├── preload/     # contextBridge 桥接
+│   └── renderer/    # picker.html（唯一的本地页面）
+├── electron-builder.yml
+└── package.json
+```
+
+## 打包
+
+```bash
+npm run package:mac   # 在 release/ 生成 dmg + zip
+npm run package:win   # 在 release/ 生成 NSIS exe
+```
+
+<Callout type="warning">
+当前版本产物**未签名**。macOS 上首次打开需右键 → **打开**（或在 系统设置 → 隐私与安全性 中允许）。Windows 上忽略 SmartScreen 提示即可。当环境变量 `CSC_LINK` / `APPLE_ID` 存在时，签名与公证会自动启用，无需改动代码。
+</Callout>
+
+发布前请在 `assets/` 放入图标：`icon.icns`（mac）、`icon.ico`（win）、`icon.png`（兜底）。在此之前 electron-builder 会使用 Electron 默认图标。
+
+## 发布 CI
+
+推送 `desktop-v*` 标签会触发 `.github/workflows/desktop-release.yml`，在 macOS 与 Windows runner 上构建安装包并附加到 GitHub Release。该流程与 Docker 镜像构建流程互相独立。
+
+```bash
+git tag desktop-v0.1.0
+git push origin desktop-v0.1.0
+```

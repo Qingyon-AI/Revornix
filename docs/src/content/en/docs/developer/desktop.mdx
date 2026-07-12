@@ -1,0 +1,82 @@
+import { Callout } from 'nextra/components';
+
+# Desktop App
+
+Revornix ships a lightweight desktop app that wraps the remote web client as a native application for macOS and Windows. It lives under `desktop/` and is built with Electron.
+
+The desktop app is a **thin shell**: it does not bundle the Next.js server or the backend. It opens a native window pointed at a remote Revornix server you choose, so the web client can update independently without re-releasing the desktop build.
+
+## What it does
+
+- Opens the Revornix workspace in a native window.
+- Lets you pick a server on first launch: `app.revornix.com` (international), `app.revornix.cn` (China mirror), or a custom self-hosted address.
+- Remembers your choice and lets you switch anytime via the **Server** menu.
+- Keeps the login flow (including Google / GitHub OAuth) inside the window, while pushing unrelated external links out to your system browser.
+
+<Callout type="info">
+The backend API, database, vector store and graph always run remotely. The desktop app only changes how you *reach* a Revornix server — it does not run one.
+</Callout>
+
+## Server selection
+
+On first launch the app shows a local picker page with the two official mirrors plus a custom-address field.
+
+- Built-in servers: `https://app.revornix.com`, `https://app.revornix.cn`.
+- Custom server: any `https://` address is accepted; `http://` is accepted only for `localhost` / `127.0.0.1` to make self-hosted debugging convenient. Anything else is rejected.
+
+The selected origin is saved to `config.json` under the app's user-data directory. Use **Server → Re-select server…** to return to the picker.
+
+## Navigation and security
+
+The window runs with `contextIsolation: true`, `nodeIntegration: false`, and `sandbox: true`. The preload script exposes only two methods (list built-in servers, select a server) over a `contextBridge` — the remote page gets no Node access.
+
+Link handling:
+
+- Same-origin navigations and OAuth provider hosts (`accounts.google.com`, `github.com`, `open.weixin.qq.com`) stay in the window, so login works exactly like the web version.
+- Any other outbound link opens in the system browser; the shell window stays on the workspace.
+
+A single-instance lock keeps one window; launching again focuses the existing one.
+
+## Develop
+
+```bash
+cd desktop
+npm install
+npm run dev      # build + launch
+npm test         # unit tests (server logic, config store)
+npm run test:e2e # Playwright-Electron smoke test
+```
+
+Source layout:
+
+```text
+desktop/
+├── src/
+│   ├── main/        # main process: window, servers, store, menu, entry
+│   ├── preload/     # contextBridge bridge
+│   └── renderer/    # picker.html (only local page)
+├── electron-builder.yml
+└── package.json
+```
+
+## Package
+
+```bash
+npm run package:mac   # dmg + zip in release/
+npm run package:win   # NSIS exe in release/
+```
+
+<Callout type="warning">
+Builds are **unsigned** in the current version. On macOS, first launch needs right-click → **Open** (or allow under System Settings → Privacy & Security). On Windows, dismiss the SmartScreen prompt. Signing and notarization auto-enable when the `CSC_LINK` / `APPLE_ID` environment variables are present, with no code changes.
+</Callout>
+
+Add `assets/icon.icns` (mac), `assets/icon.ico` (win), and `assets/icon.png` (fallback) before a release build. Until then electron-builder falls back to the default Electron icon.
+
+## Release CI
+
+Pushing a `desktop-v*` tag triggers `.github/workflows/desktop-release.yml`, which builds installers on macOS and Windows runners and attaches them to a GitHub Release. This workflow is independent of the Docker image workflow.
+
+```bash
+git tag desktop-v0.1.0
+git push origin desktop-v0.1.0
+```
