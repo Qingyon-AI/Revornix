@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+    <title>Choose Revornix Server</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 40px; background: #0b0b0c; color: #f4f4f5; }
+      h1 { font-size: 20px; margin: 0 0 24px; }
+      .server { display: block; width: 100%; text-align: left; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a2e; border-radius: 10px; background: #151517; color: inherit; font-size: 15px; cursor: pointer; }
+      .server:hover { border-color: #6366f1; }
+      .row { display: flex; gap: 8px; margin-top: 8px; }
+      input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #2a2a2e; background: #151517; color: inherit; }
+      button.go { padding: 12px 18px; border-radius: 8px; border: none; background: #6366f1; color: white; cursor: pointer; }
+      .err { color: #f87171; min-height: 18px; font-size: 13px; margin-top: 8px; }
+      label { font-size: 13px; color: #a1a1aa; }
+    </style>
+  </head>
+  <body>
+    <h1>Choose a server to connect</h1>
+    <div id="builtins"></div>
+    <label for="custom">Or enter a custom server (self-hosted)</label>
+    <div class="row">
+      <input id="custom" placeholder="https://your-host" />
+      <button class="go" id="go">Connect</button>
+    </div>
+    <div class="err" id="err"></div>
+    <script>
+      const api = window.revornix;
+      const err = document.getElementById('err');
+      async function pick(origin) {
+        err.textContent = '';
+        const res = await api.selectServer(origin);
+        if (!res.ok) err.textContent = res.error || 'Invalid server address';
+      }
+      api.getBuiltinServers().then((servers) => {
+        const box = document.getElementById('builtins');
+        for (const s of servers) {
+          const b = document.createElement('button');
+          b.className = 'server';
+          b.textContent = s.label;
+          b.onclick = () => pick(s.origin);
+          box.appendChild(b);
+        }
+      });
+      document.getElementById('go').onclick = () => pick(document.getElementById('custom').value);
+    </script>
+  </body>
+</html>
