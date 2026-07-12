@@ -1,0 +1,31 @@
+appId: com.revornix.desktop
+productName: Revornix
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - package.json
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # Unsigned by default. Signing auto-enables when CSC_LINK / APPLE_ID env vars are set.
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+# Auto-update publishing is reserved for a later iteration. v1 only produces
+# installers; CI uploads them via a separate GitHub Release step. Adding a
+# `publish:` block here would make electron-builder emit update-info metadata
+# and fail local (untagged) builds.
