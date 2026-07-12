@@ -5,8 +5,16 @@ import { readConfig, writeConfig } from './store';
 import { createShellWindow, applyNavigationPolicy } from './window';
 import { buildAppMenu } from './menu';
 
+app.setName('Revornix');
+
 let win: BrowserWindow | null = null;
 let currentOrigin: string | null = null;
+
+function applyDevDockIcon(): void {
+  // Packaged builds embed the icns; give the dev run the same identity.
+  if (app.isPackaged || process.platform !== 'darwin') return;
+  app.dock?.setIcon(join(__dirname, '..', 'assets', 'icon.png'));
+}
 
 function userDataDir(): string {
   return app.getPath('userData');
@@ -37,6 +45,7 @@ function refreshMenu(): void {
 }
 
 function start(): void {
+  applyDevDockIcon();
   win = createShellWindow();
   applyNavigationPolicy(win, () => currentOrigin);
   win.once('ready-to-show', () => win?.show());

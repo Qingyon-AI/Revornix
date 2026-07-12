@@ -9,6 +9,7 @@ export function createShellWindow(): BrowserWindow {
     minWidth: 900,
     minHeight: 600,
     show: false,
+    title: 'Revornix',
     webPreferences: {
       preload: join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,

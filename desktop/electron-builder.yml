@@ -9,6 +9,7 @@ files:
 afterPack: ./scripts/adhoc-sign.js
 mac:
   category: public.app-category.productivity
+  icon: assets/icon.icns
   target:
     - target: dmg
       arch: [arm64, x64]
@@ -23,6 +24,7 @@ mac:
   identity: null
   hardenedRuntime: false
 win:
+  icon: assets/icon.ico
   target:
     - target: nsis
       arch: [x64]
