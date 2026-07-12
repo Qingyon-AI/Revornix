@@ -1,0 +1,23 @@
+{
+  "name": "revornix-desktop",
+  "version": "0.1.0",
+  "description": "Revornix desktop shell (Electron)",
+  "main": "dist/main/main.js",
+  "author": "Qingyon-AI",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc && npm run copy:assets",
+    "copy:assets": "node scripts/copy-assets.mjs",
+    "dev": "npm run build && electron .",
+    "test": "tsx --test src/**/*.test.ts",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:win": "npm run build && electron-builder --win"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}
