@@ -84,6 +84,18 @@ const trySetServerAuthCookies = async (tokens: TokenResponse) => {
     }
 };
 
+const tryClearServerAuthCookies = async () => {
+    try {
+        const cookieStore = await cookies();
+        // Same caveat as trySetServerAuthCookies: throws in Server Components.
+        const mutableCookieStore = cookieStore as any;
+        mutableCookieStore.delete('access_token');
+        mutableCookieStore.delete('refresh_token');
+    } catch {
+        // Ignore: the in-request fallback below still degrades to anonymous.
+    }
+};
+
 const refreshServerToken = async (
     requestUrl: string,
     refreshToken: string,
@@ -188,6 +200,19 @@ export const serverRequest = async <T>(url: string, initialOptions?: ServerReque
                         headers.set('Authorization', `Bearer ${refreshedTokens.access_token}`);
                         refreshToken = refreshedTokens.refresh_token;
                         await trySetServerAuthCookies(refreshedTokens);
+                        lastErr = parsed;
+                        attempt -= 1;
+                        continue;
+                    }
+                    // The session is dead (expired / invalid refresh token).
+                    // Drop the stale cookies so the next request doesn't retry
+                    // the refresh, and finish this one anonymously — public
+                    // pages must not fail just because a session went stale.
+                    await tryClearServerAuthCookies();
+                    refreshToken = undefined;
+                    if (hadAuthHeader && !triedAnonymousFallback) {
+                        triedAnonymousFallback = true;
+                        headers.delete('Authorization');
                         lastErr = parsed;
                         attempt -= 1;
                         continue;

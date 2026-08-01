@@ -235,7 +235,11 @@ async def _sync_document_labels(
         document_id=document_id,
     )
     existing_label_ids = {item.label_id for item in existing_document_labels}
-    new_label_ids = [label_id for label_id in label_ids if label_id not in existing_label_ids]
+    new_label_ids = [
+        label_id
+        for label_id in dict.fromkeys(label_ids)
+        if label_id not in existing_label_ids
+    ]
     if new_label_ids:
         await crud.document.create_document_labels_async(
             db=db,
