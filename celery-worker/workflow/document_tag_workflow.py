@@ -31,16 +31,24 @@ async def handle_tag_document(
     )
     if tags is None:
         return
-    tag_ids = [
-        tag.id for tag in tags
-    ]
+    tag_ids = list(dict.fromkeys(tag.id for tag in tags))
 
     async with async_session_context() as db:
         await ensure_document_active(db=db, document_id=document_id)
+        # Re-tagging must not stack a second link row onto labels the document
+        # already carries — duplicates surface as duplicated labels in the UI.
+        exist_document_labels = await crud.document.get_document_labels_by_document_id_async(
+            db=db,
+            document_id=document_id
+        )
+        exist_label_ids = {item.label_id for item in exist_document_labels}
+        new_tag_ids = [tag_id for tag_id in tag_ids if tag_id not in exist_label_ids]
+        if not new_tag_ids:
+            return
         await crud.document.create_document_labels_async(
             db=db,
             document_id=document_id,
-            label_ids=tag_ids
+            label_ids=new_tag_ids
         )
         await db.commit()
 

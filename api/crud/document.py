@@ -1892,6 +1892,18 @@ async def get_labels_summary_async(
     )
     return (await db.execute(stmt)).all()
 
+def _dedupe_labels(labels: list) -> list:
+    # A document can historically carry more than one live link row for the
+    # same label; collapse them so callers never see the same label twice.
+    seen: set[int] = set()
+    res = []
+    for label in labels:
+        if label.id in seen:
+            continue
+        seen.add(label.id)
+        res.append(label)
+    return res
+
 def get_labels_by_document_id(
     db: Session,
     document_id: int
@@ -1901,7 +1913,7 @@ def get_labels_by_document_id(
     query = query.filter(models.document.DocumentLabel.document_id == document_id,
                          models.document.DocumentLabel.delete_at.is_(None),
                          models.document.Label.delete_at.is_(None))
-    return query.all()
+    return _dedupe_labels(query.all())
 
 async def get_labels_by_document_id_async(
     db: AsyncSession,
@@ -1916,7 +1928,7 @@ async def get_labels_by_document_id_async(
             models.document.Label.delete_at.is_(None),
         )
     )
-    return list((await db.execute(stmt)).scalars().all())
+    return _dedupe_labels(list((await db.execute(stmt)).scalars().all()))
 
 def get_labels_by_document_ids(
     db: Session,
@@ -1938,7 +1950,7 @@ def get_labels_by_document_ids(
     res: dict[int, list[models.document.Label]] = {}
     for document_id, label in rows:
         res.setdefault(document_id, []).append(label)
-    return res
+    return {key: _dedupe_labels(value) for key, value in res.items()}
 
 async def get_labels_by_document_ids_async(
     db: AsyncSession,
@@ -1962,7 +1974,7 @@ async def get_labels_by_document_ids_async(
     res: dict[int, list[models.document.Label]] = {}
     for document_id, label in rows:
         res.setdefault(document_id, []).append(label)
-    return res
+    return {key: _dedupe_labels(value) for key, value in res.items()}
 
 def get_document_labels_by_document_id(
     db: Session,
@@ -2942,6 +2954,25 @@ def delete_document_labels_by_label_ids(
                          models.document.DocumentLabel.delete_at.is_(None))
     query = query.update({models.document.DocumentLabel.delete_at: now})
     db.flush()
+
+async def delete_document_label_links_by_ids_async(
+    db: AsyncSession,
+    document_label_ids: list[int]
+):
+    # Deletes individual link rows (DocumentLabel.id), unlike
+    # delete_document_labels_by_label_ids_async which unlinks a label from
+    # every document it is attached to.
+    if not document_label_ids:
+        return
+    now = datetime.now(timezone.utc)
+    stmt = select(models.document.DocumentLabel).where(
+        models.document.DocumentLabel.id.in_(document_label_ids),
+        models.document.DocumentLabel.delete_at.is_(None),
+    )
+    document_labels = list((await db.execute(stmt)).scalars().all())
+    for document_label in document_labels:
+        document_label.delete_at = now
+    await db.flush()
 
 async def delete_document_labels_by_label_ids_async(
     db: AsyncSession,

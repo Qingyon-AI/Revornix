@@ -36,6 +36,17 @@ async def create_document_labels_async(
     await db.flush()
     return db_document_labels
 
+
+async def get_document_labels_by_document_id_async(
+    db: AsyncSession,
+    document_id: int
+):
+    stmt = select(models.document.DocumentLabel).where(
+        models.document.DocumentLabel.document_id == document_id,
+        models.document.DocumentLabel.delete_at.is_(None),
+    )
+    return list((await db.execute(stmt)).scalars().all())
+
 def create_quick_note_document(
     db: Session,
     document_id: int,

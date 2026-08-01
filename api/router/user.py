@@ -4,7 +4,7 @@ import string
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request
-from jwt.exceptions import ExpiredSignatureError
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -979,6 +979,12 @@ async def update_token(
         )
         # Refresh endpoint should not return 401 to avoid refresh-loop in frontend.
         raise CustomException(message="Refresh token has expired, please log in again", code=403) from e
+    except PyJWTError as e:
+        # Malformed / tampered / wrongly-signed tokens must not surface as a 500.
+        exception_logger.warning(
+            format_log_message("refresh_token_decode_failed", error=e)
+        )
+        raise CustomException(message="Refresh token is invalid, please log in again", code=403) from e
     user_uuid: str | None = payload.get("sub")
     token_type = payload.get("type")
     if user_uuid is None:

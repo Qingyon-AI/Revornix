@@ -1134,27 +1134,37 @@ async def update_document(
         )
         db_document.content_update_time = now
     if document_update_request.labels is not None:
+        # 去重
+        requested_label_ids = list(dict.fromkeys(document_update_request.labels))
         exist_document_labels = await crud.document.get_document_labels_by_document_id_async(
             db=db,
             document_id=document_update_request.document_id
         )
-        exist_document_label_ids = [
-            label.id for label in exist_document_labels
-        ]
+        # Link rows carry their own primary key; the label they point at is
+        # label_id. Comparing the two mints duplicate links on every update.
+        exist_label_ids: set[int] = set()
+        links_to_delete: list[int] = []
+        for document_label in exist_document_labels:
+            if (
+                document_label.label_id not in requested_label_ids
+                or document_label.label_id in exist_label_ids
+            ):
+                links_to_delete.append(document_label.id)
+                continue
+            exist_label_ids.add(document_label.label_id)
         new_document_label_ids = [
-            label_id for label_id in document_update_request.labels if label_id not in exist_document_label_ids
+            label_id for label_id in requested_label_ids if label_id not in exist_label_ids
         ]
         await crud.document.create_document_labels_async(
             db=db,
             document_id=document_update_request.document_id,
             label_ids=new_document_label_ids
         )
-        labels_to_delete = [
-            label.id for label in exist_document_labels if label.id not in document_update_request.labels
-        ]
-        await crud.document.delete_document_labels_by_label_ids_async(
+        # Scoped to this document's link rows — deleting by label id would
+        # unlink the label from every other document too.
+        await crud.document.delete_document_label_links_by_ids_async(
             db=db,
-            label_ids=labels_to_delete
+            document_label_ids=links_to_delete
         )
     if document_update_request.sections is not None:
         ensure_document_manage_access(is_creator=is_creator)

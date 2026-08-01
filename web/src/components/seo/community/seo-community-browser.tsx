@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { Fragment, useEffect, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import {
 	ArrowRight,
@@ -364,9 +364,9 @@ const SeoCommunityBrowser = ({
 						<div>
 							{tab === 'sections'
 								? sections?.elements.map((section, index) => (
-										<>
+										<Fragment
+											key={`${section.id}-${section.publish_uuid ?? 'private'}`}>
 											<div
-												key={`${section.id}-${section.publish_uuid ?? 'private'}`}
 												ref={
 													index === sections.elements.length - 1
 														? bottomRef
@@ -377,7 +377,7 @@ const SeoCommunityBrowser = ({
 											{index !== sections.elements.length - 1 ? (
 												<Separator className='my-3' />
 											) : null}
-										</>
+										</Fragment>
 									))
 								: documents?.elements.map((document, index) => (
 										<div key={document.id}>

@@ -2076,6 +2076,18 @@ async def get_section_by_section_id_async(
     )
     return (await db.execute(stmt)).scalar_one_or_none()
 
+def _dedupe_labels(labels: list) -> list:
+    # A section can historically carry more than one live link row for the
+    # same label; collapse them so callers never see the same label twice.
+    seen: set[int] = set()
+    res = []
+    for label in labels:
+        if label.id in seen:
+            continue
+        seen.add(label.id)
+        res.append(label)
+    return res
+
 def get_labels_by_section_id(
     db: Session,
     section_id: int
@@ -2085,7 +2097,7 @@ def get_labels_by_section_id(
     query = query.filter(models.section.SectionLabel.section_id == section_id,
                          models.section.SectionLabel.delete_at.is_(None),
                          models.section.Label.delete_at.is_(None))
-    return query.all()
+    return _dedupe_labels(query.all())
 
 
 async def get_labels_by_section_id_async(
@@ -2101,7 +2113,7 @@ async def get_labels_by_section_id_async(
             models.section.Label.delete_at.is_(None),
         )
     )
-    return list((await db.execute(stmt)).scalars().all())
+    return _dedupe_labels(list((await db.execute(stmt)).scalars().all()))
 
 def get_labels_by_section_ids(
     db: Session,
@@ -2123,7 +2135,7 @@ def get_labels_by_section_ids(
     res: dict[int, list[models.section.Label]] = {}
     for section_id, label in rows:
         res.setdefault(section_id, []).append(label)
-    return res
+    return {key: _dedupe_labels(value) for key, value in res.items()}
 
 
 async def get_labels_by_section_ids_async(
@@ -2148,7 +2160,7 @@ async def get_labels_by_section_ids_async(
     res: dict[int, list[models.section.Label]] = {}
     for section_id, label in rows:
         res.setdefault(section_id, []).append(label)
-    return res
+    return {key: _dedupe_labels(value) for key, value in res.items()}
 
 async def get_public_labels_async(
     db: AsyncSession,
@@ -2604,28 +2616,30 @@ async def delete_section_labels_by_section_id_async(
     )
     await db.flush()
 
-def delete_section_labels_by_label_ids(
+def delete_section_label_links_by_ids(
     db: Session,
-    label_ids: list[int]
+    section_label_ids: list[int]
 ):
+    # Takes SectionLabel primary keys (link rows), not label ids.
     now = datetime.now(timezone.utc)
     query = db.query(models.section.SectionLabel)
-    query = query.filter(models.section.SectionLabel.id.in_(label_ids),
+    query = query.filter(models.section.SectionLabel.id.in_(section_label_ids),
                          models.section.SectionLabel.delete_at.is_(None))
     query = query.update({models.section.SectionLabel.delete_at: now}, synchronize_session=False)
     db.flush()
 
-async def delete_section_labels_by_label_ids_async(
+async def delete_section_label_links_by_ids_async(
     db: AsyncSession,
-    label_ids: list[int]
+    section_label_ids: list[int]
 ):
-    if not label_ids:
+    # Takes SectionLabel primary keys (link rows), not label ids.
+    if not section_label_ids:
         return
     now = datetime.now(timezone.utc)
     await db.execute(
         models.section.SectionLabel.__table__.update()
         .where(
-            models.section.SectionLabel.id.in_(label_ids),
+            models.section.SectionLabel.id.in_(section_label_ids),
             models.section.SectionLabel.delete_at.is_(None),
         )
         .values(delete_at=now)

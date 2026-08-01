@@ -637,7 +637,7 @@ async def create_section(
         await crud.section.create_section_labels_async(
             db=db,
             section_id=db_section.id,
-            label_ids=section_create_request.labels
+            label_ids=list(dict.fromkeys(section_create_request.labels))
         )
     await crud.section.create_section_user_async(
         db=db,
@@ -769,19 +769,31 @@ async def update_section(
             db=db,
             section_id=section_update_request.section_id
         )
-        exist_section_label_ids = [label.id for label in exist_section_labels]
-        new_section_label_ids = [label_id for label_id in section_update_request.labels if label_id not in exist_section_label_ids]
+        # 去重
+        requested_label_ids = list(dict.fromkeys(section_update_request.labels))
+        # Link rows carry their own primary key; the label they point at is
+        # label_id. Comparing the two mints duplicate links on every update.
+        exist_section_label_ids: set[int] = set()
+        labels_to_delete: list[int] = []
+        for section_label in exist_section_labels:
+            if (
+                section_label.label_id not in requested_label_ids
+                or section_label.label_id in exist_section_label_ids
+            ):
+                labels_to_delete.append(section_label.id)
+                continue
+            exist_section_label_ids.add(section_label.label_id)
+        new_section_label_ids = [label_id for label_id in requested_label_ids if label_id not in exist_section_label_ids]
         if new_section_label_ids:
             await crud.section.create_section_labels_async(
                 db=db,
                 section_id=section_update_request.section_id,
                 label_ids=new_section_label_ids
             )
-        labels_to_delete = [label.id for label in exist_section_labels if label.id not in section_update_request.labels]
         if labels_to_delete:
-            await crud.section.delete_section_labels_by_label_ids_async(
+            await crud.section.delete_section_label_links_by_ids_async(
                 db=db,
-                label_ids=labels_to_delete
+                section_label_ids=labels_to_delete
             )
     if section_update_request.auto_podcast is not None:
         db_section.auto_podcast = section_update_request.auto_podcast
