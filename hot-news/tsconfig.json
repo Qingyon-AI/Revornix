@@ -14,5 +14,10 @@
     // 出的 ./src，所以产物布局不变（start 脚本仍然跑 dist/index.js）。
     "rootDir": "./src"
   },
-  "exclude": ["node_modules", "*.test.*", "./dist/**/*"]
+  // 显式 include：否则默认的 `**/*` 会把根目录的 vitest.config.ts 也拉进
+  // program，而它不在 rootDir 里，构建会直接失败。
+  "include": ["src/**/*"],
+  // 注意是 `**/*.test.*` 而不是 `*.test.*` —— 后者只匹配根目录那一层，
+  // 匹配不到 src/utils/*.test.ts，测试文件会被编译进 dist。
+  "exclude": ["node_modules", "**/*.test.*", "./dist/**/*"]
 }
