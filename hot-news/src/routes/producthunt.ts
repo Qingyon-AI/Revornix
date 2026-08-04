@@ -55,6 +55,8 @@ const getList = async (noCache: boolean) => {
       data: stories,
     };
   } catch (error) {
-    throw new Error(`Failed to parse Product Hunt HTML: ${error}`);
+    throw new Error(`Failed to parse Product Hunt HTML: ${error}`, {
+      cause: error,
+    });
   }
 }; 
