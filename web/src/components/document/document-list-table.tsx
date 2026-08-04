@@ -115,7 +115,7 @@ const DocumentListTable = ({
 									<div className='line-clamp-2 break-all font-medium'>
 										{document.title || t('document_no_title')}
 									</div>
-									<div className='line-clamp-1 max-w-full break-all text-xs text-muted-foreground'>
+									<div className='line-clamp-2 max-w-full break-all text-xs text-muted-foreground'>
 										{document.description || t('document_no_description')}
 									</div>
 								</div>
