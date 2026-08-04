@@ -23,6 +23,7 @@ from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
 from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+from workflow.planning import plan_document_processing
 from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
 
@@ -39,9 +40,6 @@ class DocumentProcessState(TypedDict, total=False):
 
 
 WORKFLOW_NAME = "document_process"
-PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD = 100_000
-PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT = 24
-ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD = 400_000
 
 
 async def _init_document_process_task(
@@ -197,12 +195,13 @@ async def _process_document_chunks(
         await ensure_document_active(db=db, document_id=document_id)
 
     markdown_length = await get_document_markdown_length(document_id)
-    if markdown_length >= PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD:
-        enable_auto_graph = markdown_length < ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD
+    plan = plan_document_processing(markdown_length=markdown_length)
+    if plan.progressive:
+        enable_auto_graph = plan.auto_graph
         set_stage_metrics(
             progressive_enabled=True,
             markdown_chars=markdown_length,
-            bootstrap_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
+            bootstrap_chunks=plan.bootstrap_chunk_limit,
             auto_summary=auto_summary,
             auto_podcast=auto_podcast,
             enable_auto_graph=enable_auto_graph,
@@ -210,7 +209,7 @@ async def _process_document_chunks(
         await run_document_embedding_workflow(
             document_id=document_id,
             user_id=user_id,
-            max_chunks=PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
+            max_chunks=plan.bootstrap_chunk_limit,
             manage_task_status=False,
         )
         # The remaining embedding + optional follow-ups (and the completion
