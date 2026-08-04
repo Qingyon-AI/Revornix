@@ -12,6 +12,7 @@ from celery.signals import (
     task_postrun,
     task_prerun,
     task_retry,
+    worker_init,
     worker_process_init,
     worker_ready,
 )
@@ -21,6 +22,7 @@ from common.logger import exception_logger, info_logger, log_event
 from common.tracing import sentry_before_send_attach_otel, setup_worker_tracing
 from config.redis import REDIS_PORT, REDIS_URL
 from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
+from data.sql.schema_guard import run_schema_guard
 
 
 celery_app = Celery(
@@ -111,6 +113,13 @@ def _start_background_coroutine(target, *, name: str) -> None:
 
 _initialize_worker_sentry()
 setup_worker_tracing()
+
+
+@worker_init.connect
+def run_schema_guard_when_worker_init(**kwargs):
+    # 在主进程里跑一次（早于 fork、早于任何任务），worker 先于 API 起来时也不会
+    # 撞上缺列。幂等，跟 API 侧跑的是同一份。
+    run_schema_guard()
 
 
 @worker_process_init.connect
