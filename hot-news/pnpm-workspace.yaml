@@ -1,0 +1,16 @@
+allowBuilds:
+  # esbuild 的 install script 拉的是平台相关的原生二进制，tsx 靠它跑。
+  esbuild: true
+minimumReleaseAgeExclude:
+  - '@typescript-eslint/eslint-plugin@8.66.0'
+  - '@typescript-eslint/parser@8.66.0'
+  - '@typescript-eslint/project-service@8.66.0'
+  - '@typescript-eslint/scope-manager@8.66.0'
+  - '@typescript-eslint/tsconfig-utils@8.66.0'
+  - '@typescript-eslint/type-utils@8.66.0'
+  - '@typescript-eslint/types@8.66.0'
+  - '@typescript-eslint/typescript-estree@8.66.0'
+  - '@typescript-eslint/utils@8.66.0'
+  - '@typescript-eslint/visitor-keys@8.66.0'
+  - hono@4.13.0
+  - typescript-eslint@8.66.0
