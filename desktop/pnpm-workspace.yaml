@@ -1,0 +1,6 @@
+allowBuilds:
+  # electron's postinstall downloads the platform Electron binary; without it
+  # electron-builder has nothing to package.
+  electron: true
+  # esbuild's install script fetches its platform-specific binary (used by tsx).
+  esbuild: true
