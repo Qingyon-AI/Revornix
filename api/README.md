@@ -65,6 +65,7 @@ These are easy to get wrong if you're touching the codebase for the first time:
 - **`OAUTH_SECRET_KEY` must be identical** between `api/` and `celery-worker/`. The worker verifies user identity from JWTs the API issued; mismatched keys break that trust chain silently.
 - **Optional vs required auth.** `get_current_user` rejects with 401 when credentials are missing or invalid. `get_current_user_without_throw` returns `None` only when **no** `Authorization` header is sent; any *invalid* token raises 401 so the client can refresh-and-retry. Don't reach for the optional variant just to "silently fall back to anonymous" — that hides token failures.
 - **Soft deletes**: most tables use a soft-delete flag; respect it in CRUD filters.
+- **Changing a table takes two steps.** Alembic migrations are not version-controlled here (`.gitignore` skips `alembic/versions/*.py`, so every deployment autogenerates its own chain and no migration can be shared). Existing installs are brought forward by `data/sql/schema_guard.py` instead: a chain of idempotent `_migrate_*` functions that both the API and the worker run on startup. So: (1) change `models/*.py` — fresh installs get the right shape from it; (2) add a `_migrate_*` and hook it into `run_schema_guard()` — existing installs catch up from it. Do only the first and a fresh install works while everyone upgrading crashes on the missing column. Upgrades need no manual migration step; `python -m data.sql.create` stays a fresh-database bootstrap.
 
 ## Background work
 

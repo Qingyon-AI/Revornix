@@ -26,6 +26,7 @@ from common.redis import redis_pool
 from common.tracing import sentry_before_send_attach_otel, setup_tracing
 from common.websocket import notificationManager
 from config.sentry import API_SENTRY_DSN, API_SENTRY_ENABLE
+from data.sql.schema_guard import run_schema_guard
 from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
 from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
 from mcp_router.common import common_mcp_router
@@ -58,6 +59,9 @@ section_mcp_app = section_mcp_router.http_app()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis_conn = None
+    # 表结构自愈跑在最前面：后面的每一步（调度任务、通知、请求）都假设表是全的。
+    # 幂等，且 worker 侧跑的是同一份，谁先起来都行。
+    run_schema_guard()
     try:
         if is_env_enabled(API_SENTRY_ENABLE):
             import sentry_sdk
