@@ -5,12 +5,16 @@
 约定说「改一处要同步另一处」，但此前没有任何东西会在漏改时失败 —— 而它们**已经
 不完全相等**了（worker 的 ``models/`` 就少几个模块）。
 
-全量比对是行不通的：有些差异是有意的。所以改成**文件自己声明**：在文件里写下
+全量比对是行不通的：有些差异是有意的。所以需要一份明确的「哪些必须一致」，
+它有两个来源，两种都认：
 
-    MIRRORED-FILE: api/ <-> celery-worker/
+1. **清单** ``scripts/mirrored-files.txt`` —— 批量守护既有的共享代码。它是一份
+   事实快照，一次覆盖上百个文件，不必逐个去改。
+2. **就近标记** —— 在文件里写下 ``MIRRORED-FILE: api/ <-> celery-worker/``。
+   好处是改这个文件的人一眼就能看到，适合新写的核心共享代码。
 
-这个脚本就会强制该文件在两侧逐字节一致。新增一个镜像文件时只要打上标记，不必回来
-维护任何清单；反过来，某个文件不再需要镜像时，删掉标记即可。
+某个文件确实要在两侧分化时，把它从清单里删掉 / 去掉标记 —— 让"允许漂移"成为一个
+需要解释的动作，而不是随手发生的事。
 
 用法::
 
@@ -36,14 +40,32 @@ def _iter_python(root: Path):
         yield path
 
 
+MANIFEST = Path(__file__).resolve().parent / "mirrored-files.txt"
+
+
+def _read_manifest() -> set[str]:
+    if not MANIFEST.is_file():
+        return set()
+    entries: set[str] = set()
+    for line in MANIFEST.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            entries.add(line)
+    return entries
+
+
 def main() -> int:
-    # 收集两侧所有打了标记的文件（按相对路径归并）
-    marked: set[str] = set()
+    for side in SIDES:
+        if not (REPO / side).is_dir():
+            print(f"找不到目录：{REPO / side}", file=sys.stderr)
+            return 1
+
+    # 来源一：清单
+    marked = _read_manifest()
+
+    # 来源二：文件里的就近标记
     for side in SIDES:
         root = REPO / side
-        if not root.is_dir():
-            print(f"找不到目录：{root}", file=sys.stderr)
-            return 1
         for path in _iter_python(root):
             try:
                 if MARKER in path.read_text(encoding="utf-8"):
