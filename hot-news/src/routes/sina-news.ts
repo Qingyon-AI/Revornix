@@ -104,7 +104,7 @@ const parseData = (data: string) => {
       const jsonData = JSON.parse(jsonString);
       return jsonData;
     } catch (error) {
-      throw new Error("Failed to parse JSON: " + error);
+      throw new Error("Failed to parse JSON: " + error, { cause: error });
     }
   } else {
     throw new Error("Invalid JSON format");

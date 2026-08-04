@@ -9,7 +9,10 @@
     "types": ["node"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    // TypeScript 7 不再自己推断公共源码目录，要求显式写出来。值就是它原本推断
+    // 出的 ./src，所以产物布局不变（start 脚本仍然跑 dist/index.js）。
+    "rootDir": "./src"
   },
   "exclude": ["node_modules", "*.test.*", "./dist/**/*"]
 }
