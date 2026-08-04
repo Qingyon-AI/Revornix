@@ -1,0 +1,7 @@
+allowBuilds:
+  # dev 的文件监听走它的原生 watcher。
+  '@parcel/watcher': true
+  # Next 的编译器，装的是平台相关的原生二进制。
+  '@swc/core': true
+  # next/image 的图片处理后端；不装原生二进制，构建期的图片优化就退化了。
+  sharp: true
