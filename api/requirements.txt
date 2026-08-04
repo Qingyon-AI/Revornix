@@ -43,12 +43,12 @@ lightrag-hku==1.5.5
 google-auth==2.56.2
 # webauthn 3.x 要 cryptography>=49，而阿里云 SDK 的 alibabacloud-tea-openapi
 # 钉了 cryptography<49，两者装不到一起 —— 停在 2 线的最新。
-webauthn==3.0.0
+webauthn==2.8.0
 tencentcloud-sdk-python==3.1.149
 sentence_transformers==5.6.1
 neo4j==6.2.0
 # lark_oapi 钉了 websockets<16，所以这里升不到 17.x —— 15.0.1 已是 15 线的最新。
-websockets==17.0.1
+websockets==15.0.1
 lark_oapi==1.7.1
 python-telegram-bot==22.8
 hf_transfer==0.1.9
