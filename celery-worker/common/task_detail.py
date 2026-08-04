@@ -4,6 +4,8 @@ Every document/section task node owns a short, human readable ``detail``
 explaining why it is in its current status. Failures are recorded there instead
 of being written back onto the document itself, so one broken node never
 rewrites the document's title or description.
+
+MIRRORED-FILE: api/ <-> celery-worker/ —— 两侧必须逐字节一致，由 scripts/check_mirrored_files.py 强制。
 """
 
 MAX_TASK_DETAIL_LENGTH = 1000
