@@ -11,6 +11,7 @@ import type { SectionDetailWithPpt } from '@/service/section';
 import AudioPlayer from '../ui/audio-player';
 import { Button } from '../ui/button';
 import SidebarTaskNode from '../ui/sidebar-task-node';
+import TaskDetailMessage from '../ui/task-detail-message';
 
 type SectionMediaPodcastTaskProps = {
 	section: SectionDetailWithPpt;
@@ -196,7 +197,12 @@ const SectionMediaPodcastTask = ({
 				title={t('section_podcast_failed')}
 				description={t('section_podcast_failed_description')}
 				tone='danger'
-				hint={podcastHint}
+				hint={
+					<div className='space-y-3'>
+						{podcastHint}
+						<TaskDetailMessage detail={section.podcast_task?.detail} />
+					</div>
+				}
 				action={
 					isCreator
 						? renderAction(

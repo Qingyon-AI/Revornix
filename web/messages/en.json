@@ -1735,6 +1735,8 @@
 	"document_process_status_doing": "Processing",
 	"document_process_status_todo": "Pending Processing",
 	"document_process_status_failed": "Failed",
+	"task_detail": "Task detail",
+	"task_detail_empty": "This task recorded no extra detail.",
 	"document_transform_again": "Added to conversion queue again, please wait",
 	"document_graph_generate": "Click to Generate",
 	"document_graph_regenerate": "Click to Regenerate",

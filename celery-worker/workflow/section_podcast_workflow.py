@@ -8,6 +8,7 @@ import crud
 from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
+from common.task_detail import format_task_error
 from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.section import SectionPodcastStatus
@@ -96,6 +97,7 @@ async def _init_section_podcast_task(
             if db_podcast_task.status != SectionPodcastStatus.GENERATING:
                 db_podcast_task.status = SectionPodcastStatus.GENERATING
                 db_podcast_task.update_time = datetime.now(timezone.utc)
+        db_podcast_task.detail = None
         await db.commit()
     return state
 
@@ -241,6 +243,7 @@ async def _mark_section_podcast_success(
         )
         if db_podcast_task is not None:
             db_podcast_task.status = SectionPodcastStatus.SUCCESS
+            db_podcast_task.detail = None
             db_podcast_task.podcast_file_name = podcast_file_name
             db_podcast_task.podcast_script_file_name = podcast_script_file_name
             db_podcast_task.celery_task_id = None
@@ -312,6 +315,7 @@ async def run_section_podcast_workflow(
             )
             if db_podcast_task is not None:
                 db_podcast_task.status = SectionPodcastStatus.CANCELLED
+                db_podcast_task.detail = None
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -328,6 +332,7 @@ async def run_section_podcast_workflow(
                 and db_podcast_task.status != SectionPodcastStatus.CANCELLED
             ):
                 db_podcast_task.status = SectionPodcastStatus.FAILED
+                db_podcast_task.detail = format_task_error(e)
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 await db.commit()

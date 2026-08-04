@@ -30,6 +30,12 @@ export interface DocumentTranscribeTask {
      * @type {string}
      * @memberof DocumentTranscribeTask
      */
+    detail?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentTranscribeTask
+     */
     md_file_name?: string | null;
     /**
      * 
@@ -70,6 +76,7 @@ export function DocumentTranscribeTaskFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'status': json['status'],
+        'detail': json['detail'] == null ? undefined : json['detail'],
         'md_file_name': json['md_file_name'] == null ? undefined : json['md_file_name'],
         'segments_file_name': json['segments_file_name'] == null ? undefined : json['segments_file_name'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
@@ -89,6 +96,7 @@ export function DocumentTranscribeTaskToJSONTyped(value?: DocumentTranscribeTask
     return {
         
         'status': value['status'],
+        'detail': value['detail'],
         'md_file_name': value['md_file_name'],
         'segments_file_name': value['segments_file_name'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),

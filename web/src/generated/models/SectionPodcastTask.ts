@@ -30,6 +30,12 @@ export interface SectionPodcastTask {
      * @type {string}
      * @memberof SectionPodcastTask
      */
+    detail?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SectionPodcastTask
+     */
     podcast_file_name: string | null;
     /**
      * 
@@ -71,6 +77,7 @@ export function SectionPodcastTaskFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'status': json['status'],
+        'detail': json['detail'] == null ? undefined : json['detail'],
         'podcast_file_name': json['podcast_file_name'],
         'podcast_script_file_name': json['podcast_script_file_name'] == null ? undefined : json['podcast_script_file_name'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
@@ -90,6 +97,7 @@ export function SectionPodcastTaskToJSONTyped(value?: SectionPodcastTask | null,
     return {
         
         'status': value['status'],
+        'detail': value['detail'],
         'podcast_file_name': value['podcast_file_name'],
         'podcast_script_file_name': value['podcast_script_file_name'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),

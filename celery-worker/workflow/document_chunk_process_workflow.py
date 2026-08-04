@@ -18,6 +18,7 @@ from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from data.common import (
     close_extract_llm_client,
     extract_entities_relations,
@@ -252,6 +253,7 @@ async def _mark_chunk_related_tasks_failed(
     *,
     document_id: int,
     auto_summary: bool,
+    detail: str | None = None,
 ) -> None:
     now = datetime.now(timezone.utc)
     async with async_session_context() as db:
@@ -261,6 +263,7 @@ async def _mark_chunk_related_tasks_failed(
         )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+            db_embedding_task.detail = detail
             db_embedding_task.update_time = now
 
         if auto_summary:
@@ -270,6 +273,7 @@ async def _mark_chunk_related_tasks_failed(
             )
             if db_summarize_task is not None:
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
+                db_summarize_task.detail = detail
                 db_summarize_task.update_time = now
 
         db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
@@ -278,6 +282,7 @@ async def _mark_chunk_related_tasks_failed(
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.FAILED
+            db_graph_task.detail = detail
             db_graph_task.update_time = now
         await db.commit()
 
@@ -287,6 +292,7 @@ async def _set_graph_task_status(
     document_id: int,
     status: DocumentGraphStatus,
     check_document_active: bool = False,
+    detail: str | None = None,
 ) -> None:
     async with async_session_context() as db:
         if check_document_active:
@@ -297,6 +303,7 @@ async def _set_graph_task_status(
         )
         if db_graph_task is not None:
             db_graph_task.status = status
+            db_graph_task.detail = detail
             db_graph_task.update_time = datetime.now(timezone.utc)
             await db.commit()
 
@@ -345,6 +352,7 @@ async def _init_chunk_tasks(
         if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
             db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
             db_embedding_task.update_time = now
+        db_embedding_task.detail = None
         db_summarize_task = None
         auto_summary = bool(state.get("auto_summary", False))
         if auto_summary:
@@ -361,6 +369,7 @@ async def _init_chunk_tasks(
             if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
                 db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
                 db_summarize_task.update_time = now
+            db_summarize_task.detail = None
         db_graph_task = await crud.task.get_document_graph_task_by_document_id_async(
             db=db,
             document_id=document_id
@@ -374,6 +383,7 @@ async def _init_chunk_tasks(
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
             db_graph_task.update_time = now
+        db_graph_task.detail = None
         await db.commit()
     return state
 
@@ -659,7 +669,8 @@ async def _process_document_chunks(
         try:
             await _mark_chunk_related_tasks_failed(
                 document_id=document_id,
-                auto_summary=auto_summary
+                auto_summary=auto_summary,
+                detail=format_task_error(e)
             )
         except Exception as status_error:
             exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
@@ -689,6 +700,7 @@ async def _process_document_chunks(
                 )
                 if db_embedding_task is not None:
                     db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+                    db_embedding_task.detail = None
                     db_embedding_task.update_time = now
                 if auto_summary:
                     db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
@@ -697,6 +709,7 @@ async def _process_document_chunks(
                     )
                     if db_summarize_task is not None:
                         db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                        db_summarize_task.detail = None
                         if final_summary_info is not None:
                             db_summarize_task.summary = final_summary_info.summary
                         db_summarize_task.update_time = now
@@ -709,11 +722,12 @@ async def _process_document_chunks(
                             db_document.title = final_summary_info.title
                             db_document.description = final_summary_info.description
                 await db.commit()
-        except Exception:
+        except Exception as e:
             try:
                 await _mark_chunk_related_tasks_failed(
                     document_id=document_id,
-                    auto_summary=auto_summary
+                    auto_summary=auto_summary,
+                    detail=format_task_error(e)
                 )
             except Exception as status_error:
                 exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
@@ -859,7 +873,8 @@ async def _process_document_chunks(
         try:
             await _set_graph_task_status(
                 document_id=document_id,
-                status=DocumentGraphStatus.FAILED
+                status=DocumentGraphStatus.FAILED,
+                detail=format_task_error(e)
             )
         except Exception as status_error:
             exception_logger.error(f"Failed to update graph task status: {status_error}")

@@ -26,6 +26,7 @@ import DocumentGraph from './document-graph';
 import DocumentInfo from './document-info';
 import DocumentPodcast from './document-podcast';
 import SidebarTaskNode from '@/components/ui/sidebar-task-node';
+import TaskDetailMessage from '@/components/ui/task-detail-message';
 import JoinRequestsCard from '@/components/permission/join-requests-card';
 import { AccessRequestTargetType } from '@/service/access-request';
 
@@ -175,6 +176,7 @@ type DocumentDetailSidebarProps = {
 	graphBadge: string;
 	graphTone: 'default' | 'success' | 'warning' | 'danger';
 	graphStale: boolean;
+	graphDetail?: string | null;
 	graphActionLabel: string;
 	graphGenerating: boolean;
 	graphCancelling: boolean;
@@ -194,6 +196,7 @@ const DocumentDetailSidebar = ({
 	graphBadge,
 	graphTone,
 	graphStale,
+	graphDetail,
 	graphActionLabel,
 	graphGenerating,
 	graphCancelling,
@@ -270,7 +273,14 @@ const DocumentDetailSidebar = ({
 							title={t('document_graph')}
 							description={t('document_graph_description')}
 							tone={graphTone}
-							hint={graphStale ? t('document_graph_stale_hint') : undefined}
+							hint={
+								graphStale || graphDetail?.trim() ? (
+									<div className='space-y-3'>
+										{graphStale ? <p>{t('document_graph_stale_hint')}</p> : null}
+										<TaskDetailMessage detail={graphDetail} />
+									</div>
+								) : undefined
+							}
 							action={
 								canWriteDocument ? (
 								<div className='flex items-center gap-2'>

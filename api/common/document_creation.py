@@ -267,6 +267,7 @@ async def _ensure_document_process_task(
         )
         return
     db_process_task.status = DocumentProcessStatus.WAIT_TO
+    db_process_task.detail = None
     db_process_task.update_time = now
 
 

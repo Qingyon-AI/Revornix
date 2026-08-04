@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus
@@ -138,6 +139,7 @@ async def _init_convert_task(
             if db_convert_task.status != DocumentMdConvertStatus.CONVERTING:
                 db_convert_task.status = DocumentMdConvertStatus.CONVERTING
                 db_convert_task.update_time = datetime.now(timezone.utc)
+        db_convert_task.detail = None
         await db.commit()
     return state
 
@@ -303,6 +305,7 @@ async def _mark_convert_success(
         if db_convert_task is None:
             raise Exception("The convert task of the document is not found")
         db_convert_task.status = DocumentMdConvertStatus.SUCCESS
+        db_convert_task.detail = None
         db_convert_task.md_file_name = md_file_name
         db_convert_task.update_time = datetime.now(timezone.utc)
         db_document = await crud.document.get_document_by_document_id_async(
@@ -406,6 +409,7 @@ async def run_document_convert_workflow(
             )
             if db_convert_task is not None:
                 db_convert_task.status = DocumentMdConvertStatus.FAILED
+                db_convert_task.detail = format_task_error(e)
                 db_convert_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
         raise

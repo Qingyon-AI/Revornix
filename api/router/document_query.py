@@ -217,6 +217,7 @@ async def get_document_infos(
         if convert_task is not None:
             info.convert_task = schemas.task.DocumentConvertTask(
                 status=convert_task.status,
+                detail=convert_task.detail,
                 md_file_name=convert_task.md_file_name,
                 create_time=convert_task.create_time,
                 update_time=convert_task.update_time,
@@ -226,6 +227,7 @@ async def get_document_infos(
         if embedding_task is not None:
             info.embedding_task = schemas.task.DocumentEmbeddingTask(
                 status=embedding_task.status,
+                detail=embedding_task.detail,
                 create_time=embedding_task.create_time,
                 update_time=embedding_task.update_time,
             )
@@ -233,6 +235,7 @@ async def get_document_infos(
         if graph_task is not None:
             info.graph_task = schemas.task.DocumentGraphTask(
                 status=graph_task.status,
+                detail=graph_task.detail,
                 create_time=graph_task.create_time,
                 update_time=graph_task.update_time,
             )
@@ -240,6 +243,7 @@ async def get_document_infos(
         if podcast_task is not None:
             info.podcast_task = schemas.task.DocumentPodcastTask(
                 status=podcast_task.status,
+                detail=podcast_task.detail,
                 podcast_file_name=podcast_task.podcast_file_name,
                 podcast_script_file_name=podcast_task.podcast_script_file_name,
                 create_time=podcast_task.create_time,
@@ -251,6 +255,7 @@ async def get_document_infos(
         if summarize_task is not None:
             info.summarize_task = schemas.task.DocumentSummarizeTask(
                 status=summarize_task.status,
+                detail=summarize_task.detail,
                 summary=summarize_task.summary,
                 create_time=summarize_task.create_time,
                 update_time=summarize_task.update_time,
@@ -259,6 +264,7 @@ async def get_document_infos(
         if transcribe_task is not None:
             info.transcribe_task = schemas.task.DocumentTranscribeTask(
                 status=transcribe_task.status,
+                detail=transcribe_task.detail,
                 md_file_name=transcribe_task.md_file_name,
                 segments_file_name=transcribe_task.segments_file_name,
                 create_time=transcribe_task.create_time,
@@ -272,6 +278,7 @@ async def get_document_infos(
         if process_task is not None:
             info.process_task = schemas.task.DocumentProcessTask(
                 status=process_task.status,
+                detail=process_task.detail,
                 create_time=process_task.create_time,
                 update_time=process_task.update_time,
             )
@@ -571,6 +578,7 @@ async def get_document_detail(
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
             status=convert_task.status,
+            detail=convert_task.detail,
             md_file_name=convert_task.md_file_name,
             create_time=convert_task.create_time,
             update_time=convert_task.update_time,
@@ -578,6 +586,7 @@ async def get_document_detail(
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
+            detail=podcast_task.detail,
             podcast_file_name=podcast_task.podcast_file_name,
             podcast_script_file_name=podcast_task.podcast_script_file_name,
             create_time=podcast_task.create_time,
@@ -586,6 +595,7 @@ async def get_document_detail(
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
             status=summarize_task.status,
+            detail=summarize_task.detail,
             summary=summarize_task.summary,
             create_time=summarize_task.create_time,
             update_time=summarize_task.update_time,
@@ -595,6 +605,7 @@ async def get_document_detail(
     if transcribe_task is not None:
         res.transcribe_task = schemas.task.DocumentTranscribeTask(
             status=transcribe_task.status,
+            detail=transcribe_task.detail,
             md_file_name=transcribe_task.md_file_name,
             segments_file_name=transcribe_task.segments_file_name,
             create_time=transcribe_task.create_time,

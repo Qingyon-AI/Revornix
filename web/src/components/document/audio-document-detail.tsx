@@ -32,6 +32,7 @@ import EngineSelect from '@/components/ai/engine-select';
 import { EngineCategory } from '@/enums/engine';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import { NotFoundView } from '../not-found/not-found-view';
+import TaskDetailMessage from '../ui/task-detail-message';
 import { Button } from '../ui/button';
 import { useAudioPlayer } from '@/provider/audio-player-provider';
 import { Input } from '../ui/input';
@@ -453,7 +454,15 @@ const AudioDocumentDetail = ({
 							icon={TriangleAlert}
 							eyebrow={t('document_transcribe_status_failed')}
 							title={t('document_transcribe_failed')}
-							description={t('document_transcribe_failed_description')}
+							description={
+								<div className='space-y-3'>
+									<p>{t('document_transcribe_failed_description')}</p>
+									<TaskDetailMessage
+										detail={document.transcribe_task?.detail}
+										className='text-left'
+									/>
+								</div>
+							}
 							className={statusViewClassName}
 							footer={
 								<Button

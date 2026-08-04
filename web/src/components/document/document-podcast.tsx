@@ -19,6 +19,7 @@ import EngineSelect from '@/components/ai/engine-select';
 import { EngineCategory } from '@/enums/engine';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import SidebarTaskNode from '../ui/sidebar-task-node';
+import TaskDetailMessage from '../ui/task-detail-message';
 
 const DocumentPodcast = ({
 	document_id,
@@ -89,12 +90,14 @@ const DocumentPodcast = ({
 		freshnessState.podcastStale ? t('document_podcast_stale_hint') : null,
 		!canGeneratePodcast ? t('document_create_auto_podcast_engine_unset') : null,
 	].filter((message): message is string => Boolean(message));
+	const podcastTaskDetail = document?.podcast_task?.detail?.trim();
 	const podcastHint =
-		podcastHintMessages.length > 0 ? (
+		podcastHintMessages.length > 0 || podcastTaskDetail ? (
 			<div className='space-y-3'>
 				{podcastHintMessages.map((message) => (
 					<p key={message}>{message}</p>
 				))}
+				<TaskDetailMessage detail={podcastTaskDetail} />
 			</div>
 		) : undefined;
 	const renderPodcastAction = ({

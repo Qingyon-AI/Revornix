@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger, format_log_message
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from data.common import get_document_markdown_length
 from data.sql.base import async_session_context
 from enums.document import (
@@ -41,12 +42,6 @@ WORKFLOW_NAME = "document_process"
 PROGRESSIVE_PROCESS_MARKDOWN_CHAR_THRESHOLD = 100_000
 PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT = 24
 ULTRA_LARGE_DOCUMENT_MARKDOWN_CHAR_THRESHOLD = 400_000
-
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[: max(0, limit - 3)] + "..."
 
 
 async def _init_document_process_task(
@@ -91,6 +86,7 @@ async def _init_document_process_task(
             if db_document_process_task.status != DocumentProcessStatus.PROCESSING:
                 db_document_process_task.status = DocumentProcessStatus.PROCESSING
                 db_document_process_task.update_time = datetime.now(timezone.utc)
+        db_document_process_task.detail = None
         await db.commit()
     return state
 
@@ -279,6 +275,7 @@ async def _mark_process_success(
         )
         if db_document_process_task is not None:
             db_document_process_task.status = DocumentProcessStatus.SUCCESS.value
+            db_document_process_task.detail = None
             db_document_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
 
@@ -311,6 +308,7 @@ async def prepare_progressive_followup_tasks(
                 document_id=document_id,
             )
         db_embedding_task.status = DocumentEmbeddingStatus.WAIT_TO
+        db_embedding_task.detail = None
         db_embedding_task.update_time = now
 
         if auto_graph:
@@ -325,6 +323,7 @@ async def prepare_progressive_followup_tasks(
                     document_id=document_id,
                 )
             db_graph_task.status = DocumentGraphStatus.WAIT_TO
+            db_graph_task.detail = None
             db_graph_task.update_time = now
 
         if auto_summary:
@@ -339,6 +338,7 @@ async def prepare_progressive_followup_tasks(
                     document_id=document_id,
                 )
             db_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
+            db_summarize_task.detail = None
             db_summarize_task.summary = None
             db_summarize_task.update_time = now
 
@@ -354,6 +354,7 @@ async def prepare_progressive_followup_tasks(
                     document_id=document_id,
                 )
             db_podcast_task.status = DocumentPodcastStatus.WAIT_TO
+            db_podcast_task.detail = None
             db_podcast_task.podcast_file_name = None
             db_podcast_task.update_time = now
 
@@ -552,22 +553,17 @@ async def run_document_process_workflow(
             ),
             exc_info=True,
         )
+        # The failure belongs to this task node, not to the document: record it on
+        # the process task's own detail and leave the document's title,
+        # description and cover untouched.
         async with async_session_context() as db:
-            db_document = await crud.document.get_document_by_document_id_async(
-                db=db,
-                document_id=document_id
-            )
-            if db_document is not None:
-                title = _truncate(f"Error: {e}", 200)
-                description = _truncate(f"Error: {e}", 1000)
-                db_document.title = title
-                db_document.description = description
             db_document_process_task = await crud.task.get_document_process_task_by_document_id_async(
                 db=db,
                 document_id=document_id
             )
             if db_document_process_task is not None:
                 db_document_process_task.status = DocumentProcessStatus.FAILED
+                db_document_process_task.detail = format_task_error(e)
                 db_document_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
         raise

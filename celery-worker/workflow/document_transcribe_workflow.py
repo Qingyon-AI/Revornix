@@ -10,6 +10,7 @@ from base_implement.stt_engine_base import Segment
 
 from common.logger import exception_logger, info_logger, log_event
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from common.file import register_remote_file
 from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
@@ -141,6 +142,7 @@ async def _init_transcribe_task(
             if db_transcribe_task.status != DocumentAudioTranscribeStatus.TRANSCRIBING:
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.TRANSCRIBING
                 db_transcribe_task.update_time = datetime.now(timezone.utc)
+        db_transcribe_task.detail = None
         await db.commit()
     return state
 
@@ -264,6 +266,7 @@ async def _transcribe_document_audio(
         db_transcribe_task.md_file_name = md_file_name
         db_transcribe_task.segments_file_name = segments_file_name
         db_transcribe_task.status = DocumentAudioTranscribeStatus.SUCCESS
+        db_transcribe_task.detail = None
         db_transcribe_task.celery_task_id = None
         db_transcribe_task.update_time = datetime.now(timezone.utc)
         db_document = await crud.document.get_document_by_document_id_async(
@@ -331,6 +334,7 @@ async def run_document_transcribe_workflow(
             )
             if db_transcribe_task is not None:
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.CANCELLED
+                db_transcribe_task.detail = None
                 db_transcribe_task.celery_task_id = None
                 db_transcribe_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -347,6 +351,7 @@ async def run_document_transcribe_workflow(
                 and db_transcribe_task.status != DocumentAudioTranscribeStatus.CANCELLED
             ):
                 db_transcribe_task.status = DocumentAudioTranscribeStatus.FAILED
+                db_transcribe_task.detail = format_task_error(e)
                 db_transcribe_task.celery_task_id = None
                 db_transcribe_task.update_time = datetime.now(timezone.utc)
                 await db.commit()

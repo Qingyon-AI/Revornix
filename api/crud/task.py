@@ -20,6 +20,10 @@ from enums.section import (
     SectionProcessTriggerType,
 )
 
+TASK_DETAIL_DOCUMENT_REMOVED = (
+    "The task was stopped because the document it belongs to was removed"
+)
+
 
 def create_section_process_task_trigger_scheduler(
     db: Session,
@@ -888,6 +892,7 @@ async def cancel_document_summarize_task_async(
     ):
         return None
     task.status = DocumentSummarizeStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -906,6 +911,7 @@ async def cancel_document_graph_task_async(
     ):
         return None
     task.status = DocumentGraphStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -924,6 +930,7 @@ async def cancel_document_podcast_task_async(
     ):
         return None
     task.status = DocumentPodcastStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -942,6 +949,7 @@ async def cancel_document_embedding_task_async(
     ):
         return None
     task.status = DocumentEmbeddingStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -960,6 +968,7 @@ def cancel_document_transcribe_task(
     ):
         return None
     task.status = DocumentAudioTranscribeStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -977,6 +986,7 @@ async def cancel_document_transcribe_task_async(
     ):
         return None
     task.status = DocumentAudioTranscribeStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -995,6 +1005,7 @@ def cancel_section_podcast_task(
     ):
         return None
     task.status = SectionPodcastStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -1012,6 +1023,7 @@ async def cancel_section_podcast_task_async(
     ):
         return None
     task.status = SectionPodcastStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -1030,6 +1042,7 @@ def cancel_section_process_task(
     ):
         return None
     task.status = SectionProcessStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -1047,6 +1060,7 @@ async def cancel_section_process_task_async(
     ):
         return None
     task.status = SectionProcessStatus.CANCELLED
+    task.detail = None
     task.update_time = now
     return task
 
@@ -1069,6 +1083,7 @@ def cancel_document_tasks_by_document_ids(
         query.update(
             {
                 model.status: failed_status,
+                model.detail: TASK_DETAIL_DOCUMENT_REMOVED,
                 model.update_time: now,
             },
             synchronize_session=False,
@@ -1127,6 +1142,7 @@ async def cancel_document_tasks_by_document_ids_async(
         rows = list((await db.execute(stmt)).scalars().all())
         for row in rows:
             row.status = failed_status
+            row.detail = TASK_DETAIL_DOCUMENT_REMOVED
             row.update_time = now
 
     await _cancel(

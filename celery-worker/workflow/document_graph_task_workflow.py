@@ -9,6 +9,7 @@ from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_
 from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from data.common import (
     close_extract_llm_client,
     stream_chunk_document,
@@ -131,6 +132,7 @@ async def _init_graph_task(state: DocumentGraphState) -> DocumentGraphState:
         if db_graph_task.status != DocumentGraphStatus.BUILDING:
             db_graph_task.status = DocumentGraphStatus.BUILDING
             db_graph_task.update_time = datetime.now(timezone.utc)
+        db_graph_task.detail = None
         await db.commit()
 
     if model_id is None:
@@ -317,6 +319,7 @@ async def _mark_graph_success(state: DocumentGraphState) -> DocumentGraphState:
         )
         if db_graph_task is not None:
             db_graph_task.status = DocumentGraphStatus.SUCCESS.value
+            db_graph_task.detail = None
             db_graph_task.celery_task_id = None
             db_graph_task.update_time = datetime.now(timezone.utc)
             await db.commit()
@@ -401,6 +404,7 @@ async def run_document_graph_task_workflow(
             )
             if db_graph_task is not None:
                 db_graph_task.status = DocumentGraphStatus.CANCELLED.value
+                db_graph_task.detail = None
                 db_graph_task.celery_task_id = None
                 db_graph_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -417,6 +421,7 @@ async def run_document_graph_task_workflow(
                 and db_graph_task.status != DocumentGraphStatus.CANCELLED.value
             ):
                 db_graph_task.status = DocumentGraphStatus.FAILED.value
+                db_graph_task.detail = format_task_error(e)
                 db_graph_task.celery_task_id = None
                 db_graph_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
