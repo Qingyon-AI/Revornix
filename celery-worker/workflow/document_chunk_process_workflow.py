@@ -19,6 +19,7 @@ from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from common.task_detail import format_task_error
+from workflow.stages import record_failure_safely
 from data.common import (
     close_extract_llm_client,
     extract_entities_relations,
@@ -666,14 +667,16 @@ async def _process_document_chunks(
         if pending_tasks:
             await asyncio.gather(*pending_tasks, return_exceptions=True)
         exception_logger.error(f"Something is error while embedding document info: {e}")
-        try:
+
+        async def _record(error: BaseException) -> None:
             await _mark_chunk_related_tasks_failed(
                 document_id=document_id,
                 auto_summary=auto_summary,
-                detail=format_task_error(e)
+                detail=format_task_error(error),
             )
-        except Exception as status_error:
-            exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
+
+        await record_failure_safely(record=_record, error=e, what="chunk-related task")
+        # 向量化是核心：它失败就是整份文档处理失败，必须往上传。
         raise
     finally:
         await close_extract_llm_client(llm_client)
@@ -723,14 +726,17 @@ async def _process_document_chunks(
                             db_document.description = final_summary_info.description
                 await db.commit()
         except Exception as e:
-            try:
+
+            async def _record(error: BaseException) -> None:
                 await _mark_chunk_related_tasks_failed(
                     document_id=document_id,
                     auto_summary=auto_summary,
-                    detail=format_task_error(e)
+                    detail=format_task_error(error),
                 )
-            except Exception as status_error:
-                exception_logger.error(f"Failed to update chunk-related task status: {status_error}")
+
+            await record_failure_safely(
+                record=_record, error=e, what="chunk-related task"
+            )
             raise
     # 5) 图谱构建
     deployed_by_official = check_deployed_by_official_in_fuc()
@@ -870,18 +876,17 @@ async def _process_document_chunks(
             )
     except Exception as e:
         exception_logger.error(f"Something is error while graphing document info: {e}")
-        try:
+
+        async def _record(error: BaseException) -> None:
             await _set_graph_task_status(
                 document_id=document_id,
                 status=DocumentGraphStatus.FAILED,
-                detail=format_task_error(e)
+                detail=format_task_error(error),
             )
-        except Exception as status_error:
-            exception_logger.error(f"Failed to update graph task status: {status_error}")
-        # The knowledge graph is an optional artifact: its failure is recorded on
-        # the graph task status above but must not fail the whole chunk workflow,
-        # otherwise the core embedding (already done) would never reach the
-        # "document process completed" notification. Do not re-raise.
+
+        await record_failure_safely(record=_record, error=e, what="graph task")
+        # 知识图谱是可选产物：失败只记在它自己那一行上，绝不能让整条 chunk 链失败 ——
+        # 否则已经完成的核心向量化永远等不到「处理完成」通知。所以这里不 re-raise。
 
     return state
 
