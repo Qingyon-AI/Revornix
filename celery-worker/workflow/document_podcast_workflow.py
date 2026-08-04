@@ -43,9 +43,11 @@ class DocumentPodcastState(TypedDict, total=False):
 
 
 WORKFLOW_NAME = "document_podcast"
-SUMMARY_PREFERRED_MARKDOWN_CHAR_THRESHOLD = 80_000
-SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD = 180_000
-SAMPLED_PODCAST_CHUNK_LIMIT = 10
+from workflow.planning import (
+    SAMPLED_PODCAST_CHUNK_LIMIT,
+    should_prefer_summary_source,
+    should_sample_chunks,
+)
 SAMPLED_PODCAST_MAX_TEXT_LENGTH = 12_000
 SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_200
 
@@ -190,7 +192,7 @@ async def _generate_document_podcast(
     source_chars = 0
     graph_context = ""
     graph_counts = {"entities": 0, "relations": 0, "excerpts": 0}
-    if markdown_length >= SUMMARY_PREFERRED_MARKDOWN_CHAR_THRESHOLD:
+    if should_prefer_summary_source(markdown_length=markdown_length):
         async with async_session_context() as db:
             db_summarize_task = await crud.task.get_document_summarize_task_by_document_id_async(
                 db=db,
@@ -200,7 +202,7 @@ async def _generate_document_podcast(
                 markdown_content = db_summarize_task.summary
                 state["podcast_mode"] = "summary"
                 source_chars = len(markdown_content)
-        if markdown_content is None and markdown_length >= SAMPLED_PODCAST_MARKDOWN_CHAR_THRESHOLD:
+        if markdown_content is None and should_sample_chunks(markdown_length=markdown_length):
             markdown_content = await _build_sampled_podcast_text(
                 document_id=document_id,
                 user_id=user_id,
