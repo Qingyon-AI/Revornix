@@ -1735,6 +1735,8 @@
 	"document_process_status_doing": "进程中",
 	"document_process_status_todo": "待处理",
 	"document_process_status_failed": "失败",
+	"task_detail": "任务详情",
+	"task_detail_empty": "该任务没有记录额外的详情。",
 	"document_transform_again": "已重新加入转换队列，请稍后",
 	"document_graph_generate": "点击生成",
 	"document_graph_regenerate": "重新生成",

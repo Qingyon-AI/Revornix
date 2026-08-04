@@ -16,6 +16,7 @@ import {
 
 import { Button } from '../ui/button';
 import SidebarTaskNode from '../ui/sidebar-task-node';
+import { taskDetailHint } from '../ui/task-detail-message';
 
 const DocumentEmbedding = ({
 	document_id,
@@ -186,6 +187,7 @@ const DocumentEmbedding = ({
 						? 'warning'
 						: 'danger'
 				}
+				hint={taskDetailHint(document.embedding_task.detail)}
 				action={startEmbeddingAction}
 			/>
 		);

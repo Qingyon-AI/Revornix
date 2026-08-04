@@ -2,7 +2,18 @@ import type { DocumentDetailResponse } from '@/generated';
 
 type TaskLike = {
 	status?: number | null;
+	detail?: string | null;
 } | null | undefined;
+
+/**
+ * The detail a task node recorded for its current status — normally the error
+ * message of a failed run. Empty strings are normalised away so callers can use
+ * it directly as a "is there anything to show" check.
+ */
+export const getDocumentTaskDetail = (task: TaskLike): string | undefined => {
+	const detail = task?.detail?.trim();
+	return detail ? detail : undefined;
+};
 
 export const isDocumentTaskPending = (task: TaskLike): boolean => {
 	return typeof task?.status === 'number' && task.status < 2;

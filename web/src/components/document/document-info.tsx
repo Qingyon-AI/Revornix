@@ -45,6 +45,7 @@ import AIModelSelect from '@/components/ai/model-select';
 import { useUserContext } from '@/provider/user-provider';
 import ResourceConfirmDialog from '@/components/ai/resource-confirm-dialog';
 import SidebarTaskNode from '../ui/sidebar-task-node';
+import { taskDetailHint } from '../ui/task-detail-message';
 import { Separator } from '../ui/separator';
 
 const MetaBadge = ({ children }: { children: ReactNode }) => {
@@ -333,6 +334,7 @@ const DocumentInfo = ({
 					title={t('ai_summary_failed')}
 					description={t('ai_summary_failed_description')}
 					tone='danger'
+					hint={taskDetailHint(data.summarize_task.detail)}
 					action={summaryActionButton}
 				/>
 			);

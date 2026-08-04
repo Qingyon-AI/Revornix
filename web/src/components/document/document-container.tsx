@@ -307,6 +307,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 					graphBadge={graphCardState.badge}
 					graphTone={graphCardState.tone}
 					graphStale={freshnessState.graphStale}
+					graphDetail={document?.graph_task?.detail}
 					graphActionLabel={graphActionLabel}
 					graphGenerating={mutateGenerateDocumentGraph.isPending}
 					graphCancelling={mutateCancelDocumentGraph.isPending}
@@ -322,6 +323,7 @@ const DocumentContainer = ({ id }: { id: number }) => {
 			document?.category,
 			document?.creator?.id,
 			documentAuthority?.authority,
+			document?.graph_task?.detail,
 			document?.graph_task?.status,
 			document?.id,
 			freshnessState.graphStale,

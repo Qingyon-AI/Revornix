@@ -35,6 +35,7 @@ import {
 } from '../ui/alert-dialog';
 import AIModelSelect from '@/components/ai/model-select';
 import EngineSelect from '@/components/ai/engine-select';
+import TaskDetailMessage from '@/components/ui/task-detail-message';
 import { EngineCategory } from '@/enums/engine';
 
 const SectionOperateProcess = ({
@@ -189,6 +190,7 @@ const SectionOperateProcess = ({
 				: isFailed
 					? t('section_process_status_failed_hint')
 					: t('section_process_status_idle_hint');
+	const taskDetail = section?.process_task?.detail?.trim();
 	const buttonIcon = mutation.isPending || isProcessing || isStopping ? (
 		<Loader2 className='animate-spin' />
 	) : isRunning ? (
@@ -247,6 +249,11 @@ const SectionOperateProcess = ({
 							<div className='rounded-xl border border-border/60 bg-muted/35 px-3 py-2 text-sm text-muted-foreground'>
 								{statusHint}
 							</div>
+							{taskDetail ? (
+								<div className='rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-800 dark:text-rose-200'>
+									<TaskDetailMessage detail={taskDetail} />
+								</div>
+							) : null}
 							<div>
 								<p className='mb-1 text-sm text-muted-foreground'>{t('use_model')}</p>
 								<AIModelSelect

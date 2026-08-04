@@ -8,6 +8,7 @@ from langgraph.graph import StateGraph, END
 from common.ai import reducer_summary, summary_content
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from data.common import (
     build_sampled_chunk_indexes,
     close_extract_llm_client,
@@ -104,6 +105,7 @@ async def _init_summarize_task(
         if db_summarize_task.status != DocumentSummarizeStatus.SUMMARIZING:
             db_summarize_task.status = DocumentSummarizeStatus.SUMMARIZING
             db_summarize_task.update_time = datetime.now(timezone.utc)
+        db_summarize_task.detail = None
         await db.commit()
     return state
 
@@ -273,6 +275,7 @@ async def _mark_summarize_success(
             )
             if db_summarize_task is not None:
                 db_summarize_task.status = DocumentSummarizeStatus.SUCCESS
+                db_summarize_task.detail = None
                 if summary is not None:
                     db_summarize_task.summary = summary
                 db_summarize_task.celery_task_id = None
@@ -357,6 +360,7 @@ async def run_document_summarize_workflow(
             )
             if db_summarize_task is not None:
                 db_summarize_task.status = DocumentSummarizeStatus.CANCELLED
+                db_summarize_task.detail = None
                 db_summarize_task.celery_task_id = None
                 db_summarize_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -373,6 +377,7 @@ async def run_document_summarize_workflow(
                 and db_summarize_task.status != DocumentSummarizeStatus.CANCELLED
             ):
                 db_summarize_task.status = DocumentSummarizeStatus.FAILED
+                db_summarize_task.detail = format_task_error(e)
                 db_summarize_task.celery_task_id = None
                 db_summarize_task.update_time = datetime.now(timezone.utc)
                 await db.commit()

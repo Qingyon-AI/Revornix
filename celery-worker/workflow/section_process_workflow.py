@@ -13,6 +13,7 @@ from langgraph.graph import StateGraph, END
 
 from common.ai import make_section_markdown
 from common.logger import exception_logger, info_logger
+from common.task_detail import format_task_error
 from data.custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import async_neo4j_driver
 from data.sql.base import async_session_context
@@ -1167,6 +1168,7 @@ async def _load_context(
             if db_section_process_task.status != SectionProcessStatus.PROCESSING:
                 db_section_process_task.status = SectionProcessStatus.PROCESSING
                 db_section_process_task.update_time = now
+        db_section_process_task.detail = None
         await db.commit()
 
         db_section_documents_all = await crud.section.get_section_documents_by_section_id_async(
@@ -1204,6 +1206,7 @@ async def _load_context(
         if not ready_documents:
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.WAIT_TO
+                db_section_process_task.detail = None
                 db_section_process_task.update_time = now
             await db.commit()
             state["target_document_ids"] = []
@@ -1352,6 +1355,9 @@ async def _build_section_content(
             )
             if db_section_process_task is not None:
                 db_section_process_task.status = SectionProcessStatus.FAILED
+                db_section_process_task.detail = (
+                    "No document in this section could be read, so there was nothing to summarize"
+                )
                 db_section_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
         state["skip_processing"] = True
@@ -1600,6 +1606,7 @@ async def _mark_section_process_success(
         )
         if db_section_process_task is not None:
             db_section_process_task.status = SectionProcessStatus.SUCCESS
+            db_section_process_task.detail = None
             db_section_process_task.celery_task_id = None
             db_section_process_task.update_time = datetime.now(timezone.utc)
             await db.commit()
@@ -1682,6 +1689,7 @@ async def run_section_process_workflow(
                 )
                 if db_section_process_task is not None:
                     db_section_process_task.status = SectionProcessStatus.CANCELLED
+                    db_section_process_task.detail = None
                     db_section_process_task.celery_task_id = None
                     db_section_process_task.update_time = now
                     await db.commit()
@@ -1702,6 +1710,7 @@ async def run_section_process_workflow(
                     and db_section_process_task.status != SectionProcessStatus.CANCELLED
                 ):
                     db_section_process_task.status = SectionProcessStatus.FAILED
+                    db_section_process_task.detail = format_task_error(e)
                     db_section_process_task.celery_task_id = None
                     db_section_process_task.update_time = now
                 db_section_documents = await crud.section.get_section_documents_by_section_id_async(

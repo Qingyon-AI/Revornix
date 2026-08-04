@@ -8,6 +8,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from common.embedding_utils import coerce_embedding_vectors
 from data.common import stream_chunk_document
 from data.milvus.insert import upsert_milvus
@@ -109,6 +110,7 @@ async def _init_embedding_task(
             if db_embedding_task.status != DocumentEmbeddingStatus.EMBEDDING:
                 db_embedding_task.status = DocumentEmbeddingStatus.EMBEDDING
                 db_embedding_task.update_time = datetime.now(timezone.utc)
+            db_embedding_task.detail = None
             await db.commit()
     return state
 
@@ -230,6 +232,7 @@ async def _mark_embedding_success(
         )
         if db_embedding_task is not None:
             db_embedding_task.status = DocumentEmbeddingStatus.SUCCESS
+            db_embedding_task.detail = None
             db_embedding_task.celery_task_id = None
             db_embedding_task.update_time = datetime.now(timezone.utc)
             await db.commit()
@@ -306,6 +309,7 @@ async def run_document_embedding_workflow(
             )
             if db_embedding_task is not None:
                 db_embedding_task.status = DocumentEmbeddingStatus.CANCELLED
+                db_embedding_task.detail = None
                 db_embedding_task.celery_task_id = None
                 db_embedding_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -324,6 +328,7 @@ async def run_document_embedding_workflow(
                 and db_embedding_task.status != DocumentEmbeddingStatus.CANCELLED
             ):
                 db_embedding_task.status = DocumentEmbeddingStatus.FAILED
+                db_embedding_task.detail = format_task_error(e)
                 db_embedding_task.celery_task_id = None
                 db_embedding_task.update_time = datetime.now(timezone.utc)
                 await db.commit()

@@ -30,6 +30,12 @@ export interface DocumentConvertTask {
      * @type {string}
      * @memberof DocumentConvertTask
      */
+    detail?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentConvertTask
+     */
     md_file_name: string | null;
     /**
      * 
@@ -65,6 +71,7 @@ export function DocumentConvertTaskFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'status': json['status'],
+        'detail': json['detail'] == null ? undefined : json['detail'],
         'md_file_name': json['md_file_name'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
@@ -83,6 +90,7 @@ export function DocumentConvertTaskToJSONTyped(value?: DocumentConvertTask | nul
     return {
         
         'status': value['status'],
+        'detail': value['detail'],
         'md_file_name': value['md_file_name'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),

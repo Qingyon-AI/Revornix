@@ -32,6 +32,7 @@ from common.dependencies import (
 )
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.stt_capability import engine_supports_meeting_mode
+from common.task_detail import format_task_error
 from common.timezone import (
     get_cached_user_timezone,
     normalize_timezone_name,
@@ -104,8 +105,9 @@ async def _commit_then_enqueue(
     await db.commit()
     try:
         task_result = enqueue()
-    except Exception:
+    except Exception as e:
         db_task.status = failed_status
+        db_task.detail = format_task_error(e)
         db_task.update_time = datetime.now(timezone.utc)
         await db.commit()
         raise
@@ -358,6 +360,7 @@ async def create_ai_summary(
         if db_exist_summarize_task.status == DocumentSummarizeStatus.SUMMARIZING:
             raise schemas.error.CustomException("Summary task is already in progress", code=409)
         db_exist_summarize_task.status = DocumentSummarizeStatus.WAIT_TO
+        db_exist_summarize_task.detail = None
         db_exist_summarize_task.summary = None
         db_exist_summarize_task.celery_task_id = None
         db_exist_summarize_task.update_time = datetime.now(timezone.utc)
@@ -427,6 +430,7 @@ async def create_embedding(
         if db_embedding_task.status == DocumentEmbeddingStatus.EMBEDDING:
             raise schemas.error.CustomException("Embedding task is already in progress", code=409)
         db_embedding_task.status = DocumentEmbeddingStatus.WAIT_TO
+        db_embedding_task.detail = None
         db_embedding_task.celery_task_id = None
         db_embedding_task.update_time = now
     else:
@@ -538,6 +542,7 @@ async def transcribe_audio_document(
         if db_transcribe_task.status == DocumentAudioTranscribeStatus.TRANSCRIBING:
             raise schemas.error.CustomException("Transcription task is already in progress", code=409)
         db_transcribe_task.status = DocumentAudioTranscribeStatus.WAIT_TO
+        db_transcribe_task.detail = None
         db_transcribe_task.md_file_name = None
         db_transcribe_task.segments_file_name = None
         db_transcribe_task.celery_task_id = None
@@ -668,6 +673,7 @@ async def generate_graph(
         if db_graph_generate_task.status == DocumentGraphStatus.BUILDING:
             raise schemas.error.CustomException("Graph generation task is already in progress", code=409)
         db_graph_generate_task.status = DocumentGraphStatus.WAIT_TO
+        db_graph_generate_task.detail = None
         db_graph_generate_task.celery_task_id = None
         db_graph_generate_task.update_time = now
     else:
@@ -751,6 +757,7 @@ async def generate_podcast(
         if db_exist_podcast_task.status == DocumentPodcastStatus.GENERATING:
             raise schemas.error.CustomException("Podcast task is already in progress", code=409)
         db_exist_podcast_task.status = DocumentPodcastStatus.WAIT_TO
+        db_exist_podcast_task.detail = None
         db_exist_podcast_task.podcast_file_name = None
         db_exist_podcast_task.podcast_script_file_name = None
         db_exist_podcast_task.celery_task_id = None
@@ -1027,6 +1034,7 @@ async def transform_markdown(
         elif db_convert_task.status == DocumentMdConvertStatus.CONVERTING:
             raise schemas.error.CustomException("Markdown conversion task is already in progress", code=409)
         db_convert_task.status = DocumentMdConvertStatus.WAIT_TO
+        db_convert_task.detail = None
         db_convert_task.update_time = now
     else:
         db_convert_task = await crud.task.create_document_convert_task_async(
@@ -1046,8 +1054,9 @@ async def transform_markdown(
             auto_summary=False,
             auto_podcast=True
         )
-    except Exception:
+    except Exception as e:
         db_convert_task.status = DocumentMdConvertStatus.FAILED
+        db_convert_task.detail = format_task_error(e)
         db_convert_task.update_time = datetime.now(timezone.utc)
         await db.commit()
         raise

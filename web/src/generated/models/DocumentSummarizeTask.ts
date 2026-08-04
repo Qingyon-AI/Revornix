@@ -30,6 +30,12 @@ export interface DocumentSummarizeTask {
      * @type {string}
      * @memberof DocumentSummarizeTask
      */
+    detail?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof DocumentSummarizeTask
+     */
     summary: string | null;
     /**
      * 
@@ -65,6 +71,7 @@ export function DocumentSummarizeTaskFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'status': json['status'],
+        'detail': json['detail'] == null ? undefined : json['detail'],
         'summary': json['summary'],
         'create_time': json['create_time'] == null ? undefined : (new Date(json['create_time'])),
         'update_time': json['update_time'] == null ? undefined : (new Date(json['update_time'])),
@@ -83,6 +90,7 @@ export function DocumentSummarizeTaskToJSONTyped(value?: DocumentSummarizeTask |
     return {
         
         'status': value['status'],
+        'detail': value['detail'],
         'summary': value['summary'],
         'create_time': value['create_time'] == null ? value['create_time'] : value['create_time'].toISOString(),
         'update_time': value['update_time'] == null ? value['update_time'] : value['update_time'].toISOString(),

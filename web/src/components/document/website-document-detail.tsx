@@ -34,6 +34,7 @@ import { toStableMarkdownSourceKey } from '@/lib/markdown-source';
 import EditableMarkdownPanel from '../markdown/editable-markdown-panel';
 import useDocumentMarkdownEditable from '@/hooks/use-document-markdown-editable';
 import { NotFoundView } from '../not-found/not-found-view';
+import TaskDetailMessage from '../ui/task-detail-message';
 import {
 	Select,
 	SelectContent,
@@ -391,7 +392,15 @@ const WebsiteDocumentDetail = ({
 							code={null}
 							icon={TriangleAlert}
 							title={t('document_transform_to_markdown_failed')}
-							description={t('document_transform_to_markdown_failed_description')}
+							description={
+								<div className='space-y-3'>
+									<p>{t('document_transform_to_markdown_failed_description')}</p>
+									<TaskDetailMessage
+										detail={document.convert_task?.detail}
+										className='text-left'
+									/>
+								</div>
+							}
 							className={statusViewClassName}
 							footer={
 								<>

@@ -267,6 +267,7 @@ async def generate_podcast(
         )
     else:
         db_exist_podcast_task.status = SectionPodcastStatus.WAIT_TO
+        db_exist_podcast_task.detail = None
         db_exist_podcast_task.podcast_file_name = None
         db_exist_podcast_task.podcast_script_file_name = None
         db_exist_podcast_task.celery_task_id = None
@@ -509,6 +510,7 @@ async def trigger_section_process(
         )
     else:
         db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.detail = None
         db_section_process_task.celery_task_id = None
         db_section_process_task.update_time = now
     task_result = start_process_section.apply_async(kwargs={
@@ -584,6 +586,7 @@ async def retry_section_document_integration(
         )
     else:
         db_section_process_task.status = SectionProcessStatus.WAIT_TO
+        db_section_process_task.detail = None
         db_section_process_task.celery_task_id = None
         db_section_process_task.update_time = now
     task_result = start_process_section.apply_async(kwargs={

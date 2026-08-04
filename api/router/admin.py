@@ -225,6 +225,7 @@ async def _build_admin_document_detail(
     if convert_task is not None:
         res.convert_task = schemas.document.DocumentConvertTask(
             status=convert_task.status,
+            detail=convert_task.detail,
             md_file_name=convert_task.md_file_name,
             create_time=convert_task.create_time,
             update_time=convert_task.update_time,
@@ -236,6 +237,7 @@ async def _build_admin_document_detail(
     if podcast_task is not None:
         res.podcast_task = schemas.document.DocumentPodcastTask(
             status=podcast_task.status,
+            detail=podcast_task.detail,
             podcast_file_name=podcast_task.podcast_file_name,
             podcast_script_file_name=podcast_task.podcast_script_file_name,
             create_time=podcast_task.create_time,
@@ -248,6 +250,7 @@ async def _build_admin_document_detail(
     if summarize_task is not None:
         res.summarize_task = schemas.document.DocumentSummarizeTask(
             status=summarize_task.status,
+            detail=summarize_task.detail,
             summary=summarize_task.summary,
             create_time=summarize_task.create_time,
             update_time=summarize_task.update_time,

@@ -265,6 +265,7 @@ async def _build_section_info_response(
     if db_section_podcast_task is not None:
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
+            detail=db_section_podcast_task.detail,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
             podcast_script_file_name=db_section_podcast_task.podcast_script_file_name,
             create_time=db_section_podcast_task.create_time,
@@ -282,6 +283,7 @@ async def _build_section_info_response(
     if db_section_process_task is not None:
         res.process_task = schemas.section.SectionProcessTask(
             status=db_section_process_task.status,
+            detail=db_section_process_task.detail,
             create_time=db_section_process_task.create_time,
             update_time=db_section_process_task.update_time,
         )
@@ -671,6 +673,7 @@ async def get_date_section_info(
     if db_section_podcast_task is not None:
         res.podcast_task = schemas.section.SectionPodcastTask(
             status=db_section_podcast_task.status,
+            detail=db_section_podcast_task.detail,
             podcast_file_name=db_section_podcast_task.podcast_file_name,
             podcast_script_file_name=db_section_podcast_task.podcast_script_file_name,
             create_time=db_section_podcast_task.create_time,
@@ -688,6 +691,7 @@ async def get_date_section_info(
     if db_section_process_task is not None:
         res.process_task = schemas.section.SectionProcessTask(
             status=db_section_process_task.status,
+            detail=db_section_process_task.detail,
             create_time=db_section_process_task.create_time,
             update_time=db_section_process_task.update_time,
         )

@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END
 
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active
+from common.task_detail import format_task_error
 from common.file import register_remote_file
 from common.podcast_content import prepare_podcast_markdown
 from common.podcast_graph import build_document_podcast_graph_context
@@ -159,6 +160,7 @@ async def _init_podcast_task(
         if db_podcast_task.status != DocumentPodcastStatus.GENERATING:
             db_podcast_task.status = DocumentPodcastStatus.GENERATING
             db_podcast_task.update_time = datetime.now(timezone.utc)
+        db_podcast_task.detail = None
         await db.commit()
     return state
 
@@ -339,6 +341,7 @@ async def _mark_podcast_success(
         )
         if db_podcast_task is not None:
             db_podcast_task.status = DocumentPodcastStatus.SUCCESS
+            db_podcast_task.detail = None
             db_podcast_task.podcast_file_name = podcast_file_name
             db_podcast_task.podcast_script_file_name = podcast_script_file_name
             db_podcast_task.celery_task_id = None
@@ -410,6 +413,7 @@ async def run_document_podcast_workflow(
             )
             if db_podcast_task is not None:
                 db_podcast_task.status = DocumentPodcastStatus.CANCELLED
+                db_podcast_task.detail = None
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 await db.commit()
@@ -426,6 +430,7 @@ async def run_document_podcast_workflow(
                 and db_podcast_task.status != DocumentPodcastStatus.CANCELLED
             ):
                 db_podcast_task.status = DocumentPodcastStatus.FAILED
+                db_podcast_task.detail = format_task_error(e)
                 db_podcast_task.celery_task_id = None
                 db_podcast_task.update_time = datetime.now(timezone.utc)
                 await db.commit()

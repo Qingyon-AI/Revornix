@@ -85,6 +85,7 @@ async def _build_section_infos(
         if podcast_task is not None:
             res.podcast_task = schemas.task.SectionPodcastTask(
                 status=podcast_task.status,
+                detail=podcast_task.detail,
                 podcast_file_name=podcast_task.podcast_file_name,
                 podcast_script_file_name=podcast_task.podcast_script_file_name,
                 create_time=podcast_task.create_time,
