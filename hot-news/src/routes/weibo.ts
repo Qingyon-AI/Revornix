@@ -2,6 +2,15 @@ import type { RouterData } from "../types.js";
 import { get } from "../utils/getData.js";
 import { getTime } from "../utils/getTime.js";
 
+// 微博热搜接口返回的原始条目。字段全是可选的：外部接口随时可能少给，
+// 下面的取值链路本来就按「取不到就退回默认」写的。
+type HotSearchItem = {
+  word?: string;
+  word_scheme?: string;
+  mid?: string;
+  onboard_time?: number;
+};
+
 export const handleRoute = async (_: undefined, noCache: boolean) => {
   const listData = await getList(noCache);
   const routeData: RouterData = {
@@ -37,7 +46,7 @@ const getList = async (noCache: boolean) => {
   const list = result.data.data.realtime;
   return {
     ...result,
-    data: list.map((v: any, index: number) => {
+    data: list.map((v: HotSearchItem, index: number) => {
       const title = v.word || v.word_scheme || `热搜${index + 1}`;
       return {
         id: v.mid || v.word_scheme || `weibo-${index}`,

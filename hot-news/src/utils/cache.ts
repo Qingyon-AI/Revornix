@@ -35,13 +35,11 @@ const redis = new Redis({
 
 const REDIS_RETRY_DELAY_MS = 5000;
 
-let isRedisAvailable: boolean = false;
 let nextRedisRetryAt = 0;
 
 // Redis 连接状态
 const ensureRedisConnection = async (): Promise<boolean> => {
   if (redis.status === "ready") {
-    isRedisAvailable = true;
     nextRedisRetryAt = 0;
     return true;
   }
@@ -51,12 +49,10 @@ const ensureRedisConnection = async (): Promise<boolean> => {
 
   try {
     await redis.ping();
-    isRedisAvailable = true;
     nextRedisRetryAt = 0;
     logger.info("📦 [Redis] connected successfully.");
     return true;
   } catch (error) {
-    isRedisAvailable = false;
     nextRedisRetryAt = now + REDIS_RETRY_DELAY_MS;
     logger.error(
       `📦 [Redis] connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -65,17 +61,11 @@ const ensureRedisConnection = async (): Promise<boolean> => {
   }
 };
 
-// Redis 事件监听
-redis.on("error", () => {
-  isRedisAvailable = false;
-});
-
-redis.on("close", () => {
-  isRedisAvailable = false;
-});
-
-redis.on("end", () => {
-  isRedisAvailable = false;
+// ioredis 上没有 'error' 监听器时，连接错误会按 EventEmitter 的规矩变成未捕获
+// 异常直接掀掉进程 —— 所以这个监听器必须在，哪怕只是记一行日志。重连由上面的
+// retryStrategy 和 nextRedisRetryAt 负责。
+redis.on("error", (error: Error) => {
+  logger.error(`📦 [Redis] ${error.message}`);
 });
 
 // NodeCache 事件监听
