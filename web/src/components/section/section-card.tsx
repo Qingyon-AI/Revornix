@@ -47,9 +47,11 @@ const SectionCard = ({
 				<div
 					className={cn(
 						'absolute left-2 top-2 z-10 rounded-md border border-border/60 bg-background/90 p-1 shadow-sm backdrop-blur-sm transition-opacity',
+						// 常驻显示。做成 hover 才出现的话，触屏设备上根本没有 hover，
+						// 等于这些设备上不存在多选；未选中时压低一点存在感就够了。
 						checked
 							? 'opacity-100'
-							: 'opacity-0 focus-within:opacity-100 group-hover/select:opacity-100',
+							: 'opacity-70 focus-within:opacity-100 group-hover/select:opacity-100',
 					)}>
 					<Checkbox
 						aria-label={section.title ?? undefined}
