@@ -48,7 +48,7 @@ langchain_core==1.5.3
 langgraph==1.2.10
 fastmcp==3.4.5
 # lark_oapi 钉了 websockets<16，所以这里升不到 17.x —— 15.0.1 已是 15 线的最新。
-websockets==17.0.1
+websockets==15.0.1
 lark_oapi==1.7.1
 python-telegram-bot==22.8
 jwcrypto==1.5.8
