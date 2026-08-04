@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/AccessRequestApi.ts
 apis/AdminApi.ts
 apis/AiApi.ts
