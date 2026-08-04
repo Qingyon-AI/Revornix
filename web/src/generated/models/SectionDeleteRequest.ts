@@ -21,17 +21,17 @@ import { mapValues } from '../runtime';
 export interface SectionDeleteRequest {
     /**
      * 
-     * @type {number}
+     * @type {Array<number>}
      * @memberof SectionDeleteRequest
      */
-    section_id: number;
+    section_ids: Array<number>;
 }
 
 /**
  * Check if a given object implements the SectionDeleteRequest interface.
  */
 export function instanceOfSectionDeleteRequest(value: object): value is SectionDeleteRequest {
-    if (!('section_id' in value) || value['section_id'] === undefined) return false;
+    if (!('section_ids' in value) || value['section_ids'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +45,7 @@ export function SectionDeleteRequestFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'section_id': json['section_id'],
+        'section_ids': json['section_ids'],
     };
 }
 
@@ -60,7 +60,7 @@ export function SectionDeleteRequestToJSONTyped(value?: SectionDeleteRequest | n
 
     return {
         
-        'section_id': value['section_id'],
+        'section_ids': value['section_ids'],
     };
 }
 

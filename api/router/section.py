@@ -913,61 +913,91 @@ async def update_section(
     return schemas.common.SuccessResponse()
 
 
+async def _load_created_sections_or_raise(
+    *,
+    db: AsyncSession,
+    section_ids: list[int],
+    user_id: int,
+) -> list[models.section.Section]:
+    """校验这批专栏都存在、且当前用户都是创建者。
+
+    语义与文档删除一致（见 router/document_interaction_manage.py）：**全有或全无**。
+    只要有一个 id 不存在或没权限，整个请求就失败，一个都不删 —— 部分成功的删除
+    没法让调用方判断到底删掉了什么。
+    """
+    sections: list[models.section.Section] = []
+    for section_id in section_ids:
+        db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+            db=db,
+            section_id=section_id,
+            user_id=user_id
+        )
+        if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
+            raise schemas.error.CustomException("You don't have permission to delete this section", code=403)
+        db_section = await crud.section.get_section_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
+        if db_section is None:
+            raise schemas.error.CustomException("The section is not found", code=404)
+        sections.append(db_section)
+    return sections
+
+
 @section_router.post('/delete', response_model=schemas.common.NormalResponse)
 async def delete_section(
     section_delete_request: schemas.section.SectionDeleteRequest,
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user)
 ):
-    db_section_user = await crud.section.get_section_user_by_section_id_and_user_id_async(
+    db_sections = await _load_created_sections_or_raise(
         db=db,
-        section_id=section_delete_request.section_id,
-        user_id=user.id
+        section_ids=section_delete_request.section_ids,
+        user_id=user.id,
     )
-    if db_section_user is None or db_section_user.role not in [UserSectionRole.CREATOR]:
-        raise schemas.error.CustomException("You don't have permission to delete this section", code=403)
 
-    db_section = await crud.section.get_section_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    if db_section is not None:
-        await delete_section_remote_files(db=db, sections=[db_section])
+    await delete_section_remote_files(db=db, sections=db_sections)
 
-    db_users = await crud.section.get_users_for_section_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id,
-        filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
-    )
-    await crud.section.delete_section_users_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    await crud.section.delete_section_documents_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    await crud.section.delete_section_labels_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    await crud.section.delete_section_comments_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
-    await crud.section.delete_section_by_section_id_async(
-        db=db,
-        section_id=section_delete_request.section_id
-    )
+    # 被移除的成员/订阅者要在提交之后才通知，先攒着。
+    pending_notifications: list[tuple[int, int]] = []
+    for db_section in db_sections:
+        section_id = db_section.id
+        db_users = await crud.section.get_users_for_section_by_section_id_async(
+            db=db,
+            section_id=section_id,
+            filter_roles=[UserSectionRole.MEMBER, UserSectionRole.SUBSCRIBER]
+        )
+        pending_notifications.extend(
+            (db_user.id, section_id) for db_user in db_users if db_user.id != user.id
+        )
+        await crud.section.delete_section_users_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
+        await crud.section.delete_section_documents_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
+        await crud.section.delete_section_labels_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
+        await crud.section.delete_section_comments_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
+        await crud.section.delete_section_by_section_id_async(
+            db=db,
+            section_id=section_id
+        )
     await db.commit()
-    for db_user in db_users:
-        if db_user.id != user.id:
-            start_trigger_user_notification_event.delay(
-                user_id=db_user.id,
-                trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
-                params={
-                    "section_id": section_delete_request.section_id,
-                    "receiver_id": db_user.id
-                }
-            )
+    for receiver_id, section_id in pending_notifications:
+        start_trigger_user_notification_event.delay(
+            user_id=receiver_id,
+            trigger_event_uuid=NotificationTriggerEventUUID.REMOVED_FROM_SECTION.value,
+            params={
+                "section_id": section_id,
+                "receiver_id": receiver_id
+            }
+        )
     return schemas.common.SuccessResponse()

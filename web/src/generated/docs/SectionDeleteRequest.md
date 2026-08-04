@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`section_id` | number
+`section_ids` | Array&lt;number&gt;
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { SectionDeleteRequest } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "section_id": null,
+  "section_ids": null,
 } satisfies SectionDeleteRequest
 
 console.log(example)

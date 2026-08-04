@@ -39,7 +39,7 @@ const SectionOperateDelete = ({
 		setDeleting(true);
 		const [res, err] = await utils.to(
 			deleteSection({
-				section_id: section_id,
+				section_ids: [section_id],
 			})
 		);
 		if (err) {
