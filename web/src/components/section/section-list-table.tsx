@@ -14,17 +14,21 @@ import {
 } from '@/components/ui/table';
 import SectionVisibilityHint from './section-visibility-hint';
 import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { ListSelection } from '@/components/document/document-list-table';
 
 const SectionListTable = ({
 	sections,
 	lastRowRef,
 	loadingMore = false,
 	loadingCentered = false,
+	selection,
 }: {
 	sections: SectionInfo[];
 	lastRowRef?: Ref<HTMLTableRowElement>;
 	loadingMore?: boolean;
 	loadingCentered?: boolean;
+	selection?: ListSelection;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -34,6 +38,21 @@ const SectionListTable = ({
 			<Table>
 				<TableHeader>
 					<TableRow>
+						{selection ? (
+							<TableHead className='w-10'>
+								<Checkbox
+									aria-label={t('selection_select_all_visible')}
+									checked={
+										selection.allVisibleSelected
+											? true
+											: selection.someVisibleSelected
+												? 'indeterminate'
+												: false
+									}
+									onCheckedChange={() => selection.toggleAllVisible()}
+								/>
+							</TableHead>
+						) : null}
 						<TableHead>{t('admin_sections_table_title')}</TableHead>
 						<TableHead>{t('admin_sections_table_creator')}</TableHead>
 						<TableHead>{t('admin_sections_table_publish')}</TableHead>
@@ -47,6 +66,16 @@ const SectionListTable = ({
 							ref={index === sections.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/section/detail/${section.id}`)}>
+							{selection ? (
+								// 勾选格自己吃掉点击，否则会连带触发整行的跳转。
+								<TableCell onClick={(e) => e.stopPropagation()}>
+									<Checkbox
+										aria-label={section.title ?? undefined}
+										checked={selection.isSelected(section.id)}
+										onCheckedChange={() => selection.toggle(section.id)}
+									/>
+								</TableCell>
+							) : null}
 							<TableCell className='whitespace-normal'>
 								<div className='space-y-1'>
 									<div className='font-medium'>

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { SectionInfo } from '@/generated';
 import { formatDistance } from 'date-fns';
 import { AlertTriangle, BookTextIcon } from 'lucide-react';
@@ -12,17 +13,21 @@ import { useDefaultResourceAccess } from '@/hooks/use-default-resource-access';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import SectionCardPodcast from './section-card-podcast';
 import { getSectionCoverSrc } from '@/lib/section-cover';
-import { replacePath } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import { CardViewMode } from '@/lib/card-view-mode';
 import SectionVisibilityHint from './section-visibility-hint';
 import ImageWithFallback from '../ui/image-with-fallback';
+import { Checkbox } from '../ui/checkbox';
+import type { ListSelection } from '@/components/document/document-list-table';
 
 const SectionCard = ({
 	section,
 	layout = 'grid',
+	selection,
 }: {
 	section: SectionInfo;
 	layout?: CardViewMode;
+	selection?: ListSelection;
 }) => {
 	const locale = useLocale();
 	const t = useTranslations();
@@ -30,6 +35,32 @@ const SectionCard = ({
 	const { mainUserInfo } = useUserContext();
 	const { podcastEngine, imageGenerateEngine } = useDefaultResourceAccess();
 	const isCreator = mainUserInfo?.id === section.creator.id;
+
+	// 勾选框叠在卡片**外面**（不是 Link 里面），所以点它不会顺带触发跳转。
+	// 未选中时只在 hover / 键盘聚焦时露出，避免平时一片勾选框。
+	const withSelection = (node: ReactNode) => {
+		if (!selection) return node;
+		const checked = selection.isSelected(section.id);
+		return (
+			<div className='relative group/select h-full'>
+				{node}
+				<div
+					className={cn(
+						'absolute left-2 top-2 z-10 rounded-md border border-border/60 bg-background/90 p-1 shadow-sm backdrop-blur-sm transition-opacity',
+						checked
+							? 'opacity-100'
+							: 'opacity-0 focus-within:opacity-100 group-hover/select:opacity-100',
+					)}>
+					<Checkbox
+						aria-label={section.title ?? undefined}
+						checked={checked}
+						onCheckedChange={() => selection.toggle(section.id)}
+					/>
+				</div>
+			</div>
+		);
+	};
+
 	const automationWarnings = getSectionAutomationWarnings({
 		autoPodcast: section.auto_podcast,
 		autoIllustration: section.auto_illustration,
@@ -71,7 +102,7 @@ const SectionCard = ({
 	);
 
 	if (layout === 'list') {
-		return (
+		return withSelection(
 			<div className='group flex overflow-hidden rounded-2xl border border-border/60 bg-card/70 shadow-sm backdrop-blur-sm transition-colors hover:border-border hover:bg-card/90'>
 				<div className='flex w-full flex-col gap-3 p-3 sm:grid sm:grid-cols-[96px,minmax(0,1.8fr),minmax(220px,1fr),auto] sm:items-center sm:gap-4 sm:p-4'>
 					<Link
@@ -167,7 +198,7 @@ const SectionCard = ({
 		);
 	}
 
-	return (
+	return withSelection(
 		<div className='group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md'>
 			<Link href={`/section/detail/${section.id}`} className='block'>
 				<div className='relative h-40 w-full overflow-hidden'>

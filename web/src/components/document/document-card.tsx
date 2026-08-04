@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { DocumentInfo } from '@/generated';
 import { File, NotebookPen, Paperclip } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -5,20 +6,24 @@ import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
 import { DocumentCategory } from '@/enums/document';
 import { CardViewMode } from '@/lib/card-view-mode';
-import { replacePath } from '@/lib/utils';
+import { cn, replacePath } from '@/lib/utils';
 import { formatInUserTimeZone } from '@/lib/time';
 import DocumentVisibilityHint from './document-visibility-hint';
 import ImageWithFallback from '../ui/image-with-fallback';
 import DocumentCardPodcast from './document-card-podcast';
+import { Checkbox } from '../ui/checkbox';
+import type { ListSelection } from './document-list-table';
 
 const DocumentCard = ({
 	document,
 	layout = 'grid',
 	onLabelClick,
+	selection,
 }: {
 	document: DocumentInfo;
 	layout?: CardViewMode;
 	onLabelClick?: (labelId: number) => void;
+	selection?: ListSelection;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -32,6 +37,32 @@ const DocumentCard = ({
 					: document.category === DocumentCategory.AUDIO
 						? t('document_category_audio')
 						: t('document_category_others');
+
+
+	// 勾选框叠在卡片**外面**（不是 Link 里面），所以点它不会顺带触发跳转。
+	// 未选中时只在 hover / 键盘聚焦时露出，避免平时一片勾选框。
+	const withSelection = (node: ReactNode) => {
+		if (!selection) return node;
+		const checked = selection.isSelected(document.id);
+		return (
+			<div className='relative group/select h-full'>
+				{node}
+				<div
+					className={cn(
+						'absolute left-2 top-2 z-10 rounded-md border border-border/60 bg-background/90 p-1 shadow-sm backdrop-blur-sm transition-opacity',
+						checked
+							? 'opacity-100'
+							: 'opacity-0 focus-within:opacity-100 group-hover/select:opacity-100',
+					)}>
+					<Checkbox
+						aria-label={document.title ?? undefined}
+						checked={checked}
+						onCheckedChange={() => selection.toggle(document.id)}
+					/>
+				</div>
+			</div>
+		);
+	};
 
 	const cover = document?.cover ? (
 		<ImageWithFallback
@@ -55,7 +86,7 @@ const DocumentCard = ({
 	);
 
 	if (layout === 'list') {
-		return (
+		return withSelection(
 			<Link
 				href={`/document/detail/${document.id}`}
 				className='group flex overflow-hidden rounded-2xl border border-border/60 bg-card/70 shadow-sm backdrop-blur-sm transition-colors hover:border-border hover:bg-card/90'>
@@ -127,7 +158,7 @@ const DocumentCard = ({
 		);
 	}
 
-	return (
+	return withSelection(
 		<Link
 			href={`/document/detail/${document.id}`}
 			className='group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md'>

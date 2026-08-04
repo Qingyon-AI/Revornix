@@ -2401,5 +2401,15 @@
 	"access_key_incorrect": "访问密钥不正确",
 	"document_create_auto_publish": "创建后立即公开",
 	"document_create_auto_publish_description": "创建完成后立即公开此文档,可选择用访问密钥保护链接",
-	"access_key_optional_placeholder": "访问密钥(可选)"
+	"access_key_optional_placeholder": "访问密钥(可选)",
+	"selection_selected_count": "已选 {count} 项",
+	"selection_clear": "取消选择",
+	"selection_select_all_visible": "全选已加载项",
+	"selection_delete": "删除所选",
+	"selection_delete_documents_title": "删除选中的文档？",
+	"selection_delete_documents_description": "将删除 {count} 篇文档，且无法恢复。",
+	"selection_delete_sections_title": "删除选中的专栏？",
+	"selection_delete_sections_description": "将删除 {count} 个专栏，其中的文档不会被删除。",
+	"selection_delete_success": "已删除 {count} 项",
+	"selection_delete_partial": "成功 {success} 项，失败 {failed} 项"
 }

@@ -17,17 +17,29 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
+import { Checkbox } from '@/components/ui/checkbox';
+
+/** 传了才渲染勾选列 —— 公共列表页没有批量操作，就不该多出一列。 */
+export type ListSelection = {
+	isSelected: (id: number) => boolean;
+	toggle: (id: number) => void;
+	allVisibleSelected: boolean;
+	someVisibleSelected: boolean;
+	toggleAllVisible: () => void;
+};
 
 const DocumentListTable = ({
 	documents,
 	lastRowRef,
 	loadingMore = false,
 	loadingCentered = false,
+	selection,
 }: {
 	documents: DocumentInfo[];
 	lastRowRef?: Ref<HTMLTableRowElement>;
 	loadingMore?: boolean;
 	loadingCentered?: boolean;
+	selection?: ListSelection;
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -52,6 +64,21 @@ const DocumentListTable = ({
 			<Table className='table-fixed min-w-[900px]'>
 				<TableHeader>
 					<TableRow>
+						{selection ? (
+							<TableHead className='w-10'>
+								<Checkbox
+									aria-label={t('selection_select_all_visible')}
+									checked={
+										selection.allVisibleSelected
+											? true
+											: selection.someVisibleSelected
+												? 'indeterminate'
+												: false
+									}
+									onCheckedChange={() => selection.toggleAllVisible()}
+								/>
+							</TableHead>
+						) : null}
 						<TableHead className='w-[42%] min-w-[260px]'>
 							{t('admin_documents_table_title')}
 						</TableHead>
@@ -69,6 +96,16 @@ const DocumentListTable = ({
 							ref={index === documents.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/document/detail/${document.id}`)}>
+							{selection ? (
+								// 勾选格自己吃掉点击，否则会连带触发整行的跳转。
+								<TableCell onClick={(e) => e.stopPropagation()}>
+									<Checkbox
+										aria-label={document.title ?? undefined}
+										checked={selection.isSelected(document.id)}
+										onCheckedChange={() => selection.toggle(document.id)}
+									/>
+								</TableCell>
+							) : null}
 							<TableCell className='whitespace-normal'>
 								<div className='min-w-0 space-y-1'>
 									<div className='line-clamp-2 break-all font-medium'>

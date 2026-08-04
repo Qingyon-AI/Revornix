@@ -2401,5 +2401,15 @@
 	"access_key_incorrect": "The access key is incorrect",
 	"document_create_auto_publish": "Publish right away",
 	"document_create_auto_publish_description": "Make this document public immediately after creation; optionally protect the link with an access key",
-	"access_key_optional_placeholder": "Access key (optional)"
+	"access_key_optional_placeholder": "Access key (optional)",
+	"selection_selected_count": "{count} selected",
+	"selection_clear": "Clear selection",
+	"selection_select_all_visible": "Select all loaded",
+	"selection_delete": "Delete selected",
+	"selection_delete_documents_title": "Delete the selected documents?",
+	"selection_delete_documents_description": "{count} documents will be deleted. This cannot be undone.",
+	"selection_delete_sections_title": "Delete the selected sections?",
+	"selection_delete_sections_description": "{count} sections will be deleted. Documents inside them are not deleted.",
+	"selection_delete_success": "{count} deleted",
+	"selection_delete_partial": "{success} deleted, {failed} failed"
 }
