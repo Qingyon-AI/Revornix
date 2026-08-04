@@ -25,7 +25,7 @@ jobs:
       - run: python scripts/check_mirrored_files.py
 
   worker:
-    name: celery-worker 可编译
+    name: celery-worker 编译与测试
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,16 @@ jobs:
       - name: 语法检查
         working-directory: celery-worker
         run: python -m compileall -q workflow common crud models schemas enums notification
+
+      # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
+      # 渲染），因此只装 pytest 就能跑 —— 不必为了测试把整棵运行时依赖树拖进来。
+      - name: 安装测试依赖
+        working-directory: celery-worker
+        run: pip install -r requirements-dev.txt
+
+      - name: 单元测试
+        working-directory: celery-worker
+        run: python -m pytest -q
 
   gateway:
     name: gateway 构建与 vet
