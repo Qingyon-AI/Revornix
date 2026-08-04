@@ -68,21 +68,6 @@ engine/video_plugins/helpers.py
 engine/video_plugins/youtube.py
 engine/video_plugins/youtube_auth.py
 
-# ---- enums/ —— 枚举 —— 两侧取值必须字面一致，否则状态码会对不上 (13) ----
-enums/__init__.py
-enums/ability.py
-enums/access_request.py
-enums/billing.py
-enums/document.py
-enums/engine_enums.py
-enums/file.py
-enums/mcp.py
-enums/model.py
-enums/notification.py
-enums/product.py
-enums/section.py
-enums/user.py
-
 # ---- common/ —— 公共工具 (12) ----
 common/__init__.py
 common/celery/__init__.py

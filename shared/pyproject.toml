@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "revornix-shared"
+version = "0.1.0"
+description = "api/ 与 celery-worker/ 共用的代码"
+requires-python = ">=3.11"
+
+# 刻意作为**顶级包**暴露，而不是 revornix_shared.enums。
+# 这样两个服务里既有的 `from enums.document import X` 一行都不用改 ——
+# 148 个引用点零改动，这次提取的风险因此可控。
+[tool.setuptools]
+packages = ["enums"]

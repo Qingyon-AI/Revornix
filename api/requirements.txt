@@ -1,3 +1,8 @@
+# 与另一个服务共用的代码。以可编辑方式安装，改 shared/ 立即生效。
+# 注意：requirements.txt 里的相对路径由 pip 相对**当前工作目录**解析，
+# 所以必须在服务目录下执行 pip install -r requirements.txt。
+-e ../shared
+
 fastapi[standard]==0.141.1
 opentelemetry-api==1.44.0
 opentelemetry-sdk==1.44.0
