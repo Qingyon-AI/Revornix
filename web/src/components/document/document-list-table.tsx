@@ -64,7 +64,7 @@ const DocumentListTable = ({
 	};
 
 	return (
-		<div className='rounded-[24px] border border-border/60 bg-card/50 px-3 py-3 backdrop-blur-sm'>
+		<div>
 			<Table className='table-fixed min-w-[900px]'>
 				<TableHeader>
 					<TableRow>
