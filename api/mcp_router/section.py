@@ -714,7 +714,7 @@ async def delete_section(section_id: int, ctx: Context):
     async with db_session() as db:
         user = await get_user_from_ctx(ctx, db)
         res = await api_delete_section(
-            section_delete_request=schemas.section.SectionDeleteRequest(section_id=section_id),
+            section_delete_request=schemas.section.SectionDeleteRequest(section_ids=[section_id]),
             db=db,
             user=user,
         )

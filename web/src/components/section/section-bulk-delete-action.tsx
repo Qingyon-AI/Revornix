@@ -21,12 +21,8 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { deleteSection } from '@/service/section';
 
 /**
- * 批量删除专栏。
- *
- * 和文档不同，专栏的删除接口一次只收一个 id，所以这里是 N 次请求。用
- * `allSettled` 是有意的：部分失败时（比如其中一个专栏并非本人创建）已经删掉的那些
- * 不该被回滚成「整体失败」，UI 要如实报「成功几个、失败几个」，并且只把真正删掉的
- * 那些从选中集合里摘掉。
+ * 批量删除专栏。接口收 id 数组，一次请求即原子 —— 和文档侧同一种可靠性，不会出现
+ * 「删了一半」的中间态。
  */
 const SectionBulkDeleteAction = ({
 	sectionIds,
@@ -40,28 +36,12 @@ const SectionBulkDeleteAction = ({
 	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	const mutation = useMutation({
-		mutationFn: async () => {
-			const results = await Promise.allSettled(
-				sectionIds.map((section_id) => deleteSection({ section_id })),
-			);
-			const deleted = sectionIds.filter(
-				(_, index) => results[index].status === 'fulfilled',
-			);
-			return { deleted, failed: sectionIds.length - deleted.length };
-		},
-		onSuccess: async ({ deleted, failed }) => {
-			onDeleted(deleted);
+		mutationFn: () => deleteSection({ section_ids: sectionIds }),
+		onSuccess: async () => {
+			const count = sectionIds.length;
+			onDeleted(sectionIds);
 			setConfirmOpen(false);
-			if (failed > 0) {
-				toast.error(
-					t('selection_delete_partial', {
-						success: deleted.length,
-						failed,
-					}),
-				);
-			} else {
-				toast.success(t('selection_delete_success', { count: deleted.length }));
-			}
+			toast.success(t('selection_delete_success', { count }));
 			await Promise.all(
 				['searchMySection', 'searchPublicSection', 'searchMySubscribedSection'].map(
 					(key) => queryClient.invalidateQueries({ queryKey: [key] }),

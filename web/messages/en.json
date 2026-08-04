@@ -2411,7 +2411,6 @@
 	"selection_delete_sections_title": "Delete the selected sections?",
 	"selection_delete_sections_description": "{count} sections will be deleted. Documents inside them are not deleted.",
 	"selection_delete_success": "{count} deleted",
-	"selection_delete_partial": "{success} deleted, {failed} failed",
 	"selection_mode_enter": "Select",
 	"selection_mode_exit": "Done"
 }

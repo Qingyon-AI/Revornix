@@ -316,7 +316,7 @@ class SectionPptPreview(BaseModel):
     slides: list[SectionPptSlide] = Field(default_factory=list)
 
 class SectionDeleteRequest(BaseModel):
-    section_id: int
+    section_ids: list[int]
 
 
 class GenerateSectionPptRequest(BaseModel):

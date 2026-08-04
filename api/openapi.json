@@ -35071,14 +35071,17 @@
       },
       "SectionDeleteRequest": {
         "properties": {
-          "section_id": {
-            "type": "integer",
-            "title": "Section Id"
+          "section_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Section Ids"
           }
         },
         "type": "object",
         "required": [
-          "section_id"
+          "section_ids"
         ],
         "title": "SectionDeleteRequest"
       },
