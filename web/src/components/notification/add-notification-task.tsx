@@ -57,20 +57,20 @@ const AddNotificationTask = () => {
 			title: z.string(),
 			trigger_event_id: z.coerce
 				.number({
-					required_error: 'Please select the trigger event',
+					error: 'Please select the trigger event',
 				})
 				.int()
 				.positive('Please select the trigger event'),
 			enable: z.boolean(),
 			notification_source_id: z.coerce
 				.number({
-					required_error: 'Please select the source',
+					error: 'Please select the source',
 				})
 				.int()
 				.positive('Please select the source'),
 			notification_target_id: z.coerce
 				.number({
-					required_error: 'Please select the target',
+					error: 'Please select the target',
 				})
 				.int()
 				.positive('Please select the target'),
@@ -98,7 +98,7 @@ const AddNotificationTask = () => {
 
 	const [showAddDialog, setShowAddDialog] = useState(false);
 
-	const form = useForm<z.infer<typeof formSchema>>({
+	const form = useForm<z.input<typeof formSchema>, any, z.output<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			title: '',

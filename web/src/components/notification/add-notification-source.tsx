@@ -101,7 +101,11 @@ const AddNotificationSource = () => {
 		is_public: false,
 	};
 
-	const form = useForm<AddNotificationSourceFormValues>({
+	const form = useForm<
+		z.input<typeof formSchema>,
+		any,
+		AddNotificationSourceFormValues
+	>({
 		resolver: zodResolver(formSchema),
 		defaultValues: defaultFormValues,
 		shouldUnregister: true,
