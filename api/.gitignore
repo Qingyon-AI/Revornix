@@ -168,8 +168,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-alembic/versions/*.py
-
 temp/
 
 logs/*.log

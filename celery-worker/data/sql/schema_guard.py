@@ -1,18 +1,19 @@
 """启动时的表结构自愈（已装机的那一半迁移）。
 
-**为什么不是 alembic。** 这个仓库的迁移脚本不入库（`api/.gitignore` 忽略
-`alembic/versions/*.py`，版本库里只有一个 `.gitkeep`），每个部署靠
-`python -m data.sql.create` 各自 `autogenerate` 出自己的迁移链，revision id 互不
-相同 —— 所以没有任何一条迁移脚本能被共享给别的部署，手写一条反而会在别的机器上
-因为 `down_revision` 找不到而崩。结果就是模型加了一列，已装机的库要等人**手动**跑
-一次 create 才会跟上，漏跑就 500 在缺列上。
+**运行时不跑迁移框架。** 表结构由两件事共同确定：`Base.metadata.create_all`
+（`data/sql/create.py`）建出新装机需要的全部表，本文件的一串 `_migrate_*` 给
+**已装机**补上 `create_all` 不会施加到既有表上的变更（加列、回填）。API 与 celery
+worker 启动时各跑一遍，谁先起来都行。
 
-这里补上「已装机」那一半：一串幂等的 `_migrate_*` 函数，两个服务启动时各跑一遍，
-把 `create_all` / `autogenerate` 不会施加到既有表上的变更补齐。alembic 照旧负责新装机。
+仓库里一度用 alembic，但迁移脚本从不入库（`.gitignore` 忽略 `versions/*.py`），
+每个部署各自 `autogenerate` 出自己的链、revision id 互不相同 —— 没有任何一条能被
+共享，手写一条反而会在别的机器上因为 `down_revision` 找不到而崩。实际效果就是
+「模型加了一列，每台机器都得有人手动去迁移，漏跑就 500 在缺列上」，所以整套换成
+了这里的启动自愈。
 
 **改表结构因此是两步**：
 
-1. 改 `models/*.py` —— 新装机由此得到正确结构；
+1. 改 `models/*.py` —— 新装机由 `create_all` 从这里得到正确结构；
 2. 加一个 `_migrate_*` 并挂进 `run_schema_guard()` —— 已装机由此跟上。
 
 只做第 1 步的话，新装机正常、老用户升级后崩在缺列上。
@@ -21,7 +22,7 @@
 
 - DDL 必须幂等（`ADD COLUMN IF NOT EXISTS`），整个流程还包在一把 advisory lock 里，
   多副本同时启动不会互相踩到；
-- 表还不存在时跳过 —— 全新库此刻什么都没建，随后由 alembic 按模型一次建对；
+- 表还不存在时跳过 —— 全新库此刻什么都没建，随后由 `create_all` 按模型一次建对；
 - 一个 `_migrate_*` 在它保护的最早版本不再需要支持时就可以删掉。
 
 这份文件在 `api/` 与 `celery-worker/` 各有一份，必须保持一致。
@@ -123,7 +124,7 @@ def run_schema_guard() -> None:
             )
             tables = _table_names(conn)
             if not tables:
-                # 全新库，什么都还没建 —— 交给 alembic 按模型一次建对。
+                # 全新库，什么都还没建 —— 交给 create_all 按模型一次建对。
                 info_logger.warning("schema_guard: empty database, nothing to patch")
                 return
             _migrate_task_detail(conn, tables)

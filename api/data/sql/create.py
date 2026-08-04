@@ -4,13 +4,11 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 import os
-from alembic.config import Config
-from alembic import command
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 from common.logger import exception_logger, info_logger
-from config.base import BASE_DIR, ROOT_USER_NAME, ROOT_USER_PASSWORD
+from config.base import ROOT_USER_NAME, ROOT_USER_PASSWORD
 from data.sql.base import async_session_context
 
 from common.dependencies import check_deployed_by_official_in_fuc
@@ -88,19 +86,24 @@ from enums.notification import UserNotificationSourceRole, UserNotificationTarge
 
 from schemas.error import CustomException
 
-from datetime import datetime
-from alembic.util.exc import CommandError
-from data.sql.base import engine  # 你得有这个 engine
+from data.sql.base import Base, engine  # 你得有这个 engine
+from data.sql.schema_guard import run_schema_guard
+
+# create_all 只建它见过的表 —— 模型模块必须先被导入，否则新表会被静默漏掉。
+from models.api_key import *
+from models.document import *
+from models.engine import *
+from models.notification import *
+from models.section import *
+from models.task import *
+from models.model import *
+from models.user import *
+from models.usage import *
 
 
 if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
     raise RuntimeError("❌ ROOT_USER_NAME or ROOT_USER_PASSWORD is not set.")
 
-
-# =========================================================
-# Alembic 配置：强制与 engine 使用同一数据库
-# =========================================================
-alembic_cfg = Config(str(BASE_DIR / "alembic.ini"))
 
 # =========================================================
 # Seed 数据（要求：尽量幂等）
@@ -430,23 +433,16 @@ async def seed_database(db: AsyncSession):
 # 主入口
 # =========================================================
 async def main():
-    # 让 alembic 与 session_scope 使用同一个库
-    alembic_cfg.set_main_option("sqlalchemy.url", str(engine.url))
+    # 1) 建出模型声明的全部表。幂等：已存在的表原样跳过，不会重建、不会丢数据。
+    info_logger.warning("STEP 0: Creating missing tables...")
+    Base.metadata.create_all(bind=engine)
+    info_logger.warning("STEP 0: Tables created.")
 
-    # 1) 自动生成 migration（如果没有变化会报错，我们要吞掉）
-    msg = f"auto {datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    info_logger.warning(f"STEP 0: Autogenerate migration: {msg}")
-    try:
-        command.revision(alembic_cfg, message=msg, autogenerate=True)
-        info_logger.warning("STEP 0: Migration generated.")
-    except CommandError as e:
-        # 常见：No changes in schema detected.
-        info_logger.warning(f"STEP 0: No migration generated: {e}")
-
-    # 2) 应用到最新
-    info_logger.warning("STEP 1: Running alembic upgrade heads...")
-    command.upgrade(alembic_cfg, "heads")
-    info_logger.warning("STEP 1: Alembic upgrade done.")
+    # 2) 给既有表补上 create_all 不会施加的变更（加列 / 回填）。服务启动时也会跑
+    #    同一份，这里再跑一次只是让「先 bootstrap 再起服务」这条路径自洽。
+    info_logger.warning("STEP 1: Running schema guard...")
+    run_schema_guard()
+    info_logger.warning("STEP 1: Schema guard done.")
 
     # 3) seed（你原逻辑）
     async with async_session_context() as db:
