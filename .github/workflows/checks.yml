@@ -49,7 +49,7 @@ jobs:
         run: python -m pytest -q
 
   gateway:
-    name: gateway 构建与 vet
+    name: gateway 构建、vet 与测试
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +68,9 @@ jobs:
       - name: vet
         working-directory: gateway
         run: go vet ./...
+      - name: 单元测试
+        working-directory: gateway
+        run: go test ./...
 
   hot-news:
     name: hot-news lint 与构建
