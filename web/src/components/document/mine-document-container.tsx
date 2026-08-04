@@ -45,6 +45,7 @@ import { useUserContext } from '@/provider/user-provider';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
 import { useMultiSelect } from '@/hooks/use-multi-select';
 import SelectionActionBar from '@/components/ui/selection-action-bar';
+import SelectionModeToggle from '@/components/ui/selection-mode-toggle';
 import DocumentBulkDeleteAction from '@/components/document/document-bulk-delete-action';
 
 const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
@@ -111,6 +112,10 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
 				<div className='flex flex-row gap-3 shrink-0'>
+					<SelectionModeToggle
+						active={selection.active}
+						onToggle={selection.toggleActive}
+					/>
 					<CardViewToggle value={viewMode} onChange={setViewMode} />
 					<Popover>
 						<PopoverTrigger asChild>
@@ -298,7 +303,7 @@ const MineDocumentContainer = ({ label_id }: { label_id?: number }) => {
 			</div>
 			<SelectionActionBar
 				count={selection.selectedCount}
-				onClear={selection.clear}>
+				onClear={selection.exit}>
 				<DocumentBulkDeleteAction
 					documentIds={selection.selectedIds}
 					onDeleted={selection.removeIds}

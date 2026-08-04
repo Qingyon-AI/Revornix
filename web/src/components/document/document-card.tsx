@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { DocumentInfo } from '@/generated';
-import { File, NotebookPen, Paperclip } from 'lucide-react';
+import { Check, File, NotebookPen, Paperclip } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'nextjs-toploader/app';
@@ -11,7 +11,6 @@ import { formatInUserTimeZone } from '@/lib/time';
 import DocumentVisibilityHint from './document-visibility-hint';
 import ImageWithFallback from '../ui/image-with-fallback';
 import DocumentCardPodcast from './document-card-podcast';
-import { Checkbox } from '../ui/checkbox';
 import type { ListSelection } from './document-list-table';
 
 const DocumentCard = ({
@@ -39,29 +38,37 @@ const DocumentCard = ({
 						: t('document_category_others');
 
 
-	// 勾选框叠在卡片**外面**（不是 Link 里面），所以点它不会顺带触发跳转。
-	// 未选中时只在 hover / 键盘聚焦时露出，避免平时一片勾选框。
+	// 选择模式下才叠这一层：整张卡片变成一个可点选的目标（点哪都是切换选中，
+	// 不再跳转），左上角给一个圆形的选中指示，选中的卡片整体套一圈高亮。
+	// 不用带边框的小方块 —— 那在卡片上就是个「框里套框」。
 	const withSelection = (node: ReactNode) => {
-		if (!selection) return node;
+		if (!selection?.active) return node;
 		const checked = selection.isSelected(document.id);
 		return (
-			<div className='relative group/select h-full'>
+			<div className='relative h-full'>
 				{node}
-				<div
+				<button
+					type='button'
+					aria-pressed={checked}
+					aria-label={document.title ?? undefined}
+					onClick={() => selection.toggle(document.id)}
 					className={cn(
-						'absolute left-2 top-2 z-10 rounded-md border border-border/60 bg-background/90 p-1 shadow-sm backdrop-blur-sm transition-opacity',
-						// 常驻显示。做成 hover 才出现的话，触屏设备上根本没有 hover，
-						// 等于这些设备上不存在多选；未选中时压低一点存在感就够了。
+						'absolute inset-0 z-10 rounded-2xl transition-colors',
+						checked ? 'bg-primary/5' : 'hover:bg-foreground/[0.03]',
+					)}
+				/>
+				<span
+					className={cn(
+						'pointer-events-none absolute left-3 top-3 z-20 flex size-6 items-center justify-center rounded-full border shadow-sm transition-colors',
 						checked
-							? 'opacity-100'
-							: 'opacity-70 focus-within:opacity-100 group-hover/select:opacity-100',
+							? 'border-primary bg-primary text-primary-foreground'
+							: 'border-border/70 bg-background/85 backdrop-blur-sm',
 					)}>
-					<Checkbox
-						aria-label={document.title ?? undefined}
-						checked={checked}
-						onCheckedChange={() => selection.toggle(document.id)}
-					/>
-				</div>
+					{checked ? <Check className='size-3.5' strokeWidth={3} /> : null}
+				</span>
+				{checked ? (
+					<span className='pointer-events-none absolute inset-0 z-20 rounded-2xl ring-2 ring-primary' />
+				) : null}
 			</div>
 		);
 	};

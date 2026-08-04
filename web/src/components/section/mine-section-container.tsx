@@ -44,6 +44,7 @@ import Link from 'next/link';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
 import { useMultiSelect } from '@/hooks/use-multi-select';
 import SelectionActionBar from '@/components/ui/selection-action-bar';
+import SelectionModeToggle from '@/components/ui/selection-mode-toggle';
 import SectionBulkDeleteAction from '@/components/section/section-bulk-delete-action';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
@@ -109,6 +110,10 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 					onChange={(e) => setKeyword(e.target.value)}
 				/>
 				<div className='flex flex-row gap-3 shrink-0'>
+					<SelectionModeToggle
+						active={selection.active}
+						onToggle={selection.toggleActive}
+					/>
 					<CardViewToggle value={viewMode} onChange={setViewMode} />
 					<Popover>
 						<PopoverTrigger asChild>
@@ -296,7 +301,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 			</div>
 			<SelectionActionBar
 				count={selection.selectedCount}
-				onClear={selection.clear}>
+				onClear={selection.exit}>
 				<SectionBulkDeleteAction
 					sectionIds={selection.selectedIds}
 					onDeleted={selection.removeIds}

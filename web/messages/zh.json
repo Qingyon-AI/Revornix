@@ -2411,5 +2411,7 @@
 	"selection_delete_sections_title": "删除选中的专栏？",
 	"selection_delete_sections_description": "将删除 {count} 个专栏，其中的文档不会被删除。",
 	"selection_delete_success": "已删除 {count} 项",
-	"selection_delete_partial": "成功 {success} 项，失败 {failed} 项"
+	"selection_delete_partial": "成功 {success} 项，失败 {failed} 项",
+	"selection_mode_enter": "选择",
+	"selection_mode_exit": "完成"
 }
