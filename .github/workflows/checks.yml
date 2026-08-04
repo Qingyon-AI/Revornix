@@ -73,7 +73,7 @@ jobs:
         run: go test ./...
 
   hot-news:
-    name: hot-news lint 与构建
+    name: hot-news lint、测试与构建
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +89,9 @@ jobs:
       - name: lint
         working-directory: hot-news
         run: pnpm lint
+      - name: 单元测试
+        working-directory: hot-news
+        run: pnpm test
       - name: 构建
         working-directory: hot-news
         run: pnpm build

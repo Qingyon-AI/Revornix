@@ -32,6 +32,7 @@
     "dev": "cross-env NODE_ENV=development tsx watch --no-cache src/index.ts",
     "dev:cache": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "build": "tsc --project tsconfig.json",
+    "test": "vitest run",
     "start": "cross-env NODE_ENV=development node dist/index.js"
   },
   "type": "module",
@@ -69,7 +70,8 @@
     "prettier": "^3.9.6",
     "tsx": "^4.23.5",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.66.0",
+    "vitest": "3.2.4"
   },
   "engines": {
     "node": ">=20"
