@@ -15,10 +15,10 @@
     "package:win": "npm run build && electron-builder --win"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
-    "electron": "^34.0.0",
+    "@playwright/test": "^1.62.1",
+    "electron": "^34.5.8",
     "electron-builder": "^25.1.8",
-    "tsx": "^4.19.0",
-    "typescript": "^5.9.0"
+    "tsx": "^4.23.5",
+    "typescript": "^5.9.3"
   }
 }
