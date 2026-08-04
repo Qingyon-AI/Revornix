@@ -56,6 +56,7 @@ All URIs are relative to *http://localhost*
 | [**transformMarkdownDocumentMarkdownTransformPost**](DocumentApi.md#transformmarkdowndocumentmarkdowntransformpost) | **POST** /document/markdown/transform | Transform Markdown |
 | [**unlikeDocumentCommentDocumentCommentUnlikePost**](DocumentApi.md#unlikedocumentcommentdocumentcommentunlikepost) | **POST** /document/comment/unlike | Unlike Document Comment |
 | [**updateDocumentDocumentUpdatePost**](DocumentApi.md#updatedocumentdocumentupdatepost) | **POST** /document/update | Update Document |
+| [**updateDocumentPublishAccessKeyDocumentPublishAccessKeyPost**](DocumentApi.md#updatedocumentpublishaccesskeydocumentpublishaccesskeypost) | **POST** /document/publish/access-key | Update Document Publish Access Key |
 
 
 
@@ -3751,6 +3752,78 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **documentUpdateRequest** | [DocumentUpdateRequest](DocumentUpdateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateDocumentPublishAccessKeyDocumentPublishAccessKeyPost
+
+> NormalResponse updateDocumentPublishAccessKeyDocumentPublishAccessKeyPost(documentAccessKeyUpdateRequest, authorization, xUserTimezone)
+
+Update Document Publish Access Key
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DocumentApi,
+} from '';
+import type { UpdateDocumentPublishAccessKeyDocumentPublishAccessKeyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DocumentApi();
+
+  const body = {
+    // DocumentAccessKeyUpdateRequest
+    documentAccessKeyUpdateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies UpdateDocumentPublishAccessKeyDocumentPublishAccessKeyPostRequest;
+
+  try {
+    const data = await api.updateDocumentPublishAccessKeyDocumentPublishAccessKeyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentAccessKeyUpdateRequest** | [DocumentAccessKeyUpdateRequest](DocumentAccessKeyUpdateRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

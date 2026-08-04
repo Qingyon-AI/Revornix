@@ -7,7 +7,9 @@
 Name | Type
 ------------ | -------------
 `document_id` | number
+`uuid` | string
 `url` | string
+`access_key` | string
 
 ## Example
 
@@ -17,7 +19,9 @@ import type { DocumentDetailRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "document_id": null,
+  "uuid": null,
   "url": null,
+  "access_key": null,
 } satisfies DocumentDetailRequest
 
 console.log(example)

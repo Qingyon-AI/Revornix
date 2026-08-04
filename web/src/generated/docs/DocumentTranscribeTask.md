@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `status` | number
+`detail` | string
 `md_file_name` | string
 `segments_file_name` | string
 `create_time` | Date
@@ -20,6 +21,7 @@ import type { DocumentTranscribeTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "detail": null,
   "md_file_name": null,
   "segments_file_name": null,
   "create_time": null,

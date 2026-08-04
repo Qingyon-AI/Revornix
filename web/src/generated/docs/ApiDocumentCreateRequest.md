@@ -20,6 +20,8 @@ Name | Type
 `auto_transcribe` | boolean
 `auto_tag` | boolean
 `audio_meeting_mode` | boolean
+`auto_publish` | boolean
+`access_key` | string
 
 ## Example
 
@@ -42,6 +44,8 @@ const example = {
   "auto_transcribe": null,
   "auto_tag": null,
   "audio_meeting_mode": null,
+  "auto_publish": null,
+  "access_key": null,
 } satisfies ApiDocumentCreateRequest
 
 console.log(example)

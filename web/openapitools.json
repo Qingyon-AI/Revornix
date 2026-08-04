@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.23.0",
+    "generators": {
+      "revornix-api": {
+        "generatorName": "typescript-fetch",
+        "inputSpec": "../api/openapi.json",
+        "output": "src/generated",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        }
+      }
+    }
+  }
+}

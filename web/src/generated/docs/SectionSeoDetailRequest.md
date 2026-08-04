@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `uuid` | string
+`access_key` | string
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { SectionSeoDetailRequest } from ''
 // TODO: Update the object below with actual values
 const example = {
   "uuid": null,
+  "access_key": null,
 } satisfies SectionSeoDetailRequest
 
 console.log(example)

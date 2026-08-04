@@ -11,6 +11,7 @@ Name | Type
 `cover` | string
 `labels` | Array&lt;number&gt;
 `auto_publish` | boolean
+`access_key` | string
 `auto_podcast` | boolean
 `auto_illustration` | boolean
 `process_task_trigger_type` | number
@@ -28,6 +29,7 @@ const example = {
   "cover": null,
   "labels": null,
   "auto_publish": null,
+  "access_key": null,
   "auto_podcast": null,
   "auto_illustration": null,
   "process_task_trigger_type": null,

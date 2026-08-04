@@ -9,7 +9,7 @@ import {
 	SchemasDocumentBaseSectionInfo,
 	SectionInfo,
 } from '@/generated';
-import type { Label } from '@/generated/models/Label';
+import type { DocumentLabel } from '@/generated/models/DocumentLabel';
 
 export type PublicSectionInfo = SectionInfo & {
 	publish_uuid?: string | null;
@@ -45,7 +45,7 @@ export type PublicDocumentMarkdownContentRequest = {
 	snapshot_id?: number;
 };
 
-export type PublicLabel = Label;
+export type PublicLabel = DocumentLabel;
 
 export const getPublicSectionHref = (section: {
 	id?: number;
