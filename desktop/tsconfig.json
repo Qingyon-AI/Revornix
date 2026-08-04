@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    // TypeScript 7 移除了 moduleResolution=node10（旧的 "Node"）。node16 是它的
+    // 接班人：按 package.json 的 type 字段判定模块制式 —— 这里没有 type 字段，
+    // 所以照旧输出 CommonJS，electron 主进程的加载方式不变。
+    "module": "node16",
+    "moduleResolution": "node16",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
