@@ -156,8 +156,11 @@ Configure env values based on [environment docs](https://revornix.com/docs/envir
 ```shell
 cd api
 python -m data.milvus.create
-python -m data.sql.create
 ```
+
+> Postgres needs no step here. The API creates tables, applies schema changes and
+> seeds built-in data on every startup, so a fresh install and an upgrade both
+> need nothing but starting the service.
 
 ### 5) Run API service
 

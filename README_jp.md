@@ -156,8 +156,11 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 ```shell
 cd api
 python -m data.milvus.create
-python -m data.sql.create
 ```
+
+> Postgres はこの手順が不要です。API は起動のたびにテーブル作成・スキーマ変更の適用・
+> 組み込みデータの投入を自動で行うため、新規インストールもアップグレードも
+> サービスを起動するだけで済みます。
 
 ### 5) API サービスを起動
 
