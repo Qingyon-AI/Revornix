@@ -81,7 +81,7 @@ const SectionListTable = ({
 									<div className='font-medium'>
 										{section.title || t('section_title_empty')}
 									</div>
-									<div className='line-clamp-1 max-w-[420px] text-xs text-muted-foreground'>
+									<div className='line-clamp-2 max-w-[420px] text-xs text-muted-foreground'>
 										{section.description || t('section_description_empty')}
 									</div>
 								</div>
