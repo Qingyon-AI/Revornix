@@ -83,3 +83,8 @@ jobs:
       - name: 类型检查
         working-directory: web
         run: pnpm exec tsc --noEmit -p tsconfig.json
+
+      # 只跑纯逻辑的单测（lib/ 与 hooks/）；组件渲染测试是另一层投入。
+      - name: 单元测试
+        working-directory: web
+        run: pnpm test
