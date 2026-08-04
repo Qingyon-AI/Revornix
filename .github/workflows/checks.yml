@@ -1,0 +1,100 @@
+name: Checks
+
+# 在此之前，仓库在 push/PR 上不跑任何检查 —— 只有两个 tag 触发的发布流水线。
+# 这里覆盖 contract-check.yml 没管的那几个服务，每个都用它自己已有的命令，
+# 不为了 CI 另造一套。
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mirrored:
+    name: api 与 worker 的镜像文件一致
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # 两个服务共享一批代码，但此前没有任何东西会在「只改了一侧」时失败。
+      - run: python scripts/check_mirrored_files.py
+
+  worker:
+    name: celery-worker 可编译
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # worker 的依赖很重（torch 等），装齐一次代价太大。compileall 不需要依赖，
+      # 但能抓住语法错误和坏缩进 —— 这类问题此前要等任务真正跑起来才暴露。
+      - name: 语法检查
+        working-directory: celery-worker
+        run: python -m compileall -q workflow common crud models schemas enums notification
+
+  gateway:
+    name: gateway 构建与 vet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: gateway/go.mod
+          cache-dependency-path: gateway/go.sum
+      - name: 格式检查
+        working-directory: gateway
+        run: test -z "$(gofmt -l .)" || { echo "::error::以下文件未格式化，请运行 gofmt -w ."; gofmt -l .; exit 1; }
+      - name: 构建
+        working-directory: gateway
+        run: go build ./...
+      # vet 抓的是编译器不管但几乎必错的东西（Printf 格式串、结构体标签等）。
+      # 本机 Go 是精简安装、没有 vet 工具，所以这一步只在 CI 上真正跑过。
+      - name: vet
+        working-directory: gateway
+        run: go vet ./...
+
+  hot-news:
+    name: hot-news lint 与构建
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: hot-news/pnpm-lock.yaml
+      - name: 安装依赖
+        working-directory: hot-news
+        run: pnpm install --frozen-lockfile
+      - name: lint
+        working-directory: hot-news
+        run: pnpm lint
+      - name: 构建
+        working-directory: hot-news
+        run: pnpm build
+
+  docs:
+    name: docs 构建
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: docs/pnpm-lock.yaml
+      - name: 安装依赖
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+      # 文档站没有单独的类型检查脚本，build 本身就会跑类型检查并渲染全部页面。
+      - name: 构建
+        working-directory: docs
+        run: pnpm build
