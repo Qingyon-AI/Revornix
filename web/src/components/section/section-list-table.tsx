@@ -38,7 +38,7 @@ const SectionListTable = ({
 			<Table>
 				<TableHeader>
 					<TableRow>
-						{selection ? (
+						{selection?.active ? (
 							<TableHead className='w-10'>
 								<Checkbox
 									aria-label={t('selection_select_all_visible')}
@@ -66,7 +66,7 @@ const SectionListTable = ({
 							ref={index === sections.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/section/detail/${section.id}`)}>
-							{selection ? (
+							{selection?.active ? (
 								// 勾选格自己吃掉点击，否则会连带触发整行的跳转。
 								<TableCell onClick={(e) => e.stopPropagation()}>
 									<Checkbox

@@ -19,8 +19,12 @@ import {
 import ListLoadingIndicator from '@/components/ui/list-loading-indicator';
 import { Checkbox } from '@/components/ui/checkbox';
 
-/** 传了才渲染勾选列 —— 公共列表页没有批量操作，就不该多出一列。 */
+/**
+ * 传了才渲染勾选列 —— 公共列表页没有批量操作，就不该多出一列。
+ * `active` 是显式的选择模式：为 false 时列表和平时完全一样，一个勾选框都不出现。
+ */
 export type ListSelection = {
+	active: boolean;
 	isSelected: (id: number) => boolean;
 	toggle: (id: number) => void;
 	allVisibleSelected: boolean;
@@ -64,7 +68,7 @@ const DocumentListTable = ({
 			<Table className='table-fixed min-w-[900px]'>
 				<TableHeader>
 					<TableRow>
-						{selection ? (
+						{selection?.active ? (
 							<TableHead className='w-10'>
 								<Checkbox
 									aria-label={t('selection_select_all_visible')}
@@ -96,7 +100,7 @@ const DocumentListTable = ({
 							ref={index === documents.length - 1 ? lastRowRef : undefined}
 							className='cursor-pointer'
 							onClick={() => router.push(`/document/detail/${document.id}`)}>
-							{selection ? (
+							{selection?.active ? (
 								// 勾选格自己吃掉点击，否则会连带触发整行的跳转。
 								<TableCell onClick={(e) => e.stopPropagation()}>
 									<Checkbox

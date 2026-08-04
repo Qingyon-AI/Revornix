@@ -10,6 +10,8 @@ import { useCallback, useMemo, useState } from 'react';
  */
 export const useMultiSelect = (visibleIds: number[]) => {
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	// 选择模式是显式开关：没点「选择」之前，列表里不该出现任何勾选框。
+	const [active, setActive] = useState(false);
 
 	const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -25,6 +27,19 @@ export const useMultiSelect = (visibleIds: number[]) => {
 	}, []);
 
 	const clear = useCallback(() => setSelectedIds([]), []);
+
+	/** 退出选择模式。顺手清空 —— 留着上次的勾选再进来会很意外。 */
+	const exit = useCallback(() => {
+		setActive(false);
+		setSelectedIds([]);
+	}, []);
+
+	const toggleActive = useCallback(() => {
+		setActive((prev) => {
+			if (prev) setSelectedIds([]);
+			return !prev;
+		});
+	}, []);
 
 	const allVisibleSelected =
 		visibleIds.length > 0 && visibleIds.every((id) => selectedSet.has(id));
@@ -51,6 +66,9 @@ export const useMultiSelect = (visibleIds: number[]) => {
 	}, []);
 
 	return {
+		active,
+		exit,
+		toggleActive,
 		selectedIds,
 		selectedCount: selectedIds.length,
 		isSelected,
