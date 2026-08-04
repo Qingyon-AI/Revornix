@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   spec:
-    name: OpenAPI spec 是最新的
+    name: api 契约与测试
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,16 +24,25 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
-          cache-dependency-path: api/requirements.txt
+          cache-dependency-path: |
+            api/requirements.txt
+            api/requirements-dev.txt
 
+      # api 的依赖很重，这个 job 装一次就同时供契约校验和测试使用，
+      # 不为跑测试再单开一个 job 重装一遍。
       - name: 安装 api 依赖
         working-directory: api
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
       # 抓「改了 router 但没导出 spec」
       - name: 校验 api/openapi.json
         working-directory: api
         run: python -m scripts.export_openapi --check
+
+      # 测试不依赖真实配置：tests/conftest.py 会塞入确定性的假密钥。
+      - name: 单元测试
+        working-directory: api
+        run: python -m pytest tests -q
 
   generated:
     name: 前端类型与 spec 一致

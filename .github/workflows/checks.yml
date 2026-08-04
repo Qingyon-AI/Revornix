@@ -80,6 +80,26 @@ jobs:
         working-directory: hot-news
         run: pnpm build
 
+  desktop:
+    name: desktop 单元测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: desktop/pnpm-lock.yaml
+      - name: 安装依赖
+        working-directory: desktop
+        run: pnpm install --frozen-lockfile
+      # 只跑 node 原生 runner 的单测。test:e2e 要先打包 Electron 再拉 Playwright，
+      # 代价和不稳定性都高得多，不适合挂在每个 PR 上。
+      - name: 单元测试
+        working-directory: desktop
+        run: pnpm test
+
   docs:
     name: docs 构建
     runs-on: ubuntu-latest

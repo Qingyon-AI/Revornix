@@ -1,0 +1,4 @@
+# 只有跑测试才需要的依赖，不进运行时镜像。
+# 装法：pip install -r requirements.txt -r requirements-dev.txt
+pytest==9.1.1
+pytest-asyncio==1.4.0

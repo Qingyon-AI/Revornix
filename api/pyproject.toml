@@ -68,3 +68,6 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+# 异步用例统一由 pytest-asyncio 接管。没有它时那些 @pytest.mark.asyncio
+# 只会被当成普通函数、拿到一个没跑的 coroutine —— 表现为失败而不是跳过。
+asyncio_mode = "auto"
