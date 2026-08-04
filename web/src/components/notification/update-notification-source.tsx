@@ -119,7 +119,11 @@ const UpdateNotificationSource = ({
 
 	type UpdateNotificationSourceFormValues = z.infer<typeof formSchema>;
 
-	const form = useForm<UpdateNotificationSourceFormValues>({
+	const form = useForm<
+		z.input<typeof formSchema>,
+		any,
+		UpdateNotificationSourceFormValues
+	>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			notification_source_id: notification_source_id,
