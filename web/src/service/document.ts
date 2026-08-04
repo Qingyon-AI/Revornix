@@ -4,7 +4,7 @@ import { InfiniteScrollPaginationDocumentInfo, DocumentDetailResponse, NormalRes
 // Re-export generated request/response models so consumers can keep importing from this module.
 export type { DocumentAiSummaryRequest, DocumentPublishRequest, DocumentPublishGetRequest, MineDocumentAuthorityRequest, DocumentUserAuthorityResponse, DocumentUserRequest, DocumentUserAddRequest, DocumentUserModifyRequest, DocumentUserDeleteRequest, GenerateDocumentPodcastRequest, DocumentGraphGenerateRequest, DocumentTranscribeRequest, DocumentAudioSpeakerRenameRequest, CancelDocumentTaskRequest, DocumentMarkdownContentRequest, SearchPublicDocumentsRequest, DocumentCommentCreateRequest, DocumentCommentSearchRequest, DocumentCommentReplySearchRequest, DocumentCommentLikeRequest, DocumentCommentDeleteRequest } from '@/generated'
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse'
-import { LabelListResponse } from '@/generated/models/LabelListResponse'
+import { SchemasDocumentLabelListResponse as LabelListResponse } from '@/generated/models/SchemasDocumentLabelListResponse'
 import { request } from '@/lib/request'
 import type { ServerRequestOptions } from '@/lib/request-core'
 import { serverRequest } from '@/lib/request-server'

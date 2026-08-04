@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `status` | number
+`detail` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -18,6 +19,7 @@ import type { DocumentProcessTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "detail": null,
   "create_time": null,
   "update_time": null,
 } satisfies DocumentProcessTask

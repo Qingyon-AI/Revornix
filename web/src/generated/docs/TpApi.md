@@ -52,6 +52,8 @@ All URIs are relative to *http://localhost*
 | [**searchUnreadDocumentsTpDocumentUnreadSearchPost**](TpApi.md#searchunreaddocumentstpdocumentunreadsearchpost) | **POST** /tp/document/unread/search | Search Unread Documents |
 | [**searchUserSectionsTpSectionUserSearchPost**](TpApi.md#searchusersectionstpsectionusersearchpost) | **POST** /tp/section/user/search | Search User Sections |
 | [**sectionGraphTpGraphSectionPost**](TpApi.md#sectiongraphtpgraphsectionpost) | **POST** /tp/graph/section | Section Graph |
+| [**setDocumentPublishAccessKeyTpDocumentPublishAccessKeyPost**](TpApi.md#setdocumentpublishaccesskeytpdocumentpublishaccesskeypost) | **POST** /tp/document/publish/access-key | Set Document Publish Access Key |
+| [**setSectionPublishAccessKeyTpSectionPublishAccessKeyPost**](TpApi.md#setsectionpublishaccesskeytpsectionpublishaccesskeypost) | **POST** /tp/section/publish/access-key | Set Section Publish Access Key |
 | [**transcribeAudioDocumentTpDocumentTranscribePost**](TpApi.md#transcribeaudiodocumenttpdocumenttranscribepost) | **POST** /tp/document/transcribe | Transcribe Audio Document |
 | [**transformDocumentMarkdownTpDocumentMarkdownTransformPost**](TpApi.md#transformdocumentmarkdowntpdocumentmarkdowntransformpost) | **POST** /tp/document/markdown/transform | Transform Document Markdown |
 | [**triggerSectionProcessTpSectionProcessTriggerPost**](TpApi.md#triggersectionprocesstpsectionprocesstriggerpost) | **POST** /tp/section/process/trigger | Trigger Section Process |
@@ -3482,6 +3484,150 @@ example().catch(console.error);
 ### Return type
 
 [**GraphResponse**](GraphResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## setDocumentPublishAccessKeyTpDocumentPublishAccessKeyPost
+
+> NormalResponse setDocumentPublishAccessKeyTpDocumentPublishAccessKeyPost(documentAccessKeyUpdateRequest, xUserTimezone, apiKey)
+
+Set Document Publish Access Key
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TpApi,
+} from '';
+import type { SetDocumentPublishAccessKeyTpDocumentPublishAccessKeyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new TpApi();
+
+  const body = {
+    // DocumentAccessKeyUpdateRequest
+    documentAccessKeyUpdateRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
+    apiKey: apiKey_example,
+  } satisfies SetDocumentPublishAccessKeyTpDocumentPublishAccessKeyPostRequest;
+
+  try {
+    const data = await api.setDocumentPublishAccessKeyTpDocumentPublishAccessKeyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **documentAccessKeyUpdateRequest** | [DocumentAccessKeyUpdateRequest](DocumentAccessKeyUpdateRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## setSectionPublishAccessKeyTpSectionPublishAccessKeyPost
+
+> NormalResponse setSectionPublishAccessKeyTpSectionPublishAccessKeyPost(sectionAccessKeyUpdateRequest, xUserTimezone, apiKey)
+
+Set Section Publish Access Key
+
+### Example
+
+```ts
+import {
+  Configuration,
+  TpApi,
+} from '';
+import type { SetSectionPublishAccessKeyTpSectionPublishAccessKeyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new TpApi();
+
+  const body = {
+    // SectionAccessKeyUpdateRequest
+    sectionAccessKeyUpdateRequest: ...,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+    // string (optional)
+    apiKey: apiKey_example,
+  } satisfies SetSectionPublishAccessKeyTpSectionPublishAccessKeyPostRequest;
+
+  try {
+    const data = await api.setSectionPublishAccessKeyTpSectionPublishAccessKeyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **sectionAccessKeyUpdateRequest** | [SectionAccessKeyUpdateRequest](SectionAccessKeyUpdateRequest.md) |  | |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **apiKey** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**NormalResponse**](NormalResponse.md)
 
 ### Authorization
 

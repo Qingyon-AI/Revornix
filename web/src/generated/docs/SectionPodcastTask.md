@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `status` | number
+`detail` | string
 `podcast_file_name` | string
 `podcast_script_file_name` | string
 `create_time` | Date
@@ -20,6 +21,7 @@ import type { SectionPodcastTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "detail": null,
   "podcast_file_name": null,
   "podcast_script_file_name": null,
   "create_time": null,

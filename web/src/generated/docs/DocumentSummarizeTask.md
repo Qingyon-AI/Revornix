@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `status` | number
+`detail` | string
 `summary` | string
 `create_time` | Date
 `update_time` | Date
@@ -19,6 +20,7 @@ import type { DocumentSummarizeTask } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "detail": null,
   "summary": null,
   "create_time": null,
   "update_time": null,

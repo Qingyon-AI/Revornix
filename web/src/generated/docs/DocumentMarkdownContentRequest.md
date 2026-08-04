@@ -9,6 +9,7 @@ Name | Type
 `document_id` | number
 `url` | string
 `snapshot_id` | number
+`access_key` | string
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "document_id": null,
   "url": null,
   "snapshot_id": null,
+  "access_key": null,
 } satisfies DocumentMarkdownContentRequest
 
 console.log(example)

@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`publish_uuid` | string
 `creator_id` | number
 `creator` | [UserPublicInfo](UserPublicInfo.md)
 `category` | number
@@ -35,6 +36,7 @@ import type { DocumentInfo } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "publish_uuid": null,
   "creator_id": null,
   "creator": null,
   "category": null,

@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**deleteUserFileSystemFileSystemUserFileSystemDeletePost**](FileSystemApi.md#deleteuserfilesystemfilesystemuserfilesystemdeletepost) | **POST** /file-system/user-file-system/delete | Delete User File System |
+| [**getDocumentUploadLimitsFileSystemUploadLimitsPost**](FileSystemApi.md#getdocumentuploadlimitsfilesystemuploadlimitspost) | **POST** /file-system/upload-limits | Get Document Upload Limits |
 | [**getFileSystemInfoFileSystemDetailPost**](FileSystemApi.md#getfilesysteminfofilesystemdetailpost) | **POST** /file-system/detail | Get File System Info |
 | [**getPresignedUrlFileSystemPresignUploadUrlPost**](FileSystemApi.md#getpresignedurlfilesystempresignuploadurlpost) | **POST** /file-system/presign-upload-url | Get Presigned Url |
 | [**getUserFileSystemInfoFileSystemUserFileSystemDetailPost**](FileSystemApi.md#getuserfilesysteminfofilesystemuserfilesystemdetailpost) | **POST** /file-system/user-file-system/detail | Get User File System Info |
@@ -79,6 +80,75 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getDocumentUploadLimitsFileSystemUploadLimitsPost
+
+> DocumentUploadLimitResponse getDocumentUploadLimitsFileSystemUploadLimitsPost(authorization, xUserTimezone)
+
+Get Document Upload Limits
+
+### Example
+
+```ts
+import {
+  Configuration,
+  FileSystemApi,
+} from '';
+import type { GetDocumentUploadLimitsFileSystemUploadLimitsPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new FileSystemApi();
+
+  const body = {
+    // string (optional)
+    authorization: authorization_example,
+    // string (optional)
+    xUserTimezone: xUserTimezone_example,
+  } satisfies GetDocumentUploadLimitsFileSystemUploadLimitsPostRequest;
+
+  try {
+    const data = await api.getDocumentUploadLimitsFileSystemUploadLimitsPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**DocumentUploadLimitResponse**](DocumentUploadLimitResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 

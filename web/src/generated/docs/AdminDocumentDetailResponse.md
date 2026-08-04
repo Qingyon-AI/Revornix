@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `id` | number
+`publish_uuid` | string
+`has_access_key` | boolean
 `category` | number
 `title` | string
 `from_plat` | string
@@ -42,6 +44,8 @@ import type { AdminDocumentDetailResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
+  "publish_uuid": null,
+  "has_access_key": null,
   "category": null,
   "title": null,
   "from_plat": null,

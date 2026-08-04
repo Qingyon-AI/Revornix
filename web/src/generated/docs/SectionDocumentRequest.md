@@ -11,6 +11,7 @@ Name | Type
 `limit` | number
 `desc` | boolean
 `keyword` | string
+`access_key` | string
 
 ## Example
 
@@ -24,6 +25,7 @@ const example = {
   "limit": null,
   "desc": null,
   "keyword": null,
+  "access_key": null,
 } satisfies SectionDocumentRequest
 
 console.log(example)

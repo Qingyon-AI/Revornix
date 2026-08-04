@@ -22,6 +22,7 @@ Name | Type
 `labels` | [Array&lt;SectionLabel&gt;](SectionLabel.md)
 `cover` | string
 `publish_uuid` | string
+`has_access_key` | boolean
 `podcast_task` | [SectionPodcastTask](SectionPodcastTask.md)
 `process_task` | [SectionProcessTask](SectionProcessTask.md)
 `document_integration` | [SectionDocumentIntegrationSummary](SectionDocumentIntegrationSummary.md)
@@ -55,6 +56,7 @@ const example = {
   "labels": null,
   "cover": null,
   "publish_uuid": null,
+  "has_access_key": null,
   "podcast_task": null,
   "process_task": null,
   "document_integration": null,

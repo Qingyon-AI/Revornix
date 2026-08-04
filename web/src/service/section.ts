@@ -5,7 +5,7 @@ import { AllMySectionsResponse, DaySectionRequest, DaySectionResponse, InfiniteS
 export type { RetrySectionDocumentRequest, TriggerSectionProcessRequest, GenerateSectionPptRequest, GenerateSectionPodcastRequest, CancelSectionTaskRequest, SectionPptSlide, SectionCommentCreateRequest, SectionCommentSearchRequest, SectionCommentReplySearchRequest, SectionCommentLikeRequest } from '@/generated';
 import { CreateLabelResponse } from '@/generated/models/CreateLabelResponse';
 import { LabelAddRequest } from '@/generated/models/LabelAddRequest';
-import { LabelListResponse } from '@/generated/models/LabelListResponse';
+import { SchemasSectionLabelListResponse as LabelListResponse } from '@/generated/models/SchemasSectionLabelListResponse';
 import { request } from '@/lib/request';
 import type { ServerRequestOptions } from '@/lib/request-core';
 import { serverRequest } from '@/lib/request-server';

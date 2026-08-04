@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AccessRequestApi.ts
 apis/AdminApi.ts
 apis/AiApi.ts
@@ -98,6 +99,7 @@ docs/DeleteNotificationSourceRequest.md
 docs/DeleteNotificationTargetRequest.md
 docs/DeleteNotificationTaskRequest.md
 docs/DingTalkTargetForm.md
+docs/DocumentAccessKeyUpdateRequest.md
 docs/DocumentAiSummaryRequest.md
 docs/DocumentApi.md
 docs/DocumentAskRequest.md
@@ -138,6 +140,7 @@ docs/DocumentSummarizeTask.md
 docs/DocumentTranscribeRequest.md
 docs/DocumentTranscribeTask.md
 docs/DocumentUpdateRequest.md
+docs/DocumentUploadLimitResponse.md
 docs/DocumentUserAddRequest.md
 docs/DocumentUserAuthorityResponse.md
 docs/DocumentUserDeleteRequest.md
@@ -320,6 +323,7 @@ docs/SearchUserFansRequest.md
 docs/SearchUserFollowsRequest.md
 docs/SearchUserRequest.md
 docs/SearchUserSectionsRequest.md
+docs/SectionAccessKeyUpdateRequest.md
 docs/SectionApi.md
 docs/SectionAskRequest.md
 docs/SectionCommentCreateRequest.md
@@ -494,6 +498,7 @@ models/DeleteNotificationSourceRequest.ts
 models/DeleteNotificationTargetRequest.ts
 models/DeleteNotificationTaskRequest.ts
 models/DingTalkTargetForm.ts
+models/DocumentAccessKeyUpdateRequest.ts
 models/DocumentAiSummaryRequest.ts
 models/DocumentAskRequest.ts
 models/DocumentAudioSpeakerRenameRequest.ts
@@ -533,6 +538,7 @@ models/DocumentSummarizeTask.ts
 models/DocumentTranscribeRequest.ts
 models/DocumentTranscribeTask.ts
 models/DocumentUpdateRequest.ts
+models/DocumentUploadLimitResponse.ts
 models/DocumentUserAddRequest.ts
 models/DocumentUserAuthorityResponse.ts
 models/DocumentUserDeleteRequest.ts
@@ -710,6 +716,7 @@ models/SearchUserFansRequest.ts
 models/SearchUserFollowsRequest.ts
 models/SearchUserRequest.ts
 models/SearchUserSectionsRequest.ts
+models/SectionAccessKeyUpdateRequest.ts
 models/SectionAskRequest.ts
 models/SectionCommentCreateRequest.ts
 models/SectionCommentDeleteRequest.ts

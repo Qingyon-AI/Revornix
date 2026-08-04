@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `file_path` | string
 `content_type` | string
+`size` | number
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { PresignUploadURLRequest } from ''
 const example = {
   "file_path": null,
   "content_type": null,
+  "size": null,
 } satisfies PresignUploadURLRequest
 
 console.log(example)

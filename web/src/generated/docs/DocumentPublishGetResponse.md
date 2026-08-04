@@ -7,6 +7,9 @@
 Name | Type
 ------------ | -------------
 `status` | boolean
+`uuid` | string
+`has_access_key` | boolean
+`access_key` | string
 `create_time` | Date
 `update_time` | Date
 
@@ -18,6 +21,9 @@ import type { DocumentPublishGetResponse } from ''
 // TODO: Update the object below with actual values
 const example = {
   "status": null,
+  "uuid": null,
+  "has_access_key": null,
+  "access_key": null,
   "create_time": null,
   "update_time": null,
 } satisfies DocumentPublishGetResponse

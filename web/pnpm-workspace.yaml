@@ -3,6 +3,10 @@ overrides:
   # 同一棵树里两份 prosemirror-model 会让 tiptap 的节点类型互不兼容。钉成一份。
   prosemirror-model: 1.25.11
 allowBuilds:
+  # openapi-generator-cli 的 postinstall 负责把生成器 jar 拉到本地；
+  # 不放行的话 pnpm generate:api 会在第一次运行时才去下载。
+  '@openapitools/openapi-generator-cli': true
+  '@nestjs/core': true
   '@parcel/watcher': true
   '@swc/core': true
   esbuild: true
