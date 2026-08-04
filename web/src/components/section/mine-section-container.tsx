@@ -42,6 +42,9 @@ import {
 } from '@/components/ui/empty';
 import Link from 'next/link';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
+import { useMultiSelect } from '@/hooks/use-multi-select';
+import SelectionActionBar from '@/components/ui/selection-action-bar';
+import SectionBulkDeleteAction from '@/components/section/section-bulk-delete-action';
 
 const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	const t = useTranslations();
@@ -80,6 +83,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 	});
 
 	const sections = data?.pages.flatMap((page) => page.elements) || [];
+	const selection = useMultiSelect(sections.map((section) => section.id));
 
 	const { data: labels } = useQuery({
 		queryKey: ['getSectionLabels'],
@@ -250,7 +254,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 										ref={
 											index === sections.length - 1 ? bottomRef : undefined
 										}>
-										<SectionCard section={section} />
+										<SectionCard section={section} selection={selection} />
 									</div>
 								);
 							})}
@@ -271,6 +275,7 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 							sections={sections}
 							lastRowRef={bottomRef}
 							loadingMore={isFetchingNextPage && Boolean(data)}
+							selection={selection}
 						/>
 					</>
 				) : null}
@@ -289,6 +294,14 @@ const MineSectionContainer = ({ label_id }: { label_id?: number }) => {
 					)
 				)}
 			</div>
+			<SelectionActionBar
+				count={selection.selectedCount}
+				onClear={selection.clear}>
+				<SectionBulkDeleteAction
+					sectionIds={selection.selectedIds}
+					onDeleted={selection.removeIds}
+				/>
+			</SelectionActionBar>
 		</>
 	);
 };

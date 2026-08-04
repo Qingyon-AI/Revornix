@@ -43,6 +43,9 @@ import {
 import Link from 'next/link';
 import { useUserContext } from '@/provider/user-provider';
 import { useCardViewMode } from '@/hooks/use-card-view-mode';
+import { useMultiSelect } from '@/hooks/use-multi-select';
+import SelectionActionBar from '@/components/ui/selection-action-bar';
+import DocumentBulkDeleteAction from '@/components/document/document-bulk-delete-action';
 
 const StarDocumentPage = () => {
 	const t = useTranslations();
@@ -89,6 +92,7 @@ const StarDocumentPage = () => {
 	});
 
 	const documents = data?.pages.flatMap((page) => page.elements) || [];
+	const selection = useMultiSelect(documents.map((document) => document.id));
 
 	const { data: labels } = useQuery({
 		queryKey: ['getDocumentLabels'],
@@ -253,7 +257,7 @@ const StarDocumentPage = () => {
 										ref={
 											index === documents.length - 1 ? bottomRef : undefined
 										}>
-										<DocumentCard document={document} />
+										<DocumentCard document={document} selection={selection} />
 									</div>
 								);
 							})}
@@ -274,6 +278,7 @@ const StarDocumentPage = () => {
 							documents={documents}
 							lastRowRef={bottomRef}
 							loadingMore={isFetchingNextPage && Boolean(data)}
+							selection={selection}
 						/>
 					</>
 				) : null}
@@ -292,6 +297,14 @@ const StarDocumentPage = () => {
 					)
 				)}
 			</div>
+			<SelectionActionBar
+				count={selection.selectedCount}
+				onClear={selection.clear}>
+				<DocumentBulkDeleteAction
+					documentIds={selection.selectedIds}
+					onDeleted={selection.removeIds}
+				/>
+			</SelectionActionBar>
 		</>
 	);
 };
