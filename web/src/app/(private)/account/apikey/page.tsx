@@ -29,12 +29,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { flexRender } from '@tanstack/react-table';
+// react-table 9 换掉了整套 API 名；官方的 legacy 入口原样保留 v8 的语义，
+// 所以这里先接上它，把「迁到 v9 的新 API」留成一件单独的事。
 import {
-	ColumnDef,
-	flexRender,
+	LegacyColumnDef as ColumnDef,
 	getCoreRowModel,
-	useReactTable,
-} from '@tanstack/react-table';
+	useLegacyTable as useReactTable,
+} from '@tanstack/react-table/legacy';
 import {
 	Copy,
 	KeyRound,

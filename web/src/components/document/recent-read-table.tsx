@@ -2,17 +2,21 @@
 
 import * as React from 'react';
 import {
-	ColumnDef,
 	ColumnFiltersState,
+	// v9 把 VisibilityState 改名成了 ColumnVisibilityState。
+	ColumnVisibilityState as VisibilityState,
 	SortingState,
-	VisibilityState,
 	flexRender,
+} from '@tanstack/react-table';
+// 见 apikey/page.tsx：走 react-table 9 的 legacy 入口保持 v8 语义。
+import {
+	LegacyColumnDef as ColumnDef,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	useReactTable,
-} from '@tanstack/react-table';
+	useLegacyTable as useReactTable,
+} from '@tanstack/react-table/legacy';
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

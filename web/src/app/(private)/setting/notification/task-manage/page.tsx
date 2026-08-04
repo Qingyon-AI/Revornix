@@ -18,12 +18,13 @@ import AddNotificationTask from '@/components/notification/add-notification-task
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getQueryClient } from '@/lib/get-query-client';
+import { flexRender } from '@tanstack/react-table';
+// 见 apikey/page.tsx：走 react-table 9 的 legacy 入口保持 v8 语义。
 import {
-	ColumnDef,
-	flexRender,
+	LegacyColumnDef as ColumnDef,
 	getCoreRowModel,
-	useReactTable,
-} from '@tanstack/react-table';
+	useLegacyTable as useReactTable,
+} from '@tanstack/react-table/legacy';
 import { Button } from '@/components/ui/button';
 import UpdateNotificationTask from '@/components/notification/update-notification-task';
 import DeleteNotificationTask from '@/components/notification/delete-notification-task';
