@@ -86,19 +86,6 @@ from enums.notification import UserNotificationSourceRole, UserNotificationTarge
 
 from schemas.error import CustomException
 
-from data.sql.base import Base, engine  # 你得有这个 engine
-from data.sql.schema_guard import run_schema_guard
-
-# create_all 只建它见过的表 —— 模型模块必须先被导入，否则新表会被静默漏掉。
-from models.api_key import *
-from models.document import *
-from models.engine import *
-from models.notification import *
-from models.section import *
-from models.task import *
-from models.model import *
-from models.user import *
-from models.usage import *
 
 
 if not ROOT_USER_NAME or not ROOT_USER_PASSWORD:
@@ -433,28 +420,16 @@ async def seed_database(db: AsyncSession):
 # 主入口
 # =========================================================
 async def main():
-    # 1) 建出模型声明的全部表。幂等：已存在的表原样跳过，不会重建、不会丢数据。
-    info_logger.warning("STEP 0: Creating missing tables...")
-    Base.metadata.create_all(bind=engine)
-    info_logger.warning("STEP 0: Tables created.")
+    # API 启动时会自动跑同一套（见 data/sql/bootstrap.py），所以这个入口不再是
+    # 部署的必经步骤，只是「想在起服务之前先把库准备好」时的手动开关。
+    from data.sql.bootstrap import ensure_database_ready
 
-    # 2) 给既有表补上 create_all 不会施加的变更（加列 / 回填）。服务启动时也会跑
-    #    同一份，这里再跑一次只是让「先 bootstrap 再起服务」这条路径自洽。
-    info_logger.warning("STEP 1: Running schema guard...")
-    run_schema_guard()
-    info_logger.warning("STEP 1: Schema guard done.")
-
-    # 3) seed（你原逻辑）
-    async with async_session_context() as db:
-        try:
-            info_logger.info("🌱 Seeding database...")
-            await seed_database(db=db)
-            await db.commit()
-            info_logger.info("✅ Database initialized successfully")
-        except Exception as e:
-            await db.rollback()
-            exception_logger.exception(f"❌ Database initialization failed: {e}")
-            raise
+    try:
+        await ensure_database_ready()
+        info_logger.info("✅ Database initialized successfully")
+    except Exception as e:
+        exception_logger.exception(f"❌ Database initialization failed: {e}")
+        raise
 
 
 if __name__ == "__main__":

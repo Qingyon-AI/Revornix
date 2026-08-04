@@ -57,9 +57,6 @@ ignore = [
 # FastAPI 的 __init__.py 经常用于导出 API；没必要纠结未使用 import
 "**/__init__.py" = ["F401"]
 
-# data/sql/create.py 为 create_all 顶部批量 `import *` 模型，看似未使用但缺一张表就少建一张
-"**/data/sql/create.py" = ["F401", "F403", "F405", "E402"]
-
 # 测试文件允许 assert / magic value 等更宽松（按需）
 "**/tests/**/*.py" = ["S101"]
 

@@ -156,8 +156,10 @@ cp ./celery-worker/.env.example ./celery-worker/.env
 ```shell
 cd api
 python -m data.milvus.create
-python -m data.sql.create
 ```
+
+> Postgres 不需要这一步。API 每次启动都会自动建表、应用结构变更并补齐内置数据，
+> 全新安装和版本升级都只需要把服务起起来，不需要手动迁移数据库。
 
 ### 5) 启动核心后端服务
 
