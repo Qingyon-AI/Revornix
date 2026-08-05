@@ -23,6 +23,7 @@ from workflow.document_embedding_workflow import run_document_embedding_workflow
 from workflow.document_podcast_workflow import run_document_podcast_workflow
 from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+from workflow.orchestration import build_progressive_followup_workflow
 from workflow.planning import plan_document_processing
 from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
@@ -360,6 +361,8 @@ async def prepare_progressive_followup_tasks(
         await db.commit()
 
 
+
+
 def enqueue_progressive_followups(
     *,
     document_id: int,
@@ -368,67 +371,19 @@ def enqueue_progressive_followups(
     auto_podcast: bool,
     auto_graph: bool,
 ) -> None:
-    from celery import chain, chord, group
-    from common.celery.app import celery_app
+    """组装并投递渐进式后续任务。
 
-    def _optional_followup(kind: str) -> object:
-        # Optional follow-ups (graph/summary/podcast) run best-effort via the
-        # safe wrapper, which records FAILED on their own task and swallows the
-        # error. They therefore never fail the chord, so their failure does not
-        # block the completion notification.
-        return celery_app.signature(
-            "common.celery.app.run_progressive_followup",
-            kwargs={
-                "kind": kind,
-                "document_id": document_id,
-                "user_id": user_id,
-            },
-            immutable=True,
-        )
-
-    # The embedding remainder is core: it uses the raising task so that if it
-    # fails the chord errors and the finalize callback (completion notification)
-    # is NOT fired — matching the non-progressive path where an embedding failure
-    # also blocks the notification. Optional follow-ups can't fail the chord, so
-    # the callback fires iff the core embedding succeeded.
-    header_signatures = [
-        celery_app.signature(
-            "common.celery.app.start_process_document_embedding",
-            kwargs={
-                "document_id": document_id,
-                "user_id": user_id,
-                "start_chunk_idx": PROGRESSIVE_BOOTSTRAP_CHUNK_LIMIT,
-            },
-            immutable=True,
-        ),
-    ]
-    if auto_graph:
-        header_signatures.append(_optional_followup("graph"))
-    if auto_summary:
-        header_signatures.append(_optional_followup("summarize"))
-    if auto_podcast:
-        header_signatures.append(_optional_followup("podcast"))
-
-    finalize_signature = celery_app.signature(
-        "common.celery.app.start_finalize_document_process",
-        kwargs={
-            "document_id": document_id,
-        },
-        immutable=True,
-    )
-    # Fire the "document process completed" notification once, after the core
-    # embedding succeeds and every optional follow-up has settled.
-    followups_chord = chord(group(header_signatures), finalize_signature)
-    workflow = chain(
-        celery_app.signature(
-            "common.celery.app.start_prepare_document_chunk_snapshot",
-            kwargs={
-                "document_id": document_id,
-                "user_id": user_id,
-            },
-            immutable=True,
-        ),
-        followups_chord,
+    组装与投递是分开的（见 ``build_progressive_followup_workflow``）：编排的正确性
+    几乎全在**结构**里 —— 谁在 chord 的 header、谁是 callback、核心那步用的是会抛
+    错的任务还是吞错的包装。把结构单独拿出来，就能在不起 celery 和数据库的前提下
+    断言它。
+    """
+    workflow = build_progressive_followup_workflow(
+        document_id=document_id,
+        user_id=user_id,
+        auto_summary=auto_summary,
+        auto_podcast=auto_podcast,
+        auto_graph=auto_graph,
     )
     workflow.apply_async()
     set_stage_metrics(
