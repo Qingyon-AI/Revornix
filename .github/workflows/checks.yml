@@ -24,6 +24,10 @@ jobs:
       # 两个服务共享一批代码，但此前没有任何东西会在「只改了一侧」时失败。
       - run: python scripts/check_mirrored_files.py
 
+      # shared/ 已经不属于任何一个服务，得有人检查它的语法。
+      - name: shared 语法检查
+        run: python -m compileall -q shared
+
   worker:
     name: celery-worker 编译与测试
     runs-on: ubuntu-latest
@@ -36,7 +40,7 @@ jobs:
       # 但能抓住语法错误和坏缩进 —— 这类问题此前要等任务真正跑起来才暴露。
       - name: 语法检查
         working-directory: celery-worker
-        run: python -m compileall -q workflow common crud models schemas enums notification
+        run: python -m compileall -q workflow common crud models schemas notification
 
       # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
       # 渲染），因此只装 pytest 就能跑 —— 不必为了测试把整棵运行时依赖树拖进来。
