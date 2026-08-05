@@ -17,7 +17,7 @@ from data.common import (
     get_extract_llm_client,
     resolve_entities_with_semantic_dedupe,
 )
-from data.custom_types.all import DocumentInfo
+from custom_types.all import DocumentInfo
 from data.neo4j.insert import (
     upsert_entities_neo4j,
     upsert_relations_neo4j,

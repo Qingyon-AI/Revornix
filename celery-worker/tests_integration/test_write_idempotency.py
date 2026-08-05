@@ -20,7 +20,7 @@ import uuid
 
 import pytest
 
-from data.custom_types.all import ChunkInfo, EntityInfo, RelationInfo
+from custom_types.all import ChunkInfo, EntityInfo, RelationInfo
 from data.milvus.base import MILVUS_COLLECTION
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import (

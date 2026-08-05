@@ -95,17 +95,12 @@ base_implement/tts_engine_base.py
 
 # ---- data/ —— 数据访问的公共部分 (6) ----
 data/__init__.py
-data/custom_types/__init__.py
 data/milvus/__init__.py
 data/neo4j/__init__.py
 data/sql/__init__.py
 data/sql/schema_guard.py
 
 # ---- models/ —— ORM 模型 (4) ----
-models/api_key.py
-models/engine.py
-models/file_system.py
-models/usage.py
 
 # ---- proxy/ —— 对外部服务的代理封装 (4) ----
 proxy/__init__.py
@@ -114,9 +109,6 @@ proxy/file_system_proxy.py
 proxy/notification_proxy.py
 
 # ---- prompts/ —— 提示词 (3) ----
-prompts/__init__.py
-prompts/podcast_dialogue.py
-prompts/section_ppt.py
 
 # ---- protocol/ —— 协议 / 接口定义 (3) ----
 

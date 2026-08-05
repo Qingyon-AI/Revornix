@@ -13,7 +13,7 @@ from prompts.summary_content import summary_content_prompt
 from prompts.reducer_summary import reducer_summary_prompt
 from prompts.make_section_markdown import make_section_markdown_prompt
 from pydantic import BaseModel
-from data.custom_types.all import RelationInfo, EntityInfo
+from custom_types.all import RelationInfo, EntityInfo
 from common.logger import exception_logger, info_logger, log_event
 from common.mermaid import sanitize_mermaid_blocks
 from common.usage_billing import persist_model_usage_from_completion

@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from data.sql.base import Base
+from models.base import Base
 
 
 class DocumentAudioTranscribeTask(Base):
@@ -79,7 +79,7 @@ class DocumentGraphTask(Base):
     create_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     update_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    
+
 
 class DocumentPodcastTask(Base):
     __tablename__ = "document_podcast_task"
@@ -128,12 +128,12 @@ class SectionProcessTask(Base):
 
 class SectionTriggerScheduler(Base):
     __tablename__ = "section_trigger_scheduler"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     section_process_task_id: Mapped[int] = mapped_column(ForeignKey("section_process_task.id"), index=True, nullable=False)
     cron_expr: Mapped[str] = mapped_column(String(100), nullable=False)
     delete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    
+
 
 class SectionPodcastTask(Base):
     __tablename__ = "section_podcast_task"

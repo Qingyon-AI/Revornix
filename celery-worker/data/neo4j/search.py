@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from datetime import datetime
-from data.custom_types.all import *
+from custom_types.all import *
 from data.neo4j.base import async_neo4j_driver
 from data.milvus.search import naive_search
 

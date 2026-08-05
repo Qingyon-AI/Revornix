@@ -28,7 +28,7 @@ from data.common import (
     resolve_entities_with_semantic_dedupe,
     stream_chunk_document,
 )
-from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
+from custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.milvus.insert import upsert_milvus
 from data.neo4j.insert import (
     annotate_node_degrees,

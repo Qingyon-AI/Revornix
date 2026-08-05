@@ -24,7 +24,8 @@ from importlib import import_module
 from sqlalchemy import inspect
 
 from common.logger import info_logger
-from data.sql.base import Base, async_session_context, engine
+from models.base import Base
+from data.sql.base import async_session_context, engine
 from data.sql.schema_guard import run_schema_guard
 
 

@@ -14,7 +14,7 @@ from langgraph.graph import StateGraph, END
 from common.ai import make_section_markdown
 from common.logger import exception_logger, info_logger
 from common.task_detail import format_task_error
-from data.custom_types.all import EntityInfo, RelationInfo
+from custom_types.all import EntityInfo, RelationInfo
 from data.neo4j.base import async_neo4j_driver
 from data.sql.base import async_session_context
 from enums.section import (

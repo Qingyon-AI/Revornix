@@ -1,4 +1,5 @@
-from data.custom_types.all import ChunkInfo
+from custom_types.all import ChunkInfo
+
 
 def entity_and_relation_extraction_prompt(chunk: ChunkInfo):
     return f"""
