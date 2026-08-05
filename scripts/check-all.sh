@@ -5,8 +5,9 @@
 # 判失败 —— 没人会在一台机器上同时装齐 api 的 torch、Go 工具链和三套 node_modules，
 # 而一个动不动就红的本地脚本没人会用。
 #
-#   ./scripts/check-all.sh          跑全部
-#   ./scripts/check-all.sh web api  只跑指定的
+#   ./scripts/check-all.sh              跑全部（不含集成测试）
+#   ./scripts/check-all.sh web api      只跑指定的
+#   ./scripts/check-all.sh integration  跑集成测试（要先起容器，见下）
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -16,6 +17,12 @@ FAILED_STEPS=()
 
 want() {  # 没给参数就全跑；给了就只跑匹配的
   [ ${#ONLY[@]} -eq 0 ] && return 0
+  local target="$1"
+  for o in "${ONLY[@]}"; do [ "$o" = "$target" ] && return 0; done
+  return 1
+}
+
+want_explicit() {  # 只有被点名才跑，"跑全部"也不带上它
   local target="$1"
   for o in "${ONLY[@]}"; do [ "$o" = "$target" ] && return 0; done
   return 1
@@ -76,6 +83,23 @@ step desktop "单元测试" in_dir desktop pnpm test
 
 echo "── docs ──"
 step docs "构建" in_dir docs pnpm build
+
+# 集成测试：真连 Postgres / Neo4j / Milvus，分钟级。
+#
+# 用 want_explicit 而不是 want —— 不点名就不跑，连"跑全部"也不带上它。这条脚本
+# 的价值在于随手一跑就有结论，而起五个容器等两分钟是另一种性质的事，不该被
+# 默默塞进来。CI 侧同理：它在单独的 integration.yml 里，不挂 push/PR。
+if want_explicit integration; then
+  echo "── 集成测试 ──"
+  echo "  (需先起容器: docker compose -f celery-worker/tests_integration/docker-compose.yaml up -d --wait)"
+  step integration "写入幂等与入口可导入" \
+    env REVORNIX_INTEGRATION=1 \
+        POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=revornix \
+        POSTGRES_DB_URL=localhost:45432 \
+        NEO4J_URI=bolt://localhost:47687 NEO4J_USER=neo4j NEO4J_PASS=neo4jneo4j \
+        MILVUS_CLUSTER_ENDPOINT=http://localhost:49530 \
+        bash -c 'cd celery-worker && python -m pytest tests_integration -q'
+fi
 
 echo
 printf '通过 %d · 跳过 %d · 失败 %d\n' "$PASS" "$SKIP" "$FAIL"
