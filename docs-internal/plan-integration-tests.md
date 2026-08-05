@@ -1,8 +1,15 @@
 # 集成测试：值不值得做，先做哪一条
 
 > 结论先行：**值得，但只做一条**——「重复执行是否安全」的契约测试。
-> 而分析过程中它已经先还了本：**发现向量写入其实不幂等，`task_acks_late` 的
-> 安全性前提有一半是错的。**
+> 已落地：12 条用例、一轮约 100 秒、独立 workflow、不挂 push/PR。
+>
+> 而它在写出来之前就已经还本了。三个缺陷都是这套东西逼出来的：
+>
+> 1. **celery-worker 起不来**（P0）——镜像文件依赖了 worker 侧不存在的符号，
+>    `compileall` 和单元测试各自因为"只编译"和"顶了替身"而看不见（§6.1）；
+> 2. **向量写入不幂等**——`upsert_milvus` 调的是 `insert`，而 `task_acks_late`
+>    的安全性整个压在幂等上（§0）；
+> 3. **APOC 是硬依赖**，此前没写在任何地方（§6.2）。
 
 ## 0. 先说那个发现
 
@@ -85,7 +92,7 @@ api 侧只验纯函数与 schema 形状。全仓库没有一个测试连过真�
 | 组件 | 镜像大小 | 冷启动到就绪 |
 | --- | ---: | ---: |
 | postgres:15-alpine | 408 MB | **1 s** |
-| neo4j:5.26 | 988 MB | **4 s** |
+| neo4j（5.26，测量时用） | 988 MB | **4 s** |
 | milvus + etcd + minio | 2.64 GB | **4 s** |
 
 启动时间不是问题。CI 上的真实成本是**拉镜像**：Milvus 三件套 2.64 GB。
@@ -136,8 +143,76 @@ milvus-etcd / milvus-minio 都是已启动状态）。也就是说本地跑集�
 - **把集成测试挂进现有 checks 工作流**：那会让每个 PR 都等它。应当单开 job，
   按需或定时触发。
 
-## 6. 顺带记下的三处版本问题
+## 6. 落地结果：又挖出两个，其中一个是 P0
 
-`docker-compose-local.yaml` 里：`neo4j:latest`、`minio/minio`（file-backend 那个）
-都没锁版本，而 `redis:8.0-M04-alpine` 是**里程碑预发布版**。集成测试要求环境可复现，
-这三处得先钉死——否则某天镜像变了，测试红了，而代码一行没改。
+按上面的范围做完了（`celery-worker/tests_integration/`，12 条用例，全绿，
+一轮约 100 秒）。过程中真正的收获不是那 12 条断言，而是**被它们逼出来的两个缺陷**。
+
+### 6.1 celery-worker 根本起不来（P0）
+
+`data/sql/schema_guard.py` 是**镜像文件**（CI 强制 api / worker 逐字节相同），
+里面有一行：
+
+```python
+from data.sql.base import engine
+```
+
+api 侧的 `data/sql/base.py` 有这个同步 `engine`，**worker 侧没有**（只有
+`async_engine`）。而 worker 的 `common/celery/app.py` —— 定义 `celery_app`、
+每个任务都要导入的那个模块 —— 在顶部导入了 `run_schema_guard`。
+
+结果：**worker 一导入入口模块就 ImportError，整个服务起不来。**
+
+这是 `8af31cd5`（启动自愈那次改动）引入的，两道现有检查都没看见：
+
+- `compileall` 只编译不导入，语法没问题就过；
+- 单元测试把 `data.sql.base` 顶成了替身，压根到不了真实那行。
+
+修法是给 worker 补一个同步 `engine`（`NullPool`，只在启动时用一次）。同时加了
+`tests_integration/test_entrypoint_imports.py`：不断言任何行为，只把入口模块
+**真的 import 一遍**。它不需要任何外部系统，因此不受 `REVORNIX_INTEGRATION`
+开关限制，0.5 秒跑完。
+
+> 这条教训比缺陷本身重要：**镜像机制保证"两侧一致"，但一致不等于两侧都能用。**
+> 一个文件在 A 侧依赖的东西，B 侧不一定有，而逐字节比对恰恰看不出这种差别。
+
+### 6.2 APOC 是硬依赖
+
+`upsert_entities_neo4j` 用了 `apoc.coll.toSet`，`upsert_relations_neo4j` 用了
+`apoc.merge.relationship`，`search.py` 还用了 `apoc.path.subgraphNodes`。
+根 compose 里配了 `NEO4J_PLUGINS: '["apoc", "graph-data-science"]'`，所以开发环境
+一直是好的——但这件事此前没有写在任何地方，测试夹具漏配就会以 "Unknown function"
+的形式失败，而那与要验的东西毫无关系。现在 `tests_integration/docker-compose.yaml`
+里配上了，并注明了原因。
+
+### 6.3 抖动是真的，但可控
+
+第一次接进 `check-all.sh` 就红了一条：上一轮"故意改回 `insert`"的负向验证留下了
+重复行，而用例隐含假设"开跑时集合是干净的"。改成**前后都清**之后自愈：
+先跑一轮制造残留（3 红），紧接着复原再跑，直接 8 全绿。
+
+> 一个看历史脸色的测试比没有更糟：红一次没人查，红三次这套就没人跑了。
+
+### 6.4 实际数字
+
+| 项 | 值 |
+| --- | ---: |
+| 用例数 | 12 |
+| 一轮耗时（本地，容器已起） | ~100 s |
+| 五容器冷启动到全部 healthy | 56 s |
+| 需要的额外依赖 | 4 个客户端库（见 `requirements-integration.txt`） |
+
+CI 侧放在独立的 `.github/workflows/integration.yml`：**手动触发 + 每日定时**，
+不挂 push/PR。入口导入冒烟排在起容器**之前**——它失败时后面几分钟的等待毫无意义，
+而它恰恰是最严重的一类问题。
+
+## 7. 顺带修掉的三处版本问题（已完成）
+
+`docker-compose-local.yaml` 里原本 `neo4j:latest`、`minio/minio`（file-backend 那个）
+都没锁版本，`redis:8.0-M04-alpine` 还是**里程碑预发布版**。集成测试的价值建立在
+环境可复现上，所以先钉死了这三处——否则某天镜像变了、测试红了，而代码一行没改，
+几次之后就没人再信它。
+
+钉的时候有个坑值得记：**Neo4j 已改用日历版本号**（本机在跑 `2025.08.0`），
+不是 5.x 的延续。想当然地钉成 `neo4j:5.26` 是跨大版本降级，现有数据卷会直接
+起不来——所以按实际在跑的版本钉，而不是按印象里的"最新稳定版"。

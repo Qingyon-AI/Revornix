@@ -1,0 +1,72 @@
+# 跑 tests_integration 需要的最小存储集合。
+#
+# 与仓库根的 docker-compose-local.yaml 是两回事：那份是**开发环境**（还含 redis、
+# 文件存储、持久化卷、固定容器名）；这份是**测试夹具** —— 只有这批用例真正会连的
+# 三个，不落盘，端口错开，可以随起随删。
+#
+#   docker compose -f tests_integration/docker-compose.yaml up -d
+#   REVORNIX_INTEGRATION=1 python -m pytest tests_integration
+#
+# 版本全部钉死。集成测试的价值建立在环境可复现上 —— 用 latest 的话，某天镜像变了
+# 测试红了，而代码一行没改，几次之后就没人再信它。
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: revornix
+    ports: ["45432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  neo4j:
+    image: neo4j:2025.08.0
+    environment:
+      NEO4J_AUTH: neo4j/neo4jneo4j
+      # APOC 不是可选的：upsert_entities_neo4j 用了 apoc.coll.toSet，
+      # upsert_relations_neo4j 用了 apoc.merge.relationship。不装的话用例会以
+      # "Unknown function" 失败 —— 而那与它要验的幂等性毫无关系。
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*"
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+    ports: ["47474:7474", "47687:7687"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:7474 || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  # Milvus standalone 仍然要 etcd + 对象存储，少一个都起不来。
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data
+
+  milvus:
+    image: milvusdb/milvus:v2.5.6
+    command: ["milvus", "run", "standalone"]
+    security_opt: ["seccomp:unconfined"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    ports: ["49530:19530", "49091:9091"]
+    depends_on: [etcd, minio]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 3s
+      timeout: 5s
+      retries: 40

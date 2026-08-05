@@ -1,0 +1,9 @@
+# 集成测试专用。与 requirements-dev.txt 的区别：那边一个运行时依赖都不装，
+# 这边要真的连库，所以装**客户端**（而且只装客户端）——torch、langgraph、
+# langfuse 这些仍然不装，因为这批用例不跑模型也不建图。
+-r requirements-dev.txt
+pymilvus==2.5.6
+neo4j==5.28.1
+sqlalchemy==2.0.44
+psycopg[binary]==3.2.12
+python-dotenv==1.1.1

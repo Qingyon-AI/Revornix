@@ -1,0 +1,69 @@
+# 集成测试：真的连 Postgres / Neo4j / Milvus。
+#
+# **刻意不挂在 push/PR 上。** checks.yml 那套的价值在于秒级、零依赖、从不误报；
+# 把这个塞进去会让每个 PR 都等几分钟，而且这类测试天然会抖（容器就绪时机、
+# Milvus 的 flush 可见性）。一个动不动就红的 CI，人的反应是重跑而不是查 ——
+# 那时连快的那套也会被连累。
+#
+# 所以：手动触发 + 每日定时。它验的是"重复执行是否安全"这类**变化很慢**的契约，
+# 不需要每次提交都跑。
+name: integration
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每天 UTC 19:00（北京时间次日 03:00）
+    - cron: "0 19 * * *"
+
+jobs:
+  idempotency:
+    name: 写入幂等与入口可导入
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: celery-worker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 装依赖
+        # 只装客户端（pymilvus / neo4j / sqlalchemy），不装 torch、langgraph 这些 ——
+        # 这批用例不跑模型，也不建图。
+        run: pip install -r requirements-integration.txt
+
+      # 先跑不需要外部系统的那条：入口模块能不能导入。
+      # 放在起容器**之前**，因为它失败时后面几分钟的等待毫无意义 ——
+      # 而这恰恰是最严重的一类问题（worker 起不来）。
+      - name: 入口模块导入冒烟
+        run: python -m pytest tests_integration/test_entrypoint_imports.py -q
+
+      - name: 起存储
+        run: docker compose -f tests_integration/docker-compose.yaml up -d --wait
+
+      - name: 集成测试
+        env:
+          REVORNIX_INTEGRATION: "1"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: revornix
+          POSTGRES_DB_URL: localhost:45432
+          NEO4J_URI: bolt://localhost:47687
+          NEO4J_USER: neo4j
+          NEO4J_PASS: neo4jneo4j
+          MILVUS_CLUSTER_ENDPOINT: http://localhost:49530
+        run: python -m pytest tests_integration -q
+
+      - name: 失败时打印容器日志
+        if: failure()
+        # 没有这一步，一次远端失败只能看到"连接超时"，分不清是容器没起来
+        # 还是代码错了。
+        run: docker compose -f tests_integration/docker-compose.yaml logs --tail=80
+
+      - name: 收摊
+        if: always()
+        run: docker compose -f tests_integration/docker-compose.yaml down -v
