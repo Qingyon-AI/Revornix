@@ -327,3 +327,9 @@ class NotificationSourcesUsableResponse(BaseModel):
 
 class NotificationTargetsUsableResponse(BaseModel):
     data: list[NotificationTarget]
+
+
+# 来自 celery-worker 侧：定时触发的 cron 表达式载荷。
+
+class NotificationTriggerScheduler(BaseModel):
+    cron_expr: str
