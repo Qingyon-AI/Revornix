@@ -1,4 +1,0 @@
-import os
-
-WORKER_SENTRY_ENABLE = os.environ.get("WORKER_SENTRY_ENABLE")
-WORKER_SENTRY_DSN = os.environ.get("WORKER_SENTRY_DSN")

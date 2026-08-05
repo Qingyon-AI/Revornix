@@ -89,14 +89,20 @@ def module_exports(tree: ast.Module) -> tuple[set[str], bool]:
 
 
 def resolve(service_root: Path, dotted: str) -> Path | None:
-    """把 `data.sql.base` 解析成服务目录下的文件；不是本仓库模块就返回 None。"""
+    """把 `data.sql.base` 解析成文件；不是本仓库模块就返回 None。
+
+    先在服务目录里找，找不到再去 `shared/` —— 已经搬进共享包的层（enums、config
+    等）以顶级包形式暴露，服务里写的仍是 `from config.base import ...`。少了这一步，
+    每搬走一层，这个检查对那一层的覆盖就会**静悄悄消失**。
+    """
     parts = dotted.split(".")
-    as_module = service_root.joinpath(*parts).with_suffix(".py")
-    if as_module.is_file():
-        return as_module
-    as_package = service_root.joinpath(*parts, "__init__.py")
-    if as_package.is_file():
-        return as_package
+    for root in (service_root, REPO / "shared"):
+        as_module = root.joinpath(*parts).with_suffix(".py")
+        if as_module.is_file():
+            return as_module
+        as_package = root.joinpath(*parts, "__init__.py")
+        if as_package.is_file():
+            return as_package
     return None
 
 
