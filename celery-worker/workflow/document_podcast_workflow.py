@@ -50,6 +50,7 @@ from workflow.planning import (
 )
 SAMPLED_PODCAST_MAX_TEXT_LENGTH = 12_000
 SAMPLED_PODCAST_MAX_CHUNK_TEXT_LENGTH = 1_200
+_ELLIPSIS = "..."
 
 
 async def _ensure_podcast_task_not_cancelled(document_id: int) -> None:
@@ -104,7 +105,10 @@ async def _build_sampled_podcast_text(
         if candidate_length > SAMPLED_PODCAST_MAX_TEXT_LENGTH:
             remaining = SAMPLED_PODCAST_MAX_TEXT_LENGTH - total_length - (2 if parts else 0)
             if remaining > 200:
-                parts.append(chunk_text[:remaining].rstrip() + "...")
+                # 省略号也占字数。此前这里按 remaining 截断后再补 "..."，
+                # 于是总长会比上限多出 3 个字符 —— 一个自称 MAX 的预算被突破，
+                # 数量虽小，但读代码的人有理由相信它不会发生。
+                parts.append(chunk_text[: remaining - len(_ELLIPSIS)].rstrip() + _ELLIPSIS)
             break
         parts.append(chunk_text)
         total_length = candidate_length
