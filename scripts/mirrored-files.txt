@@ -46,6 +46,7 @@ notification/trigger_event/section_subscribed.py
 
 # ---- engine/ —— 各类引擎实现（解析 / 向量 / 语音 / 图像） (22) ----
 engine/embedding/__init__.py
+engine/embedding/factory.py
 engine/image_generate/__init__.py
 engine/image_generate/bailian.py
 engine/image_generate/volc.py

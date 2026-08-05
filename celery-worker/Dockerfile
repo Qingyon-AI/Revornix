@@ -11,6 +11,8 @@ WORKDIR /app
 # 依赖层单独一层：worker 的依赖树很重（torch 等），改业务代码不该触发重装。
 COPY shared/ /shared/
 COPY celery-worker/requirements.txt /app/requirements.txt
+# 本地 embedding 引擎的依赖（torch，wheel 527 MB）**不装**：默认配置走云端。
+# 要在容器里跑本地推理，自行加一层 `pip install -r celery-worker/requirements-local-embedding.txt`。
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
