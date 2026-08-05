@@ -227,3 +227,88 @@ crud/section.py 3 · data/neo4j/search.py 3 · ...（清单可由本文末的脚
 已经先把最便宜的一道网架好了：`scripts/check_imports.py` 静态核对
 `from X import Y` 里的 Y 是否真的存在（1,927 个名字，0.7 秒，零依赖）。它守的
 正是搬迁最容易出的那类错 —— 也正是让 worker 起不来的那个缺陷的形态。
+
+---
+
+## 把 72 个逐个看了一遍
+
+分类之后再逐个读，结论是**合并比数字看起来容易，但有两处必须先决定**。
+
+### 分类
+
+| 类别 | 数量 | 合并风险 |
+| --- | ---: | --- |
+| 仅写法不同（调用集合、常量、控制流全同） | 36 | 无 —— 取任一版本 |
+| 仅常量/参数不同 | 12 | 低 |
+| 控制流不同 | 0 | — |
+| **调用集合不同** | **24** | 要逐个决定 |
+
+那 24 个不是 24 个独立决定，成组之后只有 5 类：
+
+1. **一次没做完的日志 API 迁移**（7 处）—— worker 用 `log_event(logger, ...)`，
+   api 还在用 `logger.info(format_log_message(...))`。一次性改完即可。
+2. **超时策略**（4 处，全在 `common/dependencies.py`）—— worker 显式 10s/connect 5s，
+   api 用 httpx 默认 5s。**api 并非没有超时，反而更严**；worker 放宽是合理的
+   （后台任务能等，请求不能）。保留差异，但要写下来。
+3. **预加载策略**（4 处）—— api 用 `selectinload`/`joinedload` 带出关联对象
+   （要序列化给前端），worker 不需要。合并后应当由调用方选择，而不是两份实现。
+4. **`crud/engine.py` 的查询形状**（6 处）—— `in_` / `join` 用法不同，需要单独比对。
+5. **两个真正的语义分歧** —— 见下。
+
+### 分歧一：同一个守卫，抛的异常类型不同
+
+```python
+# api/common/document_guard.py
+raise ValueError("Document not found")
+
+# celery-worker/common/document_guard.py
+raise DocumentDeletedError("Document is deleted")   # 这个类只在 worker 侧存在
+```
+
+worker 的 `document_process_status_workflow.py` 正是靠 `except DocumentDeletedError`
+来"文档已删就安静返回"。**合并时取任一版本都会坏掉一边**：取 api 的，worker 那个
+except 永远不触发（甚至 NameError）；取 worker 的，api 侧 catch `ValueError` 的
+调用方失效。
+
+这是那 72 个里唯一一个"必须先改调用方、再合并"的。
+
+### 分歧二：令牌吊销机制只建了一半
+
+api 的 `create_token` 签发的载荷带 `type` 和 `auth_epoch`；**worker 的只签 `sub`**。
+而 worker 会在工作流里签发这种令牌去调 API（`document_chunk_process_workflow.py:777`、
+`document_graph_task_workflow.py:105`）。
+
+api 侧的校验是：
+
+```python
+token_auth_epoch = payload.get("auth_epoch")
+if token_auth_epoch is None:
+    token_auth_epoch = 0          # 缺失 → 当作 0
+if token_auth_epoch != user.auth_epoch:
+    raise HTTPException(401, "Authentication session is stale")
+```
+
+用户的 `auth_epoch` 默认 0，**每次会话失效应当 +1**。所以：
+
+- **今天不出问题**：`bump_user_auth_epoch_async` 在整个仓库里**一个调用点都没有**，
+  所有人的 epoch 恒为 0，worker 令牌（缺失 → 当作 0）正好匹配。
+- **也不是安全绕过**：缺失被当作 0，而不是"跳过校验"。
+- **但这是个雷**：一旦有人接上"改密码/强制登出使旧令牌失效"（那个函数存在就是
+  为了这个），该用户的 epoch 变成 ≥1，而 worker 签的令牌永远是 0 —— 于是
+  **文档处理对且仅对这些用户 401 失败**。症状会极难定位：只有登出过的人处理失败。
+
+这一条与合并无关，是独立的缺陷，已单独记录。它也正好说明分叉的代价：
+api 长出了 `auth_epoch`，worker 的那份 `create_token` 没跟上，而**两侧字节不同，
+镜像检查不管，静态导入检查也不管** —— 只有把两个实现并排读才看得见。
+
+### 结论：顺序可以调整
+
+原计划是"先给 72 个做集成覆盖，再合并"。逐个看完之后，更合理的顺序是：
+
+1. 先修**分歧一**（统一异常类型，改调用方）——它是唯一的硬阻塞；
+2. 一次性做完**日志 API 迁移**（7 处），把无谓差异消掉；
+3. 预加载与 `crud/engine.py` 查询形状（10 处）需要集成覆盖，因为这两类
+   "取错版本"的表现是查询结果变了而不报错 —— 这才是网真正要罩住的地方；
+4. 其余 48 个（36 写法 + 12 常量）直接合并，不需要额外测试。
+
+**要写测试的从 72 收窄到 10。**
