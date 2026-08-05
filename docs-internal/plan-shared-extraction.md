@@ -85,3 +85,66 @@ python scripts/check_mirrored_files.py   # 先确认清单仍然准确
 
 # 测量三：依赖闭包（脚本见本文件的提交记录，或按 ast 遍历重写）
 ```
+
+---
+
+## 修订（本次集成测试之后）：上面那个结论的前提站不住
+
+原结论是"**为了提取 97 个共享文件，要把 77 个只属于某一侧的文件也搬进共享层**，
+其中 schemas 19 · crud 13 · models 9 —— 把领域核心塞进共享层不是提取公共代码，
+是合并服务"，据此决定只搬 `enums`。
+
+**那句话里"只属于某一侧"是错的。** 那 77 个文件之所以"专属"，是因为两侧**漂移了**，
+不是因为概念上不同。最直接的反证：worker 的 `models/` 缺 access_request、mcp ——
+这不是设计，这是漏搬，而且它正是"建表只能由 api 做"的原因。两个服务读写的是
+**同一个数据库、同一套表**。这是一个 bounded context，不是两个。
+
+重新量的两个数：
+
+| | 文件数 | 行数 |
+| --- | ---: | ---: |
+| api 真正独有（`router/` + `mcp_router/`） | 49 | 22,639 |
+| worker 真正独有（`workflow/`） | 21 | 7,484 |
+| **两侧同路径** | **194** | — |
+
+同路径那 194 个的分布：engine 34 · notification 33 · common 27 · data 19 ·
+prompts 12 · models 11 · crud 11 · config 11 · schemas 10 · base_implement 8 ·
+protocol 7 · proxy 5。**没有一层是某个服务专有的领域。**
+
+所以准确的说法是：真正不同的只有 70 个文件，其余全是同一套东西存了两份。
+当前的形态不是"两个服务"，是**一份代码部署两次、各带一个入口**。
+
+### 成本那一侧也变了
+
+原分析把镜像守卫的代价估成"CI 多跑一个检查"。集成测试推翻了这个估计：
+`schema_guard.py` 逐字节相同地存在于两侧，但它 `from data.sql.base import engine`，
+而 worker 侧根本没有这个符号 —— **worker 一导入入口模块就 ImportError，服务起不来**
+（详见 `plan-integration-tests.md` §6.1）。
+
+> **镜像守卫能保证"两侧一致"，但保证不了"两侧都能用"。** 逐字节比对看不见
+> "这个文件依赖的东西那边没有"。这类缺陷的代价是服务起不来，不是代码不整洁。
+
+### 那该做什么
+
+不是"合并成一个服务"——**进程和镜像仍然应该分开**，理由是硬的：worker 独有
+10 个重依赖（modelscope、huggingface_hub、rapid_table、shapely、pyclipper、ftfy、
+omegaconf 等 OCR/ML 栈），api 不该背；worker OOM 也不该拖垮 API。
+
+该做的是让**源码**停止复制：
+
+```
+shared/     models, crud, enums, config, common, notification, engine, proxy, protocol
+api/        router/, mcp_router/  + 自己的 requirements
+celery-worker/  workflow/          + 自己的 requirements（含 ML 栈）
+```
+
+部署形态一点不变，两个镜像各装各的依赖。变的是那 194 个文件只存一份。
+
+### 但这次仍然不动手
+
+理由不是"不值得"，而是**顺序**：这是一次大范围搬迁，而目前 `crud/` 210 个函数
+刚有 10 个被真正跑过，`router/` 22,639 行一行没测。在这个覆盖率下做大搬迁，
+出了问题只能靠线上发现 —— 那正是这一整轮工作要摆脱的处境。
+
+合理的顺序是：先把 crud 与 api 路由的集成覆盖做起来，再动结构。
+**先有网，再拆房子。**
