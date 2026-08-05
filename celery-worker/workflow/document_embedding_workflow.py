@@ -16,6 +16,7 @@ from data.sql.base import async_session_context
 from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 from workflow.cancelled import WorkflowCancelledError
+from workflow.streaming import ParallelBatchAccumulator
 from workflow.timing import (
     add_timed_node,
     ainvoke_with_timing,
@@ -128,13 +129,42 @@ async def _embed_document(
     await _ensure_embedding_task_not_cancelled(document_id)
     embedding_engine = get_embedding_engine()
 
-    # 批量缓存
-    embed_chunks: list = []
-    embed_texts: list[str] = []
+    # 批量缓存。text 由 chunk 派生而不是另存一条平行列表 —— 两条列表要靠
+    # 「每处都成对 append、成对 clear」保持同步，漏掉一半就会让向量安到别的
+    # 分块上，且不会报错。
+    embed_batches: ParallelBatchAccumulator = ParallelBatchAccumulator(
+        size=EMBED_BATCH_SIZE,
+        derive=lambda chunk: chunk.text,
+    )
     chunk_count = 0
     batch_count = 0
     embed_elapsed_ms = 0.0
     upsert_elapsed_ms = 0.0
+
+    async def _embed_and_upsert_batch(
+        chunks: list,
+        texts: list[str],
+    ) -> tuple[float, float]:
+        """一批的 embed + 写入。整批和尾巴走同一段代码。
+
+        此前这段是抄了两遍的：循环里一遍、收尾一遍。改了其中一处而忘了另一处，
+        表现是文档最后那不足一批的分块用了旧逻辑 —— 不报错。
+        """
+        embed_start = time.perf_counter()
+        vectors = await embedding_engine.embed(texts)
+        embed_ms = (time.perf_counter() - embed_start) * 1000
+        _assign_chunk_embeddings(
+            chunks=chunks,
+            vectors_raw=vectors,
+        )
+
+        upsert_start = time.perf_counter()
+        await asyncio.to_thread(
+            upsert_milvus,
+            user_id,
+            chunks,
+        )
+        return embed_ms, (time.perf_counter() - upsert_start) * 1000
 
     # 如果你想 embedding batch 和 milvus batch 分开控制，
     # 可以再做一层 milvus_buffer；这里先用“embed 批完就写 milvus”版本（最简单可靠）
@@ -160,50 +190,23 @@ async def _embed_document(
             prefer_snapshot=True,
         ):
             chunk_count += 1
-            embed_chunks.append(chunk_info)
-            embed_texts.append(chunk_info.text)
 
             # 满一个 embedding batch：一次 embed + 一次 upsert milvus
-            if len(embed_chunks) >= EMBED_BATCH_SIZE:
+            batch = embed_batches.add(chunk_info)
+            if batch is not None:
                 batch_count += 1
-                embed_start = time.perf_counter()
-                vectors = await embedding_engine.embed(embed_texts)
-                embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
-                _assign_chunk_embeddings(
-                    chunks=embed_chunks,
-                    vectors_raw=vectors,
-                )
-
-                upsert_start = time.perf_counter()
-                await asyncio.to_thread(
-                    upsert_milvus,
-                    user_id,
-                    embed_chunks,
-                )
-                upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+                embed_ms, upsert_ms = await _embed_and_upsert_batch(*batch)
+                embed_elapsed_ms += embed_ms
+                upsert_elapsed_ms += upsert_ms
                 await _ensure_embedding_task_not_cancelled(document_id)
 
-                embed_chunks.clear()
-                embed_texts.clear()
-
         # 处理最后不足一个 batch 的尾巴
-        if embed_chunks:
+        tail_chunks, tail_texts = embed_batches.flush()
+        if tail_chunks:
             batch_count += 1
-            embed_start = time.perf_counter()
-            vectors = await embedding_engine.embed(embed_texts)
-            embed_elapsed_ms += (time.perf_counter() - embed_start) * 1000
-            _assign_chunk_embeddings(
-                chunks=embed_chunks,
-                vectors_raw=vectors,
-            )
-
-            upsert_start = time.perf_counter()
-            await asyncio.to_thread(
-                upsert_milvus,
-                user_id,
-                embed_chunks,
-            )
-            upsert_elapsed_ms += (time.perf_counter() - upsert_start) * 1000
+            embed_ms, upsert_ms = await _embed_and_upsert_batch(tail_chunks, tail_texts)
+            embed_elapsed_ms += embed_ms
+            upsert_elapsed_ms += upsert_ms
     set_stage_metrics(
         chunks=chunk_count,
         batches=batch_count,
