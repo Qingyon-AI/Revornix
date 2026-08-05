@@ -372,3 +372,25 @@ class SectionUpdateRequest(BaseModel):
     auto_illustration: bool | None = None
     process_task_trigger_type: int | None = None
     process_task_trigger_scheduler: str | None = None
+
+
+# 以下两个来自 celery-worker 侧 —— 两份 schemas 合并到 shared 时并入。
+# section_ppt_workflow 用它们承接模型返回的幻灯片计划（结构化输出的 schema）。
+
+class PptSlidePlan(BaseModel):
+    id: str
+    title: str
+    summary: str
+    prompt: str  # image-generation prompt (mapped from image_prompt in LLM output)
+    # Enriched script fields (populated when using the new script prompt)
+    slide_type: str | None = None
+    key_points: list[str] = Field(default_factory=list)
+    speaker_notes: str | None = None
+    layout: str | None = None
+
+
+class PptPlanResult(BaseModel):
+    title: str | None = None
+    subtitle: str | None = None
+    theme_prompt: str | None = None
+    slides: list[PptSlidePlan] = Field(default_factory=list)

@@ -226,3 +226,24 @@ class BillingAuditIssue(BaseModel):
 
 class BillingAuditResponse(BaseModel):
     items: list[BillingAuditIssue]
+
+
+# 来自 celery-worker 侧。注意它带 name_zh / description_zh，而 api 侧的
+# EngineInfo 没有 —— 合并时保留 worker 的这个类型，没有把字段硬塞进 EngineInfo，
+# 因为那会改变 api 已有响应的形状。
+
+class UserEngineInfo(BaseModel):
+    id: int
+    name: str
+    name_zh: str
+    description: str | None = None
+    description_zh: str | None = None
+    enable: bool | None = None
+    config_json: str | None = None
+    create_time: datetime
+    update_time: datetime | None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="ignore",
+    )

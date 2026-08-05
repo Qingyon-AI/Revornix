@@ -119,9 +119,6 @@ prompts/podcast_dialogue.py
 prompts/section_ppt.py
 
 # ---- protocol/ —— 协议 / 接口定义 (3) ----
-protocol/engine.py
-protocol/notification_tool.py
-protocol/remote_file_service.py
 
 # ---- config/ —— 配置读取 (2) ----
 
