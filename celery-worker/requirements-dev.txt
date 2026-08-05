@@ -15,3 +15,6 @@ pytest-asyncio==1.4.0
 # 上下文管理器语义，伪造出来的东西一旦与真实 API 漂移，测试就会开始骗人。
 # 纯 python，不到 1 MB。
 opentelemetry-api==1.39.0
+# 同理装真包：工作流里有 pydantic 模型（结构化输出的 schema），伪造成占位符等于
+# 把校验行为一起伪造掉 —— 被测代码的行为就不是真的了。
+pydantic==2.12.3

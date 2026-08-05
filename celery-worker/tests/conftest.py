@@ -186,12 +186,25 @@ _install_lenient("sqlalchemy")
 
 # --- 真正的外部系统 ---
 _install("crud")
-_install("common.document_guard", ensure_document_active=_unavailable("ensure_document_active"))
+
+
+class _DocumentDeletedError(Exception):
+    """真实实现里是个普通异常类。用例要能 raise/except 它，所以不能是占位符。"""
+
+
+_install(
+    "common.document_guard",
+    ensure_document_active=_unavailable("ensure_document_active"),
+    DocumentDeletedError=_DocumentDeletedError,
+)
 
 _install("data")
 _install(
     "data.common",
     stream_chunk_document=_unavailable("stream_chunk_document"),
+    build_sampled_chunk_indexes=_unavailable("build_sampled_chunk_indexes"),
+    ensure_document_chunk_snapshot=_unavailable("ensure_document_chunk_snapshot"),
+    get_document_markdown_length=_unavailable("get_document_markdown_length"),
     get_extract_llm_client=_unavailable("get_extract_llm_client"),
     close_extract_llm_client=_unavailable("close_extract_llm_client"),
     extract_entities_relations=_unavailable("extract_entities_relations"),
@@ -221,6 +234,7 @@ _install(
     upsert_relations_neo4j=_unavailable("upsert_relations_neo4j"),
 )
 _install("data.neo4j.search", get_entities_by_text_and_type=_unavailable("get_entities_by_text_and_type"))
+_install("data.neo4j.base", async_neo4j_driver=_unavailable("async_neo4j_driver"))
 _install("data.sql")
 _install("data.sql.base", Base=_Placeholder, async_session_context=_unavailable("async_session_context"))
 
@@ -231,6 +245,12 @@ _install("engine.embedding.factory", get_embedding_engine=_unavailable("get_embe
 # 模型服务的代理。真实实现要连数据库取用户模型配置。
 _install("proxy")
 _install("proxy.ai_model_proxy", AIModelProxy=_Placeholder)
+_install("proxy.file_system_proxy", FileSystemProxy=_Placeholder)
+_install("proxy.engine_proxy", EngineProxy=_Placeholder)
+
+# 打标引擎：真实实现要调模型。
+_install("engine.tag")
+_install("engine.tag.llm_document", LLMDocumentTagEngine=_Placeholder)
 
 # common.ai 是模型调用的入口（抽取、摘要、归并），属于外部边界。
 _install(
@@ -238,4 +258,7 @@ _install(
     SummaryResultWithTitleAndDescription=_Placeholder,
     reducer_summary=_unavailable("reducer_summary"),
     summary_content=_unavailable("summary_content"),
+    make_section_markdown=_unavailable("make_section_markdown"),
+    build_structured_output_language_instruction=_unavailable("build_structured_output_language_instruction"),
+    _get_user_ai_interaction_language=_unavailable("_get_user_ai_interaction_language"),
 )
