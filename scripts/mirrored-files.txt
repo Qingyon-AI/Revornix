@@ -71,6 +71,7 @@ engine/video_plugins/youtube_auth.py
 # ---- common/ —— 公共工具 (12) ----
 common/__init__.py
 common/celery/__init__.py
+common/document_guard.py
 common/embedding_utils.py
 common/engine_concurrency.py
 common/env.py
