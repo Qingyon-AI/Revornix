@@ -162,6 +162,14 @@ python -m data.milvus.create
 > 組み込みデータの投入を自動で行うため、新規インストールもアップグレードも
 > サービスを起動するだけで済みます。
 
+> **コンテナイメージ**：各サービスに Dockerfile があります。ビルドコンテキストは
+> サービスディレクトリではなく**リポジトリルート**を指定してください —— `api` と
+> `celery-worker` は同階層の `shared/` パッケージを必要とします：
+>
+> ```shell
+> docker build -f api/Dockerfile -t revornix/api .
+> ```
+
 ### 5) API サービスを起動
 
 ```shell

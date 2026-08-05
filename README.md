@@ -162,6 +162,14 @@ python -m data.milvus.create
 > seeds built-in data on every startup, so a fresh install and an upgrade both
 > need nothing but starting the service.
 
+> **Container images.** Every service has a Dockerfile. Build from the **repo
+> root**, not the service directory — `api` and `celery-worker` need the sibling
+> `shared/` package:
+>
+> ```shell
+> docker build -f api/Dockerfile -t revornix/api .
+> ```
+
 ### 5) Run API service
 
 ```shell
