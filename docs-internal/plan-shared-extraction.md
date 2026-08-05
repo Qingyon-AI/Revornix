@@ -425,3 +425,53 @@ api 侧不受影响：它没有 `workflow/` 目录，也不用 timing。
 在环解开之前，硬搬任何一个环内的层都会把整个环一起拖进 shared —— 那不是提取
 共享代码，那是把两个服务合成一个。**这正是最初那份分析的直觉是对的地方，
 虽然它给的理由（"77 个服务专属文件"）是错的。**
+
+---
+
+## 执行结果：9 层已搬，7 层卡在环里
+
+按"依赖方向而非重复程度"的顺序推进，结果如下。
+
+### 已进入 shared/
+
+| 层 | 文件 | 合并方式 |
+| --- | ---: | --- |
+| `enums` | 13 | 早先已搬 |
+| `config` | 11 | api 超集；`sentry.py` 取两侧并集 |
+| `protocol` | 7 | api 超集（worker 那份缺 `category`、缺 `render(params)`，是陈旧副本） |
+| `schemas` | 18 | api 超集 **+ worker 独有的 4 个类**（PptSlidePlan/PptPlanResult/NotificationTriggerScheduler/UserEngineInfo） |
+| `custom_types` | 2 | 两侧仅空白差异 |
+| `models` | 13 | api 超集（worker 缺 access_request、mcp） |
+| `prompts` | 14 | 提示词文本逐字相同，差异全在 `return f"""` vs `prompt = f"""` |
+| `crud` | 12 | api 超集 **+ worker 独有的 3 个函数**；另有 5 个零调用的同步变体直接弃用 |
+| `encryption` | 1 | 由 `common/encrypt.py` 提出，零一方依赖 |
+
+**两侧同路径文件 194 → 129，镜像清单 98 → 84。**
+
+### 解掉的三条环边
+
+搬得动的前提是先断边，而三条边都是**文件放错了层**：
+
+| 原位置 | 问题 | 归位到 |
+| --- | --- | --- |
+| `workflow/timing.py` | 只有 OTel span 与日志，却让 data、notification 反向依赖 worker 入口层 | `common/timing.py` |
+| `data/sql/base.py::Base` | declarative Base 是**模型**概念，却让 10 个模型文件依赖数据访问层 | `models/base.py` |
+| `common/encrypt.py` | 零一方依赖，却是 crud 依赖 common 的**唯一**理由 | `shared/encryption.py` |
+
+强连通分量：**10 层 → 7 层**，`workflow`、`models`、`prompts`、`crud` 依次脱离。
+
+### 剩下的 7 层：需要拆文件，不是搬文件
+
+```
+{base_implement, common, data, engine, file, notification, proxy}
+```
+
+最细的边仍然只有一处引用，但性质变了。例如 `base_implement` 的三条边全来自两个
+文件：`image_generate_engine_base.py` 344 行里，抽象基类和一个**调 LLM 的具体
+方法**（`plan_images_with_llm`）混在一起，后者才是拉进 crud/proxy/data 的原因。
+
+**搬文件不改行为，拆文件会。** 而 `router/` 22,639 行至今零测试。在这个覆盖率下
+拆分实现，出问题只能靠线上发现 —— 与前面反复讲的是同一条理由。
+
+所以下一步不是继续拆，而是：**先给 api 侧建立集成覆盖**（`tests_integration/`
+的替身层已经建好，api 侧照搬即可），再动这 7 层。
