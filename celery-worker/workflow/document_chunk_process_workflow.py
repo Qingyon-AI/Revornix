@@ -20,6 +20,7 @@ from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from common.task_detail import format_task_error
 from workflow.stages import record_failure_safely
+from workflow.streaming import BatchAccumulator, OrderedResultBuffer
 from data.common import (
     close_extract_llm_client,
     extract_entities_relations,
@@ -436,8 +437,12 @@ async def _process_document_chunks(
     relations: list[RelationInfo] = []
     existing_entities_index: dict[tuple[str, str], list[dict]] = {}
     final_summary_info: SummaryResultWithTitleAndDescription | None = None
-    chunk_upsert_batch: list[ChunkInfo] = []
-    summary_reduce_buffer: list[tuple[str, list[EntityInfo], list[RelationInfo]]] = []
+    chunk_upsert_buffer: BatchAccumulator[ChunkInfo] = BatchAccumulator(
+        CHUNK_UPSERT_BATCH_SIZE
+    )
+    summary_reduce_buffer: BatchAccumulator[
+        tuple[str, list[EntityInfo], list[RelationInfo]]
+    ] = BatchAccumulator(SUMMARY_REDUCE_BATCH_SIZE)
     preprocess_semaphore = asyncio.Semaphore(CHUNK_PREPROCESS_CONCURRENCY)
     extract_semaphore = asyncio.Semaphore(CHUNK_EXTRACT_CONCURRENCY)
     summary_semaphore = (
@@ -446,8 +451,9 @@ async def _process_document_chunks(
         else None
     )
     pending_tasks: set[asyncio.Task[ChunkPreprocessResult]] = set()
-    ready_results: dict[int, ChunkPreprocessResult] = {}
-    next_chunk_idx = 0
+    # 预处理是并发的（谁先算完谁先回来），但消费必须按分块下标有序 ——
+    # 摘要是逐段归并的，顺序错了结果照样通顺、只是内容不对。
+    ordered_results: OrderedResultBuffer[ChunkPreprocessResult] = OrderedResultBuffer()
     processed_chunks = 0
     extracted_entities_total = 0
     extracted_relations_total = 0
@@ -507,28 +513,27 @@ async def _process_document_chunks(
         extracted_entities_total += len(sub_entities)
         extracted_relations_total += len(sub_relations)
 
-        chunk_upsert_batch.append(chunk_info)
-        if len(chunk_upsert_batch) >= CHUNK_UPSERT_BATCH_SIZE:
+        upsert_batch = chunk_upsert_buffer.add(chunk_info)
+        if upsert_batch is not None:
             flush_metrics = await _flush_chunk_upserts(
                 user_id=user_id,
-                chunks_info=chunk_upsert_batch,
+                chunks_info=upsert_batch,
             )
             upsert_batches += 1
             upsert_milvus_elapsed_ms += flush_metrics.milvus_elapsed_ms
             upsert_neo4j_elapsed_ms += flush_metrics.neo4j_elapsed_ms
-            chunk_upsert_batch.clear()
 
         if not auto_summary:
             return
 
-        summary_reduce_buffer.append(
+        reduce_items = summary_reduce_buffer.add(
             (
                 chunk_info.summary or "",
                 sub_entities,
                 sub_relations,
             )
         )
-        if len(summary_reduce_buffer) < SUMMARY_REDUCE_BATCH_SIZE:
+        if reduce_items is None:
             return
 
         summary_reduce_start = time.perf_counter()
@@ -536,13 +541,12 @@ async def _process_document_chunks(
             user_id=user_id,
             model_id=model_id,
             current_summary_info=final_summary_info,
-            reduce_items=summary_reduce_buffer,
+            reduce_items=reduce_items,
             summary_model_configuration=summary_model_configuration,
             summary_client=summary_client,
         )
         summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
         summary_reduce_batches += 1
-        summary_reduce_buffer.clear()
 
     # 4) 任务进行
     try:
@@ -592,11 +596,10 @@ async def _process_document_chunks(
                 )
                 for done_task in done:
                     result = done_task.result()
-                    ready_results[result.chunk_info.idx] = result
+                    ordered_results.add(result.chunk_info.idx, result)
 
-                while next_chunk_idx in ready_results:
-                    await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
-                    next_chunk_idx += 1
+                for result in ordered_results.take_ready():
+                    await _consume_preprocessed_result(result)
 
             while pending_tasks:
                 done, pending_tasks = await asyncio.wait(
@@ -605,39 +608,38 @@ async def _process_document_chunks(
                 )
                 for done_task in done:
                     result = done_task.result()
-                    ready_results[result.chunk_info.idx] = result
+                    ordered_results.add(result.chunk_info.idx, result)
 
-                while next_chunk_idx in ready_results:
-                    await _consume_preprocessed_result(ready_results.pop(next_chunk_idx))
-                    next_chunk_idx += 1
+                for result in ordered_results.take_ready():
+                    await _consume_preprocessed_result(result)
 
-            if ready_results:
-                for idx in sorted(ready_results):
-                    await _consume_preprocessed_result(ready_results[idx])
+            # 下标连续时这里已经空了；非空说明上游跳号，按序补完而不是丢掉
+            for result in ordered_results.drain_remaining():
+                await _consume_preprocessed_result(result)
 
-            if chunk_upsert_batch:
+            tail_chunks = chunk_upsert_buffer.flush()
+            if tail_chunks:
                 flush_metrics = await _flush_chunk_upserts(
                     user_id=user_id,
-                    chunks_info=chunk_upsert_batch,
+                    chunks_info=tail_chunks,
                 )
                 upsert_batches += 1
                 upsert_milvus_elapsed_ms += flush_metrics.milvus_elapsed_ms
                 upsert_neo4j_elapsed_ms += flush_metrics.neo4j_elapsed_ms
-                chunk_upsert_batch.clear()
 
-            if auto_summary and summary_reduce_buffer:
+            tail_reduce_items = summary_reduce_buffer.flush()
+            if auto_summary and tail_reduce_items:
                 summary_reduce_start = time.perf_counter()
                 final_summary_info = await _reduce_summary_batch(
                     user_id=user_id,
                     model_id=model_id,
                     current_summary_info=final_summary_info,
-                    reduce_items=summary_reduce_buffer,
+                    reduce_items=tail_reduce_items,
                     summary_model_configuration=summary_model_configuration,
                     summary_client=summary_client,
                 )
                 summary_reduce_elapsed_ms += (time.perf_counter() - summary_reduce_start) * 1000
                 summary_reduce_batches += 1
-                summary_reduce_buffer.clear()
 
         pipeline_elapsed_ms = (time.perf_counter() - pipeline_start) * 1000
         throughput = (
