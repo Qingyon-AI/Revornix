@@ -59,7 +59,7 @@ _install_stub(
     EngineProvided=_EngineProvided,
 )
 
-_MODULE_PATH = Path(__file__).resolve().parents[1] / "engine/image_generate/openai_image.py"
+_MODULE_PATH = Path(__file__).resolve().parents[2] / "app/engine/image_generate/openai_image.py"
 _SPEC = importlib.util.spec_from_file_location("openai_image_under_test", _MODULE_PATH)
 assert _SPEC is not None and _SPEC.loader is not None
 openai_image = importlib.util.module_from_spec(_SPEC)

@@ -1,0 +1,753 @@
+from dotenv import find_dotenv, load_dotenv
+# usecwd=True 很关键：load_dotenv 默认从**调用方文件所在目录**向上找 .env，
+# 而这个模块搬进 app/ 之后，那条路径通向仓库根 —— 那里恰好也有一个 .env，
+# 于是它会**静默读到另一份配置**（比找不到更糟）。两个服务都从各自目录启动，
+# 按工作目录找才是原来的语义。
+load_dotenv(find_dotenv(usecwd=True), override=True)
+
+import asyncio
+import os
+import threading
+from datetime import datetime, timezone
+
+from celery import Celery
+from celery.signals import (
+    task_failure,
+    task_postrun,
+    task_prerun,
+    task_retry,
+    worker_init,
+    worker_process_init,
+    worker_ready,
+)
+
+from common.env import is_env_enabled
+from common.logger import exception_logger, info_logger, log_event
+from common.tracing import sentry_before_send_attach_otel, setup_worker_tracing
+from config.redis import REDIS_PORT, REDIS_URL
+from config.sentry import WORKER_SENTRY_DSN, WORKER_SENTRY_ENABLE
+from data.sql.schema_guard import run_schema_guard
+
+
+celery_app = Celery(
+    "worker",
+    broker=f"redis://{REDIS_URL}:{REDIS_PORT}/0",
+    backend=f"redis://{REDIS_URL}:{REDIS_PORT}/0",
+)
+
+#: Redis 认为一个任务"执行超时、该重新投递"的时限。必须**大于最慢任务的执行时间** ——
+#: 设小了会让一个还在跑的大文档被另一个 worker 同时再跑一遍，那是真正的并发重复执行，
+#: 比丢任务更糟。默认 6 小时按大文档图谱构建的上限留足余量，可用环境变量按实测调整。
+CELERY_VISIBILITY_TIMEOUT = int(os.environ.get("CELERY_VISIBILITY_TIMEOUT", 6 * 60 * 60))
+
+celery_app.conf.update(
+    # 默认是任务**一被取走就 ack**，于是 worker 在执行中被终止（OOM、部署重启、kill）
+    # 时任务永久消失：不重跑，也没机会写失败状态，文档就永远停在"处理中"。
+    # 改成执行完成后才 ack，代价是任务可能被执行两次 —— 而这是安全的，因为写入侧
+    # 本来就幂等：Milvus 走 upsert、Neo4j 全是 MERGE，主键由内容 sha256 派生
+    # （make_chunk_id / make_entity_id），重跑命中同一批键而不是堆出新记录。
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    broker_transport_options={"visibility_timeout": CELERY_VISIBILITY_TIMEOUT},
+)
+
+
+_sentry_initialized_pid: int | None = None
+
+
+def _initialize_worker_sentry() -> None:
+    global _sentry_initialized_pid
+
+    current_pid = os.getpid()
+    if _sentry_initialized_pid == current_pid:
+        return
+
+    if not is_env_enabled(WORKER_SENTRY_ENABLE):
+        return
+
+    if not WORKER_SENTRY_DSN:
+        info_logger.warning(
+            "WORKER_SENTRY_ENABLE is enabled but WORKER_SENTRY_DSN is empty; worker sentry init skipped."
+        )
+        return
+
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.celery import CeleryIntegration
+
+        # Sentry handles ERRORS; tracing/performance lives in OTel
+        # (see common/tracing.py + Jaeger). traces_sample_rate=0 keeps the
+        # two SDKs from double-instrumenting the same code paths.
+        sentry_sdk.init(
+            dsn=WORKER_SENTRY_DSN,
+            send_default_pii=True,
+            traces_sample_rate=0.0,
+            profiles_sample_rate=0.0,
+            integrations=[CeleryIntegration()],
+            before_send=sentry_before_send_attach_otel,
+        )
+        _sentry_initialized_pid = current_pid
+        info_logger.info(f"Worker sentry initialized for pid={current_pid}")
+    except Exception as e:
+        exception_logger.error(f"Failed to initialize worker sentry: {e}")
+
+
+def _run(coro):
+    """Drive ``coro`` on a fresh event loop and clean up per-loop resources.
+
+    Each celery task gets its own loop via ``asyncio.run``. Resources whose
+    lifetime is tied to the loop (notably the neo4j async driver, which binds
+    to the loop that created it) are closed inside that same loop here, in a
+    ``finally`` block, so they never leak across loops.
+    """
+    async def _wrapped():
+        try:
+            return await coro
+        finally:
+            # Imported lazily to avoid a circular import (data.neo4j.base
+            # depends on common.logger which is in the same package tree).
+            try:
+                from data.neo4j.base import close_neo4j_driver_for_current_loop
+                await close_neo4j_driver_for_current_loop()
+            except Exception as cleanup_exc:  # pragma: no cover — defensive
+                exception_logger.warning(
+                    f"neo4j per-loop cleanup failed: {cleanup_exc}"
+                )
+
+    return asyncio.run(_wrapped())
+
+
+def _start_background_coroutine(target, *, name: str) -> None:
+    def _runner() -> None:
+        try:
+            _run(target())
+        except Exception as e:
+            exception_logger.error(f"{name} failed on worker startup: {e}")
+
+    threading.Thread(
+        target=_runner,
+        name=name,
+        daemon=True,
+    ).start()
+
+
+_initialize_worker_sentry()
+setup_worker_tracing()
+
+
+@worker_init.connect
+def run_schema_guard_when_worker_init(**kwargs):
+    # 在主进程里跑一次（早于 fork、早于任何任务），worker 先于 API 起来时也不会
+    # 撞上缺列。幂等，跟 API 侧跑的是同一份。
+    run_schema_guard()
+
+
+@worker_process_init.connect
+def initialize_sentry_when_worker_process_init(**kwargs):
+    _initialize_worker_sentry()
+    # Re-initialise OTel inside each worker process so spans flow through the
+    # right TracerProvider after fork. Idempotent per pid.
+    setup_worker_tracing()
+
+
+_task_start_times: dict[str, float] = {}
+
+
+@task_prerun.connect
+def _log_task_prerun(sender=None, task_id=None, task=None, args=None, kwargs=None, **_):
+    import time
+    if task_id:
+        _task_start_times[task_id] = time.perf_counter()
+    log_event(
+        info_logger,
+        "celery_task_started",
+        celery_task_id=task_id,
+        celery_task_name=getattr(task, "name", None) or (sender.name if sender else None),
+    )
+
+
+@task_postrun.connect
+def _log_task_postrun(
+    sender=None,
+    task_id=None,
+    task=None,
+    retval=None,
+    state=None,
+    **_,
+):
+    import time
+    duration_ms = None
+    started = _task_start_times.pop(task_id, None) if task_id else None
+    if started is not None:
+        duration_ms = round((time.perf_counter() - started) * 1000, 2)
+    log_event(
+        info_logger,
+        "celery_task_finished",
+        celery_task_id=task_id,
+        celery_task_name=getattr(task, "name", None) or (sender.name if sender else None),
+        state=state,
+        duration_ms=duration_ms,
+    )
+
+
+@task_failure.connect
+def _log_task_failure(
+    sender=None,
+    task_id=None,
+    exception=None,
+    traceback=None,
+    einfo=None,
+    **_,
+):
+    log_event(
+        exception_logger,
+        "celery_task_failed",
+        level=40,  # logging.ERROR
+        celery_task_id=task_id,
+        celery_task_name=sender.name if sender else None,
+        error=repr(exception) if exception is not None else None,
+    )
+
+
+@task_retry.connect
+def _log_task_retry(sender=None, request=None, reason=None, einfo=None, **_):
+    log_event(
+        info_logger,
+        "celery_task_retry",
+        level=30,  # logging.WARNING
+        celery_task_id=getattr(request, "id", None) if request else None,
+        celery_task_name=sender.name if sender else None,
+        reason=repr(reason) if reason is not None else None,
+    )
+
+
+@worker_ready.connect
+def initialize_bilibili_auth_when_worker_ready(**kwargs):
+    from engine.video_plugins.bilibili_auth import initialize_bilibili_auth_on_startup
+    from engine.video_plugins.youtube_auth import initialize_youtube_auth_on_startup
+
+    _start_background_coroutine(
+        initialize_bilibili_auth_on_startup,
+        name="worker-bilibili-auth-init",
+    )
+    _start_background_coroutine(
+        initialize_youtube_auth_on_startup,
+        name="worker-youtube-auth-init",
+    )
+
+
+@celery_app.task
+def start_process_document(
+    document_id: int,
+    user_id: int,
+    auto_summary: bool = False,
+    auto_podcast: bool = False,
+    auto_transcribe: bool = False,
+    auto_tag: bool = False,
+    override: dict | None = None,
+):
+    from workflow.document_process_workflow import (
+        run_document_process_workflow,
+        prepare_progressive_followup_tasks,
+        enqueue_progressive_followups,
+    )
+
+    # The workflow raises on failure/cancel (status already recorded inside), so
+    # reaching here means the core processing succeeded. Orchestration owns what
+    # happens next: optional follow-ups and the completion notification.
+    final_state = _run(
+        run_document_process_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            auto_transcribe=auto_transcribe,
+            auto_tag=auto_tag,
+            override=override,
+        )
+    )
+
+    if final_state and final_state.get("use_progressive_followups"):
+        # Large document: the remaining embedding + optional follow-ups run as a
+        # chord whose finalize callback fires the completion notification once the
+        # core embedding succeeds (optional follow-ups can't block it).
+        auto_graph = bool(final_state.get("progressive_auto_graph", False))
+        _run(
+            prepare_progressive_followup_tasks(
+                document_id=document_id,
+                user_id=user_id,
+                auto_summary=auto_summary,
+                auto_podcast=auto_podcast,
+                auto_graph=auto_graph,
+            )
+        )
+        enqueue_progressive_followups(
+            document_id=document_id,
+            user_id=user_id,
+            auto_summary=auto_summary,
+            auto_podcast=auto_podcast,
+            auto_graph=auto_graph,
+        )
+    else:
+        # Small document: everything ran inline, so the pipeline is fully done.
+        from notification.emit import emit_document_process_completed
+
+        _run(emit_document_process_completed(document_id=document_id))
+
+
+@celery_app.task
+def start_process_section(
+    section_id: int,
+    user_id: int,
+    auto_podcast: bool = False,
+    force_full_rebuild: bool = False,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
+    podcast_engine_id: int | None = None,
+):
+    import crud
+    from data.sql.base import async_session_context
+    from enums.section import SectionPodcastStatus, SectionProcessStatus
+    from workflow.section_process_workflow import run_section_process_workflow
+
+    async def _prepare_section_podcast_task() -> bool:
+        async with async_session_context() as db:
+            now = datetime.now(timezone.utc)
+            db_section_process_task = await crud.task.get_section_process_task_by_section_id_async(
+                db=db,
+                section_id=section_id,
+            )
+            if (
+                db_section_process_task is not None
+                and db_section_process_task.status == SectionProcessStatus.CANCELLED
+            ):
+                return False
+            db_podcast_task = await crud.task.get_section_podcast_task_by_section_id_async(
+                db=db,
+                section_id=section_id,
+            )
+            if db_podcast_task is None:
+                await crud.task.create_section_podcast_task_async(
+                    db=db,
+                    user_id=user_id,
+                    section_id=section_id,
+                    status=SectionPodcastStatus.WAIT_TO,
+                )
+            else:
+                db_podcast_task.status = SectionPodcastStatus.WAIT_TO
+                db_podcast_task.podcast_file_name = None
+                db_podcast_task.update_time = now
+            await db.commit()
+            return True
+
+    # The workflow raises on failure/cancel (status already recorded inside), so
+    # reaching here means the core section processing succeeded. Orchestration
+    # owns what happens next: the optional podcast and the completion notification.
+    _run(
+        run_section_process_workflow(
+            section_id=section_id,
+            user_id=user_id,
+            auto_podcast=auto_podcast,
+            force_full_rebuild=force_full_rebuild,
+            model_id=model_id,
+            image_engine_id=image_engine_id,
+            podcast_engine_id=podcast_engine_id,
+        )
+    )
+    if auto_podcast and _run(_prepare_section_podcast_task()):
+        # Run the podcast, then fire the completion notification from a finalize
+        # task. The podcast task swallows ordinary failures (so the chain still
+        # reaches finalize) but re-raises on cancellation (so the chain stops and
+        # no completion is announced).
+        from celery import chain
+
+        chain(
+            run_section_podcast_followup.si(section_id, user_id, podcast_engine_id),
+            start_finalize_section_process.si(section_id),
+        ).apply_async()
+    else:
+        from notification.emit import emit_section_process_completed
+
+        _run(emit_section_process_completed(section_id))
+
+
+@celery_app.task
+def finalize_section_images(
+    section_id: int,
+    user_id: int,
+    md_file_name: str,
+    markdown_with_markers: str,
+    image_plans_payload: list[dict],
+    engine_id: int,
+):
+    from workflow.section_process_workflow import run_finalize_section_images
+
+    _run(
+        run_finalize_section_images(
+            section_id=section_id,
+            user_id=user_id,
+            md_file_name=md_file_name,
+            markdown_with_markers=markdown_with_markers,
+            image_plans_payload=image_plans_payload,
+            engine_id=engine_id,
+        )
+    )
+
+
+@celery_app.task
+def start_process_document_embedding(
+    document_id: int,
+    user_id: int,
+    start_chunk_idx: int = 0,
+    chunk_snapshot_path: str | None = None,
+):
+    from workflow.document_embedding_workflow import run_document_embedding_workflow
+
+    _run(
+        run_document_embedding_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            start_chunk_idx=start_chunk_idx,
+            chunk_snapshot_path=chunk_snapshot_path,
+        )
+    )
+
+
+@celery_app.task
+def start_process_document_graph(
+    document_id: int,
+    user_id: int,
+    chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
+):
+    from workflow.document_graph_task_workflow import run_document_graph_task_workflow
+
+    _run(
+        run_document_graph_task_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            chunk_snapshot_path=chunk_snapshot_path,
+            model_id=model_id,
+        )
+    )
+
+
+@celery_app.task
+def start_process_document_summarize(
+    document_id: int,
+    user_id: int,
+    chunk_snapshot_path: str | None = None,
+    model_id: int | None = None,
+):
+    from workflow.document_summarize_workflow import run_document_summarize_workflow
+
+    _run(
+        run_document_summarize_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            chunk_snapshot_path=chunk_snapshot_path,
+            model_id=model_id,
+        )
+    )
+
+@celery_app.task
+def start_process_document_transcribe(
+    document_id: int,
+    user_id: int,
+    engine_id: int | None = None,
+):
+    from workflow.document_transcribe_workflow import run_document_transcribe_workflow
+
+    _run(
+        run_document_transcribe_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            engine_id=engine_id,
+        )
+    )
+
+@celery_app.task
+def start_process_document_podcast(
+    document_id: int,
+    user_id: int,
+    engine_id: int | None = None,
+):
+    from workflow.document_podcast_workflow import run_document_podcast_workflow
+
+    _run(
+        run_document_podcast_workflow(
+            document_id=document_id,
+            user_id=user_id,
+            engine_id=engine_id,
+        )
+    )
+
+
+@celery_app.task
+def start_prepare_document_chunk_snapshot(
+    document_id: int,
+    user_id: int,
+):
+    from data.common import ensure_document_chunk_snapshot
+
+    try:
+        _run(
+            ensure_document_chunk_snapshot(
+                doc_id=document_id,
+                user_id=user_id,
+            )
+        )
+    except Exception as e:
+        info_logger.warning(
+            f"Document chunk snapshot preparation failed, fallback to raw chunk stream. "
+            f"document_id={document_id}, user_id={user_id}, error={e}"
+        )
+
+
+@celery_app.task
+def start_finalize_document_process(
+    document_id: int,
+):
+    """Chord success callback fired after the core embedding succeeds and every
+    optional follow-up has settled; sends the "document process completed"
+    notification so it is never premature."""
+    from notification.emit import emit_document_process_completed
+
+    _run(emit_document_process_completed(document_id=document_id))
+
+
+@celery_app.task
+def run_progressive_followup(
+    kind: str,
+    document_id: int,
+    user_id: int,
+):
+    """Run a single optional progressive follow-up (graph/summary/podcast) and
+    swallow its exception.
+
+    The underlying workflow already records FAILED on its own task row before
+    raising, so swallowing here loses no information. It keeps an optional
+    follow-up's failure from failing the enclosing chord — so it never blocks
+    the completion notification (only the core embedding can)."""
+    try:
+        if kind == "graph":
+            from workflow.document_graph_task_workflow import run_document_graph_task_workflow
+
+            _run(
+                run_document_graph_task_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        elif kind == "summarize":
+            from workflow.document_summarize_workflow import run_document_summarize_workflow
+
+            _run(
+                run_document_summarize_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        elif kind == "podcast":
+            from workflow.document_podcast_workflow import run_document_podcast_workflow
+
+            _run(
+                run_document_podcast_workflow(
+                    document_id=document_id,
+                    user_id=user_id,
+                )
+            )
+        else:
+            exception_logger.error(f"Unknown progressive follow-up kind: {kind}")
+    except Exception as e:
+        info_logger.warning(
+            f"Progressive follow-up '{kind}' failed (failure recorded on its own "
+            f"task status): document_id={document_id}, user_id={user_id}, error={e}"
+        )
+
+
+@celery_app.task
+def update_document_process_status(
+    document_id: int,
+    status: int,
+):
+    from workflow.document_process_status_workflow import run_document_process_status_workflow
+
+    _run(
+        run_document_process_status_workflow(
+            document_id=document_id,
+            status=status,
+        )
+    )
+
+
+@celery_app.task
+def start_process_section_podcast(
+    section_id: int,
+    user_id: int,
+    engine_id: int | None = None,
+):
+    """Generate the section podcast (on-demand entry point used by the API).
+
+    Plain task semantics: it propagates failures so the celery task is marked
+    FAILED, matching what the on-demand "generate podcast" endpoint expects."""
+    from workflow.section_podcast_workflow import run_section_podcast_workflow
+
+    _run(
+        run_section_podcast_workflow(
+            section_id=section_id,
+            user_id=user_id,
+            engine_id=engine_id,
+        )
+    )
+
+
+@celery_app.task
+def run_section_podcast_followup(
+    section_id: int,
+    user_id: int,
+    engine_id: int | None = None,
+):
+    """Section podcast run as the auto follow-up of a section process flow.
+
+    Chained before ``start_finalize_section_process``: it swallows ordinary
+    failures so the chain still reaches finalize (the core section processing
+    already succeeded, and the podcast records its own FAILED status), but
+    re-raises on cancellation so the chain stops and no completion notification
+    is sent."""
+    from workflow.cancelled import WorkflowCancelledError
+    from workflow.section_podcast_workflow import run_section_podcast_workflow
+
+    try:
+        _run(
+            run_section_podcast_workflow(
+                section_id=section_id,
+                user_id=user_id,
+                engine_id=engine_id,
+            )
+        )
+    except WorkflowCancelledError:
+        raise
+    except Exception as e:
+        info_logger.warning(
+            f"Section podcast generation failed (recorded on its own task "
+            f"status): section_id={section_id}, user_id={user_id}, error={e}"
+        )
+
+
+@celery_app.task
+def start_finalize_section_process(
+    section_id: int,
+):
+    """Chain tail fired after the section's auto podcast has settled; sends the
+    "section process completed" notification so it is never premature."""
+    from notification.emit import emit_section_process_completed
+
+    _run(emit_section_process_completed(section_id))
+
+
+@celery_app.task
+def start_process_section_ppt(
+    section_id: int,
+    user_id: int,
+    model_id: int | None = None,
+    image_engine_id: int | None = None,
+):
+    from workflow.section_ppt_workflow import run_section_ppt_workflow
+
+    _run(
+        run_section_ppt_workflow(
+            section_id=section_id,
+            user_id=user_id,
+            model_id=model_id,
+            image_engine_id=image_engine_id,
+        )
+    )
+
+
+@celery_app.task
+def update_section_process_status(
+    section_id: int,
+    status: int,
+):
+    from workflow.section_process_status_workflow import run_section_process_status_workflow
+
+    _run(
+        run_section_process_status_workflow(
+            section_id=section_id,
+            status=status,
+        )
+    )
+
+
+@celery_app.task
+def start_trigger_user_notification_event(
+    user_id: int,
+    trigger_event_uuid: str,
+    params: dict | None = None,
+):
+    from notification.dispatch import run_notification_event_workflow
+
+    _run(
+        run_notification_event_workflow(
+            user_id=user_id,
+            trigger_event_uuid=trigger_event_uuid,
+            params=params,
+        )
+    )
+
+
+if __name__ == "__main__":
+    from workflow.section_process_workflow import run_section_process_workflow
+
+    _run(
+        run_section_process_workflow(
+            section_id=1,
+            user_id=1,
+            auto_podcast=True
+        )
+    )
+
+
+# 由 api 侧合并而来：路由在用户取消专栏处理时调它。
+# 注意任务名是按**模块路径**派生的（common.celery.app.*），所以这个模块的位置
+# 不能动 —— 一旦改名，队列里在途的任务与 api 发出的名字就全部失配。
+def revoke_task(
+    task_id: str | None,
+    *,
+    terminate: bool = True,
+    signal: str = "SIGTERM",
+) -> None:
+    if not task_id:
+        return
+    celery_app.control.revoke(
+        task_id,
+        terminate=terminate,
+        signal=signal,
+    )
+
+
+# api 侧的按名字发任务代理。worker 侧有真实任务定义，不需要它；
+# 但 api 侧某些路径仍按名字投递，保留。
+class TaskProxy:
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def s(self, *args, **kwargs):
+        return celery_app.signature(self.name, args=args, kwargs=kwargs)
+
+    def si(self, *args, **kwargs):
+        return celery_app.signature(self.name, args=args, kwargs=kwargs, immutable=True)
+
+    def delay(self, *args, **kwargs):
+        return celery_app.send_task(self.name, args=args, kwargs=kwargs)
+
+    def apply_async(self, args=None, kwargs=None, **options):
+        return celery_app.send_task(self.name, args=args or [], kwargs=kwargs or {}, **options)
+
+    def __call__(self, *args, **kwargs):
+        # 让它像函数一样被 APScheduler 调用
+        return self.delay(*args, **kwargs)
+
+def _task(name: str) -> TaskProxy:
+    return TaskProxy(name)

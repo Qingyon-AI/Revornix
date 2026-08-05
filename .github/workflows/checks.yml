@@ -14,15 +14,13 @@ concurrency:
 
 jobs:
   mirrored:
-    name: api 与 worker 的镜像文件一致
+    name: app 包与导入检查
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      # 两个服务共享一批代码，但此前没有任何东西会在「只改了一侧」时失败。
-      - run: python scripts/check_mirrored_files.py
 
       # 镜像检查只保证两侧**字节相同**，保证不了两侧**都能用** —— 一个文件在 api
       # 侧依赖的符号，worker 侧不一定有。这正是让 worker 起不来的那个缺陷的形态，
@@ -47,7 +45,7 @@ jobs:
       # 但能抓住语法错误和坏缩进 —— 这类问题此前要等任务真正跑起来才暴露。
       - name: 语法检查
         working-directory: celery-worker
-        run: python -m compileall -q workflow common crud models schemas notification
+        run: python -m compileall -q workflow
 
       # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
       # 渲染），因此只装 pytest 就能跑 —— 不必为了测试把整棵运行时依赖树拖进来。
