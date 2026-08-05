@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 import crud
 from data.sql.base import async_session_context
 from common.logger import exception_logger
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from common.timing import add_timed_node, ainvoke_with_timing
 
 
 class SectionProcessStatusState(TypedDict, total=False):

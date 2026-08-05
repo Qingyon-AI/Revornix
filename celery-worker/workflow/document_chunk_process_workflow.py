@@ -52,7 +52,7 @@ from enums.document import (
 )
 from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
-from workflow.timing import (
+from common.timing import (
     add_timed_node,
     ainvoke_with_timing,
     set_stage_metrics,

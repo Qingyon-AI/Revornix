@@ -15,7 +15,7 @@ from data.sql.base import async_session_context
 from enums.document import DocumentCategory, DocumentMdConvertStatus
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from common.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentConvertState(TypedDict, total=False):

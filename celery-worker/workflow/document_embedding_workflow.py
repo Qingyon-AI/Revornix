@@ -17,7 +17,7 @@ from engine.embedding.factory import get_embedding_engine
 from enums.document import DocumentEmbeddingStatus
 from workflow.cancelled import WorkflowCancelledError
 from workflow.streaming import ParallelBatchAccumulator
-from workflow.timing import (
+from common.timing import (
     add_timed_node,
     ainvoke_with_timing,
     set_stage_metrics,

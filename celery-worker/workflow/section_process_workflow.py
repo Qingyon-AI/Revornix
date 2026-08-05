@@ -33,7 +33,7 @@ from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics, timed_stage
+from common.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics, timed_stage
 
 
 class SectionProcessState(TypedDict, total=False):

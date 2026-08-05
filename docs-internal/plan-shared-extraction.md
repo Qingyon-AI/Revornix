@@ -354,3 +354,74 @@ api 长出了 `auth_epoch`，worker 的那份 `create_token` 没跟上，而**�
 > 重依赖（torch 两侧都有）、正则切函数体（假阳性）、以及这次的 grep 二进制匹配。
 > **共同点不是粗心，是"拿工具的输出当事实，而没有先确认那个工具在做什么"。**
 > 四次里有三次是抽查发现的，一次是数字对不上发现的 —— 抽查的性价比高得不成比例。
+
+---
+
+## 真正的障碍不是重复，是依赖环
+
+前面一直在算"两份拷贝差多少"，但那个问题的答案（72 → 4）反而说明合并不难。
+真正卡住提取的是另一件事，量了依赖图才看见。
+
+### 层依赖：只有三个叶子
+
+按**模块级** import 统计 14 个层之间的依赖（函数内的延迟 import 不算，那不构成
+加载期依赖）：
+
+| 层 | 依赖的其他层 |
+| --- | --- |
+| `schemas` / `protocol` / `config` | **（无）★ 叶子** |
+| `models` | data |
+| `crud` | common |
+| `prompts` | data, schemas |
+| `common` | config, data, prompts, protocol, proxy |
+| `data` | common, config, engine, prompts, protocol, proxy, schemas, workflow |
+| `proxy` / `engine` / `notification` / `base_implement` / `file` | 各依赖 6–8 层 |
+
+后面这批构成一个**强连通分量**：
+
+```
+{base_implement, common, data, engine, file, notification, prompts, proxy, workflow}  —— 9 层
+```
+
+**环里的层谁都不能单独抽出。** 这解释了为什么 `base_implement` 虽然两侧逐字节
+一致（8 个文件、100%），却搬不动 —— 它 import 了 common、crud、data、engine、
+prompts、proxy、schemas，几乎所有层。
+
+一致率高低根本不是排序依据，**依赖方向才是**。
+
+### workflow 在环里，这是个信号
+
+最不该出现在环里的是 `workflow` —— 那是 worker 的入口层，只该被别人依赖，
+不该反过来。查下去，把它拖进环的只有两条边，而且是同一个东西：
+
+```
+notification/dispatch.py:9  from workflow.timing import set_stage_metrics, timed_stage
+data/common.py:29           from workflow.timing import set_stage_metrics
+```
+
+`workflow/timing.py` 里只有 OTel span 与结构化日志，**与"工作流"毫无关系** ——
+它放错了地方。移到 `common/timing.py`（它本身只依赖标准库、OTel 和
+`common.logger`，不产生新环），两条边一起消失：
+
+| | 移动前 | 移动后 |
+| --- | --- | --- |
+| 强连通分量 | 9 层 | **8 层** |
+| workflow 被反向依赖 | 是 | **否** |
+
+api 侧不受影响：它没有 `workflow/` 目录，也不用 timing。
+
+### 接下来该怎么走
+
+顺序由依赖决定，不由重复程度决定：
+
+1. **先搬三个叶子**：`config`(11)、`schemas`(10)、`protocol`(7)。零一方依赖，
+   搬进 shared 不会拖进任何东西。其中 `config` 有 7 个文件只差排版，
+   归一即可；`schemas` 两侧 AST 全不同（api 是 HTTP 契约的超集），取 api 的。
+2. **再解环**。剩下 8 层的环要一条边一条边地拆，办法与 timing 这次相同：
+   找出"放错层"的文件并移到它真正属于的地方。`common ⇄ data` 是下一个目标
+   （两个方向都有模块级 import）。
+3. **环解开之后**，剩下的层按拓扑序搬，每层一个提交。
+
+在环解开之前，硬搬任何一个环内的层都会把整个环一起拖进 shared —— 那不是提取
+共享代码，那是把两个服务合成一个。**这正是最初那份分析的直觉是对的地方，
+虽然它给的理由（"77 个服务专属文件"）是错的。**

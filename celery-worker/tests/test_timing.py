@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from workflow import timing
+from common import timing
 
 
 class FakeSpan:

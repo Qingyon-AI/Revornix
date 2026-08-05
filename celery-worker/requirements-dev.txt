@@ -10,7 +10,7 @@ pytest==9.1.1
 # 阶段失败语义是 async 的；没有这个插件，async 用例会被当成普通函数收集，
 # 拿到一个没跑的 coroutine —— 表现为失败而不是跳过。
 pytest-asyncio==1.4.0
-# 节点体测试要真正导入 workflow/*，而它们都经 workflow/timing.py 用到 OTel。
+# 节点体测试要真正导入 workflow/*，而它们都经 common/timing.py 用到 OTel。
 # 这里装真包而不是伪造：要伪造的是 tracer、Span、Status、StatusCode 一整套
 # 上下文管理器语义，伪造出来的东西一旦与真实 API 漂移，测试就会开始骗人。
 # 纯 python，不到 1 MB。

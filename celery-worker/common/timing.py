@@ -1,6 +1,12 @@
-"""OpenTelemetry-backed timing helpers for celery-worker workflows.
+"""OpenTelemetry-backed timing helpers.
 
-The public API (``wrap_workflow_node``, ``add_timed_node``, ``timed_stage``,
+放在 ``common/`` 而不是 ``workflow/``：这里只有 span 与结构化日志，与"工作流"
+无关。它原本在 workflow 下，导致 ``data`` 和 ``notification`` 为了用它而在**模块
+层级**反向依赖 workflow —— 也就是共享层 import 了 worker 的入口层。那两条边正是
+把 workflow 拖进 9 层依赖环的原因，而依赖环是提取共享包的直接障碍。挪一个文件
+就断掉了两条。
+
+仍保留原有公开 API。The public API (``wrap_workflow_node``, ``add_timed_node``, ``timed_stage``,
 ``ainvoke_with_timing``) is preserved so existing call-sites keep compiling;
 the implementation has been rewritten to emit proper OTel spans instead of
 ``info_logger`` strings.

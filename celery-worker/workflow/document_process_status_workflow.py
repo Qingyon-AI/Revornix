@@ -7,7 +7,7 @@ import crud
 from data.sql.base import async_session_context
 from common.logger import exception_logger
 from common.document_guard import DocumentDeletedError, ensure_document_active
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from common.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentProcessStatusState(TypedDict, total=False):

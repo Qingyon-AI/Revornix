@@ -6,7 +6,7 @@ import crud
 from common.logger import exception_logger
 from proxy.notification_proxy import NotificationProxy
 from data.sql.base import async_session_context
-from workflow.timing import set_stage_metrics, timed_stage
+from common.timing import set_stage_metrics, timed_stage
 
 WORKFLOW_NAME = "notification_event"
 NOTIFICATION_DISPATCH_CONCURRENCY = 5
