@@ -8,7 +8,7 @@ GATEWAY_INTERNAL_URL = os.environ.get('GATEWAY_INTERNAL_URL', 'http://localhost:
 #
 # 此前是 `Path(__file__).resolve().parent.parent` —— "config 包的上一级"。在
 # config 还各存一份于 api/ 和 celery-worker/ 时，那恰好等于服务根目录；config
-# 搬进 shared/ 之后这个巧合就不成立了，它会变成 shared/，两个服务的日志写到同一处，
+# 搬进 app/ 之后这个巧合就不成立了，它会变成 app/，两个服务的日志写到同一处，
 # 而那个目录在部署镜像里根本不存在（启动即 FileNotFoundError）。
 #
 # 改成按**工作目录**取：两个服务都从各自目录启动（start-worker.sh 显式 cd，

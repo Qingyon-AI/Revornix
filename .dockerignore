@@ -1,4 +1,4 @@
-# 构建上下文是仓库根（api / celery-worker 需要同级的 shared/），所以必须显式
+# 构建上下文是仓库根（api / celery-worker 需要同级的 app/），所以必须显式
 # 排除大件，否则每次构建都要把整个工作区塞给 daemon。
 .git
 **/node_modules

@@ -51,11 +51,11 @@ for _name in (
 ):
     os.environ.setdefault(_name, _FAKE_KEY)
 
-# 让 `import enums` 在没跑过 `pip install -e ../shared` 的环境里也能工作。
-# CI 装了 shared，本地不一定；缺它时的报错是「模块找不到」，与用例要验的东西无关。
-_SHARED = Path(__file__).resolve().parents[2] / "shared"
-if _SHARED.is_dir() and str(_SHARED) not in sys.path:
-    sys.path.insert(0, str(_SHARED))
+# 让 `import enums` 在没跑过 `pip install -e ../app` 的环境里也能工作。
+# CI 装了 app 包，本地不一定；缺它时的报错是「模块找不到」，与用例要验的东西无关。
+_APP_DIR = Path(__file__).resolve().parents[2] / "app"
+if _APP_DIR.is_dir() and str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
 
 
 def _install(name: str, **attrs: object) -> types.ModuleType:
