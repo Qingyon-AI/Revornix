@@ -7,3 +7,7 @@ neo4j==5.28.1
 sqlalchemy==2.0.44
 psycopg[binary]==3.2.12
 python-dotenv==1.1.1
+# crud 链路会 import common.encrypt（API key 等字段是加密存的）
+cryptography==46.0.4
+# SQLAlchemy 的 async 走 greenlet；不装的话所有 async 查询在运行期报错
+greenlet==3.2.4

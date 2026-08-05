@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import base64
 import os
 
 import pytest
@@ -47,6 +48,18 @@ for _key, _value in DEFAULTS.items():
 os.environ.setdefault("OAUTH_SECRET_KEY", "revornix-integration-secret")
 os.environ.setdefault("LANGFUSE_PUBLIC_KEY", "revornix-integration-public")
 os.environ.setdefault("LANGFUSE_SECRET_KEY", "revornix-integration-secret")
+
+# crud 链路会 import common.encrypt —— API key 等字段是加密存的，而那几个密钥
+# 在导入期强校验。与 tests/conftest.py 用同一套假值。
+_FAKE_KEY = base64.b64encode(b"revornix-test-key-32-bytes-long!").decode("ascii")
+for _name in (
+    "APIKEY_ENCRYPT_KEY",
+    "ENGINE_CONFIG_ENCRYPT_KEY",
+    "FILE_SYSTEM_CONFIG_ENCRYPT_KEY",
+    "NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY",
+    "NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY",
+):
+    os.environ.setdefault(_name, _FAKE_KEY)
 
 
 # 不需要外部系统的用例：只要装了依赖就该跑，不受开关影响。
