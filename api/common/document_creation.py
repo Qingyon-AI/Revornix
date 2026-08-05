@@ -11,7 +11,7 @@ import schemas
 from proxy.file_system_proxy import FileSystemProxy
 from common.apscheduler.app import scheduler
 from common.celery.app import start_process_document, start_process_section
-from common.encrypt import encrypt_share_access_key
+from encryption import encrypt_share_access_key
 from common.file import register_remote_file
 from common.resource_plan_access import ensure_engine_access, ensure_model_access
 from common.stt_capability import engine_supports_meeting_mode

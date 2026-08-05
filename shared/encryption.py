@@ -1,3 +1,12 @@
+"""数据库字段的对称加密（API key、引擎配置、文件系统配置等）。
+
+从两个服务的 `common/encrypt.py` 合并而来。它零一方依赖（只用 base64、os、
+cryptography），却把整个 `crud` 层锁在了依赖环里 —— crud 依赖 common 的唯一
+理由就是这个文件。搬出来之后 crud 成为叶子。
+
+取的是 api 侧版本：它多出分享访问密钥的加解密，worker 侧那份是旧的子集。
+"""
+
 import base64
 import os
 
@@ -26,6 +35,25 @@ ENGINE_CONFIG_MASTER_KEY = base64.b64decode(ENGINE_CONFIG_ENCRYPT_KEY)
 FILE_SYSTEM_CONFIG_MASTER_KEY = base64.b64decode(FILE_SYSTEM_CONFIG_ENCRYPT_KEY)
 NOTIFICATION_SOURCE_CONFIG_MASTER_KEY = base64.b64decode(NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY)
 NOTIFICATION_TARGET_CONFIG_MASTER_KEY = base64.b64decode(NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY)
+
+# Share access keys are stored encrypted (not hashed) so the creator can view
+# the current key in the share dialog. Reuses the api-key master key to avoid
+# yet another required environment variable.
+def encrypt_share_access_key(
+    access_key: str
+):
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
+    nonce = os.urandom(12)
+    ciphertext = aesgcm.encrypt(nonce, access_key.encode(), None)
+    return base64.b64encode(nonce + ciphertext).decode()
+
+def decrypt_share_access_key(
+    encoded: str
+):
+    raw = base64.b64decode(encoded)
+    nonce, ciphertext = raw[:12], raw[12:]
+    aesgcm = AESGCM(APIKEY_MASTER_KEY)
+    return aesgcm.decrypt(nonce, ciphertext, None).decode()
 
 def encrypt_file_system_config(
     file_system_config_json_str: str

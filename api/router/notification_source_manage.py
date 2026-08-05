@@ -8,7 +8,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_async_db, get_current_user
-from common.encrypt import encrypt_notification_source_config
+from encryption import encrypt_notification_source_config
 from enums.notification import NotificationSourceProvided, UserNotificationSourceRole
 
 notification_source_manage_router = APIRouter()

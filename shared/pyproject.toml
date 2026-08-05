@@ -12,4 +12,5 @@ requires-python = ">=3.11"
 # 这样两个服务里既有的 `from enums.document import X` 一行都不用改 ——
 # 148 个引用点零改动，这次提取的风险因此可控。
 [tool.setuptools]
-packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts"]
+py-modules = ["encryption"]
+packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud"]

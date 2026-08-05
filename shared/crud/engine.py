@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
-from common.encrypt import encrypt_engine_config
+from encryption import encrypt_engine_config
 from enums.engine_enums import UserEngineRole, EngineCategory, EngineProvided
 
 import models

@@ -11,7 +11,7 @@ from common.dependencies import (
     get_async_db,
     resolve_current_user_from_token,
 )
-from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
+from encryption import decrypt_notification_source_config, decrypt_notification_target_config
 from common.logger import exception_logger, format_log_message, info_logger
 from common.websocket import notificationManager
 from enums.notification import UserNotificationSourceRole, UserNotificationTargetRole

@@ -27,7 +27,7 @@ from common.subscription_access import (
 from enums.engine_enums import EngineCategory, UserEngineRole
 from base_implement.stt_engine_base import STTEngineBase
 from enums.user import UserRole
-from common.encrypt import decrypt_engine_config, encrypt_engine_config
+from encryption import decrypt_engine_config, encrypt_engine_config
 from proxy.engine_proxy import EngineProxy
 from data.sql.base import async_session_context
 

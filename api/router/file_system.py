@@ -11,7 +11,7 @@ import json
 import crud
 import models
 import schemas
-from common.encrypt import encrypt_file_system_config, decrypt_file_system_config
+from encryption import encrypt_file_system_config, decrypt_file_system_config
 from common.upload_limits import (
     can_upgrade_document_upload,
     get_document_upload_limit_bytes,

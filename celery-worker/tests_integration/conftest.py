@@ -49,7 +49,7 @@ os.environ.setdefault("OAUTH_SECRET_KEY", "revornix-integration-secret")
 os.environ.setdefault("LANGFUSE_PUBLIC_KEY", "revornix-integration-public")
 os.environ.setdefault("LANGFUSE_SECRET_KEY", "revornix-integration-secret")
 
-# crud 链路会 import common.encrypt —— API key 等字段是加密存的，而那几个密钥
+# crud 链路会 import encryption —— API key 等字段是加密存的，而那几个密钥
 # 在导入期强校验。与 tests/conftest.py 用同一套假值。
 _FAKE_KEY = base64.b64encode(b"revornix-test-key-32-bytes-long!").decode("ascii")
 for _name in (
