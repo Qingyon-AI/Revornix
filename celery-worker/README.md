@@ -89,3 +89,20 @@ Make sure `api/` is reachable (or at least the shared dependencies — Redis, Po
 ## Learn more
 
 The pipelines map one-to-one onto user-visible features. See <https://revornix.com/docs/documents> and <https://revornix.com/docs/sections> for what each pipeline produces, and the developer docs for architecture.
+
+## 任务可靠性
+
+`task_acks_late=True`：任务**执行完成后**才 ack。默认值（`False`）会在任务刚被取走时
+就 ack，于是 worker 在执行中被终止（OOM、部署重启、kill）时任务永久消失 —— 不重跑，
+也没机会写失败状态，文档就永远停在「处理中」。
+
+代价是任务可能被执行两次。这在这里是安全的，因为写入侧本来就幂等：Milvus 走
+`upsert`、Neo4j 全是 `MERGE`，而主键由内容 sha256 派生（`make_chunk_id` /
+`make_entity_id`），重跑命中同一批键而不是堆出新记录。**如果哪天这些 id 改成随机值，
+这个配置就必须一起重新评估。**
+
+`CELERY_VISIBILITY_TIMEOUT`（默认 6 小时）必须**大于最慢任务的执行时间**。设小了，
+Redis 会把一个还在跑的大文档重新投递给另一个 worker —— 那是真正的并发重复执行，比
+丢任务更糟。按实测的 p99 处理时长调整。
+
+详见 `docs-internal/plan-task-reliability.md`。

@@ -31,6 +31,22 @@ celery_app = Celery(
     backend=f"redis://{REDIS_URL}:{REDIS_PORT}/0",
 )
 
+#: Redis 认为一个任务"执行超时、该重新投递"的时限。必须**大于最慢任务的执行时间** ——
+#: 设小了会让一个还在跑的大文档被另一个 worker 同时再跑一遍，那是真正的并发重复执行，
+#: 比丢任务更糟。默认 6 小时按大文档图谱构建的上限留足余量，可用环境变量按实测调整。
+CELERY_VISIBILITY_TIMEOUT = int(os.environ.get("CELERY_VISIBILITY_TIMEOUT", 6 * 60 * 60))
+
+celery_app.conf.update(
+    # 默认是任务**一被取走就 ack**，于是 worker 在执行中被终止（OOM、部署重启、kill）
+    # 时任务永久消失：不重跑，也没机会写失败状态，文档就永远停在"处理中"。
+    # 改成执行完成后才 ack，代价是任务可能被执行两次 —— 而这是安全的，因为写入侧
+    # 本来就幂等：Milvus 走 upsert、Neo4j 全是 MERGE，主键由内容 sha256 派生
+    # （make_chunk_id / make_entity_id），重跑命中同一批键而不是堆出新记录。
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    broker_transport_options={"visibility_timeout": CELERY_VISIBILITY_TIMEOUT},
+)
+
 
 _sentry_initialized_pid: int | None = None
 
