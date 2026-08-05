@@ -55,7 +55,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```shell
 cp ./web/.env.example ./web/.env
 cp ./api/.env.example ./api/.env
-cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./worker/.env.example ./worker/.env
 cp ./gateway/.env.example ./gateway/.env
 ```
 
@@ -97,9 +97,9 @@ pnpm start
 ### Start the Celery task queue
 
 ```shell
-cd celery-worker
-conda create -n celery-worker python=3.11 -y
-conda activate celery-worker
+cd worker
+conda create -n worker python=3.11 -y
+conda activate worker
 pip install -r ./requirements.txt
 playwright install
 ./start-worker.sh

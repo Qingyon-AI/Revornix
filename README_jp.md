@@ -48,7 +48,7 @@ Web クライアント・ゲートウェイ・API・非同期ワーカー・ト�
 Revornix/
 ├── web/                       # Next.js クライアント（ワークスペース + 公開ページ）— web/README.md
 ├── api/                       # FastAPI コアバックエンド（認証、ドキュメント、AI API）— api/README.md
-├── celery-worker/             # 非同期ワークフロー（embedding、要約、グラフ、ポッドキャスト、通知）— celery-worker/README.md
+├── worker/             # 非同期ワークフロー（embedding、要約、グラフ、ポッドキャスト、通知）— worker/README.md
 ├── gateway/                   # Go 製の公開エントリゲートウェイ（ルーティング、アンチスクレイピング、上流フェイルオーバー）
 ├── hot-news/                  # トレンド集約サービス（DailyHotApi ベース）
 ├── docs/                      # 公開ドキュメントサイト（revornix.com/docs）— 独立した Next.js + Nextra
@@ -143,7 +143,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 cp ./web/.env.example ./web/.env
 cp ./gateway/.env.example ./gateway/.env
 cp ./api/.env.example ./api/.env
-cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./worker/.env.example ./worker/.env
 ```
 
 詳細は [環境変数ドキュメント](https://revornix.com/docs/environment) を参照してください。
@@ -164,7 +164,7 @@ python -m data.milvus.create
 
 > **コンテナイメージ**：各サービスに Dockerfile があります。ビルドコンテキストは
 > サービスディレクトリではなく**リポジトリルート**を指定してください —— `api` と
-> `celery-worker` は同階層の `shared/` パッケージを必要とします：
+> `worker` は同階層の `shared/` パッケージを必要とします：
 >
 > ```shell
 > docker build -f api/Dockerfile -t revornix/api .
@@ -201,8 +201,8 @@ pnpm start
 ### 8) Celery ワーカーを起動
 
 ```shell
-cd celery-worker
-conda create -n celery-worker python=3.11 -y
+cd worker
+conda create -n worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
 ./start-worker.sh
@@ -221,7 +221,7 @@ pnpm start
 ## 次に読むもの
 
 - **製品を使いたい?** <https://revornix.com/docs/start> から始め、<https://app.revornix.com> にアクセスしてください。
-- **拡張したい?** 各サービスに個別の README があります: [`web/`](./web/README.md)、[`api/`](./api/README.md)、[`celery-worker/`](./celery-worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
+- **拡張したい?** 各サービスに個別の README があります: [`web/`](./web/README.md)、[`api/`](./api/README.md)、[`worker/`](./worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
 - **ドキュメントに貢献したい?** [`docs/src/content/`](./docs/README.md) に MDX を追加してください。
 - **デスクトップ版が気になる?** macOS と Windows 向けの Electron 薄型シェルが [`desktop/`](./desktop/README.md) にあります。ドキュメントは [開発者 → デスクトップアプリ](https://revornix.com/docs/developer/desktop) を参照。
 - **アーキテクチャを深く知りたい?** <https://revornix.com/docs/developer/structure>。

@@ -65,7 +65,7 @@ from .embedding.qwen_local import LocalQwen3EmbeddingEngine   # ← 模块顶层
   "迁移要在容器里跑"这类麻烦本来就不存在。
 
 镜像不要停止发布：README 有中/日/英三版，是对外的项目，别人可能正按
-`revornix/api`、`revornix/celery-worker` 自部署。
+`revornix/api`、`revornix/worker` 自部署。
 
 ## 2. 合并之后的形态
 

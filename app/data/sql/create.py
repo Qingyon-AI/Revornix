@@ -15,7 +15,7 @@ from common.logger import exception_logger, info_logger
 from config.base import ROOT_USER_NAME, ROOT_USER_PASSWORD
 from data.sql.base import async_session_context
 
-from common.dependencies import check_deployed_by_official_in_fuc
+from common.plan_access import check_deployed_by_official_in_fuc
 deployed_by_official = check_deployed_by_official_in_fuc()
 
 # ---------------- Engines ----------------

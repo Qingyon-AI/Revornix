@@ -25,7 +25,7 @@ worker 启动时各跑一遍，谁先起来都行。
 - 表还不存在时跳过 —— 全新库此刻什么都没建，随后由 `create_all` 按模型一次建对；
 - 一个 `_migrate_*` 在它保护的最早版本不再需要支持时就可以删掉。
 
-MIRRORED-FILE: api/ <-> celery-worker/ —— 两侧必须逐字节一致，由 scripts/check_mirrored_files.py 强制。
+MIRRORED-FILE: api/ <-> worker/ —— 两侧必须逐字节一致，由 scripts/check_mirrored_files.py 强制。
 """
 
 from __future__ import annotations

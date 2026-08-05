@@ -11,11 +11,11 @@ The current Revornix runtime is mainly composed of:
 - `gateway`: the unified public entrypoint and split-region routing layer
 - `web`: the main user-facing product frontend
 - `api`: the synchronous business API and orchestration entry
-- `celery-worker`: the async workflow and heavy-job execution layer
+- `worker`: the async workflow and heavy-job execution layer
 - `hot-news`: the separate trending aggregation service
 - PostgreSQL / Redis / Milvus / Neo4j / MinIO: the underlying data and file infrastructure
 
-In practice, `gateway` owns the public entrypoint and path-level routing, `web` handles interaction and presentation, `api` handles state changes and access control, `celery-worker` handles long-running processing, and `hot-news` handles trend aggregation.
+In practice, `gateway` owns the public entrypoint and path-level routing, `web` handles interaction and presentation, `api` handles state changes and access control, `worker` handles long-running processing, and `hot-news` handles trend aggregation.
 
 ## Runtime sketch
 
@@ -23,7 +23,7 @@ In practice, `gateway` owns the public entrypoint and path-level routing, `web` 
 flowchart LR
     A["Browser opens gateway<br/>Users always enter the product through one public entrypoint"] --> B["gateway routes to web or api<br/>Page traffic goes to web, while business traffic is routed to the domestic or overseas API by path"]
     B --> C["api coordinates storage and tasks<br/>It reads and writes core stores and creates async tasks when needed"]
-    C --> D["celery-worker runs heavy workflows<br/>It handles document conversion, section generation, podcast, graph, PPT, and notifications"]
+    C --> D["worker runs heavy workflows<br/>It handles document conversion, section generation, podcast, graph, PPT, and notifications"]
     D --> E["web refreshes results<br/>The frontend refetches state and renders the latest output"]
 ```
 
@@ -56,8 +56,8 @@ flowchart LR
 
 1. The user submits a link, file, audio source, or quick note in `web`
 2. `api` performs permission checks, default-resource checks, document creation, and original file storage
-3. `api` creates a document processing task and hands heavy work to `celery-worker`
-4. `celery-worker` runs website parsing, file parsing, transcription, Markdown conversion, summarization, vectorization, graph generation, and related workflows based on the document type
+3. `api` creates a document processing task and hands heavy work to `worker`
+4. `worker` runs website parsing, file parsing, transcription, Markdown conversion, summarization, vectorization, graph generation, and related workflows based on the document type
 5. Results are written back to the database and file system
 6. `web` polls or refetches API state and shows the updated status
 
@@ -84,7 +84,7 @@ flowchart LR
 1. A user creates or updates section configuration
 2. `api` saves section metadata, labels, collaboration state, trigger mode, and schedule settings
 3. When an event trigger or scheduled trigger fires, `api` or the scheduler starts section processing
-4. `celery-worker` aggregates section documents, generates Markdown, adds illustrations, generates podcasts, builds section graphs, and creates PPT output when needed
+4. `worker` aggregates section documents, generates Markdown, adds illustrations, generates podcasts, builds section graphs, and creates PPT output when needed
 5. After results are written back, `web` renders the body, media area, graph, comments, and subscription state on the section detail page
 
 The daily section is a system-maintained section type, but it still follows the same underlying section-processing path with automatic defaults applied at creation time.
@@ -113,7 +113,7 @@ Notifications are not a standalone content workflow. They sit on top of events a
 1. The user creates notification sources, targets, and tasks in settings
 2. `api` stores the rules and registers scheduled jobs when needed
 3. When an event occurs or a scheduled time arrives, the notification task fires
-4. `api` or `celery-worker` assembles the content and delivers it to email, Feishu, DingTalk, Telegram, or Apple devices
+4. `api` or `worker` assembles the content and delivers it to email, Feishu, DingTalk, Telegram, or Apple devices
 
 Notification tasks are commonly paired with:
 
@@ -160,7 +160,7 @@ The most common local development startup order is:
 1. Start PostgreSQL, Redis, Milvus, Neo4j, MinIO, and related infrastructure through `docker-compose-local.yaml`
 2. Run initialization scripts under `api`
 3. Start `api`
-4. Start `celery-worker`
+4. Start `worker`
 5. Start `hot-news`
 6. Start `web`
 7. Start `gateway` when you want a unified public entrypoint

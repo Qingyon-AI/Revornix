@@ -26,7 +26,7 @@ REPO = Path(__file__).resolve().parents[2]
 # 搬走之后这几条静静地全跳过了，看起来一切正常。
 ENGINE_INIT = REPO / "app" / "engine" / "__init__.py"
 FACTORY = REPO / "app" / "engine" / "embedding" / "factory.py"
-SERVICES = ["api", "celery-worker"]
+SERVICES = ["api", "worker"]
 
 
 def module_level_imports(path: Path) -> list[str]:

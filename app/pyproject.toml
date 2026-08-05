@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "revornix-app"
 version = "0.1.0"
-description = "应用本体：models, crud, schemas, config, enums … 两个入口（api / celery-worker）都装它"
+description = "应用本体：models, crud, schemas, config, enums … 两个入口（api / worker）都装它"
 requires-python = ">=3.11"
 
 # 刻意作为**顶级包**暴露，而不是 revornix_app.enums。

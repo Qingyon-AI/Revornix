@@ -9,7 +9,7 @@ from enums.model import UserModelProviderRole
 from enums.product import PlanAccessLevel
 from enums.user import UserRole
 from common.jwt_utils import create_token
-from common.dependencies import (
+from common.plan_access import (
     check_deployed_by_official_in_fuc,
     get_user_compute_balance_in_func,
     get_user_plan_level_in_func,

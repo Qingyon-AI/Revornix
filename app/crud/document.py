@@ -3505,7 +3505,7 @@ async def get_collaborator_user_ids_for_document_async(
     return list(user_ids)
 
 
-# 来自 celery-worker 侧：抓取网页时保存快照。两份 crud 合并到 shared 时并入。
+# 来自 worker 侧：抓取网页时保存快照。两份 crud 合并到 shared 时并入。
 
 async def create_website_document_snapshot_async(
     db: AsyncSession,

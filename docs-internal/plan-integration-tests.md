@@ -5,7 +5,7 @@
 >
 > 而它在写出来之前就已经还本了。三个缺陷都是这套东西逼出来的：
 >
-> 1. **celery-worker 起不来**（P0）——镜像文件依赖了 worker 侧不存在的符号，
+> 1. **worker 起不来**（P0）——镜像文件依赖了 worker 侧不存在的符号，
 >    `compileall` 和单元测试各自因为"只编译"和"顶了替身"而看不见（§6.1）；
 > 2. **向量写入不幂等**——`upsert_milvus` 调的是 `insert`，而 `task_acks_late`
 >    的安全性整个压在幂等上（§0）；
@@ -145,10 +145,10 @@ milvus-etcd / milvus-minio 都是已启动状态）。也就是说本地跑集�
 
 ## 6. 落地结果：又挖出两个，其中一个是 P0
 
-按上面的范围做完了（`celery-worker/tests_integration/`，12 条用例，全绿，
+按上面的范围做完了（`worker/tests_integration/`，12 条用例，全绿，
 一轮约 100 秒）。过程中真正的收获不是那 12 条断言，而是**被它们逼出来的两个缺陷**。
 
-### 6.1 celery-worker 根本起不来（P0）
+### 6.1 worker 根本起不来（P0）
 
 `data/sql/schema_guard.py` 是**镜像文件**（CI 强制 api / worker 逐字节相同），
 里面有一行：

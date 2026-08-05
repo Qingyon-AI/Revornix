@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Node 22.x, npm 11.x (repo dev environment).
-- Do NOT modify `web/`, `api/`, `celery-worker/`, `gateway/`, or the existing `.github/workflows/docker-push.yml`.
+- Do NOT modify `web/`, `api/`, `worker/`, `gateway/`, or the existing `.github/workflows/docker-push.yml`.
 - Electron security baseline for every BrowserWindow: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
 - Built-in server origins (verbatim): `https://app.revornix.com` (label International), `https://app.revornix.cn` (label China Mirror).
 - OAuth/third-party hosts allowed to navigate inside the shell window (verbatim): `accounts.google.com`, `github.com`, `open.weixin.qq.com`.

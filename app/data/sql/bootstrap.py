@@ -9,7 +9,7 @@
 3. **种子数据** —— `seed_database`。内置文件系统、引擎、通知源 / 模板、root 用户。
    新版本新增的内置项也靠它补进老库，所以每次启动都要跑，不只是首次安装。
 
-**为什么建表只在 API 里跑。** `celery-worker/models/` 是 `api/models/` 的一个子集
+**为什么建表只在 API 里跑。** `worker/models/` 是 `api/models/` 的一个子集
 （没有 access_request、mcp 等），拿它 `create_all` 会建出一份缺表的库。所以表的
 权威只有 API 一家；worker 启动时只跑第 2 步 —— 那些 `_migrate_*` 是写死的 DDL，
 不依赖 metadata 完整，表还不存在时会自己跳过。谁先起来都不会坏。

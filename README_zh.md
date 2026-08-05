@@ -48,7 +48,7 @@ Revornix 是一个开源、可本地部署的 AI 信息工作台。把那些"想
 Revornix/
 ├── web/                       # Next.js 客户端（工作台 + 公开页面）— 见 web/README.md
 ├── api/                       # FastAPI 核心后端（鉴权、文档、专栏、AI 能力接口）— 见 api/README.md
-├── celery-worker/             # 异步任务流（embedding、总结、图谱、播客、通知）— 见 celery-worker/README.md
+├── worker/             # 异步任务流（embedding、总结、图谱、播客、通知）— 见 worker/README.md
 ├── gateway/                   # Go 公网入口网关（路由、反爬、上游容错）
 ├── hot-news/                  # 热搜聚合服务（基于 DailyHotApi）
 ├── docs/                      # 公开文档站（revornix.com/docs）— 独立 Next.js + Nextra
@@ -143,7 +143,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 cp ./web/.env.example ./web/.env
 cp ./gateway/.env.example ./gateway/.env
 cp ./api/.env.example ./api/.env
-cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./worker/.env.example ./worker/.env
 ```
 
 按 [环境变量文档](https://revornix.com/docs/environment) 完成配置。
@@ -162,7 +162,7 @@ python -m data.milvus.create
 > 全新安装和版本升级都只需要把服务起起来，不需要手动迁移数据库。
 
 > **容器镜像**：各服务都有 Dockerfile。构建时上下文要用**仓库根**而不是服务目录 ——
-> `api` 与 `celery-worker` 需要同级的 `shared/` 包：
+> `api` 与 `worker` 需要同级的 `shared/` 包：
 >
 > ```shell
 > docker build -f api/Dockerfile -t revornix/api .
@@ -199,8 +199,8 @@ pnpm start
 ### 8) 启动 Celery 任务服务
 
 ```shell
-cd celery-worker
-conda create -n celery-worker python=3.11 -y
+cd worker
+conda create -n worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
 ./start-worker.sh
@@ -219,7 +219,7 @@ pnpm start
 ## 接下来去哪里
 
 - **想用产品？** 从 <https://revornix.com/docs/start> 开始，然后进入 <https://app.revornix.com>。
-- **想扩展功能？** 每个服务有自己的 README：[`web/`](./web/README.md)、[`api/`](./api/README.md)、[`celery-worker/`](./celery-worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
+- **想扩展功能？** 每个服务有自己的 README：[`web/`](./web/README.md)、[`api/`](./api/README.md)、[`worker/`](./worker/README.md)、[`gateway/`](./gateway/README.md)、[`docs/`](./docs/README.md)。
 - **想为文档贡献内容？** 在 [`docs/src/content/`](./docs/README.md) 下增加 MDX。
 - **关心桌面端？** macOS 与 Windows 的 Electron 薄壳已在 [`desktop/`](./desktop/README.md)，文档见 [开发者 → 桌面应用](https://revornix.com/docs/developer/desktop)。
 - **想了解架构细节？** <https://revornix.com/docs/developer/structure>。

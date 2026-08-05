@@ -27,7 +27,7 @@ This is the first public beta on the road to 1.0. The release follows two thread
 - **Unified background-task enqueueing order**: summarize / embedding / transcribe / graph / podcast tasks now commit to the database before enqueueing, eliminating races where the worker read stale state, plus ghost tasks; failed enqueues are marked failed instead of staying "queued" forever.
 - **Fixed worker database connections being reused across event loops**, resolving intermittent hangs and "attached to a different loop" errors.
 - **Fixed a crash when unpublishing a section that had publish history.**
-- Mirrored code between api and celery-worker (enums / notification templates / Apple push tooling) was re-synchronized to eliminate drift.
+- Mirrored code between api and worker (enums / notification templates / Apple push tooling) was re-synchronized to eliminate drift.
 
 ### Fixes & Polish
 

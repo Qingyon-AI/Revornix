@@ -17,7 +17,7 @@
 - 不做原生高级能力：托盘、全局快捷键、`revornix://` 深链、离线缓存、本地全文索引。均为后续迭代。
 - 不做代码签名 / 公证（但预留配置位，拿到证书后零改代码启用）。
 - 不内置 Next.js 服务器（不打包 `web/.next/standalone`）。窗口加载远程 URL。
-- 不改动 `web/`、`api/`、`celery-worker/`、`gateway/` 任何现有代码，不改动现有 Docker CI。
+- 不改动 `web/`、`api/`、`worker/`、`gateway/` 任何现有代码，不改动现有 Docker CI。
 
 ## 2. 关键决策
 

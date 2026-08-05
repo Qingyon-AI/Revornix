@@ -54,7 +54,7 @@ description: 账户 MFA 与登录安全、Markdown 编辑器升级（地图节�
 
 ### 可观测性与底层
 
-- **日志与链路追踪迁移**：统一了 `web` / `api` / `celery-worker` 的日志与 traces 采集（参见 `OBSERVABILITY.md`）。
+- **日志与链路追踪迁移**：统一了 `web` / `api` / `worker` 的日志与 traces 采集（参见 `OBSERVABILITY.md`）。
 - 为 worker 增加了更细的运行日志；为 Milvus 连接增加超时保护。
 - 优化前端异步加载；将 `instrumentation.ts` 迁移到 `src/`；修复服务端请求的 headers 透传。
 

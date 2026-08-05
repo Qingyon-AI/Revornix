@@ -5,7 +5,7 @@
 
 ## 背景
 
-`api/` 与 `celery-worker/` 有 206 个同路径的 Python 文件，其中 110 个逐字节相同。
+`api/` 与 `worker/` 有 206 个同路径的 Python 文件，其中 110 个逐字节相同。
 `enums`（13 个）已经搬进 `shared/`，做到了零导入改动。问题是：接下来搬什么。
 
 ## 零导入改动的两个前提
@@ -64,7 +64,7 @@ prompts 6 · file 4 · engine 3 · notification 2 · data 2 · protocol 2
 ## 结论
 
 **当前架构下，整体提取共享包的代价高于收益。** 真正要动，得先回答一个更根本的问题：
-api 与 celery-worker 是不是应该共享同一套 `schemas`/`crud`/`models`？那是重新划分
+api 与 worker 是不是应该共享同一套 `schemas`/`crud`/`models`？那是重新划分
 服务边界，不是一次重构能解决的。
 
 所以：
@@ -134,7 +134,7 @@ protocol 7 · proxy 5。**没有一层是某个服务专有的领域。**
 | | 依赖数 | 独有 |
 | --- | ---: | --- |
 | api | 55 | apscheduler, fastapi, google-auth, markdown, webauthn, otel-fastapi |
-| celery-worker | 59 | ftfy, huggingface_hub, modelscope, omegaconf, pyclipper, python-jose, rapid_table, shapely, tenacity, otel-celery |
+| worker | 59 | ftfy, huggingface_hub, modelscope, omegaconf, pyclipper, python-jose, rapid_table, shapely, tenacity, otel-celery |
 | **两侧共有** | **49** | 其中包括 `torch` 和 `sentence_transformers` |
 
 **最重的那个 `torch` 两侧都有**，api 独有的六个全是轻量库。所以"依赖重量"根本
@@ -157,7 +157,7 @@ protocol 7 · proxy 5。**没有一层是某个服务专有的领域。**
 ```
 shared/     models, crud, enums, config, common, notification, engine, proxy, protocol
 api/        router/, mcp_router/  + 自己的 requirements
-celery-worker/  workflow/          + 自己的 requirements（含 ML 栈）
+worker/  workflow/          + 自己的 requirements（含 ML 栈）
 ```
 
 部署形态一点不变，两个镜像各装各的依赖。变的是那 194 个文件只存一份。
@@ -261,7 +261,7 @@ crud/section.py 3 · data/neo4j/search.py 3 · ...（清单可由本文末的脚
 # api/common/document_guard.py
 raise ValueError("Document not found")
 
-# celery-worker/common/document_guard.py
+# worker/common/document_guard.py
 raise DocumentDeletedError("Document is deleted")   # 这个类只在 worker 侧存在
 ```
 

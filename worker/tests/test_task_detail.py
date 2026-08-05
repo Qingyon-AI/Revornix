@@ -5,7 +5,7 @@
 写库时的 `DataError`（列宽 1000），异常渲染丢了信息就是用户看到一张只写着
 "失败"的卡片。
 
-注意：本模块在 api/ 与 celery-worker/ 下是镜像的（带 MIRRORED-FILE 标记，
+注意：本模块在 api/ 与 worker/ 下是镜像的（带 MIRRORED-FILE 标记，
 由 scripts/check_mirrored_files.py 保证两侧一致），所以这里测一次即可。
 """
 

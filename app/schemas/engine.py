@@ -228,7 +228,7 @@ class BillingAuditResponse(BaseModel):
     items: list[BillingAuditIssue]
 
 
-# 来自 celery-worker 侧。注意它带 name_zh / description_zh，而 api 侧的
+# 来自 worker 侧。注意它带 name_zh / description_zh，而 api 侧的
 # EngineInfo 没有 —— 合并时保留 worker 的这个类型，没有把字段硬塞进 EngineInfo，
 # 因为那会改变 api 已有响应的形状。
 

@@ -14,7 +14,7 @@
 
 | 缺陷 | 成因 |
 | --- | --- |
-| celery-worker 起不来（P0） | 镜像文件依赖了 worker 侧不存在的符号 |
+| worker 起不来（P0） | 镜像文件依赖了 worker 侧不存在的符号 |
 | 向量写入不幂等 | `insert` 而非 `upsert`，两侧**各错一遍** |
 | 同一守卫抛不同异常类型 | 两份实现各自演化 |
 | `protocol` 声明与实现不符 | worker 那份是陈旧副本 |
@@ -29,9 +29,9 @@
 两个 Dockerfile 去掉注释后的**全部**差异：
 
 ```
-COPY api/requirements.txt          vs  COPY celery-worker/requirements.txt
+COPY api/requirements.txt          vs  COPY worker/requirements.txt
 apt-get install ... curl           vs  apt-get install ...（无 curl）
-COPY api/                          vs  COPY celery-worker/
+COPY api/                          vs  COPY worker/
 EXPOSE 8001                        vs  （无）
 CMD ["fastapi", "run", ...]        vs  CMD ["/app/start-worker.sh"]
 ```
@@ -41,7 +41,7 @@ CMD ["fastapi", "run", ...]        vs  CMD ["/app/start-worker.sh"]
 | | 包数 | 说明 |
 | --- | ---: | --- |
 | api | 55 | 独有 6 个，全是轻量库（fastapi、apscheduler、webauthn…） |
-| celery-worker | 59 | 独有 10 个（modelscope、huggingface_hub、rapid_table…） |
+| worker | 59 | 独有 10 个（modelscope、huggingface_hub、rapid_table…） |
 | **并集** | **65** | **同包版本冲突：0 个** |
 | 两侧共有 | 49 | **其中包括 `torch==2.13.0` 和 `sentence_transformers`** |
 
@@ -49,7 +49,7 @@ CMD ["fastapi", "run", ...]        vs  CMD ["/app/start-worker.sh"]
 镜像大小的变化被 torch 淹没。
 
 顺带一个可量化的收益：`docker-push.yml` 的构建矩阵是
-`[web, hot-news, celery-worker, api] × [amd64, arm64]` = **8 次构建**，其中 4 次
+`[web, hot-news, worker, api] × [amd64, arm64]` = **8 次构建**，其中 4 次
 各装一遍 torch。这个流水线里已经有"构建前后检查磁盘"和"构建完立刻删镜像释放空间"
 的步骤 —— 说明它在撑爆 runner。合并 api 与 worker 之后是 6 次。
 

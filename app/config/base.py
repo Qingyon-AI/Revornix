@@ -7,7 +7,7 @@ GATEWAY_INTERNAL_URL = os.environ.get('GATEWAY_INTERNAL_URL', 'http://localhost:
 # 日志目录的基准，`common/logger.py` 是唯一的使用者（写 BASE_DIR/logs/）。
 #
 # 此前是 `Path(__file__).resolve().parent.parent` —— "config 包的上一级"。在
-# config 还各存一份于 api/ 和 celery-worker/ 时，那恰好等于服务根目录；config
+# config 还各存一份于 api/ 和 worker/ 时，那恰好等于服务根目录；config
 # 搬进 app/ 之后这个巧合就不成立了，它会变成 app/，两个服务的日志写到同一处，
 # 而那个目录在部署镜像里根本不存在（启动即 FileNotFoundError）。
 #

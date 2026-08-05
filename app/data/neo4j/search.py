@@ -318,7 +318,7 @@ async def global_search(
     }
 
 
-# 由 celery-worker 侧合并而来：实体去重时按 (类型, 文本) 批量回查已有实体。
+# 由 worker 侧合并而来：实体去重时按 (类型, 文本) 批量回查已有实体。
 
 async def get_entities_by_text_and_type(
     entity_keys: list[tuple[str, str]]

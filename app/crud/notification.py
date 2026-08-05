@@ -2268,7 +2268,7 @@ async def delete_notification_records_by_notification_record_ids_async(
     await db.flush()
 
 
-# 来自 celery-worker 侧：worker 派发通知时按模板/触发事件查询，api 侧没有对应函数。
+# 来自 worker 侧：worker 派发通知时按模板/触发事件查询，api 侧没有对应函数。
 
 async def get_notification_template_by_id_async(
     db: AsyncSession,

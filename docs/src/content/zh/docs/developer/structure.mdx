@@ -11,7 +11,7 @@ Revornix/
 ├── gateway/         # 统一公网入口网关服务
 ├── web/             # 主产品前端（Next.js App Router）
 ├── api/             # 主 FastAPI 服务
-├── celery-worker/   # 后台工作流与异步重任务
+├── worker/   # 后台工作流与异步重任务
 ├── hot-news/        # 热搜聚合微服务
 ├── docs/            # 当前这套 Nextra 文档站
 ├── desktop/         # 规划中的桌面端外壳占位目录
@@ -40,11 +40,11 @@ Revornix/
 - 负责用户与认证、文档、专栏、图谱 API、AI 路由、MCP 服务端路由、通知、支付系统对接、公开分享页等。
 - 在分区部署场景下，可以拆出一组专门负责 Google / GitHub 登录的境外 API 实例，并由网关按路径转发。
 
-### `celery-worker`
+### `worker`
 
 - 负责长耗时或高成本异步任务。
 - 包括文档转换、切块、向量化、摘要、图谱、专栏渲染、播客生成、通知投递等工作流。
-- 启动入口在 `celery-worker/common/celery/app.py`。
+- 启动入口在 `worker/common/celery/app.py`。
 
 ### `hot-news`
 
@@ -103,7 +103,7 @@ Revornix/
 
 1. 用户在 `web` 发起操作
 2. `api` 落库并投递 Celery 任务
-3. `celery-worker` 执行解析、切块、embedding、图谱、插图、播客等流程并回写结果
+3. `worker` 执行解析、切块、embedding、图谱、插图、播客等流程并回写结果
 4. `web` 通过轮询或重新拉取 API 状态展示最新结果
 
 ### 热搜链路
@@ -120,7 +120,7 @@ Revornix/
 - 基础设施 bootstrap：`docker-compose-local.yaml`
 - 手动启动的应用服务：
   - `api`
-  - `celery-worker`
+  - `worker`
   - `web`
   - `hot-news`
   - 以及需要时本地启动的 `docs`
@@ -129,7 +129,7 @@ Revornix/
 
 1. 先用 `docker-compose-local.yaml` 拉起 Postgres / Redis / Neo4j / Milvus / MinIO
 2. 在 `api` 中做基础数据初始化
-3. 手动启动 `api`、`celery-worker`、`hot-news`、`web`
+3. 手动启动 `api`、`worker`、`hot-news`、`web`
 
 ## 7. 关键实现边界
 
@@ -150,7 +150,7 @@ Revornix/
 
 - 内置文件系统基于 MinIO / S3 兼容协议
 - 代码同时支持 Aliyun OSS、AWS S3、Generic S3
-- 文件系统抽象在 `api/file/*` 与 `celery-worker/file/*` 两边都存在
+- 文件系统抽象在 `api/file/*` 与 `worker/file/*` 两边都存在
 
 ## 8. 与旧文档相比的变化
 

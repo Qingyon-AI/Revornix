@@ -12,7 +12,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta, timezone
 
-from common.dependencies import check_deployed_by_official_in_fuc
+from common.plan_access import check_deployed_by_official_in_fuc
 from common.logger import exception_logger, info_logger
 from common.upload_limits import (
     FILE_DOCUMENT_MAX_UPLOAD_BYTES,

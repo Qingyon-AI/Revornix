@@ -1,5 +1,5 @@
-# 构建上下文是**仓库根**，不是 celery-worker/ —— 这个服务依赖同级的 app/。
-# 对应的构建命令：docker build -f celery-worker/Dockerfile .
+# 构建上下文是**仓库根**，不是 worker/ —— 这个服务依赖同级的 app/。
+# 对应的构建命令：docker build -f worker/Dockerfile .
 FROM python:3.11-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -10,9 +10,9 @@ WORKDIR /app
 
 # 依赖层单独一层：worker 的依赖树很重（torch 等），改业务代码不该触发重装。
 COPY app/ /app/
-COPY celery-worker/requirements.txt /app/requirements.txt
+COPY worker/requirements.txt /app/requirements.txt
 # 本地 embedding 引擎的依赖（torch，wheel 527 MB）**不装**：默认配置走云端。
-# 要在容器里跑本地推理，自行加一层 `pip install -r celery-worker/requirements-local-embedding.txt`。
+# 要在容器里跑本地推理，自行加一层 `pip install -r worker/requirements-local-embedding.txt`。
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
@@ -20,7 +20,7 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY celery-worker/ /app/
+COPY worker/ /app/
 
 RUN addgroup --system --gid 1001 revornix \
     && adduser --system --uid 1001 --ingroup revornix revornix \
