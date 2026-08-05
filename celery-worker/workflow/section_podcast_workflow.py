@@ -18,7 +18,7 @@ from common.podcast_graph import build_section_podcast_graph_context
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
+from common.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
 
 class SectionPodcastState(TypedDict, total=False):

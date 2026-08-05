@@ -17,7 +17,7 @@ from enums.document import DocumentCategory, DocumentAudioTranscribeStatus
 from proxy.engine_proxy import EngineProxy
 from proxy.file_system_proxy import FileSystemProxy
 from workflow.cancelled import WorkflowCancelledError
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from common.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentTranscribeState(TypedDict, total=False):

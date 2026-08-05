@@ -7,7 +7,7 @@ from common.logger import exception_logger
 from common.document_guard import ensure_document_active
 from data.sql.base import async_session_context
 from engine.tag.llm_document import LLMDocumentTagEngine
-from workflow.timing import add_timed_node, ainvoke_with_timing
+from common.timing import add_timed_node, ainvoke_with_timing
 
 
 class DocumentTagState(TypedDict, total=False):

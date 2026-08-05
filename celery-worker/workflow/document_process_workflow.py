@@ -25,7 +25,7 @@ from workflow.document_tag_workflow import run_document_tag_workflow
 from workflow.document_transcribe_workflow import run_document_transcribe_workflow
 from workflow.orchestration import build_progressive_followup_workflow
 from workflow.planning import plan_document_processing
-from workflow.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
+from common.timing import add_timed_node, ainvoke_with_timing, set_stage_metrics
 
 
 class DocumentProcessState(TypedDict, total=False):

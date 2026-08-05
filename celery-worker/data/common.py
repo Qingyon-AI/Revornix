@@ -26,7 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
-from workflow.timing import set_stage_metrics
+from common.timing import set_stage_metrics
 
 
 def _clear_torch_cache() -> None:

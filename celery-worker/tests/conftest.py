@@ -12,7 +12,7 @@ import ...`，装齐这些等于把 torch、pymilvus、neo4j 驱动、langgraph 
 - 真正的外部系统（数据库、Milvus、Neo4j、模型服务）；
 - 只在建图时用到、与节点体逻辑无关的重依赖（langgraph）。
 
-哪些**不该**顶掉：`common.embedding_utils`、`common.task_detail`、`workflow.timing`
+哪些**不该**顶掉：`common.embedding_utils`、`common.task_detail`、`common.timing`
 这些是本进程的纯逻辑，顶掉它们等于把要测的东西测没了。OTel 是真装的（见
 requirements-dev.txt），理由同上：伪造一整套 span 语义比装一个 1 MB 的包更容易出错。
 
