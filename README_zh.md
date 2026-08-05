@@ -115,7 +115,7 @@ Revornix/
 ## 快速开始
 
 > [!NOTE]
-> 推荐为每个 Python 服务使用独立虚拟环境（例如 conda），避免依赖冲突。
+> 每个 Python 服务用独立虚拟环境，避免依赖冲突。推荐 uv（见下）。
 
 ### 1) 克隆仓库
 
@@ -170,13 +170,17 @@ python -m data.milvus.create
 
 ### 5) 启动核心后端服务
 
+> 用 uv 而不是 conda：conda 的长处是管非 Python 依赖（CUDA、MKL 那些），而 torch 现在是**可选**的
+> （默认走云端 embedding），那个长处用不上了。实测冷缓存装同一份 requirements：**uv 32 秒 / pip 242 秒**。
+> uv 还会自己下载对应版本的 Python，机器上不必另装 pyenv。
+
 ```shell
 cd api
-conda create -n api python=3.11 -y
-pip install -r ./requirements.txt
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
 # 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# pip install -r ./requirements-local-embedding.txt
-fastapi run --port 8001
+# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
+./.venv/bin/fastapi run main.py --port 8001
 ```
 
 ### 6) 启动网关服务（可选）
@@ -200,10 +204,10 @@ pnpm start
 
 ```shell
 cd worker
-conda create -n worker python=3.11 -y
-pip install -r ./requirements.txt
-playwright install
-./start-worker.sh
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
+./.venv/bin/playwright install
+PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
 ```
 
 ### 9) 启动前端服务

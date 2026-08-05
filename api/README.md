@@ -37,20 +37,25 @@ api/
 ## Running locally
 
 ```bash
-# Recommended: an isolated Python env per service
-conda create -n revornix-api python=3.11 -y
-conda activate revornix-api
+# One isolated environment per service. uv rather than conda: conda's strength is
+# non-Python dependencies (CUDA, MKL), and torch is optional here now — the default
+# configuration uses cloud embedding — so that strength does not apply. Cold-cache
+# install of the same requirements measured 32s with uv against 242s with pip, and uv
+# fetches the matching Python itself.
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
 
-pip install -r requirements.txt
+# Local embedding (optional, ~1.3 GB of torch) — not needed with cloud embedding:
+# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
 
 # Configure env — see https://revornix.com/docs/environment
 cp .env.example .env
 
 # Bootstrap Milvus (Postgres needs nothing — the API does it on startup)
-python -m data.milvus.create
+./.venv/bin/python -m data.milvus.create
 
 # Dev server
-fastapi run --port 8001
+./.venv/bin/fastapi run main.py --port 8001
 ```
 
 Before starting, make sure Postgres, Redis, Neo4j, MinIO and Milvus are running. The repo root ships `docker-compose-local.yaml` for exactly this.

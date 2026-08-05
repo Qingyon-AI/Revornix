@@ -51,19 +51,19 @@ worker/
 
 ```bash
 # Isolated env (mirrors api/ — they often diverge in deps over time)
-conda create -n revornix-worker python=3.11 -y
-conda activate revornix-worker
-
-pip install -r requirements.txt
+# uv rather than conda — see api/README.md for why. Cold-cache install measured
+# 32s against pip's 242s, and uv fetches the matching Python itself.
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
 
 # Playwright browsers (required for web-page conversion)
-playwright install
+./.venv/bin/playwright install
 
 # Configure env — see https://revornix.com/docs/environment
 cp .env.example .env
 
 # Start the worker (default: --pool=threads --concurrency=20 --loglevel=info -E)
-./start-worker.sh
+PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
 ```
 
 You can override Celery flags by passing them to `start-worker.sh`:
