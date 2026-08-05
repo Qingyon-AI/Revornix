@@ -13,4 +13,4 @@ requires-python = ">=3.11"
 # 148 个引用点零改动，这次提取的风险因此可控。
 [tool.setuptools]
 py-modules = ["encryption"]
-packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud"]
+packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud", "base_implement", "common", "data", "engine", "file", "notification", "proxy"]

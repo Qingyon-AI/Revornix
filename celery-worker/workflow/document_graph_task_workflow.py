@@ -5,7 +5,7 @@ from typing import TypedDict
 import crud
 from langgraph.graph import StateGraph, END
 
-from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
+from common.plan_access import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.jwt_utils import create_token
 from common.logger import exception_logger
 from common.document_guard import ensure_document_active

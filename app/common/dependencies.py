@@ -1,0 +1,710 @@
+from dotenv import find_dotenv, load_dotenv
+# usecwd=True 很关键：load_dotenv 默认从**调用方文件所在目录**向上找 .env，
+# 而这个模块搬进 app/ 之后，那条路径通向仓库根 —— 那里恰好也有一个 .env，
+# 于是它会**静默读到另一份配置**（比找不到更糟）。两个服务都从各自目录启动，
+# 按工作目录找才是原来的语义。
+load_dotenv(find_dotenv(usecwd=True), override=True)
+
+import os
+
+import crud
+import models
+import schemas
+import httpx
+from datetime import datetime, timezone
+import jwt
+from redis import Redis
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+from data.sql.base import async_session_context
+from config.oauth2 import OAUTH_SECRET_KEY
+from config.base import OFFICIAL, DEPLOY_HOSTS, UNION_PAY_API_PREFIX
+from urllib.parse import urlparse
+from fastapi import Request, HTTPException, status, Depends, Header
+from config.langfuse import LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+from common.env import is_env_disabled, is_env_enabled
+from common.logger import exception_logger, format_log_message
+from common.subscription_access import get_plan_access_level_from_product_uuid
+from common.timezone import UTC_TIMEZONE_NAME, normalize_timezone_name, timezone_cache_key
+from enums.product import PlanAccessLevel
+from enums.user import UserRole
+
+if OAUTH_SECRET_KEY is None:
+    raise Exception("OAUTH_SECRET_KEY is not set")
+if LANGFUSE_PUBLIC_KEY is None or LANGFUSE_SECRET_KEY is None:
+    raise Exception("LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY is not set")
+
+LANGFUSE_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+LANGFUSE_MAX_RETRIES = 3
+LANGFUSE_BASE_BACKOFF_SECONDS = 1.0
+LANGFUSE_MAX_BACKOFF_SECONDS = 6.0
+    
+async def get_request_host(request: Request) -> str | None:
+    origin = request.headers.get("origin")
+    if origin:
+        return urlparse(origin).netloc
+
+    referer = request.headers.get("referer")
+    if referer:
+        return urlparse(referer).netloc
+
+    return None
+
+async def check_deployed_by_official(
+    host = Depends(get_request_host)
+):
+    # 检查是否是部署在官方的服务
+    if host in DEPLOY_HOSTS:
+        return True
+    if is_env_enabled(OFFICIAL):
+        return True
+    return False
+
+
+async def reject_if_official(
+    host = Depends(get_request_host)
+):
+    # 如果不是部署着的服务 则可访问
+    if host not in DEPLOY_HOSTS and is_env_disabled(OFFICIAL):
+        return True
+    raise schemas.error.CustomException(message='This api is only available for local use, and is disabled in the official deployment version', code=403)
+
+async def get_async_db():
+    async with async_session_context() as db:
+        try:
+            yield db
+        except Exception as e:
+            await db.rollback()
+            exception_logger.error(
+                format_log_message("async_db_session_failed", error=e)
+            )
+            raise
+
+
+REFRESH_TOKEN_TYPE = "refresh"
+
+
+def decode_jwt_token(
+    token: str,
+    secret_key: str = OAUTH_SECRET_KEY
+):
+    return jwt.decode(token, secret_key, algorithms=["HS256"])
+
+
+def _reject_if_refresh_token(payload: dict) -> None:
+    if payload.get("type") == REFRESH_TOKEN_TYPE:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token cannot be used as access token",
+        )
+
+
+def _reject_if_stale_auth_epoch(payload: dict, user: models.user.User) -> None:
+    token_auth_epoch = payload.get("auth_epoch")
+    if token_auth_epoch is None:
+        token_auth_epoch = 0
+    if token_auth_epoch != user.auth_epoch:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication session is stale",
+        )
+
+
+async def resolve_current_user_from_token(
+    *,
+    request: Request,
+    token: str,
+    raw_timezone: str | None = None,
+) -> models.user.User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = decode_jwt_token(token=token)
+        uuid: str | None = payload.get("sub")
+        if uuid is None:
+            raise credentials_exception
+        _reject_if_refresh_token(payload)
+    except HTTPException:
+        raise
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="required_auth_short_lived", error=e)
+        )
+        raise credentials_exception
+
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
+        )
+        if user is None:
+            raise credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=raw_timezone,
+        )
+        return user
+
+
+
+def get_cache(request: Request) -> Redis:
+    return request.app.state.redis
+
+
+async def _cache_user_timezone(
+    request: Request,
+    user_id: int,
+    raw_timezone: str | None,
+) -> str:
+    if raw_timezone is None or not raw_timezone.strip():
+        return UTC_TIMEZONE_NAME
+    timezone_name = normalize_timezone_name(raw_timezone)
+    redis_conn = getattr(request.app.state, "redis", None)
+    if redis_conn is None:
+        return timezone_name
+    try:
+        await redis_conn.set(timezone_cache_key(user_id), timezone_name)
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message(
+                "user_timezone_cache_failed",
+                user_id=user_id,
+                timezone=timezone_name,
+                error=e,
+            )
+        )
+    return timezone_name
+
+
+def get_request_timezone(
+    x_user_timezone: str | None = Header(default=None),
+) -> str:
+    return normalize_timezone_name(x_user_timezone)
+
+async def get_api_key(
+    api_key: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_async_db)
+):
+    if api_key is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API Key")
+    db_api_key = await crud.api_key.get_api_key_by_api_key_async(
+        db=db,
+        api_key=api_key,
+    )
+    if db_api_key is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key")
+    try:
+        async with async_session_context() as touch_db:
+            await crud.api_key.touch_api_key_last_used_async(
+                db=touch_db,
+                api_key_id=db_api_key.id,
+            )
+            await touch_db.commit()
+    except Exception as e:
+        exception_logger.error(
+            format_log_message("api_key_touch_last_used_failed", error=e)
+        )
+    return db_api_key
+
+async def get_current_user_with_api_key(
+    request: Request,
+    api_key: models.api_key.ApiKey = Depends(get_api_key),
+    x_user_timezone: str | None = Header(default=None),
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_id_async(
+            db=db,
+            user_id=api_key.user_id,
+        )
+        if user is None:
+            raise credentials_exception
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
+
+def _trusted_proxy_count() -> int:
+    """Number of trusted reverse-proxy hops in front of the API.
+
+    Why: blindly trusting X-Forwarded-For[0] lets any client spoof their IP
+    by sending the header. By counting from the right we skip exactly the
+    hops we control. Default 0 = ignore X-Forwarded-For entirely (safe for
+    direct exposure). Set TRUSTED_PROXY_COUNT=1 behind one reverse proxy.
+    """
+    raw = os.environ.get("TRUSTED_PROXY_COUNT", "0")
+    try:
+        value = int(raw)
+        return max(value, 0)
+    except ValueError:
+        return 0
+
+
+def get_real_ip(
+    request: Request,
+    x_forwarded_for: str | None = Header(default=None)
+) -> str | None:
+    trusted_hops = _trusted_proxy_count()
+    if x_forwarded_for and trusted_hops > 0:
+        forwarded_chain = [item.strip() for item in x_forwarded_for.split(",") if item.strip()]
+        if forwarded_chain:
+            # X-Forwarded-For chains: client, proxy1, proxy2, ...
+            # The right-most entries are appended by the closest proxies we
+            # control; pick the entry just before our trusted hops.
+            index = max(len(forwarded_chain) - trusted_hops - 1, 0)
+            return forwarded_chain[index]
+    if request.client:
+        return request.client.host
+    return None
+
+def get_authorization_header(
+    authorization: str | None = Header(default=None)
+):
+    if authorization is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authorization header")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
+    return authorization.replace("Bearer ", "")
+
+async def get_current_user_without_throw(
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_user_timezone: str | None = Header(default=None),
+):
+    """Optional-auth dependency.
+
+    Semantics:
+    - No Authorization header        -> return None (genuine anonymous request).
+    - Authorization header present
+      and valid                      -> return the resolved user.
+    - Authorization header present
+      but malformed / expired /
+      decode-fails / refresh-token / -> raise 401.
+      points at missing user
+    - User exists but is forbidden   -> raise 403.
+
+    Rationale: when the caller *claims* to be authenticated by sending a Bearer
+    token, we must not silently demote them to anonymous on token failure.
+    Doing so causes the request to fall through to downstream permission checks
+    that then return 403 ("no permission") instead of 401 ("refresh your
+    token"), which prevents the client from triggering its refresh-and-retry
+    flow and leaves users staring at false permission errors. See
+    `web/src/lib/request.ts` — only 401 triggers refresh.
+    """
+    if authorization is None:
+        return None
+
+    authenticate_value = "Bearer"
+    invalid_credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+
+    if not authorization.startswith(authenticate_value):
+        raise invalid_credentials_exception
+
+    try:
+        token = authorization.replace('Bearer ', '')
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
+        uuid: str | None = payload.get("sub")
+        if uuid is None:
+            raise invalid_credentials_exception
+        if payload.get("type") == REFRESH_TOKEN_TYPE:
+            raise invalid_credentials_exception
+    except HTTPException:
+        raise
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="optional_auth", error=e)
+        )
+        raise invalid_credentials_exception
+
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
+        )
+        if user is None:
+            raise invalid_credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden",
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
+
+async def get_current_user(
+    request: Request,
+    authorization: str | None = Header(default=None), 
+    x_user_timezone: str | None = Header(default=None),
+):
+    authenticate_value = "Bearer"
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    if authorization is None or not authorization.startswith(authenticate_value):
+        raise credentials_exception
+    try:
+        token = authorization.replace('Bearer ', '')
+        payload = jwt.decode(token, OAUTH_SECRET_KEY, algorithms=['HS256'])
+        uuid: str | None = payload.get("sub")
+        if uuid is None:
+            raise credentials_exception
+        _reject_if_refresh_token(payload)
+    except HTTPException:
+        raise
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("token_decode_failed", source="required_auth", error=e)
+        )
+        raise credentials_exception
+    async with async_session_context() as db:
+        user = await crud.user.get_user_by_uuid_async(
+            db=db,
+            uuid=uuid,
+        )
+        if user is None:
+            raise credentials_exception
+        _reject_if_stale_auth_epoch(payload=payload, user=user)
+        if user.is_forbidden:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are forbidden"
+            )
+        await _cache_user_timezone(
+            request=request,
+            user_id=user.id,
+            raw_timezone=x_user_timezone,
+        )
+        return user
+
+
+async def get_current_user_short_lived(
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_user_timezone: str | None = Header(default=None),
+):
+    authenticate_value = "Bearer"
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    if authorization is None or not authorization.startswith(authenticate_value):
+        raise credentials_exception
+    token = authorization.replace("Bearer ", "", 1)
+    return await resolve_current_user_from_token(
+        request=request,
+        token=token,
+        raw_timezone=x_user_timezone,
+    )
+
+
+
+def _parse_plan_start_time(raw: Any) -> datetime | None:
+    if raw is None:
+        return None
+
+    if isinstance(raw, datetime):
+        if raw.tzinfo is None:
+            return raw.replace(tzinfo=timezone.utc)
+        return raw.astimezone(timezone.utc)
+
+    if isinstance(raw, (int, float)):
+        ts = float(raw)
+        if ts > 1_000_000_000_000:
+            ts = ts / 1000
+        return datetime.fromtimestamp(ts, tz=timezone.utc)
+
+    if isinstance(raw, str):
+        value = raw.strip()
+        if not value:
+            return None
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+
+    return None
+
+
+def _extract_user_plan_from_payload(payload: object) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+
+    user_plan = payload.get("userPlan")
+    if user_plan is None:
+        user_plan = payload.get("user_plan")
+
+    if not isinstance(user_plan, dict):
+        return None
+    return user_plan
+
+
+async def get_user_plan_payload_in_func(
+    authorization: str | None,
+) -> dict[str, Any] | None:
+    headers: dict[str, str] = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/info",
+                headers=headers,
+            )
+            if not response.is_success:
+                exception_logger.warning(
+                    format_log_message(
+                        "user_plan_info_request_failed",
+                        status_code=response.status_code,
+                    )
+                )
+                return None
+            payload = response.json()
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("user_plan_info_request_failed", error=e)
+        )
+        return None
+
+    return _extract_user_plan_from_payload(payload)
+
+
+async def get_user_plan_start_time_in_func(
+    authorization: str | None,
+) -> datetime | None:
+    user_plan = await get_user_plan_payload_in_func(
+        authorization=authorization,
+    )
+    if user_plan is None:
+        return None
+
+    start_raw = user_plan.get("startTime")
+    if start_raw is None:
+        start_raw = user_plan.get("start_time")
+    return _parse_plan_start_time(start_raw)
+
+
+async def get_user_plan_level_in_func(
+    authorization: str | None,
+) -> PlanAccessLevel:
+    if await _is_admin_or_root_from_authorization_async(authorization):
+        return PlanAccessLevel.MAX
+
+    user_plan = await get_user_plan_payload_in_func(
+        authorization=authorization,
+    )
+    if user_plan is None:
+        return PlanAccessLevel.FREE
+
+    expire_time_raw = user_plan.get("expireTime")
+    if expire_time_raw is None:
+        expire_time_raw = user_plan.get("expire_time")
+    expire_time = _parse_plan_start_time(expire_time_raw)
+    if expire_time is None or expire_time <= datetime.now(timezone.utc):
+        return PlanAccessLevel.FREE
+
+    plan = user_plan.get("plan")
+    if not isinstance(plan, dict):
+        return PlanAccessLevel.FREE
+    product = plan.get("product")
+    if not isinstance(product, dict):
+        return PlanAccessLevel.FREE
+
+    product_uuid = product.get("uuid")
+    if not isinstance(product_uuid, str) or not product_uuid.strip():
+        return PlanAccessLevel.FREE
+    return get_plan_access_level_from_product_uuid(product_uuid)
+
+
+async def resolve_user_plan_level(
+    user: models.user.User,
+) -> PlanAccessLevel:
+    """Resolve a user's current subscription tier from a user object.
+
+    Works regardless of how the request authenticated (session bearer token or
+    API key) by minting a short-lived access token for the pay-system lookup.
+    """
+    from common.jwt_utils import create_token
+
+    access_token, _ = create_token(user=user)
+    return await get_user_plan_level_in_func(
+        authorization=f"Bearer {access_token}",
+    )
+
+
+async def is_paid_subscription_user_in_func(
+    authorization: str | None,
+) -> bool:
+    return await get_user_plan_level_in_func(
+        authorization=authorization,
+    ) > PlanAccessLevel.FREE
+
+
+async def get_user_compute_balance_in_func(
+    authorization: str | None,
+) -> int:
+    headers: dict[str, str] = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/info",
+                headers=headers,
+            )
+            if not response.is_success:
+                exception_logger.warning(
+                    format_log_message(
+                        "user_compute_info_request_failed",
+                        status_code=response.status_code,
+                    )
+                )
+                return 0
+            payload = response.json()
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("user_compute_info_request_failed", error=e)
+        )
+        return 0
+
+    if not isinstance(payload, dict):
+        return 0
+    available_points = payload.get("available_points")
+    if isinstance(available_points, (int, float)):
+        return max(int(available_points), 0)
+    return 0
+
+
+
+
+async def consume_user_compute_points_in_func(
+    *,
+    authorization: str | None,
+    points: int,
+    reason: str,
+    source: str,
+    idempotency_key: str,
+) -> bool:
+    if points <= 0:
+        return True
+
+    headers: dict[str, str] = {}
+    if authorization:
+        if authorization.startswith("Bearer "):
+            headers["Authorization"] = authorization
+        else:
+            headers["Authorization"] = f"Bearer {authorization}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{UNION_PAY_API_PREFIX}/user/compute/consume",
+                headers=headers,
+                json={
+                    "points": int(points),
+                    "reason": reason,
+                    "source": source,
+                    "idempotency_key": idempotency_key,
+                },
+            )
+            return response.is_success
+    except Exception as e:
+        exception_logger.warning(
+            format_log_message("user_compute_consume_request_failed", error=e)
+        )
+        return False
+    
+
+def plan_ability_checked(
+    ability: str
+):
+    async def dependency(
+        authorization: str | None = Header(default=None),
+        deployed_by_official: bool = Depends(check_deployed_by_official)
+    ):
+        # 如果不是官方的部署 那么就直接返回True表示该能力可用
+        if not deployed_by_official:
+            return True
+        if await _is_admin_or_root_from_authorization_async(authorization):
+            return True
+
+        headers = { }
+        if authorization is not None:
+            headers.update({
+                'Authorization': f'{authorization}'
+            })
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f'{UNION_PAY_API_PREFIX}/user/ability/check',
+                headers=headers,
+                json={
+                    "ability": ability
+                }
+            )
+            if not response.is_success: 
+                err = None
+                try:
+                    errMsg = response.json().get("message")
+                    err = schemas.error.CustomException(
+                        message=errMsg, 
+                        code=403
+                    )
+                except Exception as e:
+                    errMsg = f"Something is wrong with the ability check service: {e}"
+                    err = schemas.error.CustomException(
+                        message=errMsg, 
+                        code=503
+                    )
+                raise err
+        return True
+    return dependency
+
+
+# 这三个已移到 common/plan_access.py（不依赖 FastAPI，worker 也要用）。
+# 这里保留再导出，api 侧既有的 `from common.dependencies import ...` 不必改。
+from common.plan_access import (  # noqa: E402
+    _is_admin_or_root_from_authorization_async,
+    check_deployed_by_official_in_fuc,
+    plan_ability_checked_in_func,
+)

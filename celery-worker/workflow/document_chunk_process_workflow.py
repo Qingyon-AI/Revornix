@@ -13,7 +13,7 @@ from common.ai import (
     reducer_summary,
     summary_content,
 )
-from common.dependencies import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
+from common.plan_access import check_deployed_by_official_in_fuc, plan_ability_checked_in_func
 from common.embedding_utils import extract_single_embedding_vector
 from common.jwt_utils import create_token
 from common.logger import exception_logger

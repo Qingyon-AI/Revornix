@@ -21,6 +21,11 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[2]
+# engine 已经合并进 app/ —— 只有一份了。
+# 这里刻意**不写 pytest.skip**：文件找不到就该红。此前用 skip 兜底，结果 engine
+# 搬走之后这几条静静地全跳过了，看起来一切正常。
+ENGINE_INIT = REPO / "app" / "engine" / "__init__.py"
+FACTORY = REPO / "app" / "engine" / "embedding" / "factory.py"
 SERVICES = ["api", "celery-worker"]
 
 
@@ -49,45 +54,40 @@ def relative_from_imports(path: Path) -> list[str]:
     ]
 
 
-@pytest.mark.parametrize("service", SERVICES)
-def test_engine_package_does_not_pull_the_local_engine(service):
-    path = REPO / service / "engine" / "__init__.py"
-    if not path.is_file():
-        pytest.skip(f"{service} 没有 engine 包")
+def test_engine_package_does_not_pull_the_local_engine():
+    path = ENGINE_INIT
+    assert path.is_file(), f"{path} 不存在 —— engine 包被移动了？"
 
     reached = module_level_imports(path) + relative_from_imports(path)
     offenders = [m for m in reached if "qwen_local" in m]
     assert not offenders, (
-        f"{service}/engine/__init__.py 在顶层导入了 {offenders} —— "
+        f"app/engine/__init__.py 在顶层导入了 {offenders} —— "
         "这会让 `import engine` 连带装载 torch（约 1.3 GB），"
         "而默认配置走云端 embedding，那段代码一次都不会执行。"
     )
 
 
-@pytest.mark.parametrize("service", SERVICES)
-def test_factory_imports_the_local_engine_lazily(service):
-    path = REPO / service / "engine" / "embedding" / "factory.py"
-    if not path.is_file():
-        pytest.skip(f"{service} 没有 embedding factory")
+def test_factory_imports_the_local_engine_lazily():
+    path = FACTORY
+    assert path.is_file(), f"{path} 不存在 —— factory 被移动了？"
 
     top = module_level_imports(path)
     assert not [m for m in top if "qwen_local" in m], (
-        f"{service} 的 factory 在模块顶层导入了本地引擎；应当放进分支内部，"
+        "factory 在模块顶层导入了本地引擎；应当放进分支内部，"
         "只有真正选中本地引擎时才 import。"
     )
 
     # 反过来也要确认它**确实**还能拿到本地引擎 —— 否则这条测试可以靠
     # "把功能删掉" 来通过。
     source = path.read_text(encoding="utf-8")
-    assert "qwen_local" in source, f"{service} 的 factory 已经完全不引用本地引擎了"
+    assert "qwen_local" in source, "factory 已经完全不引用本地引擎了"
 
 
 @pytest.mark.parametrize("service", SERVICES)
 def test_torch_is_not_in_the_default_requirements(service):
     req = REPO / service / "requirements.txt"
     opt = REPO / service / "requirements-local-embedding.txt"
-    if not req.is_file():
-        pytest.skip(f"{service} 没有 requirements.txt")
+    assert req.is_file(), f"{service} 没有 requirements.txt"
 
     assert not [
         l for l in req.read_text(encoding="utf-8").splitlines()

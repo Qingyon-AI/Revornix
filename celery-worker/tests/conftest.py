@@ -188,6 +188,8 @@ _install("dotenv", load_dotenv=lambda *a, **k: False, find_dotenv=lambda *a, **k
 _install_lenient("jwt")
 _install_lenient("httpx")
 _install_lenient("sqlalchemy")
+# 合并 app/ 之后，common/ 里多了 api 侧带来的 redis 客户端；Redis 是外部系统。
+_install_lenient("redis")
 
 
 # --- 真正的外部系统 ---
