@@ -312,3 +312,45 @@ api 长出了 `auth_epoch`，worker 的那份 `create_token` 没跟上，而**�
 4. 其余 48 个（36 写法 + 12 常量）直接合并，不需要额外测试。
 
 **要写测试的从 72 收窄到 10。**
+
+---
+
+## 逐条定性：72 → 4
+
+把 72 个按"合并时该怎么办"分类，答案比预期干净得多：
+
+| 处置 | 数量 | 依据 |
+| --- | ---: | --- |
+| ① 纯写法不同，取任一 | 37 | 调用集合、常量、控制流三者全同 |
+| ② 仅常量不同，取任一 | 12 | 调用集合与控制流相同 |
+| ③ 日志迁移，统一到 `log_event` | 8 | api 还在 `logger.info(format_log_message(...))` |
+| ④ 超时策略，有意保留 | 1 | worker 放宽到 10s，请求侧用 httpx 默认 5s |
+| ⑤ **worker 侧死代码，取 api** | 8 | worker 那份从未被调用（如整个 `crud/engine.py` 的白名单过滤） |
+| ⑥ 预加载，取 api（超集安全） | 2 | api 多 `selectinload`；多加载只是多花一点，少加载会 `MissingGreenlet` |
+| **⑦ 需人工决定** | **4** | 见下 |
+
+**要写的集成测试是 0 个。** 上一节估的"10 个"仍然高了：那 6 个 `crud/engine.py`
+分歧里，worker 的版本缺了 `SUPPORTED_ENGINE_PROVIDED_UUIDS` 白名单过滤 —— 看着
+像 bug，实则那 6 个函数在 worker 侧**一个调用点都没有**，是复制过来就没用过的
+陈旧副本。取 api 的版本即可，没有行为可测。
+
+剩下 4 个：
+
+1. `common/jwt_utils.py::create_token` —— 令牌吊销那条，已单独归档，与合并无关；
+2. `crud/notification.py::get_notification_target_by_id_async` —— 预加载写法不同，
+   但走的是 helper，要看一眼；
+3. `data/common.py::resolve_entities_with_semantic_dedupe`
+4. `data/common.py::stream_chunk_document` —— 这两个是 worker 长出来的那部分
+   （worker 142 行 / api 72 行，分块与流式读在 worker 侧），取 worker 的。
+
+### 第四次测量出错
+
+这张表的第一版把 6 个 `crud/engine.py` 函数判成"需人工决定"，因为死代码检查说
+它们**有**调用点。实际那些"调用点"是 `__pycache__` 里的 `.pyc` —— 交互式 shell
+里的 ugrep 默认跳过二进制文件，而脚本里调的 BSD grep 会报 `Binary file matches`。
+加上 `-I --exclude-dir=__pycache__` 之后，8 个函数从"需决定"变成"死代码"。
+
+> 这一轮同一个毛病犯了四次：Milvus 的 `upsert`（名字不是实现）、requirements 的
+> 重依赖（torch 两侧都有）、正则切函数体（假阳性）、以及这次的 grep 二进制匹配。
+> **共同点不是粗心，是"拿工具的输出当事实，而没有先确认那个工具在做什么"。**
+> 四次里有三次是抽查发现的，一次是数字对不上发现的 —— 抽查的性价比高得不成比例。
