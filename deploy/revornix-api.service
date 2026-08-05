@@ -1,0 +1,40 @@
+# /etc/systemd/system/revornix-api.service
+#
+# 装法：
+#   sudo cp deploy/revornix-*.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now revornix-api revornix-worker
+#
+# WorkingDirectory **不能省，也不能改**。合并成单一 app/ 包之后，有两处按
+# 工作目录取值：
+#   - config/base.py 的 BASE_DIR（日志写到 BASE_DIR/logs/）
+#   - 各处 load_dotenv(find_dotenv(usecwd=True))，决定读哪个 .env
+# 之前它们靠"文件恰好在服务目录里"生效，代码搬进 app/ 后就只剩工作目录这一个依据了。
+
+[Unit]
+Description=Revornix API (FastAPI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=ubuntu
+Group=ubuntu
+
+WorkingDirectory=/opt/revornix/api
+ExecStart=/opt/revornix/api/.venv/bin/fastapi run main.py --host 0.0.0.0 --port 8001
+
+# 配置从 WorkingDirectory 下的 .env 读，不用 EnvironmentFile —— 保持与本地
+# `cd api && fastapi run` 完全同一条路径，避免"线上和本地读的不是一份配置"。
+
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=revornix-api
+
+[Install]
+WantedBy=multi-user.target

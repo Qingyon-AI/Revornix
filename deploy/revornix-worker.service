@@ -1,0 +1,34 @@
+# /etc/systemd/system/revornix-worker.service
+
+[Unit]
+Description=Revornix Celery Worker
+After=network-online.target
+Wants=network-online.target
+# 不写 After=revornix-api：worker 不依赖 api 进程。建表由 api 启动时做，
+# 但 worker 自己在 worker_init 里跑 schema_guard 补列，先起也不会炸。
+
+[Service]
+Type=exec
+User=ubuntu
+Group=ubuntu
+
+WorkingDirectory=/opt/revornix/worker
+# 走 start-worker.sh 而不是直接 celery：它负责设置 PYTHONPATH 并 cd 到自身目录，
+# 与本地开发跑的是同一条路径。默认参数 --pool=threads --concurrency=20。
+ExecStart=/opt/revornix/worker/start-worker.sh
+Environment=PATH=/opt/revornix/worker/.venv/bin:/usr/local/bin:/usr/bin:/bin
+
+Restart=always
+RestartSec=10
+
+# celery 的优雅退出：TERM 让它做完手上的任务再退。给足时间 —— 配了
+# task_acks_late，被强杀的任务会重投，但重跑一份大文档是分钟级的浪费。
+KillSignal=SIGTERM
+TimeoutStopSec=300
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=revornix-worker
+
+[Install]
+WantedBy=multi-user.target
