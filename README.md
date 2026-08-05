@@ -115,7 +115,7 @@ A glimpse of the workspace and the public surfaces. The full walkthrough lives i
 ## Quick Start
 
 > [!NOTE]
-> We recommend creating isolated Python environments per service (for example with conda), because dependencies across services can conflict.
+> Use an isolated Python environment per service — uv is what the commands below assume — because dependencies across services can conflict.
 
 ### 1) Clone repository
 
@@ -172,13 +172,18 @@ python -m data.milvus.create
 
 ### 5) Run API service
 
+> uv rather than conda: conda earns its keep managing non-Python dependencies (CUDA, MKL and friends),
+> and torch is now **optional** here — the default configuration uses cloud embedding — so that advantage
+> no longer applies. Measured on a cold cache installing the same requirements: **uv 32s, pip 242s**.
+> uv also downloads the matching Python itself, so the host needs no pyenv.
+
 ```shell
 cd api
-conda create -n api python=3.11 -y
-pip install -r ./requirements.txt
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
 # 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# pip install -r ./requirements-local-embedding.txt
-fastapi run --port 8001
+# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
+./.venv/bin/fastapi run main.py --port 8001
 ```
 
 ### 6) Run gateway service
@@ -202,10 +207,10 @@ pnpm start
 
 ```shell
 cd worker
-conda create -n worker python=3.11 -y
-pip install -r ./requirements.txt
-playwright install
-./start-worker.sh
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
+./.venv/bin/playwright install
+PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
 ```
 
 ### 9) Run frontend

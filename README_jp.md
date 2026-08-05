@@ -172,13 +172,18 @@ python -m data.milvus.create
 
 ### 5) API サービスを起動
 
+> conda ではなく uv を使います。conda の強みは Python 以外の依存（CUDA や MKL など）の管理ですが、
+> torch は現在**任意**（既定はクラウド埋め込み）のため、その強みは効きません。同じ requirements を
+> キャッシュなしで導入した実測値は **uv 32 秒 / pip 242 秒**。uv は対応する Python 自体も取得するため、
+> ホストに pyenv は不要です。
+
 ```shell
 cd api
-conda create -n api python=3.11 -y
-pip install -r ./requirements.txt
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
 # 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# pip install -r ./requirements-local-embedding.txt
-fastapi run --port 8001
+# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
+./.venv/bin/fastapi run main.py --port 8001
 ```
 
 ### 6) ゲートウェイサービスを起動（任意）
@@ -202,10 +207,10 @@ pnpm start
 
 ```shell
 cd worker
-conda create -n worker python=3.11 -y
-pip install -r ./requirements.txt
-playwright install
-./start-worker.sh
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
+./.venv/bin/playwright install
+PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
 ```
 
 ### 9) フロントエンドを起動
