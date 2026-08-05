@@ -1,4 +1,4 @@
-"""OpenTelemetry bootstrap for celery-worker.
+"""OpenTelemetry bootstrap for worker.
 
 ``setup_worker_tracing()`` should be called once per worker process. It is
 idempotent and a no-op when ``OTEL_SDK_DISABLED=true`` or when the OTel

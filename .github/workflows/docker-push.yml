@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [web, hot-news, celery-worker, api]
+        service: [web, hot-news, worker, api]
         arch: [amd64, arm64]
     steps:
       - name: Checkout
@@ -48,7 +48,7 @@ jobs:
       # 构建单架构镜像（使用传统 docker build）
       - name: Build and Push ${{ matrix.service }} (${{ matrix.arch }})
         run: |
-          # 构建上下文是仓库根，不是服务目录 —— api 与 celery-worker 都要用到
+          # 构建上下文是仓库根，不是服务目录 —— api 与 worker 都要用到
           # 同级的 app/。根目录的 .dockerignore 负责把大件挡在外面。
           docker build \
             --rm \
@@ -83,7 +83,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        service: [web, hot-news, celery-worker, api]
+        service: [web, hot-news, worker, api]
     steps:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

@@ -34,7 +34,7 @@ jobs:
         run: python -m compileall -q app
 
   worker:
-    name: celery-worker 编译与测试
+    name: worker 编译与测试
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,17 +44,17 @@ jobs:
       # worker 的依赖很重（torch 等），装齐一次代价太大。compileall 不需要依赖，
       # 但能抓住语法错误和坏缩进 —— 这类问题此前要等任务真正跑起来才暴露。
       - name: 语法检查
-        working-directory: celery-worker
+        working-directory: worker
         run: python -m compileall -q workflow
 
       # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
       # 渲染），因此只装 pytest 就能跑 —— 不必为了测试把整棵运行时依赖树拖进来。
       - name: 安装测试依赖
-        working-directory: celery-worker
+        working-directory: worker
         run: pip install -r requirements-dev.txt
 
       - name: 单元测试
-        working-directory: celery-worker
+        working-directory: worker
         run: python -m pytest -q
 
   gateway:

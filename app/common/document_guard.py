@@ -13,7 +13,7 @@
 `document_process_status_workflow` 正是靠 `except DocumentDeletedError` 来"已删就
 安静返回" —— 两侧合并时取任一版本都会坏掉另一边。现已统一到具名异常。
 
-MIRRORED-FILE: api/ <-> celery-worker/ —— 两侧必须逐字节一致，由 scripts/check_mirrored_files.py 强制。
+MIRRORED-FILE: api/ <-> worker/ —— 两侧必须逐字节一致，由 scripts/check_mirrored_files.py 强制。
 """
 
 from __future__ import annotations

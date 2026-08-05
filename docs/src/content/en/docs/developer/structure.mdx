@@ -11,7 +11,7 @@ Revornix/
 ├── gateway/         # Unified public-entry gateway service
 ├── web/             # Main product frontend (Next.js App Router)
 ├── api/             # Main FastAPI service
-├── celery-worker/   # Background workflows and heavy async jobs
+├── worker/   # Background workflows and heavy async jobs
 ├── hot-news/        # Trending aggregation microservice
 ├── docs/            # This Nextra documentation site
 ├── desktop/         # Planned desktop shell placeholder
@@ -41,11 +41,11 @@ Revornix/
 - Acts as the main synchronous orchestration layer for the product.
 - In split deployments, a separate overseas API slice can be used specifically for Google / GitHub login while the gateway routes only those paths abroad.
 
-### `celery-worker`
+### `worker`
 
 - Handles long-running or expensive background jobs.
 - Owns workflows such as document conversion, embedding, summarization, graph building, section rendering, podcast generation, and notification delivery.
-- Runs from `celery-worker/common/celery/app.py`.
+- Runs from `worker/common/celery/app.py`.
 
 ### `hot-news`
 
@@ -104,7 +104,7 @@ In local development, these infrastructure services are started through `docker-
 
 1. A user action in `web` triggers an API mutation.
 2. `api` records state and enqueues work for Celery.
-3. `celery-worker` performs parsing, chunking, embedding, graph generation, illustration or podcast workflows, and writes results back.
+3. `worker` performs parsing, chunking, embedding, graph generation, illustration or podcast workflows, and writes results back.
 4. `web` polls or refetches API state and presents the updated result.
 
 ### Hot-news path
@@ -121,7 +121,7 @@ What exists today:
 - Local infrastructure bootstrap: `docker-compose-local.yaml`
 - Manual startup for:
   - `api`
-  - `celery-worker`
+  - `worker`
   - `web`
   - `hot-news`
   - `docs` when you want to run the docs site locally
@@ -130,7 +130,7 @@ That means the most common local loop is:
 
 1. Start Postgres / Redis / Neo4j / Milvus / MinIO with `docker-compose-local.yaml`
 2. Initialize baseline data from `api`
-3. Start `api`, `celery-worker`, `hot-news`, and `web`
+3. Start `api`, `worker`, `hot-news`, and `web`
 
 ## 7. Important implementation boundaries
 
@@ -150,7 +150,7 @@ That means the most common local loop is:
 
 - The built-in file backend is MinIO/S3-compatible.
 - The codebase also supports Aliyun OSS, AWS S3, and generic S3 adapters.
-- File-system abstractions exist in both `api/file/*` and `celery-worker/file/*`.
+- File-system abstractions exist in both `api/file/*` and `worker/file/*`.
 
 ## 8. What changed from older documentation
 

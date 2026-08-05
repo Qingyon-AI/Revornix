@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 25
     defaults:
       run:
-        working-directory: celery-worker
+        working-directory: worker
 
     steps:
       - uses: actions/checkout@v4

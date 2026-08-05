@@ -2,7 +2,7 @@
 
 This directory hosts the Revornix web client — every screen a logged-in user sees, every public page a search engine crawls, and every SEO endpoint that exposes the platform to the open web. It is the surface area of the product. If you ever wondered "where is that button drawn?" or "how does that page load?", the answer is almost always here.
 
-It is a standalone Next.js application and can run on its own once the supporting services (`api/`, `celery-worker/`, optionally `gateway/` and `hot-news/`) are reachable.
+It is a standalone Next.js application and can run on its own once the supporting services (`api/`, `worker/`, optionally `gateway/` and `hot-news/`) are reachable.
 
 ## Tech stack
 

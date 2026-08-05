@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 import crud
 import models
-from common.dependencies import (
+from common.plan_access import (
     check_deployed_by_official_in_fuc,
     get_user_plan_level_in_func,
 )

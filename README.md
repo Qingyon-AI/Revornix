@@ -48,7 +48,7 @@ The whole stack — web client, gateway, API, async workers, trending feed, docs
 Revornix/
 ├── web/                       # Next.js client (workspace + SEO pages) — see web/README.md
 ├── api/                       # FastAPI core backend (auth, documents, sections, AI) — see api/README.md
-├── celery-worker/             # Async workflows (embedding, summary, graph, podcast, notifications)
+├── worker/             # Async workflows (embedding, summary, graph, podcast, notifications)
 ├── gateway/                   # Go public-entry gateway (routing, anti-scraping, upstream failover)
 ├── hot-news/                  # Trending aggregation service (based on DailyHotApi)
 ├── docs/                      # Public docs site (revornix.com/docs) — separate Next.js + Nextra
@@ -143,7 +143,7 @@ docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 cp ./web/.env.example ./web/.env
 cp ./gateway/.env.example ./gateway/.env
 cp ./api/.env.example ./api/.env
-cp ./celery-worker/.env.example ./celery-worker/.env
+cp ./worker/.env.example ./worker/.env
 ```
 
 Configure env values based on [environment docs](https://revornix.com/docs/environment).
@@ -163,7 +163,7 @@ python -m data.milvus.create
 > need nothing but starting the service.
 
 > **Container images.** Every service has a Dockerfile. Build from the **repo
-> root**, not the service directory — `api` and `celery-worker` need the sibling
+> root**, not the service directory — `api` and `worker` need the sibling
 > `shared/` package:
 >
 > ```shell
@@ -201,8 +201,8 @@ pnpm start
 ### 8) Run Celery worker
 
 ```shell
-cd celery-worker
-conda create -n celery-worker python=3.11 -y
+cd worker
+conda create -n worker python=3.11 -y
 pip install -r ./requirements.txt
 playwright install
 ./start-worker.sh
@@ -221,7 +221,7 @@ After all services are running, open <http://localhost:3000>.
 ## Where to look next
 
 - **Want to use the product?** Start at <https://revornix.com/docs/start>, then jump into the workspace at <https://app.revornix.com>.
-- **Want to extend it?** Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`celery-worker/`](./celery-worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
+- **Want to extend it?** Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`worker/`](./worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
 - **Want to contribute docs?** Add an MDX file under [`docs/src/content/`](./docs/README.md).
 - **Curious about the desktop app?** An Electron thin-shell for macOS and Windows lives in [`desktop/`](./desktop/README.md); docs at [Developer → Desktop App](https://revornix.com/docs/developer/desktop).
 - **Architecture deep dive?** <https://revornix.com/docs/developer/structure>.

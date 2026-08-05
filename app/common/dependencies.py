@@ -427,36 +427,6 @@ async def get_current_user_short_lived(
 
 
 
-def _parse_plan_start_time(raw: Any) -> datetime | None:
-    if raw is None:
-        return None
-
-    if isinstance(raw, datetime):
-        if raw.tzinfo is None:
-            return raw.replace(tzinfo=timezone.utc)
-        return raw.astimezone(timezone.utc)
-
-    if isinstance(raw, (int, float)):
-        ts = float(raw)
-        if ts > 1_000_000_000_000:
-            ts = ts / 1000
-        return datetime.fromtimestamp(ts, tz=timezone.utc)
-
-    if isinstance(raw, str):
-        value = raw.strip()
-        if not value:
-            return None
-        if value.endswith("Z"):
-            value = value[:-1] + "+00:00"
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            return None
-        if parsed.tzinfo is None:
-            return parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc)
-
-    return None
 
 
 def _extract_user_plan_from_payload(payload: object) -> dict[str, Any] | None:
@@ -472,85 +442,10 @@ def _extract_user_plan_from_payload(payload: object) -> dict[str, Any] | None:
     return user_plan
 
 
-async def get_user_plan_payload_in_func(
-    authorization: str | None,
-) -> dict[str, Any] | None:
-    headers: dict[str, str] = {}
-    if authorization:
-        if authorization.startswith("Bearer "):
-            headers["Authorization"] = authorization
-        else:
-            headers["Authorization"] = f"Bearer {authorization}"
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{UNION_PAY_API_PREFIX}/user/info",
-                headers=headers,
-            )
-            if not response.is_success:
-                exception_logger.warning(
-                    format_log_message(
-                        "user_plan_info_request_failed",
-                        status_code=response.status_code,
-                    )
-                )
-                return None
-            payload = response.json()
-    except Exception as e:
-        exception_logger.warning(
-            format_log_message("user_plan_info_request_failed", error=e)
-        )
-        return None
-
-    return _extract_user_plan_from_payload(payload)
 
 
-async def get_user_plan_start_time_in_func(
-    authorization: str | None,
-) -> datetime | None:
-    user_plan = await get_user_plan_payload_in_func(
-        authorization=authorization,
-    )
-    if user_plan is None:
-        return None
-
-    start_raw = user_plan.get("startTime")
-    if start_raw is None:
-        start_raw = user_plan.get("start_time")
-    return _parse_plan_start_time(start_raw)
 
 
-async def get_user_plan_level_in_func(
-    authorization: str | None,
-) -> PlanAccessLevel:
-    if await _is_admin_or_root_from_authorization_async(authorization):
-        return PlanAccessLevel.MAX
-
-    user_plan = await get_user_plan_payload_in_func(
-        authorization=authorization,
-    )
-    if user_plan is None:
-        return PlanAccessLevel.FREE
-
-    expire_time_raw = user_plan.get("expireTime")
-    if expire_time_raw is None:
-        expire_time_raw = user_plan.get("expire_time")
-    expire_time = _parse_plan_start_time(expire_time_raw)
-    if expire_time is None or expire_time <= datetime.now(timezone.utc):
-        return PlanAccessLevel.FREE
-
-    plan = user_plan.get("plan")
-    if not isinstance(plan, dict):
-        return PlanAccessLevel.FREE
-    product = plan.get("product")
-    if not isinstance(product, dict):
-        return PlanAccessLevel.FREE
-
-    product_uuid = product.get("uuid")
-    if not isinstance(product_uuid, str) or not product_uuid.strip():
-        return PlanAccessLevel.FREE
-    return get_plan_access_level_from_product_uuid(product_uuid)
 
 
 async def resolve_user_plan_level(
@@ -569,91 +464,12 @@ async def resolve_user_plan_level(
     )
 
 
-async def is_paid_subscription_user_in_func(
-    authorization: str | None,
-) -> bool:
-    return await get_user_plan_level_in_func(
-        authorization=authorization,
-    ) > PlanAccessLevel.FREE
-
-
-async def get_user_compute_balance_in_func(
-    authorization: str | None,
-) -> int:
-    headers: dict[str, str] = {}
-    if authorization:
-        if authorization.startswith("Bearer "):
-            headers["Authorization"] = authorization
-        else:
-            headers["Authorization"] = f"Bearer {authorization}"
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{UNION_PAY_API_PREFIX}/user/compute/info",
-                headers=headers,
-            )
-            if not response.is_success:
-                exception_logger.warning(
-                    format_log_message(
-                        "user_compute_info_request_failed",
-                        status_code=response.status_code,
-                    )
-                )
-                return 0
-            payload = response.json()
-    except Exception as e:
-        exception_logger.warning(
-            format_log_message("user_compute_info_request_failed", error=e)
-        )
-        return 0
-
-    if not isinstance(payload, dict):
-        return 0
-    available_points = payload.get("available_points")
-    if isinstance(available_points, (int, float)):
-        return max(int(available_points), 0)
-    return 0
 
 
 
 
-async def consume_user_compute_points_in_func(
-    *,
-    authorization: str | None,
-    points: int,
-    reason: str,
-    source: str,
-    idempotency_key: str,
-) -> bool:
-    if points <= 0:
-        return True
 
-    headers: dict[str, str] = {}
-    if authorization:
-        if authorization.startswith("Bearer "):
-            headers["Authorization"] = authorization
-        else:
-            headers["Authorization"] = f"Bearer {authorization}"
 
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{UNION_PAY_API_PREFIX}/user/compute/consume",
-                headers=headers,
-                json={
-                    "points": int(points),
-                    "reason": reason,
-                    "source": source,
-                    "idempotency_key": idempotency_key,
-                },
-            )
-            return response.is_success
-    except Exception as e:
-        exception_logger.warning(
-            format_log_message("user_compute_consume_request_failed", error=e)
-        )
-        return False
     
 
 def plan_ability_checked(
@@ -703,8 +519,19 @@ def plan_ability_checked(
 
 # 这三个已移到 common/plan_access.py（不依赖 FastAPI，worker 也要用）。
 # 这里保留再导出，api 侧既有的 `from common.dependencies import ...` 不必改。
+
+
+# 全部 `*_in_func` 都在 common/plan_access.py（不依赖 FastAPI）。
+# 这里再导出，api 侧既有调用点不必改。
 from common.plan_access import (  # noqa: E402
     _is_admin_or_root_from_authorization_async,
     check_deployed_by_official_in_fuc,
     plan_ability_checked_in_func,
+    _parse_plan_start_time,
+    consume_user_compute_points_in_func,
+    get_user_compute_balance_in_func,
+    get_user_plan_level_in_func,
+    get_user_plan_payload_in_func,
+    get_user_plan_start_time_in_func,
+    is_paid_subscription_user_in_func,
 )

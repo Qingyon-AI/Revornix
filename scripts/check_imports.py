@@ -32,7 +32,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 # 每个服务是自己的 import 根：`from data.sql.base import x` 在两侧各自解析。
-SERVICE_ROOTS = ["api", "celery-worker", "app"]
+SERVICE_ROOTS = ["api", "worker", "app"]
 SKIP_DIRS = {"__pycache__", ".venv", "venv", "node_modules", "alembic", "tests", "tests_integration"}
 
 

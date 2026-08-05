@@ -1,4 +1,4 @@
-"""Structured logger for celery-worker.
+"""Structured logger for worker.
 
 Output is JSON one-line-per-record so logs from worker, api and web tier can
 be joined by ``trace_id``. Existing call-sites that use ``format_log_message``

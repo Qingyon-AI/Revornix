@@ -374,7 +374,7 @@ class SectionUpdateRequest(BaseModel):
     process_task_trigger_scheduler: str | None = None
 
 
-# 以下两个来自 celery-worker 侧 —— 两份 schemas 合并到 shared 时并入。
+# 以下两个来自 worker 侧 —— 两份 schemas 合并到 shared 时并入。
 # section_ppt_workflow 用它们承接模型返回的幻灯片计划（结构化输出的 schema）。
 
 class PptSlidePlan(BaseModel):

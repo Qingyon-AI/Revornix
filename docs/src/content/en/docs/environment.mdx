@@ -6,7 +6,7 @@ This document is organized around the actual read points in the repository and d
 
 Recommended deployment boundaries:
 
-- Application services are started manually: `gateway`, `api`, `celery-worker`, `web`, `hot-news`
+- Application services are started manually: `gateway`, `api`, `worker`, `web`, `hot-news`
 - Only the "local infrastructure dependencies" Docker path remains: `docker-compose-local.yaml` + `.env.local`
 - The full application is not started through one all-in-one Compose file
 
@@ -15,7 +15,7 @@ Recommended deployment boundaries:
 | Scenario | Example file | Actual file | How it is loaded | Notes |
 | --- | --- | --- | --- | --- |
 | API service | `api/.env.example` | `api/.env` | Multiple `load_dotenv(override=True)` calls | Values in `.env` override external environment variables with the same name |
-| Celery Worker | `celery-worker/.env.example` | `celery-worker/.env` | Multiple `load_dotenv(override=True)` calls | Same behavior as API |
+| Celery Worker | `worker/.env.example` | `worker/.env` | Multiple `load_dotenv(override=True)` calls | Same behavior as API |
 | Web frontend | `web/.env.example` | `web/.env` | `next.config.ts` + Next runtime | Changes usually require a rebuild |
 | Gateway service | `gateway/.env.example` | `gateway/.env` | Built-in lightweight `.env` parsing + `go run ./cmd/gateway` | Unified public entrypoint, path-based routing, and split-region auth proxy |
 | Hot News service | No committed sample file | `hot-news/.env` if you create one | `dotenv.config()` | This repo does not commit `hot-news/.env.example` |
@@ -31,7 +31,7 @@ Additional notes:
 
 ### 2.1 API / Worker
 
-- Many `api` and `celery-worker` entrypoints call `load_dotenv(override=True)`.
+- Many `api` and `worker` entrypoints call `load_dotenv(override=True)`.
 - That means if `.env` and the external shell environment define the same variable, the value from `.env` wins.
 - The following boolean checks now accept case-insensitive truthy values: `1`, `true`, `yes`, `on`, `y`
 - The main switches affected by this rule include:
@@ -107,10 +107,10 @@ The reason is not that every feature is always called immediately. The current A
 
 The current Worker startup chain goes through:
 
-- `celery-worker/common/celery/app.py`
-- `celery-worker/common/dependencies.py`
-- `celery-worker/common/encrypt.py`
-- `celery-worker/proxy/notification_proxy.py`
+- `worker/common/celery/app.py`
+- `worker/common/dependencies.py`
+- `worker/common/encrypt.py`
+- `worker/proxy/notification_proxy.py`
 - Multiple workflow / proxy / data modules
 
 Additional notes:
@@ -131,22 +131,22 @@ Additional notes:
 
 | Variable | Services | Required level | Default / example | Main read points | Purpose |
 | --- | --- | --- | --- | --- | --- |
-| `OAUTH_SECRET_KEY` | api, worker | Required at startup | None | `api/config/oauth2.py`, `api/common/jwt_utils.py`, `celery-worker/config/oauth2.py` | JWT signing key; API and Worker must use the same value |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB_URL` / `POSTGRES_DB` | api, worker | Required at startup | Example: `revornix` / `12345678` / `localhost` / `revornix` | `api/data/sql/base.py`, `celery-worker/data/sql/base.py`, `api/alembic/env.py` | PostgreSQL connection |
-| `REDIS_URL` / `REDIS_PORT` | api, worker | Required at startup | Example: `localhost` / `6379` | `api/common/redis.py`, `api/common/celery/app.py`, `celery-worker/common/celery/app.py` | API cache and Celery broker/backend |
-| `MILVUS_CLUSTER_ENDPOINT` / `MILVUS_TOKEN` | api, worker | Required at startup | Example: `http://localhost:19530` / `root:Milvus` | `api/data/milvus/base.py`, `celery-worker/data/milvus/base.py` | Vector database |
-| `NEO4J_USER` / `NEO4J_PASS` / `NEO4J_URI` | api, worker | Required at startup | Example: `neo4j` / `12345678` / `bolt://localhost:7687` | `api/data/neo4j/base.py`, `celery-worker/data/neo4j/base.py` | Graph database |
-| `FILE_SYSTEM_SERVER_PUBLIC_URL` / `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD` | api, worker | Required at startup | Example: local MinIO | `api/file/built_in_remote_file_service.py`, `celery-worker/file/built_in_remote_file_service.py` | Built-in file system (MinIO / S3-compatible) |
-| `APIKEY_ENCRYPT_KEY` | api, worker | Required at startup | None | `api/common/encrypt.py`, `celery-worker/common/encrypt.py` | Master key for API key encryption |
+| `OAUTH_SECRET_KEY` | api, worker | Required at startup | None | `api/config/oauth2.py`, `api/common/jwt_utils.py`, `worker/config/oauth2.py` | JWT signing key; API and Worker must use the same value |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB_URL` / `POSTGRES_DB` | api, worker | Required at startup | Example: `revornix` / `12345678` / `localhost` / `revornix` | `api/data/sql/base.py`, `worker/data/sql/base.py`, `api/alembic/env.py` | PostgreSQL connection |
+| `REDIS_URL` / `REDIS_PORT` | api, worker | Required at startup | Example: `localhost` / `6379` | `api/common/redis.py`, `api/common/celery/app.py`, `worker/common/celery/app.py` | API cache and Celery broker/backend |
+| `MILVUS_CLUSTER_ENDPOINT` / `MILVUS_TOKEN` | api, worker | Required at startup | Example: `http://localhost:19530` / `root:Milvus` | `api/data/milvus/base.py`, `worker/data/milvus/base.py` | Vector database |
+| `NEO4J_USER` / `NEO4J_PASS` / `NEO4J_URI` | api, worker | Required at startup | Example: `neo4j` / `12345678` / `bolt://localhost:7687` | `api/data/neo4j/base.py`, `worker/data/neo4j/base.py` | Graph database |
+| `FILE_SYSTEM_SERVER_PUBLIC_URL` / `FILE_SYSTEM_USER_NAME` / `FILE_SYSTEM_PASSWORD` | api, worker | Required at startup | Example: local MinIO | `api/file/built_in_remote_file_service.py`, `worker/file/built_in_remote_file_service.py` | Built-in file system (MinIO / S3-compatible) |
+| `APIKEY_ENCRYPT_KEY` | api, worker | Required at startup | None | `api/common/encrypt.py`, `worker/common/encrypt.py` | Master key for API key encryption |
 | `ENGINE_CONFIG_ENCRYPT_KEY` | api, worker | Required at startup | None | Same as above | Master key for engine configuration encryption |
 | `FILE_SYSTEM_CONFIG_ENCRYPT_KEY` | api, worker | Required at startup | None | Same as above | Master key for file system configuration encryption |
 | `NOTIFICATION_SOURCE_CONFIG_ENCRYPT_KEY` | api, worker | Required at startup | None | Same as above | Master key for notification source configuration encryption |
 | `NOTIFICATION_TARGET_CONFIG_ENCRYPT_KEY` | api, worker | Required at startup | None | Same as above | Master key for notification target configuration encryption |
-| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | api, worker | Required at startup | None | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | The current code validates them strictly during import |
-| `LANGFUSE_BASE_URL` | api, worker | Optional | None | `api/config/langfuse.py`, `celery-worker/config/langfuse.py` | Currently only read into config; there is no direct call site in this repo yet |
-| `OFFICIAL` | api, worker | Optional | Example: `False` | `api/common/dependencies.py`, `celery-worker/common/dependencies.py` | Official deployment switch; uses case-insensitive boolean parsing |
-| `DEPLOY_HOSTS` | api (worker currently keeps config only) | Optional | Config default is `localhost`; the sample shows official domains | `api/config/base.py`, `api/common/dependencies.py`, `celery-worker/config/base.py` | Official-host detection on the API side; Worker does not currently consume it further |
-| `WEB_BASE_URL` | api, worker | Recommended | None | `api/notification/tool/*.py`, `celery-worker/notification/tool/*.py`, `api/common/oauth_redirect.py` | Expands relative links into full notification links and acts as the unified public callback base for Google / GitHub OAuth |
+| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | api, worker | Required at startup | None | `api/common/dependencies.py`, `worker/common/dependencies.py` | The current code validates them strictly during import |
+| `LANGFUSE_BASE_URL` | api, worker | Optional | None | `api/config/langfuse.py`, `worker/config/langfuse.py` | Currently only read into config; there is no direct call site in this repo yet |
+| `OFFICIAL` | api, worker | Optional | Example: `False` | `api/common/dependencies.py`, `worker/common/dependencies.py` | Official deployment switch; uses case-insensitive boolean parsing |
+| `DEPLOY_HOSTS` | api (worker currently keeps config only) | Optional | Config default is `localhost`; the sample shows official domains | `api/config/base.py`, `api/common/dependencies.py`, `worker/config/base.py` | Official-host detection on the API side; Worker does not currently consume it further |
+| `WEB_BASE_URL` | api, worker | Recommended | None | `api/notification/tool/*.py`, `worker/notification/tool/*.py`, `api/common/oauth_redirect.py` | Expands relative links into full notification links and acts as the unified public callback base for Google / GitHub OAuth |
 
 ### 4.2 Authentication, third-party login, and notifications
 
@@ -160,7 +160,7 @@ Additional notes:
 | `WECHAT_HTTP_TIMEOUT_SECONDS` | api | Optional | `20` | `api/common/tp_auth/wechat_utils.py` | Timeout in seconds for WeChat HTTP requests |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` | api | Currently required for API startup | None | `api/common/system_email/email.py`, `api/router/user.py`, `api/router/notification_target_manage.py` | Email verification codes and notification email |
 | `TENCENT_SECRET_ID` / `TENCENT_SECRET_KEY` / `TENCENT_SMS_SDK_APP_ID` / `TENCENT_SMS_APP_KEY` / `TENCENT_SMS_SIGN` | api | Currently required for API startup | None | `api/common/sms/tencent_sms.py`, `api/router/user_auth_phone.py` | Phone verification codes |
-| `IOS_DEEPLINK_SCHEME` | api, worker | Optional | `revornix` | `api/notification/tool/apple.py`, `celery-worker/notification/tool/apple.py` | Deep link scheme for iOS push notifications |
+| `IOS_DEEPLINK_SCHEME` | api, worker | Optional | `revornix` | `api/notification/tool/apple.py`, `worker/notification/tool/apple.py` | Deep link scheme for iOS push notifications |
 
 ### 4.3 Bilibili / YouTube credentials and startup authentication
 
@@ -182,9 +182,9 @@ Additional notes:
 | Variable | Services | Required level | Default / example | Main read points | Purpose |
 | --- | --- | --- | --- | --- | --- |
 | `API_SENTRY_ENABLE` / `API_SENTRY_DSN` | api | Optional | Disabled by default | `api/main.py` | API Sentry initialization |
-| `WORKER_SENTRY_ENABLE` / `WORKER_SENTRY_DSN` | worker | Optional | Disabled by default | `celery-worker/common/celery/app.py` | Worker Sentry initialization with `CeleryIntegration` |
-| `WORKFLOW_TIMING_VERBOSE` | worker | Optional | `0` | `celery-worker/workflow/timing.py` | Emit detailed workflow timing logs |
-| `ALI_DASHSCOPE_EMBEDDING_ON` | api, worker | Optional | `False` | `api/engine/embedding/factory.py`, `celery-worker/engine/embedding/factory.py` | Switch to Alibaba DashScope embedding |
+| `WORKER_SENTRY_ENABLE` / `WORKER_SENTRY_DSN` | worker | Optional | Disabled by default | `worker/common/celery/app.py` | Worker Sentry initialization with `CeleryIntegration` |
+| `WORKFLOW_TIMING_VERBOSE` | worker | Optional | `0` | `worker/workflow/timing.py` | Emit detailed workflow timing logs |
+| `ALI_DASHSCOPE_EMBEDDING_ON` | api, worker | Optional | `False` | `api/engine/embedding/factory.py`, `worker/engine/embedding/factory.py` | Switch to Alibaba DashScope embedding |
 | `ALI_DASHSCOPE_EMBEDDING_API_KEY` | api, worker | Required when the previous switch is true | None | `api/engine/embedding/qwen_cloud.py`, same file name in worker | DashScope embedding API key |
 | `WS_OFFLINE_CACHE_TTL_SECONDS` | api | Optional | `86400` | `api/common/websocket.py` | TTL for cached offline WebSocket messages |
 | `WS_OFFLINE_CACHE_MAX_MESSAGES` | api | Optional | `200` | `api/common/websocket.py` | Max number of retained offline WebSocket messages |
@@ -198,7 +198,7 @@ Additional notes:
 
 Additional note:
 
-- These four variables also appear in `celery-worker/.env.example`, but the current normal Worker startup path does not use them.
+- These four variables also appear in `worker/.env.example`, but the current normal Worker startup path does not use them.
 
 ### 4.6 Web frontend variables
 
@@ -282,7 +282,7 @@ This path is only responsible for local infrastructure dependencies. It does not
 
 ### 6.2 Variables that also exist in `.env.local.example` but are not read directly by compose-local
 
-These are mostly there so you can copy from one aggregated local sample into `api/.env`, `celery-worker/.env`, and `web/.env` when configuring your machine:
+These are mostly there so you can copy from one aggregated local sample into `api/.env`, `worker/.env`, and `web/.env` when configuring your machine:
 
 - `POSTGRES_DB_URL`
 - `MILVUS_CLUSTER_ENDPOINT`
@@ -304,7 +304,7 @@ These are mostly there so you can copy from one aggregated local sample into `ap
 1. Start local infrastructure first with `.env.local` + `docker-compose-local.yaml`, or reuse the Postgres / Redis / Neo4j / MinIO / Milvus services already running on your machine.
 2. Then configure each service separately:
    - `api/.env`
-   - `celery-worker/.env`
+   - `worker/.env`
    - `web/.env`
    - `hot-news/.env`
 3. In a manual deployment, at minimum keep these cross-service variables consistent:

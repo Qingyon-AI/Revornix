@@ -1,7 +1,7 @@
 # Observability Stack
 
 Revornix ships traces (OTel), errors (Sentry) and structured JSON logs
-(stdout) from all three runtimes — `web`, `api`, `celery-worker`. They share a
+(stdout) from all three runtimes — `web`, `api`, `worker`. They share a
 single `trace_id`, so a customer report can be followed from the browser
 response header all the way down to a Cypher query in Neo4j.
 
@@ -41,14 +41,14 @@ curl -X POST http://localhost:4318/v1/traces \
 
 No env changes needed: each service already points at
 `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` (see
-`api/.env.example`, `celery-worker/.env.example`, `web/.env.example`).
+`api/.env.example`, `worker/.env.example`, `web/.env.example`).
 
 ```bash
 # api
 cd api && fastapi run --port 8001
 
 # worker
-cd celery-worker && ./start-worker.sh
+cd worker && ./start-worker.sh
 
 # web
 cd web && pnpm dev
@@ -115,11 +115,11 @@ all carrying `trace_id`:
 
 ```bash
 # Follow live
-tail -f api/logs/info.log celery-worker/logs/info.log | jq -c
+tail -f api/logs/info.log worker/logs/info.log | jq -c
 
 # Cross-service grep by trace
 TRACE_ID=4bf92f3577b34da6a3ce929d0e0e4736
-grep "$TRACE_ID" api/logs/info.log celery-worker/logs/info.log | sort
+grep "$TRACE_ID" api/logs/info.log worker/logs/info.log | sort
 ```
 
 ## Sentry × OTel

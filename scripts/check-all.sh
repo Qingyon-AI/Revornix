@@ -64,11 +64,11 @@ echo "── api ──"
 step api "OpenAPI spec 是最新的" in_dir api python -m scripts.export_openapi --check
 step api "单元测试"               in_dir api python -m pytest tests -q -p no:cacheprovider
 
-echo "── celery-worker ──"
-# crud/models/schemas/config/protocol 已搬进 app/，这里只列 celery-worker 下还剩的。
+echo "── worker ──"
+# crud/models/schemas/config/protocol 已搬进 app/，这里只列 worker 下还剩的。
 # compileall 对不存在的目录只打印一行"Can't list"、退出码仍是 0 —— 列错了会静静少查。
-step worker "语法检查" in_dir celery-worker python -m compileall -q workflow
-step worker "单元测试" in_dir celery-worker python -m pytest -q -p no:cacheprovider
+step worker "语法检查" in_dir worker python -m compileall -q workflow
+step worker "单元测试" in_dir worker python -m pytest -q -p no:cacheprovider
 
 echo "── web ──"
 step web "类型检查" in_dir web npx tsc --noEmit -p tsconfig.json
@@ -97,14 +97,14 @@ step docs "构建" in_dir docs pnpm build
 # 默默塞进来。CI 侧同理：它在单独的 integration.yml 里，不挂 push/PR。
 if want_explicit integration; then
   echo "── 集成测试 ──"
-  echo "  (需先起容器: docker compose -f celery-worker/tests_integration/docker-compose.yaml up -d --wait)"
+  echo "  (需先起容器: docker compose -f worker/tests_integration/docker-compose.yaml up -d --wait)"
   step integration "写入幂等与入口可导入" \
     env REVORNIX_INTEGRATION=1 \
         POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=revornix \
         POSTGRES_DB_URL=localhost:45432 \
         NEO4J_URI=bolt://localhost:47687 NEO4J_USER=neo4j NEO4J_PASS=neo4jneo4j \
         MILVUS_CLUSTER_ENDPOINT=http://localhost:49530 \
-        bash -c 'cd celery-worker && python -m pytest tests_integration -q'
+        bash -c 'cd worker && python -m pytest tests_integration -q'
 fi
 
 echo

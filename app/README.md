@@ -1,6 +1,6 @@
 # revornix-app
 
-`api/` 与 `celery-worker/` 共用的代码。两个服务各自 `pip install -e ../app`
+`api/` 与 `worker/` 共用的代码。两个服务各自 `pip install -e ../app`
 之后，这里的包以**顶级包**的形式出现在 `sys.path` 上。
 
 ## 为什么是顶级包

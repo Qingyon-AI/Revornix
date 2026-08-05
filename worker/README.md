@@ -31,7 +31,7 @@ In-process periodic jobs (notification dispatch, cache warming, etc.) are schedu
 ## What's inside
 
 ```text
-celery-worker/
+worker/
 ├── start-worker.sh        # Entrypoint: `celery -A common.celery.app worker ...`
 ├── workflow/              # One file per pipeline (see list above)
 ├── engine/                # Pluggable parsing / AI engines
