@@ -1,6 +1,6 @@
-# revornix-shared
+# revornix-app
 
-`api/` 与 `celery-worker/` 共用的代码。两个服务各自 `pip install -e ../shared`
+`api/` 与 `celery-worker/` 共用的代码。两个服务各自 `pip install -e ../app`
 之后，这里的包以**顶级包**的形式出现在 `sys.path` 上。
 
 ## 为什么是顶级包
@@ -23,7 +23,7 @@
 `enums` 能做到零导入改动，靠的是两个同时成立的条件：
 
 1. **整个目录都是共享的** —— 13 个文件在两侧逐字节相同，没有"只属于某一侧"的文件
-   留在里面。否则同一个顶级包会同时来自 `shared/` 和服务目录，Python 只能解析到
+   留在里面。否则同一个顶级包会同时来自 `app/` 和服务目录，Python 只能解析到
    其中一个。
 2. **只依赖标准库** —— shared 不能反过来依赖服务里的代码。
 

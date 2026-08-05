@@ -6,7 +6,7 @@
 # 而一个动不动就红的本地脚本没人会用。
 #
 #   ./scripts/check-all.sh              跑全部（不含集成测试）
-#   ./scripts/check-all.sh web api      只跑指定的
+#   ./scripts/check-all.sh web api      只跑指定的（分组：app api worker web gateway hot-news desktop docs）
 #   ./scripts/check-all.sh integration  跑集成测试（要先起容器，见下）
 set -uo pipefail
 
@@ -57,16 +57,18 @@ step() {  # step <分组> <名称> <命令...>
 in_dir() { local d="$1"; shift; (cd "$d" && "$@"); }
 
 echo "── 跨服务 ──"
-step shared   "api ⇄ worker 镜像文件一致" python3 scripts/check_mirrored_files.py
-step shared   "shared 语法检查"           python3 -m compileall -q shared
-step shared   "导入的名字是否真的存在"    python3 scripts/check_imports.py
+step app      "api ⇄ worker 镜像文件一致" python3 scripts/check_mirrored_files.py
+step app      "app 语法检查"           python3 -m compileall -q app
+step app      "导入的名字是否真的存在"    python3 scripts/check_imports.py
 
 echo "── api ──"
 step api "OpenAPI spec 是最新的" in_dir api python -m scripts.export_openapi --check
 step api "单元测试"               in_dir api python -m pytest tests -q -p no:cacheprovider
 
 echo "── celery-worker ──"
-step worker "语法检查" in_dir celery-worker python -m compileall -q workflow common crud models schemas notification
+# crud/models/schemas/config/protocol 已搬进 app/，这里只列 celery-worker 下还剩的。
+# compileall 对不存在的目录只打印一行"Can't list"、退出码仍是 0 —— 列错了会静静少查。
+step worker "语法检查" in_dir celery-worker python -m compileall -q workflow common data engine notification proxy file base_implement
 step worker "单元测试" in_dir celery-worker python -m pytest -q -p no:cacheprovider
 
 echo "── web ──"

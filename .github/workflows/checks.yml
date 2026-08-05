@@ -31,9 +31,9 @@ jobs:
       - name: 导入的名字是否真的存在
         run: python scripts/check_imports.py
 
-      # shared/ 已经不属于任何一个服务，得有人检查它的语法。
-      - name: shared 语法检查
-        run: python -m compileall -q shared
+      # app/ 已经不属于任何一个服务，得有人检查它的语法。
+      - name: app 语法检查
+        run: python -m compileall -q app
 
   worker:
     name: celery-worker 编译与测试

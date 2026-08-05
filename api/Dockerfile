@@ -1,4 +1,4 @@
-# 构建上下文是**仓库根**，不是 api/ —— 这个服务依赖同级的 shared/。
+# 构建上下文是**仓库根**，不是 api/ —— 这个服务依赖同级的 app/。
 # 对应的构建命令：docker build -f api/Dockerfile .
 FROM python:3.11-slim AS base
 
@@ -8,9 +8,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# 依赖层单独一层：只要 requirements 和 shared/ 没变，改业务代码就不必重装。
+# 依赖层单独一层：只要 requirements 和 app/ 没变，改业务代码就不必重装。
 # torch 那一串装一次要很久，这个分层是有意的。
-COPY shared/ /shared/
+COPY app/ /app/
 COPY api/requirements.txt /app/requirements.txt
 # 本地 embedding 引擎的依赖（torch，wheel 527 MB）**不装**：默认配置走云端。
 # 要在容器里跑本地推理，自行加一层 `pip install -r api/requirements-local-embedding.txt`。

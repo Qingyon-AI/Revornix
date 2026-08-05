@@ -49,7 +49,7 @@ jobs:
       - name: Build and Push ${{ matrix.service }} (${{ matrix.arch }})
         run: |
           # 构建上下文是仓库根，不是服务目录 —— api 与 celery-worker 都要用到
-          # 同级的 shared/。根目录的 .dockerignore 负责把大件挡在外面。
+          # 同级的 app/。根目录的 .dockerignore 负责把大件挡在外面。
           docker build \
             --rm \
             --squash \

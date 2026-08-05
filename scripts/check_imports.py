@@ -32,7 +32,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 # 每个服务是自己的 import 根：`from data.sql.base import x` 在两侧各自解析。
-SERVICE_ROOTS = ["api", "celery-worker", "shared"]
+SERVICE_ROOTS = ["api", "celery-worker", "app"]
 SKIP_DIRS = {"__pycache__", ".venv", "venv", "node_modules", "alembic", "tests", "tests_integration"}
 
 
@@ -91,12 +91,12 @@ def module_exports(tree: ast.Module) -> tuple[set[str], bool]:
 def resolve(service_root: Path, dotted: str) -> Path | None:
     """把 `data.sql.base` 解析成文件；不是本仓库模块就返回 None。
 
-    先在服务目录里找，找不到再去 `shared/` —— 已经搬进共享包的层（enums、config
+    先在服务目录里找，找不到再去 `app/` —— 已经搬进共享包的层（enums、config
     等）以顶级包形式暴露，服务里写的仍是 `from config.base import ...`。少了这一步，
     每搬走一层，这个检查对那一层的覆盖就会**静悄悄消失**。
     """
     parts = dotted.split(".")
-    for root in (service_root, REPO / "shared"):
+    for root in (service_root, REPO / "app"):
         as_module = root.joinpath(*parts).with_suffix(".py")
         if as_module.is_file():
             return as_module
