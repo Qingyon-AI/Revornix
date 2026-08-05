@@ -23,6 +23,10 @@ want() {  # 没给参数就全跑；给了就只跑匹配的
 }
 
 want_explicit() {  # 只有被点名才跑，"跑全部"也不带上它
+  # 这个空数组判断不是多余的：set -u 下 macOS 自带的 bash 3.2 会把空数组的
+  # ${ONLY[@]} 当成未绑定变量而直接退出 —— 表现是无参数运行时脚本死在这里，
+  # **连最后的汇总行都不打印**。一个不报结果的检查脚本比没有更糟。
+  [ ${#ONLY[@]} -eq 0 ] && return 1
   local target="$1"
   for o in "${ONLY[@]}"; do [ "$o" = "$target" ] && return 0; done
   return 1
