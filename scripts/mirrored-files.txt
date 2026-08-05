@@ -124,8 +124,6 @@ protocol/notification_tool.py
 protocol/remote_file_service.py
 
 # ---- config/ —— 配置读取 (2) ----
-config/__init__.py
-config/langfuse.py
 
 # ---- crud/ —— 数据读写 (1) ----
 crud/usage.py
