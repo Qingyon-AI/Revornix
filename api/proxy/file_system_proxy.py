@@ -7,7 +7,7 @@ from file.aws_s3_remote_file_service import AWSS3RemoteFileService
 from file.built_in_remote_file_service import BuiltInRemoteFileService
 from file.generic_s3_remote_file_service import GenericS3RemoteFileService
 from enums.file import RemoteFileService
-from common.encrypt import decrypt_file_system_config
+from encryption import decrypt_file_system_config
 from common.logger import exception_logger
 from protocol.remote_file_service import RemoteFileServiceProtocol
 

@@ -2,7 +2,7 @@ import hmac
 
 import models
 import schemas
-from common.encrypt import decrypt_share_access_key
+from encryption import decrypt_share_access_key
 from enums.document import UserDocumentAuthority
 from enums.section import UserSectionAuthority, UserSectionRole
 

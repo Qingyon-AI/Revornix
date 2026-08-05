@@ -32,7 +32,7 @@ from common.dependencies import (
     get_user_plan_level_in_func,
     plan_ability_checked_in_func,
 )
-from common.encrypt import encrypt_api_key
+from encryption import encrypt_api_key
 from common.interpret_event import EventInterpreter
 from common.kimi_compat import build_kimi_tool_compatible_extra_body
 from common.jwt_utils import create_token

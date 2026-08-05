@@ -10,7 +10,7 @@ from base_implement.stt_engine_base import STTEngineBase
 from base_implement.tts_engine_base import TTSEngineBase
 from data.sql.base import async_session_context
 from enums.engine_enums import UserEngineRole
-from common.encrypt import decrypt_engine_config
+from encryption import decrypt_engine_config
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
     get_user_compute_balance_in_func,

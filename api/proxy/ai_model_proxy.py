@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import crud
 import schemas
 from data.sql.base import async_session_context
-from common.encrypt import decrypt_api_key
+from encryption import decrypt_api_key
 from common.logger import exception_logger
 from enums.model import UserModelProviderRole
 from enums.product import PlanAccessLevel

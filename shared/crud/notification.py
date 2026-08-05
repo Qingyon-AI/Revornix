@@ -2266,3 +2266,43 @@ async def delete_notification_records_by_notification_record_ids_async(
         .values(delete_at=now)
     )
     await db.flush()
+
+
+# 来自 celery-worker 侧：worker 派发通知时按模板/触发事件查询，api 侧没有对应函数。
+
+async def get_notification_template_by_id_async(
+    db: AsyncSession,
+    notification_template_id: int,
+):
+    stmt = select(models.notification.NotificationTemplate).where(
+        models.notification.NotificationTemplate.id == notification_template_id,
+        models.notification.NotificationTemplate.delete_at.is_(None),
+    )
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_notification_tasks_by_user_id_and_notification_trigger_event_async(
+    db: AsyncSession,
+    user_id: int,
+    trigger_event_uuid: str,
+):
+    stmt = (
+        select(models.notification.NotificationTask)
+        .join(
+            models.notification.NotificationTaskTriggerEvent,
+            models.notification.NotificationTask.id
+            == models.notification.NotificationTaskTriggerEvent.notification_task_id,
+        )
+        .join(
+            models.notification.TriggerEvent,
+            models.notification.TriggerEvent.id
+            == models.notification.NotificationTaskTriggerEvent.trigger_event_id,
+        )
+        .where(
+            models.notification.NotificationTask.creator_id == user_id,
+            models.notification.NotificationTask.delete_at.is_(None),
+            models.notification.NotificationTaskTriggerEvent.delete_at.is_(None),
+            models.notification.TriggerEvent.uuid == trigger_event_uuid,
+        )
+    )
+    return list((await db.execute(stmt)).scalars().all())

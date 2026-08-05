@@ -7,7 +7,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_async_db, get_current_user
-from common.encrypt import decrypt_share_access_key, encrypt_share_access_key
+from encryption import decrypt_share_access_key, encrypt_share_access_key
 from common.resource_actions import resolve_publish_action
 
 document_publish_manage_router = APIRouter()

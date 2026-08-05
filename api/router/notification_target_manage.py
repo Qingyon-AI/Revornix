@@ -10,7 +10,7 @@ import crud
 import models
 import schemas
 from common.dependencies import get_async_db, get_cache, get_current_user
-from common.encrypt import encrypt_notification_target_config
+from encryption import encrypt_notification_target_config
 from common.logger import format_log_message, info_logger
 from common.system_email.email import RevornixSystemEmail
 from common.websocket import notificationManager

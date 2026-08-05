@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
 
 import models
-from common.encrypt import encrypt_api_key
+from encryption import encrypt_api_key
 from enums.model import UserModelProviderRole
 
 

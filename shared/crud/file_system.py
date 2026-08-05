@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import models
-from common.encrypt import encrypt_file_system_config
+from encryption import encrypt_file_system_config
 
 
 def create_file_system(

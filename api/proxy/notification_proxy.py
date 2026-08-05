@@ -21,7 +21,7 @@ from notification.template.section_join_requested import SectionJoinRequestedNot
 from notification.template.section_join_request_handled import SectionJoinRequestHandledNotificationTemplate
 from notification.template.document_join_requested import DocumentJoinRequestedNotificationTemplate
 from notification.template.document_join_request_handled import DocumentJoinRequestHandledNotificationTemplate
-from common.encrypt import decrypt_notification_source_config, decrypt_notification_target_config
+from encryption import decrypt_notification_source_config, decrypt_notification_target_config
 
 class NotificationProxy:
     
