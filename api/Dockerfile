@@ -12,6 +12,8 @@ WORKDIR /app
 # torch 那一串装一次要很久，这个分层是有意的。
 COPY shared/ /shared/
 COPY api/requirements.txt /app/requirements.txt
+# 本地 embedding 引擎的依赖（torch，wheel 527 MB）**不装**：默认配置走云端。
+# 要在容器里跑本地推理，自行加一层 `pip install -r api/requirements-local-embedding.txt`。
 
 # 编译型依赖需要工具链，装完即删 —— 它们不该留在运行镜像里。
 RUN apt-get update \

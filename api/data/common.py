@@ -4,7 +4,6 @@ import hashlib
 import asyncio
 import inspect
 import time
-import torch
 import models
 from typing import cast
 from langfuse.openai import AsyncOpenAI
@@ -23,6 +22,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from protocol.remote_file_service import RemoteFileServiceProtocol
 from proxy.ai_model_proxy import AIModelProxy
 from proxy.file_system_proxy import FileSystemProxy
+
+
+def _clear_torch_cache() -> None:
+    """清一次本地推理的显存缓存。**整个函数都是尽力而为**。
+
+    torch 现在是可选依赖（见 requirements-local-embedding.txt）：走云端 embedding
+    的部署根本不装它。所以这里用延迟 import 加 try —— 装没装、能不能用，都不该
+    影响分块管线跑不跑得下去。
+    """
+    try:
+        import torch
+    except Exception:
+        return
+
+    try:
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+        elif torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        # 清缓存失败绝不该打断分块。
+        return
 
 
 async def _safe_close_async_client(client: AsyncOpenAI) -> None:
@@ -217,10 +238,7 @@ async def stream_chunk_document(
                     )
                     global_idx += 1
 
-                if torch.backends.mps.is_available():
-                    torch.mps.empty_cache()
-                elif torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+                _clear_torch_cache()
     except Exception as e:
         exception_logger.error(f"Error while streaming chunk document: {e}")
         raise

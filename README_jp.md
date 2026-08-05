@@ -176,6 +176,8 @@ python -m data.milvus.create
 cd api
 conda create -n api python=3.11 -y
 pip install -r ./requirements.txt
+# 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
+# pip install -r ./requirements-local-embedding.txt
 fastapi run --port 8001
 ```
 
