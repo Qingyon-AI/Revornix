@@ -15,7 +15,7 @@ from chonkie.types import Chunk
 from chonkie.chunker.recursive import RecursiveChunker
 from enums.document import DocumentCategory
 from data.sql.base import async_session_context
-from data.custom_types.all import RelationInfo, EntityInfo, ChunkInfo
+from custom_types.all import RelationInfo, EntityInfo, ChunkInfo
 from common.document_guard import ensure_document_active
 from prompts.entity_and_relation_extraction import entity_and_relation_extraction_prompt
 from typing import AsyncGenerator

@@ -116,7 +116,8 @@ def _tables_exist():
     if not INTEGRATION_ENABLED:
         return
     import models  # noqa: F401  —— 导入即注册到 metadata
-    from data.sql.base import Base, engine
+    from models.base import Base
+    from data.sql.base import engine
 
     Base.metadata.create_all(bind=engine)
 

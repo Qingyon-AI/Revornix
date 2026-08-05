@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from data.sql.base import Base
+from models.base import Base
 from models.user import User
 
 

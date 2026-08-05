@@ -1,6 +1,6 @@
 import asyncio
 
-from data.custom_types.all import ChunkInfo
+from custom_types.all import ChunkInfo
 from data.milvus.base import milvus_client, MILVUS_COLLECTION
 
 

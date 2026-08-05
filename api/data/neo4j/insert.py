@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from data.custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
+from custom_types.all import ChunkInfo, DocumentInfo, EntityInfo, RelationInfo
 from data.neo4j.base import async_neo4j_driver
 
 def now_str():

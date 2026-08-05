@@ -9,7 +9,7 @@ from common.ai import (
     _get_user_ai_interaction_language,
     build_structured_output_language_instruction,
 )
-from data.custom_types.all import EntityInfo, RelationInfo
+from custom_types.all import EntityInfo, RelationInfo
 from data.sql.base import async_session_context
 from common.logger import exception_logger, format_log_message, info_logger
 from common.usage_billing import persist_model_usage_from_completion

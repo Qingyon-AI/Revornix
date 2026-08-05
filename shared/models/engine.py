@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Boolean, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from data.sql.base import Base
+from models.base import Base
 from models.user import User
 
 

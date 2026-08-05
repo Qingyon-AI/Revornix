@@ -1,4 +1,4 @@
-from data.custom_types.all import EntityInfo, RelationInfo
+from custom_types.all import EntityInfo, RelationInfo
 from enums.user import AIInteractionLanguage
 
 
@@ -80,7 +80,7 @@ def make_section_markdown_prompt(
 
     current_md = current_markdown_content or "_No existing section content._"
 
-    prompt = f"""
+    return f"""
 You are a senior column editor for a high-signal knowledge publishing platform.
 
 Your task is to turn the source material into a publication-ready Markdown column:
@@ -188,5 +188,3 @@ Before you answer, check your draft against this bar:
 
 Please output the final Markdown column now.
 """
-
-    return prompt

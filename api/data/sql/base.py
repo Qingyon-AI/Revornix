@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine as create_sqlalchemy_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -48,4 +47,3 @@ async def async_session_context():
     finally:
         await session.close()
 
-Base = declarative_base()

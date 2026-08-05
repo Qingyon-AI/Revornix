@@ -165,6 +165,12 @@ class _Placeholder(metaclass=_AnyMeta):
     def __getitem__(self, item: object):
         return self
 
+    def __mro_entries__(self, bases: tuple):
+        # 让替身**实例**也能当基类用：`Base = declarative_base()` 返回的是实例，
+        # 而 `class Document(Base)` 要求它能参与 MRO 计算。没有这个方法时报的是
+        # `TypeError: __mro_entries__ must return a tuple`，与真正的问题毫无关系。
+        return (object,)
+
 
 # --- 只在建图/观测链路上用到的重依赖：节点体测试直接调函数，用不到它们 ---
 _install("langgraph")
@@ -210,9 +216,9 @@ _install(
     extract_entities_relations=_unavailable("extract_entities_relations"),
     resolve_entities_with_semantic_dedupe=_unavailable("resolve_entities_with_semantic_dedupe"),
 )
-_install("data.custom_types")
+_install("custom_types")
 _install(
-    "data.custom_types.all",
+    "custom_types.all",
     ChunkInfo=_Placeholder,
     DocumentInfo=_Placeholder,
     EntityInfo=_Placeholder,
