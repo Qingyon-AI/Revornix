@@ -126,9 +126,31 @@ protocol 7 · proxy 5。**没有一层是某个服务专有的领域。**
 
 ### 那该做什么
 
-不是"合并成一个服务"——**进程和镜像仍然应该分开**，理由是硬的：worker 独有
-10 个重依赖（modelscope、huggingface_hub、rapid_table、shapely、pyclipper、ftfy、
-omegaconf 等 OCR/ML 栈），api 不该背；worker OOM 也不该拖垮 API。
+不是"合并成一个服务"——**进程和镜像仍然应该分开**。但要先纠正上一段里我写错的
+一个理由。
+
+我原本写的是"worker 独有 10 个重依赖（OCR/ML 栈），api 不该背"。**这句话是错的**：
+
+| | 依赖数 | 独有 |
+| --- | ---: | --- |
+| api | 55 | apscheduler, fastapi, google-auth, markdown, webauthn, otel-fastapi |
+| celery-worker | 59 | ftfy, huggingface_hub, modelscope, omegaconf, pyclipper, python-jose, rapid_table, shapely, tenacity, otel-celery |
+| **两侧共有** | **49** | 其中包括 `torch` 和 `sentence_transformers` |
+
+**最重的那个 `torch` 两侧都有**，api 独有的六个全是轻量库。所以"依赖重量"根本
+不是分开部署的理由——两个镜像本来就一样大。
+
+（这是本轮第二次我基于不完整的阅读下了架构判断。第一次是 Milvus 的"upsert"，
+靠跑一遍才发现是 insert；这次是 requirements，靠比对两个文件才发现 torch 在两边。
+**两次都是"看了个名字就当成事实"。**）
+
+分开部署的真实理由只剩两条，但都成立：**爆炸半径**（worker OOM 或被 kill 不该
+带走 API）和**伸缩轴**（worker 随文档量伸缩，api 随请求量伸缩）。这两条与依赖
+无关，也不会因为源码合并而改变。
+
+顺带一个值得单独看的问题：**api 为什么需要 torch？** 如果只是查询时做 embedding，
+那它可能可以换成调用 worker 或外部服务，从而把 api 镜像显著瘦下来。这不在本文
+范围，但值得记一笔。
 
 该做的是让**源码**停止复制：
 
