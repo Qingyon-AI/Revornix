@@ -24,6 +24,13 @@ jobs:
       # 两个服务共享一批代码，但此前没有任何东西会在「只改了一侧」时失败。
       - run: python scripts/check_mirrored_files.py
 
+      # 镜像检查只保证两侧**字节相同**，保证不了两侧**都能用** —— 一个文件在 api
+      # 侧依赖的符号，worker 侧不一定有。这正是让 worker 起不来的那个缺陷的形态，
+      # 而 compileall（只编译不导入）和单元测试（把相关模块顶成替身）都看不见。
+      # 纯 AST 比对，0.7 秒，不需要装任何依赖。
+      - name: 导入的名字是否真的存在
+        run: python scripts/check_imports.py
+
       # shared/ 已经不属于任何一个服务，得有人检查它的语法。
       - name: shared 语法检查
         run: python -m compileall -q shared

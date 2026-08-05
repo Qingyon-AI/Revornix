@@ -55,6 +55,7 @@ in_dir() { local d="$1"; shift; (cd "$d" && "$@"); }
 echo "── 跨服务 ──"
 step shared   "api ⇄ worker 镜像文件一致" python3 scripts/check_mirrored_files.py
 step shared   "shared 语法检查"           python3 -m compileall -q shared
+step shared   "导入的名字是否真的存在"    python3 scripts/check_imports.py
 
 echo "── api ──"
 step api "OpenAPI spec 是最新的" in_dir api python -m scripts.export_openapi --check
