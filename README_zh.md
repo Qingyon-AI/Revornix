@@ -161,6 +161,13 @@ python -m data.milvus.create
 > Postgres 不需要这一步。API 每次启动都会自动建表、应用结构变更并补齐内置数据，
 > 全新安装和版本升级都只需要把服务起起来，不需要手动迁移数据库。
 
+> **容器镜像**：各服务都有 Dockerfile。构建时上下文要用**仓库根**而不是服务目录 ——
+> `api` 与 `celery-worker` 需要同级的 `shared/` 包：
+>
+> ```shell
+> docker build -f api/Dockerfile -t revornix/api .
+> ```
+
 ### 5) 启动核心后端服务
 
 ```shell
