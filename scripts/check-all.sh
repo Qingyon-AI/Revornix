@@ -73,6 +73,9 @@ echo "── worker ──"
 # crud/models/schemas/config/protocol 已搬进 app/，这里只列 worker 下还剩的。
 # compileall 对不存在的目录只打印一行"Can't list"、退出码仍是 0 —— 列错了会静静少查。
 step worker "语法检查" uv run --directory worker python -m compileall -q workflow
+# 本地直接用 workspace 那个 .venv（什么都装着，跑得最快）。CI 用
+# `uv sync --only-group dev` 装一个 31 包的精简环境 —— 差异是刻意的，但也意味着
+# **本地绿不代表 CI 绿**：漏声明一个测试依赖，只有 CI 会红。
 step worker "单元测试" uv run --directory worker python -m pytest -q -p no:cacheprovider
 
 echo "── web ──"
