@@ -73,7 +73,6 @@ class AIModelProxy:
         provider_api_key: str | None = None
         provider_creator_id: int | None = None
         provider_is_public = False
-        model_db_id: int | None = None
         model_owned_by_user = False
         official_provider_check_needed = False
         required_plan_level = 0
@@ -109,7 +108,6 @@ class AIModelProxy:
                 provider_api_key = db_model_provider.api_key
                 provider_creator_id = db_model_provider.creator_id
                 provider_is_public = bool(db_model_provider.is_public)
-                model_db_id = db_model.id
                 required_plan_level = db_model.required_plan_level
                 model_owned_by_user = provider_creator_id == user_id
                 minimum_required_points = get_minimum_required_points(

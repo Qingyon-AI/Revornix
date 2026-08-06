@@ -33,7 +33,6 @@ from common.dependencies import (
     plan_ability_checked_in_func,
 )
 from encryption import encrypt_api_key
-from common.interpret_event import EventInterpreter
 from common.kimi_compat import build_kimi_tool_compatible_extra_body
 from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message, info_logger

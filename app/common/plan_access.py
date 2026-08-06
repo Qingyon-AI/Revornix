@@ -15,14 +15,36 @@ import os
 
 import httpx
 
+from typing import Any
+
+from common.auth_token import decode_jwt_token, is_auth_epoch_stale
 from common.env import is_env_enabled
-from common.logger import exception_logger
+from common.logger import exception_logger, format_log_message
+from common.subscription_access import get_plan_access_level_from_product_uuid
 from config.base import OFFICIAL, UNION_PAY_API_PREFIX
 from data.sql.base import async_session_context
 from enums.user import UserRole
-from datetime import datetime
+from datetime import datetime, timezone
 from enums.product import PlanAccessLevel
 import crud
+
+
+def _extract_user_plan_from_payload(payload: object) -> dict[str, Any] | None:
+    """从支付系统的响应里取出套餐字段。两种键名都认。
+
+    与 common/dependencies.py 里那份同名函数是同一段逻辑；那边只被 api 用，
+    这边只被这个模块用，且这里不能 import 那边（那会把 fastapi 拖进来）。
+    """
+    if not isinstance(payload, dict):
+        return None
+
+    user_plan = payload.get("userPlan")
+    if user_plan is None:
+        user_plan = payload.get("user_plan")
+
+    if not isinstance(user_plan, dict):
+        return None
+    return user_plan
 
 
 async def _is_admin_or_root_from_authorization_async(
@@ -51,9 +73,10 @@ async def _is_admin_or_root_from_authorization_async(
             )
             if db_user is None:
                 return False
-            try:
-                _reject_if_stale_auth_epoch(payload=payload, user=db_user)
-            except HTTPException:
+            # 原先这里调的是 api 侧那个抛 HTTPException 的版本，再把异常吞掉当
+            # false 用 —— 而 HTTPException 来自 fastapi，正是这个模块要避开的东西。
+            # 判定逻辑现在在 common/auth_token.py，两侧共用，这里直接读布尔值。
+            if is_auth_epoch_stale(payload=payload, user=db_user):
                 return False
             return db_user.role in (UserRole.ADMIN, UserRole.ROOT)
         except Exception:

@@ -85,11 +85,10 @@ async def get_async_db():
 REFRESH_TOKEN_TYPE = "refresh"
 
 
-def decode_jwt_token(
-    token: str,
-    secret_key: str = OAUTH_SECRET_KEY
-):
-    return jwt.decode(token, secret_key, algorithms=["HS256"])
+# decode_jwt_token 与 auth_epoch 的判定搬到了 common/auth_token.py（零 fastapi），
+# 好让 common/plan_access.py 这类非 api 侧代码也能用。这里重新导出，
+# `from common.dependencies import decode_jwt_token` 这条既有路径继续可用。
+from common.auth_token import decode_jwt_token, is_auth_epoch_stale  # noqa: E402
 
 
 def _reject_if_refresh_token(payload: dict) -> None:
@@ -101,10 +100,8 @@ def _reject_if_refresh_token(payload: dict) -> None:
 
 
 def _reject_if_stale_auth_epoch(payload: dict, user: models.user.User) -> None:
-    token_auth_epoch = payload.get("auth_epoch")
-    if token_auth_epoch is None:
-        token_auth_epoch = 0
-    if token_auth_epoch != user.auth_epoch:
+    # 判定本身在 common/auth_token.py，两侧共用一份；这里只负责把它翻译成 HTTP 语义。
+    if is_auth_epoch_stale(payload=payload, user=user):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication session is stale",

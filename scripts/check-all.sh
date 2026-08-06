@@ -59,6 +59,11 @@ in_dir() { local d="$1"; shift; (cd "$d" && "$@"); }
 echo "── 跨服务 ──"
 step app      "app 语法检查"           uv run python -m compileall -q app
 step app      "导入的名字是否真的存在"    python3 scripts/check_imports.py
+# 上一条查的是「import 进来的名字在源模块里存不存在」，查不出「用了一个压根没
+# import 的名字」—— 那是 NameError，要等那行代码真的被执行才炸。合并代码时把函数
+# 从一个文件搬到另一个、只搬函数体不搬 import，产生的正是这一类：整整 18 处，
+# 全在同一个文件里，而单元测试和 compileall 都是绿的，因为没有一条路径走到那些行。
+step app      "有没有用到未定义的名字"    uv run --no-project --python 3.11 --with ruff ruff check --select F821 --no-cache --quiet app api worker
 
 echo "── api ──"
 step api "OpenAPI spec 是最新的" uv run --directory api python -m scripts.export_openapi --check
