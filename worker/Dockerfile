@@ -32,7 +32,7 @@ COPY --chown=revornix:revornix api/pyproject.toml api/
 COPY --chown=revornix:revornix worker/pyproject.toml worker/
 # 依赖层。这里有三件事都是量出来的，改动前请先量：
 #
-# 1. **不装 build-essential。** 锁文件里 305 个包全都有 wheel，一个都不需要现场编译。
+# 1. **不装 build-essential。** 锁文件里 306 个包全都有 wheel，一个都不需要现场编译。
 #    装了再 purge 也没用：purge 在后面的层，删不掉前一层已经存进去的 344 MB。
 #    真需要编译某个新依赖时，把 apt 装、uv sync、apt purge 写进**同一个 RUN**。
 # 2. **--no-cache。** 缓存目录同样是"写在这一层、删在下一层"，白留 1.2 GB。
@@ -42,6 +42,39 @@ COPY --chown=revornix:revornix worker/pyproject.toml worker/
 #
 # 三条合起来：8.69 GB → 2.83 GB。
 RUN uv sync --locked --no-cache --no-install-workspace --package revornix-worker
+
+# PATH 在这里就设好，下面要用 venv 里的 playwright CLI。
+ENV PATH="/src/.venv/bin:$PATH"
+
+# Playwright 浏览器。装的是 **chromium-headless-shell 一个**，不是 `chromium`：
+#
+# - 代码里只有 `p.chromium.launch(headless=True)` 这一种用法
+#   （app/base_implement/markdown_engine_base.py、app/engine/markdown/*），
+#   firefox 与 webkit 一次都不会用；
+# - 而 `playwright install chromium` 会同时下**完整 chromium(641 MB)与
+#   headless shell(340 MB)**两份，headless 模式跑的是后者，前者纯属白带。
+#
+# 实测：只装 headless shell，`launch(headless=True)` 正常启动并渲染。省 880 MB。
+#
+# **代价是一条约束**：谁把哪处改成 `headless=False`，容器里就会缺二进制。
+# worker/tests/test_playwright_headless_only.py 盯着这件事，改了会红。
+#
+# 放在依赖层之后、代码层之前：改业务代码不会让它失效，不必每次重下浏览器。
+#
+# PLAYWRIGHT_BROWSERS_PATH 必须显式指到 /src 下 —— revornix 是系统用户、没有家目录，
+# 默认路径 ~/.cache/ms-playwright 会落到 /nonexistent。这类"系统用户没有家"的坑
+# 在这个镜像里已经出现过一次（uv 的缓存目录）。
+ENV PLAYWRIGHT_BROWSERS_PATH=/src/.playwright
+
+# 系统库要 root 装，且**不能 purge** —— 它们是浏览器的运行时依赖，不是编译工具。
+# 同一个 RUN 里清掉 apt 列表：分开写的话前一层已经存进去了，后面删不掉。
+USER root
+RUN playwright install-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
+
+# 浏览器本身以 revornix 身份下载，落进它拥有的 /src —— 又一次避开 chown。
+USER revornix
+RUN playwright install chromium-headless-shell
 
 # 代码层
 COPY --chown=revornix:revornix app/ app/
@@ -56,6 +89,5 @@ RUN mkdir -p /src/worker/logs
 # WorkingDirectory 是承重的：BASE_DIR（日志）与 load_dotenv(usecwd=True)（读哪份
 # .env）都按它取值。放在别处会读到仓库根那份配置。
 WORKDIR /src/worker
-ENV PATH="/src/.venv/bin:$PATH"
 
 CMD ["celery", "-A", "common.celery.app", "worker", "--pool=threads", "--concurrency=20", "--loglevel=info", "-E"]

@@ -216,7 +216,9 @@ pnpm start
 ### 8) Run Celery worker
 
 ```shell
-uv run --directory worker playwright install   # browsers for web-page conversion
+# Chromium for web-page conversion. headless-shell only — every launch in the
+# codebase is headless=True, and the full browser is another 641 MB.
+uv run --directory worker playwright install chromium-headless-shell
 uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 

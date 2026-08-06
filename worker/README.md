@@ -59,8 +59,10 @@ including a worker that could not start at all, so the copies were merged.
 # 32s against pip's 242s, and uv fetches the matching Python itself.
 uv sync --all-packages
 
-# Playwright browsers (required for web-page conversion)
-uv run --directory worker playwright install
+# Chromium for web-page conversion. headless-shell only, matching the image:
+# every launch in the codebase is headless=True, and `playwright install chromium`
+# would also pull the full 641 MB browser that headless mode never runs.
+uv run --directory worker playwright install chromium-headless-shell
 
 # Configure env — see https://revornix.com/docs/environment
 cp .env.example .env
@@ -87,6 +89,8 @@ Make sure `api/` is reachable (or at least the shared dependencies — Redis, Po
 
 ## Tuning
 
+- **The Docker image ships the browser; source deploys install it themselves.** `worker/Dockerfile` runs `playwright install chromium-headless-shell` (~343 MB of the image). A systemd deploy from source needs the command above run once, because the venv is built by `uv sync` and browsers are not Python packages.
+- **Only chromium's headless shell is installed, on purpose.** `playwright install chromium` downloads two binaries — the full browser (641 MB) and the headless shell (340 MB) — and `headless=True` runs the latter. Every launch in this codebase is headless, so the full one is dead weight. `tests/test_playwright_headless_only.py` fails if anyone writes `headless=False` or reaches for firefox/webkit, because that would only surface in production as "Executable doesn't exist".
 - `--pool=threads` is the default because most tasks are I/O-bound (HTTP calls to model providers, Playwright, S3). For CPU-bound work add a separate worker with `--pool=prefork`.
 - Concurrency is set with `--concurrency=N`. Start with 4–20 and watch upstream rate limits before climbing higher.
 

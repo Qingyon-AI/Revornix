@@ -210,7 +210,9 @@ pnpm start
 ### 8) Celery ワーカーを起動
 
 ```shell
-uv run --directory worker playwright install   # Web ページ変換に使うブラウザ
+# Web ページ変換用の chromium。headless shell のみ：コード内の launch はすべて
+# headless=True で、フルブラウザは別途 641 MB かかるうえ一度も使いません。
+uv run --directory worker playwright install chromium-headless-shell
 uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 

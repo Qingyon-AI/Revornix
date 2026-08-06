@@ -210,7 +210,9 @@ pnpm start
 ### 8) 启动 Celery 任务服务
 
 ```shell
-uv run --directory worker playwright install   # 网页转换要用的浏览器
+# 网页转换要用的 chromium。只装 headless shell：代码里所有 launch 都是
+# headless=True，完整浏览器另占 641 MB 且一次都不会用。
+uv run --directory worker playwright install chromium-headless-shell
 uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
 

@@ -21,7 +21,7 @@ git clone <repo> /opt/revornix && cd /opt/revornix
 # **一条命令装两个服务。** uv workspace：一份 uv.lock、仓库根一个 .venv，
 # api / worker / app 都是其中的成员，app 以可编辑方式装入（改代码不必重装）。
 uv sync --locked --all-packages
-uv run --directory worker playwright install
+uv run --directory worker playwright install chromium-headless-shell
 
 # 配置：**每个服务目录各一份 .env**（见下面"为什么不能合并成一份"）
 cp api/.env.example    api/.env     && vim api/.env
@@ -62,7 +62,7 @@ curl -sf localhost:8001/docs -A "Mozilla/5.0" -o /dev/null && echo "api ok"
 cd /opt/revornix/worker && /opt/revornix/.venv/bin/celery -A common.celery.app inspect ping
 ```
 
-## 四个容易踩的地方
+## 五个容易踩的地方
 
 **1. `WorkingDirectory` 不能省，也不能改。**
 合并成单一 `app/` 包之后，有两处按**工作目录**取值：
@@ -86,7 +86,16 @@ unit 里写的是 venv 里的可执行文件，不是 `uv run`：`uv run` 每次
 配了 `task_acks_late`：被强杀的任务会重投，而重跑一份大文档是分钟级的浪费。
 `KillSignal=SIGTERM` 让 celery 做完手上的活再退。
 
-**4. torch 默认不装。**
+**4. 浏览器不是 Python 包，`uv sync` 不管它。**
+`playwright install chromium-headless-shell` 要单独跑一次(上面的首次安装里有)。
+只装 headless shell 是有意的:代码里所有 `launch` 都是 `headless=True`，而
+`playwright install chromium` 会连完整浏览器(641 MB)一起下，headless 模式根本
+不用它。改成 headful 的话这里也要跟着换 —— `worker/tests/test_playwright_headless_only.py`
+会拦住只改一边的情况。
+
+容器部署不需要这一步:`worker/Dockerfile` 里已经装好了。
+
+**5. torch 默认不装。**
 生产走云端 embedding（`ALI_DASHSCOPE_EMBEDDING_ON=True`），本地推理引擎一次都不会
 加载。要用本地推理才装：
 
