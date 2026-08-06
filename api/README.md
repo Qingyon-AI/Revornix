@@ -48,8 +48,8 @@ uv pip install --python .venv/bin/python -r requirements.txt
 # Configure env — see https://revornix.com/docs/environment
 cp .env.example .env
 
-# Bootstrap Milvus (Postgres needs nothing — the API does it on startup)
-./.venv/bin/python -m data.milvus.create
+# Nothing to initialise: startup creates tables, applies column migrations,
+# seeds built-in data and ensures the Milvus collection exists.
 
 # Dev server
 ./.venv/bin/fastapi run main.py --port 8001

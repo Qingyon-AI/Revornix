@@ -23,7 +23,7 @@ from importlib import import_module
 
 from sqlalchemy import inspect
 
-from common.logger import info_logger
+from common.logger import exception_logger, info_logger
 from models.base import Base
 from data.sql.base import async_session_context, engine
 from data.sql.schema_guard import run_schema_guard
@@ -70,11 +70,32 @@ async def _ensure_seed() -> None:
         await db.commit()
 
 
+def _ensure_milvus() -> None:
+    """向量库的集合。
+
+    和建表同一个道理：新装机需要它，已装机跳过，都不该要人记得手动跑一次。
+    它此前是 `python -m data.milvus.create`，一条只写在 README 里的步骤 ——
+    而写在 README 里的步骤，就是迟早会有人漏掉的步骤。
+
+    **连不上 Milvus 不阻断启动。** 向量检索是 API 的一部分功能，不是全部；
+    Milvus 在另一台机器上，网络抖一下不该让整个 API 起不来。真要用到那条路径时
+    自然会以调用失败的形式报出来，那时的报错也更接近现场。
+    """
+    try:
+        from data.milvus.create import ensure_document_collection
+
+        if ensure_document_collection():
+            info_logger.warning("bootstrap: milvus collection created")
+    except Exception as e:
+        exception_logger.warning(f"bootstrap: milvus not ready, skipped ({e!r})")
+
+
 async def ensure_database_ready() -> None:
-    """建表 → 补列 → 补种子数据。每次进程启动无条件调用。"""
+    """建表 → 补列 → 补种子数据 → 向量库集合。每次进程启动无条件调用。"""
     info_logger.warning("bootstrap: ensuring tables...")
     _ensure_tables()
     run_schema_guard()
     info_logger.warning("bootstrap: schema ready, seeding...")
     await _ensure_seed()
+    _ensure_milvus()
     info_logger.warning("bootstrap: database ready")

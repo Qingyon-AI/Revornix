@@ -28,9 +28,6 @@ git clone <repo> /opt/revornix && cd /opt/revornix
 cp api/.env.example    api/.env     && vim api/.env
 cp worker/.env.example worker/.env  && vim worker/.env
 
-# Milvus 集合（Postgres 不需要，API 启动时自建表）
-( cd api && ./.venv/bin/python -m data.milvus.create )
-
 sudo cp deploy/revornix-*.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now revornix-api revornix-worker
@@ -50,8 +47,8 @@ cd /opt/revornix && git pull
 sudo systemctl restart revornix-api revornix-worker
 ```
 
-**不需要手动迁移数据库。** `app/data/sql/bootstrap.py` 在 API 每次启动时跑三步幂等
-操作：建表 → 补列（`schema_guard`）→ 补内置数据。全新安装和升级都只要把服务起起来。
+**不需要任何手动初始化。** `app/data/sql/bootstrap.py` 在 API 每次启动时跑四步幂等
+操作：建表 → 补列（`schema_guard`）→ 补内置数据 → 确保 Milvus 集合存在。全新安装和升级都只要把服务起起来。
 worker 侧在 `worker_init` 里也会跑一次 `schema_guard`，所以 worker 先起也不会撞上缺列。
 
 ## 验证
