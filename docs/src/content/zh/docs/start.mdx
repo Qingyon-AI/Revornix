@@ -116,7 +116,13 @@ pnpm build
 pnpm start
 ```
 
-### 启动网关服务（可选）
+### 启动网关服务
+
+<Callout type="warn">
+这一步不能跳过。`web/.env.example` 里的 `NEXT_PUBLIC_API_PREFIX` 指向的是
+`http://localhost:8787/api` —— 网关，不是 api 的 8001。跳过它，前端所有请求都会
+打在没人监听的端口上，界面满屏 Load failed，而 api 日志里一条请求都没有。
+</Callout>
 
 ```shell
 cd gateway

@@ -115,7 +115,14 @@ pnpm build
 pnpm start
 ```
 
-### Start the gateway service (optional)
+### Start the gateway service
+
+<Callout type="warn">
+Do not skip this. `NEXT_PUBLIC_API_PREFIX` in `web/.env.example` points at
+`http://localhost:8787/api` — the gateway, not api's 8001. Skip it and every
+frontend request goes to a port nobody is listening on: the UI fills with
+"Load failed" while the api log stays completely empty.
+</Callout>
 
 ```shell
 cd gateway

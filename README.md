@@ -211,7 +211,16 @@ cd gateway
 go run ./cmd/gateway
 ```
 
-The gateway is optional for local development, but recommended for production. It handles public routing, failover, and the first layer of anti-scraping protection before traffic reaches `api/`.
+**Do not skip this.** It used to say "optional", which was wrong:
+`NEXT_PUBLIC_API_PREFIX` in `web/.env.example` points at
+`http://localhost:8787/api` — the gateway, not api's 8001. Skip it and every
+request from the frontend goes to a port nobody is listening on: the UI fills
+with "Load failed" while the api log stays completely clean, showing no sign
+that anything is wrong.
+
+The gateway handles public routing, failover, and the first layer of
+anti-scraping protection before traffic reaches `api/`. Hot search is proxied
+through it too (`8787/hot` → hot-news on 6688).
 
 ### 7) Run trending aggregation service
 
