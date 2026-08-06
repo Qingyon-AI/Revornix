@@ -85,7 +85,10 @@ step hot-news "单元测试" in_dir hot-news pnpm test
 step hot-news "构建"     in_dir hot-news pnpm build
 
 echo "── desktop ──"
-step desktop "单元测试" in_dir desktop pnpm test
+# desktop 是唯一用 npm 的（.github/workflows/desktop-release.yml 里是 `npm ci`，
+# README 也是 npm）。这里曾经照抄其他服务写成 pnpm，于是本地和 CI 装的是两套依赖树 ——
+# 仓库里一度同时躺着 package-lock.json 与 pnpm-lock.yaml，谁也没发现它们在漂移。
+step desktop "单元测试" in_dir desktop npm test
 
 echo "── docs ──"
 step docs "构建" in_dir docs pnpm build

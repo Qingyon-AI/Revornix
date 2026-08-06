@@ -11,7 +11,14 @@
 # 启动脚本比没有更糟：那些进程会继续从队列里领任务，而你以为它们已经停了。
 # exec 到子进程之后，信号直达，结构上就不存在"没收干净"这回事。
 #
-# 依赖的存储自己起：docker compose -f docker-compose-local.yaml up -d
+# 依赖的存储自己起：
+#   cp .env.local.example .env.local     # 首次
+#   docker compose -f docker-compose-local.yaml --env-file .env.local up -d
+#
+# --env-file 不能省。compose 文件里有 12 处 ${VAR} 替换，而配置**刻意不叫 .env** ——
+# 叫 .env 的话 docker compose 会隐式读到它（这是它的默认行为，不需要任何声明），
+# 同时 load_dotenv(find_dotenv(usecwd=True)) 在仓库根跑服务时也会读到它。
+# 两套东西共用一个文件名，而它们要的根本不是同一份配置。
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -36,7 +43,7 @@ for name, port in need + opt:
         s.close()
 if missing:
     print(f"\n  缺 {', '.join(missing)}，服务起不来：")
-    print("    docker compose -f docker-compose-local.yaml up -d")
+    print("    docker compose -f docker-compose-local.yaml --env-file .env.local up -d")
     sys.exit(1)
 PY
 }
