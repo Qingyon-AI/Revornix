@@ -46,16 +46,24 @@ The whole stack — web client, gateway, API, async workers, trending feed, docs
 
 ```text
 Revornix/
+├── app/                       # The application itself: models / crud / schemas / engine / notification … one copy
+├── api/                       # FastAPI entrypoint: router, mcp_router — see api/README.md
+├── worker/                    # Celery entrypoint: workflow — see worker/README.md
 ├── web/                       # Next.js client (workspace + SEO pages) — see web/README.md
-├── api/                       # FastAPI core backend (auth, documents, sections, AI) — see api/README.md
-├── worker/             # Async workflows (embedding, summary, graph, podcast, notifications)
 ├── gateway/                   # Go public-entry gateway (routing, anti-scraping, upstream failover)
 ├── hot-news/                  # Trending aggregation service (based on DailyHotApi)
 ├── docs/                      # Public docs site (revornix.com/docs) — separate Next.js + Nextra
 ├── desktop/                   # Electron desktop shell (macOS + Windows) — see desktop/README.md
 ├── assets/                    # Repo-level images and brand assets
+├── deploy/                    # systemd units and deployment steps — see deploy/README.md
 └── docker-compose-local.yaml  # Local dependency bootstrap (Postgres, Redis, Neo4j, MinIO, Milvus)
 ```
+
+> `api/` and `worker/` are **two entrypoints onto one codebase**: the business code is
+> in `app/`, each service keeps only its own entry layer, and both install it with
+> `-e ../app`. They used to keep separate copies policed by a byte-equality check —
+> that arrangement produced six defects, including a worker that could not start at
+> all, so the copies were merged. See `docs-internal/plan-one-codebase.md`.
 
 Each subdirectory has its own README with the details specific to that service.
 
@@ -163,8 +171,8 @@ python -m data.milvus.create
 > need nothing but starting the service.
 
 > **Container images.** Every service has a Dockerfile. Build from the **repo
-> root**, not the service directory — `api` and `worker` need the sibling
-> `shared/` package:
+> root**, not the service directory — both `api` and `worker` depend on the sibling
+> `app/` package:
 >
 > ```shell
 > docker build -f api/Dockerfile -t revornix/api .
@@ -226,7 +234,7 @@ After all services are running, open <http://localhost:3000>.
 ## Where to look next
 
 - **Want to use the product?** Start at <https://revornix.com/docs/start>, then jump into the workspace at <https://app.revornix.com>.
-- **Want to extend it?** Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`worker/`](./worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
+- **Want to extend it?** Deployment lives in [`deploy/`](./deploy/README.md). Each service has its own README: [`web/`](./web/README.md), [`api/`](./api/README.md), [`worker/`](./worker/README.md), [`gateway/`](./gateway/README.md), [`docs/`](./docs/README.md).
 - **Want to contribute docs?** Add an MDX file under [`docs/src/content/`](./docs/README.md).
 - **Curious about the desktop app?** An Electron thin-shell for macOS and Windows lives in [`desktop/`](./desktop/README.md); docs at [Developer → Desktop App](https://revornix.com/docs/developer/desktop).
 - **Architecture deep dive?** <https://revornix.com/docs/developer/structure>.
