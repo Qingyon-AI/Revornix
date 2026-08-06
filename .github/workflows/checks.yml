@@ -29,6 +29,13 @@ jobs:
       - name: 导入的名字是否真的存在
         run: python scripts/check_imports.py
 
+      # 上一条查「import 的名字存不存在」，这条查「用的名字有没有 import」。
+      # 两者都不需要装依赖，加起来才覆盖得住搬文件时漏搬 import 的情况 ——
+      # 那种缺陷会一路过掉 compileall 与单元测试，直到线上某个接口返回
+      # "name 'xxx' is not defined"。
+      - name: 有没有用到未定义的名字
+        run: uv run --no-project --python 3.11 --with ruff ruff check --select F821 --no-cache --quiet app api worker
+
       # app/ 已经不属于任何一个服务，得有人检查它的语法。
       # --no-project：uv run 在没有 .venv 时会**自动装齐整个 workspace**，
       # 而 compileall 只编译不导入，一个依赖都不需要。加了它是 0.1 秒，不加是几分钟。
