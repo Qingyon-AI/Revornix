@@ -1,13 +1,3 @@
-overrides:
-  # acorn 8.18.0 会让 nextra 的 MDX 构建挂在 `Could not parse style attribute on
-  # span` —— hast-util-to-estree 的 parseStyle 用 acorn 解析内联 style，8.18 改了
-  # 行为。8.16.0 正常。实测：只回退这一个包，其余升级全部保留，构建即恢复。
-  #
-  # 这是上游问题，不是本仓库的用法问题；acorn 或 hast-util-to-estree 修好之后
-  # 就可以删掉这条。删之前请**清掉 docs/.next 再构建**验证 —— Turbopack 的缓存
-  # 在依赖变化后不会自动失效，脏缓存会给出与依赖无关的假错误。
-  acorn: 8.16.0
-
 allowBuilds:
   # dev 的文件监听走它的原生 watcher。
   '@parcel/watcher': true
