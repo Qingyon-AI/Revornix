@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
+          enable-cache: true
 
       # 镜像检查只保证两侧**字节相同**，保证不了两侧**都能用** —— 一个文件在 api
       # 侧依赖的符号，worker 侧不一定有。这正是让 worker 起不来的那个缺陷的形态，
@@ -30,32 +30,33 @@ jobs:
         run: python scripts/check_imports.py
 
       # app/ 已经不属于任何一个服务，得有人检查它的语法。
+      # --no-project：uv run 在没有 .venv 时会**自动装齐整个 workspace**，
+      # 而 compileall 只编译不导入，一个依赖都不需要。加了它是 0.1 秒，不加是几分钟。
       - name: app 语法检查
-        run: python -m compileall -q app
+        run: uv run --no-project --python 3.11 python -m compileall -q app
 
   worker:
     name: worker 编译与测试
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
-      # worker 的依赖很重（torch 等），装齐一次代价太大。compileall 不需要依赖，
-      # 但能抓住语法错误和坏缩进 —— 这类问题此前要等任务真正跑起来才暴露。
+          enable-cache: true
+      # worker 的依赖不轻（playwright、langgraph、各家 SDK），装齐一次代价太大。
+      # compileall 不需要依赖，但能抓住语法错误和坏缩进 —— 这类问题此前要等任务
+      # 真正跑起来才暴露。
       - name: 语法检查
-        working-directory: worker
-        run: python -m compileall -q workflow
+        run: uv run --no-project --python 3.11 python -m compileall -q worker/workflow
 
       # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
-      # 渲染），因此只装 pytest 就能跑 —— 不必为了测试把整棵运行时依赖树拖进来。
-      - name: 安装测试依赖
-        working-directory: worker
-        run: pip install -r requirements-dev.txt
-
+      # 渲染）：conftest 把 crud / pymilvus / engine 那些顶成替身，所以只要 pytest
+      # 就能跑，不必为了测试把整棵运行时依赖树拖进来。实测 400 个用例 1.5 秒。
+      #
+      # 这里必须写 --no-project：uv run 默认会先把 workspace 装齐（那正是上面两条
+      # 注释想避免的事），--with pytest 则单独把 pytest 塞进这个临时环境。
       - name: 单元测试
-        working-directory: worker
-        run: python -m pytest -q
+        run: uv run --no-project --python 3.11 --with pytest --directory worker python -m pytest -q
 
   gateway:
     name: gateway 构建、vet 与测试

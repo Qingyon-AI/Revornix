@@ -16,7 +16,7 @@ import { Steps } from 'nextra/components';
 ## Manual Deployment Method
 
 <Callout>
-	We strongly recommend using conda to create a separate Python virtual environment for each service, because the Python dependencies of different services may conflict. If you prefer another Python virtual environment manager, feel free to use that instead.
+	The Python side uses [uv](https://docs.astral.sh/uv/): `api` and `worker` are two members of a single uv workspace, sharing one `uv.lock` and one `.venv` at the repo root. There is no need for a separate environment per service — both dependency sets come out of the same resolution, so they cannot conflict. uv also downloads the matching Python itself, so none needs to be preinstalled.
 </Callout>
 
 <Steps>
@@ -67,23 +67,27 @@ Update each service's env file as needed. For details, see the [Revornix Environ
 	If you deploy manually, `OAUTH_SECRET_KEY` must be identical across API and Worker; otherwise, the authentication and internal service trust chain will break.
 </Callout>
 
-### Initialize the required baseline data
-
-```shell
-cd api
-python -m data.milvus.create
-python -m data.sql.create
-```
-
 ### Start the core backend service
 
+<Callout type="info">
+No manual database initialization. Every API startup runs an idempotent pass that creates
+tables, applies column migrations, seeds built-in data and ensures the Milvus collection
+exists — fresh installs and upgrades alike need nothing but starting the service.
+</Callout>
+
+`app/`, `api/` and `worker/` form a uv workspace: one `uv.lock`, one `.venv` at the repo
+root, shared by both Python services. Install once, from the **repo root**:
+
 ```shell
-cd api
-conda create -n api python=3.11 -y
-conda activate api
-pip install -r ./requirements.txt
-fastapi run --port 8001
+uv sync --all-packages
+uv run --directory api fastapi run main.py --port 8001
 ```
+
+<Callout type="warn">
+`--directory` is not optional. The log path and which `.env` gets read are both resolved
+from the working directory; running from the repo root picks up the root config instead —
+no error, just the wrong values.
+</Callout>
 
 ### Start the hot-search aggregation service
 
@@ -97,12 +101,9 @@ pnpm start
 ### Start the Celery task queue
 
 ```shell
-cd worker
-conda create -n worker python=3.11 -y
-conda activate worker
-pip install -r ./requirements.txt
-playwright install
-./start-worker.sh
+uv run --directory worker playwright install
+uv run --directory worker celery -A common.celery.app worker \
+  --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
 ### Start the frontend service

@@ -176,17 +176,25 @@ Configure env values based on [environment docs](https://revornix.com/docs/envir
 
 > uv rather than conda: conda earns its keep managing non-Python dependencies (CUDA, MKL and friends),
 > and torch is now **optional** here — the default configuration uses cloud embedding — so that advantage
-> no longer applies. Measured on a cold cache installing the same requirements: **uv 32s, pip 242s**.
+> no longer applies. Measured on a cold cache installing the same dependency set: **uv 32s, pip 242s**.
 > uv also downloads the matching Python itself, so the host needs no pyenv.
 
+`app/`, `api/` and `worker/` form a **uv workspace**: one `uv.lock`, one `.venv` at the
+repo root, shared by both services. Install once — from the repo root, not from `api/`:
+
 ```shell
-cd api
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-# 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
-./.venv/bin/fastapi run main.py --port 8001
+uv sync --all-packages
+# Local embedding (optional, torch ≈1.3 GB). The default path is cloud embedding,
+# so you almost certainly don't need this:
+# uv sync --all-packages --extra local-embedding
+
+uv run --directory api fastapi run main.py --port 8001
 ```
+
+`--directory` matters: `BASE_DIR` (where logs go) and `load_dotenv(usecwd=True)`
+(which `.env` gets read) are both resolved from the working directory. Run it from
+the repo root and you get the root `.env`, which is a different config — no error,
+just the wrong values.
 
 ### 6) Run gateway service
 
@@ -208,12 +216,12 @@ pnpm start
 ### 8) Run Celery worker
 
 ```shell
-cd worker
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-./.venv/bin/playwright install
-PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
+uv run --directory worker playwright install   # browsers for web-page conversion
+uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
+
+Or let `./scripts/dev.sh api` / `./scripts/dev.sh worker` do it — same commands, plus a
+check that Postgres and Redis are actually up.
 
 ### 9) Run frontend
 

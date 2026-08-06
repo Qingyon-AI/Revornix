@@ -172,17 +172,23 @@ cp ./worker/.env.example ./worker/.env
 ### 5) 启动核心后端服务
 
 > 用 uv 而不是 conda：conda 的长处是管非 Python 依赖（CUDA、MKL 那些），而 torch 现在是**可选**的
-> （默认走云端 embedding），那个长处用不上了。实测冷缓存装同一份 requirements：**uv 32 秒 / pip 242 秒**。
+> （默认走云端 embedding），那个长处用不上了。实测冷缓存装同一份依赖：**uv 32 秒 / pip 242 秒**。
 > uv 还会自己下载对应版本的 Python，机器上不必另装 pyenv。
 
+`app/`、`api/`、`worker/` 是一个 **uv workspace**：一份 `uv.lock`、仓库根一个 `.venv`，
+两个服务共用。装一次就够 —— 在**仓库根**跑，不是在 `api/` 里：
+
 ```shell
-cd api
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-# 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
-./.venv/bin/fastapi run main.py --port 8001
+uv sync --all-packages
+# 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，基本用不到
+# uv sync --all-packages --extra local-embedding
+
+uv run --directory api fastapi run main.py --port 8001
 ```
+
+`--directory` 不能省：`BASE_DIR`（日志往哪写）和 `load_dotenv(usecwd=True)`（读哪份
+`.env`）都按工作目录取值。在仓库根跑会读到根目录那个 `.env`，那是另一份配置 ——
+不报错，只是值全不对。
 
 ### 6) 启动网关服务（可选）
 
@@ -204,12 +210,12 @@ pnpm start
 ### 8) 启动 Celery 任务服务
 
 ```shell
-cd worker
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-./.venv/bin/playwright install
-PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
+uv run --directory worker playwright install   # 网页转换要用的浏览器
+uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
+
+也可以直接用 `./scripts/dev.sh api` / `./scripts/dev.sh worker`：同样的命令，外加一层
+Postgres、Redis 是否真的起着的检查。
 
 ### 9) 启动前端服务
 

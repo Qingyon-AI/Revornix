@@ -20,30 +20,28 @@ jobs:
     name: 写入幂等与入口可导入
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    defaults:
-      run:
-        working-directory: worker
-
+    # 工作目录留在仓库根（uv workspace 的 .venv 与 uv.lock 都在这里）；
+    # 需要在服务目录里跑的命令各自带 --directory / -f 前缀。
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
+          enable-cache: true
 
       - name: 装依赖
         # 只装客户端（pymilvus / neo4j / sqlalchemy），不装 torch、langgraph 这些 ——
         # 这批用例不跑模型，也不建图。
-        run: pip install -r requirements-integration.txt
+        run: uv sync --locked --all-packages
 
       # 先跑不需要外部系统的那条：入口模块能不能导入。
       # 放在起容器**之前**，因为它失败时后面几分钟的等待毫无意义 ——
       # 而这恰恰是最严重的一类问题（worker 起不来）。
       - name: 入口模块导入冒烟
-        run: python -m pytest tests_integration/test_entrypoint_imports.py -q
+        run: uv run --directory worker python -m pytest tests_integration/test_entrypoint_imports.py -q
 
       - name: 起存储
-        run: docker compose -f tests_integration/docker-compose.yaml up -d --wait
+        run: docker compose -f worker/tests_integration/docker-compose.yaml up -d --wait
 
       - name: 集成测试
         env:
@@ -56,14 +54,14 @@ jobs:
           NEO4J_USER: neo4j
           NEO4J_PASS: neo4jneo4j
           MILVUS_CLUSTER_ENDPOINT: http://localhost:49530
-        run: python -m pytest tests_integration -q
+        run: uv run --directory worker python -m pytest tests_integration -q
 
       - name: 失败时打印容器日志
         if: failure()
         # 没有这一步，一次远端失败只能看到"连接超时"，分不清是容器没起来
         # 还是代码错了。
-        run: docker compose -f tests_integration/docker-compose.yaml logs --tail=80
+        run: docker compose -f worker/tests_integration/docker-compose.yaml logs --tail=80
 
       - name: 收摊
         if: always()
-        run: docker compose -f tests_integration/docker-compose.yaml down -v
+        run: docker compose -f worker/tests_integration/docker-compose.yaml down -v

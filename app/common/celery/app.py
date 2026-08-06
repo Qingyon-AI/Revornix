@@ -131,8 +131,17 @@ def _start_background_coroutine(target, *, name: str) -> None:
     ).start()
 
 
-_initialize_worker_sentry()
-setup_worker_tracing()
+# **不要在模块顶层做 worker 的初始化。** api 也 import 这个模块（它要按名字发任务），
+# 于是 Sentry 与 OTel 会在 api 进程里也被初始化一遍 —— 表现是 api 侧
+# otel_tracing_initialized 出现两次，而且 export_openapi 从几秒变成几分钟。
+#
+# 合并成一份代码之前碰不到：那时 api 有自己的一份 celery 模块，里面只有客户端代理。
+# 现在两边共用同一个模块，模块级副作用就会漏到不需要它的那一侧。
+# 放进 worker_init：只有真的以 worker 身份启动时才跑。
+@worker_init.connect
+def _initialize_worker_process(**kwargs):
+    _initialize_worker_sentry()
+    setup_worker_tracing()
 
 
 @worker_init.connect
