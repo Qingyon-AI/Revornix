@@ -8,6 +8,11 @@ __pycache__/
 *.egg-info/
 *.egg
 *.log
+# 轮转出来的：info.log.2026-08-02。上面那条 *.log 挡不住带日期后缀的。
+*.log.[0-9]*
+.pytest_cache/
+.coverage
+.coverage.*
 volumes/*
 .env
 .env.*
@@ -25,3 +30,24 @@ neo4j/plugins/*
 # 免得哪天那个文件没了就把整个虚拟环境提交上来。
 .venv/
 .uv-cache/
+
+# ── 构建产物 ──────────────────────────────────────────────
+# 下面这些都曾经被提交进来过。凡是「能从源码再生成一遍」的东西都不该入库：
+# 它每次构建都变，diff 里全是噪音，而且和源码漂移时没人看得出来。
+node_modules/
+.next/
+dist/
+dist-desktop/
+out/
+.turbo/
+*.tsbuildinfo
+
+# tsc 把 vitest.config.ts 编译到了同目录，产物一起进了仓库。这里精确列出，
+# **不要**写成 `*.config.js` —— 那会连 hot-news/eslint.config.js 这种手写配置一起挡掉。
+hot-news/vitest.config.js
+hot-news/vitest.config.d.ts
+hot-news/vitest.config.d.ts.map
+
+# Go 编译出来的可执行文件，与目录同名（gateway/gateway）。曾经有一个 8.3 MB 的
+# **macOS arm64** 二进制躺在仓库里 —— 那是仓库里最大的文件，而 Linux 部署根本用不了它。
+gateway/gateway
