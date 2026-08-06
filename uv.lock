@@ -3722,6 +3722,9 @@ local-embedding = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "celery" },
+    { name = "opentelemetry-api" },
+    { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
@@ -3746,6 +3749,9 @@ provides-extras = ["local-embedding"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "celery" },
+    { name = "opentelemetry-api" },
+    { name = "pydantic" },
     { name = "pytest", specifier = "==9.1.1" },
     { name = "pytest-asyncio", specifier = "==1.4.0" },
 ]

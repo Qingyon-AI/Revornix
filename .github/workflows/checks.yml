@@ -56,14 +56,18 @@ jobs:
       - name: 语法检查
         run: uv run --no-project --python 3.11 python -m compileall -q worker/workflow
 
-      # 这批测试刻意只覆盖零依赖的纯逻辑（向量形状归一化、播客分级压缩、失败详情
-      # 渲染）：conftest 把 crud / pymilvus / engine 那些顶成替身，所以只要 pytest
-      # 就能跑，不必为了测试把整棵运行时依赖树拖进来。实测 400 个用例 1.5 秒。
+      # 这批测试刻意只覆盖零依赖的纯逻辑：conftest 把 crud / pymilvus / engine 那些
+      # 顶成替身，不必为了测试把整棵运行时依赖树拖进来。
       #
-      # 这里必须写 --no-project：uv run 默认会先把 workspace 装齐（那正是上面两条
-      # 注释想避免的事），--with pytest 则单独把 pytest 塞进这个临时环境。
+      # `--only-group dev` 只装 worker 的 dev 组（31 个包，无 torch / playwright /
+      # langgraph / pymilvus），而不是整个 workspace。曾经写成
+      # `--no-project --with pytest`，那只给 pytest —— 而 conftest 明确不伪造 OTel、
+      # pydantic 与 celery，于是 CI 报 ModuleNotFoundError: opentelemetry，
+      # 本地却是绿的（本地共用 .venv，什么都装着）。
+      - name: 装测试依赖
+        run: uv sync --locked --only-group dev --package revornix-worker
       - name: 单元测试
-        run: uv run --no-project --python 3.11 --with pytest --directory worker python -m pytest -q
+        run: uv run --no-sync --directory worker python -m pytest -q
 
   gateway:
     name: gateway 构建、vet 与测试
@@ -94,7 +98,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # package_json_file 不能省：这个 action 默认读**仓库根**的 package.json 找
+      # packageManager 字段，而这个仓库根本没有根 package.json，于是报
+      # "No pnpm version is specified" 而不是回退到某个默认版本。
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: hot-news/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -118,27 +127,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      # desktop 用 **npm**，不是 pnpm —— desktop-release.yml 里是 `npm ci`，
+      # README 也是 npm。这个 job 曾经用 pnpm，于是仓库里同时躺着 package-lock.json
+      # 和 pnpm-lock.yaml，两棵依赖树各自漂移，而两个 workflow 谁也没发现对方装的
+      # 不是同一套东西。
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: desktop/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
       - name: 安装依赖
         working-directory: desktop
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       # 只跑 node 原生 runner 的单测。test:e2e 要先打包 Electron 再拉 Playwright，
       # 代价和不稳定性都高得多，不适合挂在每个 PR 上。
       - name: 单元测试
         working-directory: desktop
-        run: pnpm test
+        run: npm test
 
   docs:
     name: docs 构建
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # package_json_file 不能省：这个 action 默认读**仓库根**的 package.json 找
+      # packageManager 字段，而这个仓库根本没有根 package.json，于是报
+      # "No pnpm version is specified" 而不是回退到某个默认版本。
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: docs/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 22

@@ -28,9 +28,17 @@ local-embedding = ["torch==2.13.0", "sentence_transformers==5.6.1"]
 dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
-    # OTel、pydantic、celery 现在由 app 的运行时依赖带进来（此前 dev 组把
-    # opentelemetry-api 钉在 1.39.0，与运行时的 1.44.0 冲突 —— pip 装不报，
-    # 锁文件一解析就暴露了）。
+    # 下面三个是 tests/conftest.py 明确**不伪造**的：伪造一整套 span 语义、
+    # 校验行为或 celery 的任务装饰器，比装真包更容易出错。
+    #
+    # **不钉版本**，交给锁文件与 app 的运行时依赖一起解析。此前它们钉死在
+    # opentelemetry-api==1.39.0，而运行时要 1.44.0 —— pip 装两份不报错，
+    # 锁文件一解析就冲突。这也是它们一度被从这里删掉的原因，但删掉之后
+    # `uv sync --only-group dev` 就装不齐，CI 报 ModuleNotFoundError:
+    # opentelemetry。写在这里、不带版本，两个目标才都成立。
+    "celery",
+    "opentelemetry-api",
+    "pydantic",
 ]
 # 集成测试不需要单独一组：它要的 pymilvus / neo4j / sqlalchemy / psycopg 都是
 # app 的运行时依赖，本来就装着。此前它单列一份并各自钉版本，与运行时对不上 ——

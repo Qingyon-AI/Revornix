@@ -1,5 +1,6 @@
 {
   "name": "revornix-web-service",
+  "packageManager": "pnpm@11.13.0",
   "version": "1.0.0-beta1",
   "private": true,
   "scripts": {

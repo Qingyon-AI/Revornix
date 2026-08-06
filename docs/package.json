@@ -1,4 +1,5 @@
 {
+  "packageManager": "pnpm@11.13.0",
   "scripts": {
     "dev": "next",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
