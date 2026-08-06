@@ -1,5 +1,6 @@
 {
   "name": "revornix-desktop",
+  "packageManager": "pnpm@11.13.0",
   "version": "0.1.0",
   "description": "Revornix desktop shell (Electron)",
   "main": "dist/main/main.js",

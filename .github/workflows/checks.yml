@@ -127,23 +127,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # desktop 用 **npm**，不是 pnpm —— desktop-release.yml 里是 `npm ci`，
-      # README 也是 npm。这个 job 曾经用 pnpm，于是仓库里同时躺着 package-lock.json
-      # 和 pnpm-lock.yaml，两棵依赖树各自漂移，而两个 workflow 谁也没发现对方装的
-      # 不是同一套东西。
+      # desktop 与其余三个前端一样用 pnpm。仓库里一度同时躺着 package-lock.json
+      # 和 pnpm-lock.yaml：前者停在 2026-07-12（desktop 初建那天），后者一直在更新，
+      # 两棵依赖树差了 9 个 electron 大版本。之所以没人发现，是因为唯一使用 npm 的
+      # desktop-release.yml **从未运行过** —— 它不在默认分支上，只由 desktop-v* tag 触发。
+      # 文档说 npm、CI 跑 pnpm，而实际维护的是后者。
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: desktop/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: desktop/package-lock.json
+          cache: pnpm
+          cache-dependency-path: desktop/pnpm-lock.yaml
       - name: 安装依赖
         working-directory: desktop
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       # 只跑 node 原生 runner 的单测。test:e2e 要先打包 Electron 再拉 Playwright，
       # 代价和不稳定性都高得多，不适合挂在每个 PR 上。
       - name: 单元测试
         working-directory: desktop
-        run: npm test
+        run: pnpm test
 
   docs:
     name: docs 构建
