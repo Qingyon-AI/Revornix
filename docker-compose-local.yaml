@@ -36,7 +36,17 @@ services:
     volumes:
       - neo4j-data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      # neo4j 镜像里**没有 curl**（有 wget 和 cypher-shell）。原先探的是
+      # `curl -f http://localhost:7474`，于是这个容器永远 unhealthy —— 而 neo4j
+      # 本身一直是好的，日志里明明写着 Started。一个恒为假的健康检查比没有更糟：
+      # 它让人以为服务坏了，真坏的时候反而没人信。
+      #
+      # 用 cypher-shell 而不是探 HTTP 端口：它走的是 bolt，还要通过认证，
+      # 与应用实际使用的路径一致。端口通了但密码不对，这条会红，而 HTTP 探测不会。
+      #
+      # 单个 $ ：由 compose 在解析时替换成实际值。写成 $$ 是把字面量传进容器，
+      # 而容器里只有 NEO4J_AUTH，没有 NEO4J_USER / NEO4J_PASS 这两个变量。
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER} -p ${NEO4J_PASS} 'RETURN 1' || exit 1"]
       interval: 30s
       timeout: 20s
       retries: 3
