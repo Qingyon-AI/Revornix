@@ -8,6 +8,20 @@
 #   ./scripts/check-all.sh              跑全部（不含集成测试）
 #   ./scripts/check-all.sh web api      只跑指定的（分组：app api worker web gateway hot-news desktop docs）
 #   ./scripts/check-all.sh integration  跑集成测试（要先起容器，见下）
+# ── 升级 Node 依赖时的两个坑（都实际踩过）─────────────────────────────
+#
+# 1. **`pnpm update` 必须带 `--registry https://registry.npmjs.org`。**
+#    默认 registry 是 npmmirror 镜像，它的元数据滞后，解析出来的依赖树会**降级**：
+#    实测 docs 一次 update 改了 73 个包，其中 style-to-js 1.1.21→1.0.0、
+#    inline-style-parser 0.2.7→0.1.1、micromark 全家 2.0.1→2.0.0。表现是构建挂在
+#    "Could not parse `style` attribute on `span`"，看着像上游 bug，实际是降级。
+#    换官方源重跑：33 个变化，**零降级**，构建正常。日常 install 走镜像没问题。
+#
+# 2. **依赖变了就要 `rm -rf <svc>/.next` 再构建。**
+#    Turbopack 的缓存在依赖变化后不会自动失效，脏缓存给出的错误与真实原因无关
+#    （同一份代码两次构建报 133 个和 18 个错，清掉即恢复）。排查依赖问题前先清缓存，
+#    否则会追着假象跑。
+
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
