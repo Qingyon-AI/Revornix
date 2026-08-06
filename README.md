@@ -159,16 +159,10 @@ Configure env values based on [environment docs](https://revornix.com/docs/envir
 > [!WARNING]
 > For manual deployment, keep `OAUTH_SECRET_KEY` consistent across services, or cross-service authentication will fail.
 
-### 4) Initialize required data
-
-```shell
-cd api
-python -m data.milvus.create
-```
-
-> Postgres needs no step here. The API creates tables, applies schema changes and
-> seeds built-in data on every startup, so a fresh install and an upgrade both
-> need nothing but starting the service.
+> **Nothing to initialize.** On every startup the API creates tables, applies
+> column migrations, seeds built-in data and ensures the Milvus collection exists,
+> so a fresh install and an upgrade both need nothing but starting the service.
+> A manual step written down in a README is a step somebody eventually skips.
 
 > **Container images.** Every service has a Dockerfile. Build from the **repo
 > root**, not the service directory — both `api` and `worker` depend on the sibling
