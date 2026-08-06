@@ -39,10 +39,11 @@ worker/
 ```
 
 Everything else — models, crud, schemas, enums, engines, notification channels,
-file adapters, proxies, prompts, `common/` — lives in `app/` at the repo root and
-is installed here via `-e ../app`, already listed in `requirements.txt`. There is
-one copy, shared with `api/`, and the packages are exposed at top level, so
-`from crud.document import ...` reads the same as it always did.
+file adapters, proxies, prompts, `common/` — lives in `app/` at the repo root.
+`app/`, `api/` and `worker/` are members of one **uv workspace**, so `app/` is
+installed here in editable mode automatically. There is one copy, shared with
+`api/`, and the packages are exposed at top level, so `from crud.document import ...`
+reads the same as it always did.
 
 That was not always true: the two services each carried their own copy, kept in
 step by a byte-equality check. Six defects came out of that arrangement,
@@ -53,34 +54,34 @@ including a worker that could not start at all, so the copies were merged.
 ## Running locally
 
 ```bash
-# Isolated env (mirrors api/ — they often diverge in deps over time)
-# uv rather than conda — see api/README.md for why. Cold-cache install measured
+# From the REPO ROOT. One uv.lock and one .venv cover api/ and worker/ both —
+# uv rather than conda, see api/README.md for why. Cold-cache install measured
 # 32s against pip's 242s, and uv fetches the matching Python itself.
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
+uv sync --all-packages
 
 # Playwright browsers (required for web-page conversion)
-./.venv/bin/playwright install
+uv run --directory worker playwright install
 
 # Configure env — see https://revornix.com/docs/environment
 cp .env.example .env
 
-# Start the worker (default: --pool=threads --concurrency=20 --loglevel=info -E)
-PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
+# Start the worker. --directory is not optional: BASE_DIR (where logs go) and
+# load_dotenv(usecwd=True) (which .env is read) both resolve from the working
+# directory, and the repo root holds a *different* .env.
+uv run --directory worker celery -A common.celery.app worker \
+  --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
-You can override Celery flags by passing them to `start-worker.sh`:
-
-```bash
-./start-worker.sh --concurrency=4 --loglevel=debug
-```
+`./scripts/dev.sh worker` does the same thing and first checks that Postgres and Redis
+are actually up. `start-worker.sh` is the systemd entrypoint — it expects the venv's
+`bin` already on PATH, which the unit file sets.
 
 Make sure `api/` is reachable (or at least the shared dependencies — Redis, Postgres, Milvus, Neo4j, MinIO — are up). Workers without the API still process tasks, but the API is where new tasks come from.
 
 ## Conventions worth knowing
 
 - **`OAUTH_SECRET_KEY` must match `api/`.** The worker decodes the same JWTs the API issued; mismatched secrets cause silent permission failures.
-- **Don't import API code directly.** Models, CRUD, and enums are duplicated on purpose so the services deploy independently. When you change shared shapes (notification, enum, proxy), mirror the edit on both sides.
+- **Shared code is imported, not copied.** Models, CRUD and enums live once in `app/`; there is nothing left to mirror. Editing them affects both services at once, which is the point — the duplicated era produced six defects, including a worker that could not start at all.
 - **Workflows are idempotent where possible.** Each accepts a task id and writes status back through the DB; reruns should converge rather than corrupt.
 - **Cancellations**: see `workflow/cancelled.py`. User-cancelled tasks short-circuit rather than racing to completion.
 

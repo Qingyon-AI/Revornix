@@ -57,18 +57,18 @@ step() {  # step <分组> <名称> <命令...>
 in_dir() { local d="$1"; shift; (cd "$d" && "$@"); }
 
 echo "── 跨服务 ──"
-step app      "app 语法检查"           python3 -m compileall -q app
+step app      "app 语法检查"           uv run python -m compileall -q app
 step app      "导入的名字是否真的存在"    python3 scripts/check_imports.py
 
 echo "── api ──"
-step api "OpenAPI spec 是最新的" in_dir api python -m scripts.export_openapi --check
-step api "单元测试"               in_dir api python -m pytest tests -q -p no:cacheprovider
+step api "OpenAPI spec 是最新的" uv run --directory api python -m scripts.export_openapi --check
+step api "单元测试"               uv run --directory api python -m pytest tests -q -p no:cacheprovider
 
 echo "── worker ──"
 # crud/models/schemas/config/protocol 已搬进 app/，这里只列 worker 下还剩的。
 # compileall 对不存在的目录只打印一行"Can't list"、退出码仍是 0 —— 列错了会静静少查。
-step worker "语法检查" in_dir worker python -m compileall -q workflow
-step worker "单元测试" in_dir worker python -m pytest -q -p no:cacheprovider
+step worker "语法检查" uv run --directory worker python -m compileall -q workflow
+step worker "单元测试" uv run --directory worker python -m pytest -q -p no:cacheprovider
 
 echo "── web ──"
 step web "类型检查" in_dir web npx tsc --noEmit -p tsconfig.json
@@ -104,7 +104,7 @@ if want_explicit integration; then
         POSTGRES_DB_URL=localhost:45432 \
         NEO4J_URI=bolt://localhost:47687 NEO4J_USER=neo4j NEO4J_PASS=neo4jneo4j \
         MILVUS_CLUSTER_ENDPOINT=http://localhost:49530 \
-        bash -c 'cd worker && python -m pytest tests_integration -q'
+        uv run --directory worker python -m pytest tests_integration -q
 fi
 
 echo

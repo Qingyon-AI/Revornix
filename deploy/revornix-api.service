@@ -22,7 +22,11 @@ User=ubuntu
 Group=ubuntu
 
 WorkingDirectory=/opt/revornix/api
-ExecStart=/opt/revornix/api/.venv/bin/fastapi run main.py --host 0.0.0.0 --port 8001
+# venv 在**仓库根**，不在服务目录：uv workspace 是一份 lock 一个 .venv，api 与
+# worker 共用。这里直接写 venv 里的可执行文件，不用 `uv run` —— uv run 每次都会
+# 校验 lock、必要时改 venv，那是开发期的便利，不该出现在服务的启动路径上
+# （启动要能在没有网络、文件系统只读的情况下成立）。
+ExecStart=/opt/revornix/.venv/bin/fastapi run main.py --host 0.0.0.0 --port 8001
 
 # 配置从 WorkingDirectory 下的 .env 读，不用 EnvironmentFile —— 保持与本地
 # `cd api && fastapi run` 完全同一条路径，避免"线上和本地读的不是一份配置"。

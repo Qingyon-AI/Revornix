@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "revornix-worker"
+version = "0.1.0"
+description = "Celery 入口：workflow"
+requires-python = ">=3.11"
+dependencies = [
+    "revornix-app",
+    "ftfy==6.3.1",
+    "huggingface_hub==1.26.0",
+    "modelscope==1.39.1",
+    "omegaconf==2.3.1",
+    "opentelemetry-instrumentation-celery==0.65b0",
+    "pyclipper==1.4.0",
+    "python-jose==3.5.0",
+    "rapid_table==3.0.2",
+    "shapely==2.1.2",
+    "tenacity==9.1.4",
+]
+
+[project.optional-dependencies]
+local-embedding = ["torch==2.13.0", "sentence_transformers==5.6.1"]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    # OTel、pydantic、celery 现在由 app 的运行时依赖带进来（此前 dev 组把
+    # opentelemetry-api 钉在 1.39.0，与运行时的 1.44.0 冲突 —— pip 装不报，
+    # 锁文件一解析就暴露了）。
+]
+# 集成测试不需要单独一组：它要的 pymilvus / neo4j / sqlalchemy / psycopg 都是
+# app 的运行时依赖，本来就装着。此前它单列一份并各自钉版本，与运行时对不上 ——
+# 那是 requirements.txt 时代看不见的问题，锁文件一解析就报出来了。
+
+# workflow 声明成包内容，而不是靠 start-worker.sh 里的 PYTHONPATH 让它可见。
+# 那条 export 只在走那个脚本时生效，`uv run celery ...` 就找不到 —— 表现是任务
+# 执行时 ModuleNotFoundError: No module named 'workflow'，而进程本身活得好好的。
+[tool.setuptools]
+packages = ["workflow"]
+
+[tool.uv.sources]
+revornix-app = { workspace = true }

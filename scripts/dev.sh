@@ -41,11 +41,9 @@ if missing:
 PY
 }
 
-need_venv() {  # need_venv <目录>
-  [ -x "$REPO/$1/.venv/bin/python" ] && return 0
-  echo "✗ $1/.venv 不可用。建：" >&2
-  echo "    cd $1 && uv venv .venv --python 3.11 && uv pip install --python .venv/bin/python -r requirements.txt" >&2
-  echo "  （目录改过名的话 venv 必须**重建** —— 里面存的是绝对路径，shebang 会坏掉。）" >&2
+need_venv() {  # 整个 workspace 一个 .venv
+  [ -x "$REPO/.venv/bin/python" ] && return 0
+  echo "✗ .venv 不可用。在仓库根跑：uv sync --all-packages" >&2
   return 1
 }
 
@@ -54,16 +52,16 @@ check_infra || exit 1
 
 case "$WHICH" in
   api)
-    need_venv api || exit 1
+    need_venv || exit 1
     echo "── api :8001（Ctrl-C 停止）──"
     # cd 到服务目录不是习惯：BASE_DIR（日志）与 load_dotenv(usecwd=True)（读哪份
     # .env）都按工作目录取值。在仓库根跑会读到根目录那个 .env，是另一份配置。
-    cd "$REPO/api" && exec ./.venv/bin/fastapi run main.py --host 127.0.0.1 --port 8001
+    exec uv run --directory "$REPO/api" fastapi run main.py --host 127.0.0.1 --port 8001
     ;;
   worker)
-    need_venv worker || exit 1
+    need_venv || exit 1
     echo "── worker（Ctrl-C 停止）──"
-    cd "$REPO/worker" && PATH="$REPO/worker/.venv/bin:$PATH" exec ./start-worker.sh --pool=threads --concurrency=4 --loglevel=info
+    exec uv run --directory "$REPO/worker" celery -A common.celery.app worker --pool=threads --concurrency=4 --loglevel=info
     ;;
   "")
     echo

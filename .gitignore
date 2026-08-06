@@ -19,3 +19,9 @@ neo4j/plugins/*
 .ruff_cache/
 .claude/
 .pnpm-store/
+
+# uv workspace：一份 uv.lock（要提交）、仓库根一个 .venv（不提交）。
+# .venv 里 uv 会自己放一个 `*` 的 .gitignore，但那是它的实现细节 —— 这里显式声明，
+# 免得哪天那个文件没了就把整个虚拟环境提交上来。
+.venv/
+.uv-cache/

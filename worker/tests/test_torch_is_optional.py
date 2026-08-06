@@ -84,15 +84,33 @@ def test_factory_imports_the_local_engine_lazily():
 
 
 @pytest.mark.parametrize("service", SERVICES)
-def test_torch_is_not_in_the_default_requirements(service):
-    req = REPO / service / "requirements.txt"
-    opt = REPO / service / "requirements-local-embedding.txt"
-    assert req.is_file(), f"{service} 没有 requirements.txt"
+def test_torch_is_not_a_default_dependency(service):
+    """torch 只能出现在 optional-dependencies 里。
 
-    assert not [
-        l for l in req.read_text(encoding="utf-8").splitlines()
-        if l.strip().startswith(("torch==", "sentence_transformers=="))
-    ], f"{service}/requirements.txt 里又出现了 torch —— 它属于可选依赖文件"
+    迁到 uv workspace 之后判据也换了：从前查的是 requirements.txt 有没有那一行，
+    现在查 pyproject 的 [project.dependencies] 与 [project.optional-dependencies]。
+    上一版仍指着已删除的 requirements.txt —— 那会在文件消失后变成一条永远失败
+    （或者更糟：被改成 skip 而永远沉默）的用例。
+    """
+    import tomllib
 
-    assert opt.is_file(), f"{service} 缺 requirements-local-embedding.txt"
-    assert "torch==" in opt.read_text(encoding="utf-8")
+    data = tomllib.loads((REPO / service / "pyproject.toml").read_text(encoding="utf-8"))
+    project = data["project"]
+
+    runtime = " ".join(project.get("dependencies", []))
+    assert "torch" not in runtime, (
+        f"{service}/pyproject.toml 的 dependencies 里出现了 torch —— "
+        "它属于 optional-dependencies，默认部署走云端 embedding 不需要它。"
+    )
+
+    optional = project.get("optional-dependencies", {})
+    assert "local-embedding" in optional, f"{service} 少了 local-embedding 这一组"
+    assert any("torch" in d for d in optional["local-embedding"])
+
+
+def test_the_shared_package_does_not_depend_on_torch():
+    """app/ 是两个入口都装的，torch 混进这里等于谁都躲不掉。"""
+    import tomllib
+
+    data = tomllib.loads((REPO / "app" / "pyproject.toml").read_text(encoding="utf-8"))
+    assert "torch" not in " ".join(data["project"].get("dependencies", []))

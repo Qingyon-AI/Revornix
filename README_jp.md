@@ -169,18 +169,26 @@ cp ./worker/.env.example ./worker/.env
 ### 5) API サービスを起動
 
 > conda ではなく uv を使います。conda の強みは Python 以外の依存（CUDA や MKL など）の管理ですが、
-> torch は現在**任意**（既定はクラウド埋め込み）のため、その強みは効きません。同じ requirements を
+> torch は現在**任意**（既定はクラウド埋め込み）のため、その強みは効きません。同じ依存一式を
 > キャッシュなしで導入した実測値は **uv 32 秒 / pip 242 秒**。uv は対応する Python 自体も取得するため、
 > ホストに pyenv は不要です。
 
+`app/`・`api/`・`worker/` は **uv workspace** です。`uv.lock` は 1 つ、`.venv` も
+リポジトリ直下に 1 つで、両サービスが共有します。導入は一度だけ、`api/` の中ではなく
+**リポジトリ直下**で実行します：
+
 ```shell
-cd api
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-# 本地 embedding（可选，torch 约 1.3 GB）：默认走云端，不需要这一步
-# uv pip install --python .venv/bin/python -r requirements-local-embedding.txt
-./.venv/bin/fastapi run main.py --port 8001
+uv sync --all-packages
+# ローカル埋め込み（任意、torch は約 1.3 GB）。既定はクラウド埋め込みなので通常は不要：
+# uv sync --all-packages --extra local-embedding
+
+uv run --directory api fastapi run main.py --port 8001
 ```
+
+`--directory` は省略できません。`BASE_DIR`（ログの出力先）と
+`load_dotenv(usecwd=True)`（どの `.env` を読むか）はどちらも作業ディレクトリ基準です。
+リポジトリ直下で実行すると直下の `.env`（別の設定）を読みます —— エラーにはならず、
+値だけが違います。
 
 ### 6) ゲートウェイサービスを起動（任意）
 
@@ -202,12 +210,12 @@ pnpm start
 ### 8) Celery ワーカーを起動
 
 ```shell
-cd worker
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r requirements.txt
-./.venv/bin/playwright install
-PATH="$PWD/.venv/bin:$PATH" ./start-worker.sh
+uv run --directory worker playwright install   # Web ページ変換に使うブラウザ
+uv run --directory worker celery -A common.celery.app worker --pool=threads --concurrency=20 --loglevel=info -E
 ```
+
+`./scripts/dev.sh api` / `./scripts/dev.sh worker` でも同じことができます（同じコマンドに
+加えて、Postgres と Redis が実際に起動しているかを確認します）。
 
 ### 9) フロントエンドを起動
 

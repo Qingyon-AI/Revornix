@@ -16,7 +16,8 @@ WorkingDirectory=/opt/revornix/worker
 # 走 start-worker.sh 而不是直接 celery：它负责设置 PYTHONPATH 并 cd 到自身目录，
 # 与本地开发跑的是同一条路径。默认参数 --pool=threads --concurrency=20。
 ExecStart=/opt/revornix/worker/start-worker.sh
-Environment=PATH=/opt/revornix/worker/.venv/bin:/usr/local/bin:/usr/bin:/bin
+# venv 在仓库根（uv workspace 单一 .venv），start-worker.sh 里那句裸 `celery` 靠这个 PATH 找到。
+Environment=PATH=/opt/revornix/.venv/bin:/usr/local/bin:/usr/bin:/bin
 
 Restart=always
 RestartSec=10

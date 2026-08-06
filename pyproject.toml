@@ -1,0 +1,17 @@
+[project]
+name = "revornix"
+version = "0.1.0"
+description = "Revornix — 顶层 workspace 容器，本身不装任何东西"
+requires-python = ">=3.11,<3.12"
+dependencies = []
+
+[tool.uv]
+# 顶层不作为可安装包
+package = false
+
+[tool.uv.workspace]
+# 一份 lock 管三个包。api 与 worker 的依赖集只差 16 个、零版本冲突（实测），
+# 放进同一个 workspace 解析能保证两侧永远装得出兼容的一套 —— 而这正是
+# requirements.txt 时代看不见的东西：两份文件各自 pin 得再死，
+# 也不保证它们能解析出同一套传递依赖。
+members = ["app", "api", "worker"]

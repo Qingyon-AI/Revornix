@@ -5,12 +5,66 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "revornix-app"
 version = "0.1.0"
-description = "应用本体：models, crud, schemas, config, enums … 两个入口（api / worker）都装它"
+description = "应用本体：models, crud, schemas, engine, notification … 两个入口（api / worker）都装它"
 requires-python = ">=3.11"
+# 这里放的是 **app/ 自己 import 的**依赖。此前它们重复写在两个服务的
+# requirements.txt 里，而真正 import sqlalchemy / pymilvus / neo4j 的代码在这个包中 ——
+# 依赖跟着代码走，加一个 import 时该改哪个文件就不必猜。
+dependencies = [
+    "SQLAlchemy==2.0.51",
+    "alibabacloud-oss-v2==1.3.2",
+    "alibabacloud-sts20150401==1.2.0",
+    "aliyun-python-sdk-core-v3==2.13.33",
+    "aliyun-python-sdk-sts==3.1.3",
+    "beautifulsoup4==4.15.0",
+    "bilibili-api-python==17.4.2",
+    "boto3==1.43.63",
+    "celery==5.6.3",
+    "chonkie==1.7.0",
+    "fastmcp==3.4.5",
+    "hf_transfer==0.1.9",
+    "httpx[http2]==0.28.1",
+    "jwcrypto==1.5.8",
+    "langchain==1.3.14",
+    "langchain_core==1.5.3",
+    "langchain_openai==1.4.1",
+    "langfuse==4.14.2",
+    "langgraph==1.2.10",
+    "lark_oapi==1.7.1",
+    "lightrag-hku==1.5.5",
+    "markitdown==0.1.7",
+    "mcp_use==1.7.0",
+    "neo4j==6.2.0",
+    "openai==2.53.0",
+    "opentelemetry-api==1.44.0",
+    "opentelemetry-exporter-otlp-proto-http==1.44.0",
+    "opentelemetry-instrumentation-asyncpg==0.65b0",
+    "opentelemetry-instrumentation-httpx==0.65b0",
+    "opentelemetry-instrumentation-logging==0.65b0",
+    "opentelemetry-instrumentation-redis==0.65b0",
+    "opentelemetry-instrumentation-sqlalchemy==0.65b0",
+    "opentelemetry-sdk==1.44.0",
+    "playwright==1.62.0",
+    # [binary] 不能省：不带它只装纯 Python 实现，运行时要系统上有 libpq。
+    # 线上 Ubuntu 恰好有（装过 postgres 客户端），python:3.11-slim 容器里没有 ——
+    # 于是镜像能构建、能 import 业务代码，一连库就是 "libpq library not found"。
+    # binary wheel 自带 libpq，两种环境行为一致。
+    "psycopg[binary]==3.3.4",
+    "pyJWT==2.13.0",
+    "pydantic==2.13.4",
+    "pymilvus[model]==3.0.1",
+    "python-dotenv==1.2.2",
+    "python-telegram-bot==22.8",
+    "redis==8.1.0",
+    "sentry_sdk==2.66.1",
+    "tencentcloud-sdk-python==3.1.149",
+    "tiktoken==0.13.0",
+    "websockets==15.0.1",
+    "yt-dlp==2026.7.4",
+]
 
 # 刻意作为**顶级包**暴露，而不是 revornix_app.enums。
-# 这样两个服务里既有的 `from enums.document import X` 一行都不用改 ——
-# 148 个引用点零改动，这次提取的风险因此可控。
+# 这样两个入口里既有的 `from enums.document import X` 一行都不用改。
 [tool.setuptools]
 py-modules = ["encryption"]
 packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud", "base_implement", "common", "data", "engine", "file", "notification", "proxy"]

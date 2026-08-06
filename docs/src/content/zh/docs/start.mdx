@@ -16,9 +16,10 @@ import { Steps } from 'nextra/components';
 ## 手动部署方式
 
 <Callout>
-	强烈建议使用 conda 针对每个服务创建不同的 python 虚拟环境，因为不同服务之间的
-	python
-	依赖可能存在冲突。当然如果你有别的python虚拟环境管理工具，也可以使用别的。
+	Python 侧用 [uv](https://docs.astral.sh/uv/)：`api` 与 `worker` 是同一个 uv
+	workspace 的两个成员，共用仓库根的一份 `uv.lock` 和一个 `.venv`。不必给每个服务
+	各建一个环境 —— 两者的依赖由同一次解析产出，本来就不会冲突。uv 还会自己下载
+	对应版本的 Python，机器上不需要预装。
 </Callout>
 
 <Steps>
@@ -69,23 +70,25 @@ cp ./gateway/.env.example ./gateway/.env
 	注意：如果你使用手动部署，`OAUTH_SECRET_KEY` 必须在 API 和 Worker 之间保持一致，否则认证和内部调用信任链会失效。
 </Callout>
 
-### 初始化一些必要的数据
-
-```shell
-cd api
-python -m data.milvus.create
-python -m data.sql.create
-```
-
 ### 启动核心后端服务
 
+<Callout type="info">
+不需要手动初始化数据库。API 每次启动都会跑一遍幂等的建表、补列、内置数据填充，
+并确保 Milvus 集合存在 —— 全新安装和升级都只要把服务起起来。
+</Callout>
+
+`app/`、`api/`、`worker/` 是一个 uv workspace：一份 `uv.lock`、仓库根一个 `.venv`，
+两个 Python 服务共用。装一次就够，在**仓库根**执行：
+
 ```shell
-cd api
-conda create -n api python=3.11 -y
-conda activate api
-pip install -r ./requirements.txt
-fastapi run --port 8001
+uv sync --all-packages
+uv run --directory api fastapi run main.py --port 8001
 ```
+
+<Callout type="warn">
+`--directory` 不能省。日志路径和读哪份 `.env` 都按工作目录取值，在仓库根直接跑会
+读到根目录那份配置 —— 不报错，只是值不对。
+</Callout>
 
 ### 启动热搜聚集服务
 
@@ -99,12 +102,9 @@ pnpm start
 ### 启动 celery 任务序列
 
 ```shell
-cd worker
-conda create -n worker python=3.11 -y
-conda activate worker
-pip install -r ./requirements.txt
-playwright install
-./start-worker.sh
+uv run --directory worker playwright install
+uv run --directory worker celery -A common.celery.app worker \
+  --pool=threads --concurrency=20 --loglevel=info -E
 ```
 
 ### 启动前端服务
