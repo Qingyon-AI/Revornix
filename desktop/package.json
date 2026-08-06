@@ -17,9 +17,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "electron": "^43.2.0",
+    "electron": "^43.3.0",
     "electron-builder": "^26.15.3",
-    "tsx": "^4.23.5",
+    "tsx": "^4.23.7",
     "typescript": "^7.0.2"
   }
 }

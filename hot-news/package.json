@@ -53,7 +53,7 @@
     "node-cache": "^5.1.2",
     "node-fetch": "^3.3.2",
     "rss-parser": "^3.13.0",
-    "user-agents": "^2.1.142",
+    "user-agents": "^2.1.143",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -69,10 +69,10 @@
     "eslint": "^10.8.0",
     "globals": "^17.9.0",
     "prettier": "^3.9.6",
-    "tsx": "^4.23.5",
+    "tsx": "^4.23.7",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.66.0",
-    "vitest": "3.2.4"
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": ">=22.13"
