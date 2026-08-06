@@ -139,6 +139,13 @@ cp .env.local.example .env.local
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
+> [!IMPORTANT]
+> このファイルは**意図的に `.env` という名前にしていません**。`--env-file` も省略できません。
+> docker compose はプロジェクト直下の `.env` を暗黙に読み（宣言不要の既定動作）、
+> リポジトリ直下からサービスを起動すると `load_dotenv(find_dotenv(usecwd=True))` も
+> 同じファイルを読みます —— 別物が 1 つのファイル名を共有し、必要な設定はまったく違います。
+> `.env.local` にすれば直下に `.env` は存在せず、この曖昧さはなくなります。
+
 ### 3) 各マイクロサービスの環境変数を設定
 
 ```shell

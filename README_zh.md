@@ -144,6 +144,12 @@ cp .env.local.example .env.local
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
+> [!IMPORTANT]
+> 这份配置**刻意不叫 `.env`**，`--env-file` 也不能省。docker compose 会隐式读取
+> 项目根的 `.env`（默认行为，不需要任何声明），而 `load_dotenv(find_dotenv(usecwd=True))`
+> 在仓库根跑服务时同样会读到它 —— 两套东西共用一个文件名，而它们要的根本不是同一份配置。
+> 叫 `.env.local` 之后，仓库根不存在 `.env`，这条歧义就没有了。
+
 ### 3) 配置微服务环境变量
 
 ```shell
