@@ -14,17 +14,17 @@ Electron thin-shell that wraps the remote Revornix web client as a native macOS/
 
 ```bash
 cd desktop
-npm install
-npm run dev      # build + launch
-npm test         # unit tests (servers, store)
-npm run test:e2e # Playwright-Electron smoke test
+pnpm install
+pnpm dev      # build + launch
+pnpm test         # unit tests (servers, store)
+pnpm test:e2e # Playwright-Electron smoke test
 ```
 
 ## Package
 
 ```bash
-npm run package:mac   # dmg + zip in release/
-npm run package:win   # NSIS exe in release/
+pnpm package:mac   # dmg + zip in release/
+pnpm package:win   # NSIS exe in release/
 ```
 
 Builds are **unsigned** in v1. On macOS, first launch needs right-click → Open

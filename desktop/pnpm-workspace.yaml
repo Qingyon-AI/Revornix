@@ -1,0 +1,9 @@
+allowBuilds:
+  # electron's postinstall downloads the platform Electron binary; without it
+  # electron-builder has nothing to package.
+  electron: true
+  # electron-builder 26 新拉进来的；只有打 Windows 安装包时才用得上，macOS 上
+  # 让它跑 install script 没有意义，也省得平台不对时报错。
+  electron-winstaller: false
+  # esbuild's install script fetches its platform-specific binary (used by tsx).
+  esbuild: true
