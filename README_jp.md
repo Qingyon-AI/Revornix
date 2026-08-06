@@ -46,14 +46,16 @@ Web クライアント・ゲートウェイ・API・非同期ワーカー・ト�
 
 ```text
 Revornix/
+├── app/                       # アプリケーション本体：models / crud / schemas / engine / notification … 単一
+├── api/                       # FastAPI エントリ：router、mcp_router — api/README.md
+├── worker/                    # Celery エントリ：workflow — worker/README.md
 ├── web/                       # Next.js クライアント（ワークスペース + 公開ページ）— web/README.md
-├── api/                       # FastAPI コアバックエンド（認証、ドキュメント、AI API）— api/README.md
-├── worker/             # 非同期ワークフロー（embedding、要約、グラフ、ポッドキャスト、通知）— worker/README.md
 ├── gateway/                   # Go 製の公開エントリゲートウェイ（ルーティング、アンチスクレイピング、上流フェイルオーバー）
 ├── hot-news/                  # トレンド集約サービス（DailyHotApi ベース）
 ├── docs/                      # 公開ドキュメントサイト（revornix.com/docs）— 独立した Next.js + Nextra
 ├── desktop/                   # Electron デスクトップシェル（macOS + Windows）— desktop/README.md を参照
 ├── assets/                    # リポジトリ全体で使用する画像/ブランド素材
+├── deploy/                    # systemd ユニットとデプロイ手順 — deploy/README.md
 └── docker-compose-local.yaml  # ローカル依存（Postgres、Redis、Neo4j、MinIO、Milvus）の起動
 ```
 
@@ -164,7 +166,7 @@ python -m data.milvus.create
 
 > **コンテナイメージ**：各サービスに Dockerfile があります。ビルドコンテキストは
 > サービスディレクトリではなく**リポジトリルート**を指定してください —— `api` と
-> `worker` は同階層の `shared/` パッケージを必要とします：
+> `api` と `worker` はいずれも同階層の `app/` パッケージに依存します：
 >
 > ```shell
 > docker build -f api/Dockerfile -t revornix/api .

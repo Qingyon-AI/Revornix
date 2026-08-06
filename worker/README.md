@@ -32,20 +32,23 @@ In-process periodic jobs (notification dispatch, cache warming, etc.) are schedu
 
 ```text
 worker/
-├── start-worker.sh        # Entrypoint: `celery -A common.celery.app worker ...`
-├── workflow/              # One file per pipeline (see list above)
-├── engine/                # Pluggable parsing / AI engines
-├── file/                  # File-system adapters (local, S3, MinIO, ...)
-├── notification/          # Channels (email, WS, push, ...)
-├── proxy/                 # Outbound HTTP proxy management
-├── prompts/               # LLM prompt templates
-├── crud/, models/, schemas/, enums/   # Same shape as api/, mirrored
-├── common/                # Celery app, DB session, shared deps
-├── config/                # Settings & env loading
-├── base_implement/        # Abstract base classes for engine plugins
-├── data/                  # Bootstrap scripts mirrored from api/
-└── protocol/              # Wire formats and contracts
+├── start-worker.sh   # Entrypoint: `celery -A common.celery.app worker ...`
+├── workflow/         # One file per pipeline (see the list above)
+└── tests/            # Unit tests (external systems replaced by doubles)
+    tests_integration/  # Real Postgres / Neo4j / Milvus; opt-in, see below
 ```
+
+Everything else — models, crud, schemas, enums, engines, notification channels,
+file adapters, proxies, prompts, `common/` — lives in `app/` at the repo root and
+is installed here via `-e ../app`, already listed in `requirements.txt`. There is
+one copy, shared with `api/`, and the packages are exposed at top level, so
+`from crud.document import ...` reads the same as it always did.
+
+That was not always true: the two services each carried their own copy, kept in
+step by a byte-equality check. Six defects came out of that arrangement,
+including a worker that could not start at all, so the copies were merged.
+`docs-internal/plan-one-codebase.md` has the reasoning.
+
 
 ## Running locally
 

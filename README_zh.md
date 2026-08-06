@@ -46,18 +46,25 @@ Revornix 是一个开源、可本地部署的 AI 信息工作台。把那些"想
 
 ```text
 Revornix/
+├── app/                       # 应用本体：models / crud / schemas / engine / notification … 只此一份
+├── api/                       # FastAPI 入口：router、mcp_router — 见 api/README.md
+├── worker/                    # Celery 入口：workflow — 见 worker/README.md
 ├── web/                       # Next.js 客户端（工作台 + 公开页面）— 见 web/README.md
-├── api/                       # FastAPI 核心后端（鉴权、文档、专栏、AI 能力接口）— 见 api/README.md
-├── worker/             # 异步任务流（embedding、总结、图谱、播客、通知）— 见 worker/README.md
 ├── gateway/                   # Go 公网入口网关（路由、反爬、上游容错）
 ├── hot-news/                  # 热搜聚合服务（基于 DailyHotApi）
 ├── docs/                      # 公开文档站（revornix.com/docs）— 独立 Next.js + Nextra
 ├── desktop/                   # Electron 桌面壳（macOS + Windows）— 见 desktop/README.md
 ├── assets/                    # 仓库级图片与品牌资源
+├── deploy/                    # systemd unit 与部署步骤 — 见 deploy/README.md
 └── docker-compose-local.yaml  # 本地依赖一键拉起（Postgres、Redis、Neo4j、MinIO、Milvus）
 ```
 
 每个子目录都有各自的 README，里面是该服务的细节说明。
+
+> `api/` 与 `worker/` 是同一份代码的**两个入口**：业务代码都在 `app/`，两边各自
+> 只保留自己的入口层，靠 `-e ../app` 装进各自的虚拟环境。曾经两边各存一份拷贝，
+> 由一个逐字节比对的检查看着 —— 那套安排引出过六个缺陷（包括 worker 完全起不来），
+> 于是合并了。缘由见 `docs-internal/plan-one-codebase.md`。
 
 ## 核心能力
 
@@ -162,7 +169,7 @@ python -m data.milvus.create
 > 全新安装和版本升级都只需要把服务起起来，不需要手动迁移数据库。
 
 > **容器镜像**：各服务都有 Dockerfile。构建时上下文要用**仓库根**而不是服务目录 ——
-> `api` 与 `worker` 需要同级的 `shared/` 包：
+> `api` 与 `worker` 都依赖同级的 `app/` 包：
 >
 > ```shell
 > docker build -f api/Dockerfile -t revornix/api .
