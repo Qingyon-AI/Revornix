@@ -70,13 +70,33 @@ case "$WHICH" in
     echo "── worker（Ctrl-C 停止）──"
     exec uv run --directory "$REPO/worker" celery -A common.celery.app worker --pool=threads --concurrency=4 --loglevel=info
     ;;
+  gateway)
+    # **前端不直连 api。** web/.env.example 里 NEXT_PUBLIC_API_PREFIX 指的是
+    # localhost:8787/api，也就是这个网关。不起它，前端所有请求都打在没人监听的
+    # 端口上 —— 界面满屏 Load failed，而 api 日志干干净净，一点异常都看不出来。
+    echo "── gateway :8787（Ctrl-C 停止）──"
+    exec bash -c "cd '$REPO/gateway' && go run ./cmd/gateway"
+    ;;
+  hot-news)
+    # 热搜也经网关转发：8787/hot → 这里的 6688。
+    echo "── hot-news :6688（Ctrl-C 停止）──"
+    exec bash -c "cd '$REPO/hot-news' && pnpm dev"
+    ;;
+  web)
+    # 端口被占时 Next 会自己让位到 3001、3002…… 实际端口看它启动时打印的 Local:。
+    echo "── web（默认 :3000，被占用则自动顺延；Ctrl-C 停止）──"
+    exec bash -c "cd '$REPO/web' && pnpm dev"
+    ;;
   "")
     echo
-    echo "两个服务各开一个终端跑："
-    echo "    ./scripts/dev.sh api"
-    echo "    ./scripts/dev.sh worker"
+    echo "每个服务各开一个终端跑（前四个是一套完整的本地栈）："
+    echo "    ./scripts/dev.sh api        :8001"
+    echo "    ./scripts/dev.sh worker     celery"
+    echo "    ./scripts/dev.sh gateway    :8787  ← 前端走它，不能省"
+    echo "    ./scripts/dev.sh web        :3000（被占则顺延）"
+    echo "    ./scripts/dev.sh hot-news   :6688  （只有热搜需要）"
     ;;
   *)
-    echo "不认识的参数：$WHICH（可选：api / worker）" >&2; exit 2
+    echo "不认识的参数：$WHICH（可选：api / worker / gateway / web / hot-news）" >&2; exit 2
     ;;
 esac
