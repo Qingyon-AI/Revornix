@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 ENV NODE_ENV=docker
 
@@ -8,15 +8,23 @@ RUN rm -rf /var/cache/apk/*
 # 构建阶段
 FROM base AS builder
 
-RUN npm install -g pnpm
+# corepack 而不是 `npm install -g pnpm`：corepack 是 Node 自带的，它读
+# package.json 里的 packageManager 字段，装的就是**声明的那个版本**。
+# 全局 npm 装则永远拉最新版 —— 镜像里跑的 pnpm 会随构建日期漂移，
+# 与本地和 CI 用的不是同一个。web/Dockerfile 一直是这么做的。
+RUN corepack enable
 WORKDIR /app
 
-COPY package*json tsconfig.json pnpm-lock.yaml ./
+# 只 COPY package.json，不用 package*json ——后者会把 package-lock.json 一并带进来。
+# pnpm-workspace.yaml 不能漏：allowBuilds 写在里面，少了它 pnpm 会拒绝跑 esbuild
+# 的 install script（ERR_PNPM_IGNORED_BUILDS），而 tsx 依赖那个二进制。
+COPY package.json tsconfig.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY src ./src
 COPY public ./public
 
-# 安装依赖
-RUN pnpm install
+# --frozen-lockfile：锁文件与 package.json 对不上时**报错**，而不是就地改写锁文件。
+# 不加的话镜像可能装出一套与仓库里记录的不同的依赖，而且没人会知道。
+RUN pnpm install --frozen-lockfile
 RUN pnpm build
 RUN pnpm prune --production
 
