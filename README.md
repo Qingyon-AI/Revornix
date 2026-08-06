@@ -145,6 +145,14 @@ cp .env.local.example .env.local
 docker compose -f ./docker-compose-local.yaml --env-file .env.local up -d
 ```
 
+> [!IMPORTANT]
+> This file is deliberately **not** named `.env`, and `--env-file` is not optional.
+> docker compose implicitly reads a `.env` at the project root (its default behaviour,
+> no declaration needed), and `load_dotenv(find_dotenv(usecwd=True))` picks up the same
+> file when a service is started from the repo root — two different things sharing one
+> filename, wanting entirely different configuration. Naming it `.env.local` leaves no
+> `.env` at the root, and the ambiguity is gone.
+
 ### 3) Configure env files for microservices
 
 ```shell
