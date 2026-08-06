@@ -102,7 +102,7 @@ pnpm start
 ### 启动 celery 任务序列
 
 ```shell
-uv run --directory worker playwright install
+uv run --directory worker playwright install chromium-headless-shell
 uv run --directory worker celery -A common.celery.app worker \
   --pool=threads --concurrency=20 --loglevel=info -E
 ```

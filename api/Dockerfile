@@ -32,7 +32,7 @@ COPY --chown=revornix:revornix api/pyproject.toml api/
 COPY --chown=revornix:revornix worker/pyproject.toml worker/
 # 依赖层。这里有三件事都是量出来的，改动前请先量：
 #
-# 1. **不装 build-essential。** 锁文件里 305 个包全都有 wheel，一个都不需要现场编译。
+# 1. **不装 build-essential。** 锁文件里 306 个包全都有 wheel，一个都不需要现场编译。
 #    装了再 purge 也没用：purge 在后面的层，删不掉前一层已经存进去的 344 MB。
 #    真需要编译某个新依赖时，把 apt 装、uv sync、apt purge 写进**同一个 RUN**。
 # 2. **--no-cache。** 缓存目录同样是"写在这一层、删在下一层"，白留 1.2 GB。
