@@ -1,4 +1,5 @@
-# next.config 已配 output: "standalone"，所以运行镜像只需要 .next/standalone
+# next.config 里 output 是**按环境判断**的：非 Vercel 环境才是 "standalone"。
+# 这个镜像里没有 VERCEL 变量，所以会产出 standalone，运行镜像只需要它。
 # 那一份自带 server.js 的产物，不必把整个 node_modules 带进去。
 FROM node:24-alpine AS base
 ENV PNPM_HOME=/pnpm
