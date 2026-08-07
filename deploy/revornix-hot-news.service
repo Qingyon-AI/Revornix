@@ -1,0 +1,18 @@
+[Unit]
+Description=Revornix Hot News Service
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Developer/Revornix-new/hot-news
+Environment="PATH=/home/ubuntu/.nvm/versions/node/v24.11.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/ubuntu/.nvm/versions/node/v24.11.1/bin/pnpm start
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
