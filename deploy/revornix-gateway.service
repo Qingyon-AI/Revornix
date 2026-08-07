@@ -1,0 +1,16 @@
+# /etc/systemd/system/revornix-gateway.service
+[Unit]
+Description=Revornix Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Developer/Revornix-new/gateway
+ExecStart=/home/ubuntu/Developer/Revornix-new/gateway/gateway
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

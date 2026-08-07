@@ -1,0 +1,17 @@
+[Unit]
+Description=Revornix Website Service
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Developer/Revornix-new/web
+ExecStart=/home/ubuntu/.nvm/versions/node/v24.11.1/bin/node .next/standalone/server.js
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
