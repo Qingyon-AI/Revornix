@@ -181,13 +181,21 @@ uv sync --locked --all-packages --extra local-embedding
 
 ## 回滚
 
-数据库这一侧通常不需要动作：`schema_guard` 只加列不删列，旧代码在新表上照常工作。
-真要恢复：
-
-```bash
-zcat ~/backups/pg-all-<时间戳>.sql.gz | sudo -u postgres psql
-```
-
 代码回滚就是 `git checkout <上一个 tag 或 commit>` + 重新 `uv sync` 与前端构建。
 **但要注意跨越目录结构变更的回退**：`worker/` 在 2026-08 之前叫 `celery-worker/`，
 退到那之前的 commit，unit 的 `WorkingDirectory` 也得跟着改回去，否则 worker 起不来。
+
+数据库这一侧通常不需要动作：`schema_guard` 只加列不删列，旧代码在新表上照常工作。
+
+**机器上没有常备的数据库备份。** 迁移时那份 `pg_dumpall` 是一次性的，迁移完成后已
+删除 —— 它是「迁移前快照」，而库在持续写入，留着它反而会诱使人恢复一份过期数据。
+做有风险的变更之前自己打一份：
+
+```bash
+sudo -u postgres pg_dumpall | gzip > ~/pg-$(date +%Y%m%d-%H%M%S).sql.gz
+```
+
+打完**验一下再动手**，不然拿到的是虚假的安全感：`gzip -t` 能过、末尾有
+`PostgreSQL database cluster dump complete`、抽一张表数一下行数与 `select count(*)`
+对得上。（迁移那次我 grep 结束标记时把 `cluster` 写成了 `database`，一度以为备份被
+截断了。）
