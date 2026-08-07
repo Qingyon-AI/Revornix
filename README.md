@@ -186,6 +186,10 @@ Configure env values based on [environment docs](https://revornix.com/docs/envir
 > and torch is now **optional** here — the default configuration uses cloud embedding — so that advantage
 > no longer applies. Measured on a cold cache installing the same dependency set: **uv 32s, pip 242s**.
 > uv also downloads the matching Python itself, so the host needs no pyenv.
+>
+> Production finished migrating off conda in 2026-08. Measured there: the Python environment went from
+> **17.7 GB (two conda envs) to 1.5 GB (one shared venv)**, api resident memory 895 MB → 416 MB, worker
+> 1092 MB → 372 MB. Steps in [`deploy/README.md`](./deploy/README.md).
 
 `app/`, `api/` and `worker/` form a **uv workspace**: one `uv.lock`, one `.venv` at the
 repo root, shared by both services. Install once — from the repo root, not from `api/`:

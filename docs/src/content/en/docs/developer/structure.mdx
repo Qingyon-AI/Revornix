@@ -8,15 +8,19 @@ This page is based on the current monorepo layout, `docker-compose-local.yaml`, 
 
 ```text
 Revornix/
-├── gateway/         # Unified public-entry gateway service
+├── app/             # The application itself: models, crud, schemas, engine, notification, data, common
+├── api/             # FastAPI entry point (router / mcp_router, thin)
+├── worker/          # Celery entry point (workflow, thin)
+├── gateway/         # Unified public-entry gateway (Go)
 ├── web/             # Main product frontend (Next.js App Router)
-├── api/             # Main FastAPI service
-├── worker/   # Background workflows and heavy async jobs
 ├── hot-news/        # Trending aggregation microservice
 ├── docs/            # This Nextra documentation site
-├── desktop/         # Planned desktop shell placeholder
-├── assets/          # Shared static assets used by repository docs/branding
-├── volumes/         # Local persisted data for docker-compose-local
+├── desktop/         # Electron desktop shell (macOS + Windows)
+├── deploy/          # Production systemd units and deployment notes
+├── assets/          # Shared static assets
+├── volumes/         # Local persistence for docker-compose-local
+├── pyproject.toml   # uv workspace root; members are app / api / worker
+├── uv.lock          # One lockfile shared by all three members
 └── docker-compose-local.yaml
 ```
 
@@ -45,7 +49,7 @@ Revornix/
 
 - Handles long-running or expensive background jobs.
 - Owns workflows such as document conversion, embedding, summarization, graph building, section rendering, podcast generation, and notification delivery.
-- Runs from `worker/common/celery/app.py`.
+- Runs from `app/common/celery/app.py` (`worker/` holds only `workflow/`).
 
 ### `hot-news`
 
@@ -136,7 +140,7 @@ That means the most common local loop is:
 
 ### AI and official hosted resources
 
-- The official hosted model and engine seed logic lives in `api/data/sql/create.py`.
+- The official hosted model and engine seed logic lives in `app/data/sql/bootstrap.py`.
 - The API controls access checks and usage recording.
 - The worker performs many of the actual downstream heavy jobs.
 
@@ -150,7 +154,7 @@ That means the most common local loop is:
 
 - The built-in file backend is MinIO/S3-compatible.
 - The codebase also supports Aliyun OSS, AWS S3, and generic S3 adapters.
-- File-system abstractions exist in both `api/file/*` and `worker/file/*`.
+- There is a single file-system abstraction in `app/file/*`, shared by api and worker.
 
 ## 8. What changed from older documentation
 

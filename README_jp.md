@@ -179,6 +179,10 @@ cp ./worker/.env.example ./worker/.env
 > torch は現在**任意**（既定はクラウド埋め込み）のため、その強みは効きません。同じ依存一式を
 > キャッシュなしで導入した実測値は **uv 32 秒 / pip 242 秒**。uv は対応する Python 自体も取得するため、
 > ホストに pyenv は不要です。
+>
+> 本番環境は 2026-08 に conda からの移行を完了しました。実測値：Python 環境が
+> **17.7 GB（conda 2 つ）→ 1.5 GB（共有 venv 1 つ）**、api の常駐メモリ 895 MB → 416 MB、
+> worker 1092 MB → 372 MB。手順は [`deploy/README.md`](./deploy/README.md) を参照。
 
 `app/`・`api/`・`worker/` は **uv workspace** です。`uv.lock` は 1 つ、`.venv` も
 リポジトリ直下に 1 つで、両サービスが共有します。導入は一度だけ、`api/` の中ではなく
