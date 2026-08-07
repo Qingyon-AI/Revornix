@@ -180,6 +180,9 @@ cp ./worker/.env.example ./worker/.env
 > 用 uv 而不是 conda：conda 的长处是管非 Python 依赖（CUDA、MKL 那些），而 torch 现在是**可选**的
 > （默认走云端 embedding），那个长处用不上了。实测冷缓存装同一份依赖：**uv 32 秒 / pip 242 秒**。
 > uv 还会自己下载对应版本的 Python，机器上不必另装 pyenv。
+>
+> 生产环境 2026-08 已从 conda 迁完，实测：Python 环境 **17.7 GB（两个 conda）→ 1.5 GB（一个共享 venv）**，
+> api 常驻内存 895 MB → 416 MB，worker 1092 MB → 372 MB。步骤见 [`deploy/README.md`](./deploy/README.md)。
 
 `app/`、`api/`、`worker/` 是一个 **uv workspace**：一份 `uv.lock`、仓库根一个 `.venv`，
 两个服务共用。装一次就够 —— 在**仓库根**跑，不是在 `api/` 里：

@@ -8,15 +8,19 @@
 
 ```text
 Revornix/
-├── gateway/         # 统一公网入口网关服务
+├── app/             # 应用本体：models、crud、schemas、engine、notification、data、common
+├── api/             # FastAPI 入口（router / mcp_router，薄）
+├── worker/          # Celery 入口（workflow，薄）
+├── gateway/         # 统一公网入口网关服务（Go）
 ├── web/             # 主产品前端（Next.js App Router）
-├── api/             # 主 FastAPI 服务
-├── worker/   # 后台工作流与异步重任务
 ├── hot-news/        # 热搜聚合微服务
 ├── docs/            # 当前这套 Nextra 文档站
-├── desktop/         # 规划中的桌面端外壳占位目录
+├── desktop/         # Electron 桌面端外壳（macOS + Windows）
+├── deploy/          # 生产的 systemd unit 与部署说明
 ├── assets/          # 仓库内共享静态资源
 ├── volumes/         # docker-compose-local 的本地持久化目录
+├── pyproject.toml   # uv workspace 根：成员是 app / api / worker
+├── uv.lock          # 三个成员共用一份锁文件
 └── docker-compose-local.yaml
 ```
 
@@ -44,7 +48,7 @@ Revornix/
 
 - 负责长耗时或高成本异步任务。
 - 包括文档转换、切块、向量化、摘要、图谱、专栏渲染、播客生成、通知投递等工作流。
-- 启动入口在 `worker/common/celery/app.py`。
+- 启动入口在 `app/common/celery/app.py`（`worker/` 只放 `workflow/`）。
 
 ### `hot-news`
 
@@ -135,7 +139,7 @@ Revornix/
 
 ### AI 与官方托管资源
 
-- 官方模型与官方引擎的 seed 逻辑位于 `api/data/sql/create.py`
+- 官方模型与官方引擎的 seed 逻辑位于 `app/data/sql/`
 - API 负责访问控制与用量记录
 - Worker 负责很多实际重任务执行
 
@@ -150,7 +154,7 @@ Revornix/
 
 - 内置文件系统基于 MinIO / S3 兼容协议
 - 代码同时支持 Aliyun OSS、AWS S3、Generic S3
-- 文件系统抽象在 `api/file/*` 与 `worker/file/*` 两边都存在
+- 文件系统抽象只有 `app/file/*` 一份，api 与 worker 共用
 
 ## 8. 与旧文档相比的变化
 
