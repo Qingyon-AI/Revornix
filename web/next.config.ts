@@ -2,7 +2,17 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // standalone 只给**自建部署**用：线上 systemd 跑的是
+  // `node .next/standalone/server.js`，Dockerfile 里也是它。
+  //
+  // Vercel 上必须关掉。它有自己的 Build Output API，不需要 standalone，两者一起
+  // 用会让构建在收尾阶段挂掉：
+  //   ENOENT: no such file or directory, open '.next/next-server.js.nft.json'
+  // 那个文件是 standalone 的 node-file-trace 产物 —— 本地构建能生成，Vercel 的
+  // 流程里不会，而它又去读，于是报一个看不出和 output 有关的错。
+  //
+  // VERCEL 是 Vercel 构建环境自带的变量，不需要自己配。
+  output: process.env.VERCEL ? undefined : "standalone",
   // Surface every SSR `fetch` (URL, cache state, duration) in the dev / prod
   // server log so the SEO fetch chain is visible without DevTools.
   logging: {
