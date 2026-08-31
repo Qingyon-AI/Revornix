@@ -19,10 +19,10 @@ import {
     BillingAuditResponseToJSON,
 } from '../models/BillingAuditResponse';
 import {
-    type ChatMessages,
-    ChatMessagesFromJSON,
-    ChatMessagesToJSON,
-} from '../models/ChatMessages';
+    type CompleteRequest,
+    CompleteRequestFromJSON,
+    CompleteRequestToJSON,
+} from '../models/CompleteRequest';
 import {
     type DeleteModelProviderRequest,
     DeleteModelProviderRequestFromJSON,
@@ -119,8 +119,8 @@ import {
     NormalResponseToJSON,
 } from '../models/NormalResponse';
 
-export interface AskAiAiAskPostRequest {
-    chatMessages: ChatMessages;
+export interface AiCompleteAiCompletePostRequest {
+    completeRequest: CompleteRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -202,13 +202,13 @@ export interface UpdateAiModelProviderAiModelProviderUpdatePostRequest {
 export class AiApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for askAiAiAskPost without sending the request
+     * Creates request options for aiCompleteAiCompletePost without sending the request
      */
-    async askAiAiAskPostRequestOpts(requestParameters: AskAiAiAskPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['chatMessages'] == null) {
+    async aiCompleteAiCompletePostRequestOpts(requestParameters: AiCompleteAiCompletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['completeRequest'] == null) {
             throw new runtime.RequiredError(
-                'chatMessages',
-                'Required parameter "chatMessages" was null or undefined when calling askAiAiAskPost().'
+                'completeRequest',
+                'Required parameter "completeRequest" was null or undefined when calling aiCompleteAiCompletePost().'
             );
         }
 
@@ -227,23 +227,23 @@ export class AiApi extends runtime.BaseAPI {
         }
 
 
-        let urlPath = `/ai/ask`;
+        let urlPath = `/ai/complete`;
 
         return {
             path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ChatMessagesToJSON(requestParameters['chatMessages']),
+            body: CompleteRequestToJSON(requestParameters['completeRequest']),
         };
     }
 
     /**
-     * Handle Revornix AI chat requests with optional MCP tool usage.
-     * Ask Ai
+     * 无状态纯文本补全(编辑器续写/润色这类一次性任务)。  对话不走这里 —— 对话在 /agent/_*(会话、工具、确认卡都在那套里)。 这个端点刻意不带工具与多轮上下文:编辑器的调用是「给一段文字,还一段文字」, 多一样都是浪费。
+     * Ai Complete
      */
-    async askAiAiAskPostRaw(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
-        const requestOptions = await this.askAiAiAskPostRequestOpts(requestParameters);
+    async aiCompleteAiCompletePostRaw(requestParameters: AiCompleteAiCompletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.aiCompleteAiCompletePostRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         if (this.isJsonMime(response.headers.get('content-type'))) {
@@ -254,11 +254,11 @@ export class AiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Handle Revornix AI chat requests with optional MCP tool usage.
-     * Ask Ai
+     * 无状态纯文本补全(编辑器续写/润色这类一次性任务)。  对话不走这里 —— 对话在 /agent/_*(会话、工具、确认卡都在那套里)。 这个端点刻意不带工具与多轮上下文:编辑器的调用是「给一段文字,还一段文字」, 多一样都是浪费。
+     * Ai Complete
      */
-    async askAiAiAskPost(requestParameters: AskAiAiAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.askAiAiAskPostRaw(requestParameters, initOverrides);
+    async aiCompleteAiCompletePost(requestParameters: AiCompleteAiCompletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.aiCompleteAiCompletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

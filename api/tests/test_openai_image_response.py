@@ -9,7 +9,20 @@ import pytest
 from schemas.error import CustomException
 
 
+_STUBBED = (
+    "langfuse",
+    "base_implement.image_generate_engine_base",
+    "common.usage_billing",
+    "enums.engine_enums",
+)
+_saved_modules: dict[str, ModuleType | None] = {}
+
+
 def _install_stub(module_name: str, **attributes):
+    # 记住被顶掉的真模块,导入完成后还回去(见文件底部)。sys.modules 是进程级共享,
+    # 桩留在里面,同进程随后 import 真模块的测试(langfuse、usage_billing 的真实
+    # 实现)拿到的就是空壳。
+    _saved_modules[module_name] = sys.modules.get(module_name)
     module = ModuleType(module_name)
     for key, value in attributes.items():
         setattr(module, key, value)
@@ -64,6 +77,15 @@ _SPEC = importlib.util.spec_from_file_location("openai_image_under_test", _MODUL
 assert _SPEC is not None and _SPEC.loader is not None
 openai_image = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(openai_image)
+
+# 桩的使命到 exec_module 就结束了:openai_image 模块自己已经持有桩的引用,
+# 后续 import 这些名字的测试应当拿到真实现。
+for _name in _STUBBED:
+    _original = _saved_modules[_name]
+    if _original is None:
+        sys.modules.pop(_name, None)
+    else:
+        sys.modules[_name] = _original
 
 
 def _response(

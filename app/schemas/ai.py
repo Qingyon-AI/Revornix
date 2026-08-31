@@ -150,6 +150,12 @@ class ModelProviderUpdateRequest(BaseModel):
     base_url: str | None = None
     is_public: bool | None = None
 
+class CompleteRequest(BaseModel):
+    """编辑器续写/润色这类一次性补全。对话不走这里,走 /agent/*。"""
+    prompt: str
+    model_id: int | None = None
+
+
 class ChatItem(BaseModel):
     chat_id: str
     content: str

@@ -1302,7 +1302,7 @@ const TipTapEditor = ({
 		}, timeoutMs);
 
 		try {
-			const response = await fetch(aiApi.askAi, {
+			const response = await fetch(aiApi.completeAi, {
 				headers: buildAiHeaders(),
 				method: 'POST',
 				mode: 'cors',
@@ -1311,15 +1311,8 @@ const TipTapEditor = ({
 				referrerPolicy: 'no-referrer',
 				signal: controller.signal,
 				body: JSON.stringify({
-					enable_mcp: false,
 					model_id: modelId,
-					messages: [
-						{
-							chat_id: generateUUID(),
-							role: 'user',
-							content: prompt,
-						},
-					],
+					prompt,
 				}),
 			});
 
@@ -1751,7 +1744,7 @@ const TipTapEditor = ({
 
 			let response: Response;
 			try {
-				response = await fetch(aiApi.askAi, {
+				response = await fetch(aiApi.completeAi, {
 					headers,
 					method: 'POST',
 					mode: 'cors',
@@ -1760,15 +1753,8 @@ const TipTapEditor = ({
 					referrerPolicy: 'no-referrer',
 					signal: continueAbortControllerRef.current.signal,
 					body: JSON.stringify({
-						enable_mcp: false,
 						model_id: selectedContinuationModelId,
-						messages: [
-							{
-								chat_id: generateUUID(),
-								role: 'user',
-								content: prompt,
-							},
-						],
+						prompt,
 					}),
 				});
 			} finally {

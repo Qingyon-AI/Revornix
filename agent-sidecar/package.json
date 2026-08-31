@@ -1,0 +1,30 @@
+{
+  "name": "@revornix/agent-sidecar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Revornix AI agent sidecar — embeds pi-agent-core and speaks newline-delimited JSON over stdio with the Python backend.",
+  "type": "module",
+  "main": "dist/sidecar.cjs",
+  "// build 的 --ignore-annotations": [
+    "pi-ai 的 package.json 把 sideEffects 限定在个别文件里,esbuild 会据此摘掉/推迟模块初始化,",
+    "而 createModels() 会被提到顶层,它引用的实现却留在惰性块里,调用时 undefined。",
+    "--ignore-annotations 让 esbuild 忽略 sideEffects/__PURE__ 标注,初始化顺序即被固定。",
+    "删掉它会静默复现该故障:类型与单测全绿,只有 bundle 冒烟测试抓得到。"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/compaction.test.mjs && node test/bundle.smoke.mjs"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "^0.84.3",
+    "@earendil-works/pi-ai": "^0.84.3",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "undici": "^8.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

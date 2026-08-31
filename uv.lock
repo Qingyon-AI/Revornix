@@ -1663,18 +1663,6 @@ wheels = [
 ]
 
 [[package]]
-name = "jsonschema-pydantic"
-version = "0.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pydantic" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/3e/088097e87f6b24b162cd42b090b1d3891b68e9dac96ceeac8ed5dff94db7/jsonschema_pydantic-0.6.tar.gz", hash = "sha256:6069a8929a333a7c7ea8510e9de50f062e747e655e6ba106da5af1981f995270", size = 6227, upload-time = "2024-02-03T21:50:23.285Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e7/67/cbb63be985519b51d13499e726db2c960069588d5c2c479859856158b4de/jsonschema_pydantic-0.6-py3-none-any.whl", hash = "sha256:98385ed53ab87598665956b43756746350e2b60411a38381231f9703d36e40eb", size = 4154, upload-time = "2024-02-03T21:50:20.622Z" },
-]
-
-[[package]]
 name = "jsonschema-specifications"
 version = "2025.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2082,28 +2070,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/30/d3/f9acc21dfc886e4f78e2add1a47db46ce16884346afde53f8a064c02c891/mcp-1.29.0.tar.gz", hash = "sha256:52d01f334de1868cc3bb2d6604931126a67631f99a6c5d3b82ba47290315ec36", size = 643148, upload-time = "2026-07-28T13:41:41.939Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/01/c8/248b201f6d753d69fd5d6506011abbb35a946d9142b2ae311a948fd0be3d/mcp-1.29.0-py3-none-any.whl", hash = "sha256:f5a075bb611f23d6f4d080c6a1699fa62772eebc562ba9e66b306ddde1c755f7", size = 223436, upload-time = "2026-07-28T13:41:40.337Z" },
-]
-
-[[package]]
-name = "mcp-use"
-version = "1.7.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "authlib" },
-    { name = "httpx" },
-    { name = "jsonschema-pydantic" },
-    { name = "langchain" },
-    { name = "mcp" },
-    { name = "posthog" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "rich" },
-    { name = "scarf-sdk" },
-    { name = "websockets" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/61/e1/0ad056f1d335946b463a3e83da59e257f7af878e68e54f94a38491e1b3c7/mcp_use-1.7.0.tar.gz", hash = "sha256:a08b61d0d4a8a5e1ea4de4a3797dbea1360fd1462345c8bc05629dcc9f927390", size = 410273, upload-time = "2026-03-17T13:43:27.496Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/c4/065e94295c018d82f493c84319bec259cd7d96e74cb77e6053c6ece4be9e/mcp_use-1.7.0-py3-none-any.whl", hash = "sha256:99d4cfcc573625bec6b31ff282ffd5a40f81ac8440ca2da21dfe35c3d9a7bf2c", size = 200371, upload-time = "2026-03-17T13:43:25.937Z" },
 ]
 
 [[package]]
@@ -2874,21 +2840,6 @@ wheels = [
 ]
 
 [[package]]
-name = "posthog"
-version = "7.38.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "backoff" },
-    { name = "distro" },
-    { name = "requests" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/4a/85eb89b53601e535576946574d6fd47adfd0b60d7041ec2050943847d09b/posthog-7.38.0.tar.gz", hash = "sha256:af2d221cd43421d0aefe563e9c688a73b568f6675466e5e4c7e085ce8aa34e43", size = 408748, upload-time = "2026-08-05T19:15:43.958Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/b8/a868543762a60af7fc82b1368bd192d5763a1c351a8b6aedb61320394374/posthog-7.38.0-py3-none-any.whl", hash = "sha256:5d767fcc72dad6adf5c18eac85b499010e11a49342ce898a94b6989b5d0405c1", size = 482750, upload-time = "2026-08-05T19:15:41.721Z" },
-]
-
-[[package]]
 name = "prompt-toolkit"
 version = "3.0.53"
 source = { registry = "https://pypi.org/simple" }
@@ -3619,7 +3570,6 @@ dependencies = [
     { name = "lark-oapi" },
     { name = "lightrag-hku" },
     { name = "markitdown" },
-    { name = "mcp-use" },
     { name = "neo4j" },
     { name = "openai" },
     { name = "opentelemetry-api" },
@@ -3669,7 +3619,6 @@ requires-dist = [
     { name = "lark-oapi", specifier = "==1.7.1" },
     { name = "lightrag-hku", specifier = "==1.5.5" },
     { name = "markitdown", specifier = "==0.1.7" },
-    { name = "mcp-use", specifier = "==1.7.0" },
     { name = "neo4j", specifier = "==6.2.0" },
     { name = "openai", specifier = "==2.53.0" },
     { name = "opentelemetry-api", specifier = "==1.44.0" },
@@ -3914,18 +3863,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8e/3f/73ccf82579412b4a71c4ca673f10b5f1f888d7cf5af7fe24f27d30307be4/safetensors-0.8.0-cp310-abi3-win32.whl", hash = "sha256:2ddf52eac562eda224f99acfa7889d02968c1fd59a5b011ae7d8137c37e9c02d", size = 342401, upload-time = "2026-06-09T07:52:28.895Z" },
     { url = "https://files.pythonhosted.org/packages/1b/6d/3fba214c1e5e0f69991677ec3bc17023f0421776975e1de0c682dca475e2/safetensors-0.8.0-cp310-abi3-win_amd64.whl", hash = "sha256:096ec1a98435df7beb08853bb5aa9081a84f23d0adc67ed1a0a10550f608373f", size = 355540, upload-time = "2026-06-09T07:52:27.832Z" },
     { url = "https://files.pythonhosted.org/packages/8d/fc/7eedc3510d97878876e32774eebbeb61c43f148a96e915c84229a3e967aa/safetensors-0.8.0-cp310-abi3-win_arm64.whl", hash = "sha256:f7838e5135a406ad3e02efdcb8cf2e5397d368b0154537c4fec682dbc544d452", size = 340500, upload-time = "2026-06-09T07:52:26.745Z" },
-]
-
-[[package]]
-name = "scarf-sdk"
-version = "0.2.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/56/434f4171cffcab2d463dbb2bda20905f748a06a8fde7239e72f4fca89e02/scarf_sdk-0.2.1.tar.gz", hash = "sha256:bac1c41b274659dd6a1653cb61dddb0c222677548f5e6ce2b22baa70a643eb13", size = 11022, upload-time = "2025-12-31T16:23:10.449Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/df/1e58161731f1be1bf97122296677862290ee0955392f7e71a4c476f0bf9f/scarf_sdk-0.2.1-py3-none-any.whl", hash = "sha256:eaaec3182ea4faceab3a1e0b260318c3f1e432273be03810e09aa807d0939431", size = 8919, upload-time = "2025-12-31T16:23:09.31Z" },
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**askAiAiAskPost**](AiApi.md#askaiaiaskpost) | **POST** /ai/ask | Ask Ai |
+| [**aiCompleteAiCompletePost**](AiApi.md#aicompleteaicompletepost) | **POST** /ai/complete | Ai Complete |
 | [**createModelAiModelCreatePost**](AiApi.md#createmodelaimodelcreatepost) | **POST** /ai/model/create | Create Model |
 | [**createModelProviderAiModelProviderCreatePost**](AiApi.md#createmodelprovideraimodelprovidercreatepost) | **POST** /ai/model-provider/create | Create Model Provider |
 | [**deleteAiModelAiModelDeletePost**](AiApi.md#deleteaimodelaimodeldeletepost) | **POST** /ai/model/delete | Delete Ai Model |
@@ -20,13 +20,13 @@ All URIs are relative to *http://localhost*
 
 
 
-## askAiAiAskPost
+## aiCompleteAiCompletePost
 
-> any askAiAiAskPost(chatMessages, authorization, xUserTimezone)
+> any aiCompleteAiCompletePost(completeRequest, authorization, xUserTimezone)
 
-Ask Ai
+Ai Complete
 
-Handle Revornix AI chat requests with optional MCP tool usage.
+无状态纯文本补全(编辑器续写/润色这类一次性任务)。  对话不走这里 —— 对话在 /agent/_*(会话、工具、确认卡都在那套里)。 这个端点刻意不带工具与多轮上下文:编辑器的调用是「给一段文字,还一段文字」, 多一样都是浪费。
 
 ### Example
 
@@ -35,23 +35,23 @@ import {
   Configuration,
   AiApi,
 } from '';
-import type { AskAiAiAskPostRequest } from '';
+import type { AiCompleteAiCompletePostRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
   const api = new AiApi();
 
   const body = {
-    // ChatMessages
-    chatMessages: ...,
+    // CompleteRequest
+    completeRequest: ...,
     // string (optional)
     authorization: authorization_example,
     // string (optional)
     xUserTimezone: xUserTimezone_example,
-  } satisfies AskAiAiAskPostRequest;
+  } satisfies AiCompleteAiCompletePostRequest;
 
   try {
-    const data = await api.askAiAiAskPost(body);
+    const data = await api.aiCompleteAiCompletePost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -67,7 +67,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **chatMessages** | [ChatMessages](ChatMessages.md) |  | |
+| **completeRequest** | [CompleteRequest](CompleteRequest.md) |  | |
 | **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
 

@@ -36,7 +36,6 @@ export default {
     cancelDocumentPodcast: API_PREFIX + '/document/podcast/cancel',
     summaryContent: API_PREFIX + '/document/ai/summary',
     cancelDocumentSummary: API_PREFIX + '/document/ai/summary/cancel',
-    askDocumentAi: API_PREFIX + '/document/ask',
     getDocumentLabelSummary: API_PREFIX + '/document/label/summary',
     generateDocumentGraph: API_PREFIX + '/document/graph/generate',
     cancelDocumentGraph: API_PREFIX + '/document/graph/cancel',

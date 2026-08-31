@@ -48,6 +48,7 @@ Web クライアント・ゲートウェイ・API・非同期ワーカー・ト�
 Revornix/
 ├── app/                       # アプリケーション本体：models / crud / schemas / engine / notification … 単一
 ├── api/                       # FastAPI エントリ：router、mcp_router — api/README.md
+├── agent-sidecar/             # エージェント実行時：pi-agent-core を内包する Node プロセス（API と stdio で通信）
 ├── worker/                    # Celery エントリ：workflow — worker/README.md
 ├── web/                       # Next.js クライアント（ワークスペース + 公開ページ）— web/README.md
 ├── gateway/                   # Go 製の公開エントリゲートウェイ（ルーティング、アンチスクレイピング、上流フェイルオーバー）
@@ -174,6 +175,16 @@ cp ./worker/.env.example ./worker/.env
 > ```
 
 ### 5) API サービスを起動
+
+> エージェント（Revornix AI）は各ターンを pi-agent-core を内包する Node **sidecar** で実行します。
+> API と stdio で通信し、ツールは HTTP で API にコールバック（`/agent/tools/*`）し、
+> 変更系ツールは確認カードの承認を待ちます。初回（`agent-sidecar/` を変更した都度）ビルド：
+>
+> ```shell
+> cd agent-sidecar && pnpm install && pnpm build
+> ```
+>
+> `./scripts/dev.sh api` は未ビルド時に自動でビルドします。
 
 > conda ではなく uv を使います。conda の強みは Python 以外の依存（CUDA や MKL など）の管理ですが、
 > torch は現在**任意**（既定はクラウド埋め込み）のため、その強みは効きません。同じ依存一式を

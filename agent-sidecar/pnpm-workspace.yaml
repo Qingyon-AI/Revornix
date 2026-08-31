@@ -1,0 +1,3 @@
+allowBuilds:
+  # esbuild 的 install script 拉的是平台相关的原生二进制,build 靠它跑。
+  esbuild: true

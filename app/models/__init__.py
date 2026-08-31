@@ -1,5 +1,6 @@
 from . import (
     access_request,
+    agent,
     api_key,
     document,
     engine,
@@ -15,6 +16,7 @@ from . import (
 
 __all__ = [
     'access_request',
+    'agent',
     'api_key',
     'document',
     'engine',

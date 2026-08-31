@@ -1,6 +1,7 @@
 from . import (
     access_request,
     admin,
+    agent,
     ai,
     api_key,
     celery,
@@ -22,6 +23,7 @@ __all__ = [
     "access_request",
     "ai",
     "admin",
+    "agent",
     "api_key",
     "celery",
     "common",

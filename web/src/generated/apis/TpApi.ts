@@ -790,6 +790,7 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * 文档问答(公共 API)。底层是 pi sidecar 的智能体管道(agent/host.ask_document_once)。
      * Ask Document Ai
      */
     async askDocumentAiTpDocumentAskPostRaw(requestParameters: AskDocumentAiTpDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -804,6 +805,7 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * 文档问答(公共 API)。底层是 pi sidecar 的智能体管道(agent/host.ask_document_once)。
      * Ask Document Ai
      */
     async askDocumentAiTpDocumentAskPost(requestParameters: AskDocumentAiTpDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
@@ -849,6 +851,7 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * 专栏问答(公共 API)。底层同样是 pi sidecar 管道(agent/host.ask_section_once)。
      * Ask Section Ai
      */
     async askSectionAiTpSectionAskPostRaw(requestParameters: AskSectionAiTpSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -863,6 +866,7 @@ export class TpApi extends runtime.BaseAPI {
     }
 
     /**
+     * 专栏问答(公共 API)。底层同样是 pi sidecar 管道(agent/host.ask_section_once)。
      * Ask Section Ai
      */
     async askSectionAiTpSectionAskPost(requestParameters: AskSectionAiTpSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {

@@ -4,11 +4,21 @@ from urllib.parse import urlparse
 
 import pytest
 
+# 桩只借给下面这行 import(common.passkey 在模块级碰 models,而这组测试不想拉起
+# 整个模型层)。**用完必须还回去**:sys.modules 是进程级共享,桩留在里面,
+# 同一进程里随后 import 真 models 的测试(如 agent 工具清单)拿到的就是这个空壳。
 models_stub = ModuleType("models")
 models_stub.user = SimpleNamespace(User=object, UserWebAuthnCredential=object)
-sys.modules.setdefault("models", models_stub)
+_real_models = sys.modules.get("models")
+sys.modules["models"] = models_stub
+try:
+    from common.passkey import get_optional_webauthn_context, get_webauthn_context
+finally:
+    if _real_models is None:
+        sys.modules.pop("models", None)
+    else:
+        sys.modules["models"] = _real_models
 
-from common.passkey import get_optional_webauthn_context, get_webauthn_context
 from schemas.error import CustomException
 
 

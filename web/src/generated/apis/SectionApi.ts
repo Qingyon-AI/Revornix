@@ -129,11 +129,6 @@ import {
     SectionAccessKeyUpdateRequestToJSON,
 } from '../models/SectionAccessKeyUpdateRequest';
 import {
-    type SectionAskRequest,
-    SectionAskRequestFromJSON,
-    SectionAskRequestToJSON,
-} from '../models/SectionAskRequest';
-import {
     type SectionCommentCreateRequest,
     SectionCommentCreateRequestFromJSON,
     SectionCommentCreateRequestToJSON,
@@ -271,12 +266,6 @@ import {
 
 export interface AddLabelSectionLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
-    authorization?: string | null;
-    xUserTimezone?: string | null;
-}
-
-export interface AskSectionAiSectionAskPostRequest {
-    sectionAskRequest: SectionAskRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -582,67 +571,6 @@ export class SectionApi extends runtime.BaseAPI {
      */
     async addLabelSectionLabelCreatePost(requestParameters: AddLabelSectionLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelSectionLabelCreatePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for askSectionAiSectionAskPost without sending the request
-     */
-    async askSectionAiSectionAskPostRequestOpts(requestParameters: AskSectionAiSectionAskPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['sectionAskRequest'] == null) {
-            throw new runtime.RequiredError(
-                'sectionAskRequest',
-                'Required parameter "sectionAskRequest" was null or undefined when calling askSectionAiSectionAskPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xUserTimezone'] != null) {
-            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
-        }
-
-
-        let urlPath = `/section/ask`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SectionAskRequestToJSON(requestParameters['sectionAskRequest']),
-        };
-    }
-
-    /**
-     * Handle section AI chat requests through the shared MCP agent pipeline.
-     * Ask Section Ai
-     */
-    async askSectionAiSectionAskPostRaw(requestParameters: AskSectionAiSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
-        const requestOptions = await this.askSectionAiSectionAskPostRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<any>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Handle section AI chat requests through the shared MCP agent pipeline.
-     * Ask Section Ai
-     */
-    async askSectionAiSectionAskPost(requestParameters: AskSectionAiSectionAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.askSectionAiSectionAskPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

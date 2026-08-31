@@ -18,11 +18,18 @@ If you treat Revornix as a layered system, this is the layer that knows *what is
 ```text
 api/
 ├── main.py         # FastAPI entrypoint
-├── router/         # HTTP routes grouped by domain
-├── mcp_router/     # MCP server endpoints (Model Context Protocol)
+├── router/         # HTTP routes grouped by domain (agent.py is the Revornix AI surface)
+├── mcp_router/     # MCP server endpoints (Model Context Protocol) — also the agent's tool registry
 ├── scripts/        # export_openapi and one-off maintenance scripts
 └── tests/          # pytest suite
 ```
+
+The agent (Revornix AI) runs each turn in a Node **sidecar** (`agent-sidecar/` at the repo
+root, embedding pi-agent-core) driven over stdio by `app/agent/`. Its tools are derived from
+the `mcp_router/` registries — one registry, never a second hand-written list — and served to
+the sidecar via `GET /agent/tools` + `POST /agent/tools/{name}`. Mutating tools create a
+confirmation card instead of executing (`agent/confirmations.py`); the sidecar blocks on it
+until the user resolves it in the UI.
 
 Everything else — models, crud, schemas, enums, common, data, engines,
 notification channels, file adapters, proxies, prompts — lives in `app/` at the

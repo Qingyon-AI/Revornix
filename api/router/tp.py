@@ -2,7 +2,13 @@
 #
 # 当使用 api key 的时候, 调用这边的接口组
 
+import asyncio
+import json
+from collections.abc import AsyncGenerator
+from uuid import uuid4
+
 from fastapi import APIRouter, Depends, File, Form, Header, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
@@ -28,6 +34,7 @@ from enums.ability import Ability
 from enums.document import DocumentCategory
 from enums.section import UserSectionRole
 from proxy.file_system_proxy import FileSystemProxy
+from agent import host as agent_host
 from router.document import update_document as update_document_impl
 from router.document import (
     create_ai_summary as create_ai_summary_impl,
@@ -38,7 +45,6 @@ from router.document import (
     transform_markdown as transform_markdown_impl,
     transcribe_audio_document as transcribe_audio_document_impl,
 )
-from router.document_ai import ask_document_ai as ask_document_ai_impl
 from router.document_interaction_manage import delete_document as delete_document_impl
 from router.document_publish_manage import (
     document_publish_get_request as document_publish_get_request_impl,
@@ -67,7 +73,6 @@ from router.section import (
     trigger_section_process as trigger_section_process_impl,
     update_section as update_section_impl,
 )
-from router.section_ai import ask_section_ai as ask_section_ai_impl
 from router.section_comment_manage import (
     create_section_comment as create_section_comment_impl,
     delete_section_comment as delete_section_comment_impl,
@@ -190,11 +195,22 @@ async def ask_section_ai(
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return await ask_section_ai_impl(
-        section_ask_request=section_ask_request,
-        db=db,
-        user=user,
-    )
+    """专栏问答(公共 API)。底层同样是 pi sidecar 管道(agent/host.ask_section_once)。"""
+    messages = [m for m in section_ask_request.messages if m.role in {"user", "assistant"}]
+    if not messages or messages[-1].role != "user":
+        raise schemas.error.CustomException("The latest message must be from the user", code=400)
+
+    async def run(on_delta) -> None:
+        await agent_host.ask_section_once(
+            user=user,
+            section_id=section_ask_request.section_id,
+            question=messages[-1].content,
+            history=[{"role": m.role, "content": m.content} for m in messages[:-1]],
+            model_id=section_ask_request.model_id,
+            on_delta=on_delta,
+        )
+
+    return _one_shot_ask_stream(section_ask_request.assistant_chat_id or uuid4().hex, run)
 
 
 @tp_router.post('/section/date', response_model=schemas.section.DaySectionResponse)
@@ -651,17 +667,71 @@ async def get_document_detail(
     )
 
 
+def _one_shot_ask_stream(chat_id: str, run: "AsyncGenerator[None, str]"):
+    """把一个无状态问答(底层是 agent 管道的一轮)包成与旧管道一致的 SSE:
+    token 增量 + done/error 收尾。"""
+
+    def _sse(event: dict) -> str:
+        return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+    async def stream() -> AsyncGenerator[str, None]:
+        queue: asyncio.Queue[str | None] = asyncio.Queue()
+
+        async def _run() -> None:
+            try:
+                await run(
+                    on_delta=lambda delta: queue.put_nowait(
+                        _sse({"chat_id": chat_id, "type": "output", "payload": {"kind": "token", "content": delta}})
+                    )
+                )
+                queue.put_nowait(_sse({"chat_id": chat_id, "type": "done", "payload": {"success": True}}))
+            except Exception as e:
+                queue.put_nowait(
+                    _sse({"chat_id": chat_id, "type": "error", "payload": {"code": "SERVER_ERROR", "message": str(e)[:300]}})
+                )
+            finally:
+                queue.put_nowait(None)
+
+        task = asyncio.create_task(_run())
+        try:
+            while True:
+                item = await queue.get()
+                if item is None:
+                    break
+                yield item
+        finally:
+            if not task.done():
+                task.cancel()
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream; charset=utf-8",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
+
+
 @tp_router.post("/document/ask")
 async def ask_document_ai(
     document_ask_request: schemas.document.DocumentAskRequest,
     db: AsyncSession = Depends(get_async_db),
     user: models.user.User = Depends(get_current_user_with_api_key),
 ):
-    return await ask_document_ai_impl(
-        document_ask_request=document_ask_request,
-        db=db,
-        user=user,
-    )
+    """文档问答(公共 API)。底层是 pi sidecar 的智能体管道(agent/host.ask_document_once)。"""
+    messages = [m for m in document_ask_request.messages if m.role in {"user", "assistant"}]
+    if not messages or messages[-1].role != "user":
+        raise schemas.error.CustomException("The latest message must be from the user", code=400)
+
+    async def run(on_delta) -> None:
+        await agent_host.ask_document_once(
+            user=user,
+            document_id=document_ask_request.document_id,
+            question=messages[-1].content,
+            history=[{"role": m.role, "content": m.content} for m in messages[:-1]],
+            model_id=document_ask_request.model_id,
+            on_delta=on_delta,
+        )
+
+    return _one_shot_ask_stream(document_ask_request.assistant_chat_id or uuid4().hex, run)
 
 
 @tp_router.post("/document/ai/summary", response_model=schemas.common.NormalResponse)

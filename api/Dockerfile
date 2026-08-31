@@ -1,5 +1,12 @@
 # 构建上下文是**仓库根**，不是 api/ —— workspace 的锁文件和 app/ 都在根上。
 # 对应的构建命令：docker build -f api/Dockerfile .
+
+# sidecar 构建层:智能体运行时(agent-sidecar,内嵌 pi-agent-core)打成单个 sidecar.cjs。
+FROM node:22-bookworm-slim AS sidecar
+WORKDIR /build
+COPY agent-sidecar/ ./
+RUN corepack enable && pnpm install && pnpm build
+
 FROM python:3.11-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -46,6 +53,10 @@ RUN uv sync --locked --no-cache --no-install-workspace --package revornix-api
 # 代码层
 COPY --chown=revornix:revornix app/ app/
 COPY --chown=revornix:revornix api/ api/
+# 智能体 sidecar:每轮对话 spawn 一个 node 进程(agent/sidecar.py)。node 二进制从官方
+# 镜像原样拷过来(同为 debian bookworm,动态库兼容);脚本路径由 sidecar.py 按仓库根解析。
+COPY --from=node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=sidecar --chown=revornix:revornix /build/dist/sidecar.cjs agent-sidecar/dist/sidecar.cjs
 RUN uv sync --locked --no-cache --package revornix-api
 
 # 本地 embedding（torch，527 MB）**不装**：默认走云端。要在容器里跑本地推理，

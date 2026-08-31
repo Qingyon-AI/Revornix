@@ -60,6 +60,14 @@ check_infra || exit 1
 case "$WHICH" in
   api)
     need_venv || exit 1
+    # 智能体的运行时在这个 bundle 里(每轮对话 spawn 一个 node 进程跑它)。
+    # 没构建就在启动时炸给你看,比第一轮对话才报「sidecar 未构建」好查。
+    if [ ! -f "$REPO/agent-sidecar/dist/sidecar.cjs" ]; then
+      echo "── agent-sidecar 未构建,先构建(node + pnpm)──"
+      (cd "$REPO/agent-sidecar" && pnpm install && pnpm build) || {
+        echo "✗ sidecar 构建失败,智能体对话不可用(其余功能不受影响)" >&2
+      }
+    fi
     echo "── api :8001（Ctrl-C 停止）──"
     # cd 到服务目录不是习惯：BASE_DIR（日志）与 load_dotenv(usecwd=True)（读哪份
     # .env）都按工作目录取值。在仓库根跑会读到根目录那个 .env，是另一份配置。

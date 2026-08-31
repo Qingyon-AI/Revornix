@@ -5,7 +5,6 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**addLabelDocumentLabelCreatePost**](DocumentApi.md#addlabeldocumentlabelcreatepost) | **POST** /document/label/create | Add Label |
-| [**askDocumentAiDocumentAskPost**](DocumentApi.md#askdocumentaidocumentaskpost) | **POST** /document/ask | Ask Document Ai |
 | [**cancelAiSummaryDocumentAiSummaryCancelPost**](DocumentApi.md#cancelaisummarydocumentaisummarycancelpost) | **POST** /document/ai/summary/cancel | Cancel Ai Summary |
 | [**cancelEmbeddingDocumentEmbeddingCancelPost**](DocumentApi.md#cancelembeddingdocumentembeddingcancelpost) | **POST** /document/embedding/cancel | Cancel Embedding |
 | [**cancelGraphDocumentGraphCancelPost**](DocumentApi.md#cancelgraphdocumentgraphcancelpost) | **POST** /document/graph/cancel | Cancel Graph |
@@ -112,78 +111,6 @@ example().catch(console.error);
 ### Return type
 
 [**CreateLabelResponse**](CreateLabelResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## askDocumentAiDocumentAskPost
-
-> any askDocumentAiDocumentAskPost(documentAskRequest, authorization, xUserTimezone)
-
-Ask Document Ai
-
-### Example
-
-```ts
-import {
-  Configuration,
-  DocumentApi,
-} from '';
-import type { AskDocumentAiDocumentAskPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new DocumentApi();
-
-  const body = {
-    // DocumentAskRequest
-    documentAskRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-    // string (optional)
-    xUserTimezone: xUserTimezone_example,
-  } satisfies AskDocumentAiDocumentAskPostRequest;
-
-  try {
-    const data = await api.askDocumentAiDocumentAskPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **documentAskRequest** | [DocumentAskRequest](DocumentAskRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-**any**
 
 ### Authorization
 

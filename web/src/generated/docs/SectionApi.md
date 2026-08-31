@@ -5,7 +5,6 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**addLabelSectionLabelCreatePost**](SectionApi.md#addlabelsectionlabelcreatepost) | **POST** /section/label/create | Add Label |
-| [**askSectionAiSectionAskPost**](SectionApi.md#asksectionaisectionaskpost) | **POST** /section/ask | Ask Section Ai |
 | [**cancelPodcastSectionPodcastCancelPost**](SectionApi.md#cancelpodcastsectionpodcastcancelpost) | **POST** /section/podcast/cancel | Cancel Podcast |
 | [**cancelPptSectionPptCancelPost**](SectionApi.md#cancelpptsectionpptcancelpost) | **POST** /section/ppt/cancel | Cancel Ppt |
 | [**cancelProcessSectionProcessCancelPost**](SectionApi.md#cancelprocesssectionprocesscancelpost) | **POST** /section/process/cancel | Cancel Process |
@@ -103,80 +102,6 @@ example().catch(console.error);
 ### Return type
 
 [**CreateLabelResponse**](CreateLabelResponse.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## askSectionAiSectionAskPost
-
-> any askSectionAiSectionAskPost(sectionAskRequest, authorization, xUserTimezone)
-
-Ask Section Ai
-
-Handle section AI chat requests through the shared MCP agent pipeline.
-
-### Example
-
-```ts
-import {
-  Configuration,
-  SectionApi,
-} from '';
-import type { AskSectionAiSectionAskPostRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new SectionApi();
-
-  const body = {
-    // SectionAskRequest
-    sectionAskRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
-    // string (optional)
-    xUserTimezone: xUserTimezone_example,
-  } satisfies AskSectionAiSectionAskPostRequest;
-
-  try {
-    const data = await api.askSectionAiSectionAskPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **sectionAskRequest** | [SectionAskRequest](SectionAskRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xUserTimezone** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-**any**
 
 ### Authorization
 

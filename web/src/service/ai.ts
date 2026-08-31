@@ -1,5 +1,5 @@
 import aiApi from '@/api/ai'
-import { ChatMessages, DeleteModelProviderRequest, DeleteModelRequest, InfiniteScrollPaginationModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
+import { DeleteModelProviderRequest, DeleteModelRequest, InfiniteScrollPaginationModelProvider, Model, ModelCreateRequest, ModelCreateResponse, ModelProvider, ModelProviderCreateRequest, ModelProviderCreateResponse, ModelProviderDetail, ModelProviderForkRequest, ModelProviderRequest, ModelProviderSearchRequest, ModelProviderUpdateRequest, ModelRequest, ModelSearchRequest, ModelSearchResponse, ModelUpdateRequest, NormalResponse } from '@/generated'
 import { request } from '@/lib/request'
 
 export type BillingAuditIssueDTO = {
@@ -15,12 +15,6 @@ export type BillingAuditIssueDTO = {
 
 export const forkAiModelProvider = async (data: ModelProviderForkRequest) => {
     return await request(aiApi.forkAiModelProvider, {
-        data: data
-    })
-}
-
-export const askAi = async (data: ChatMessages) => {
-    return await request(aiApi.askAi, {
         data: data
     })
 }

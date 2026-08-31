@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './AccessRequestApi';
 export * from './AdminApi';
+export * from './AgentApi';
 export * from './AiApi';
 export * from './ApiKeyApi';
 export * from './DefaultApi';

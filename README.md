@@ -48,6 +48,7 @@ The whole stack — web client, gateway, API, async workers, trending feed, docs
 Revornix/
 ├── app/                       # The application itself: models / crud / schemas / engine / notification … one copy
 ├── api/                       # FastAPI entrypoint: router, mcp_router — see api/README.md
+├── agent-sidecar/             # Agent runtime: Node process embedding pi-agent-core, driven by the API over stdio
 ├── worker/                    # Celery entrypoint: workflow — see worker/README.md
 ├── web/                       # Next.js client (workspace + SEO pages) — see web/README.md
 ├── gateway/                   # Go public-entry gateway (routing, anti-scraping, upstream failover)
@@ -181,6 +182,17 @@ Configure env values based on [environment docs](https://revornix.com/docs/envir
 > ```
 
 ### 5) Run API service
+
+> The agent (Revornix AI) runs each turn in a Node **sidecar** that embeds pi-agent-core and
+> talks to the API over stdio; its tools call back into the API over HTTP (`/agent/tools/*`),
+> and mutating tools wait for a confirmation card. Build the bundle once (and after any
+> change under `agent-sidecar/`):
+>
+> ```shell
+> cd agent-sidecar && pnpm install && pnpm build
+> ```
+>
+> `./scripts/dev.sh api` builds it automatically when missing.
 
 > uv rather than conda: conda earns its keep managing non-Python dependencies (CUDA, MKL and friends),
 > and torch is now **optional** here — the default configuration uses cloud embedding — so that advantage

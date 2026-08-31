@@ -4,6 +4,10 @@ from pathlib import Path
 WEB_BASE_URL = os.environ.get('WEB_BASE_URL')
 GATEWAY_INTERNAL_URL = os.environ.get('GATEWAY_INTERNAL_URL', 'http://localhost:8787')
 
+# sidecar 的工具调用经 HTTP 回连本 API 的地址。进程自己不知道自己对外的端口,
+# 部署换了端口就要改这个变量;默认是 README 里的开发端口。
+AGENT_API_BASE = os.environ.get('AGENT_API_BASE', 'http://127.0.0.1:8001')
+
 # 日志目录的基准，`common/logger.py` 是唯一的使用者（写 BASE_DIR/logs/）。
 #
 # 此前是 `Path(__file__).resolve().parent.parent` —— "config 包的上一级"。在

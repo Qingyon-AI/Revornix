@@ -33,6 +33,7 @@ from data.sql.schema_guard import run_schema_guard
 #: 新增 `models/*.py` 时必须往这里加一行，否则新表在全新安装上根本不会出现。
 _MODEL_MODULES = (
     "access_request",
+    "agent",
     "api_key",
     "document",
     "engine",

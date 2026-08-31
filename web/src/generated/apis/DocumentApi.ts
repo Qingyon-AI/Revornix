@@ -34,11 +34,6 @@ import {
     DocumentAiSummaryRequestToJSON,
 } from '../models/DocumentAiSummaryRequest';
 import {
-    type DocumentAskRequest,
-    DocumentAskRequestFromJSON,
-    DocumentAskRequestToJSON,
-} from '../models/DocumentAskRequest';
-import {
     type DocumentAudioSpeakerRenameRequest,
     DocumentAudioSpeakerRenameRequestFromJSON,
     DocumentAudioSpeakerRenameRequestToJSON,
@@ -306,12 +301,6 @@ import {
 
 export interface AddLabelDocumentLabelCreatePostRequest {
     labelAddRequest: LabelAddRequest;
-    authorization?: string | null;
-    xUserTimezone?: string | null;
-}
-
-export interface AskDocumentAiDocumentAskPostRequest {
-    documentAskRequest: DocumentAskRequest;
     authorization?: string | null;
     xUserTimezone?: string | null;
 }
@@ -668,65 +657,6 @@ export class DocumentApi extends runtime.BaseAPI {
      */
     async addLabelDocumentLabelCreatePost(requestParameters: AddLabelDocumentLabelCreatePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateLabelResponse> {
         const response = await this.addLabelDocumentLabelCreatePostRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for askDocumentAiDocumentAskPost without sending the request
-     */
-    async askDocumentAiDocumentAskPostRequestOpts(requestParameters: AskDocumentAiDocumentAskPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['documentAskRequest'] == null) {
-            throw new runtime.RequiredError(
-                'documentAskRequest',
-                'Required parameter "documentAskRequest" was null or undefined when calling askDocumentAiDocumentAskPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
-
-        if (requestParameters['xUserTimezone'] != null) {
-            headerParameters['x-user-timezone'] = String(requestParameters['xUserTimezone']);
-        }
-
-
-        let urlPath = `/document/ask`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DocumentAskRequestToJSON(requestParameters['documentAskRequest']),
-        };
-    }
-
-    /**
-     * Ask Document Ai
-     */
-    async askDocumentAiDocumentAskPostRaw(requestParameters: AskDocumentAiDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
-        const requestOptions = await this.askDocumentAiDocumentAskPostRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<any>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Ask Document Ai
-     */
-    async askDocumentAiDocumentAskPost(requestParameters: AskDocumentAiDocumentAskPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.askDocumentAiDocumentAskPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

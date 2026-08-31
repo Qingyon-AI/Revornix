@@ -34,6 +34,7 @@ from mcp_router.document import document_mcp_router
 from mcp_router.graph import graph_mcp_router
 from mcp_router.section import section_mcp_router
 from router.access_request_manage import access_request_manage_router
+from router.agent import agent_router
 from router.ai import ai_router
 from router.admin import admin_router
 from router.api_key import api_key_router
@@ -62,6 +63,13 @@ async def lifespan(app: FastAPI):
     # 建表 → 补列 → 补种子数据，跑在最前面：后面的每一步（调度任务、通知、请求）
     # 都假设表是全的、内置数据是在的。幂等，不需要任何人手动操作数据库。
     await ensure_database_ready()
+    # 重启前卡在 running 的智能体会话拨回 idle、作废其 pending 确认卡、留可见的中断说明。
+    from agent import host as agent_host
+    from agent.sidecar import log_sidecar_status
+    from data.sql.base import async_session_context
+    async with async_session_context() as db:
+        await agent_host.reconcile_orphaned_agent_sessions(db)
+    log_sidecar_status()
     try:
         if is_env_enabled(API_SENTRY_ENABLE):
             import sentry_sdk
@@ -184,6 +192,7 @@ app.include_router(user_auth_router, prefix="/user", tags=["user"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
 app.include_router(document_router, prefix="/document", tags=["document"])
 app.include_router(ai_router, prefix="/ai", tags=["ai"])
+app.include_router(agent_router, prefix="/agent", tags=["agent"])
 app.include_router(notification_router, prefix="/notification", tags=["notification"])
 app.include_router(section_router, prefix="/section", tags=["section"])
 app.include_router(api_key_router, prefix="/api-key", tags=["api-key"])

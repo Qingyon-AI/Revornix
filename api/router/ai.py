@@ -1,40 +1,27 @@
-import base64
 import json
-import mimetypes
 import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
-from typing import Any
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-import httpx
+from langfuse.openai import AsyncOpenAI
 from sqlalchemy import func, select
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
-from langfuse import propagate_attributes
-from mcp_use import MCPAgent, MCPClient
-from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from common.interpret_event import EventInterpreter, base_event
 
 import crud
 import models
 import schemas
-from common.common import safe_json_loads
+from common.ai import build_text_output_language_instruction
 from common.dependencies import (
     check_deployed_by_official_in_fuc,
     get_current_user,
     get_current_user_short_lived,
     get_async_db,
     get_user_plan_level_in_func,
-    plan_ability_checked_in_func,
 )
 from encryption import encrypt_api_key
-from common.kimi_compat import build_kimi_tool_compatible_extra_body
-from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message, info_logger
 from common.subscription_access import (
     SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
@@ -42,20 +29,12 @@ from common.subscription_access import (
     is_subscription_required_level,
     normalize_plan_access_level,
 )
-from common.structured_mcp_adapter import StructuredLangChainAdapter
-from common.usage_collector import UsageCollector
-from common.usage_billing import persist_model_usage_from_snapshot
-from data.sql.base import async_session_context
-from enums.ability import Ability
-from enums.mcp import MCPCategory
+from common.usage_billing import persist_model_usage
 from enums.model import UserModelProviderRole
-from enums.user import AIInteractionLanguage, UserRole
+from enums.user import UserRole
 from proxy.ai_model_proxy import AIModelProxy
-from proxy.file_system_proxy import FileSystemProxy
-from schemas.ai import ChatItem
 
 ai_router = APIRouter()
-MCP_AGENT_MAX_STEPS = 12
 SUBSCRIPTION_GATE_ENABLED = check_deployed_by_official_in_fuc()
 
 
@@ -145,115 +124,6 @@ def _serialize_model(
             ),
         }
     )
-
-
-def _is_graph_recursion_limit_error(exc: Exception) -> bool:
-    error_message = str(exc)
-    return (
-        exc.__class__.__name__ == "GraphRecursionError"
-        or "GRAPH_RECURSION_LIMIT" in error_message
-        or "Recursion limit of" in error_message
-    )
-
-
-def _build_mcp_recursion_limit_notice_key(*, has_partial_answer: bool) -> str:
-    if has_partial_answer:
-        return "revornix_ai_notice_mcp_recursion_limit_incomplete"
-    return "revornix_ai_notice_mcp_recursion_limit"
-
-
-def _build_agent_error_message_key(*, is_recursion_limit: bool) -> str:
-    if is_recursion_limit:
-        return "revornix_ai_error_mcp_recursion_limit"
-    return "revornix_ai_error_server_failed"
-
-
-def _normalize_chat_images(image_paths: list[str] | None) -> list[str]:
-    if not image_paths:
-        return []
-    return [path.strip() for path in image_paths if isinstance(path, str) and path.strip()]
-
-
-def _build_data_url(*, mime_type: str, content: bytes) -> str:
-    encoded = base64.b64encode(content).decode("ascii")
-    return f"data:{mime_type};base64,{encoded}"
-
-
-def _guess_image_mime_type(path: str) -> str:
-    guessed, _ = mimetypes.guess_type(path)
-    if guessed and guessed.startswith("image/"):
-        return guessed
-    return "image/png"
-
-
-async def _resolve_chat_image_urls(*, user_id: int, image_paths: list[str]) -> list[str]:
-    if not image_paths:
-        return []
-
-    file_service = await FileSystemProxy.create(user_id=user_id)
-    resolved_urls: list[str] = []
-    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
-        for path in image_paths:
-            if path.startswith("data:image/"):
-                resolved_urls.append(path)
-                continue
-
-            if path.startswith("http://") or path.startswith("https://"):
-                response = await client.get(path)
-                response.raise_for_status()
-                mime_type = response.headers.get("Content-Type") or _guess_image_mime_type(path)
-                resolved_urls.append(
-                    _build_data_url(
-                        mime_type=mime_type,
-                        content=response.content,
-                    )
-                )
-                continue
-
-            content = await file_service.get_file_content_by_file_path(file_path=path)
-            if isinstance(content, str):
-                content = content.encode("utf-8")
-            resolved_urls.append(
-                _build_data_url(
-                    mime_type=_guess_image_mime_type(path),
-                    content=content,
-                )
-            )
-    return resolved_urls
-
-
-async def _build_human_message_with_images(
-    *,
-    user_id: int,
-    text: str,
-    image_paths: list[str] | None = None,
-) -> HumanMessage:
-    normalized_images = _normalize_chat_images(image_paths)
-    if not normalized_images:
-        return HumanMessage(content=text)
-
-    resolved_urls = await _resolve_chat_image_urls(
-        user_id=user_id,
-        image_paths=normalized_images,
-    )
-    content_parts: list[dict[str, Any]] = []
-    if text.strip():
-        content_parts.append(
-            {
-                "type": "text",
-                "text": text,
-            }
-        )
-    content_parts.extend(
-        {
-            "type": "image_url",
-            "image_url": {
-                "url": image_url,
-            },
-        }
-        for image_url in resolved_urls
-    )
-    return HumanMessage(content=content_parts)
 
 
 @ai_router.post(
@@ -805,458 +675,73 @@ async def update_ai_model_provider(
     await db.commit()
     return schemas.common.SuccessResponse()
 
-async def create_agent(
-    user_id: int,
-    enable_mcp: bool = False,
-    model_id: int | None = None,
-):
-    """Create an MCP agent with Revornix auth rules and structured tool artifacts."""
-    try:
-        async with async_session_context() as db:
-            user = await crud.user.get_user_by_id_async(
-                db=db,
-                user_id=user_id,
-            )
-            if user is None:
-                raise schemas.error.CustomException("User not found", code=404)
-            resolved_model_id = model_id if model_id is not None else user.default_revornix_model_id
-            if resolved_model_id is None:
-                raise schemas.error.CustomException("The user has not set a default model", code=400)
-            access_token, _ = create_token(
-                user=user
-            )
-
-        model_configuration = (await AIModelProxy.create(
-            user_id=user_id,
-            model_id=resolved_model_id
-        )).get_configuration()
-
-        api_key = SecretStr(model_configuration.api_key if model_configuration.api_key is not None else "")
-        base_url = model_configuration.base_url
-
-        mcp_client = MCPClient()
-        auth_status = await plan_ability_checked_in_func(
-            ability=Ability.MCP_CLIENT.value,
-            authorization=f'Bearer {access_token}'
-        )
-        deployed_by_official_in_func = check_deployed_by_official_in_fuc()
-        mcp_enabled = False
-        if enable_mcp:
-            if not deployed_by_official_in_func:
-                mcp_enabled = True
-            else:
-                mcp_enabled = auth_status
-        if mcp_enabled:
-            async with async_session_context() as db:
-                mcp_servers = await crud.mcp.search_mcp_servers_async(
-                    db=db,
-                    user_id=user_id,
-                )
-                for mcp_server in mcp_servers:
-                    if not mcp_server.enable:
-                        continue
-                    if mcp_server.category == MCPCategory.STD:
-                        stdio_mcp_server = await crud.mcp.get_std_mcp_server_by_base_server_id_async(
-                            db=db,
-                            base_server_id=mcp_server.id,
-                        )
-                        if stdio_mcp_server is None:
-                            continue
-                        mcp_client.add_server(
-                            name=mcp_server.name,
-                            server_config={
-                                "command": stdio_mcp_server.cmd,
-                                "args": safe_json_loads(stdio_mcp_server.args, []),
-                                "env": safe_json_loads(stdio_mcp_server.env, {})
-                            }
-                        )
-                    if mcp_server.category == MCPCategory.HTTP:
-                        http_mcp_server = await crud.mcp.get_http_mcp_server_by_base_server_id_async(
-                            db=db,
-                            base_server_id=mcp_server.id,
-                        )
-                        if http_mcp_server is None:
-                            continue
-                        mcp_client.add_server(
-                            name=mcp_server.name,
-                            server_config={
-                                "url": http_mcp_server.url,
-                                "headers": safe_json_loads(http_mcp_server.headers, {})
-                            }
-                        )
-        llm_kwargs: dict[str, Any] = {
-            "model": model_configuration.model_name,
-            "api_key": api_key,
-            "base_url": base_url,
-            # Ensure token usage is included in streaming events when provider supports it.
-            "stream_usage": True,
-        }
-        extra_body = build_kimi_tool_compatible_extra_body(
-            model_configuration.model_name,
-        )
-        if extra_body is not None:
-            llm_kwargs["extra_body"] = extra_body
-        llm = ChatOpenAI(**llm_kwargs)
-        agent = MCPAgent(llm=llm, client=mcp_client, max_steps=MCP_AGENT_MAX_STEPS)
-        agent.adapter = StructuredLangChainAdapter(disallowed_tools=agent.disallowed_tools)
-        agent.adapter._record_telemetry = False
-        return agent, resolved_model_id
-    except Exception as e:
-        exception_logger.error(
-            format_log_message("ai_agent_create_failed", user_id=user_id, error=e)
-        )
-        raise
-
-
-def _build_ai_language_instruction(language: int | None) -> str:
-    if language == AIInteractionLanguage.CHINESE:
-        return (
-            "Always answer in Simplified Chinese unless the user explicitly asks "
-            "you to switch to another language."
-        )
-    if language == AIInteractionLanguage.ENGLISH:
-        return (
-            "Always answer in English unless the user explicitly asks "
-            "you to switch to another language."
-        )
-    return (
-        "Reply in the same language as the latest user message when it is clear. "
-        "If the latest message does not provide a clear language signal, follow "
-        "the dominant language of the conversation."
-    )
-
-
-def _apply_agent_system_prompt(*, agent: MCPAgent, system_prompt: str) -> None:
-    agent.system_prompt = system_prompt
-    agent._system_message = SystemMessage(content=system_prompt)
-    if hasattr(agent, "_create_agent"):
-        agent._agent_executor = agent._create_agent()
-
-async def stream_ops_with_agent(
-    user_id: int,
-    model_id: int,
-    agent: MCPAgent,
-    messages: list[ChatItem],
-    system_prompt: str | None = None,
-    chat_id: str | None = None,
-    emit_initial_status: bool = True,
-) -> AsyncGenerator[str, None]:
-    """Stream a general Revornix AI response through the MCP agent pipeline."""
-    interpreter = EventInterpreter()
-    usage_collector = UsageCollector()
-    chat_id = chat_id or uuid4().hex
-    stream_failed = False
-    emitted_text_output = False
-
-    try:
-        if emit_initial_status:
-            yield _sse(
-                base_event(
-                    chat_id=chat_id,
-                    event_type="status",
-                    payload={
-                        "phase": "thinking",
-                        "label": "revornix_ai_phase_request_received",
-                        "detail": {},
-                    },
-                )
-            )
-        # ==========================
-        # 1️⃣ 初始化上下文
-        # ==========================
-        agent.clear_conversation_history()
-        if system_prompt:
-            _apply_agent_system_prompt(agent=agent, system_prompt=system_prompt)
-
-        latest_message = messages.pop()
-        query_message = await _build_human_message_with_images(
-            user_id=user_id,
-            text=latest_message.content,
-            image_paths=latest_message.images,
-        )
-        for message in messages:
-            if message.role == "user":
-                agent.add_to_history(
-                    await _build_human_message_with_images(
-                        user_id=user_id,
-                        text=message.content,
-                        image_paths=message.images,
-                    )
-                )
-            elif message.role == "assistant":
-                agent.add_to_history(AIMessage(content=message.content))
-
-        # ==========================
-        # 2️⃣ 开始流式执行
-        # ==========================
-        with propagate_attributes(
-            user_id=str(user_id),
-            tags=[f"model:{agent._model_name}"],
-        ):
-
-            async for raw_event in agent.stream_events(query=query_message):
-                raw_event_dict = dict(raw_event)
-                if raw_event_dict.get("event") == "on_chat_model_end":
-                    usage_collector.collect(raw_event_dict)
-                    event_usage_snapshot = usage_collector.snapshot()
-                    if event_usage_snapshot is not None:
-                        info_logger.info(
-                            format_log_message(
-                                "ai_mcp_usage_collected",
-                                user_id=user_id,
-                                chat_id=chat_id,
-                                usage=event_usage_snapshot,
-                            )
-                        )
-                    else:
-                        raw_data = raw_event_dict.get("data")
-                        data_keys = list(raw_data.keys()) if isinstance(raw_data, dict) else []
-                        info_logger.warning(
-                            format_log_message(
-                                "ai_mcp_usage_missing",
-                                user_id=user_id,
-                                chat_id=chat_id,
-                                data_keys=data_keys,
-                            )
-                        )
-                # 🔥 核心：解释 LangGraph / MCP 事件
-                for interpreted in interpreter.interpret(
-                    event=raw_event_dict,
-                    chat_id=chat_id
-                ):
-                    if not interpreted:
-                        continue
-                    if (
-                        interpreted.get("type") == "output"
-                        and isinstance(interpreted.get("payload"), dict)
-                        and interpreted["payload"].get("kind") == "token"
-                        and interpreted["payload"].get("content")
-                    ):
-                        emitted_text_output = True
-
-                    yield _sse(interpreted)
-
-    except Exception as e:
-        stream_failed = True
-        # ==========================
-        # 3️⃣ 错误事件
-        # ==========================
-        exception_logger.error(
-            format_log_message(
-                "ai_stream_failed",
-                user_id=user_id,
-                chat_id=chat_id,
-                error=e,
-            )
-        )
-        usage_snapshot = usage_collector.snapshot()
-        is_recursion_limit = _is_graph_recursion_limit_error(e)
-
-        if is_recursion_limit:
-            yield _sse(
-                {
-                    "chat_id": chat_id,
-                    "type": "output",
-                    "timestamp": time.time(),
-                    "trace": {},
-                    "payload": {
-                        "kind": "system_text",
-                        "message": _build_mcp_recursion_limit_notice_key(
-                            has_partial_answer=emitted_text_output,
-                        ),
-                        "paragraph_break": emitted_text_output,
-                    },
-                }
-            )
-
-        payload: dict[str, Any] = {
-            "code": "MCP_RECURSION_LIMIT" if is_recursion_limit else "SERVER_ERROR",
-            "message": _build_agent_error_message_key(
-                is_recursion_limit=is_recursion_limit,
-            ),
-        }
-        if usage_snapshot is not None:
-            payload["usage"] = usage_snapshot
-        yield _sse(
-            {
-                "chat_id": chat_id,
-                "type": "error",
-                "timestamp": time.time(),
-                "trace": {},
-                "payload": payload,
-            }
-        )
-
-    # ==========================
-    # 4️⃣ 完成事件
-    # ==========================
-    usage_snapshot = usage_collector.snapshot()
-    if usage_snapshot is not None:
-        info_logger.info(
-            format_log_message(
-                "ai_usage_summary",
-                user_id=user_id,
-                chat_id=chat_id,
-                usage=usage_snapshot,
-            )
-        )
-        await persist_model_usage_from_snapshot(
-            user_id=user_id,
-            model_id=model_id,
-            snapshot=usage_snapshot,
-            source="ask_ai_stream",
-            idempotency_key=f"ask_ai:{chat_id}",
-        )
-
-    if stream_failed:
-        return
-
-    done_payload: dict[str, object] = {"success": True}
-    if usage_snapshot is not None:
-        done_payload["usage"] = usage_snapshot
-
-    yield _sse(
-        {
-            "chat_id": chat_id,
-            "type": "done",
-            "timestamp": time.time(),
-            "trace": {},
-            "payload": done_payload,
-        }
-    )
-
-
-async def stream_ops_request(
-    *,
-    user: models.user.User,
-    model_id: int,
-    enable_mcp: bool,
-    messages: list[ChatItem],
-    system_prompt: str | None = None,
-    chat_id: str | None = None,
-) -> AsyncGenerator[str, None]:
-    chat_id = chat_id or uuid4().hex
-
-    yield _sse(
-        base_event(
-            chat_id=chat_id,
-            event_type="status",
-            payload={
-                "phase": "thinking",
-                "label": "revornix_ai_phase_request_received",
-                "detail": {},
-            },
-        )
-    )
-
-    try:
-        yield _sse(
-            base_event(
-                chat_id=chat_id,
-                event_type="status",
-                payload={
-                    "phase": "thinking",
-                    "label": "revornix_ai_phase_model_prepare",
-                    "detail": {},
-                },
-            )
-        )
-        agent, resolved_model_id = await create_agent(
-            user_id=user.id,
-            enable_mcp=enable_mcp,
-            model_id=model_id,
-        )
-    except Exception as e:
-        exception_logger.error(
-            format_log_message(
-                "ai_prepare_failed",
-                user_id=user.id,
-                chat_id=chat_id,
-                error=e,
-            )
-        )
-        yield _sse(
-            {
-                "chat_id": chat_id,
-                "type": "error",
-                "timestamp": time.time(),
-                "trace": {},
-                "payload": {
-                    "code": "SERVER_ERROR",
-                    "message": _build_agent_error_message_key(
-                        is_recursion_limit=False,
-                    ),
-                },
-            }
-        )
-        return
-
-    async for event in stream_ops_with_agent(
-        user_id=user.id,
-        model_id=resolved_model_id,
-        agent=agent,
-        messages=messages,
-        system_prompt=system_prompt,
-        chat_id=chat_id,
-        emit_initial_status=False,
-    ):
-        yield event
-
 def _sse(event: dict) -> str:
-    """
-    SSE 格式统一出口
-    """
     return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
-@ai_router.post("/ask")
-async def ask_ai(
-    chat_messages: schemas.ai.ChatMessages,
+
+@ai_router.post("/complete")
+async def ai_complete(
+    complete_request: schemas.ai.CompleteRequest,
     user: models.user.User = Depends(get_current_user_short_lived),
 ):
-    """Handle Revornix AI chat requests with optional MCP tool usage."""
-    messages = [
-        message
-        for message in chat_messages.messages
-        if message.role in {"user", "assistant"}
-    ]
+    """无状态纯文本补全(编辑器续写/润色这类一次性任务)。
 
-    selected_model_id = (
-        chat_messages.model_id
-        if chat_messages.model_id is not None
-        else user.default_revornix_model_id
-    )
-    if selected_model_id is None:
-        raise schemas.error.CustomException(
-            "The user has not set a default model",
-            code=400,
-        )
-    if not messages:
-        raise schemas.error.CustomException("Messages cannot be empty", code=400)
-    if messages[-1].role != "user":
-        raise schemas.error.CustomException(
-            "The latest message must be from the user",
-            code=400,
-        )
-    if not messages[-1].content.strip() and not _normalize_chat_images(messages[-1].images):
-        raise schemas.error.CustomException(
-            "The latest message must include text or images",
-            code=400,
-        )
+    对话不走这里 —— 对话在 /agent/*(会话、工具、确认卡都在那套里)。
+    这个端点刻意不带工具与多轮上下文:编辑器的调用是「给一段文字,还一段文字」,
+    多一样都是浪费。
+    """
+    prompt = complete_request.prompt.strip()
+    if not prompt:
+        raise schemas.error.CustomException("Prompt cannot be empty", code=400)
+    model_id = complete_request.model_id if complete_request.model_id is not None else user.default_revornix_model_id
+    if model_id is None:
+        raise schemas.error.CustomException("The user has not set a default model", code=400)
+    configuration = (await AIModelProxy.create(user_id=user.id, model_id=model_id)).get_configuration()
+    language_instruction = build_text_output_language_instruction(user.default_ai_interaction_language)
+
+    async def stream() -> AsyncGenerator[str, None]:
+        usage_details: dict | None = None
+        try:
+            client = AsyncOpenAI(
+                api_key=configuration.api_key or "not-required",
+                base_url=configuration.base_url,
+            )
+            response = await client.chat.completions.create(
+                model=configuration.model_name,
+                messages=[
+                    {"role": "system", "content": language_instruction},
+                    {"role": "user", "content": prompt},
+                ],
+                stream=True,
+                stream_options={"include_usage": True},
+            )
+            async for chunk in response:
+                for choice in chunk.choices or []:
+                    delta = choice.delta.content
+                    if delta:
+                        yield _sse({"type": "output", "payload": {"kind": "token", "content": delta}})
+                if getattr(chunk, "usage", None):
+                    usage = chunk.usage
+                    usage_details = {
+                        "input_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+                        "output_tokens": getattr(usage, "completion_tokens", 0) or 0,
+                    }
+                    usage_details["total_tokens"] = usage_details["input_tokens"] + usage_details["output_tokens"]
+            yield _sse({"type": "done", "payload": {"success": True}})
+        except Exception as e:
+            exception_logger.error(format_log_message("ai_complete_failed", user_id=user.id, error=e))
+            yield _sse({"type": "error", "payload": {"code": "SERVER_ERROR", "message": str(e)[:300]}})
+        finally:
+            if usage_details:
+                await persist_model_usage(
+                    user_id=user.id,
+                    model_id=model_id,
+                    usage_details=usage_details,
+                    source="ai_complete",
+                )
 
     return StreamingResponse(
-        stream_ops_request(
-            user=user,
-            model_id=selected_model_id,
-            enable_mcp=chat_messages.enable_mcp,
-            messages=messages,
-            system_prompt=_build_ai_language_instruction(
-                user.default_ai_interaction_language,
-            ),
-            chat_id=chat_messages.assistant_chat_id,
-        ),
+        stream(),
         media_type="text/event-stream; charset=utf-8",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-        }
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )

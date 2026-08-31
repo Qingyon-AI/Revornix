@@ -33,7 +33,6 @@ dependencies = [
     "lark_oapi==1.7.1",
     "lightrag-hku==1.5.5",
     "markitdown==0.1.7",
-    "mcp_use==1.7.0",
     "neo4j==6.2.0",
     "openai==2.53.0",
     "opentelemetry-api==1.44.0",
@@ -67,4 +66,4 @@ dependencies = [
 # 这样两个入口里既有的 `from enums.document import X` 一行都不用改。
 [tool.setuptools]
 py-modules = ["encryption"]
-packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud", "base_implement", "common", "data", "engine", "file", "notification", "proxy"]
+packages = ["enums", "config", "protocol", "schemas", "custom_types", "models", "prompts", "crud", "base_implement", "common", "data", "engine", "file", "notification", "proxy", "agent"]

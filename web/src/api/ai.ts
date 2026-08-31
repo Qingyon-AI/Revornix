@@ -1,7 +1,7 @@
 import { API_PREFIX } from "@/config/api"
 
 export default {
-    askAi: API_PREFIX + '/ai/ask',
+    completeAi: API_PREFIX + '/ai/complete',
     createAiModel: API_PREFIX + '/ai/model/create',
     createAiModelProvider: API_PREFIX + '/ai/model-provider/create',
     deleteAiModel: API_PREFIX + '/ai/model/delete',

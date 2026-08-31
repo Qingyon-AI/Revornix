@@ -141,6 +141,8 @@ No authorization required
 
 Ask Document Ai
 
+文档问答(公共 API)。底层是 pi sidecar 的智能体管道(agent/host.ask_document_once)。
+
 ### Example
 
 ```ts
@@ -212,6 +214,8 @@ No authorization required
 > any askSectionAiTpSectionAskPost(sectionAskRequest, xUserTimezone, apiKey)
 
 Ask Section Ai
+
+专栏问答(公共 API)。底层同样是 pi sidecar 管道(agent/host.ask_section_once)。
 
 ### Example
 

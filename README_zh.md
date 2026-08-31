@@ -48,6 +48,7 @@ Revornix 是一个开源、可本地部署的 AI 信息工作台。把那些"想
 Revornix/
 ├── app/                       # 应用本体：models / crud / schemas / engine / notification … 只此一份
 ├── api/                       # FastAPI 入口：router、mcp_router — 见 api/README.md
+├── agent-sidecar/             # 智能体运行时：内嵌 pi-agent-core 的 Node 进程，由 API 经 stdio 驱动
 ├── worker/                    # Celery 入口：workflow — 见 worker/README.md
 ├── web/                       # Next.js 客户端（工作台 + 公开页面）— 见 web/README.md
 ├── gateway/                   # Go 公网入口网关（路由、反爬、上游容错）
@@ -176,6 +177,16 @@ cp ./worker/.env.example ./worker/.env
 > ```
 
 ### 5) 启动核心后端服务
+
+> 智能体（Revornix AI）的每一轮对话跑在一个内嵌 pi-agent-core 的 Node **sidecar** 里，
+> 由 API 经 stdio 驱动；工具经 HTTP 回连 API（`/agent/tools/*`），写操作一律等确认卡。
+> 首次（以及每次改了 `agent-sidecar/` 之后）先构建：
+>
+> ```shell
+> cd agent-sidecar && pnpm install && pnpm build
+> ```
+>
+> `./scripts/dev.sh api` 会在缺失时自动构建。
 
 > 用 uv 而不是 conda：conda 的长处是管非 Python 依赖（CUDA、MKL 那些），而 torch 现在是**可选**的
 > （默认走云端 embedding），那个长处用不上了。实测冷缓存装同一份依赖：**uv 32 秒 / pip 242 秒**。

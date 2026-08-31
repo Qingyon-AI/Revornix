@@ -50,7 +50,6 @@ from enums.document import (
 )
 from enums.section import SectionDocumentIntegration, SectionProcessTriggerType
 from router.document_interaction_manage import document_interaction_manage_router
-from router.document_ai import document_ai_router
 from router.document_publish_manage import document_publish_manage_router
 from router.document_user_manage import document_user_manage_router
 from router.document_user_query import document_user_query_router
@@ -66,7 +65,6 @@ from common.access_control import (
 document_router = APIRouter()
 document_router.include_router(document_query_router)
 document_router.include_router(document_interaction_manage_router)
-document_router.include_router(document_ai_router)
 document_router.include_router(document_publish_manage_router)
 document_router.include_router(document_user_manage_router)
 document_router.include_router(document_user_query_router)
