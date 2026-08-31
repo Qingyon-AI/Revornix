@@ -124,7 +124,8 @@ A glimpse of the workspace and the public surfaces. The full walkthrough lives i
 ## Quick Start
 
 > [!NOTE]
-> Use an isolated Python environment per service — uv is what the commands below assume — because dependencies across services can conflict.
+> `app/`, `api/` and `worker/` form one **uv workspace**: a single `uv.lock` and one shared
+> `.venv` at the repo root. Install once from the repo root — not per service.
 
 ### 1) Clone repository
 
