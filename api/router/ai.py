@@ -2,6 +2,7 @@ import json
 import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
+from typing import Any
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -22,6 +23,7 @@ from common.dependencies import (
     get_user_plan_level_in_func,
 )
 from encryption import encrypt_api_key
+from common.jwt_utils import create_token
 from common.logger import exception_logger, format_log_message, info_logger
 from common.subscription_access import (
     SUBSCRIPTION_REQUIRED_ERROR_MESSAGE,
