@@ -1,5 +1,6 @@
 {
   "name": "@revornix/agent-sidecar",
+  "packageManager": "pnpm@11.25.0",
   "version": "0.1.0",
   "private": true,
   "description": "Revornix AI agent sidecar — embeds pi-agent-core and speaks newline-delimited JSON over stdio with the Python backend.",
