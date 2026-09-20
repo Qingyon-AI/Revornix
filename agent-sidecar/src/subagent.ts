@@ -79,52 +79,55 @@ export async function runSubagent(input: {
   signal?: AbortSignal;
   onToolEvent?: (event: SubagentToolEvent) => void;
 }): Promise<{ report: string; steps: number; trace: SubagentTraceItem[]; error?: string }> {
-  const agent = new Agent({
-    initialState: {
-      systemPrompt: SUBAGENT_PROMPT,
-      model: input.model,
-      tools: input.tools,
-      messages: [],
-      thinkingLevel: "off",
-    },
-    streamFn: input.streamFn,
-    // 步数上限:子智能体没人盯着,转不出来时要能自己停下并交代进展。
-    transformContext: async (messages: AgentMessage[]) => {
-      const toolTurns = messages.filter((m) => m.role === "assistant").length;
-      if (toolTurns > MAX_STEPS) {
-        return [
-          ...messages,
-          { role: "user", content: "已达到步数上限。立刻停止调用工具,用现有发现写出结论。" } as AgentMessage,
-        ];
-      }
-      return messages;
-    },
-  });
-
-  let steps = 0;
+  // 构造也放进 try:模型/工具配置不合法时 Agent 构造函数会抛,而它此前在 try 之外 ——
+  // 那条路径上 runSubagent 返回的是一个 rejected promise,而不是带 error 的 outcome。
+  let agent: Agent;
   const trace: SubagentTraceItem[] = [];
-  agent.subscribe((event: any) => {
-    if (event?.type === "tool_execution_start") {
-      steps += 1;
-      trace.push({ type: "tool", id: String(event.toolCallId ?? ""), name: String(event.toolName ?? ""), args: event.args });
-      input.onToolEvent?.({ phase: "start", toolCallId: String(event.toolCallId ?? ""), toolName: String(event.toolName ?? ""), args: event.args });
-    } else if (event?.type === "tool_execution_end") {
-      const entry = trace.find((item) => item.type === "tool" && item.id === String(event.toolCallId ?? ""));
-      if (entry && entry.type === "tool") {
-        entry.result = event.result;
-        entry.isError = Boolean(event.isError);
-      }
-      input.onToolEvent?.({ phase: "end", toolCallId: String(event.toolCallId ?? ""), toolName: String(event.toolName ?? ""), result: event.result, isError: Boolean(event.isError) });
-    } else if (event?.type === "message_end") {
-      // 子智能体自己的阶段性文字也进轨迹:没有它,存档只是一串工具调用,
-      // 看不出它每一步**为什么**这么查。
-      const message = event.message as { role?: string } | undefined;
-      const text = message?.role === "assistant" ? assistantText(message) : "";
-      if (text) trace.push({ type: "text", text });
-    }
-  });
-
+  let steps = 0;
   try {
+    agent = new Agent({
+      initialState: {
+        systemPrompt: SUBAGENT_PROMPT,
+        model: input.model,
+        tools: input.tools,
+        messages: [],
+        thinkingLevel: "off",
+      },
+      streamFn: input.streamFn,
+      // 步数上限:子智能体没人盯着,转不出来时要能自己停下并交代进展。
+      transformContext: async (messages: AgentMessage[]) => {
+        const toolTurns = messages.filter((m) => m.role === "assistant").length;
+        if (toolTurns > MAX_STEPS) {
+          return [
+            ...messages,
+            { role: "user", content: "已达到步数上限。立刻停止调用工具,用现有发现写出结论。" } as AgentMessage,
+          ];
+        }
+        return messages;
+      },
+    });
+
+    agent.subscribe((event: any) => {
+      if (event?.type === "tool_execution_start") {
+        steps += 1;
+        trace.push({ type: "tool", id: String(event.toolCallId ?? ""), name: String(event.toolName ?? ""), args: event.args });
+        input.onToolEvent?.({ phase: "start", toolCallId: String(event.toolCallId ?? ""), toolName: String(event.toolName ?? ""), args: event.args });
+      } else if (event?.type === "tool_execution_end") {
+        const entry = trace.find((item) => item.type === "tool" && item.id === String(event.toolCallId ?? ""));
+        if (entry && entry.type === "tool") {
+          entry.result = event.result;
+          entry.isError = Boolean(event.isError);
+        }
+        input.onToolEvent?.({ phase: "end", toolCallId: String(event.toolCallId ?? ""), toolName: String(event.toolName ?? ""), result: event.result, isError: Boolean(event.isError) });
+      } else if (event?.type === "message_end") {
+        // 子智能体自己的阶段性文字也进轨迹:没有它,存档只是一串工具调用,
+        // 看不出它每一步**为什么**这么查。
+        const message = event.message as { role?: string } | undefined;
+        const text = message?.role === "assistant" ? assistantText(message) : "";
+        if (text) trace.push({ type: "text", text });
+      }
+    });
+
     await agent.prompt(input.task);
   } catch (err) {
     const message = String(err);
@@ -167,9 +170,22 @@ export class SubagentManager {
   private runs = new Map<string, BackgroundRun>();
 
   dispatch(id: string, task: string, promise: Promise<SubagentOutcome>): void {
-    const run: BackgroundRun = { id, task, promise, settled: null, notified: false };
+    // **就地把 reject 收敛掉。** 后台派发的 promise 没有人 await,一旦 reject 就是一个
+    // unhandled rejection —— 而 Node 从 15 起的默认动作是终止进程,整个 sidecar 会死在
+    // 一个后台任务上,用户那一轮只看到 "pi sidecar exited"。
+    //
+    // runSubagent 自己已经把失败装进 outcome.error 返回了,但它的 Agent 构造在 try 之外,
+    // 而 dispatch 收的是任意 promise。失败是**结果的一种**,这里让它退化成同样的形状,
+    // wait / drain 下游就都不必再各自防一遍。
+    const safe: Promise<SubagentOutcome> = promise.catch((err) => ({
+      report: "",
+      steps: 0,
+      trace: [],
+      error: String(err),
+    }));
+    const run: BackgroundRun = { id, task, promise: safe, settled: null, notified: false };
     this.runs.set(id, run);
-    void promise.then((outcome) => {
+    void safe.then((outcome) => {
       run.settled = outcome;
     });
   }
@@ -192,13 +208,14 @@ export class SubagentManager {
 
   /** 收尾清算:等全部跑完,取出所有还没进过上下文的结果。空数组 = 不用续轮。 */
   async drain(): Promise<Array<{ id: string; task: string; outcome: SubagentOutcome }>> {
-    await Promise.all([...this.runs.values()].map((run) => run.promise));
-    return [...this.runs.values()]
-      .filter((run) => !run.notified)
-      .map((run) => {
-        run.notified = true;
-        return { id: run.id, task: run.task, outcome: run.settled! };
-      });
+    const pending = [...this.runs.values()].filter((run) => !run.notified);
+    // 用**等到的值**,不读 run.settled:后者靠 dispatch 里那个 .then 先于这里 resolve
+    // 才会被填上,是一种隐性的注册顺序依赖 —— 成立,但改动一下顺序就会静默变成 undefined。
+    const outcomes = await Promise.all(pending.map((run) => run.promise));
+    return pending.map((run, index) => {
+      run.notified = true;
+      return { id: run.id, task: run.task, outcome: outcomes[index] };
+    });
   }
 }
 

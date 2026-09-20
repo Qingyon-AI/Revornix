@@ -92,11 +92,20 @@ function buildSubagentTools(
       // 默认路径:立即返回,子智能体在后台跑。id 就用这次调用的 toolCallId ——
       // UI 时间线已经拿它当锚,模型拿它来 wait,两边天然对上。
       manager.dispatch(parentCallId, task, running);
-      void running.then((outcome) => {
-        // 跑完就把存档发给宿主,让界面上这张卡从「进行中」翻成完整档案 ——
-        // 不等模型来取:看得见过程是 UI 的事,和模型什么时候读报告无关。
-        handlers.onSubagentResult?.(parentCallId, archiveOf(task, outcome));
-      });
+      // **订阅的是原始 promise,所以这里要自己兜住 reject。** manager.dispatch 收敛的是
+      // 它内部那一份;这条漏掉就仍然是 unhandled rejection,而 Node 默认会因此终止进程。
+      void running
+        .then((outcome) => {
+          // 跑完就把存档发给宿主,让界面上这张卡从「进行中」翻成完整档案 ——
+          // 不等模型来取:看得见过程是 UI 的事,和模型什么时候读报告无关。
+          handlers.onSubagentResult?.(parentCallId, archiveOf(task, outcome));
+        })
+        .catch((err) => {
+          handlers.onSubagentResult?.(
+            parentCallId,
+            archiveOf(task, { report: "", steps: 0, trace: [], error: String(err) }),
+          );
+        });
       const payload = {
         ok: true,
         dispatched: true,
@@ -139,6 +148,10 @@ function buildSubagentTools(
   };
   return [dispatchTool, waitTool];
 }
+
+/** 收尾清算最多续几轮。每轮 = 一次完整的模型调用,够模型消化完报告并收尾;
+ *  超过就停,把这一轮正常结束,而不是让它在后端超时里烂掉。 */
+const MAX_DRAIN_ROUNDS = 4;
 
 // 轮内兜底:一轮里工具调用可能连着追加十几条消息,而按 token 的压缩只在**轮与轮之间**做
 // (见 prepareContext)。这条只防"单轮内爆炸"这一种情况,阈值放得很宽,正常对话碰不到它。
@@ -412,7 +425,11 @@ export async function runPiTurn(input: PiTurnInput, handlers: PiTurnHandlers): P
     // 收尾清算:模型答完了,但后台可能还有子智能体在跑、或报告还没进过它的上下文。
     // 等全部跑完,把没送达的报告作为一条通知消息续一轮 —— 模型消化完(可能因此又派新的,
     // 所以是循环)才算真正结束。丢报告是不可接受的:sidecar 是回合级进程,这轮不送,永远没了。
-    for (;;) {
+    // 轮数封顶:每条完成通知都可能让模型**再派一批**子智能体,下一次 drain 又有结果,
+    // 于是这个循环的出口取决于模型肯不肯停。不封顶时唯一的刹车是后端 600 秒超时,
+    // 而超时会把整轮判为失败 —— 用户眼看着流式输出了几分钟,最后只拿到一条错误。
+    // 封顶之后最坏情况是少消化最后一批报告,但这一轮是正常结束的。
+    for (let round = 0; round < MAX_DRAIN_ROUNDS; round += 1) {
       if (agent.signal?.aborted) break;
       const settled = await subagents.drain();
       if (settled.length === 0) break;
