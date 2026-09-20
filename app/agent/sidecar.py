@@ -176,7 +176,29 @@ def _stderr_tail(lines: list[str]) -> str:
     return _tail("".join(lines))
 
 
+#: SIGTERM 之后留给 sidecar 收尾的时间。够它关掉 MCP 连接,又不至于让超时路径明显变慢。
+_TERMINATE_GRACE_SECONDS = 3
+
+
 async def _kill(process: asyncio.subprocess.Process) -> None:
+    """先 SIGTERM 再 SIGKILL。
+
+    直接 SIGKILL 会**跳过 sidecar 的清理**,而用户可以注册 stdio 类型的 MCP server
+    (`category=stdio`,带 cmd/args)—— 那些是 sidecar 自己 spawn 的子进程,靠每轮
+    `finally` 里的 `mcp.close()` 收掉。SIGKILL 不可捕获,那个 finally 永远不会跑,
+    子进程就被遗弃在系统里;一次 600 秒超时留一批,api 进程活多久就积多久。
+
+    SIGTERM 让 sidecar 走它自己的关闭路径;它没在宽限期内退出,再来硬的。
+    """
+    try:
+        process.terminate()
+    except ProcessLookupError:
+        return
+    try:
+        await asyncio.wait_for(process.wait(), timeout=_TERMINATE_GRACE_SECONDS)
+        return
+    except asyncio.TimeoutError:
+        pass
     try:
         process.kill()
     except ProcessLookupError:

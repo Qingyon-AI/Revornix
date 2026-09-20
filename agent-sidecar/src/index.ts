@@ -30,6 +30,32 @@ import { buildMcpTools } from "./mcp.js";
  */
 const active = new Map<string, Agent>();
 
+/**
+ * MCP handles for turns currently in flight, so a signal handler can reach them.
+ *
+ * A stdio MCP server is a child process this sidecar spawned. Normally the turn's own
+ * `finally` closes it. But the backend kills this process when a turn exceeds its timeout,
+ * and a kill does not run that `finally` — the children would be left behind, one batch per
+ * timed-out turn, for as long as the api process lives.
+ */
+const openMcp = new Set<{ close: () => Promise<void> }>();
+
+let shuttingDown = false;
+
+/** Close every open MCP connection, then exit. Safe to call twice. */
+async function shutdown(signal: string): Promise<void> {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log(`received ${signal}; closing ${openMcp.size} MCP connection(s)`);
+  await Promise.allSettled([...openMcp].map((handle) => handle.close()));
+  process.exit(0);
+}
+
+// Without these, node's default SIGTERM action terminates immediately and the cleanup above
+// never runs — which is the whole reason the backend sends SIGTERM before SIGKILL.
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));
+
 async function handleRunTurn(msg: Extract<Request, { type: "run_turn" }>): Promise<void> {
   const { turnId, prompt } = msg;
   if (!msg.provider?.baseUrl || !msg.model) {

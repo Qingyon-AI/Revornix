@@ -15,7 +15,7 @@
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node test/compaction.test.mjs && node test/bundle.smoke.mjs"
+    "test": "node test/compaction.test.mjs && node test/bundle.smoke.mjs && node test/shutdown.test.mjs"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "^0.84.3",
