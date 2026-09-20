@@ -754,7 +754,23 @@ async def post_user_message(
     images: list[str] | None = None,
 ) -> models.agent.AgentMessage:
     """落一条用户消息并驱动一轮(会话在跑则排队)。"""
-    if session.status == "running":
+    # **先抢占,再决定排队还是起轮** —— 与 `_drain_queue_locked` 同一套做法。
+    # 读到 idle 之后再赋值 running 是 check-then-act:两个请求各自把会话读进来
+    # (路由依赖就是这么做的),都看到 idle,都起一轮。那不是理论风险 ——
+    # 界面上双击发送、或两个标签页同时发,就是这个形状,而后果全是静默的:
+    # 两轮同时写 adapter_state(整段对话历史),后写的覆盖先写的;`_LIVE` 只存得下
+    # 一个,steer/abort 打在后来那轮上;第二轮的 `_stream_reset` 清掉第一轮的时间线。
+    # 交给数据库裁决:rowcount 为 0 就是别人抢先了,老老实实排队。
+    claimed = (
+        await db.execute(
+            update(models.agent.AgentSession)
+            .where(models.agent.AgentSession.id == session.id, models.agent.AgentSession.status != "running")
+            .values(status="running")
+        )
+    ).rowcount
+    await db.commit()
+    await db.refresh(session)
+    if not claimed:
         # 排队,不是 steer。排队等整个 reason-act 循环跑完、作为自己的一轮来跑,
         # 这几乎总是"用户紧接着问了一句"的意思;steer 是切进正在跑的循环,是有意为之的动作
         # (steer_queued_message),不该是默认。
@@ -780,7 +796,8 @@ async def post_user_message(
         payload=json.dumps({"images": images or []}, ensure_ascii=False) if images else None,
         create_time=_now(),
     )
-    session.status = "running"
+    # status 已经由上面那条条件 UPDATE 置成 running,这里不再重复赋值 ——
+    # 留着会让人以为抢占仍然发生在 ORM 层。
     if session.title == "新对话" and content.strip():
         session.title = content.strip()[:60]
     db.add(message)
