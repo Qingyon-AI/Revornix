@@ -1,3 +1,12 @@
 allowBuilds:
   # esbuild 的 install script 拉的是平台相关的原生二进制,build 靠它跑。
   esbuild: true
+  # 下面两个显式**拒绝**,不是漏写。pnpm 11 对未声明的 install script 直接报错
+  # (ERR_PNPM_IGNORED_BUILDS),而本地因为 node_modules 早就装好了看不出来 ——
+  # 只有全新安装(Docker 镜像、CI、线上首次部署)才会挂。
+  #   @google/genai 的 preinstall 是一句 `echo 'preinstall: no-op'`;
+  #   protobufjs 的 postinstall 是 CLI 相关的辅助,运行时用不到。
+  # sidecar 最终由 esbuild 打成单个 dist/sidecar.cjs,不跑它们产物照样完整,
+  # bundle.smoke 测试验证的正是这一点。
+  '@google/genai': false
+  protobufjs: false

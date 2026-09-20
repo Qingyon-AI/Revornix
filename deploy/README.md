@@ -14,7 +14,7 @@
 |---|---|---|
 | nginx | 80 / 443 | 所有域名的 TLS 入口（certbot 管证书） |
 | revornix-gateway | 8787 | 预编译的 Go 二进制 `gateway/gateway` |
-| revornix-api | 8001 | `.venv/bin/fastapi` |
+| revornix-api | 8001 | `.venv/bin/fastapi`；Revornix AI 每轮对话由它 spawn 一个 node 子进程 |
 | revornix-worker | — | `worker/start-worker.sh`，PATH 指向同一个 `.venv/bin` |
 | revornix-website | 3000 | `node .next/standalone/server.js` |
 | revornix-hot-news | 6688 | `pnpm start` |
@@ -30,7 +30,7 @@ nginx 把 `api.` / `hot-news.` / `pay.` 三个域名都指向 8787，由 gateway
 
 - Ubuntu 24.04，8 核 / 16G
 - `uv`：`curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Node 24（nvm）、Go 1.25
+- Node 24（nvm）、Go 1.25 —— **api 也需要 node**，见下面第 7 条
 - 不需要预装 Python：`uv sync` 按 `requires-python` 自己取 3.11
 
 **GitHub 的 SSH key 如果不是默认文件名，必须写进 `~/.ssh/config`。**
@@ -53,6 +53,10 @@ cd ~/Developer/Revornix-new
 # Python：一条命令装完 api 与 worker（同一个 uv workspace，共用仓库根一个 .venv）
 uv sync --locked --all-packages
 uv run --directory worker playwright install chromium-headless-shell
+
+# Revornix AI 的 sidecar：api 每轮对话 spawn `node agent-sidecar/dist/sidecar.cjs`，
+# 这个产物不在 git 里，必须构建出来，否则 AI 对话全部失败（其余功能不受影响）
+( cd agent-sidecar && pnpm install --frozen-lockfile && pnpm build )
 
 # 前端与网关
 ( cd gateway  && go build -o gateway ./cmd/gateway )
@@ -84,6 +88,7 @@ worker 侧在 `worker_init` 里也会跑一次 `schema_guard`，所以 worker �
 cd ~/Developer/Revornix-new && git pull
 
 uv sync --locked --all-packages          # 依赖没变时是空操作
+( cd agent-sidecar && pnpm install --frozen-lockfile && pnpm build )
 ( cd gateway  && go build -o gateway ./cmd/gateway )
 ( cd hot-news && pnpm install --frozen-lockfile && pnpm build )
 ( cd web      && pnpm install --frozen-lockfile && pnpm build \
@@ -99,6 +104,10 @@ systemctl is-active revornix-api revornix-worker revornix-gateway revornix-hot-n
 
 curl -sf localhost:8001/docs -A "Mozilla/5.0" -o /dev/null && echo "api ok"
 # 要带 User-Agent：应用自带反爬中间件，裸 curl 会被挡掉。
+
+# Revornix AI 能不能起 sidecar（api 进程里解析的就是这两个路径）
+cd ~/Developer/Revornix-new/api && ../.venv/bin/python -c \
+  "from agent.sidecar import pi_sidecar_command; n,s=pi_sidecar_command(); print(n,s)"
 
 # worker 是否真的在消费队列（而不只是进程活着）
 cd ~/Developer/Revornix-new/worker && ../.venv/bin/celery -A common.celery.app inspect ping
@@ -124,7 +133,7 @@ cd ~/Developer/Revornix-new/worker && ../.venv/bin/celery -A common.celery.app i
 **删除旧环境之前，先在删除后重启一次。** 不重启就无法证明服务真的不依赖它 ——
 迁移那次删掉 17.7G 的 conda 环境后重启，api 与 worker 都正常，那一步才算完。
 
-## 六个容易踩的地方
+## 七个容易踩的地方
 
 **1. `WorkingDirectory` 不能省，也不能改。**
 合并成单一 `app/` 包之后，有两处按**工作目录**取值：
@@ -172,6 +181,15 @@ uv sync --locked --all-packages --extra local-embedding
 「让 venv 精确等于所选包的依赖集」，不是「往里加东西」：写成
 `--package revornix-api --extra local-embedding` 会装上 torch，同时把只有 worker
 需要的包（playwright 的 shapely 等）**卸掉** —— api 起得来，worker 悄悄坏掉。
+
+**7. api 需要 node，而 systemd 的默认 PATH 里没有。**
+Revornix AI 每轮对话都 spawn 一个 node 子进程跑 `agent-sidecar/dist/sidecar.cjs`。
+`app/agent/sidecar.py` 先读 `REVORNIX_AGENT_BIN_NODE`，没有才 `shutil.which("node")` ——
+而 node 装在 nvm 目录下（`~/.nvm/versions/node/*/bin`），**不在 systemd 的默认 PATH 里**。
+不设这个变量，api 照常启动、`/docs` 照常 200，只有 AI 对话会失败。
+`deploy/revornix-api.service` 里已经写死了这一行，换机器或升级 node 版本时要跟着改。
+
+同理，`dist/sidecar.cjs` 是构建产物、不在 git 里，每次部署都要重新 `pnpm build`。
 
 ## 为什么不合并成一份 .env
 

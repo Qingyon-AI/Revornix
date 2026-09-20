@@ -7,6 +7,10 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/Developer/Revornix-new/api
 Environment="HF_ENDPOINT=https://hf-mirror.com"
 Environment="HF_HUB_ENABLE_HF_TRANSFER=1"
+# Revornix AI 每轮对话要 spawn 一个 node 进程跑 agent-sidecar/dist/sidecar.cjs。
+# app/agent/sidecar.py 先读这个变量，没有才 shutil.which("node") —— 而 node 装在
+# nvm 目录下，不在 systemd 的默认 PATH 里，不写这行就找不到 node，AI 对话全部失败。
+Environment="REVORNIX_AGENT_BIN_NODE=/home/ubuntu/.nvm/versions/node/v24.11.1/bin/node"
 ExecStart=/home/ubuntu/Developer/Revornix-new/.venv/bin/fastapi run --port 8001
 Restart=always
 RestartSec=5

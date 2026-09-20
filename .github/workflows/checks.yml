@@ -122,6 +122,34 @@ jobs:
         working-directory: hot-news
         run: pnpm build
 
+  agent-sidecar:
+    name: agent-sidecar 类型检查、构建与测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: agent-sidecar/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: agent-sidecar/pnpm-lock.yaml
+      - name: 安装依赖
+        working-directory: agent-sidecar
+        run: pnpm install --frozen-lockfile
+      - name: 类型检查
+        working-directory: agent-sidecar
+        run: pnpm typecheck
+      # 先构建再测试：bundle.smoke 加载的是 dist/sidecar.cjs，也就是 api 运行时
+      # 真正执行的那个文件，不是源码。
+      - name: 构建
+        working-directory: agent-sidecar
+        run: pnpm build
+      - name: 单元测试
+        working-directory: agent-sidecar
+        run: pnpm test
+
   desktop:
     name: desktop 单元测试
     runs-on: ubuntu-latest

@@ -6,7 +6,7 @@
 # 而一个动不动就红的本地脚本没人会用。
 #
 #   ./scripts/check-all.sh              跑全部（不含集成测试）
-#   ./scripts/check-all.sh web api      只跑指定的（分组：app api worker web gateway hot-news desktop docs）
+#   ./scripts/check-all.sh web api      只跑指定的（分组：app api worker web gateway hot-news agent-sidecar desktop docs）
 #   ./scripts/check-all.sh integration  跑集成测试（要先起容器，见下）
 # ── 升级 Node 依赖时的两个坑（都实际踩过）─────────────────────────────
 #
@@ -105,6 +105,14 @@ echo "── hot-news ──"
 step hot-news "lint"     in_dir hot-news pnpm lint
 step hot-news "单元测试" in_dir hot-news pnpm test
 step hot-news "构建"     in_dir hot-news pnpm build
+
+echo "── agent-sidecar ──"
+# Revornix AI 的 Node 侧：api 按轮次把它拉起来，走 stdio 逐行 JSON。
+# 构建产物 dist/sidecar.cjs 是 api 运行时直接执行的文件 —— 构建挂了，AI 功能就挂了，
+# 而 api 自己的检查一行都不会红。bundle.smoke 测的正是那个产物能不能被 node 加载。
+step agent-sidecar "类型检查" in_dir agent-sidecar pnpm typecheck
+step agent-sidecar "构建"     in_dir agent-sidecar pnpm build
+step agent-sidecar "单元测试" in_dir agent-sidecar pnpm test
 
 echo "── desktop ──"
 # desktop 与其余前端一样用 pnpm。仓库曾同时存在两份 lock（package-lock.json 停在

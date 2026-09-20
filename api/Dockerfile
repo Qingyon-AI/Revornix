@@ -2,10 +2,12 @@
 # 对应的构建命令：docker build -f api/Dockerfile .
 
 # sidecar 构建层:智能体运行时(agent-sidecar,内嵌 pi-agent-core)打成单个 sidecar.cjs。
-FROM node:22-bookworm-slim AS sidecar
+# Node 24 与全仓库一致（CI、web/hot-news 镜像、线上 nvm 都是 24）。
+# --frozen-lockfile：锁文件与 package.json 对不上时报错，而不是在镜像里悄悄改写。
+FROM node:24-bookworm-slim AS sidecar
 WORKDIR /build
 COPY agent-sidecar/ ./
-RUN corepack enable && pnpm install && pnpm build
+RUN corepack enable && pnpm install --frozen-lockfile && pnpm build
 
 FROM python:3.11-slim AS base
 
@@ -55,7 +57,7 @@ COPY --chown=revornix:revornix app/ app/
 COPY --chown=revornix:revornix api/ api/
 # 智能体 sidecar:每轮对话 spawn 一个 node 进程(agent/sidecar.py)。node 二进制从官方
 # 镜像原样拷过来(同为 debian bookworm,动态库兼容);脚本路径由 sidecar.py 按仓库根解析。
-COPY --from=node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:24-bookworm-slim /usr/local/bin/node /usr/local/bin/node
 COPY --from=sidecar --chown=revornix:revornix /build/dist/sidecar.cjs agent-sidecar/dist/sidecar.cjs
 RUN uv sync --locked --no-cache --package revornix-api
 
