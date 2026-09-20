@@ -51,3 +51,8 @@ hot-news/vitest.config.d.ts.map
 # Go 编译出来的可执行文件，与目录同名（gateway/gateway）。曾经有一个 8.3 MB 的
 # **macOS arm64** 二进制躺在仓库里 —— 那是仓库里最大的文件，而 Linux 部署根本用不了它。
 gateway/gateway
+
+# esbuild 现转 TS 给测试用的中间产物(test/.*.test.cjs)。每次跑测试重新生成,
+# 内容随源码变。曾经被提交过两次 —— 第一次是 .compaction.test.cjs,单独删掉了却
+# 没留规则,于是 .subagent.test.cjs 又原样进来一遍。删一个文件治不了会复发的事。
+agent-sidecar/test/.*.test.cjs
