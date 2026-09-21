@@ -6,6 +6,9 @@
 本目录的 5 个 unit 文件是**从生产机上导出的**，不是模板 —— 路径写死成部署机上的
 实际位置。换机器就得改 `WorkingDirectory`、`ExecStart` 和 `PATH` 里的三处路径。
 
+**线上一共三台机器**，下面三节各讲一台。这里的 unit 来自主机 应用主机；境外那台
+只跑 api，它的 unit 与主机的 `revornix-api.service` 只差目录名。
+
 ## 线上是什么样的
 
 **应用主机** —— 应用与主要存储，全部 systemd，没有容器：
@@ -25,6 +28,31 @@ nginx 把 `api.` / `hot-news.` / `pay.` 三个域名都指向 8787，由 gateway
 
 **数据主机** —— 数据与可观测，全是 docker：Milvus（19530）+ etcd + minio，
 以及一整套 SignOz。Neo4j 是这台的 systemd 服务，不是容器。
+
+**OAuth 主机** —— 境外 OAuth 入口（`cross-login.revornix.com`）。主网关的
+`GATEWAY_AUTH_API_UPSTREAMS` 指向它：GitHub / Google 登录的回调走这台，因为境内
+主站连不通那些服务。
+
+| | |
+|---|---|
+| 跑什么 | nginx + **只有 `revornix-api`**，没有 worker / web / gateway |
+| 数据库 | **共用主机 应用主机 的 Postgres** —— 本机没有库 |
+| 规格 | 2 核 / 1.9G 内存，比主机小得多，启动要一两分钟 |
+| 登录 | `ssh -i ~/.ssh/<私钥文件> ubuntu@OAuth 主机` |
+
+**这台长期不在任何文档里。** 它只通过域名被引用，grep IP 在两台机器上都搜不到任何
+结果（实测），所以前两轮梳理拓扑时都漏了它 —— 配置里的一个域名是一条指向未知主机的
+边，而它看起来只是个字符串。
+
+它共用主库，意味着**它的 api 启动时也会跑一遍建表 / 补列 / 种子**。`schema_guard`
+只加不删，所以两台跑不同版本的代码是安全的 —— 但要知道有这回事。
+
+两个**既有**问题（迁移前就在，不是迁移引入的）：
+
+- `REDIS_URL=localhost`，而这台**根本没装 redis**（无 6379，服务 inactive）。
+  OAuth 那条路不碰 redis，所以一直没暴露；任何碰 redis 的代码在这台上都会失败。
+- `MILVUS_CLUSTER_ENDPOINT` 指向一个 Zilliz 云端实例，实测**连不上**（HTTP 000）。
+  启动日志里是 `bootstrap: milvus not ready, skipped` —— 不阻塞启动，但向量功能没有。
 
 ## 前置
 
