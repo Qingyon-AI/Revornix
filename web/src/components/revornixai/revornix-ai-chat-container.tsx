@@ -9,7 +9,6 @@ import AgentMessageCard, { AgentTimeline } from './agent-message-card';
 import AgentSendForm from './agent-send-form';
 import AgentSessionList from './agent-session-list';
 import AgentConfirmations from './agent-confirmations';
-import AgentContextMeter from './agent-context-meter';
 
 const RevornixAI = () => {
 	const t = useTranslations();
@@ -87,7 +86,18 @@ const RevornixAI = () => {
 		};
 	}, []);
 
-	const hasContent = messages.length > 0 || (stream && !stream.done);
+	/**
+	 * **流式气泡一直留到重取落地为止**,判据是 `stream` 在不在,而不是 `stream.done`。
+	 *
+	 * 那一帧 done 为真、而正式消息还没到:sidecar 发完最后一帧就关流,store 的 onDone 要
+	 * 先 `await` 三个接口(会话/消息/队列)才把 `stream` 置空并换上正式气泡。以 `!stream.done`
+	 * 为判据的话,这段网络往返里**两边都没有东西可渲染** —— 刚写完的那段回答整段消失,
+	 * 等重取回来再冒出来。用户看到的就是"答完闪一下"。
+	 *
+	 * store 那边本来就是**同一个 `set()`** 里换的(stream 置空与 messages 落地同帧),
+	 * 所以只要这里别提前把它藏起来,切换就是无缝的。
+	 */
+	const hasContent = messages.length > 0 || Boolean(stream);
 
 	return (
 		<div className='flex h-[calc(100dvh-var(--private-top-header-height,3.5rem))] max-h-[calc(100dvh-var(--private-top-header-height,3.5rem))] min-h-0 flex-col overflow-hidden'>
@@ -108,8 +118,9 @@ const RevornixAI = () => {
 							</div>
 						</div>
 					</div>
+					{/* 上下文水位与「立即整理」搬进了输入框那一行的设置弹层 —— 它们是同一件事的
+					    两半(看还剩多少、据此决定要不要整理),钉在页头时离那颗按钮隔着半个屏幕。 */}
 					<div className='flex shrink-0 items-center gap-2'>
-						<AgentContextMeter />
 						<Button
 							variant='outline'
 							size='sm'
@@ -133,7 +144,7 @@ const RevornixAI = () => {
 						{messages.map((message) => (
 							<AgentMessageCard key={message.id} message={message} />
 						))}
-						{stream && !stream.done && (
+						{stream && (
 							<AgentMessageCard
 								streamTimeline={stream.timeline}
 								streamText={stream.text}

@@ -273,7 +273,14 @@ async def post_agent_message(
         raise schemas.error.CustomException(message="Forbidden", code=403)
     if not body.content.strip() and not body.images:
         raise schemas.error.CustomException(message="消息不能为空", code=400)
-    message = await host.post_user_message(db, session, body.content, user, images=body.images)
+    message = await host.post_user_message(
+        db,
+        session,
+        body.content,
+        user,
+        images=body.images,
+        references=[one.model_dump() for one in body.references],
+    )
     return _message_out(message)
 
 
@@ -418,7 +425,12 @@ async def invoke_agent_tool(
             session = await db.get(models.agent.AgentSession, session_id)
             if session is not None and session.user_id == user.id:
                 allowed = json.loads(session.auto_allow_tools) if session.auto_allow_tools else []
-                auto_allowed = session.permission_mode == "bypass" or name in allowed
+                auto_allowed = confirmations.may_run_without_asking(
+                    permission=spec.permission,
+                    mode=session.permission_mode,
+                    auto_allow_tools=allowed,
+                    tool=name,
+                )
         if not auto_allowed:
             card = await confirmations.request_confirmation(
                 db,

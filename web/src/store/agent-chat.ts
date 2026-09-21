@@ -25,6 +25,7 @@ import {
 } from '@/service/agent';
 import type {
 	AgentMessage,
+	AgentReference,
 	AgentSession,
 	AgentStreamFrame,
 	AgentTimelineItem,
@@ -68,7 +69,11 @@ export type AgentChatAction = {
 		id: number,
 		patch: Parameters<typeof updateAgentSession>[1],
 	) => Promise<void>;
-	sendMessage: (content: string, images?: string[]) => Promise<void>;
+	sendMessage: (
+		content: string,
+		images?: string[],
+		references?: AgentReference[],
+	) => Promise<void>;
 	stop: () => Promise<void>;
 	steer: (messageId: number) => Promise<void>;
 	cancelQueued: (messageId: number) => Promise<void>;
@@ -127,6 +132,37 @@ async function attachStream(
 	}
 }
 
+/**
+ * 一轮跑完之后的收尾:重取会话/消息/队列,**在同一个 `set()` 里**把流式快照换成正式气泡。
+ *
+ * 两处用它(自己发起的那一轮、刷新页面后接回去的那一轮),写成一份是因为它们出过不一样的错:
+ * 后者原先调 `selectSession`,而那个函数会先把 messages 和 stream 清空再去取 —— 中间那段
+ * 网络往返里屏幕上空无一物。
+ *
+ * `stream` 必须和 `messages` 一起换:分两次 set 的话,中间那一帧既没有流式气泡也没有正式
+ * 气泡,表现就是"答完闪一下"。
+ */
+async function settleTurn(
+	sessionId: number,
+	set: (partial: any) => void,
+	get: () => AgentChatState & AgentChatAction,
+) {
+	const [session, messages, queue] = await Promise.all([
+		getAgentSession(sessionId),
+		getAgentMessages(sessionId),
+		getAgentQueue(sessionId),
+	]);
+	set((state: AgentChatState) => ({
+		//: 只动**当前正看着的**那个会话。期间用户可能已经切走了 —— 那时 `stream` 属于新会话,
+		//: 无条件置空会把新会话正在滚的那段字抹掉。
+		...(state.currentSessionId === sessionId
+			? { stream: null, currentSession: session, messages, queue }
+			: {}),
+		sessions: state.sessions.map((s) => (s.id === sessionId ? session : s)),
+	}));
+	if (get().currentSessionId === sessionId) void get().refreshConfirmations();
+}
+
 export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 	(set, get) => ({
 		sessions: [],
@@ -174,7 +210,10 @@ export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 					void attachStream(
 						id,
 						(frame) => set({ stream: frame }),
-						() => void get().selectSession(id),
+						//: **不能用 selectSession 收尾**。它第一件事就是把 messages / stream 清空
+						//: 再去取 —— 那一整段网络往返里屏幕上什么都没有,刚答完的话整段消失
+						//: 又冒出来。settleTurn 是原地换,同一个 set 里完成。
+						() => void settleTurn(id, set, get),
 					);
 				}
 			} finally {
@@ -239,7 +278,7 @@ export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 			}));
 		},
 
-		sendMessage: async (content, images) => {
+		sendMessage: async (content, images, references) => {
 			const sessionId = get().currentSessionId;
 			if (sessionId === null) return;
 			set({ sending: true });
@@ -249,7 +288,7 @@ export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 			// stream 置空,恰好把正在显示的那半句话抹掉一帧。
 			const alreadyStreaming = liveStreams.has(sessionId);
 			try {
-				const message = await postAgentMessage(sessionId, { content, images });
+				const message = await postAgentMessage(sessionId, { content, images, references });
 				// 乐观地把这条消息放进列表;排队中的消息由 queue 接口给出。
 				set((state) => ({ messages: [...state.messages, message] }));
 				const queue = await getAgentQueue(sessionId);
@@ -260,23 +299,7 @@ export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 				void attachStream(
 					sessionId,
 					(frame) => set({ stream: frame }),
-					async () => {
-						const [session, messages, queue] = await Promise.all([
-							getAgentSession(sessionId),
-							getAgentMessages(sessionId),
-							getAgentQueue(sessionId),
-						]);
-						set((state) => ({
-							stream: null,
-							currentSession: session,
-							messages,
-							queue,
-							sessions: state.sessions.map((s) =>
-								s.id === sessionId ? session : s,
-							),
-						}));
-						void get().refreshConfirmations();
-					},
+					() => void settleTurn(sessionId, set, get),
 				);
 			} finally {
 				set({ sending: false });

@@ -25,9 +25,11 @@ import { replacePath } from '@/lib/utils';
 import { useUserContext } from '@/provider/user-provider';
 import CustomMarkdown from '../ui/custom-markdown';
 import ImagePreview from '../ui/image-preview';
+import { ReferenceRow } from './reference-chip';
 import type {
 	AgentCitation,
 	AgentMessage,
+	AgentReference,
 	AgentTimelineItem,
 	AgentToolCall,
 } from '@/types/agent';
@@ -164,12 +166,31 @@ export const AgentTimeline = ({ timeline }: { timeline: AgentTimelineItem[] }) =
 	);
 };
 
+/**
+ * 回答用到的来源。
+ *
+ * **一排胶囊,和输入框里 `@` 出来的那种长得一模一样** —— 对用户来说它们是同一件事:
+ * 「这句话牵扯到知识库里的哪几个东西」。一边画成胶囊、另一边画成折叠列表里的灰条,
+ * 会让人以为回答里的来源是另一种、点不动的东西。胶囊点得开,摘录仍然收在下面,
+ * 想核对再展开。
+ *
+ * 同一篇文档命中多个分块时只出现一次胶囊 —— 胶囊说的是「牵扯到哪篇」,而摘录说的是
+ * 「哪几段」,后者才需要逐条列。
+ */
 const Citations = ({ citations }: { citations: AgentCitation[] }) => {
 	const t = useTranslations();
 	const [open, setOpen] = useState(false);
 	if (citations.length === 0) return null;
+	const cited: AgentReference[] = [];
+	const seen = new Set<number>();
+	for (const one of citations) {
+		if (seen.has(one.document_id)) continue;
+		seen.add(one.document_id);
+		cited.push({ kind: 'document', id: one.document_id, name: one.document_title });
+	}
 	return (
 		<Collapsible open={open} onOpenChange={setOpen} className='mt-2'>
+			<ReferenceRow references={cited} className='mb-1.5' />
 			<CollapsibleTrigger asChild>
 				<button
 					type='button'
@@ -272,8 +293,12 @@ const AgentMessageCard = ({
 						</div>
 					)}
 					{content.trim() && (
-						<div className='rounded-2xl bg-muted px-3.5 py-2 text-sm break-words'>
+						<div className='flex flex-col gap-1.5 rounded-2xl bg-muted px-3.5 py-2 text-sm break-words'>
 							<CustomMarkdown content={content} />
+							{/* 用户 `@` 过的东西照原样画回来。正文里只有 `@标题`(那是给模型读的句子),
+							    胶囊要靠 payload 里的结构化 id 才点得开 —— 所以它画在正文下面一排,
+							    而不是去正文里做字符串替换:标题会重、会带空格,替换迟早替错地方。 */}
+							<ReferenceRow references={payload?.references ?? []} />
 						</div>
 					)}
 				</div>

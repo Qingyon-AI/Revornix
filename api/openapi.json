@@ -26718,6 +26718,14 @@
             "type": "array",
             "title": "Images",
             "default": []
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/AgentReferenceIn"
+            },
+            "type": "array",
+            "title": "References",
+            "default": []
           }
         },
         "type": "object",
@@ -26782,6 +26790,30 @@
           "create_time"
         ],
         "title": "AgentMessageInfo"
+      },
+      "AgentReferenceIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "AgentReferenceIn",
+        "description": "用户在输入框里 `@` 出来的一个对象。\n\n**正文里只有标题,id 走这里。** 标题会重、会改、会带空格,拿它当标识迟早出事;\n把数字 id 塞回正文又会把真正的句子挤没。所以句子照旧是人话(「把 @周报 里的三点\n合成一段摘要」),而这份结构化清单负责告诉模型那三个字究竟指向哪一条。"
       },
       "AgentSessionCreateRequest": {
         "properties": {

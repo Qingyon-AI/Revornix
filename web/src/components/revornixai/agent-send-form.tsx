@@ -3,41 +3,44 @@
 /**
  * 智能体的输入卡。
  *
- * 版式抄的是同一套架构的另一份实现(Mosael 的 ChatComposer):**一张卡、一条工具行、
- * 一个圆按钮**。此前这里的毛病不是少了什么,是每个控件各按各的刻度来 —— 模型下拉 h-8、
- * MCP 是个裸 Switch、图片是 size='sm' 的方按钮、发送是带文字的方按钮,四个东西四种高度
- * 四种圆角,眼睛没有任何一条线可以扫过去。现在工具行上的东西统一 28px,右边只留一个
- * 圆按钮 —— 那才是这张卡唯一的主动作。
+ * 版式参照同一套架构的另一份实现(Mosael 的 ChatComposer):**一张卡、一条工具行、一个圆按钮**。
+ * 此前的毛病不是少了什么,是每个控件各按各的刻度来 —— 模型下拉 h-8、MCP 是个裸 Switch、
+ * 图片是 size='sm' 的方按钮、发送是带文字的方按钮,四个东西四种高度四种圆角,眼睛没有一条线
+ * 可以扫过去。现在工具行上统一 32px,右边只留一个圆按钮 —— 那才是这张卡唯一的主动作。
  *
- * 发送键的含义会变(和 ChatGPT / Mosael 一致):正在回答且输入框是空的 → 停止;
- * 只要打了字 → 还是发送。**这不只是好看**:后端本来就支持在一轮跑着的时候再收消息
- * (排队,见 app/agent/host.py 的抢占),队列条也一直画在这张卡里 —— 只是原先这个按钮
- * 在 running 时一律变成「停止」,用户根本没有入口把消息排进去,那条队列条等于死的。
+ * 发送键的含义会变(和 ChatGPT / Mosael 一致):正在回答且输入框是空的 → 停止;只要打了字 →
+ * 还是发送。**这不只是好看**:后端本来就支持在一轮跑着的时候再收消息(排队,见
+ * app/agent/host.py 的抢占),队列条也一直画在这张卡里 —— 只是原先这个按钮在 running 时一律
+ * 变成「停止」,用户根本没有入口把消息排进去,那条队列条等于死的。
+ *
+ * 草稿是**编辑器文档**而不是字符串:`@` 出来的引用是原子节点(见 agent-composer)。
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import type { JSONContent } from '@tiptap/react';
 import { ImagePlus, Loader2, Send, Square, Wrench, X, ZapIcon } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 //: 用纯 tooltip 而不是 hybrid-tooltip —— 后者在触屏上会退化成 Popover,那意味着点一下
 //: 「发送」除了把消息发出去还弹一张小卡。这一行上的东西都是要被点的,不是用来看的。
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserContext } from '@/provider/user-provider';
 import { useAIImageAttachments } from '@/hooks/use-ai-image-attachments';
 import { useAgentChatStore } from '@/store/agent-chat';
 import AIModelSelect from '@/components/ai/model-select';
+import AgentComposer, {
+	collectReferences,
+	documentText,
+	emptyDocument,
+} from './agent-composer';
+import AgentSessionSettings from './agent-session-settings';
 import { cn, replacePath } from '@/lib/utils';
 
 const AgentSendForm = () => {
 	const t = useTranslations();
 	const { mainUserInfo } = useUserContext();
-	const [message, setMessage] = useState('');
+	const [draft, setDraft] = useState<JSONContent>(emptyDocument);
 	const currentSession = useAgentChatStore((s) => s.currentSession);
 	const sending = useAgentChatStore((s) => s.sending);
 	const stream = useAgentChatStore((s) => s.stream);
@@ -58,22 +61,28 @@ const AgentSendForm = () => {
 		clearAttachments,
 	} = useAIImageAttachments();
 
+	const draftText = useMemo(() => documentText(draft), [draft]);
 	const running = currentSession?.status === 'running' || (stream && !stream.done);
-	const hasDraft = message.trim().length > 0 || imagePaths.length > 0;
+	const hasDraft = draftText.trim().length > 0 || imagePaths.length > 0;
 	/** 空手 + 正在回答 = 这个按钮是「停止」,其余时候都是「发送」。 */
 	const showStop = Boolean(running) && !hasDraft;
 	const mcpOn = currentSession?.enable_mcp ?? false;
 
 	const handleSend = async () => {
-		const content = message.trim();
+		const content = draftText.trim();
 		if (!content && imagePaths.length === 0) {
 			toast.error(t('revornix_ai_message_content_needed'));
 			return;
 		}
 		if (!currentSession) return;
-		setMessage('');
+		const references = collectReferences(draft);
+		setDraft(emptyDocument);
 		try {
-			await sendMessage(content, imagePaths.length > 0 ? [...imagePaths] : undefined);
+			await sendMessage(
+				content,
+				imagePaths.length > 0 ? [...imagePaths] : undefined,
+				references.length > 0 ? references : undefined,
+			);
 			clearAttachments();
 		} catch (error: any) {
 			toast.error(error?.message ?? t('revornix_ai_error_server_failed'));
@@ -134,61 +143,13 @@ const AgentSendForm = () => {
 					))}
 				</div>
 			)}
-			{/* 空的时候只占一行高 —— 原先固定 72px,一张卡有一半是空白。
-			    输满之后自己长(Textarea 默认 field-sizing-content),到 200px 封顶转内部滚动。 */}
-			<Textarea
-				value={message}
-				onChange={(event) => setMessage(event.target.value)}
-				onKeyDown={(event) => {
-					if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-						event.preventDefault();
-						void handleSend();
-					}
-				}}
+			<AgentComposer
+				value={draft}
+				onChange={setDraft}
+				onSubmit={() => void handleSend()}
 				placeholder={t('revornix_ai_quickly_send')}
-				className='max-h-[200px] min-h-9 resize-none overflow-y-auto border-0 bg-transparent p-1 shadow-none focus-visible:ring-0 dark:bg-transparent'
 			/>
 			<div className='flex items-center gap-1'>
-				<AIModelSelect
-					value={currentSession?.model_id ?? mainUserInfo?.default_revornix_model_id ?? null}
-					onChange={(id) => {
-						if (currentSession) void patchSession(currentSession.id, { model_id: id });
-					}}
-					size='sm'
-					variant='inline'
-					/* 和右边那颗 MCP 药丸同一个形状,这一行才扫得过去:同样 28px 高、
-					   同样的圆角、同样只有 hover 时才浮出底色。 */
-					className='px-2! text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
-				/>
-				{/* 开关做成一颗药丸,而不是裸 Switch:Switch 是表单控件的分量,而这一行上
-				    其余都是图标按钮 —— 混在一起时它比模型名还抢眼,可它并不是主角。
-				    亮起来就是开着,和 ChatGPT 那排模式键同一个读法。 */}
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<button
-							type='button'
-							role='switch'
-							aria-checked={mcpOn}
-							disabled={!currentSession}
-							onClick={() => {
-								if (currentSession)
-									void patchSession(currentSession.id, { enable_mcp: !mcpOn });
-							}}
-							className={cn(
-								'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs transition-colors disabled:pointer-events-none disabled:opacity-50',
-								mcpOn
-									? 'border-primary/30 bg-primary/10 text-primary'
-									: 'border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-							)}>
-							<Wrench className='size-3.5' />
-							MCP
-						</button>
-					</TooltipTrigger>
-					<TooltipContent>
-						{mcpOn ? t('agent_mcp_on_hint') : t('agent_mcp_off_hint')}
-					</TooltipContent>
-				</Tooltip>
-				<div className='flex-1' />
 				<input
 					ref={imageInputRef}
 					type='file'
@@ -216,6 +177,46 @@ const AgentSendForm = () => {
 					</TooltipTrigger>
 					<TooltipContent>{t('agent_add_image')}</TooltipContent>
 				</Tooltip>
+				<AIModelSelect
+					value={currentSession?.model_id ?? mainUserInfo?.default_revornix_model_id ?? null}
+					onChange={(id) => {
+						if (currentSession) void patchSession(currentSession.id, { model_id: id });
+					}}
+					size='sm'
+					variant='inline'
+					/* 和右边那颗 MCP 药丸同一个形状,这一行才扫得过去:同样 32px 高、同样的圆角、
+					   同样只有 hover 时才浮出底色。 */
+					className='px-2! text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
+				/>
+				{/* 开关做成一颗药丸,而不是裸 Switch:Switch 是表单控件的分量,而这一行上其余都是
+				    图标按钮 —— 混在一起时它比模型名还抢眼,可它并不是主角。亮起来就是开着。 */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<button
+							type='button'
+							role='switch'
+							aria-checked={mcpOn}
+							disabled={!currentSession}
+							onClick={() => {
+								if (currentSession)
+									void patchSession(currentSession.id, { enable_mcp: !mcpOn });
+							}}
+							className={cn(
+								'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs transition-colors disabled:pointer-events-none disabled:opacity-50',
+								mcpOn
+									? 'border-primary/30 bg-primary/10 text-primary'
+									: 'border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+							)}>
+							<Wrench className='size-3.5' />
+							MCP
+						</button>
+					</TooltipTrigger>
+					<TooltipContent>
+						{mcpOn ? t('agent_mcp_on_hint') : t('agent_mcp_off_hint')}
+					</TooltipContent>
+				</Tooltip>
+				<AgentSessionSettings />
+				<div className='flex-1' />
 				{showStop ? (
 					<Tooltip>
 						<TooltipTrigger asChild>

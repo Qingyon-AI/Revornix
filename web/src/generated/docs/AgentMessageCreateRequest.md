@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `content` | string
 `images` | Array&lt;string&gt;
+`references` | [Array&lt;AgentReferenceIn&gt;](AgentReferenceIn.md)
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { AgentMessageCreateRequest } from ''
 const example = {
   "content": null,
   "images": null,
+  "references": null,
 } satisfies AgentMessageCreateRequest
 
 console.log(example)

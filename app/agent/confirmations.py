@@ -32,6 +32,37 @@ class ConfirmationError(ValueError):
     pass
 
 
+#: 权限档位:分界线是**这次动作撤不撤得回**,不是"信不信任模型"。
+PERMISSION_MODES = ("manual", "auto", "bypass")
+
+
+def may_run_without_asking(
+    *,
+    permission: str | None,
+    mode: str | None,
+    auto_allow_tools: list[str] | None,
+    tool: str,
+) -> bool:
+    """这次调用能不能不问就跑。
+
+    - `manual` —— 每一次都问。
+    - `auto`   —— 可撤销的修改(edit)自己做;花额度的(ai-cost)和删掉就没了的
+      (destructive)照样要问。**这一档此前没有任何行为** —— 接口收下了它、
+      数据库存得住、界面也能设,可代码里从没读过它,和 manual 完全一样。
+    - `bypass` —— 全放行。
+
+    「本会话始终允许这个工具」是用户对**具体某个工具**的一次性授权,优先于档位。
+
+    写成一个纯函数是因为它是一条**授权边界**:判据里只要漏一个分支,多出来的那一档就会
+    静默地把删除也放过去,而这件事在界面上看不出来 —— 用户只会发现东西没了。
+    """
+    if tool in (auto_allow_tools or []):
+        return True
+    if mode == "bypass":
+        return True
+    return mode == "auto" and permission == "edit"
+
+
 def _summarize(tool: str, payload: dict[str, Any]) -> str:
     """卡片上那一行字 —— 用户点批准之前唯一会读的东西。点名关键参数。"""
     if tool == "delete_documents":

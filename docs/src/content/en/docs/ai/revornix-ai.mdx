@@ -82,8 +82,26 @@ So a more accurate mental model today is:
 The row under the composer is the session console, and it does not lock up once a turn starts:
 
 - **MCP toggle**: lit means this session may call the MCP tools you registered; switched off, the agent answers with built-in abilities only. It is stored per session.
+- **Session settings** (the sliders icon at the end of that row): thinking level, tool permissions and the context meter live here. The three permission tiers are drawn along one line — whether the action can be undone. *Always ask* raises a card for every change; *Auto-edit* lets reversible edits through but still asks before anything that spends AI credits or cannot be undone; *Allow all* stops asking, deletions included. A dot on the icon marks any tier other than the default.
 - **Stop**: while a turn is running and the composer is empty, the round button in the corner is Stop, and it interrupts the current turn immediately.
 - **Queue**: the moment you start typing, that same button turns back into Send. A message sent while a turn is running does not interrupt it — it is queued and starts once the turn finishes. The queue is shown above the composer.
 - **Steer**: every queued message carries a Steer action that injects it into the *running* turn, so the model changes direction on the spot instead of finishing first. Withdraw it if you change your mind.
 
 Together these mean you never have to interrupt the model just to add a sentence, nor start a new turn just to redirect it.
+
+## 7. Pointing at things with `@`
+
+Typing `@` in the composer opens a list of your documents and sections. Picking one turns it into a
+**chip** rather than a run of text — backspace removes the whole reference instead of leaving half a
+title behind.
+
+Two things travel with the message:
+
+- the sentence still reads as a sentence ("summarise the three points in @weekly"), because that is
+  what the model reads;
+- the referenced object's **id rides along separately**, so the agent fetches that exact document
+  instead of searching the whole library for something you already pointed at.
+
+The chips in the bubble are clickable — they open the document or section. The sources listed under
+an answer use the same chip: to you they are the same thing — which parts of your knowledge base
+this sentence touches.

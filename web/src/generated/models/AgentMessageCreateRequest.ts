@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { AgentReferenceIn } from './AgentReferenceIn';
+import {
+    AgentReferenceInFromJSON,
+    AgentReferenceInFromJSONTyped,
+    AgentReferenceInToJSON,
+    AgentReferenceInToJSONTyped,
+} from './AgentReferenceIn';
+
 /**
  * 
  * @export
@@ -31,6 +39,12 @@ export interface AgentMessageCreateRequest {
      * @memberof AgentMessageCreateRequest
      */
     images?: Array<string>;
+    /**
+     * 
+     * @type {Array<AgentReferenceIn>}
+     * @memberof AgentMessageCreateRequest
+     */
+    references?: Array<AgentReferenceIn>;
 }
 
 /**
@@ -53,6 +67,7 @@ export function AgentMessageCreateRequestFromJSONTyped(json: any, ignoreDiscrimi
         
         'content': json['content'],
         'images': json['images'] == null ? undefined : json['images'],
+        'references': json['references'] == null ? undefined : ((json['references'] as Array<any>).map(AgentReferenceInFromJSON)),
     };
 }
 
@@ -69,6 +84,7 @@ export function AgentMessageCreateRequestToJSONTyped(value?: AgentMessageCreateR
         
         'content': value['content'],
         'images': value['images'],
+        'references': value['references'] == null ? undefined : ((value['references'] as Array<any>).map(AgentReferenceInToJSON)),
     };
 }
 

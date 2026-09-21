@@ -745,6 +745,28 @@ def _usage_from_started(started: float, first_token_at: float | None = None) -> 
     return usage
 
 
+#: `@` 引用在句子里只留标题 —— 模型要动手(读全文、改内容)就得知道 id。
+#: 这一段**接在用户那句话后面**,而不是塞进系统提示词:它属于「这一句问的是什么」,
+#: 跟着消息走;放进系统提示词的话,下一轮还在,模型会以为用户又提了一遍。
+_REFERENCE_KIND_LABEL = {"document": "文档", "section": "专栏"}
+
+
+def _prompt_with_references(content: str, references: list[dict] | None) -> str:
+    """把结构化引用拼成模型读得懂、也用得上的一行。"""
+    if not references:
+        return content
+    parts = []
+    for one in references:
+        kind = str(one.get("kind") or "")
+        label = _REFERENCE_KIND_LABEL.get(kind, kind or "对象")
+        name = str(one.get("name") or "").strip()
+        parts.append(f"{label} id={one.get('id')}" + (f"(《{name}》)" if name else ""))
+    if not parts:
+        return content
+    note = "[用户引用] 上面这句话里的 @ 指的是:" + ";".join(parts) + "。需要内容时按 id 取。"
+    return f"{content}\n\n{note}" if content.strip() else note
+
+
 async def post_user_message(
     db: AsyncSession,
     session: models.agent.AgentSession,
@@ -752,6 +774,7 @@ async def post_user_message(
     user: models.user.User,
     *,
     images: list[str] | None = None,
+    references: list[dict] | None = None,
 ) -> models.agent.AgentMessage:
     """落一条用户消息并驱动一轮(会话在跑则排队)。"""
     # **先抢占,再决定排队还是起轮** —— 与 `_drain_queue_locked` 同一套做法。
@@ -779,7 +802,15 @@ async def post_user_message(
             session_id=session.id,
             role="user",
             content=content,
-            payload=json.dumps({"queued": True, "queued_by": user.id, "images": images or []}, ensure_ascii=False),
+            payload=json.dumps(
+                {
+                    "queued": True,
+                    "queued_by": user.id,
+                    "images": images or [],
+                    "references": references or [],
+                },
+                ensure_ascii=False,
+            ),
             create_time=_now(),
         )
         db.add(message)
@@ -793,7 +824,15 @@ async def post_user_message(
         session_id=session.id,
         role="user",
         content=content,
-        payload=json.dumps({"images": images or []}, ensure_ascii=False) if images else None,
+        payload=json.dumps(
+            {
+                **({"images": images} if images else {}),
+                **({"references": references} if references else {}),
+            },
+            ensure_ascii=False,
+        )
+        if (images or references)
+        else None,
         create_time=_now(),
     )
     # status 已经由上面那条条件 UPDATE 置成 running,这里不再重复赋值 ——
@@ -806,7 +845,9 @@ async def post_user_message(
 
     token = mint_turn_token(user, session.id)
     asyncio.get_running_loop().create_task(
-        _run_turn_task(session.id, content, images or [], token, user.id)
+        _run_turn_task(
+            session.id, _prompt_with_references(content, references), images or [], token, user.id
+        )
     )
     return message
 
@@ -967,7 +1008,13 @@ async def _drain_queue_locked(session_id: int) -> None:
         await db.commit()
         token = mint_turn_token(owner, session_id)
     asyncio.get_running_loop().create_task(
-        _run_turn_task(session_id, message.content, payload.get("images") or [], token, owner.id)
+        _run_turn_task(
+            session_id,
+            _prompt_with_references(message.content, payload.get("references")),
+            payload.get("images") or [],
+            token,
+            owner.id,
+        )
     )
 
 
@@ -1007,7 +1054,7 @@ async def steer_queued_message(db: AsyncSession, session: models.agent.AgentSess
     payload = json.loads(message.payload or "{}") if message is not None else {}
     if message is None or message.session_id != session.id or not payload.get("queued"):
         raise HostError("找不到这条排队消息")
-    if not steer_turn(session.id, message.content):
+    if not steer_turn(session.id, _prompt_with_references(message.content, payload.get("references"))):
         return False
     await _unqueue(db, message)
     await db.commit()

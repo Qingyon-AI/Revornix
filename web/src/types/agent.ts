@@ -20,6 +20,21 @@ export type AgentSession = {
 	update_time?: string | null;
 };
 
+/**
+ * `@` 引用得到的东西:知识库里一个具体对象,不是一段字。
+ *
+ * 类型放在这里而不是组件旁边,是因为它同时出现在**三条路**上:输入框的文档、发出去的
+ * 请求体、落库后的消息 payload。搜索与图标那套东西留在 components/revornixai/references.ts。
+ */
+export type ReferenceKind = 'document' | 'section';
+
+export type AgentReference = {
+	kind: ReferenceKind;
+	id: number;
+	/** 写进正文的那个标题。存下来是为了旧消息也能渲染。 */
+	name: string;
+};
+
 /** 时间线条目:一轮回答里发生的事,按真实顺序。 */
 export type AgentTimelineItem =
 	| { type: 'text'; text: string }
@@ -65,6 +80,9 @@ export type AgentMessagePayload = {
 	timeline?: AgentTimelineItem[];
 	queued?: boolean;
 	images?: string[];
+	/** 用户在输入框里 `@` 出来的对象。**随消息存下来**,所以旧气泡也画得出胶囊 ——
+	 *  被引用的东西改了名或删了,至少还说得出当时指的是什么。 */
+	references?: AgentReference[];
 };
 
 export type AgentMessage = {

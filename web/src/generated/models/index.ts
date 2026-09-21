@@ -48,6 +48,7 @@ export * from './AdminUserUpdateRequest';
 export * from './AgentCompactResponse';
 export * from './AgentMessageCreateRequest';
 export * from './AgentMessageInfo';
+export * from './AgentReferenceIn';
 export * from './AgentSessionCreateRequest';
 export * from './AgentSessionIdRequest';
 export * from './AgentSessionInfo';

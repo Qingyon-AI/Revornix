@@ -65,6 +65,7 @@ docs/AgentApi.md
 docs/AgentCompactResponse.md
 docs/AgentMessageCreateRequest.md
 docs/AgentMessageInfo.md
+docs/AgentReferenceIn.md
 docs/AgentSessionCreateRequest.md
 docs/AgentSessionIdRequest.md
 docs/AgentSessionInfo.md
@@ -479,6 +480,7 @@ models/AdminUserUpdateRequest.ts
 models/AgentCompactResponse.ts
 models/AgentMessageCreateRequest.ts
 models/AgentMessageInfo.ts
+models/AgentReferenceIn.ts
 models/AgentSessionCreateRequest.ts
 models/AgentSessionIdRequest.ts
 models/AgentSessionInfo.ts

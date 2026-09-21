@@ -39,9 +39,23 @@ class AgentSessionInfo(BaseModel):
     update_time: datetime | None = None
 
 
+class AgentReferenceIn(BaseModel):
+    """用户在输入框里 `@` 出来的一个对象。
+
+    **正文里只有标题,id 走这里。** 标题会重、会改、会带空格,拿它当标识迟早出事;
+    把数字 id 塞回正文又会把真正的句子挤没。所以句子照旧是人话(「把 @周报 里的三点
+    合成一段摘要」),而这份结构化清单负责告诉模型那三个字究竟指向哪一条。
+    """
+
+    kind: str
+    id: int
+    name: str = ""
+
+
 class AgentMessageCreateRequest(BaseModel):
     content: str
     images: list[str] = []
+    references: list[AgentReferenceIn] = []
 
 
 class AgentMessageInfo(BaseModel):

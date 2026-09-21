@@ -2,6 +2,7 @@ import agentApi from '@/api/agent';
 import { request } from '@/lib/request';
 import type {
 	AgentMessage,
+	AgentReference,
 	AgentSession,
 	ToolConfirmation,
 } from '@/types/agent';
@@ -59,7 +60,12 @@ export const getAgentMessages = async (
 
 export const postAgentMessage = async (
 	session_id: number,
-	data: { content: string; images?: string[] },
+	data: {
+		content: string;
+		images?: string[];
+		/** `@` 出来的对象。正文里只有标题,id 走这里 —— 见 app/schemas/agent.py 的说明。 */
+		references?: AgentReference[];
+	},
 ): Promise<AgentMessage> => {
 	return await request(`${agentApi.postMessage}?session_id=${session_id}`, {
 		data,
