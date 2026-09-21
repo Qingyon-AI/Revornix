@@ -243,12 +243,18 @@ export const useAgentChatStore = create<AgentChatState & AgentChatAction>()(
 			const sessionId = get().currentSessionId;
 			if (sessionId === null) return;
 			set({ sending: true });
+			// **这一轮已经有流在跑就不要再接一条**。输入框允许在回答过程中继续发
+			// (后端会把它排进队列,不会起新的一轮),此时再 attach 一次会先 abort 掉
+			// 当前那条 —— abort 走的是同一个 finally,它的 onDone 在重取完成后把
+			// stream 置空,恰好把正在显示的那半句话抹掉一帧。
+			const alreadyStreaming = liveStreams.has(sessionId);
 			try {
 				const message = await postAgentMessage(sessionId, { content, images });
 				// 乐观地把这条消息放进列表;排队中的消息由 queue 接口给出。
 				set((state) => ({ messages: [...state.messages, message] }));
 				const queue = await getAgentQueue(sessionId);
 				set({ queue });
+				if (alreadyStreaming) return;
 				// 接流。done 之后整体重取一次:正式气泡(带 timeline/usage/citations)
 				// 与流式气泡同帧切换。
 				void attachStream(

@@ -76,3 +76,14 @@ So a more accurate mental model today is:
 
 - Revornix AI is a composite capability built from default models, default resources, knowledge context, and MCP
 - Availability depends not only on whether you configured an API key, but also on whether the selected resources are accessible under the current plan
+
+## 6. What you can still do while it answers
+
+The row under the composer is the session console, and it does not lock up once a turn starts:
+
+- **MCP toggle**: lit means this session may call the MCP tools you registered; switched off, the agent answers with built-in abilities only. It is stored per session.
+- **Stop**: while a turn is running and the composer is empty, the round button in the corner is Stop, and it interrupts the current turn immediately.
+- **Queue**: the moment you start typing, that same button turns back into Send. A message sent while a turn is running does not interrupt it — it is queued and starts once the turn finishes. The queue is shown above the composer.
+- **Steer**: every queued message carries a Steer action that injects it into the *running* turn, so the model changes direction on the spot instead of finishing first. Withdraw it if you change your mind.
+
+Together these mean you never have to interrupt the model just to add a sentence, nor start a new turn just to redirect it.
